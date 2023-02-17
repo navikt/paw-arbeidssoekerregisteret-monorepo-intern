@@ -1,11 +1,10 @@
-name: Build and publish paw-pds-client
+name: paw-pds-client
 
 on:
   push:
     branches:
       - main
-    paths:
-      - 'paw-pdl-client/**'
+
 
 jobs:
   build:
