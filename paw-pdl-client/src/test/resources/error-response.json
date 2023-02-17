@@ -3,7 +3,7 @@
   "errors": [
     {
       "message": "error message",
-      "locations": [{"line": null, "column": null}],
+      "locations": null,
       "path": null,
       "extensions": {
         "code": null,

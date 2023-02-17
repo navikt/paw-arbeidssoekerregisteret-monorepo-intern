@@ -1,58 +1,32 @@
 package no.nav.paw.pdl
 
-import io.ktor.client.call.body
+import com.expediagroup.graphql.client.ktor.GraphQLKtorClient
+import com.expediagroup.graphql.client.types.GraphQLClientRequest
+import com.expediagroup.graphql.client.types.GraphQLClientResponse
+import io.ktor.client.HttpClient
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.header
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
+import org.slf4j.LoggerFactory
+import java.net.URL
 
-/**
- * Enkel GraphQL-klient for PDL som kan enten hente navn fra aktør eller fnr (ident)
- * eller hente mer fullstendig data om en person via fnr eller aktørid (ident)
- *
- * Authorisasjon gjøres via den gitte Token prodvideren, og servicebrukeren som er angitt i token provideren må være i
- * i AD-gruppen `0000-GA-TEMA_SYK` som dokumentert [her](https://pdldocs-navno.msappproxy.net/intern/index.html#_konsumentroller_basert_p%C3%A5_tema).
- *
- * Klienten vil alltid gi PDL-Temaet 'SYK', så om du trenger et annet tema må du endre denne klienten.
- */
+// Se https://pdldocs-navno.msappproxy.net/ for dokumentasjon av PDL API-et
 class PdlClient(
-    private val url: String,
+    url: String,
+    // Tema: https://confluence.adeo.no/pages/viewpage.action?pageId=309311397
+    private val tema: String,
+    httpClient: HttpClient = createHttpClient(),
     private val getAccessToken: () -> String
 ) {
-    private val httpClient = createHttpClient()
+    internal val logger = LoggerFactory.getLogger(this::class.java)
 
-    private val hentIdenterQuery = "hentIdenter.graphql".readQuery()
+    private val graphQLClient = GraphQLKtorClient(
+        url = URL(url),
+        httpClient = httpClient
+    )
 
-    suspend fun hentIdenter(ident: String, userLoginToken: String? = null): String? =
-        PdlQuery(hentIdenterQuery, Variables(ident))
-            .execute<PdlHentIdenter>(userLoginToken)
-            ?.hentIdenter
-            ?.trekkUtIdent(PdlIdent.PdlIdentGruppe.AKTORID)
-
-    // Funksjonen må være inline+reified for å kunne deserialisere T
-    private suspend inline fun <reified T> PdlQuery.execute(userLoginToken: String?): T? {
-        val stsToken = getAccessToken()
-
-        val response = httpClient.post(url) {
-            contentType(ContentType.Application.Json)
-            bearerAuth(userLoginToken ?: stsToken)
-            header("Tema", "OPP")
-
-            setBody(this@execute)
+    internal suspend fun <T : Any> execute(query: GraphQLClientRequest<T>): GraphQLClientResponse<T> =
+        graphQLClient.execute(query) {
+            bearerAuth(getAccessToken())
+            header("Tema", tema)
         }
-            .body<PdlResponse<T>>()
-
-        if (!response.errors.isNullOrEmpty()) {
-            throw PdlException(response.errors)
-        }
-
-        return response.data
-    }
 }
-
-class PdlException(val errors: List<PdlError>?) : RuntimeException()
-
-private fun String.readQuery(): String =
-    this.readResource().replace(Regex("[\r\n]"), "")
