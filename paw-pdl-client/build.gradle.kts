@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "no.nav.paw"
-version = "0.2.2"
+version = "0.1.0"
 
 plugins {
     kotlin("jvm")
@@ -45,7 +45,7 @@ publishing {
         }
     }
     repositories {
-        mavenNav("paw-${rootProject.name}")
+        mavenNav("paw-kotlin-clients")
     }
 }
 

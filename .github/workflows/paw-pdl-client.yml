@@ -1,9 +1,12 @@
-name: Build and publish
+name: paw-pds-client
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'paw-pdl-client/**'
+
 jobs:
   build:
     name: Build and push
@@ -20,6 +23,7 @@ jobs:
         uses: gradle/wrapper-validation-action@v1
 
       - name: Build with Gradle and Publish artifact
+        working-directory: ./paw-pdl-client
         run: ./gradlew build publish
         env:
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
