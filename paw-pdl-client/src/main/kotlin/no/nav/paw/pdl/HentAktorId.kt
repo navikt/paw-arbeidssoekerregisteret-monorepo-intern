@@ -1,6 +1,5 @@
 package no.nav.paw.pdl
 
-import com.expediagroup.graphql.client.types.GraphQLClientError
 import no.nav.paw.pdl.graphql.generated.HentIdenter
 import no.nav.paw.pdl.graphql.generated.enums.IdentGruppe
 import no.nav.paw.pdl.graphql.generated.hentidenter.IdentInformasjon
@@ -28,5 +27,3 @@ suspend fun PdlClient.hentIdenter(ident: String): List<IdentInformasjon>? {
         ?.hentIdenter
         ?.identer
 }
-
-class PdlException(val errors: List<GraphQLClientError>?) : RuntimeException()

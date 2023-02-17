@@ -22,6 +22,3 @@ internal fun HttpClientConfig<*>.configureJsonHandler() {
         )
     }
 }
-
-internal fun String.readResource(): String =
-    ClassLoader.getSystemResource(this).readText()

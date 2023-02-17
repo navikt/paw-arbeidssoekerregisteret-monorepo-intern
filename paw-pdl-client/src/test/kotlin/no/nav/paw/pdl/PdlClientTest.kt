@@ -5,21 +5,22 @@ import no.nav.paw.mockPdlClient
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+
 class PdlClientTest {
     @Test
     fun `Forventer gyldig respons fra hentAktorId`() {
-        val response = readResource("hentIdenter-response.json")
-        val pdlClient = mockPdlClient(response)
-        val resultat = runBlocking { pdlClient.hentAktorId("2649500819544") }
+        val respons = readResource("hentIdenter-response.json")
+        val pdlClient = mockPdlClient(respons)
 
+        val resultat = runBlocking { pdlClient.hentAktorId("2649500819544") }
         val forventet = "2649500819544"
         assertEquals(forventet, resultat)
     }
 
     @Test
     fun `Forventer feilmelding fra hentIdenter`() {
-        val response = readResource("error-response.json")
-        val pdlClient = mockPdlClient(response)
+        val respons = readResource("error-response.json")
+        val pdlClient = mockPdlClient(respons)
         assertFailsWith<PdlException>(
             block = {
                 runBlocking {
@@ -31,10 +32,10 @@ class PdlClientTest {
 
     @Test
     fun `Forventer gyldig respons fra hentIdenter`() {
-        val response = readResource("hentIdenter-response.json")
-        val pdlClient = mockPdlClient(response)
-        val resultat = runBlocking { pdlClient.hentIdenter("2649500819544") }
+        val respons = readResource("hentIdenter-response.json")
+        val pdlClient = mockPdlClient(respons)
 
+        val resultat = runBlocking { pdlClient.hentIdenter("2649500819544") }
         val forventet = "09127821914"
         assertEquals(forventet, resultat!!.first().ident)
     }

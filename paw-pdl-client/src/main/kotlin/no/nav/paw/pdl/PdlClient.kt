@@ -1,6 +1,7 @@
 package no.nav.paw.pdl
 
 import com.expediagroup.graphql.client.ktor.GraphQLKtorClient
+import com.expediagroup.graphql.client.types.GraphQLClientError
 import com.expediagroup.graphql.client.types.GraphQLClientRequest
 import com.expediagroup.graphql.client.types.GraphQLClientResponse
 import io.ktor.client.HttpClient
@@ -30,3 +31,5 @@ class PdlClient(
             header("Tema", tema)
         }
 }
+
+class PdlException(val errors: List<GraphQLClientError>?) : RuntimeException()
