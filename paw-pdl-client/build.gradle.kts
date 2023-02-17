@@ -38,7 +38,7 @@ publishing {
         }
     }
     repositories {
-        mavenNav("paw-${rootProject.name}")
+        mavenNav("paw-kotlin-clients")
     }
 }
 
