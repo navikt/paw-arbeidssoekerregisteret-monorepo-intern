@@ -13,16 +13,16 @@ suspend fun PdlClient.hentIdenter(ident: String): List<IdentInformasjon>? {
 
     logger.info("Henter 'aktorId' fra PDL")
 
-    val resultat = execute(query)
+    val respons = execute(query)
 
-    if (!resultat.errors.isNullOrEmpty()) {
-        logger.error("Henter 'aktorId' fra PDL feilet med: ${resultat.errors}")
-        throw PdlException(resultat.errors)
+    respons.errors?.let {
+        logger.error("Henter 'aktorId' fra PDL feilet med: ${respons.errors}")
+        throw PdlException(it)
     }
 
     logger.info("Hentet 'aktorId' fra PDL")
 
-    return resultat
+    return respons
         .data
         ?.hentIdenter
         ?.identer

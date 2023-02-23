@@ -15,8 +15,8 @@ class PdlClient(
     url: String,
     // Tema: https://confluence.adeo.no/pages/viewpage.action?pageId=309311397
     private val tema: String,
-    private val getAccessToken: () -> String,
-    httpClient: HttpClient = createHttpClient()
+    httpClient: HttpClient,
+    private val getAccessToken: () -> String
 ) {
     internal val logger = LoggerFactory.getLogger(this::class.java)
 

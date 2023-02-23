@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "no.nav.paw"
-version = "0.1.3"
+version = "0.1.4"
 
 plugins {
     kotlin("jvm")
@@ -52,7 +52,6 @@ publishing {
 graphql {
     client {
         packageName = "no.nav.paw.pdl.graphql.generated"
-        // uncomment if you need schema to be local
         schemaFile = File("src/main/resources/pdl-schema.graphql")
         queryFiles = file("src/main/resources").listFiles()?.toList()?.filter { it.name.endsWith(".graphql") }.orEmpty()
         serializer = com.expediagroup.graphql.plugin.gradle.config.GraphQLSerializer.KOTLINX
