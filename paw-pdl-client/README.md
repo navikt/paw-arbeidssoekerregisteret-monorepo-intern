@@ -17,18 +17,32 @@ dependencies {
 For mer informasjon om tema-koder [sjekk her](https://confluence.adeo.no/pages/viewpage.action?pageId=309311397).
 
 ```kt
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import no.nav.paw.tokenprovier.OAuth2TokenProvider
+import no.nav.common.token_client.builder.AzureAdTokenClientBuilder
 import no.nav.paw.pdl-client.PdlCLient
 
 fun main() {
     val url = "http://pdl-api.default.svc.nais.local/graphql"
-    val accessTokenProvider = RestSTSAccessTokenProvider()
-
-    val pdlClient = pdlClient(url, "tema", accessTokenProvider::getToken)
-
+    val httpClient = HttpClient(OkHttp) {
+        install(ContentNegotiation) {
+            jackson()
+        }
+    }
+    val pdlClient = pdlClient(url, "tema", httpClient) { getAccessToken() }
     val result = runBlocking { pdlClient.hentAktorId("fnr") }
     println(result)
+}
+
+private val aadMachineToMachineTokenClient = AzureAdTokenClientBuilder.builder()
+        .withNaisDefaults()
+        .buildMachineToMachineTokenClient()
+
+fun getAccessToken(): String {
+    return aadMachineToMachineTokenClient.createMachineToMachineToken(
+        "api://${pdlCluster}.$namespace.$appName/.default"
+    )
 }
 ```
 
