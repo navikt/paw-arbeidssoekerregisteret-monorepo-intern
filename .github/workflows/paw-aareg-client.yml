@@ -1,11 +1,11 @@
-name: paw-pdl-client
+name: paw-aareg-client
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'paw-pdl-client/**'
+      - 'paw-aareg-client/**'
 
 jobs:
   build:
@@ -23,7 +23,7 @@ jobs:
         uses: gradle/wrapper-validation-action@v1
 
       - name: Build with Gradle and Publish artifact
-        working-directory: ./paw-pdl-client
+        working-directory: ./paw-aareg-client
         run: ./gradlew build test publish
         env:
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}

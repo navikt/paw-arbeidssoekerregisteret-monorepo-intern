@@ -1,0 +1,164 @@
+[
+  {
+    "navArbeidsforholdId": 51505573,
+    "arbeidsforholdId": "1",
+    "arbeidstaker": {
+      "type": "Person",
+      "offentligIdent": "22018520056",
+      "aktoerId": "2884609777831"
+    },
+    "arbeidsgiver": {
+      "type": "Organisasjon",
+      "organisasjonsnummer": "896929119"
+    },
+    "opplysningspliktig": {
+      "type": "Organisasjon",
+      "organisasjonsnummer": "928497704"
+    },
+    "type": "ordinaertArbeidsforhold",
+    "ansettelsesperiode": {
+      "periode": {
+        "fom": "2001-01-22"
+      },
+      "bruksperiode": {
+        "fom": "2021-01-22T12:07:35.844"
+      },
+      "sporingsinformasjon": {
+        "opprettetTidspunkt": "2021-01-22T12:07:35.844",
+        "opprettetAv": "srvtestnorge-aareg",
+        "opprettetKilde": "AAREG",
+        "opprettetKildereferanse": "Dolly 92e7cef8-7097-4cf5-8ffa-b9960d0dd3f8",
+        "endretTidspunkt": "2021-01-22T12:07:35.844",
+        "endretAv": "srvtestnorge-aareg",
+        "endretKilde": "AAREG",
+        "endretKildereferanse": "Dolly 92e7cef8-7097-4cf5-8ffa-b9960d0dd3f8"
+      }
+    },
+    "arbeidsavtaler": [
+      {
+        "type": "Ordinaer",
+        "arbeidstidsordning": "ikkeSkift",
+        "yrke": "3310101",
+        "stillingsprosent": 100.0,
+        "antallTimerPrUke": 37.5,
+        "beregnetAntallTimerPrUke": 37.5,
+        "bruksperiode": {
+          "fom": "2021-01-22T12:07:35.844"
+        },
+        "gyldighetsperiode": {
+          "fom": "2001-01-01"
+        },
+        "sporingsinformasjon": {
+          "opprettetTidspunkt": "2021-01-22T12:07:35.844",
+          "opprettetAv": "srvtestnorge-aareg",
+          "opprettetKilde": "AAREG",
+          "opprettetKildereferanse": "Dolly 92e7cef8-7097-4cf5-8ffa-b9960d0dd3f8",
+          "endretTidspunkt": "2021-01-22T12:07:35.844",
+          "endretAv": "srvtestnorge-aareg",
+          "endretKilde": "AAREG",
+          "endretKildereferanse": "Dolly 92e7cef8-7097-4cf5-8ffa-b9960d0dd3f8"
+        }
+      }
+    ],
+    "varsler": [
+      {
+        "entitet": "ARBEIDSFORHOLD",
+        "varslingskode": "NAVEND"
+      }
+    ],
+    "innrapportertEtterAOrdningen": true,
+    "registrert": "2021-01-22T12:07:35.785",
+    "sistBekreftet": "2021-01-22T12:07:35",
+    "sporingsinformasjon": {
+      "opprettetTidspunkt": "2021-01-22T12:07:35.844",
+      "opprettetAv": "srvtestnorge-aareg",
+      "opprettetKilde": "AAREG",
+      "opprettetKildereferanse": "Dolly 92e7cef8-7097-4cf5-8ffa-b9960d0dd3f8",
+      "endretTidspunkt": "2021-01-22T12:07:35.844",
+      "endretAv": "srvtestnorge-aareg",
+      "endretKilde": "AAREG",
+      "endretKildereferanse": "Dolly 92e7cef8-7097-4cf5-8ffa-b9960d0dd3f8"
+    }
+  },
+  {
+    "navArbeidsforholdId": 51507953,
+    "arbeidsforholdId": "2",
+    "arbeidstaker": {
+      "type": "Person",
+      "offentligIdent": "22018520056",
+      "aktoerId": "2884609777831"
+    },
+    "arbeidsgiver": {
+      "type": "Organisasjon",
+      "organisasjonsnummer": "896929119"
+    },
+    "opplysningspliktig": {
+      "type": "Organisasjon",
+      "organisasjonsnummer": "928497704"
+    },
+    "type": "ordinaertArbeidsforhold",
+    "ansettelsesperiode": {
+      "periode": {
+        "fom": "2001-03-15"
+      },
+      "bruksperiode": {
+        "fom": "2021-03-15T12:45:29.413"
+      },
+      "sporingsinformasjon": {
+        "opprettetTidspunkt": "2021-03-15T12:45:29.413",
+        "opprettetAv": "srvtestnorge-aareg",
+        "opprettetKilde": "AAREG",
+        "opprettetKildereferanse": "DOLLY",
+        "endretTidspunkt": "2021-03-15T12:45:29.413",
+        "endretAv": "srvtestnorge-aareg",
+        "endretKilde": "AAREG",
+        "endretKildereferanse": "DOLLY"
+      }
+    },
+    "arbeidsavtaler": [
+      {
+        "type": "Ordinaer",
+        "arbeidstidsordning": "ikkeSkift",
+        "yrke": "5221126",
+        "stillingsprosent": 100.0,
+        "antallTimerPrUke": 37.5,
+        "beregnetAntallTimerPrUke": 37.5,
+        "bruksperiode": {
+          "fom": "2021-03-15T12:45:29.413"
+        },
+        "gyldighetsperiode": {
+          "fom": "2001-03-01"
+        },
+        "sporingsinformasjon": {
+          "opprettetTidspunkt": "2021-03-15T12:45:29.413",
+          "opprettetAv": "srvtestnorge-aareg",
+          "opprettetKilde": "AAREG",
+          "opprettetKildereferanse": "DOLLY",
+          "endretTidspunkt": "2021-03-15T12:45:29.413",
+          "endretAv": "srvtestnorge-aareg",
+          "endretKilde": "AAREG",
+          "endretKildereferanse": "DOLLY"
+        }
+      }
+    ],
+    "varsler": [
+      {
+        "entitet": "ARBEIDSFORHOLD",
+        "varslingskode": "NAVEND"
+      }
+    ],
+    "innrapportertEtterAOrdningen": true,
+    "registrert": "2021-03-15T12:45:29.319",
+    "sistBekreftet": "2021-03-15T12:45:29",
+    "sporingsinformasjon": {
+      "opprettetTidspunkt": "2021-03-15T12:45:29.413",
+      "opprettetAv": "srvtestnorge-aareg",
+      "opprettetKilde": "AAREG",
+      "opprettetKildereferanse": "DOLLY",
+      "endretTidspunkt": "2021-03-15T12:45:29.413",
+      "endretAv": "srvtestnorge-aareg",
+      "endretKilde": "AAREG",
+      "endretKildereferanse": "DOLLY"
+    }
+  }
+]
