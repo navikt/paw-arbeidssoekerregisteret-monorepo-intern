@@ -2,6 +2,8 @@
 
 Henter arbeidsforhold fra Arbeidsgiver- og arbeidstakerregisteret ([aareg](https://navikt.github.io/aareg/)).
 
+Se URL-er på https://github.com/navikt/aareg-services
+
 ### Bruk av paw-aareg-client
 
 ***gradle.build.kts***
