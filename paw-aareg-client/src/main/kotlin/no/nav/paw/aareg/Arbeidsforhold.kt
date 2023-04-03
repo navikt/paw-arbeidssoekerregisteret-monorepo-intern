@@ -34,7 +34,7 @@ data class Arbeidsgiver(
 @Serializable
 data class Periode(
     @Serializable(with = LocalDateSerializer::class)
-    val fom: LocalDate?,
+    val fom: LocalDate,
     @Serializable(with = LocalDateSerializer::class)
     val tom: LocalDate? = null
 )
