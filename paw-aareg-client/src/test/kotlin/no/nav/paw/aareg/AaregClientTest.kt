@@ -1,8 +1,6 @@
 package no.nav.paw.aareg
 
-import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
