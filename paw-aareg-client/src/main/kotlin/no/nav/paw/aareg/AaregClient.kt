@@ -31,8 +31,7 @@ class AaregClient(
             val payload = httpClient.get(url) {
                 contentType(ContentType.Application.Json)
                 bearerAuth(token)
-                header("X-Correlation-ID", callId)
-                header("Nav-Consumer-Token", "Bearer $token")
+                header("Nav-Call-Id", callId)
                 header("Nav-Personident", ident)
             }.also {
                 sikkerLogg.debug("Svar fra aareg-API: " + it.bodyAsText())
@@ -40,14 +39,14 @@ class AaregClient(
             return payload
         } catch (responseException: ResponseException) {
             aaregClientLogger.error("Hente arbeidsforhold callId=[$callId] feilet med http-kode ${responseException.response.status}")
-            return emptyList()
+            throw responseException
         } catch (connectException: ConnectException) {
             aaregClientLogger.error("Hente arbeidsforhold callId=[$callId] feilet:", connectException)
-            return emptyList()
+            throw connectException
         } catch (jsonConvertException: JsonConvertException) {
             aaregClientLogger.error("Hente arbeidsforhold callId=[$callId] feilet, kunne ikke lese JSON")
             sikkerLogg.error("Hente arbeidsforhold callId=[$callId] feilet", jsonConvertException)
-            return emptyList()
+            throw jsonConvertException
         }
     }
 }

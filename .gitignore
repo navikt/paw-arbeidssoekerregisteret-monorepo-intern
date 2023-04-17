@@ -5,11 +5,11 @@
 *.log
 
 # IDEA & Gradle
-/.gradle
+**/.gradle
 /.idea
 /out
 /lib
-/build
+**/build
 *.iml
 *.ipr
 *.iws
