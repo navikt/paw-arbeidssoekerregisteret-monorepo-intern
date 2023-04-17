@@ -4,9 +4,12 @@ Henter arbeidsforhold fra Arbeidsgiver- og arbeidstakerregisteret ([aareg](https
 
 Se URL-er på https://github.com/navikt/aareg-services
 
+Se dokumentasjon for aareg på https://aareg-services.dev.intern.nav.no/swagger-ui/index.html
+
 ### Bruk av paw-aareg-client
 
-***gradle.build.kts***
+**_gradle.build.kts_**
+
 ```kts
 val tokenproviderVersion: String by project
 val aaregClientVersion: String by project
@@ -16,7 +19,7 @@ dependencies {
     implementation("no.nav.paw:aareg-client:$aaregClientVersion")
 }
 ```
- 
+
 ### Klienten instansieres slik
 
 ```kt

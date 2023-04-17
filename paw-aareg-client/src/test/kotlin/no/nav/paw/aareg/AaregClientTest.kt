@@ -18,6 +18,15 @@ class AaregClientTest {
         }
         assertTrue(response.any { it.arbeidsgiver.organisasjonsnummer == "896929119" })
     }
+
+    @Test
+    fun `Returnerer gyldig objekt når ingen perioder`() {
+        val response = runBlocking {
+            mockAaregClient(MockResponse.ingenArbeidsforhold)
+                .hentArbeidsforhold("ident", "call-id")
+        }
+        assertTrue(response.any { it.ansettelsesperiode.periode == null })
+    }
 //
 //    @Test
 //    fun test_OK_svar_Med_Uventet_JSON() {

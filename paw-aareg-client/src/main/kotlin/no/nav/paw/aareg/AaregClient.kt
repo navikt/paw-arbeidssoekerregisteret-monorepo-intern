@@ -34,6 +34,7 @@ class AaregClient(
                 header("Nav-Call-Id", callId)
                 header("Nav-Personident", ident)
             }.also {
+                aaregClientLogger.info("Hentet arbeidsforhold fra aareg med status=$it.status()")
                 sikkerLogg.debug("Svar fra aareg-API: " + it.bodyAsText())
             }.body<List<Arbeidsforhold>>()
             return payload
