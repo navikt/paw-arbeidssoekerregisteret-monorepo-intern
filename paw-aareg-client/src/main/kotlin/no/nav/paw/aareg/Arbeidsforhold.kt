@@ -22,7 +22,7 @@ data class Arbeidsavtale(
 
 @Serializable
 data class Ansettelsesperiode(
-    val periode: Periode?
+    val periode: Periode
 )
 
 @Serializable
