@@ -21,8 +21,8 @@ class AaregClient(
     private val url: String,
     private val getAccessToken: () -> String
 ) {
-    private val sikkerLogg: Logger = LoggerFactory.getLogger("tjenestekall")
-    private val aaregClientLogger: Logger = LoggerFactory.getLogger("paw-aareg-client")
+    private val sikkerLogger: Logger = LoggerFactory.getLogger("tjenestekall")
+    private val logger: Logger = LoggerFactory.getLogger("paw-aareg-client")
     private val httpClient = createHttpClient()
 
     suspend fun hentArbeidsforhold(ident: String, callId: String): List<Arbeidsforhold> {
@@ -34,19 +34,19 @@ class AaregClient(
                 header("Nav-Call-Id", callId)
                 header("Nav-Personident", ident)
             }.also {
-                aaregClientLogger.info("Hentet arbeidsforhold fra aareg med status=$it.status()")
-                sikkerLogg.debug("Svar fra aareg-API: " + it.bodyAsText())
+                logger.info("Hentet arbeidsforhold fra aareg med status=${it.status}")
+                sikkerLogger.debug("Svar fra aareg-API: " + it.bodyAsText())
             }.body<List<Arbeidsforhold>>()
             return payload
         } catch (responseException: ResponseException) {
-            aaregClientLogger.error("Hente arbeidsforhold callId=[$callId] feilet med http-kode ${responseException.response.status}")
+            logger.error("Hente arbeidsforhold callId=[$callId] feilet med http-kode ${responseException.response.status}")
             throw responseException
         } catch (connectException: ConnectException) {
-            aaregClientLogger.error("Hente arbeidsforhold callId=[$callId] feilet:", connectException)
+            logger.error("Hente arbeidsforhold callId=[$callId] feilet:", connectException)
             throw connectException
         } catch (jsonConvertException: JsonConvertException) {
-            aaregClientLogger.error("Hente arbeidsforhold callId=[$callId] feilet, kunne ikke lese JSON")
-            sikkerLogg.error("Hente arbeidsforhold callId=[$callId] feilet", jsonConvertException)
+            logger.error("Hente arbeidsforhold callId=[$callId] feilet, kunne ikke lese JSON")
+            sikkerLogger.error("Hente arbeidsforhold callId=[$callId] feilet", jsonConvertException)
             throw jsonConvertException
         }
     }
