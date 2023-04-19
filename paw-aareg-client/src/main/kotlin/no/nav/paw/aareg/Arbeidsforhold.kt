@@ -16,7 +16,7 @@ data class Arbeidsforhold(
 
 @Serializable
 data class Arbeidsavtale(
-    val stillingsprosent: Double,
+    val stillingsprosent: Double?,
     val gyldighetsperiode: Periode
 )
 
