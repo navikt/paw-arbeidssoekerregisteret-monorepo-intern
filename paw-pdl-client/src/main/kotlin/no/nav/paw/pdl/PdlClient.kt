@@ -15,6 +15,7 @@ class PdlClient(
     url: String,
     // Tema: https://confluence.adeo.no/pages/viewpage.action?pageId=309311397
     private val tema: String,
+    private val navConsumerId: String,
     httpClient: HttpClient,
     private val getAccessToken: () -> String
 ) {
@@ -25,10 +26,12 @@ class PdlClient(
         httpClient = httpClient
     )
 
-    internal suspend fun <T : Any> execute(query: GraphQLClientRequest<T>): GraphQLClientResponse<T> =
+    internal suspend fun <T : Any> execute(query: GraphQLClientRequest<T>, callId: String): GraphQLClientResponse<T> =
         graphQLClient.execute(query) {
             bearerAuth(getAccessToken())
             header("Tema", tema)
+            header("Nav-Call-Id", callId)
+            header("Nav-Consumer-Id", navConsumerId)
         }
 }
 
