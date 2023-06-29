@@ -2,17 +2,19 @@ package no.nav.paw.pdl
 
 import kotlinx.coroutines.runBlocking
 import no.nav.paw.mockPdlClient
+import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class PdlClientTest {
+    val callId = UUID.randomUUID().toString()
     @Test
     fun `Forventer gyldig respons fra hentAktorId`() {
         val respons = readResource("hentIdenter-response.json")
         val pdlClient = mockPdlClient(respons)
 
-        val resultat = runBlocking { pdlClient.hentAktorId("2649500819544") }
+        val resultat = runBlocking { pdlClient.hentAktorId("2649500819544", callId) }
         val forventet = "2649500819544"
         assertEquals(forventet, resultat)
     }
@@ -24,7 +26,7 @@ class PdlClientTest {
         assertFailsWith<PdlException>(
             block = {
                 runBlocking {
-                    pdlClient.hentIdenter("2649500819544")
+                    pdlClient.hentIdenter("2649500819544", callId)
                 }
             }
         )
@@ -35,7 +37,7 @@ class PdlClientTest {
         val respons = readResource("hentIdenter-response.json")
         val pdlClient = mockPdlClient(respons)
 
-        val resultat = runBlocking { pdlClient.hentIdenter("2649500819544") }
+        val resultat = runBlocking { pdlClient.hentIdenter("2649500819544", callId) }
         val forventet = "09127821914"
         assertEquals(forventet, resultat!!.first().ident)
     }

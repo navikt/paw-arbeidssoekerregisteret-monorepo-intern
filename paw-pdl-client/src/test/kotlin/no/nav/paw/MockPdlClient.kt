@@ -17,5 +17,5 @@ fun mockPdlClient(content: String): PdlClient {
             headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         )
     }
-    return PdlClient("https://url", "tema", HttpClient(mockEngine)) { "fake token" }
+    return PdlClient("https://url", "tema", "consumerId", HttpClient(mockEngine)) { "fake token" }
 }
