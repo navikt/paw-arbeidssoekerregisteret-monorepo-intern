@@ -9,6 +9,7 @@ import kotlin.test.assertFailsWith
 
 class PdlClientTest {
     val callId = UUID.randomUUID().toString()
+
     @Test
     fun `Forventer gyldig respons fra hentAktorId`() {
         val respons = readResource("hentIdenter-response.json")
