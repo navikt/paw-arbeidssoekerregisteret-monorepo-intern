@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="STDOUT_JSON" class="no.nav.common.log.MaskingAppender">
+        <appender name="consoleJsonAppender" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+        </appender>
+    </appender>
+
+    <logger name="no.nav" level="INFO" />
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT_JSON" />
+    </root>
+</configuration>
