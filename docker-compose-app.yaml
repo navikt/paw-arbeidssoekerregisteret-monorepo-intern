@@ -1,0 +1,24 @@
+version: '3.9'
+
+services:
+  lite-program:
+    image: paw-arbeidssoker-registeret:latest
+    container_name: lite-program
+    hostname: lite-program
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka
+    environment:
+      - NAIS_DATABASE_PAW_ARBEIDSSOKER_REGISTERET_ARBEIDSSOKER_REGISTERET_PASSWORD=admin
+      - NAIS_DATABASE_PAW_ARBEIDSSOKER_REGISTERET_ARBEIDSSOKER_REGISTERET_USERNAME=admin
+      - NAIS_DATABASE_PAW_ARBEIDSSOKER_REGISTERET_ARBEIDSSOKER_REGISTERET_HOST=database
+      - NAIS_DATABASE_PAW_ARBEIDSSOKER_REGISTERET_ARBEIDSSOKER_REGISTERET_PORT=5432
+      - NAIS_DATABASE_PAW_ARBEIDSSOKER_REGISTERET_ARBEIDSSOKER_REGISTERET_DATABASE=arbeidssokerregisteret
+      - KAFKA_BROKERS=kafka:9092
+      - KAFKA_SCHEMA_REGISTRY=http://schema-registry:8082
+      - KAFKA_PRODUCER_ID=paw-producer-arbeidssokerregisteret-v1
+      - KAFKA_PRODUCER_PERIODER_TOPIC=paw.arbeidssokerperioder-v1
+      - KAFKA_GROUP_ID=paw-consumer-arbeidssokerregisteret-v1
+      - IDPORTEN_WELL_KNOWN_URL=http://mock-oauth2-server:8081/default/.well-known/openid-configuration
+      - IDPORTEN_CLIENT_ID=paw-arbeidssoker-registeret
