@@ -34,6 +34,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-crypt:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-java-time:$exposedVersion")
     implementation("com.zaxxer:HikariCP:5.0.1")
     implementation("no.nav.common:log:2.2023.01.10_13.49-81ddc732df3a")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
@@ -41,6 +42,16 @@ dependencies {
     implementation("org.apache.kafka:kafka-clients:3.5.1")
     implementation("org.apache.avro:avro:$avroVersion")
     implementation("io.confluent:kafka-avro-serializer:7.4.0")
+
+    // TODO: Flytte til bundle KTOR
+    val ktorVersion = "2.3.4"
+    implementation("io.ktor:ktor-server-cors:$ktorVersion")
+    implementation("io.ktor:ktor-server-swagger:$ktorVersion")
+    implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
+    implementation("io.ktor:ktor-server-call-id:$ktorVersion")
+    implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.2")
@@ -56,7 +67,7 @@ java {
 tasks {
     "run"(JavaExec::class) {
         jvmArgs = listOf(
-            "-javaagent:../agents/opentelemetry-javaagent.jar",
+            "-javaagent:agents/opentelemetry-javaagent.jar",
             "-Dotel.javaagent.extensions=../opentelemetry-agent-extension/build/libs/opentelemetry-agent-extension.jar",
             "-Dotel.resource.attributes=service.name=paw-arbeidssoker-registeret",
         )
@@ -70,16 +81,18 @@ tasks {
         environment("KAFKA_PRODUCER_ID", "paw-consumer-arbeidssokerregisteret-v1")
         environment("KAFKA_PRODUCER_PERIODER_TOPIC", "paw.arbeidssokerperioder-v1")
         environment("KAFKA_GROUP_ID", "paw-consumer-arbeidssokerregisteret-v1")
-        environment("IDPORTEN_WELL_KNOWN_URL", "http://localhost:8081/default/.well-known/openid-configuration")
-        environment("IDPORTEN_CLIENT_ID", "paw-arbeidssoker-registeret")
+        environment("AZURE_APP_WELL_KNOWN_URL", "http://localhost:8081/default/.well-known/openid-configuration")
+        environment("AZURE_APP_CLIENT_ID", "paw-arbeidssoker-registeret")
+        environment("TOKEN_X_WELL_KNOWN_URL", "http://localhost:8081/default/.well-known/openid-configuration")
+        environment("TOKEN_X_CLIENT_ID", "paw-arbeidssoker-registeret")
         environment("OTEL_TRACES_EXPORTER", "maskert_oltp")
         environment("OTEL_METRICS_EXPORTER", "none")
-        environment("OTEL_JAVAAGENT_DEBUG", "true")
+        environment("OTEL_JAVAAGENT_DEBUG", "false")
     }
 }
 
 application {
-    mainClass.set("no.nav.paw.arbeidssookerregisteret.AppKt")
+    mainClass.set("no.nav.paw.arbeidssokerregisteret.ApplicationKt")
 }
 
 tasks.named<Test>("test") {

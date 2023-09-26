@@ -1,0 +1,118 @@
+openapi: "3.0.3"
+info:
+  title: "paw_arbeidssoker_registeret API"
+  description: "paw_arbeidssoker_registeret API"
+  version: "1.0.0"
+servers:
+- url: "https://paw_arbeidssoker_registeret"
+paths:
+  /api/v1/arbeidssoker/perioder:
+    get:
+      description: ""
+      responses:
+        "404":
+          description: "Not Found"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "Arbeidssøker ikke funnet"
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/PeriodeDto"
+    post:
+      description: ""
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "Opprett arbeidssøkerperiode"
+    put:
+      description: ""
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "Avsluttet arbeidssøkerperiode"
+  /api/v1/veileder/arbeidssoker/perioder:
+    get:
+      description: ""
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "Perioder"
+  /internal/isAlive:
+    get:
+      description: ""
+      responses:
+        "200":
+          description: "OK"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "ALIVE"
+  /internal/isReady:
+    get:
+      description: ""
+      responses:
+        "200":
+          description: "OK"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "READY"
+  /internal/metrics:
+    get:
+      description: ""
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+components:
+  schemas:
+    PeriodeDto:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        fraOgMedDato:
+          type: "string"
+          format: "date-time"
+        tilOgMedDato:
+          type: "string"
+          format: "date-time"
+        aktiv:
+          type: "boolean"
