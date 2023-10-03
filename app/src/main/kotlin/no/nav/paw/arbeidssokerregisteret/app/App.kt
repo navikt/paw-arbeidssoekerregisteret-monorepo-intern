@@ -5,12 +5,11 @@ import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig
 import io.confluent.kafka.serializers.KafkaAvroSerializer
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
-import io.confluent.kafka.streams.serdes.avro.GenericAvroSerde
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import no.nav.paw.arbeidssokerregisteret.app.config.helpers.konfigVerdi
 import no.nav.paw.arbeidssokerregisteret.app.config.nais.KAFKA_BROKERS
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.ignorerDuplikateStartStoppEventer
 import no.nav.paw.arbeidssokerregisteret.intern.StartV1
-import no.nav.paw.arbeidssokerregisteret.intern.StoppV1
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -23,11 +22,6 @@ import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.Named
 import org.apache.kafka.streams.kstream.Produced
-import org.apache.kafka.streams.processor.api.Processor
-import org.apache.kafka.streams.processor.api.ProcessorContext
-import org.apache.kafka.streams.processor.api.ProcessorSupplier
-import org.apache.kafka.streams.processor.api.Record
-import org.apache.kafka.streams.state.KeyValueStore
 import org.apache.kafka.streams.state.internals.KeyValueStoreBuilder
 import org.apache.kafka.streams.state.internals.RocksDbKeyValueBytesStoreSupplier
 import org.slf4j.LoggerFactory
@@ -104,7 +98,7 @@ fun main() {
             eventSerde
         ))
         .process(
-            supplier,
+            ignorerDuplikateStartStoppEventer,
             Named.`as`("filtrer-duplikate-start-stopp-eventer"),
             dbNavn
         )
@@ -114,55 +108,6 @@ fun main() {
     KafkaStreams(topology, streamsConfig).start()
     streamLogger.info("Venter...")
     Thread.sleep(Long.MAX_VALUE)
-}
-
-val supplier: ProcessorSupplier<String, SpecificRecord, String, SpecificRecord> = ProcessorSupplier {
-    FiltrerDuplikateStartStoppEventer("tilstandsDb")
-}
-
-class FiltrerDuplikateStartStoppEventer(private val tilstandsDbNavn: String) :
-    Processor<String, SpecificRecord, String, SpecificRecord> {
-    private var tilstandsDb: KeyValueStore<String, PeriodeTilstandV1>? = null
-    private var context: ProcessorContext<String, SpecificRecord>? = null
-    private val logger = LoggerFactory.getLogger("stream_filter_logger")
-
-    override fun init(context: ProcessorContext<String, SpecificRecord>?) {
-        super.init(context)
-        this.context = context
-        tilstandsDb = context?.getStateStore(tilstandsDbNavn)
-    }
-
-    override fun process(record: Record<String, SpecificRecord>?) {
-        requireNotNull(tilstandsDb) { "TilstandsDb er ikke initialisert" }
-        requireNotNull(context) { "Context er ikke initialisert" }
-        when (val value = record?.value()) {
-            null -> return
-            is StartV1 -> tilstandsDb?.putIfAbsent(value.personNummer, value.periodeTilstand())
-                .also {
-                    if (it == null) {
-                        context?.forward(record)
-                        logger.info("${value.personNummer} start event")
-                    } else {
-                        logger.info("${value.personNummer} Duplikat start event")
-                    }
-                }
-
-            is StoppV1 -> tilstandsDb?.delete(value.personNummer)
-                .also {
-                    if (it != null) {
-                        context?.forward(record)
-                        logger.info("${value.personNummer} Stopp event")
-                    } else {
-                        logger.info("${value.personNummer} Duplikat stopp event")
-                    }
-                }
-
-            else -> {
-                logger.info("Ukjent event: $value, class=${value::class.qualifiedName}")
-                context?.forward(record)
-            }
-        }
-    }
 }
 
 fun StartV1.periodeTilstand() = PeriodeTilstandV1(id, personNummer, timestamp)
