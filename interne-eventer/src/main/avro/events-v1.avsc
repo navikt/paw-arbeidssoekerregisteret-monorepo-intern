@@ -1,0 +1,39 @@
+[{
+  "type" : "record",
+  "namespace" : "no.nav.paw.arbeidssokerregisteret.intern",
+  "name" : "StartV1",
+  "fields" : [
+    {
+      "name" : "id",
+      "type" : "string"
+    },
+    {
+      "name" : "personNummer",
+      "type" : "string"
+    },
+    {
+      "name" : "timestamp",
+      "type" : "long"
+    }
+  ]
+},
+{
+  "type" : "record",
+  "namespace" : "no.nav.paw.arbeidssokerregisteret.intern",
+  "name" : "StoppV1",
+  "fields" : [
+    {
+      "name" : "id",
+      "type" : "string"
+    },
+    {
+      "name" : "personNummer",
+      "type" : "string"
+    },
+    {
+      "name" : "timestamp",
+      "type" : "long"
+    }
+  ]
+}
+]

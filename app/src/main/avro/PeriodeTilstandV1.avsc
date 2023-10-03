@@ -1,0 +1,19 @@
+{
+  "type" : "record",
+  "namespace" : "no.nav.paw.arbeidssokerregisteret.app",
+  "name" : "PeriodeTilstandV1",
+  "fields" : [
+    {
+      "name" : "id",
+      "type" : "string"
+    },
+    {
+      "name" : "personNummer",
+      "type" : "string"
+    },
+    {
+      "name" : "timestamp",
+      "type" : "long"
+    }
+  ]
+}
