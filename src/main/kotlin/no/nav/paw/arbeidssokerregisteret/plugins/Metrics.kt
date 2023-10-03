@@ -14,7 +14,7 @@ fun Application.configureMetrics(prometheusMeterRegistry: PrometheusMeterRegistr
         meterBinders = listOf(
             JvmMemoryMetrics(),
             JvmGcMetrics(),
-            ProcessorMetrics(),
+            ProcessorMetrics()
         )
     }
 }

@@ -5,18 +5,13 @@ import io.ktor.server.engine.addShutdownHook
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.routing.routing
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
-import no.nav.paw.arbeidssokerregisteret.config.AutentiseringsKonfigurasjon
-import no.nav.paw.arbeidssokerregisteret.config.DatabaseKonfigurasjon
-import no.nav.paw.arbeidssokerregisteret.config.connect
-import no.nav.paw.arbeidssokerregisteret.config.migrateDatabase
+import no.nav.paw.arbeidssokerregisteret.config.Config
 import no.nav.paw.arbeidssokerregisteret.plugins.configureAuthentication
 import no.nav.paw.arbeidssokerregisteret.plugins.configureHTTP
 import no.nav.paw.arbeidssokerregisteret.plugins.configureLogging
 import no.nav.paw.arbeidssokerregisteret.plugins.configureMetrics
 import no.nav.paw.arbeidssokerregisteret.plugins.configureSerialization
-import no.nav.paw.arbeidssokerregisteret.routes.apiRoutes
+import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutes
 import no.nav.paw.arbeidssokerregisteret.routes.healthRoutes
 import no.nav.paw.arbeidssokerregisteret.routes.swaggerRoutes
 
@@ -32,27 +27,22 @@ fun main() {
 fun Application.module() {
     // Konfigurasjon
     val environment = System.getenv()
-    val databaseKonfigurasjon = DatabaseKonfigurasjon(environment)
-    val autentiseringsKonfigurasjon = AutentiseringsKonfigurasjon(environment)
-    val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+    val config = Config(environment)
 
-    // Koble til database
-    val arbeidssokerDatabase = databaseKonfigurasjon.connect()
-
-    // Kjører migrering av databasen
-    databaseKonfigurasjon.migrateDatabase()
+    // Avhengigheter
+    val dependencies = createDependencies(environment, config)
 
     // Konfigurer plugins
-    configureMetrics(prometheusMeterRegistry)
+    configureMetrics(dependencies.registry)
     configureHTTP()
-    configureAuthentication(autentiseringsKonfigurasjon.authenticationProviders)
+    configureAuthentication(config.authenticationProviders)
     configureLogging()
     configureSerialization()
 
     // Routes
     routing {
-        healthRoutes(prometheusMeterRegistry)
+        healthRoutes(dependencies.registry)
         swaggerRoutes()
-        apiRoutes(arbeidssokerDatabase)
+        arbeidssokerRoutes(dependencies.arbeidssokerService, dependencies.autorisasjonService)
     }
 }

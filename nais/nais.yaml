@@ -1,7 +1,7 @@
 apiVersion: nais.io/v1alpha1
 kind: Application
 metadata:
-  name: paw-arbeidssoker-registeret
+  name: paw-arbeidssokerregisteret
   namespace: paw
   labels:
     team: paw
@@ -47,10 +47,5 @@ spec:
   observability:
     tracing:
       enabled: true
-  gcp:
-    sqlInstances:
-      - type: POSTGRES_14
-        databases:
-          - name: arbeidssokerregisteret
   kafka:
     pool: nav-dev

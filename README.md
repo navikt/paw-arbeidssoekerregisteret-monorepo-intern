@@ -1,1 +1,1 @@
-# paw-arbeidssoker-registeret
+# paw-arbeidssokerregisteret

@@ -1,0 +1,20 @@
+# EditorConfig helps developers define and maintain consistent
+# coding styles between different editors and IDEs
+# editorconfig.org
+
+root = true
+
+# All files
+[**]
+end_of_line = lf
+
+# Kotlin
+[**.{kt,kts}]
+charset = utf-8
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace=true
+insert_final_newline = true
+max_line_length = 250
+ij_kotlin_allow_trailing_comma_on_call_site = false
+ij_kotlin_allow_trailing_comma = false

@@ -17,9 +17,9 @@ fun Application.configureAuthentication(authProviders: AuthProviders) {
                     IssuerConfig(
                         name = authProvider.name,
                         discoveryUrl = authProvider.discoveryUrl,
-                        acceptedAudience = authProvider.acceptedAudience,
-                    ),
-                ),
+                        acceptedAudience = authProvider.acceptedAudience
+                    )
+                )
             )
         }
     }

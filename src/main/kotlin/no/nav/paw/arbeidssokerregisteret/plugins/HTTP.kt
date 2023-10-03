@@ -20,7 +20,7 @@ fun Application.configureHTTP() {
             logger.info("Feil ved kall", cause)
             call.respond(
                 HttpStatusCode.InternalServerError,
-                cause.message ?: HttpStatusCode.InternalServerError.description,
+                cause.message ?: HttpStatusCode.InternalServerError.description
             )
         }
     }

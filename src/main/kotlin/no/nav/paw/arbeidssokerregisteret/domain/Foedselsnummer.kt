@@ -1,4 +1,4 @@
-package no.nav.paw.arbeidssokerregisteret.arbeidssoker.domain
+package no.nav.paw.arbeidssokerregisteret.domain
 
 @JvmInline
 value class Foedselsnummer(val verdi: String) {

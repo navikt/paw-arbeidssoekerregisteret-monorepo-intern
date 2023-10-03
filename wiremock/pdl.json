@@ -1,0 +1,32 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/pdl"
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "data": {
+        "hentIdenter": {
+          "identer": [
+            {
+              "ident": "18908396568",
+              "gruppe": "FOLKEREGISTERIDENT"
+            },
+            {
+              "ident": "18908396561",
+              "gruppe": "FOLKEREGISTERIDENT"
+            },
+            {
+              "ident": "2649500819544",
+              "gruppe": "AKTORID"
+            }
+          ]
+        }
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
