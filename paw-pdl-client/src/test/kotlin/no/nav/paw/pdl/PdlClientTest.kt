@@ -3,7 +3,6 @@ package no.nav.paw.pdl
 import kotlinx.coroutines.runBlocking
 import no.nav.paw.mockPdlClient
 import no.nav.paw.pdl.graphql.generated.enums.Oppholdstillatelse
-import no.nav.paw.pdl.graphql.generated.hentopphold.Opphold
 import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
