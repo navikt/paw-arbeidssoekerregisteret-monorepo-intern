@@ -18,7 +18,7 @@ internal fun HttpClientConfig<*>.configureJsonHandler() {
             Json {
                 ignoreUnknownKeys = true
                 explicitNulls = false
-            }
+            },
         )
     }
 }

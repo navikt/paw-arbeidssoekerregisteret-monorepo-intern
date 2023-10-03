@@ -2,20 +2,23 @@ package no.nav.paw.pdl
 
 import kotlinx.coroutines.runBlocking
 import no.nav.paw.mockPdlClient
-import java.util.UUID
+import no.nav.paw.pdl.graphql.generated.enums.Oppholdstillatelse
+import no.nav.paw.pdl.graphql.generated.hentopphold.Opphold
+import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class PdlClientTest {
     val callId = UUID.randomUUID().toString()
+    val navConsumerId = "nav-consumer-id"
 
     @Test
     fun `Forventer gyldig respons fra hentAktorId`() {
         val respons = readResource("hentIdenter-response.json")
         val pdlClient = mockPdlClient(respons)
 
-        val resultat = runBlocking { pdlClient.hentAktorId("2649500819544", callId) }
+        val resultat = runBlocking { pdlClient.hentAktorId("2649500819544", callId, navConsumerId) }
         val forventet = "2649500819544"
         assertEquals(forventet, resultat)
     }
@@ -27,9 +30,9 @@ class PdlClientTest {
         assertFailsWith<PdlException>(
             block = {
                 runBlocking {
-                    pdlClient.hentIdenter("2649500819544", callId)
+                    pdlClient.hentIdenter("2649500819544", callId, navConsumerId)
                 }
-            }
+            },
         )
     }
 
@@ -38,9 +41,19 @@ class PdlClientTest {
         val respons = readResource("hentIdenter-response.json")
         val pdlClient = mockPdlClient(respons)
 
-        val resultat = runBlocking { pdlClient.hentIdenter("2649500819544", callId) }
+        val resultat = runBlocking { pdlClient.hentIdenter("2649500819544", callId, navConsumerId) }
         val forventet = "09127821914"
         assertEquals(forventet, resultat!!.first().ident)
+    }
+
+    @Test
+    fun `Forventer gyldig respons fra hentOpphold`() {
+        val respons = readResource("hentOpphold-response.json")
+        val pdlClient = mockPdlClient(respons)
+
+        val resultat = runBlocking { pdlClient.hentOpphold("2649500819544", callId, navConsumerId) }
+        val forventet = Oppholdstillatelse.PERMANENT
+        assertEquals(forventet, resultat!!.first().type)
     }
 }
 

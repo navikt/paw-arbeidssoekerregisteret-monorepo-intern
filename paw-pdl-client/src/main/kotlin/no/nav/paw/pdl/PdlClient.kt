@@ -15,18 +15,17 @@ class PdlClient(
     url: String,
     // Tema: https://confluence.adeo.no/pages/viewpage.action?pageId=309311397
     private val tema: String,
-    private val navConsumerId: String,
     httpClient: HttpClient,
-    private val getAccessToken: () -> String
+    private val getAccessToken: () -> String,
 ) {
     internal val logger = LoggerFactory.getLogger(this::class.java)
 
     private val graphQLClient = GraphQLKtorClient(
         url = URL(url),
-        httpClient = httpClient
+        httpClient = httpClient,
     )
 
-    internal suspend fun <T : Any> execute(query: GraphQLClientRequest<T>, callId: String): GraphQLClientResponse<T> =
+    internal suspend fun <T : Any> execute(query: GraphQLClientRequest<T>, callId: String?, navConsumerId: String?): GraphQLClientResponse<T> =
         graphQLClient.execute(query) {
             bearerAuth(getAccessToken())
             header("Tema", tema)
