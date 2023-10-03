@@ -101,7 +101,7 @@ fun main() {
         )
         .stream(hendelseTopic, Consumed.with(
             Serdes.String(),
-            SpecificAvroSerde(schemaRegistry)
+            eventSerde
         ))
         .process(
             supplier,
