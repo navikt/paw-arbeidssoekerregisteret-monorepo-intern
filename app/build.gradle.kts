@@ -24,6 +24,8 @@ application {
 
 tasks {
     "run"(JavaExec::class) {
+        environment("KAFKA_STREAM_APPLICATION_ID", "arbeidssokerregisteret-eventlog-v2")
+        environment("EVENTLOG_TOPIC", "input")
         environment("NAIS_DATABASE_PAW_DEMO_PAWDEMO_PASSWORD", "admin")
         environment("NAIS_DATABASE_PAW_DEMO_PAWDEMO_USERNAME", "admin")
         environment("NAIS_DATABASE_PAW_DEMO_PAWDEMO_HOST", "localhost")
