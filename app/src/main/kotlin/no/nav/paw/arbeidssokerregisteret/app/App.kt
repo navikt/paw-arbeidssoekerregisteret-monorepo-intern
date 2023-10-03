@@ -6,6 +6,7 @@ import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig
 import io.confluent.kafka.serializers.KafkaAvroSerializer
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+import no.nav.paw.arbeidssokerregisteret.app.config.SchemaRegistryConfig
 import no.nav.paw.arbeidssokerregisteret.app.config.helpers.konfigVerdi
 import no.nav.paw.arbeidssokerregisteret.app.config.nais.KAFKA_BROKERS
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.ignorerDuplikateStartStoppEventer
@@ -14,6 +15,7 @@ import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.utils.Time
 import org.apache.kafka.streams.KafkaStreams
@@ -67,20 +69,9 @@ fun main() {
     val streamLogger = LoggerFactory.getLogger("App")
     streamLogger.info("Starter stream")
     val streamsConfig = StreamsConfig(streamsProperties)
-    val eventSerde = SpecificAvroSerde<SpecificRecord>(schemaRegistry).also {
-        it.configure(mapOf(
-            KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG to true,
-            KafkaAvroSerializerConfig.AUTO_REGISTER_SCHEMAS to true,
-            KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG to "http://localhost:8082"
-            ), false)
-    }
-    val stateSerde = SpecificAvroSerde<PeriodeTilstandV1>(schemaRegistry).also {
-        it.configure(mapOf(
-            KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG to true,
-            KafkaAvroSerializerConfig.AUTO_REGISTER_SCHEMAS to true,
-            KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG to "http://localhost:8082"
-        ), false)
-    }
+    val schemaRegistryConfig = SchemaRegistryConfig(System.getenv())
+    val eventSerde: Serde<SpecificRecord> = lagSpecificAvroSerde(schemaRegistryConfig)
+    val stateSerde: Serde<PeriodeTilstandV1> = lagSpecificAvroSerde(schemaRegistryConfig)
     val producedWith: Produced<String, SpecificRecord> = Produced.with(Serdes.String(), eventSerde)
     val dbNavn = "tilstandsDb"
     val builder = StreamsBuilder()
@@ -93,10 +84,12 @@ fun main() {
                 Time.SYSTEM
             )
         )
-        .stream(hendelseTopic, Consumed.with(
-            Serdes.String(),
-            eventSerde
-        ))
+        .stream(
+            hendelseTopic, Consumed.with(
+                Serdes.String(),
+                eventSerde
+            )
+        )
         .process(
             ignorerDuplikateStartStoppEventer,
             Named.`as`("filtrer-duplikate-start-stopp-eventer"),
@@ -109,5 +102,6 @@ fun main() {
     streamLogger.info("Venter...")
     Thread.sleep(Long.MAX_VALUE)
 }
+
 
 fun StartV1.periodeTilstand() = PeriodeTilstandV1(id, personNummer, timestamp)
