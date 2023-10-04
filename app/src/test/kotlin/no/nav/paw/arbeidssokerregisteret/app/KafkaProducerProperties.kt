@@ -1,5 +1,6 @@
-package no.nav.paw.arbeidssokerregisteret.app.config.helpers
+package no.nav.paw.arbeidssokerregisteret.app
 
+import no.nav.paw.arbeidssokerregisteret.app.config.helpers.KafkaProperties
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.Serializer
 import java.time.Duration
@@ -23,5 +24,4 @@ class KafkaProducerProperties<K, V> (
             ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to keySerializer.java,
             ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to valueSerializer.java
         )
-
 }

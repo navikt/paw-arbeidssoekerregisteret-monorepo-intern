@@ -2,7 +2,6 @@ package no.nav.paw.arbeidssokerregisteret.app
 
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
-import no.nav.paw.arbeidssokerregisteret.app.config.helpers.KafkaProducerProperties
 import no.nav.paw.arbeidssokerregisteret.intern.StartV1
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.clients.consumer.ConsumerConfig

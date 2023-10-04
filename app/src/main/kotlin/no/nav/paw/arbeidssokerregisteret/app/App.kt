@@ -36,6 +36,7 @@ fun main() {
         .filtererDuplikateStartStoppEventer(dbNavn)
         .to("output", produsent)
 
+
     val kafkaStreams = KafkaStreams(builder.build(), streamsConfig)
     kafkaStreams.setUncaughtExceptionHandler { throwable ->
         streamLogger.error("Uventet feil", throwable)
