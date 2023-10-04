@@ -5,15 +5,39 @@
   "fields" : [
     {
       "name" : "id",
+      "type" : {
+        "type": "string",
+        "logicalType": "uuid"
+      }
+    },
+    {
+      "name" : "foedselsnummer",
       "type" : "string"
     },
     {
-      "name" : "personNummer",
-      "type" : "string"
+      "name" : "sistEndret",
+      "type" : {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
     },
     {
-      "name" : "timestamp",
-      "type" : "long"
+      "name" : "fraOgMed",
+      "type" : {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
+    },
+    {
+      "name" : "tilOgMed",
+      "type" : [
+        "null",
+        {
+          "type": "long",
+          "logicalType": "timestamp-millis"
+        }
+      ],
+      "default" : null
     }
   ]
 }

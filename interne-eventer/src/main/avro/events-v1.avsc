@@ -4,16 +4,23 @@
   "name" : "StartV1",
   "fields" : [
     {
-      "name" : "id",
-      "type" : "string"
-    },
-    {
-      "name" : "personNummer",
+      "name" : "foedselsnummer",
       "type" : "string"
     },
     {
       "name" : "timestamp",
-      "type" : "long"
+      "type" : {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
+    },
+    {
+      "name" : "registertAv",
+      "type" : "string"
+    },
+    {
+      "name" : "kilde",
+      "type" : "string"
     }
   ]
 },
@@ -27,12 +34,53 @@
       "type" : "string"
     },
     {
-      "name" : "personNummer",
+      "name" : "foedselsnummer",
+      "type" : "string"
+    },
+    {
+      "name" : "timestamp",
+      "type" : {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
+    },
+    {
+      "name" : "stoppetAv",
+      "type" : "string"
+    },
+    {
+      "name" : "kilde",
+      "type" : "string"
+    },
+    {
+      "name" : "begrunnelse",
+      "type" : "string"
+    }
+  ]
+},
+{
+  "type" : "record",
+  "namespace" : "no.nav.paw.arbeidssokerregisteret.intern",
+  "name" : "AvvistV1",
+  "fields" : [
+    {
+      "name" : "foedselsnummer",
       "type" : "string"
     },
     {
       "name" : "timestamp",
       "type" : "long"
+    },
+    {
+      "name" : "kilde",
+      "type" : {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
+    },
+    {
+      "name" : "begrunnelse",
+      "type" : "string"
     }
   ]
 }

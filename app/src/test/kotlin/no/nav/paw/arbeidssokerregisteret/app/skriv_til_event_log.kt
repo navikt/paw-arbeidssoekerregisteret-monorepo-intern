@@ -11,6 +11,7 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serdes
 import java.time.Duration
+import java.time.Instant
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -36,9 +37,9 @@ fun main() {
     val producer: KafkaProducer<String, SpecificRecord> = KafkaProducer(cfgMap)
 
     val id1 = UUID.randomUUID().toString()
-    producer.send(ProducerRecord("input", id1, StartV1(id1, id1, System.currentTimeMillis())))
+    producer.send(ProducerRecord("input", id1, StartV1(id1, Instant.now(), "junit", "junit")))
         .get(30, TimeUnit.SECONDS)
-    producer.send(ProducerRecord("input", id1, StartV1(id1, id1, System.currentTimeMillis())))
+    producer.send(ProducerRecord("input", id1, StartV1(id1, Instant.now(), "junit", "junit")))
         .get(30, TimeUnit.SECONDS)
     producer.flush()
     producer.close()

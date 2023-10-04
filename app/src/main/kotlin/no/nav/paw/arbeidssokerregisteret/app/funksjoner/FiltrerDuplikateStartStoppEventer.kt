@@ -43,10 +43,10 @@ class FiltrerDuplikateStartStoppEventer(private val tilstandDbNavn: String) :
         when (val value = record?.value()) {
             null -> return
             is StartV1 -> tilstandsDb
-                ?.putIfAbsent(value.personNummer, value.periodeTilstand())
+                ?.putIfAbsent(value.foedselsnummer, value.periodeTilstand())
                 .also { if (it == null) context?.forward(record) }
 
-            is StoppV1 -> tilstandsDb?.delete(value.personNummer).also {
+            is StoppV1 -> tilstandsDb?.delete(value.foedselsnummer).also {
                 if (it != null) context?.forward(record)
             }
 

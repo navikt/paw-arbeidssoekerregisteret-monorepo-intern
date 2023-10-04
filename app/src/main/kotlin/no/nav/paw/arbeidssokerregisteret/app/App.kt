@@ -12,6 +12,8 @@ import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
 import org.apache.kafka.streams.kstream.Produced
 import org.slf4j.LoggerFactory
+import java.time.Instant
+import java.util.*
 
 fun main() {
     val kildeConfig = KafkaSourceConfig(System.getenv())
@@ -47,4 +49,10 @@ fun main() {
 }
 
 
-fun StartV1.periodeTilstand() = PeriodeTilstandV1(id, personNummer, timestamp)
+fun StartV1.periodeTilstand() = PeriodeTilstandV1(
+    UUID.randomUUID(),
+    foedselsnummer,
+    timestamp,
+    Instant.now(),
+    null
+)
