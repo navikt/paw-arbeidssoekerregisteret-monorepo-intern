@@ -11,6 +11,7 @@ import org.apache.kafka.common.utils.Time
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
+import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
 import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.Named
 import org.apache.kafka.streams.kstream.Produced
@@ -53,8 +54,12 @@ fun main() {
         .peek { key, value -> streamLogger.info("key: $key, value: $value") }
         .to("output", producedWith)
     val topology = builder.build()
-    KafkaStreams(topology, streamsConfig).start()
-    streamLogger.info("Venter...")
+    val kafkaStreams = KafkaStreams(topology, streamsConfig)
+    kafkaStreams.setUncaughtExceptionHandler { throwable ->
+        streamLogger.error("Uventet feil", throwable)
+        StreamsUncaughtExceptionHandler.StreamThreadExceptionResponse.SHUTDOWN_APPLICATION
+    }
+    kafkaStreams.start()
     Thread.sleep(Long.MAX_VALUE)
 }
 
