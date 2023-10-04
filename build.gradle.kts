@@ -11,6 +11,8 @@ val logstashVersion = "7.3"
 val navCommonModulesVersion = "2.2023.01.02_13.51-1c6adeb1653b"
 val avroVersion = "1.11.0"
 val tokenSupportVersion = "3.1.5"
+val koTestVersion = "5.7.2"
+val hopliteVersion = "2.7.5"
 
 repositories {
     mavenLocal()
@@ -37,6 +39,8 @@ dependencies {
     implementation("io.confluent:kafka-avro-serializer:7.4.0")
     implementation("com.github.navikt.poao-tilgang:client:2023.09.25_09.26-72043f243cad")
     implementation("no.nav.paw:pdl-client:0.3.1")
+    implementation("com.sksamuel.hoplite:hoplite-core:$hopliteVersion")
+    implementation("com.sksamuel.hoplite:hoplite-yaml:$hopliteVersion")
 
     // TODO: Flytte til bundle KTOR
     val ktorVersion = "2.3.4"
@@ -51,9 +55,10 @@ dependencies {
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.2")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
+    testImplementation("io.kotest:kotest-runner-junit5:$koTestVersion")
+    testImplementation("io.kotest:kotest-assertions-core:$koTestVersion")
+    testImplementation("io.mockk:mockk:1.13.8")
 }
 
 java {
@@ -82,7 +87,6 @@ tasks {
         environment("POAO_TILGANG_CLIENT_SCOPE", "api://test.test.poao-tilgang/.default")
         environment("PDL_CLIENT_URL", "http://localhost:8090/pdl")
         environment("PDL_CLIENT_SCOPE", "api://test.test.pdl-api/.default")
-        environment("AZURE_APP_CLIENT_ID", "paw-arbeidssokerregisteret")
         environment("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT", "http://localhost:8081/default/token")
         environment("OTEL_TRACES_EXPORTER", "maskert_oltp")
         environment("OTEL_METRICS_EXPORTER", "none")
@@ -94,7 +98,7 @@ application {
     mainClass.set("no.nav.paw.arbeidssokerregisteret.ApplicationKt")
 }
 
-tasks.named<Test>("test") {
+tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
 

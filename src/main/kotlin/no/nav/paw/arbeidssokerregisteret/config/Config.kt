@@ -1,45 +1,57 @@
 package no.nav.paw.arbeidssokerregisteret.config
 
-import no.nav.paw.arbeidssokerregisteret.utils.konfigVerdi
-import no.nav.security.token.support.v2.RequiredClaims
+import io.confluent.kafka.serializers.KafkaAvroSerializer
+import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
+import org.apache.kafka.clients.producer.ProducerConfig
+import org.apache.kafka.common.serialization.StringSerializer
+import java.util.*
 
-class Config(env: Map<String, String>) {
-    val authenticationProviders: AuthProviders = listOf(
-        AuthProvider(
-            name = "tokenx",
-            discoveryUrl = env.konfigVerdi("TOKEN_X_WELL_KNOWN_URL"),
-            acceptedAudience = listOf(env.konfigVerdi("TOKEN_X_CLIENT_ID")),
-            requiredClaims = RequiredClaims("tokenx", arrayOf("acr=Level4", "acr=idporten-loa-high"), true)
+data class Config(
+    val authProviders: AuthProvidersConfig,
+    val pdlClientConfig: ServiceClientConfig,
+    val poaoTilgangClientConfig: ServiceClientConfig,
+    val kafka: KafkaConfig,
+    val naisEnv: NaisEnv = currentNaisEnv
+)
 
-        ),
-        AuthProvider(
-            name = "azure",
-            discoveryUrl = env.konfigVerdi("AZURE_APP_WELL_KNOWN_URL"),
-            acceptedAudience = listOf(env.konfigVerdi("AZURE_APP_CLIENT_ID")),
-            requiredClaims = RequiredClaims("azure", arrayOf("NAVident"))
-        )
-    )
-    val pdlClient: ServiceKlientkonfigurasjon = ServiceKlientkonfigurasjon(
-        env.konfigVerdi("PDL_CLIENT_URL"),
-        env.konfigVerdi("PDL_CLIENT_SCOPE")
-    )
-    val poaoTilgangClient: ServiceKlientkonfigurasjon = ServiceKlientkonfigurasjon(
-        env.konfigVerdi("POAO_TILGANG_CLIENT_URL"),
-        env.konfigVerdi("POAO_TILGANG_CLIENT_SCOPE")
-    )
-    val naisEnv = currentNaisEnv
-}
-
-typealias AuthProviders = List<AuthProvider>
+data class AuthProvidersConfig(
+    val azure: AuthProvider,
+    val tokenx: AuthProvider
+)
 
 data class AuthProvider(
     val name: String,
     val discoveryUrl: String,
-    val acceptedAudience: List<String>,
-    val requiredClaims: RequiredClaims? = null
+    val tokenEndpointUrl: String,
+    val clientId: String,
+    val claims: List<String>
 )
 
-data class ServiceKlientkonfigurasjon(
+data class ServiceClientConfig(
     val url: String,
     val scope: String
+)
+
+data class KafkaConfig(
+    val brokerUrl: String,
+    val schemaRegistryUrl: String,
+    val producerId: String,
+    val producers: KafkaProducers
+) {
+    val kafkaProducerProperties
+        get() = Properties().apply {
+            this[ProducerConfig.CLIENT_ID_CONFIG] = producerId
+            this[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = brokerUrl
+            this[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
+            this[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = KafkaAvroSerializer::class.java.name
+            this[KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG] = schemaRegistryUrl
+        }
+}
+
+data class KafkaProducers(
+    val arbeidssokerperiodeStartV1: KafkaTopic
+)
+
+data class KafkaTopic(
+    val topic: String
 )

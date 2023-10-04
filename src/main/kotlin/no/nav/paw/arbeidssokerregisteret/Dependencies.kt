@@ -6,22 +6,24 @@ import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder
 import no.nav.paw.arbeidssokerregisteret.config.Config
 import no.nav.paw.arbeidssokerregisteret.config.NaisEnv
+import no.nav.paw.arbeidssokerregisteret.intern.StartV1
+import no.nav.paw.arbeidssokerregisteret.kafka.producers.ArbeidssokerperiodeStartProducer
 import no.nav.paw.arbeidssokerregisteret.services.ArbeidssokerService
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.arbeidssokerregisteret.utils.createMockRSAKey
-import no.nav.paw.arbeidssokerregisteret.utils.konfigVerdi
 import no.nav.paw.pdl.PdlClient
 import no.nav.poao_tilgang.client.PoaoTilgangHttpClient
+import org.apache.kafka.clients.producer.KafkaProducer
 
-fun createDependencies(env: Map<String, String>, config: Config): Dependencies {
+fun createDependencies(config: Config): Dependencies {
     val registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
 
     val azureAdMachineToMachineTokenClient =
         when (config.naisEnv) {
             NaisEnv.Local -> AzureAdTokenClientBuilder.builder()
-                .withClientId(env.konfigVerdi("AZURE_APP_CLIENT_ID"))
+                .withClientId(config.authProviders.azure.clientId)
                 .withPrivateJwk(createMockRSAKey("azure"))
-                .withTokenEndpointUrl(env.konfigVerdi("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"))
+                .withTokenEndpointUrl(config.authProviders.azure.tokenEndpointUrl)
                 .buildMachineToMachineTokenClient()
 
             else -> AzureAdTokenClientBuilder.builder()
@@ -30,18 +32,25 @@ fun createDependencies(env: Map<String, String>, config: Config): Dependencies {
         }
 
     val pdlClient = PdlClient(
-        config.pdlClient.url,
+        config.pdlClientConfig.url,
         "OPP",
         HttpClient()
-    ) { azureAdMachineToMachineTokenClient.createMachineToMachineToken(config.pdlClient.scope) }
+    ) { azureAdMachineToMachineTokenClient.createMachineToMachineToken(config.pdlClientConfig.scope) }
 
     val poaoTilgangCachedClient = PoaoTilgangHttpClient(
-        config.poaoTilgangClient.url,
-        { azureAdMachineToMachineTokenClient.createMachineToMachineToken(config.poaoTilgangClient.scope) }
+        config.poaoTilgangClientConfig.url,
+        { azureAdMachineToMachineTokenClient.createMachineToMachineToken(config.poaoTilgangClientConfig.scope) }
     )
 
     val autorisasjonService = AutorisasjonService(poaoTilgangCachedClient)
-    val arbeidssokerService = ArbeidssokerService(pdlClient)
+
+    val kafkaProducerClient = KafkaProducer<String, StartV1>(config.kafka.kafkaProducerProperties)
+
+    val arbeidssokerperiodeStartProducer = ArbeidssokerperiodeStartProducer(
+        kafkaProducerClient,
+        config.kafka.producers.arbeidssokerperiodeStartV1.topic
+    )
+    val arbeidssokerService = ArbeidssokerService(pdlClient, arbeidssokerperiodeStartProducer)
 
     return Dependencies(
         registry,

@@ -16,7 +16,7 @@ class AutorisasjonService(
         val harNavAnsattTilgang = poaoTilgangHttpClient.evaluatePolicy(
             NavAnsattTilgangTilEksternBrukerPolicyInput(
                 navAnsatt.azureId,
-                TilgangType.LESE,
+                TilgangType.SKRIVE,
                 foedselsnummer.verdi
             )
         ).getOrThrow()

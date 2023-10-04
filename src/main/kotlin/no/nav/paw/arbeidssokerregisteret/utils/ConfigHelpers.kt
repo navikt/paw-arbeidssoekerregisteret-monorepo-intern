@@ -1,15 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.utils
 
 import java.time.Duration
-
-inline fun <reified R> Map<String, String>.konfigVerdi(navn: String, mapper: (String) -> R): R =
-    get(navn)
-        ?.let(mapper) ?: if (null is R) {
-        null as R
-    } else {
-        throw IllegalArgumentException("Den obligatoriske config parameteren '$navn' er ikke definert")
-    }
-
 inline fun <reified R> Map<String, String>.konfigVerdi(navn: String): R =
     get(navn)
         ?.let { value ->

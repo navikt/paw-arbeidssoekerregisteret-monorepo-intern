@@ -6,6 +6,7 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.routing.routing
 import no.nav.paw.arbeidssokerregisteret.config.Config
+import no.nav.paw.arbeidssokerregisteret.config.loadConfiguration
 import no.nav.paw.arbeidssokerregisteret.plugins.configureAuthentication
 import no.nav.paw.arbeidssokerregisteret.plugins.configureHTTP
 import no.nav.paw.arbeidssokerregisteret.plugins.configureLogging
@@ -26,20 +27,19 @@ fun main() {
 
 fun Application.module() {
     // Konfigurasjon
-    val environment = System.getenv()
-    val config = Config(environment)
+    val config = loadConfiguration<Config>()
 
     // Avhengigheter
-    val dependencies = createDependencies(environment, config)
+    val dependencies = createDependencies(config)
 
-    // Konfigurer plugins
+    // Konfigurerer plugins
     configureMetrics(dependencies.registry)
     configureHTTP()
-    configureAuthentication(config.authenticationProviders)
+    configureAuthentication(config.authProviders)
     configureLogging()
     configureSerialization()
 
-    // Routes
+    // Ruter
     routing {
         healthRoutes(dependencies.registry)
         swaggerRoutes()

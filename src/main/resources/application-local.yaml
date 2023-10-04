@@ -1,0 +1,29 @@
+poaoTilgangClientConfig:
+  url: http://localhost:8090/poao-tilgang
+  scope: api://test.test.poao-tilgang/.default
+pdlClientConfig:
+  url: http://localhost:8090/pdl
+  scope: api://test.test.pdl-api/.default
+authProviders:
+  azure:
+    name: azure
+    discoveryUrl: http://localhost:8081/default/.well-known/openid-configuration
+    tokenEndpointUrl: http://localhost:8081/default/token
+    clientId: paw-arbeidssokerregisteret
+    claims:
+      - NAVident
+  tokenx:
+    name: tokenx
+    discoveryUrl: http://localhost:8081/default/.well-known/openid-configuration
+    tokenEndpointUrl: http://localhost:8081/default/token
+    clientId: paw-arbeidssokerregisteret
+    claims:
+      - acr=Level4
+      - acr=idporten-loa-high
+kafka:
+  brokerUrl: localhost:9092
+  schemaRegistryUrl: http://localhost:8082
+  producerId: paw-arbeidssokerregisteret
+  producers:
+    arbeidssokerperiodeStartV1:
+      topic: arbeidssokerperiode-start-v1

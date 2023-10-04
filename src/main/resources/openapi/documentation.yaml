@@ -1,69 +1,55 @@
 openapi: "3.0.3"
 info:
-  title: "paw_arbeidssoker_registeret API"
-  description: "paw_arbeidssoker_registeret API"
+  title: "paw_arbeidssokerregisteret API"
+  description: "paw_arbeidssokerregisteret API"
   version: "1.0.0"
 servers:
-- url: "https://paw_arbeidssoker_registeret"
+- url: "https://paw_arbeidssokerregisteret"
 paths:
   /api/v1/arbeidssoker/perioder:
-    get:
-      description: ""
-      responses:
-        "404":
-          description: "Not Found"
-          content:
-            '*/*':
-              schema:
-                type: "string"
-              examples:
-                Example#1:
-                  value: "Arbeidssøker ikke funnet"
-        "200":
-          description: "OK"
-          content:
-            '*/*':
-              schema:
-                type: "array"
-                items:
-                  $ref: "#/components/schemas/PeriodeDto"
     post:
       description: ""
       responses:
-        "200":
-          description: "OK"
+        "202":
+          description: "Accepted"
           content:
             '*/*':
               schema:
-                type: "string"
-              examples:
-                Example#1:
-                  value: "Opprett arbeidssøkerperiode"
+                type: "object"
     put:
       description: ""
       responses:
-        "200":
-          description: "OK"
+        "202":
+          description: "Accepted"
           content:
             '*/*':
               schema:
-                type: "string"
-              examples:
-                Example#1:
-                  value: "Avsluttet arbeidssøkerperiode"
+                type: "object"
   /api/v1/veileder/arbeidssoker/perioder:
-    get:
+    post:
       description: ""
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: "#/components/schemas/VeilederRequest"
+        required: true
       responses:
-        "200":
-          description: "OK"
+        "403":
+          description: "Forbidden"
           content:
             '*/*':
               schema:
                 type: "string"
               examples:
                 Example#1:
-                  value: "Perioder"
+                  value: "NAV-ansatt har ikke tilgang"
+        "202":
+          description: "Accepted"
+          content:
+            '*/*':
+              schema:
+                type: "object"
   /internal/isAlive:
     get:
       description: ""
@@ -102,17 +88,8 @@ paths:
                 type: "string"
 components:
   schemas:
-    PeriodeDto:
+    VeilederRequest:
       type: "object"
       properties:
-        id:
+        foedselsnummer:
           type: "string"
-          format: "uuid"
-        fraOgMedDato:
-          type: "string"
-          format: "date-time"
-        tilOgMedDato:
-          type: "string"
-          format: "date-time"
-        aktiv:
-          type: "boolean"
