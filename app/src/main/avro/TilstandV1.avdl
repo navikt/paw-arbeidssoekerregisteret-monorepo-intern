@@ -1,0 +1,18 @@
+@namespace("no.nav.paw.arbeidssokerregisteret.app")
+protocol Internt {
+	record PeriodeTilstandV1 {
+		@logicalType("uuid")
+		string id;
+
+		string foedselsnummer;
+
+		@logicalType("timestamp-millis")
+		long sistEndret;
+
+		@logicalType("timestamp-millis")
+		long fraOgMed;
+
+		@logicalType("timestamp-millis")
+		long? tilOgMed = null;
+	}
+}
