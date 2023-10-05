@@ -2,13 +2,13 @@ package no.nav.paw.arbeidssokerregisteret.plugins
 
 import io.ktor.server.application.Application
 import io.ktor.server.auth.authentication
-import no.nav.paw.arbeidssokerregisteret.config.AuthProvidersConfig
+import no.nav.paw.arbeidssokerregisteret.config.AuthProviders
 import no.nav.security.token.support.v2.IssuerConfig
 import no.nav.security.token.support.v2.RequiredClaims
 import no.nav.security.token.support.v2.TokenSupportConfig
 import no.nav.security.token.support.v2.tokenValidationSupport
 
-fun Application.configureAuthentication(authProviders: AuthProvidersConfig) {
+fun Application.configureAuthentication(authProviders: AuthProviders) {
     val (azure, tokenx) = authProviders
     authentication {
         tokenValidationSupport(

@@ -24,7 +24,8 @@ fun Route.arbeidssokerRoutes(arbeidssokerService: ArbeidssokerService, autorisas
                     logger.info("Starter ny arbeidssøkerperiode for bruker")
 
                     val foedselsnummer = call.getPidClaim()
-                    arbeidssokerService.startArbeidssokerperiode(foedselsnummer)
+
+                    arbeidssokerService.startArbeidssokerperiode(foedselsnummer, foedselsnummer.verdi)
 
                     logger.info("Startet arbeidssøkerperiode for bruker")
 
@@ -35,7 +36,7 @@ fun Route.arbeidssokerRoutes(arbeidssokerService: ArbeidssokerService, autorisas
                     logger.info("Avslutter arbeidssøkerperiode for bruker")
 
                     val foedselsnummer = call.getPidClaim()
-                    arbeidssokerService.avsluttArbeidssokerperiode(foedselsnummer)
+                    arbeidssokerService.avsluttArbeidssokerperiode(foedselsnummer, foedselsnummer.verdi)
 
                     logger.info("Avsluttet arbeidssøkerperiode for bruker")
 
@@ -59,7 +60,7 @@ fun Route.arbeidssokerRoutes(arbeidssokerService: ArbeidssokerService, autorisas
                         return@post call.respond(HttpStatusCode.Forbidden, "NAV-ansatt har ikke tilgang")
                     }
 
-                    arbeidssokerService.startArbeidssokerperiode(foedselsnummer)
+                    arbeidssokerService.startArbeidssokerperiode(foedselsnummer, navAnsatt.ident)
 
                     logger.info("Veileder startet arbeidssøkerperiode for bruker")
 

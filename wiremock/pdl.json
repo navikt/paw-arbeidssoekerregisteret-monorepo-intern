@@ -7,19 +7,12 @@
     "status": 200,
     "jsonBody": {
       "data": {
-        "hentIdenter": {
-          "identer": [
+        "hentPerson": {
+          "opphold": [
             {
-              "ident": "18908396568",
-              "gruppe": "FOLKEREGISTERIDENT"
-            },
-            {
-              "ident": "18908396561",
-              "gruppe": "FOLKEREGISTERIDENT"
-            },
-            {
-              "ident": "2649500819544",
-              "gruppe": "AKTORID"
+              "type": "PERMANENT",
+              "oppholdFra": "2010-01-20",
+              "oppholdTil": "2025-01-20"
             }
           ]
         }

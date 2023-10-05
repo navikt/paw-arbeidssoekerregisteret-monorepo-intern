@@ -7,14 +7,14 @@ import org.apache.kafka.common.serialization.StringSerializer
 import java.util.*
 
 data class Config(
-    val authProviders: AuthProvidersConfig,
+    val authProviders: AuthProviders,
     val pdlClientConfig: ServiceClientConfig,
     val poaoTilgangClientConfig: ServiceClientConfig,
     val kafka: KafkaConfig,
     val naisEnv: NaisEnv = currentNaisEnv
 )
 
-data class AuthProvidersConfig(
+data class AuthProviders(
     val azure: AuthProvider,
     val tokenx: AuthProvider
 )
