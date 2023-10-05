@@ -59,6 +59,8 @@ dependencies {
     testImplementation("io.kotest:kotest-runner-junit5:$koTestVersion")
     testImplementation("io.kotest:kotest-assertions-core:$koTestVersion")
     testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("org.testcontainers:testcontainers:1.19.1")
+    testImplementation("no.nav.security:mock-oauth2-server:2.0.0")
 }
 
 java {
