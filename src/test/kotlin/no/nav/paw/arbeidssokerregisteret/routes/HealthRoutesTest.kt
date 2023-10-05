@@ -7,7 +7,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
-import no.nav.paw.arbeidssokerregisteret.routes.healthRoutes
 
 class HealthRoutesTest : FunSpec({
     context("health routes") {
