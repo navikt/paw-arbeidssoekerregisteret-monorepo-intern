@@ -1,58 +1,98 @@
 package no.nav.paw.arbeidssokerregisteret.app
 
-import no.nav.paw.arbeidssokerregisteret.app.config.KafkaSourceConfig
+import no.nav.paw.arbeidssokerregisteret.app.config.KafkaStreamConfig
 import no.nav.paw.arbeidssokerregisteret.app.config.SchemaRegistryConfig
-import no.nav.paw.arbeidssokerregisteret.app.funksjoner.filtererDuplikateStartStoppEventer
-import no.nav.paw.arbeidssokerregisteret.intern.StartV1
-import org.apache.avro.specific.SpecificRecord
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.*
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.Operasjon.OPPRETT_ELLER_OPPDATER
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.Operasjon.SLETT
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Start
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Stopp
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
+import org.apache.kafka.common.utils.Time
 import org.apache.kafka.streams.KafkaStreams
+import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
+import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
-import org.apache.kafka.streams.kstream.Produced
+import org.apache.kafka.streams.kstream.KStream
+import org.apache.kafka.streams.state.internals.KeyValueStoreBuilder
+import org.apache.kafka.streams.state.internals.RocksDbKeyValueBytesStoreSupplier
 import org.slf4j.LoggerFactory
-import java.time.Instant
-import java.util.*
+import java.util.concurrent.LinkedBlockingQueue
+
 
 fun main() {
-    val kildeConfig = KafkaSourceConfig(System.getenv())
-
     val streamLogger = LoggerFactory.getLogger("App")
-    streamLogger.info("Starter stream")
-    val streamsConfig = StreamsConfig(kildeConfig.properties)
-    val schemaRegistryConfig = SchemaRegistryConfig(System.getenv())
+    streamLogger.info("Starter applikasjon...")
 
-    val hendelsesSerde: Serde<SpecificRecord> = lagSpecificAvroSerde(schemaRegistryConfig)
-    val tilstandsSerde: Serde<PeriodeTilstandV1> = lagSpecificAvroSerde(schemaRegistryConfig)
-    val produsent: Produced<String, SpecificRecord> = Produced.with(Serdes.String(), hendelsesSerde)
+    val strømConfig = KafkaStreamConfig(System.getenv())
+
+    val periodeSerde: Serde<PeriodeTilstandV1> = lagSpecificAvroSerde(SchemaRegistryConfig(System.getenv()))
 
     val dbNavn = "tilstandsDb"
-    val (builder, strøm) = konfigurerKafkaStrøm(
-        hendelseLog = kildeConfig.eventlogTopic,
-        tilstandSerde = tilstandsSerde,
-        hendelseSerde = hendelsesSerde,
-        dbNavn = dbNavn
+    val builder = StreamsBuilder()
+    builder.addStateStore(
+        KeyValueStoreBuilder(
+            RocksDbKeyValueBytesStoreSupplier(dbNavn, false),
+            Serdes.String(),
+            periodeSerde,
+            Time.SYSTEM
+        )
     )
-    strøm
-        .filtererDuplikateStartStoppEventer(dbNavn)
-        .to("output", produsent)
+    val topology = topology(
+        builder,
+        dbNavn,
+        strømConfig.eventlogTopic,
+        strømConfig.periodeTopic
+    )
 
-
-    val kafkaStreams = KafkaStreams(builder.build(), streamsConfig)
+    val kafkaStreams = KafkaStreams(topology, StreamsConfig(strømConfig.properties))
     kafkaStreams.setUncaughtExceptionHandler { throwable ->
         streamLogger.error("Uventet feil", throwable)
         StreamsUncaughtExceptionHandler.StreamThreadExceptionResponse.SHUTDOWN_APPLICATION
     }
     kafkaStreams.start()
-    Thread.sleep(Long.MAX_VALUE)
+    streamLogger.info("KafkaStreams tilstand: ${kafkaStreams.state()}")
+    val avslutt = LinkedBlockingQueue<Unit>(1)
+    Runtime.getRuntime().addShutdownHook(Thread {
+        streamLogger.info("Avslutter...")
+        kafkaStreams.close()
+        avslutt.put(Unit)
+    })
+    avslutt.take()
+    streamLogger.info("Avsluttet")
 }
 
-
-fun StartV1.periodeTilstand() = PeriodeTilstandV1(
-    UUID.randomUUID(),
-    foedselsnummer,
-    timestamp,
-    Instant.now(),
-    null
-)
+fun topology(
+    builder: StreamsBuilder,
+    dbNavn: String,
+    innTopic: String,
+    utTopic: String
+): Topology {
+    val strøm: KStream<String, Hendelse> = builder.stream(innTopic)
+    strøm
+        .filtrer(dbNavn) {
+            when (hendelse.endring) {
+                is Start -> inkluderDersomIkkeRegistrertArbeidssøker()
+                is Stopp -> inkluderDersomRegistrertArbeidssøker()
+                else -> inkluder
+            }
+        }
+        .opprettEllerOppdaterPeriode(dbNavn) {
+            when (hendelse.endring) {
+                is Start -> startPeriode(hendelse)
+                is Stopp -> avsluttPeriode(hendelse.timestamp)
+                else -> ingenEndring()
+            }
+        }
+        .oppdaterLagretPeriode(dbNavn) { periode ->
+            when (periode.erAvsluttet()) {
+                true -> SLETT
+                false -> OPPRETT_ELLER_OPPDATER
+            }
+        }
+        .to(utTopic)
+    return builder.build()
+}

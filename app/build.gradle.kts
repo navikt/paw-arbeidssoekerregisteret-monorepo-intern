@@ -16,16 +16,30 @@ dependencies {
     implementation("io.confluent:kafka-avro-serializer:7.4.0")
     implementation("io.confluent:kafka-streams-avro-serde:7.4.0")
     implementation("org.apache.avro:avro:1.11.0")
+    testImplementation("io.kotest:kotest-runner-junit5-jvm:4.6.0")
+    testImplementation("org.apache.kafka:kafka-streams-test-utils:3.5.1")
 }
 
 application {
     mainClass.set("no.nav.paw.arbeidssokerregisteret.app.AppKt")
 }
 
+tasks.named("compileKotlin", org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask::class.java) {
+    compilerOptions {
+        freeCompilerArgs.add("-Xcontext-receivers")
+    }
+}
+
+tasks.named<Test>("test") {
+    useJUnitPlatform()
+}
+
 tasks {
     "run"(JavaExec::class) {
         environment("KAFKA_STREAM_APPLICATION_ID", "arbeidssokerregisteret-eventlog-v2")
         environment("EVENTLOG_TOPIC", "input")
+        environment("PERIODE_TOPIC", "periode-v1")
+        environment("SITUASJON_TOPIC", "situasjon-v1")
         environment("NAIS_DATABASE_PAW_DEMO_PAWDEMO_PASSWORD", "admin")
         environment("NAIS_DATABASE_PAW_DEMO_PAWDEMO_USERNAME", "admin")
         environment("NAIS_DATABASE_PAW_DEMO_PAWDEMO_HOST", "localhost")

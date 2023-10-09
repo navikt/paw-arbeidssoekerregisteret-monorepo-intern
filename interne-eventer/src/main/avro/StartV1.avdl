@@ -1,0 +1,6 @@
+@namespace("no.nav.paw.arbeidssokerregisteret.intern.v1")
+protocol HendelseStartV1 {
+	record Start {
+
+	}
+}
