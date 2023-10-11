@@ -6,6 +6,7 @@ import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.put
 import io.ktor.server.routing.route
@@ -19,6 +20,19 @@ import no.nav.paw.arbeidssokerregisteret.utils.logger
 fun Route.arbeidssokerRoutes(arbeidssokerService: ArbeidssokerService, autorisasjonService: AutorisasjonService) {
     route("/api/v1") {
         authenticate("tokenx") {
+            route("/kan-registreres-som-arbeidssoker") {
+                get {
+                    logger.info("Sjekker om bruker kan registreres som arbeidssøker")
+
+                    val foedselsnummer = call.getPidClaim()
+
+                    val kanRegistreres = arbeidssokerService.kanRegistreresSomArbeidssoker(foedselsnummer)
+
+                    logger.info("Bruker kan registreres som arbeidssøker: $kanRegistreres")
+
+                    call.respond(HttpStatusCode.OK, kanRegistreres)
+                }
+            }
             route("/arbeidssoker/perioder") {
                 post {
                     logger.info("Starter ny arbeidssøkerperiode for bruker")
