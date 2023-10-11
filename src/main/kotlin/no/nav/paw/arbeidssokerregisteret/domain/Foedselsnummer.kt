@@ -6,3 +6,5 @@ value class Foedselsnummer(val verdi: String) {
         return "*".repeat(11)
     }
 }
+
+fun String.toFoedselsnummer(): Foedselsnummer = Foedselsnummer(this)

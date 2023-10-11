@@ -5,6 +5,7 @@ import io.ktor.server.application.ApplicationCall
 import io.ktor.server.auth.authentication
 import no.nav.paw.arbeidssokerregisteret.domain.Foedselsnummer
 import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
+import no.nav.paw.arbeidssokerregisteret.domain.toFoedselsnummer
 import no.nav.paw.arbeidssokerregisteret.plugins.StatusException
 import no.nav.security.token.support.v2.TokenValidationContextPrincipal
 import java.util.*
@@ -16,9 +17,9 @@ fun ApplicationCall.getClaim(issuer: String, name: String): String? =
         ?.getStringClaim(name)
 
 fun ApplicationCall.getPidClaim(): Foedselsnummer =
-    getClaim("tokenx", "pid")
-        ?.let { Foedselsnummer(it) }
+    getClaim("tokenx", "pid")?.toFoedselsnummer()
         ?: throw StatusException(HttpStatusCode.Forbidden, "Fant ikke 'pid'-claim i token fra tokenx-issuer")
+
 private fun ApplicationCall.getNavAnsattAzureId(): UUID =
     getClaim("azure", "oid")
         ?.let { UUID.fromString(it) }
