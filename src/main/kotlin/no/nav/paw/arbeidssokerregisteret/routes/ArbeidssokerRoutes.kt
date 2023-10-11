@@ -20,41 +20,43 @@ import no.nav.paw.arbeidssokerregisteret.utils.logger
 fun Route.arbeidssokerRoutes(arbeidssokerService: ArbeidssokerService, autorisasjonService: AutorisasjonService) {
     route("/api/v1") {
         authenticate("tokenx") {
-            route("/kan-registreres-som-arbeidssoker") {
-                get {
-                    logger.info("Sjekker om bruker kan registreres som arbeidssøker")
+            route("/arbeidssoker") {
+                route("/kan-registreres") {
+                    get {
+                        logger.info("Sjekker om bruker kan registreres som arbeidssøker")
 
-                    val foedselsnummer = call.getPidClaim()
+                        val foedselsnummer = call.getPidClaim()
 
-                    val kanRegistreres = arbeidssokerService.kanRegistreresSomArbeidssoker(foedselsnummer)
+                        val kanRegistreres = arbeidssokerService.kanRegistreresSomArbeidssoker(foedselsnummer)
 
-                    logger.info("Bruker kan registreres som arbeidssøker: $kanRegistreres")
+                        logger.info("Bruker kan registreres som arbeidssøker: $kanRegistreres")
 
-                    call.respond(HttpStatusCode.OK, kanRegistreres)
+                        call.respond(HttpStatusCode.OK, kanRegistreres)
+                    }
                 }
-            }
-            route("/arbeidssoker/perioder") {
-                post {
-                    logger.info("Starter ny arbeidssøkerperiode for bruker")
+                route("/perioder") {
+                    post {
+                        logger.info("Starter ny arbeidssøkerperiode for bruker")
 
-                    val foedselsnummer = call.getPidClaim()
+                        val foedselsnummer = call.getPidClaim()
 
-                    arbeidssokerService.startArbeidssokerperiode(foedselsnummer, foedselsnummer.verdi)
+                        arbeidssokerService.startArbeidssokerperiode(foedselsnummer, foedselsnummer.verdi)
 
-                    logger.info("Startet arbeidssøkerperiode for bruker")
+                        logger.info("Startet arbeidssøkerperiode for bruker")
 
-                    call.respond(HttpStatusCode.Accepted)
-                }
+                        call.respond(HttpStatusCode.Accepted)
+                    }
 
-                put {
-                    logger.info("Avslutter arbeidssøkerperiode for bruker")
+                    put {
+                        logger.info("Avslutter arbeidssøkerperiode for bruker")
 
-                    val foedselsnummer = call.getPidClaim()
-                    arbeidssokerService.avsluttArbeidssokerperiode(foedselsnummer, foedselsnummer.verdi)
+                        val foedselsnummer = call.getPidClaim()
+                        arbeidssokerService.avsluttArbeidssokerperiode(foedselsnummer, foedselsnummer.verdi)
 
-                    logger.info("Avsluttet arbeidssøkerperiode for bruker")
+                        logger.info("Avsluttet arbeidssøkerperiode for bruker")
 
-                    call.respond(HttpStatusCode.Accepted)
+                        call.respond(HttpStatusCode.Accepted)
+                    }
                 }
             }
         }

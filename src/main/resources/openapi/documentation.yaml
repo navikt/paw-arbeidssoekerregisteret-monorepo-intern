@@ -6,6 +6,16 @@ info:
 servers:
 - url: "https://paw_arbeidssokerregisteret"
 paths:
+  /api/v1/arbeidssoker/kan-registreres:
+    get:
+      description: ""
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "boolean"
   /api/v1/arbeidssoker/perioder:
     post:
       description: ""
