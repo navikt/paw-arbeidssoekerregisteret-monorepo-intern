@@ -1,0 +1,10 @@
+@namespace("no.nav.paw.arbeidssokerregisteret.api.v1")
+protocol Endring {
+	import idl "bruker-v1.avdl";
+
+	record Endring {
+		@logicalType("timestamp-millis")
+		long tidspunkt;
+		Bruker utfoertAv;
+	}
+}

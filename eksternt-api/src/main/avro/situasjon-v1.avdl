@@ -1,0 +1,17 @@
+@namespace("no.nav.paw.arbeidssokerregisteret.api.v1")
+protocol Situasjon {
+	import idl "vo/bruker-v1.avdl";
+
+	record Situasjon {
+		@logicalType("uuid")
+		string id;
+
+		@logicalType("uuid")
+		string periodeId;
+
+		string foedselsnummer;
+
+		
+
+	}
+}

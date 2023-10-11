@@ -4,7 +4,7 @@ plugins {
 }
 
 rootProject.name = "paw-arbeidssokerregisteret-event-prosessor"
-include("app", "interne-eventer")
+include("app", "interne-eventer", "eksternt-api")
 
 dependencyResolutionManagement {
     val githubPassword: String by settings

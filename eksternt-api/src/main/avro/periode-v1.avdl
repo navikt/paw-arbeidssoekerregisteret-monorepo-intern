@@ -1,0 +1,15 @@
+@namespace("no.nav.paw.arbeidssokerregisteret.api.v1")
+protocol Periode {
+	import idl "vo/endring-v1.avdl";
+
+	record Periode {
+		@logicalType("uuid")
+		string id;
+
+		string foedselsnummer;
+
+		Endring startet;
+
+		Endring? avsluttet;
+	}
+}
