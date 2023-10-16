@@ -25,6 +25,7 @@ class ArbeidssokerService(
 
         if (!harOpphold) {
             logger.info("Bruker har ikke oppholdstillatelse, starter ikke arbeidssokerperiode")
+            // TODO: Dette er en beslutning som må loggføres
             throw StatusException(HttpStatusCode.Forbidden, "Bruker har ikke oppholdstillatelse")
         }
 
