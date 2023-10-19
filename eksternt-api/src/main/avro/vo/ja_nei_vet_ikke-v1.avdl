@@ -1,0 +1,11 @@
+@namespace("no.nav.paw.arbeidssokerregisteret.api.v1")
+protocol JaNeiVetIkke {
+
+	enum JaNeiVetIkke {
+		UKJENT_VERDI,
+		UDEFINERT,
+		JA,
+		NEI,
+		VET_IKKE
+	} = UKJENT_VERDI;
+}

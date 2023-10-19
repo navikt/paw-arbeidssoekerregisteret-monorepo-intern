@@ -1,6 +1,9 @@
 @namespace("no.nav.paw.arbeidssokerregisteret.api.v1")
 protocol Situasjon {
 	import idl "vo/bruker-v1.avdl";
+	import idl "vo/endring-v1.avdl";
+	import idl "vo/utdanning-v1.avdl";
+	import idl "vo/helse-v1.avdl";
 
 	record Situasjon {
 		@logicalType("uuid")
@@ -9,9 +12,12 @@ protocol Situasjon {
 		@logicalType("uuid")
 		string periodeId;
 
-		string foedselsnummer;
+		string identitetsnummer;
+		Endring sendtInnAv;
 
-		
+		Utdanning utdanning;
+		Helse helse;
+
 
 	}
 }
