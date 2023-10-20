@@ -13,7 +13,6 @@ protocol Utdanning {
 		HOYERE_UTDANNING_5_ELLER_MER
 	} = UKJENT_VERDI;
 
-
 	record Utdanning {
 		UtdanningsNiva lengde;
 		JaNeiVetIkke bestått;

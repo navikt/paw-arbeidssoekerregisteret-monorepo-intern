@@ -2,9 +2,11 @@
 protocol Endring {
 	import idl "bruker-v1.avdl";
 
-	record Endring {
+	record Metadata {
 		@logicalType("timestamp-millis")
 		long tidspunkt;
 		Bruker utfoertAv;
+		string kilde;
+		string aarsak;
 	}
 }

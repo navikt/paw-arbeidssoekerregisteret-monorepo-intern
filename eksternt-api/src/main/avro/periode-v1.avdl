@@ -1,6 +1,6 @@
 @namespace("no.nav.paw.arbeidssokerregisteret.api.v1")
 protocol Periode {
-	import idl "vo/endring-v1.avdl";
+	import idl "vo/metadata-v1.avdl";
 
 	record Periode {
 		@logicalType("uuid")
@@ -8,8 +8,8 @@ protocol Periode {
 
 		string identitetsnummer;
 
-		Endring startet;
+		Metadata startet;
 
-		Endring? avsluttet;
+		Metadata? avsluttet;
 	}
 }

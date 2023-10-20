@@ -1,0 +1,24 @@
+@namespace("no.nav.paw.arbeidssokerregisteret.api.v1")
+protocol Arbeidssoekersituasjon {
+	enum Beskrivelse {
+		UKJENT_VERDI,
+		UDEFINERT,
+		HAR_SAGT_OPP,
+		HAR_BLITT_SAGT_OPP,
+		ER_PERMITTERT,
+		ALDRI_HATT_JOBB,
+		IKKE_VEART_I_JOBB_SISTE_2_AAR,
+		AKKURAT_FULLFORT_UTDANNING,
+		VIL_BYTTE_JOBB,
+		USIKKER_JOBBSITUASJON,
+		MIDLERTIDIG_JOBB,
+		DELTIDSJOBB_VIL_MER,
+		NY_JOBB,
+		KONKURS,
+		ANNET
+	} = UKJENT_VERDI;
+
+	record  Arbeidssoekersituasjon {
+		array<Beskrivelse> beskrivelser;
+	}
+}

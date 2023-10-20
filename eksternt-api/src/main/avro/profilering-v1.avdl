@@ -5,7 +5,7 @@ protocol Situasjon {
 	import idl "vo/helse-v1.avdl";
 	import idl "vo/arbeidserfaring-v1.avdl";
 
-	record Situasjon {
+	record Profilering {
 		@logicalType("uuid")
 		string id;
 
@@ -15,9 +15,6 @@ protocol Situasjon {
 		string identitetsnummer;
 		Metadata sendtInnAv;
 
-		Utdanning utdanning;
-		Helse helse;
-		Arbeidserfaring arbeidserfaring;
 
 
 	}

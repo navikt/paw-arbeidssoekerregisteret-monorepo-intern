@@ -2,10 +2,8 @@
 protocol JaNeiVetIkke {
 
 	enum JaNeiVetIkke {
-		UKJENT_VERDI,
-		UDEFINERT,
 		JA,
 		NEI,
 		VET_IKKE
-	} = UKJENT_VERDI;
+	}
 }
