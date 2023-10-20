@@ -1,5 +1,5 @@
 @namespace("no.nav.paw.arbeidssokerregisteret.api.v1")
-protocol Utdanning {
+protocol Helse {
 	import idl "ja_nei_vet_ikke-v1.avdl";
 
 	record Helse {
