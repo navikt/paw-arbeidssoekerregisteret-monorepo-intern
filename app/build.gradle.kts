@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "1.9.10"
+    id("io.ktor.plugin") version "2.3.3"
     application
 }
 val exposedVersion = "0.42.1"
@@ -42,4 +43,10 @@ application {
 
 tasks.named<Test>("test") {
     useJUnitPlatform()
+}
+
+ktor {
+    fatJar {
+        archiveFileName.set("fat.jar")
+    }
 }
