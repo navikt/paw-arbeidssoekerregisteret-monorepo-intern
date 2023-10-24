@@ -3,15 +3,16 @@ package no.nav.paw.kafkakeygenerator.config
 import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.ExperimentalHoplite
 import com.sksamuel.hoplite.addResourceSource
-import no.nav.paw.kafkakeygenerator.config.NaisEnv.*
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import java.lang.System.getenv
 
 @OptIn(ExperimentalHoplite::class)
 inline fun <reified A> lastKonfigurasjon(navn: String): A {
-    val fulltNavn = when (currentNaisEnv) {
-        Local -> "/local/$navn"
-        DevGCP -> "/dev/$navn"
-        ProdGCP -> "/prod/$navn"
+    val fulltNavn = when (getenv("NAIS_CLUSTER_NAME")) {
+        "rod-gcp" -> "/prod/$navn"
+        "dev-gcp" -> "/dev/$navn"
+        else -> "/local/$navn"
     }
     return ConfigLoaderBuilder
         .default()
@@ -21,16 +22,10 @@ inline fun <reified A> lastKonfigurasjon(navn: String): A {
         .loadConfigOrThrow()
 }
 
-enum class NaisEnv(val clusterName: String) {
-    Local("local"),
-    DevGCP("dev-gcp"),
-    ProdGCP("prod-gcp");
-}
-
-val currentNaisEnv: NaisEnv
-    get() =
-        when (getenv("NAIS_CLUSTER_NAME")) {
-            DevGCP.clusterName -> DevGCP
-            ProdGCP.clusterName -> ProdGCP
-            else -> Local
-        }
+fun DatabaseKonfigurasjon.dataSource() =
+    HikariDataSource(HikariConfig().apply {
+        jdbcUrl = url
+        driverClassName = "org.postgresql.Driver"
+        password = passord
+        username = brukernavn
+    })

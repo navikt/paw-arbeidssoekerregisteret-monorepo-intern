@@ -1,9 +1,8 @@
-package no.nav.paw.kafkakeygenerator
+package no.nav.paw.kafkakeygenerator.webserver
 
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.metrics.micrometer.*
-import io.ktor.server.routing.*
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics
