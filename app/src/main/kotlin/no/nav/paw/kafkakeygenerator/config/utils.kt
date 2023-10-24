@@ -10,7 +10,7 @@ import java.lang.System.getenv
 @OptIn(ExperimentalHoplite::class)
 inline fun <reified A> lastKonfigurasjon(navn: String): A {
     val fulltNavn = when (getenv("NAIS_CLUSTER_NAME")) {
-        "rod-gcp" -> "/prod/$navn"
+        "prod-gcp" -> "/prod/$navn"
         "dev-gcp" -> "/dev/$navn"
         else -> "/local/$navn"
     }
