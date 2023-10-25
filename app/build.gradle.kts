@@ -25,6 +25,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.0.1")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashVersion")
+    implementation("no.nav.paw:pdl-client:0.3.1")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.2")

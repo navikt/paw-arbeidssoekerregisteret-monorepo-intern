@@ -16,6 +16,13 @@ dependencyResolutionManagement {
                 password = githubPassword
             }
         }
+        maven {
+            setUrl("https://maven.pkg.github.com/navikt/paw-kotlin-clients")
+            credentials {
+                username = "x-access-token"
+                password = githubPassword
+            }
+        }
         mavenCentral()
     }
     versionCatalogs {
