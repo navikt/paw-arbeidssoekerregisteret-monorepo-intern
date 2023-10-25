@@ -28,4 +28,5 @@ fun DatabaseKonfigurasjon.dataSource() =
         driverClassName = "org.postgresql.Driver"
         password = passord
         username = brukernavn
+        isAutoCommit = false
     })
