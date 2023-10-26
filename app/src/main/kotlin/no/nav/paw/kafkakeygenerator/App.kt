@@ -25,5 +25,5 @@ fun main() {
         Api(
             ExposedKafkaKeys(database),
             { emptyList() }
-        ))
+        )).start(wait = true)
 }
