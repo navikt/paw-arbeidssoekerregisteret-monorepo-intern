@@ -1,5 +1,5 @@
-url = ""
+url = "https://pdl-api.dev-fss-pub.nais.io"
 tema = "OPP"
-pdlCluster = ""
+pdlCluster = "dev-fss"
 namespace = ""
 appName = ""
