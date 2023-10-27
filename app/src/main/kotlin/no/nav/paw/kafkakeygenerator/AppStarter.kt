@@ -7,9 +7,9 @@ import no.nav.paw.kafkakeygenerator.config.DatabaseKonfigurasjon
 import no.nav.paw.kafkakeygenerator.config.dataSource
 import no.nav.paw.kafkakeygenerator.config.lastKonfigurasjon
 import no.nav.paw.kafkakeygenerator.database.flywayMigrate
+import no.nav.paw.kafkakeygenerator.pdl.opprettPdlIdentitesTjeneste
 import no.nav.paw.kafkakeygenerator.webserver.initKtorServer
 import org.jetbrains.exposed.sql.Database
-import java.util.*
 
 fun main() {
     val autentiseringKonfig: Autentiseringskonfigurasjon = lastKonfigurasjon("ktor_server_autentisering.toml")
@@ -22,8 +22,8 @@ fun main() {
     initKtorServer(
         autentiseringKonfig,
         prometheusMeterRegistry,
-        Api(
+        Applikasjon(
             ExposedKafkaKeys(database),
-            { emptyList() }
+            opprettPdlIdentitesTjeneste()
         )).start(wait = true)
 }

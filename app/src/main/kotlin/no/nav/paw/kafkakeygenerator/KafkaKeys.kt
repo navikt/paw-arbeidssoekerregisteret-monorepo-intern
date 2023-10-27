@@ -2,15 +2,18 @@ package no.nav.paw.kafkakeygenerator
 
 import no.nav.paw.kafkakeygenerator.database.IdentitetTabell
 import no.nav.paw.kafkakeygenerator.database.KafkaKeysTabell
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.TransactionManager
+import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.insertIgnore
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
 interface KafkaKeys {
 
-    fun hent(identitet: String): Long?
-    fun lagre(identitet: String, nøkkel: Long): Boolean
-    fun opprett(identitet: String): Long?
+    fun hent(identitet: Identitetsnummer): Long?
+    fun lagre(identitet: Identitetsnummer, nøkkel: Long): Boolean
+    fun opprett(identitet: Identitetsnummer): Long?
     fun hent(identiteter: List<String>): Map<String, Long>
 }
 
@@ -24,26 +27,26 @@ class ExposedKafkaKeys(private val database: Database) : KafkaKeys {
                 it[IdentitetTabell.identitetsnummer] to it[IdentitetTabell.kafkaKey]
             }
         }
-    override fun hent(identitet: String): Long? =
+    override fun hent(identitet: Identitetsnummer): Long? =
         transaction(database) {
             IdentitetTabell.select {
-                IdentitetTabell.identitetsnummer eq identitet
+                IdentitetTabell.identitetsnummer eq identitet.value
             }.firstOrNull()?.get(IdentitetTabell.kafkaKey)
         }
 
-    override fun lagre(identitet: String, nøkkel: Long): Boolean =
+    override fun lagre(identitet: Identitetsnummer, nøkkel: Long): Boolean =
         transaction(database) {
             IdentitetTabell.insertIgnore {
-                it[identitetsnummer] = identitet
+                it[identitetsnummer] = identitet.value
                 it[kafkaKey] = nøkkel
             }.insertedCount == 1
         }
 
-    override fun opprett(identitet: String): Long? =
+    override fun opprett(identitet: Identitetsnummer): Long? =
         transaction(database) {
             val nøkkel = KafkaKeysTabell.insert { }[KafkaKeysTabell.id]
             val opprettet = IdentitetTabell.insertIgnore {
-                it[identitetsnummer] = identitet
+                it[identitetsnummer] = identitet.value
                 it[kafkaKey] = nøkkel
             }.insertedCount == 1
             if (opprettet) nøkkel else null

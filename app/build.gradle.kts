@@ -46,7 +46,7 @@ java {
 }
 
 application {
-    mainClass.set("no.nav.paw.kafkakeygenerator.AppKt")
+    mainClass.set("no.nav.paw.kafkakeygenerator.AppStarterKt")
 }
 
 tasks.named<Test>("test") {

@@ -10,6 +10,8 @@ import no.nav.paw.kafkakeygenerator.config.lastKonfigurasjon
 import no.nav.paw.pdl.PdlClient
 
 
+fun opprettPdlIdentitesTjeneste() = PdlIdentitesTjeneste(opprettPdlKlient())
+
 fun opprettKtorKlient() = HttpClient(OkHttp) {
     install(ContentNegotiation) {
         jackson()
