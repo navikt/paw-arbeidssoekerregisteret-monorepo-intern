@@ -1,11 +1,11 @@
 package no.nav.paw.kafkakeygenerator
 
-const val person1_fødselsnummer = "09127821914"
+const val person1_fødselsnummer = "01017012346"
 const val person1_aktor_id = "2649500819544"
 const val person1_dnummer = "09127821913"
 const val person1_annen_ident = "12129127821913"
 const val person2_fødselsnummer = "01017012345"
-const val person2_aktor_id = "2649500819545"
+const val person2_aktor_id = "1649500819544"
 
 fun hentSvar(ident: String) =
     when(ident) {
