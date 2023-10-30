@@ -2,7 +2,7 @@ FROM ghcr.io/navikt/baseimages/temurin:17
 
 ENV SERVICE_NAVN=paw-kafka-key-generator
 ENV AGENT=agents/opentelemetry-javaagent.jar
-ENV ANONYMISERING=agents/opentelemetry-anonymisering-1.30.0-23.09.22.7-1.jar
+ENV ANONYMISERING=agents/opentelemetry-anonymisering-1.31.0-23.10.25.8-1.jar
 ENV APPLIKASJON_JAR=App.jar
 
 COPY app/build/libs/fat.jar app.jar
