@@ -39,3 +39,6 @@ spec:
           - name: pawkafkakeys
   tokenx:
     enabled: true
+  azure:
+    application:
+      enabled: true
