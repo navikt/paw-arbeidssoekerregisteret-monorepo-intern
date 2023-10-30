@@ -7,10 +7,9 @@ import io.ktor.serialization.jackson.*
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder
 import no.nav.paw.kafkakeygenerator.config.PdlKlientKonfigurasjon
 import no.nav.paw.kafkakeygenerator.config.lastKonfigurasjon
+import no.nav.paw.kafkakeygenerator.pdlKlientKonfigFil
 import no.nav.paw.pdl.PdlClient
 
-
-fun opprettPdlIdentitesTjeneste() = PdlIdentitesTjeneste(opprettPdlKlient())
 
 fun opprettKtorKlient() = HttpClient(OkHttp) {
     install(ContentNegotiation) {
@@ -18,8 +17,8 @@ fun opprettKtorKlient() = HttpClient(OkHttp) {
     }
 }
 
-fun opprettPdlKlient() =
-    with(lastKonfigurasjon<PdlKlientKonfigurasjon>("pdl_klient")) {
+fun opprettPdlKlient(konfig: PdlKlientKonfigurasjon) =
+    with(konfig) {
         PdlClient(
             url = url,
             tema = tema,

@@ -37,6 +37,9 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("io.kotest:kotest-runner-junit5-jvm:4.6.3")
+    testImplementation("io.ktor:ktor-client-mock:${pawObservability.versions.ktor}")
+    testImplementation("org.testcontainers:postgresql:1.18.0")
 }
 
 java {

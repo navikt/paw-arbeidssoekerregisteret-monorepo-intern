@@ -7,15 +7,33 @@ import no.nav.paw.kafkakeygenerator.config.DatabaseKonfigurasjon
 import no.nav.paw.kafkakeygenerator.config.dataSource
 import no.nav.paw.kafkakeygenerator.config.lastKonfigurasjon
 import no.nav.paw.kafkakeygenerator.database.flywayMigrate
-import no.nav.paw.kafkakeygenerator.pdl.opprettPdlIdentitesTjeneste
+import no.nav.paw.kafkakeygenerator.pdl.PdlIdentitesTjeneste
+import no.nav.paw.kafkakeygenerator.pdl.opprettPdlKlient
 import no.nav.paw.kafkakeygenerator.webserver.initKtorServer
+import no.nav.paw.pdl.PdlClient
 import org.jetbrains.exposed.sql.Database
+import javax.sql.DataSource
+
+const val serverAuthentiseringKonfigFil = "ktor_server_autentisering.toml"
+const val postgresKonfigFil = "postgres.toml"
+const val pdlKlientKonfigFil = "pdl_klient.toml"
+
 
 fun main() {
-    val autentiseringKonfig: Autentiseringskonfigurasjon = lastKonfigurasjon("ktor_server_autentisering.toml")
-    val dataSource =
-        lastKonfigurasjon<DatabaseKonfigurasjon>("postgres.toml")
-            .dataSource()
+    val dataSource = lastKonfigurasjon<DatabaseKonfigurasjon>(postgresKonfigFil)
+        .dataSource()
+    val pdlKlient = opprettPdlKlient(lastKonfigurasjon(pdlKlientKonfigFil))
+    startApplikasjon(
+        lastKonfigurasjon(serverAuthentiseringKonfigFil),
+        dataSource,
+        pdlKlient
+    )
+}
+fun startApplikasjon(
+    autentiseringKonfig: Autentiseringskonfigurasjon,
+    dataSource: DataSource,
+    pdlKlient: PdlClient
+) {
     val database = Database.connect(dataSource)
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     flywayMigrate(dataSource)
@@ -24,6 +42,6 @@ fun main() {
         prometheusMeterRegistry,
         Applikasjon(
             ExposedKafkaKeys(database),
-            opprettPdlIdentitesTjeneste()
+            PdlIdentitesTjeneste(pdlKlient)
         )).start(wait = true)
 }
