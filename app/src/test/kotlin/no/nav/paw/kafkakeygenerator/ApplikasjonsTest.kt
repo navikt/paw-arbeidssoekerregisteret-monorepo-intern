@@ -12,7 +12,7 @@ import io.ktor.http.content.*
 import kotlinx.coroutines.runBlocking
 import no.nav.paw.kafkakeygenerator.pdl.PdlIdentitesTjeneste
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
-import no.nav.paw.kafkakeygenerator.vo.TracePath
+import no.nav.paw.kafkakeygenerator.vo.CallId
 import no.nav.paw.pdl.PdlClient
 import org.jetbrains.exposed.sql.Database
 import java.util.*
@@ -27,11 +27,11 @@ class ApplikasjonsTest : StringSpec({
         })
     ) { "fake token" }
     val app = Applikasjon(
-        kafkaKeys = ExposedKafkaKeys(Database.connect(dataSource)),
+        kafkaKeys = KafkaKeys(Database.connect(dataSource)),
         identitetsTjeneste = PdlIdentitesTjeneste(pdlKlient)
     )
     fun hentEllerOpprett(identitetsnummer: String): Long? = runBlocking {
-        app.hentEllerOpprett(TracePath(UUID.randomUUID().toString()), Identitetsnummer(identitetsnummer))
+        app.hentEllerOpprett(CallId(UUID.randomUUID().toString()), Identitetsnummer(identitetsnummer))
     }
     "alle identer for person1 skal gi samme nøkkel" {
         val person1KafkaNøkler = listOf(

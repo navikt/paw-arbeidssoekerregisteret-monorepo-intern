@@ -9,7 +9,7 @@ import no.nav.paw.kafkakeygenerator.config.lastKonfigurasjon
 import no.nav.paw.kafkakeygenerator.database.flywayMigrate
 import no.nav.paw.kafkakeygenerator.pdl.PdlIdentitesTjeneste
 import no.nav.paw.kafkakeygenerator.pdl.opprettPdlKlient
-import no.nav.paw.kafkakeygenerator.webserver.initKtorServer
+import no.nav.paw.kafkakeygenerator.ktor.initKtorServer
 import no.nav.paw.pdl.PdlClient
 import org.jetbrains.exposed.sql.Database
 import javax.sql.DataSource
@@ -41,7 +41,7 @@ fun startApplikasjon(
         autentiseringKonfig,
         prometheusMeterRegistry,
         Applikasjon(
-            ExposedKafkaKeys(database),
+            KafkaKeys(database),
             PdlIdentitesTjeneste(pdlKlient)
         )).start(wait = true)
 }

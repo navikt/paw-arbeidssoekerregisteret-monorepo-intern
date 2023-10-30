@@ -20,6 +20,7 @@ dependencies {
     implementation("org.flywaydb:flyway-core:9.21.2")
     implementation(pawObservability.bundles.ktorNettyOpentelemetryMicrometerPrometheus)
     implementation("io.ktor:ktor-client-content-negotiation:${pawObservability.versions.ktor}")
+    implementation("io.ktor:ktor-server-swagger:${pawObservability.versions.ktor}")
     implementation("io.ktor:ktor-serialization-jackson:${pawObservability.versions.ktor}")
     implementation("no.nav.security:token-validation-ktor-v2:$tokenSupportVersion")
     implementation("no.nav.security:token-client-core:$tokenSupportVersion")

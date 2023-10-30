@@ -9,17 +9,9 @@ import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
-interface KafkaKeys {
+class KafkaKeys(private val database: Database) {
 
-    fun hent(identitet: Identitetsnummer): Long?
-    fun lagre(identitet: Identitetsnummer, nøkkel: Long): Boolean
-    fun opprett(identitet: Identitetsnummer): Long?
-    fun hent(identiteter: List<String>): Map<String, Long>
-}
-
-class ExposedKafkaKeys(private val database: Database) : KafkaKeys {
-
-    override fun hent(identiteter: List<String>): Map<String, Long> =
+    fun hent(identiteter: List<String>): Map<String, Long> =
         transaction(database) {
             IdentitetTabell.select {
                 IdentitetTabell.identitetsnummer inList identiteter
@@ -27,14 +19,14 @@ class ExposedKafkaKeys(private val database: Database) : KafkaKeys {
                 it[IdentitetTabell.identitetsnummer] to it[IdentitetTabell.kafkaKey]
             }
         }
-    override fun hent(identitet: Identitetsnummer): Long? =
+    fun hent(identitet: Identitetsnummer): Long? =
         transaction(database) {
             IdentitetTabell.select {
                 IdentitetTabell.identitetsnummer eq identitet.value
             }.firstOrNull()?.get(IdentitetTabell.kafkaKey)
         }
 
-    override fun lagre(identitet: Identitetsnummer, nøkkel: Long): Boolean =
+    fun lagre(identitet: Identitetsnummer, nøkkel: Long): Boolean =
         transaction(database) {
             IdentitetTabell.insertIgnore {
                 it[identitetsnummer] = identitet.value
@@ -42,7 +34,7 @@ class ExposedKafkaKeys(private val database: Database) : KafkaKeys {
             }.insertedCount == 1
         }
 
-    override fun opprett(identitet: Identitetsnummer): Long? =
+    fun opprett(identitet: Identitetsnummer): Long? =
         transaction(database) {
             val nøkkel = KafkaKeysTabell.insert { }[KafkaKeysTabell.id]
             val opprettet = IdentitetTabell.insertIgnore {

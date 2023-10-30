@@ -1,4 +1,4 @@
-package no.nav.paw.kafkakeygenerator.webserver
+package no.nav.paw.kafkakeygenerator.ktor
 
 import io.ktor.server.application.*
 import io.ktor.server.response.*

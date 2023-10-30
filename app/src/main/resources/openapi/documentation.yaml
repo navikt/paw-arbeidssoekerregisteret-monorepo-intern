@@ -1,0 +1,36 @@
+openapi: "3.0.3"
+info:
+  title: "Kafka Key Generator API"
+  description: "Hent/generer kafka key for en gitt ident"
+  version: "1.0.0"
+servers:
+- url: "https://paw_kafka_key_generator"
+paths:
+  /api/v1/hentEllerOpprett:
+    post:
+        requestBody:
+          description: "Henter nøkkel for ident (ny nøkkel opprettes dersom det ikke finnes nøkkel for personen identen tilhører)"
+          content:
+            application/json:
+             schema:
+               $ref: "#/components/schemas/Request"
+        responses:
+          "200":
+            description: "OK"
+            content:
+              '*/*':
+                schema:
+                  $ref: "#/components/schemas/Response"
+components:
+  schemas:
+    Request:
+      type: "object"
+      properties:
+        ident:
+          type: "string"
+    Response:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
