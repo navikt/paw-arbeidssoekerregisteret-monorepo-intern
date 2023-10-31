@@ -29,15 +29,15 @@ services:
                   "requestParam": "scope",
                   "match": "openid somescope",
                   "claims": {
-                    "sub": "admin@paw-demo",
-                    "aud": ["paw-demo"]
+                    "sub": "admin@paw-kafka-key-generator",
+                    "aud": ["paw-kafka-key-generator"]
                   }
                 },
                 {
                   "requestParam": "scope",
                   "match": "default",
                   "claims": {
-                    "aud": ["paw-demo"]
+                    "aud": ["paw-kafka-key-generator"]
                   }
                 }
               ]

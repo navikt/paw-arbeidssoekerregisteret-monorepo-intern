@@ -70,3 +70,10 @@ ktor {
         archiveFileName.set("fat.jar")
     }
 }
+
+tasks.create("runTestApp", JavaExec::class) {
+    classpath = sourceSets["test"].runtimeClasspath +
+            sourceSets["main"].runtimeClasspath
+    mainClass = "no.nav.paw.kafkakeygenerator.Run_test_appKt"
+    args = listOf()
+}

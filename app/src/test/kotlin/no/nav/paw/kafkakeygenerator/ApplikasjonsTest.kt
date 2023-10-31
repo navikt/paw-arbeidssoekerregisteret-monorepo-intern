@@ -58,18 +58,3 @@ class ApplikasjonsTest : StringSpec({
     }
 })
 
-private fun MockRequestHandleScope.genererResponse(it: HttpRequestData): HttpResponseData {
-    val text = (it.body as TextContent).text
-    val start = text.indexOf("ident")
-    val end = text.indexOf("}", start)
-    val ident = text
-        .substring(start, end)
-        .replace("\"", "")
-        .replace("ident:", "")
-        .trim()
-    return respond(
-        content = hentSvar(ident),
-        status = HttpStatusCode.OK,
-        headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-    )
-}
