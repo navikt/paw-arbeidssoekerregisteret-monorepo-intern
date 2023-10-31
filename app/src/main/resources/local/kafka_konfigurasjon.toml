@@ -1,0 +1,14 @@
+[streamKonfigurasjon]
+tilstandsDatabase = "tilstand"
+applikasjonsId = "appId"
+eventlogTopic = "eventlog"
+periodeTopic = "periode"
+situasjonTopic = "situasjon"
+
+[serverKonfigurasjon]
+autentisering = "PLAIN"
+kafkaBrokers = "localhost:9092"
+kafkaSchemaRegistry = "http://localhost:8082"
+
+[schemaRegistryKonfigurasjon]
+url = "http://localhost:8082"

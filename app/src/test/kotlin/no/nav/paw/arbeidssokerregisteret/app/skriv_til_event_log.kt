@@ -1,15 +1,13 @@
 package no.nav.paw.arbeidssokerregisteret.app
 
-import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+import no.nav.paw.arbeidssokerregisteret.app.config.KafkaKonfigurasjon
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Start
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Stopp
 import org.apache.avro.specific.SpecificRecord
-import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serdes
 import java.time.Duration
@@ -17,32 +15,24 @@ import java.time.Instant
 import java.util.*
 
 fun main() {
-    val producerCfg = KafkaProducerProperties(
+    val kafkaKonfigurasjon = lastKonfigurasjon<KafkaKonfigurasjon>(kafkaKonfigurasjonsfil)
+    val producerCfg = kafkaProducerProperties(
         producerId = "test",
         keySerializer = Serdes.String().serializer()::class,
         valueSerializer = SpecificAvroSerde<SpecificRecord>().serializer()::class
     )
-    val cfgMap = producerCfg.map +
-            (KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG to "http://localhost:8082") +
-            ("auto.register.schemas" to "true") +
-            ("use.latest.version" to "true") +
-            (ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to "localhost:9092") +
-            (ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to Serdes.String().deserializer()::class.java.name) +
-            (ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to SpecificAvroSerde<SpecificRecord>().deserializer()::class.java.name) +
-            (ConsumerConfig.GROUP_ID_CONFIG to UUID.randomUUID().toString()) +
-            (ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest")
 
-    val consumer = KafkaConsumer<String, SpecificRecord>(cfgMap)
-    consumer.subscribe(listOf("periode-v1"))
+    val consumer = KafkaConsumer<String, SpecificRecord>(kafkaKonfigurasjon.properties)
+    consumer.subscribe(listOf(kafkaKonfigurasjon.streamKonfigurasjon.situasjonTopic))
     val eventerFørStart = consumer.poll(Duration.ofSeconds(1))
     consumer.commitSync()
 
-    val producer: KafkaProducer<String, SpecificRecord> = KafkaProducer(cfgMap)
+    val producer = KafkaProducer<String, SpecificRecord>(kafkaKonfigurasjon.properties + producerCfg)
 
     val periodeBruker1 = UUID.randomUUID().toString()
     val periodeBruker2 = UUID.randomUUID().toString()
     val periodeBruker3 = UUID.randomUUID().toString()
-    with(TestContext(producer, "input")) {
+    with(TestContext(producer, kafkaKonfigurasjon.streamKonfigurasjon.eventlogTopic)) {
         start(periodeBruker1)
         start(periodeBruker1)
         start(periodeBruker1)

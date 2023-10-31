@@ -1,7 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.app
 
-import no.nav.paw.arbeidssokerregisteret.app.config.SchemaRegistryConfig
-import no.nav.paw.arbeidssokerregisteret.app.config.helpers.konfigVerdi
+import no.nav.paw.arbeidssokerregisteret.app.config.KafkaKonfigurasjon
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
@@ -11,22 +10,22 @@ import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.state.internals.KeyValueStoreBuilder
 import org.apache.kafka.streams.state.internals.RocksDbKeyValueBytesStoreSupplier
+
 //Å endre denne vil ha samme effekt som å slette alle lagrede tilstander
 const val PERIODE_DB_NAVN = "periode-db-v1"
-fun konfigurerApplikasjon(konfigurasjon: Map<String, String>): ApplikasjonKonfigurasjon<Hendelse> {
-    val schemaRegistryConfig = SchemaRegistryConfig(konfigurasjon)
+fun konfigurerApplikasjon(konfigurasjon: KafkaKonfigurasjon): ApplikasjonKonfigurasjon<Hendelse> {
     val (builder, strøm) = konfigurerKafkaStrøm(
-        hendelseLog = konfigurasjon.konfigVerdi("EVENTLOG_TOPIC"),
-        tilstandSerde = lagSpecificAvroSerde(schemaRegistryConfig),
-        hendelseSerde = lagSpecificAvroSerde<Hendelse>(schemaRegistryConfig),
-        dbNavn = PERIODE_DB_NAVN
+        hendelseLog = konfigurasjon.streamKonfigurasjon.eventlogTopic,
+        tilstandSerde = lagSpecificAvroSerde(konfigurasjon.schemaRegistryKonfigurasjon),
+        hendelseSerde = lagSpecificAvroSerde<Hendelse>(konfigurasjon.schemaRegistryKonfigurasjon),
+        dbNavn = konfigurasjon.streamKonfigurasjon.tilstandsDatabase
     )
     return ApplikasjonKonfigurasjon(
         builder = builder,
         stream = strøm,
         dbNavn = PERIODE_DB_NAVN,
-        tilstandSerde = lagSpecificAvroSerde(schemaRegistryConfig),
-        hendelseSerde = lagSpecificAvroSerde(schemaRegistryConfig)
+        tilstandSerde = lagSpecificAvroSerde(konfigurasjon.schemaRegistryKonfigurasjon),
+        hendelseSerde = lagSpecificAvroSerde(konfigurasjon.schemaRegistryKonfigurasjon)
     )
 }
 fun <T> konfigurerKafkaStrøm(

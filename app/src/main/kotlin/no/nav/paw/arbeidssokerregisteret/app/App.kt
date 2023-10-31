@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.app
 
-import no.nav.paw.arbeidssokerregisteret.app.config.KafkaStreamConfig
-import no.nav.paw.arbeidssokerregisteret.app.config.SchemaRegistryConfig
+import no.nav.paw.arbeidssokerregisteret.app.config.KafkaKonfigurasjon
+import no.nav.paw.arbeidssokerregisteret.app.config.SchemaRegistryKonfigurasjon
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.*
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.Operasjon.OPPRETT_ELLER_OPPDATER
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.Operasjon.SLETT
@@ -22,16 +22,17 @@ import org.apache.kafka.streams.state.internals.RocksDbKeyValueBytesStoreSupplie
 import org.slf4j.LoggerFactory
 import java.util.concurrent.LinkedBlockingQueue
 
+const val kafkaKonfigurasjonsfil = "kafka_konfigurasjon.toml"
 
 fun main() {
     val streamLogger = LoggerFactory.getLogger("App")
     streamLogger.info("Starter applikasjon...")
 
-    val strømConfig = KafkaStreamConfig(System.getenv())
+    val kafkaKonfigurasjon = lastKonfigurasjon<KafkaKonfigurasjon>(kafkaKonfigurasjonsfil)
 
-    val periodeSerde: Serde<PeriodeTilstandV1> = lagSpecificAvroSerde(SchemaRegistryConfig(System.getenv()))
+    val periodeSerde: Serde<PeriodeTilstandV1> = lagSpecificAvroSerde(kafkaKonfigurasjon.schemaRegistryKonfigurasjon)
 
-    val dbNavn = "tilstandsDb"
+    val dbNavn = kafkaKonfigurasjon.streamKonfigurasjon.tilstandsDatabase
     val builder = StreamsBuilder()
     builder.addStateStore(
         KeyValueStoreBuilder(
@@ -44,11 +45,11 @@ fun main() {
     val topology = topology(
         builder,
         dbNavn,
-        strømConfig.eventlogTopic,
-        strømConfig.periodeTopic
+        kafkaKonfigurasjon.streamKonfigurasjon.eventlogTopic,
+        kafkaKonfigurasjon.streamKonfigurasjon.periodeTopic
     )
 
-    val kafkaStreams = KafkaStreams(topology, StreamsConfig(strømConfig.properties))
+    val kafkaStreams = KafkaStreams(topology, StreamsConfig(kafkaKonfigurasjon.properties))
     kafkaStreams.setUncaughtExceptionHandler { throwable ->
         streamLogger.error("Uventet feil", throwable)
         StreamsUncaughtExceptionHandler.StreamThreadExceptionResponse.SHUTDOWN_APPLICATION

@@ -1,0 +1,19 @@
+[streamKonfigurasjon]
+tilstandsDatabase = "paw-arbeidssokerregisteret-event-prosessor-tilstand"
+applikasjonsId = "paw-arbeidssokerregisteret-event-prosessor"
+eventlogTopic = "paw.paw-arbeidssokerregisteret-eventlog"
+periodeTopic = "paw.paw-arbeidssokerregisteret-periode"
+situasjonTopic = "paw.paw-arbeidssokerregisteret-situasjon"
+
+[serverKonfigurasjon]
+autentisering = "SSL"
+kafkaBrokers = "${KAFKA_BROKERS}"
+kafkaSchemaRegistry = "${KAFKA_SCHEMA_REGISTRY}"
+keyStorePath = "${KAFKA_KEYSTORE_PATH}"
+credStorePassword = "${KAFKA_CREDSTORE_PASSWORD}"
+trustStorePath = "${KAFKA_TRUSTSTORE_PATH}"
+
+[schemaRegistryKonfigurasjon]
+url = "${KAFKA_SCHEMA_REGISTRY}"
+bruker = "${KAFKA_SCHEMA_REGISTRY_USER}"
+passord = "${KAFKA_SCHEMA_REGISTRY_PASSWORD}"

@@ -6,6 +6,8 @@ plugins {
 val logbackVersion = "1.4.5"
 val logstashVersion = "7.3"
 dependencies {
+    implementation("com.sksamuel.hoplite:hoplite-core:2.8.0.RC3")
+    implementation("com.sksamuel.hoplite:hoplite-toml:2.8.0.RC3")
     implementation("no.nav.common:log:2.2023.01.10_13.49-81ddc732df3a")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashVersion")
@@ -32,28 +34,4 @@ tasks.named("compileKotlin", org.jetbrains.kotlin.gradle.tasks.KotlinCompilation
 
 tasks.named<Test>("test") {
     useJUnitPlatform()
-}
-
-tasks {
-    "run"(JavaExec::class) {
-        environment("KAFKA_STREAM_APPLICATION_ID", "arbeidssokerregisteret-eventlog-v2")
-        environment("EVENTLOG_TOPIC", "input")
-        environment("PERIODE_TOPIC", "periode-v1")
-        environment("SITUASJON_TOPIC", "situasjon-v1")
-        environment("NAIS_DATABASE_PAW_DEMO_PAWDEMO_PASSWORD", "admin")
-        environment("NAIS_DATABASE_PAW_DEMO_PAWDEMO_USERNAME", "admin")
-        environment("NAIS_DATABASE_PAW_DEMO_PAWDEMO_HOST", "localhost")
-        environment("NAIS_DATABASE_PAW_DEMO_PAWDEMO_PORT", "5432")
-        environment("NAIS_DATABASE_PAW_DEMO_PAWDEMO_DATABASE", "pawdemo")
-        environment("KAFKA_BROKERS", "localhost:9092")
-        environment("KAFKA_SCHEMA_REGISTRY", "http://localhost:8082")
-        environment("KAFKA_PRODUCER_ID", "paw-demo-v1")
-        environment("KAFKA_PRODUCER_TOPIC", "paw.paw-demo-v1")
-        environment("KAFKA_GROUP_ID", "PAW_DEMO_CONSUMER")
-        environment("TOKEN_X_WELL_KNOWN_URL", "http://localhost:8081/default/.well-known/openid-configuration")
-        environment("TOKEN_X_CLIENT_ID", "paw-demo")
-        environment("OTEL_TRACES_EXPORTER", "maskert_oltp")
-        environment("OTEL_METRICS_EXPORTER", "none")
-        environment("OTEL_JAVAAGENT_DEBUG", "true")
-    }
 }
