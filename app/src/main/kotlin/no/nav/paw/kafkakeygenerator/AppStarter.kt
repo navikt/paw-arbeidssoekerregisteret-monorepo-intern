@@ -17,12 +17,16 @@ import javax.sql.DataSource
 const val serverAuthentiseringKonfigFil = "ktor_server_autentisering.toml"
 const val postgresKonfigFil = "postgres.toml"
 const val pdlKlientKonfigFil = "pdl_klient.toml"
+const val azureTokenKlientKonfigFil = "azure_token_klient.toml"
 
 
 fun main() {
     val dataSource = lastKonfigurasjon<DatabaseKonfigurasjon>(postgresKonfigFil)
         .dataSource()
-    val pdlKlient = opprettPdlKlient(lastKonfigurasjon(pdlKlientKonfigFil))
+    val pdlKlient = opprettPdlKlient(
+        lastKonfigurasjon(pdlKlientKonfigFil),
+        lastKonfigurasjon(azureTokenKlientKonfigFil)
+    )
     startApplikasjon(
         lastKonfigurasjon(serverAuthentiseringKonfigFil),
         dataSource,

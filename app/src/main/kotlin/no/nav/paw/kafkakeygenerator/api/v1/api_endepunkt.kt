@@ -19,7 +19,7 @@ fun Routing.konfigurerApi(
     applikasjon: Applikasjon
 ) {
     val logger = LoggerFactory.getLogger("api")
-    authenticate(autentiseringKonfigurasjon.name) {
+    authenticate(autentiseringKonfigurasjon.kafkaKeyApiAuthProvider) {
         post("/api/v1/hentEllerOpprett") {
             val callId = call.request.headers["traceparent"]
                 ?.let { CallId(it) }

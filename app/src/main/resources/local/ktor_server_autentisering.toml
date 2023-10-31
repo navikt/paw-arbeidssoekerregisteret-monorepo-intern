@@ -1,4 +1,7 @@
-discoveryUrl = "http://localhost:8081/default/.well-known/openid-configuration"
-acceptedAudience = "paw-kafka-key-generator"
-name = "tokenx"
+kafkaKeyApiAuthProvider = "azure"
 
+[[providers]]
+name = "azure"
+discoveryUrl = "http://localhost:8081/default/.well-known/openid-configuration"
+acceptedAudience = ["paw-kafka-key-generator"]
+requiredClaims = ["NAVident"]

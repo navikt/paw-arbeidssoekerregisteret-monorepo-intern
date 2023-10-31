@@ -1,4 +1,7 @@
-discoveryUrl = "${TOKEN_X_WELL_KNOWN_URL}"
-acceptedAudience = "${TOKEN_X_CLIENT_ID}"
-name = "tokenx"
+kafkaKeyApiAuthProvider = "azure"
 
+[[providers]]
+name = "azure"
+discoveryUrl = "${AZURE_APP_WELL_KNOWN_URL}"
+acceptedAudience = ["${AZURE_APP_CLIENT_ID}"]
+requiredClaims = ["NAVident"]

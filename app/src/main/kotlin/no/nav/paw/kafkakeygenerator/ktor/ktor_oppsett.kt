@@ -13,6 +13,7 @@ import no.nav.paw.kafkakeygenerator.Applikasjon
 import no.nav.paw.kafkakeygenerator.api.v1.konfigurerApi
 import no.nav.paw.kafkakeygenerator.config.Autentiseringskonfigurasjon
 import no.nav.security.token.support.v2.IssuerConfig
+import no.nav.security.token.support.v2.RequiredClaims
 import no.nav.security.token.support.v2.TokenSupportConfig
 import no.nav.security.token.support.v2.tokenValidationSupport
 
@@ -43,15 +44,21 @@ fun Application.micrometerMetrics(prometheusMeterRegistry: PrometheusMeterRegist
 
 fun Application.autentisering(autentiseringskonfigurasjon: Autentiseringskonfigurasjon) {
     authentication {
-        tokenValidationSupport(
-            name = autentiseringskonfigurasjon.name,
-            config = TokenSupportConfig(
-                IssuerConfig(
-                    name = autentiseringskonfigurasjon.name,
-                    discoveryUrl = autentiseringskonfigurasjon.discoveryUrl,
-                    acceptedAudience = listOf(autentiseringskonfigurasjon.acceptedAudience),
+        autentiseringskonfigurasjon.providers.forEach { provider ->
+            tokenValidationSupport(
+                name = provider.name,
+                requiredClaims = RequiredClaims(
+                    issuer = provider.name,
+                    claimMap = provider.requiredClaims.toTypedArray()
+                ),
+                config = TokenSupportConfig(
+                    IssuerConfig(
+                        name = provider.name,
+                        discoveryUrl = provider.discoveryUrl,
+                        acceptedAudience = provider.acceptedAudience
+                    ),
                 ),
             )
-        )
+        }
     }
 }

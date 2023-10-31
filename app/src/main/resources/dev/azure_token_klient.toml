@@ -1,0 +1,3 @@
+clientId = "${AZURE_APP_CLIENT_ID}"
+privateJwk = "${AZURE_APP_JWK}"
+tokenEndpointUrl = "${AZURE_OPENID_CONFIG_TOKEN_ENDPOINT}"

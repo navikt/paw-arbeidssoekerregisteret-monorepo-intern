@@ -1,0 +1,3 @@
+clientId = "paw-kafka-keys"
+privateJwk = "jwk"
+tokenEndpointUrl = "http://localhost:8081/auth/realms/paw/protocol/openid-connect/token"

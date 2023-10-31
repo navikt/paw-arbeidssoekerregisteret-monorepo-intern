@@ -5,6 +5,8 @@ import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.jackson.*
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder
+import no.nav.paw.kafkakeygenerator.config.Autentiseringskonfigurasjon
+import no.nav.paw.kafkakeygenerator.config.AzureTokenKlientKonfigurasjon
 import no.nav.paw.kafkakeygenerator.config.PdlKlientKonfigurasjon
 import no.nav.paw.kafkakeygenerator.config.lastKonfigurasjon
 import no.nav.paw.kafkakeygenerator.pdlKlientKonfigFil
@@ -17,22 +19,27 @@ fun opprettKtorKlient() = HttpClient(OkHttp) {
     }
 }
 
-fun opprettPdlKlient(konfig: PdlKlientKonfigurasjon) =
-    with(konfig) {
-        PdlClient(
-            url = url,
-            tema = tema,
-            httpClient = opprettKtorKlient(),
-            ::getAccessToken
-        )
-    }
+fun opprettPdlKlient(
+    konfig: PdlKlientKonfigurasjon,
+    autentiseringskonfigurasjon: AzureTokenKlientKonfigurasjon
+) = PdlClient(
+    url = konfig.url,
+    tema = konfig.tema,
+    httpClient = opprettKtorKlient()
+) { getAccessToken(konfig, autentiseringskonfigurasjon) }
 
-private val aadMachineToMachineTokenClient = AzureAdTokenClientBuilder.builder()
-    .withNaisDefaults()
-    .buildMachineToMachineTokenClient()
+private fun aadMachineToMachineTokenClient(konfig: AzureTokenKlientKonfigurasjon) =
+    AzureAdTokenClientBuilder.builder()
+        .withClientId(konfig.clientId)
+        .withPrivateJwk(konfig.privateJwk)
+        .withTokenEndpointUrl(konfig.tokenEndpointUrl)
+        .buildMachineToMachineTokenClient()
 
-private fun PdlKlientKonfigurasjon.getAccessToken(): String {
-    return aadMachineToMachineTokenClient.createMachineToMachineToken(
-        "api://${pdlCluster}.$namespace.$appName/.default"
+private fun getAccessToken(
+    pdlKlientKonfig: PdlKlientKonfigurasjon,
+    autKonfig: AzureTokenKlientKonfigurasjon
+): String {
+    return aadMachineToMachineTokenClient(autKonfig).createMachineToMachineToken(
+        "api://${pdlKlientKonfig.pdlCluster}.${pdlKlientKonfig.namespace}.${pdlKlientKonfig.appName}/.default"
     )
 }
