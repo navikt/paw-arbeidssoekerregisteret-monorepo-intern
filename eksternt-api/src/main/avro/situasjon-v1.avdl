@@ -12,7 +12,6 @@ protocol Situasjon {
 		@logicalType("uuid")
 		string periodeId;
 
-		string identitetsnummer;
 		Metadata sendtInnAv;
 
 		Utdanning utdanning;

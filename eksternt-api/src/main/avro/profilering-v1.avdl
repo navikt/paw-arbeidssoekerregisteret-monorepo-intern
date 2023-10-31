@@ -13,7 +13,6 @@ protocol Profilering {
 		@logicalType("uuid")
 		string situasjonsId;
 
-		string identitetsnummer;
 		Metadata sendtInnAv;
 		ProfilertTil profilertTil;
 		boolean jobbetSammenhengendeSeksAvTolvSisteMnd;
