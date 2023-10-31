@@ -4,6 +4,8 @@ protocol Profilering {
 	import idl "vo/profilert_til-v1.avdl";
 
 	record Profilering {
+		string profileringsTjenesteId;
+
 		@logicalType("uuid")
 		string id;
 
