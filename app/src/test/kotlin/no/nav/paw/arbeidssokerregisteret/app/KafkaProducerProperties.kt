@@ -10,7 +10,7 @@ fun <K, V> kafkaProducerProperties(
     keySerializer: KClass<out Serializer<K>>,
     valueSerializer: KClass<out Serializer<V>>,
     ackConfig: String = "all",
-    linger: Duration = Duration.ofSeconds(60)
+    linger: Duration = Duration.ZERO
 ): Map<String, Any> {
     require(producerId.isNotEmpty()) { "'producerId' kan ikke være tom(eller bare bestå av mellomrom)" }
     return mapOf(

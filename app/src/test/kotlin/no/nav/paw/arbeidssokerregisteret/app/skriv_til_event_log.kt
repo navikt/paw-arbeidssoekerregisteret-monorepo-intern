@@ -22,8 +22,14 @@ fun main() {
         valueSerializer = SpecificAvroSerde<SpecificRecord>().serializer()::class
     )
 
-    val consumer = KafkaConsumer<String, SpecificRecord>(kafkaKonfigurasjon.properties)
-    consumer.subscribe(listOf(kafkaKonfigurasjon.streamKonfigurasjon.situasjonTopic))
+    val consumer = KafkaConsumer<String, SpecificRecord>(
+        kafkaKonfigurasjon.properties +
+                ("key.deserializer" to Serdes.String().deserializer()::class.java.name) +
+                ("value.deserializer" to SpecificAvroSerde<SpecificRecord>().deserializer()::class.java.name) +
+                ("group.id" to "test")
+    )
+
+    consumer.subscribe(listOf(kafkaKonfigurasjon.streamKonfigurasjon.periodeTopic))
     val eventerFørStart = consumer.poll(Duration.ofSeconds(1))
     consumer.commitSync()
 
@@ -46,8 +52,8 @@ fun main() {
     }
     producer.flush()
     producer.close()
-    Thread.sleep(15000)
-    val events = consumer.poll(Duration.ofSeconds(10))
+    Thread.sleep(5000)
+    val events = consumer.poll(Duration.ofSeconds(1))
     consumer.commitSync()
     println("Antall eventer før start=${eventerFørStart.count()}")
     println("Antall eventer=${events.count()}")
@@ -57,12 +63,24 @@ fun main() {
 
 class TestContext(private val producer: KafkaProducer<String, SpecificRecord>, private val topic: String) {
     fun start(id: String) {
-        producer.send(ProducerRecord(topic, id, Hendelse(UUID.randomUUID(), id, Instant.now(), "junit", "junit", Start())))
+        producer.send(
+            ProducerRecord(
+                topic,
+                id,
+                Hendelse(UUID.randomUUID(), id, Instant.now(), "junit", "junit", Start())
+            )
+        )
             .get()
     }
 
     fun stop(id: String) {
-        producer.send(ProducerRecord(topic, id, Hendelse(UUID.randomUUID(), id, Instant.now(), "junit", "junit", Stopp("en test"))))
+        producer.send(
+            ProducerRecord(
+                topic,
+                id,
+                Hendelse(UUID.randomUUID(), id, Instant.now(), "junit", "junit", Stopp("en test"))
+            )
+        )
             .get()
     }
 }
