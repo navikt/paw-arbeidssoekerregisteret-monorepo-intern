@@ -24,15 +24,14 @@ jobs:
         with:
           arguments: build
       - uses: actions/upload-artifact@v2
-        if: failure()
         with:
           name: Avro schema
           path: |
             eksternt-api/src/main/avro/
-      - name: Push docker image to GAR
-        uses: nais/docker-build-push@v0
-        id: docker-build-push
-        with:
-          team: paw
-          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }} # Provided as Organization Secret
-          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }} # Provided as Organization Variable
+#      - name: Push docker image to GAR
+#        uses: nais/docker-build-push@v0
+#        id: docker-build-push
+#        with:
+#          team: paw
+#          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }} # Provided as Organization Secret
+#          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }} # Provided as Organization Variable
