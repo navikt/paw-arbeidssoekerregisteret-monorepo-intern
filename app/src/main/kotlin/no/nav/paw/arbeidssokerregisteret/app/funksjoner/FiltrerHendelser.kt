@@ -1,7 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 
 import no.nav.paw.arbeidssokerregisteret.app.PeriodeTilstandV1
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.processor.api.Processor
@@ -10,14 +9,14 @@ import org.apache.kafka.streams.processor.api.Record
 import org.apache.kafka.streams.state.KeyValueStore
 
 class Context(
-    val hendelse: Hendelse,
+    val hendelse: SpecificRecord,
     val gjeldeneTilstand: PeriodeTilstandV1?
 )
 
-fun KStream<String, Hendelse>.filtrer(
+fun KStream<String, SpecificRecord>.filtrer(
     tilstandDbNavn: String,
     filter: Context.() -> Boolean
-): KStream<String, Hendelse> {
+): KStream<String, SpecificRecord> {
     val processorSupplier = { FiltrerHendelser(tilstandDbNavn, filter) }
     return process(processorSupplier, tilstandDbNavn)
 }
@@ -25,18 +24,18 @@ fun KStream<String, Hendelse>.filtrer(
 class FiltrerHendelser(
     private val tilstandDbNavn: String,
     private val filter: Context.() -> Boolean
-) : Processor<String, Hendelse, String, Hendelse> {
+) : Processor<String, SpecificRecord, String, SpecificRecord> {
 
     private var tilstandsDb: KeyValueStore<String, PeriodeTilstandV1>? = null
-    private var context: ProcessorContext<String, Hendelse>? = null
+    private var context: ProcessorContext<String, SpecificRecord>? = null
 
-    override fun init(context: ProcessorContext<String, Hendelse>?) {
+    override fun init(context: ProcessorContext<String, SpecificRecord>?) {
         super.init(context)
         this.context = context
         tilstandsDb = context?.getStateStore(tilstandDbNavn)
     }
 
-    override fun process(record: Record<String, Hendelse>?) {
+    override fun process(record: Record<String, SpecificRecord>?) {
         if (record == null) return
         process(
             requireNotNull(context) { "Context er ikke initialisert" },
@@ -46,9 +45,9 @@ class FiltrerHendelser(
     }
 
     private fun process(
-        ctx: ProcessorContext<String, Hendelse>,
+        ctx: ProcessorContext<String, SpecificRecord>,
         db: KeyValueStore<String, PeriodeTilstandV1>,
-        record: Record<String, Hendelse>
+        record: Record<String, SpecificRecord>
     ) {
         val tilstand = db.get(record.key())
         val inkluder = with(Context(record.value(), tilstand)) { filter() }

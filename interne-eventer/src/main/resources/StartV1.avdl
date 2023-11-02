@@ -1,6 +1,8 @@
 @namespace("no.nav.paw.arbeidssokerregisteret.intern.v1")
 protocol HendelseStartV1 {
+	import idl "metadata-v1.avdl";
 	record Start {
-
+		string identitetsnummer;
+		Metadata metadata;
 	}
 }

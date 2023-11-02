@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.app
 
+import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.Serializer
 import java.time.Duration
@@ -18,6 +19,7 @@ fun <K, V> kafkaProducerProperties(
         ProducerConfig.ACKS_CONFIG to ackConfig,
         ProducerConfig.LINGER_MS_CONFIG to linger.toMillis(),
         ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to keySerializer.java,
-        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to valueSerializer.java
+        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to valueSerializer.java,
+        KafkaAvroSerializerConfig.VALUE_SUBJECT_NAME_STRATEGY to "io.confluent.kafka.serializers.subject.RecordNameStrategy"
     )
 }

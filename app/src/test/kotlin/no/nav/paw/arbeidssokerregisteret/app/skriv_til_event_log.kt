@@ -61,20 +61,21 @@ fun main() {
 }
 
 class TestContext(private val producer: KafkaProducer<String, SpecificRecord>, private val topic: String) {
+
     fun start(id: String) {
         producer.send(
             ProducerRecord(
                 topic,
                 id,
-                Hendelse(
+                Start(
                     id,
                     Metadata(
                         UUID.randomUUID(),
                         Instant.now(),
                         Bruker(BrukerType.SLUTTBRUKER, "test"),
                         "unit-test",
-                        "tester"),
-                    Start()
+                        "tester"
+                    )
                 )
             )
         )
@@ -86,15 +87,15 @@ class TestContext(private val producer: KafkaProducer<String, SpecificRecord>, p
             ProducerRecord(
                 topic,
                 id,
-                Hendelse(
+                Stopp(
                     id,
                     Metadata(
                         UUID.randomUUID(),
                         Instant.now(),
                         Bruker(BrukerType.SYSTEM, "test"),
                         "unit-test",
-                        "tester"),
-                    Stopp()
+                        "tester"
+                    )
                 )
             )
         )

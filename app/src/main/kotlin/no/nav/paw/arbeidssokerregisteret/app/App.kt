@@ -1,13 +1,12 @@
 package no.nav.paw.arbeidssokerregisteret.app
 
 import no.nav.paw.arbeidssokerregisteret.app.config.KafkaKonfigurasjon
-import no.nav.paw.arbeidssokerregisteret.app.config.SchemaRegistryKonfigurasjon
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.*
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.Operasjon.OPPRETT_ELLER_OPPDATER
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.Operasjon.SLETT
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Start
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Stopp
+import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.utils.Time
@@ -72,17 +71,17 @@ fun topology(
     innTopic: String,
     utTopic: String
 ): Topology {
-    val strøm: KStream<String, Hendelse> = builder.stream(innTopic)
+    val strøm: KStream<String, SpecificRecord> = builder.stream(innTopic)
     strøm
         .filtrer(dbNavn) {
-            when (hendelse.endring) {
+            when (hendelse) {
                 is Start -> inkluderDersomIkkeRegistrertArbeidssøker()
                 is Stopp -> inkluderDersomRegistrertArbeidssøker()
                 else -> inkluder
             }
         }
         .opprettEllerOppdaterPeriode(dbNavn) {
-            when (hendelse.endring) {
+            when (hendelse) {
                 is Start -> startPeriode(hendelse)
                 is Stopp -> avsluttPeriode(hendelse.metadata.tidspunkt)
                 else -> ingenEndring()

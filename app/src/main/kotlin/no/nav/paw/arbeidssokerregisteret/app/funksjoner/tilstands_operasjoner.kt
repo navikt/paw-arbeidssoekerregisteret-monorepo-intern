@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 
 import no.nav.paw.arbeidssokerregisteret.app.PeriodeTilstandV1
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Start
 import org.apache.kafka.streams.kstream.KStream
 import java.time.Instant
 import java.util.*
@@ -19,7 +19,7 @@ fun Context.avsluttPeriode(fraOgMed: Instant) = gjeldeneTilstand?.endre(
 
 fun Context.ingenEndring() = gjeldeneTilstand
 
-fun startPeriode(startHendelse: Hendelse) = PeriodeTilstandV1(
+fun startPeriode(startHendelse: Start) = PeriodeTilstandV1(
     UUID.randomUUID(),
     startHendelse.identitetsnummer,
     startHendelse.metadata.tidspunkt,

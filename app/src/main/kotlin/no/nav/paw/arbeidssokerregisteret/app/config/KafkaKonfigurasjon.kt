@@ -2,6 +2,7 @@ package no.nav.paw.arbeidssokerregisteret.app.config
 
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
+import io.confluent.kafka.serializers.subject.RecordNameStrategy
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.common.config.SslConfigs
@@ -21,7 +22,8 @@ data class KafkaKonfigurasjon(
         StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG to SpecificAvroSerde::class.java.name,
         KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to schemaRegistryKonfigurasjon.url,
         KafkaAvroSerializerConfig.AUTO_REGISTER_SCHEMAS to schemaRegistryKonfigurasjon.autoRegistrerSchema,
-        KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG to true
+        KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG to true,
+        KafkaAvroSerializerConfig.VALUE_SUBJECT_NAME_STRATEGY to RecordNameStrategy::class.java.name,
     ) + (if (serverKonfigurasjon.autentisering.equals("SSL", true)) {
         mapOf(
             CommonClientConfigs.SECURITY_PROTOCOL_CONFIG to "SSL",
