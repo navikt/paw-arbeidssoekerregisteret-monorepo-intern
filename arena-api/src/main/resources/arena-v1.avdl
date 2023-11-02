@@ -1,5 +1,5 @@
 // OBS! Kun intern Arena bruk
-@namespace("no.nav.paw.arbeidssokerregisteret.api.v1")
+@namespace("no.nav.paw.arbeidssokerregisteret.arena.v1")
 protocol ArenaArbeidssokerregisterTilstand {
 	import idl "periode-v1.avdl";
 	import idl "profilering-v1.avdl";
