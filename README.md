@@ -1,6 +1,7 @@
 # Schema for arbeidssokerregisteret
 Arbeidssøker registeret består av 3 topic som er definert i et og same Avro (avdl) schema.
 
+Avro schema er i en tidlig BETA fase og kan endres uten forvarsel. Det vil også bli flyttet til et eget repo senere i prosessen.
 Schema finner du [her](https://github.com/navikt/paw-arbeidssokerregisteret-event-prosessor/packages/1978508).
 
 ## Generer kode fra schema
