@@ -1,0 +1,11 @@
+@namespace("no.nav.paw.arbeidssokerregisteret.intern.v1")
+protocol Bruker {
+	enum BrukerType {
+		UKJENT_VERDI, UDEFINERT, VEILEDER, SYSTEM, SLUTTBRUKER
+	} = UKJENT_VERDI;
+
+	record  Bruker {
+		BrukerType type;
+		string id;
+	}
+}

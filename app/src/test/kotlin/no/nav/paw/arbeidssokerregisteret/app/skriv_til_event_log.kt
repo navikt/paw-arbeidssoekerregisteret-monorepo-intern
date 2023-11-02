@@ -2,9 +2,8 @@ package no.nav.paw.arbeidssokerregisteret.app
 
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import no.nav.paw.arbeidssokerregisteret.app.config.KafkaKonfigurasjon
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Start
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Stopp
+import no.nav.paw.arbeidssokerregisteret.intern.v1.*
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Metadata
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -67,7 +66,16 @@ class TestContext(private val producer: KafkaProducer<String, SpecificRecord>, p
             ProducerRecord(
                 topic,
                 id,
-                Hendelse(UUID.randomUUID(), id, Instant.now(), "junit", "junit", Start())
+                Hendelse(
+                    id,
+                    Metadata(
+                        UUID.randomUUID(),
+                        Instant.now(),
+                        Bruker(BrukerType.SLUTTBRUKER, "test"),
+                        "unit-test",
+                        "tester"),
+                    Start()
+                )
             )
         )
             .get()
@@ -78,7 +86,16 @@ class TestContext(private val producer: KafkaProducer<String, SpecificRecord>, p
             ProducerRecord(
                 topic,
                 id,
-                Hendelse(UUID.randomUUID(), id, Instant.now(), "junit", "junit", Stopp("en test"))
+                Hendelse(
+                    id,
+                    Metadata(
+                        UUID.randomUUID(),
+                        Instant.now(),
+                        Bruker(BrukerType.SYSTEM, "test"),
+                        "unit-test",
+                        "tester"),
+                    Stopp()
+                )
             )
         )
             .get()

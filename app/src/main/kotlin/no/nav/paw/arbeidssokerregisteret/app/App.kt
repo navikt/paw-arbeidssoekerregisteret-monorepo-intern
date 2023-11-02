@@ -84,7 +84,7 @@ fun topology(
         .opprettEllerOppdaterPeriode(dbNavn) {
             when (hendelse.endring) {
                 is Start -> startPeriode(hendelse)
-                is Stopp -> avsluttPeriode(hendelse.timestamp)
+                is Stopp -> avsluttPeriode(hendelse.metadata.tidspunkt)
                 else -> ingenEndring()
             }
         }

@@ -4,7 +4,7 @@ protocol Internt {
 		@logicalType("uuid")
 		string id;
 
-		string foedselsnummer;
+		string identitetsnummer;
 
 		@logicalType("timestamp-millis")
 		long sistEndret;

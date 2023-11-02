@@ -3,20 +3,11 @@ protocol Hendelse {
 	import idl "StartV1.avdl";
 	import idl "StoppV1.avdl";
 	import idl "AvvistV1.avdl";
+	import idl "metadata-v1.avdl";
 
 	record Hendelse {
-		@logicalType("uuid")
-		string hendelseId;
-
-		string foedselsnummer;
-
-		@logicalType("timestamp-millis")
-		long timestamp;
-
-		string registrertAv;
-
-		string kilde;
-
+		string identitetsnummer;
+		Metadata metadata;
 		union {
 			no.nav.paw.arbeidssokerregisteret.intern.v1.Start,
 			no.nav.paw.arbeidssokerregisteret.intern.v1.Stopp,

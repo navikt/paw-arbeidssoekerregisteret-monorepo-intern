@@ -21,15 +21,15 @@ fun Context.ingenEndring() = gjeldeneTilstand
 
 fun startPeriode(startHendelse: Hendelse) = PeriodeTilstandV1(
     UUID.randomUUID(),
-    startHendelse.foedselsnummer,
-    startHendelse.timestamp,
-    startHendelse.timestamp,
+    startHendelse.identitetsnummer,
+    startHendelse.metadata.tidspunkt,
+    startHendelse.metadata.tidspunkt,
     null
 )
 
 fun PeriodeTilstandV1.endre(
     id: UUID = this.id,
-    fødselsnummer: String = this.foedselsnummer,
+    fødselsnummer: String = this.identitetsnummer,
     sistEndret: Instant = this.sistEndret,
     fraOgMed: Instant = this.fraOgMed,
     tilOgMed: Instant? = this.tilOgMed
