@@ -1,13 +1,29 @@
 plugins {
     kotlin("jvm")
-    id("com.github.davidmc24.gradle.plugin.avro") version "1.8.0"
+    `maven-publish`
 }
 
 dependencies {
-    implementation("org.apache.avro:avro:1.11.1")
-    implementation("org.apache.avro:avro-ipc:1.11.1")
+
 }
 
-avro {
-    setCreateSetters(false)
+group = "no.nav.paw.arbeidssokerregisteret.api.schema"
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["kotlin"])
+        }
+    }
+    repositories {
+        maven {
+            val mavenRepo: String by project
+            val githubPassword: String by project
+            setUrl("https://maven.pkg.github.com/navikt/$mavenRepo")
+            credentials {
+                username = "x-access-token"
+                password = githubPassword
+            }
+        }
+    }
 }

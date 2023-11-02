@@ -18,11 +18,11 @@ jobs:
           java-version: 17
           distribution: temurin
           cache: gradle
-      - uses: gradle/gradle-build-action@v2
+      - name: Build with Gradle and Publish artifact
+        working-directory: ./
+        run: ./gradlew -Pversion=$(date +'%y.%m.%d').${{ github.run_number }}-${{ github.run_attempt }} build test publish
         env:
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          arguments: build
 #      - name: Push docker image to GAR
 #        uses: nais/docker-build-push@v0
 #        id: docker-build-push
