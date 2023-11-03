@@ -20,6 +20,7 @@ import org.apache.kafka.streams.state.internals.KeyValueStoreBuilder
 import org.apache.kafka.streams.state.internals.RocksDbKeyValueBytesStoreSupplier
 import org.slf4j.LoggerFactory
 import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
 
 const val kafkaKonfigurasjonsfil = "kafka_konfigurasjon.toml"
 
@@ -61,8 +62,11 @@ fun main() {
         kafkaStreams.close()
         avslutt.put(Unit)
     })
-    avslutt.take()
+    while (avslutt.poll(30, TimeUnit.SECONDS) == null) {
+        streamLogger.info("KafkaStreams tilstand: ${kafkaStreams.state()}")
+    }
     streamLogger.info("Avsluttet")
+    streamLogger.info("KafkaStreams tilstand: ${kafkaStreams.state()}")
 }
 
 fun topology(
