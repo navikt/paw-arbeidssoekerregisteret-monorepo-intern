@@ -9,6 +9,8 @@ val logbackVersion = "1.4.5"
 val logstashVersion = "7.3"
 
 dependencies {
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.3")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.3")
     implementation("com.sksamuel.hoplite:hoplite-core:2.8.0.RC3")
     implementation("com.sksamuel.hoplite:hoplite-toml:2.8.0.RC3")
     implementation("no.nav.common:log:2.2023.01.10_13.49-81ddc732df3a")
