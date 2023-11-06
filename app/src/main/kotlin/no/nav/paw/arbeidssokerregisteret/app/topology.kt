@@ -2,10 +2,9 @@ package no.nav.paw.arbeidssokerregisteret.app
 
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.api.v1.Situasjon
-import no.nav.paw.arbeidssokerregisteret.app.funksjoner.genererTilstander
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.genererNyInternTilstandOgNyeApiTilstander
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.ignorerDuplikatStartOgStopp
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafka.filtrer
-import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafka.genererTilstander
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafka.lagreInternTilstand
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafka.lastInternTilstand
 import org.apache.avro.specific.SpecificRecord
@@ -26,7 +25,7 @@ fun topology(
     strøm
         .lastInternTilstand(dbNavn)
         .filtrer(::ignorerDuplikatStartOgStopp)
-        .genererTilstander(::genererTilstander)
+        .mapValues(::genererNyInternTilstandOgNyeApiTilstander)
         .lagreInternTilstand(dbNavn)
         .flatMap { key, value ->
             listOfNotNull(

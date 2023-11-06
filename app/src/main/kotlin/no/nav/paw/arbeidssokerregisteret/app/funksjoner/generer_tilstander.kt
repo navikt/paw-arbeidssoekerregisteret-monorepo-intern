@@ -6,7 +6,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.SituasjonMottat
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Stoppet
 
-fun genererTilstander(
+fun genererNyInternTilstandOgNyeApiTilstander(
     recordKey: Long,
     internTilstandOgHendelse: InternTilstandOgHendelse
 ): InternTilstandOgApiTilstander {
