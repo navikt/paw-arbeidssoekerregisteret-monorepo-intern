@@ -24,7 +24,7 @@ fun topology(
     val strøm: KStream<Long, SpecificRecord> = builder.stream(innTopic)
     strøm
         .lastInternTilstand(dbNavn)
-        .filtrer(::ignorerDuplikatStartOgStopp)
+        .filter(::ignorerDuplikatStartOgStopp)
         .mapValues(::genererNyInternTilstandOgNyeApiTilstander)
         .lagreInternTilstand(dbNavn)
         .flatMap { key, value ->
