@@ -8,14 +8,14 @@ import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
 
 fun KStream<Long, InternTilstandOgHendelse>.genererTilstander(
-    bygger: (InternTilstandOgHendelse) -> InternTilstandOgApiTilstander
+    bygger: (Long, InternTilstandOgHendelse) -> InternTilstandOgApiTilstander
 ): KStream<Long, InternTilstandOgApiTilstander> {
     val processorSupplier = { GenererNyeTilstander(bygger) }
     return process(processorSupplier)
 }
 
 class GenererNyeTilstander(
-    private val bygger: (InternTilstandOgHendelse) -> InternTilstandOgApiTilstander
+    private val bygger: (Long, InternTilstandOgHendelse) -> InternTilstandOgApiTilstander
 ) : Processor<Long, InternTilstandOgHendelse, Long, InternTilstandOgApiTilstander> {
 
     private var context: ProcessorContext<Long, InternTilstandOgApiTilstander>? = null
@@ -37,7 +37,7 @@ class GenererNyeTilstander(
         ctx: ProcessorContext<Long, InternTilstandOgApiTilstander>,
         record: Record<Long, InternTilstandOgHendelse>
     ) {
-        val internTilstandOgApiTilstander = bygger(record.value())
+        val internTilstandOgApiTilstander = bygger(record.key(), record.value())
         ctx.forward(record.withValue(internTilstandOgApiTilstander))
     }
 }

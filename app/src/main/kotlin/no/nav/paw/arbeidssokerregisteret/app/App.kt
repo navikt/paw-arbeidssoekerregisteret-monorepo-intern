@@ -1,12 +1,12 @@
 package no.nav.paw.arbeidssokerregisteret.app
 
-import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.app.config.KafkaKonfigurasjon
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.avsluttPeriode
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.ignorerDuplikatStartOgStopp
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafka.filtrer
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafka.genererTilstander
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafka.lastTilstand
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.startPeriode
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandSerde
 import no.nav.paw.arbeidssokerregisteret.intern.v1.SituasjonMottat
@@ -87,38 +87,24 @@ fun topology(
     strøm
         .lastTilstand(dbNavn)
         .filtrer(::ignorerDuplikatStartOgStopp)
-        .genererTilstander(::genererTilstander)
+        .genererTilstander { recordKey, internTilstandOgHendelse ->
+            genererTilstander(recordKey, internTilstandOgHendelse)
+        }
     return builder.build()
 }
 
-fun genererTilstander(internTilstandOgHendelse: InternTilstandOgHendelse): InternTilstandOgApiTilstander {
+fun genererTilstander(recordKey: Long, internTilstandOgHendelse: InternTilstandOgHendelse): InternTilstandOgApiTilstander {
     val (tilstand, hendelse) = internTilstandOgHendelse
-    when {
-        hendelse is Startet -> opprettPeriode(hendelse)
+    return when {
+        hendelse is Startet -> tilstand.startPeriode(recordKey, hendelse)
         hendelse is Stoppet -> tilstand.avsluttPeriode(hendelse)
-        hendelse is SituasjonMottat -> tilstand.situsjonMottatt(hendelse)
+        hendelse is SituasjonMottat -> TODO()
         else -> throw IllegalStateException("Uventet hendelse: $hendelse")
     }
 }
 
 
 
-
-fun opprettPeriode(hendelse: Startet) {
-    TODO("Not yet implemented")
-}
-
-fun Tilstand?.situsjonMottatt(hendelse: SituasjonMottat): InternTilstandOgApiTilstander {
-    TODO("Not yet implemented")
-}
-
-fun ignorerDuplikatStartOgStopp(tilstand: Tilstand?, hendelse: Hendelse): Boolean =
-    when(tilstand?.gjeldeneTilstand) {
-        null -> hendelse.erIkkeEnAv<Stoppet, SituasjonMottat>()
-        GjeldeneTilstand.STARTET -> hendelse.erIkke<Startet>()
-        GjeldeneTilstand.STOPPET -> hendelse.erIkke<Stoppet>()
-        GjeldeneTilstand.AVVIST -> hendelse.erIkkeEnAv<Stoppet, SituasjonMottat>()
-    }
 
 inline fun <reified A: Hendelse> Hendelse.erIkke(): Boolean = this !is A
 inline fun <reified A: Hendelse, reified B: Hendelse> Hendelse.erIkkeEnAv(): Boolean = this !is A && this !is B

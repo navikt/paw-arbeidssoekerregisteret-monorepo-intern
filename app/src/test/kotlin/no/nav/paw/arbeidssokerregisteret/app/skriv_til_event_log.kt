@@ -67,10 +67,9 @@ class TestContext(private val producer: KafkaProducer<String, SpecificRecord>, p
             ProducerRecord(
                 topic,
                 id,
-                Start(
+                Startet(
                     id,
                     Metadata(
-                        UUID.randomUUID(),
                         Instant.now(),
                         Bruker(BrukerType.SLUTTBRUKER, "test"),
                         "unit-test",
@@ -87,10 +86,9 @@ class TestContext(private val producer: KafkaProducer<String, SpecificRecord>, p
             ProducerRecord(
                 topic,
                 id,
-                Stopp(
+                Stoppet(
                     id,
                     Metadata(
-                        UUID.randomUUID(),
                         Instant.now(),
                         Bruker(BrukerType.SYSTEM, "test"),
                         "unit-test",
