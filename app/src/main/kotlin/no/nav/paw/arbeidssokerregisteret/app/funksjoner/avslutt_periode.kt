@@ -17,13 +17,13 @@ fun Tilstand?.avsluttPeriode(hendelse: Stoppet): InternTilstandOgApiTilstander {
             gjeldenePeriode = null,
             forrigePeriode = stoppetPeriode
         ),
-        periode = Periode(
+        nyePeriodeTilstand = Periode(
             stoppetPeriode.id,
             stoppetPeriode.identitetsnummer,
             stoppetPeriode.startet.api(),
             stoppetPeriode.avsluttet?.api()
         ),
-        situasjon = null
+        nySituasjonTilstand = null
     )
 }
 

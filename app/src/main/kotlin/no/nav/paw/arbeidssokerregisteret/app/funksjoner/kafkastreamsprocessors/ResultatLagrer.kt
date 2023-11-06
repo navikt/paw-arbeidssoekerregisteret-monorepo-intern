@@ -1,8 +1,7 @@
-package no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafka
+package no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors
 
-import no.nav.paw.arbeidssokerregisteret.app.InternTilstandOgHendelse
+import no.nav.paw.arbeidssokerregisteret.app.InternTilstandOgApiTilstander
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
-import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.Named
 import org.apache.kafka.streams.processor.api.Processor
@@ -10,27 +9,27 @@ import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
 import org.apache.kafka.streams.state.KeyValueStore
 
-
-fun KStream<Long, SpecificRecord>.lastInternTilstand(
+fun KStream<Long, InternTilstandOgApiTilstander>.lagreInternTilstand(
     tilstandDbNavn: String
-): KStream<Long, InternTilstandOgHendelse> {
-    val processorSupplier = { TilstandsLaster(tilstandDbNavn) }
-    return process(processorSupplier, Named.`as`("lastInternTilstand"), tilstandDbNavn)
+): KStream<Long, InternTilstandOgApiTilstander> {
+    val processBuilder = { ResultatLagrer(tilstandDbNavn) }
+    return process(processBuilder, Named.`as`("lagreInternTilstand"), tilstandDbNavn)
 }
-class TilstandsLaster(
+
+class ResultatLagrer(
     private val tilstandDbNavn: String
-) : Processor<Long, SpecificRecord, Long, InternTilstandOgHendelse> {
+) : Processor<Long, InternTilstandOgApiTilstander, Long, InternTilstandOgApiTilstander> {
 
     private var tilstandsDb: KeyValueStore<Long, Tilstand>? = null
-    private var context: ProcessorContext<Long, InternTilstandOgHendelse>? = null
+    private var context: ProcessorContext<Long, InternTilstandOgApiTilstander>? = null
 
-    override fun init(context: ProcessorContext<Long, InternTilstandOgHendelse>?) {
+    override fun init(context: ProcessorContext<Long, InternTilstandOgApiTilstander>?) {
         super.init(context)
         this.context = context
         tilstandsDb = context?.getStateStore(tilstandDbNavn)
     }
 
-    override fun process(record: Record<Long, SpecificRecord>?) {
+    override fun process(record: Record<Long, InternTilstandOgApiTilstander>?) {
         if (record == null) return
         process(
             requireNotNull(context) { "Context er ikke initialisert" },
@@ -40,12 +39,12 @@ class TilstandsLaster(
     }
 
     private fun process(
-        ctx: ProcessorContext<Long, InternTilstandOgHendelse>,
+        ctx: ProcessorContext<Long, InternTilstandOgApiTilstander>,
         db: KeyValueStore<Long, Tilstand>,
-        record: Record<Long, SpecificRecord>
+        record: Record<Long, InternTilstandOgApiTilstander>
     ) {
-        val tilstand: Tilstand? = db.get(record.key())
-        ctx.forward(record.withValue(InternTilstandOgHendelse(tilstand, record.value())))
+        db.put(record.key(), record.value().tilstand)
+        ctx.forward(record)
     }
 
     override fun close() {

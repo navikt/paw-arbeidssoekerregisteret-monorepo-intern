@@ -34,8 +34,8 @@ fun Tilstand?.startPeriode(recordKey: Long, hendelse: Startet): InternTilstandOg
         )
     return InternTilstandOgApiTilstander(
         tilstand = tilstand,
-        situasjon = null,
-        periode = ApiPeriode(
+        nySituasjonTilstand = null,
+        nyePeriodeTilstand = ApiPeriode(
             startetPeriode.id,
             startetPeriode.identitetsnummer,
             startetPeriode.startet.api(),

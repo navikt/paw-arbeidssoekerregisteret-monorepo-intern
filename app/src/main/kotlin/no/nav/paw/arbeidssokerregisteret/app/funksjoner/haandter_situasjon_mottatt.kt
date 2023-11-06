@@ -21,8 +21,8 @@ fun Tilstand?.situasjonMottatt(recordKey: Long, hendelse: SituasjonMottat): Inte
                     sisteSituasjon = situasjon(hendelse),
                     forrigeSituasjon = null
                 ),
-                situasjon = null,
-                periode = null
+                nySituasjonTilstand = null,
+                nyePeriodeTilstand = null
             )
         }
 
@@ -32,8 +32,8 @@ fun Tilstand?.situasjonMottatt(recordKey: Long, hendelse: SituasjonMottat): Inte
                     sisteSituasjon = situasjon(hendelse),
                     forrigeSituasjon = this.sisteSituasjon
                 ),
-                situasjon = null,
-                periode = null
+                nySituasjonTilstand = null,
+                nyePeriodeTilstand = null
             )
         }
 
@@ -43,8 +43,8 @@ fun Tilstand?.situasjonMottatt(recordKey: Long, hendelse: SituasjonMottat): Inte
                     sisteSituasjon = situasjon(hendelse),
                     forrigeSituasjon = this.sisteSituasjon
                 ),
-                situasjon = situasjon(hendelse).api(this.gjeldenePeriode.id),
-                periode = null
+                nySituasjonTilstand = situasjon(hendelse).api(this.gjeldenePeriode.id),
+                nyePeriodeTilstand = null
             )
         }
     }

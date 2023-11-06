@@ -4,9 +4,8 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.api.v1.Situasjon
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.genererNyInternTilstandOgNyeApiTilstander
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.ignorerDuplikatStartOgStopp
-import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafka.filtrer
-import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafka.lagreInternTilstand
-import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafka.lastInternTilstand
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors.lagreInternTilstand
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors.lastInternTilstand
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.StreamsBuilder
@@ -29,8 +28,8 @@ fun topology(
         .lagreInternTilstand(dbNavn)
         .flatMap { key, value ->
             listOfNotNull(
-                value.periode?.let { KeyValue(key, it) },
-                value.situasjon?.let { KeyValue(key, it) }
+                value.nyePeriodeTilstand?.let { KeyValue(key, it) },
+                value.nySituasjonTilstand?.let { KeyValue(key, it) }
             )
         }.split()
         .branch(
@@ -42,6 +41,5 @@ fun topology(
             Branched.withConsumer { consumer -> consumer.to(situasjonTopic) }
         )
         .noDefaultBranch()
-
     return builder.build()
 }

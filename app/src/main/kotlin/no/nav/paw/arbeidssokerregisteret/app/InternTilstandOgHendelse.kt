@@ -8,7 +8,7 @@ data class InternTilstandOgHendelse(val tilstand: Tilstand?, val hendelse: Hende
 
 data class InternTilstandOgApiTilstander(
     val tilstand: Tilstand?,
-    val periode: Periode?,
-    val situasjon: Situasjon?
+    val nyePeriodeTilstand: Periode?,
+    val nySituasjonTilstand: Situasjon?
 )
 
