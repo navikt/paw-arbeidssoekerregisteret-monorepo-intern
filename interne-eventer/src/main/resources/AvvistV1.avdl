@@ -1,6 +1,6 @@
 @namespace("no.nav.paw.arbeidssokerregisteret.intern.v1")
 protocol HendelseAvvistV1 {
-	import idl "metadata-v1.avdl";
+	import idl "vo/metadata-v1.avdl";
 	record Avvist {
 		string identitetsnummer;
 		Metadata metadata;

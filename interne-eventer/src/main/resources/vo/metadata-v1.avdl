@@ -3,8 +3,6 @@ protocol Endring {
 	import idl "bruker-v1.avdl";
 
 	record Metadata {
-		@logicalType("uuid")
-		string hendelseId;
 		@logicalType("timestamp-millis")
 		long tidspunkt;
 		Bruker utfoertAv;

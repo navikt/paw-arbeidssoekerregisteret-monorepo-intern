@@ -1,7 +1,7 @@
 @namespace("no.nav.paw.arbeidssokerregisteret.intern.v1")
-protocol HendelseStoppV1 {
-	import idl "metadata-v1.avdl";
-	record Stopp {
+protocol HendelseStoppetV1 {
+	import idl "vo/metadata-v1.avdl";
+	record Stoppet {
 		string identitetsnummer;
 		Metadata metadata;
 	}

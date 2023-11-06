@@ -1,0 +1,9 @@
+@namespace("no.nav.paw.arbeidssokerregisteret.intern.v1")
+protocol Arbeidserfaring {
+	import idl "ja_nei_vet_ikke-v1.avdl";
+
+	record Arbeidserfaring {
+		JaNeiVetIkke harHattArbeid;
+		//??string sisteStilling;
+	}
+}

@@ -1,11 +1,17 @@
 package no.nav.paw.arbeidssokerregisteret.app
 
+import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.app.config.KafkaKonfigurasjon
-import no.nav.paw.arbeidssokerregisteret.app.funksjoner.*
-import no.nav.paw.arbeidssokerregisteret.app.funksjoner.Operasjon.OPPRETT_ELLER_OPPDATER
-import no.nav.paw.arbeidssokerregisteret.app.funksjoner.Operasjon.SLETT
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Start
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Stopp
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.avsluttPeriode
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafka.filtrer
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafka.genererTilstander
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafka.lastTilstand
+import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand
+import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
+import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandSerde
+import no.nav.paw.arbeidssokerregisteret.intern.v1.SituasjonMottat
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Stoppet
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
@@ -24,13 +30,15 @@ import java.util.concurrent.TimeUnit
 
 const val kafkaKonfigurasjonsfil = "kafka_konfigurasjon.toml"
 
+typealias Hendelse = SpecificRecord
+
 fun main() {
     val streamLogger = LoggerFactory.getLogger("App")
     streamLogger.info("Starter applikasjon...")
 
     val kafkaKonfigurasjon = lastKonfigurasjon<KafkaKonfigurasjon>(kafkaKonfigurasjonsfil)
 
-    val periodeSerde: Serde<PeriodeTilstandV1> = lagSpecificAvroSerde(kafkaKonfigurasjon.schemaRegistryKonfigurasjon)
+    val tilstandsSerde: Serde<Tilstand> = TilstandSerde()
 
     val dbNavn = kafkaKonfigurasjon.streamKonfigurasjon.tilstandsDatabase
     val builder = StreamsBuilder()
@@ -38,7 +46,7 @@ fun main() {
         KeyValueStoreBuilder(
             RocksDbKeyValueBytesStoreSupplier(dbNavn, false),
             Serdes.String(),
-            periodeSerde,
+            tilstandsSerde,
             Time.SYSTEM
         )
     )
@@ -75,28 +83,43 @@ fun topology(
     innTopic: String,
     utTopic: String
 ): Topology {
-    val strøm: KStream<String, SpecificRecord> = builder.stream(innTopic)
+    val strøm: KStream<Long, SpecificRecord> = builder.stream(innTopic)
     strøm
-        .filtrer(dbNavn) {
-            when (hendelse) {
-                is Start -> inkluderDersomIkkeRegistrertArbeidssøker()
-                is Stopp -> inkluderDersomRegistrertArbeidssøker()
-                else -> inkluder
-            }
-        }
-        .opprettEllerOppdaterPeriode(dbNavn) {
-            when (hendelse) {
-                is Start -> startPeriode(hendelse)
-                is Stopp -> avsluttPeriode(hendelse.metadata.tidspunkt)
-                else -> ingenEndring()
-            }
-        }
-        .oppdaterLagretPeriode(dbNavn) { periode ->
-            when (periode.erAvsluttet()) {
-                true -> SLETT
-                false -> OPPRETT_ELLER_OPPDATER
-            }
-        }
-        .to(utTopic)
+        .lastTilstand(dbNavn)
+        .filtrer(::ignorerDuplikatStartOgStopp)
+        .genererTilstander(::genererTilstander)
     return builder.build()
 }
+
+fun genererTilstander(internTilstandOgHendelse: InternTilstandOgHendelse): InternTilstandOgApiTilstander {
+    val (tilstand, hendelse) = internTilstandOgHendelse
+    when {
+        hendelse is Startet -> opprettPeriode(hendelse)
+        hendelse is Stoppet -> tilstand.avsluttPeriode(hendelse)
+        hendelse is SituasjonMottat -> tilstand.situsjonMottatt(hendelse)
+        else -> throw IllegalStateException("Uventet hendelse: $hendelse")
+    }
+}
+
+
+
+
+fun opprettPeriode(hendelse: Startet) {
+    TODO("Not yet implemented")
+}
+
+fun Tilstand?.situsjonMottatt(hendelse: SituasjonMottat): InternTilstandOgApiTilstander {
+    TODO("Not yet implemented")
+}
+
+fun ignorerDuplikatStartOgStopp(tilstand: Tilstand?, hendelse: Hendelse): Boolean =
+    when(tilstand?.gjeldeneTilstand) {
+        null -> hendelse.erIkkeEnAv<Stoppet, SituasjonMottat>()
+        GjeldeneTilstand.STARTET -> hendelse.erIkke<Startet>()
+        GjeldeneTilstand.STOPPET -> hendelse.erIkke<Stoppet>()
+        GjeldeneTilstand.AVVIST -> hendelse.erIkkeEnAv<Stoppet, SituasjonMottat>()
+    }
+
+inline fun <reified A: Hendelse> Hendelse.erIkke(): Boolean = this !is A
+inline fun <reified A: Hendelse, reified B: Hendelse> Hendelse.erIkkeEnAv(): Boolean = this !is A && this !is B
+
