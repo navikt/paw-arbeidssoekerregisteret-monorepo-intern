@@ -3,6 +3,7 @@ package no.nav.paw.arbeidssokerregisteret.app
 import io.confluent.kafka.schemaregistry.testutil.MockSchemaRegistry
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandSerde
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
@@ -27,12 +28,12 @@ fun <T : SpecificRecord> opprettSerde(): Serde<T> {
     return serde
 }
 
-fun <T: SpecificRecord> opprettStreamsBuilder(dbNavn: String, tilstandSerde: Serde<T>): StreamsBuilder {
-    val builder =StreamsBuilder()
+fun <T> opprettStreamsBuilder(dbNavn: String, tilstandSerde: Serde<T>): StreamsBuilder {
+    val builder = StreamsBuilder()
     builder.addStateStore(
         KeyValueStoreBuilder(
             InMemoryKeyValueBytesStoreSupplier(dbNavn),
-            Serdes.String(),
+            Serdes.Long(),
             tilstandSerde,
             Time.SYSTEM
         )
@@ -43,8 +44,8 @@ fun <T: SpecificRecord> opprettStreamsBuilder(dbNavn: String, tilstandSerde: Ser
 val kafkaStreamProperties = Properties().apply {
     this[StreamsConfig.APPLICATION_ID_CONFIG] = "test"
     this[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = "dummy:1234"
-    this[StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG] = Serdes.String().javaClass.name
-    this[StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG] = SpecificAvroSerde::class.java.name
+    this[StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG] = Serdes.Long().javaClass
+    this[StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG] = SpecificAvroSerde<SpecificRecord>().javaClass
     this[KafkaAvroSerializerConfig.AUTO_REGISTER_SCHEMAS] = "true"
     this[KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG] = "mock://$SCHEMA_REGISTRY_SCOPE"
 }

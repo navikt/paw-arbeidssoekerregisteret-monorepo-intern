@@ -3,6 +3,7 @@ package no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafka
 import no.nav.paw.arbeidssokerregisteret.app.InternTilstandOgApiTilstander
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
 import org.apache.kafka.streams.kstream.KStream
+import org.apache.kafka.streams.kstream.Named
 import org.apache.kafka.streams.processor.api.Processor
 import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.ProcessorSupplier
@@ -13,7 +14,7 @@ fun KStream<Long, InternTilstandOgApiTilstander>.lagreInternTilstand(
     tilstandDbNavn: String
 ): KStream<Long, InternTilstandOgApiTilstander> {
     val processBuilder = { ResultatLagrer(tilstandDbNavn) }
-    return process(processBuilder)
+    return process(processBuilder, Named.`as`("lagreInternTilstand"), tilstandDbNavn)
 }
 
 class ResultatLagrer(

@@ -4,6 +4,7 @@ import no.nav.paw.arbeidssokerregisteret.app.InternTilstandOgHendelse
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.streams.kstream.KStream
+import org.apache.kafka.streams.kstream.Named
 import org.apache.kafka.streams.processor.api.Processor
 import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
@@ -14,7 +15,7 @@ fun KStream<Long, SpecificRecord>.lastInternTilstand(
     tilstandDbNavn: String
 ): KStream<Long, InternTilstandOgHendelse> {
     val processorSupplier = { TilstandsLaster(tilstandDbNavn) }
-    return process(processorSupplier)
+    return process(processorSupplier, Named.`as`("lastInternTilstand"), tilstandDbNavn)
 }
 class TilstandsLaster(
     private val tilstandDbNavn: String
