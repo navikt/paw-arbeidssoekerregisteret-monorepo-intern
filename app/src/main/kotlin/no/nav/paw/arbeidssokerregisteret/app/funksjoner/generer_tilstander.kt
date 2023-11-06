@@ -14,7 +14,8 @@ fun genererTilstander(
     return when {
         hendelse is Startet -> tilstand.startPeriode(recordKey, hendelse)
         hendelse is Stoppet -> tilstand.avsluttPeriode(hendelse)
-        hendelse is SituasjonMottat -> TODO()
+        hendelse is SituasjonMottat -> tilstand.situasjonMottatt(recordKey, hendelse)
         else -> throw IllegalStateException("Uventet hendelse: $hendelse")
     }
 }
+
