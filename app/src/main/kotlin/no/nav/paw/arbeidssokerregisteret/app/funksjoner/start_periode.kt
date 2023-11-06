@@ -18,8 +18,11 @@ fun Tilstand?.startPeriode(recordKey: Long, hendelse: Startet): InternTilstandOg
         startet = metadata(hendelse.metadata),
         avsluttet = null
     )
-    val tilstand: Tilstand = if (this == null) {
-        Tilstand(
+    val tilstand: Tilstand = this?.copy(
+        gjeldeneTilstand = GjeldeneTilstand.STARTET,
+        gjeldenePeriode = startetPeriode
+    )
+        ?: Tilstand(
             kafkaKey = recordKey,
             gjeldeneIdentitetsnummer = hendelse.identitetsnummer,
             allIdentitetsnummer = setOf(hendelse.identitetsnummer),
@@ -29,12 +32,6 @@ fun Tilstand?.startPeriode(recordKey: Long, hendelse: Startet): InternTilstandOg
             sisteSituasjon = null,
             forrigeSituasjon = null
         )
-    } else {
-        copy(
-            gjeldeneTilstand = GjeldeneTilstand.STARTET,
-            gjeldenePeriode = startetPeriode
-        )
-    }
     return InternTilstandOgApiTilstander(
         tilstand = tilstand,
         situasjon = null,

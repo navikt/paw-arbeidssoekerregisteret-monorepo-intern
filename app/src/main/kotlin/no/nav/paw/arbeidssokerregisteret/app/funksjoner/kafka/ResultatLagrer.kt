@@ -2,15 +2,23 @@ package no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafka
 
 import no.nav.paw.arbeidssokerregisteret.app.InternTilstandOgApiTilstander
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
-import org.apache.avro.specific.SpecificRecord
+import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.processor.api.Processor
 import org.apache.kafka.streams.processor.api.ProcessorContext
+import org.apache.kafka.streams.processor.api.ProcessorSupplier
 import org.apache.kafka.streams.processor.api.Record
 import org.apache.kafka.streams.state.KeyValueStore
 
+fun KStream<Long, InternTilstandOgApiTilstander>.lagreInternTilstand(
+    tilstandDbNavn: String
+): KStream<Long, InternTilstandOgApiTilstander> {
+    val processBuilder = { ResultatLagrer(tilstandDbNavn) }
+    return process(processBuilder)
+}
+
 class ResultatLagrer(
     private val tilstandDbNavn: String
-) : Processor<Long, SpecificRecord, Long, InternTilstandOgApiTilstander> {
+) : Processor<Long, InternTilstandOgApiTilstander, Long, InternTilstandOgApiTilstander> {
 
     private var tilstandsDb: KeyValueStore<Long, Tilstand>? = null
     private var context: ProcessorContext<Long, InternTilstandOgApiTilstander>? = null
@@ -21,7 +29,7 @@ class ResultatLagrer(
         tilstandsDb = context?.getStateStore(tilstandDbNavn)
     }
 
-    override fun process(record: Record<Long, SpecificRecord>?) {
+    override fun process(record: Record<Long, InternTilstandOgApiTilstander>?) {
         if (record == null) return
         process(
             requireNotNull(context) { "Context er ikke initialisert" },
@@ -33,9 +41,10 @@ class ResultatLagrer(
     private fun process(
         ctx: ProcessorContext<Long, InternTilstandOgApiTilstander>,
         db: KeyValueStore<Long, Tilstand>,
-        record: Record<Long, SpecificRecord>
+        record: Record<Long, InternTilstandOgApiTilstander>
     ) {
-
+        db.put(record.key(), record.value().tilstand)
+        ctx.forward(record)
     }
 
     override fun close() {

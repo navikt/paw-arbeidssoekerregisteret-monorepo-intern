@@ -10,7 +10,7 @@ import org.apache.kafka.streams.processor.api.Record
 import org.apache.kafka.streams.state.KeyValueStore
 
 
-fun KStream<Long, SpecificRecord>.lastTilstand(
+fun KStream<Long, SpecificRecord>.lastInternTilstand(
     tilstandDbNavn: String
 ): KStream<Long, InternTilstandOgHendelse> {
     val processorSupplier = { TilstandsLaster(tilstandDbNavn) }
