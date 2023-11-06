@@ -62,6 +62,7 @@ class ApplikasjonsTest : StringSpec({
         )
         eventlogTopic.pipeInput(start.identitetsnummer.hashCode().toLong(), start)
         val periode = periodeTopic.readKeyValue()
+        situasjonTopic.isEmpty shouldBe true
         periode.key shouldBe start.identitetsnummer.hashCode().toLong()
         periode.value.identitetsnummer shouldBe start.identitetsnummer
         periode.value.startet.tidspunkt shouldBe start.metadata.tidspunkt
@@ -70,6 +71,7 @@ class ApplikasjonsTest : StringSpec({
         periode.value.startet.utfoertAv.id shouldBe start.metadata.utfoertAv.id
         periode.value.avsluttet shouldBe null
         periode.value.id.shouldNotBeNull()
+
     }
 })
 
