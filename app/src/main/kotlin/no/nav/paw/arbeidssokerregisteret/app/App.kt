@@ -1,6 +1,10 @@
 package no.nav.paw.arbeidssokerregisteret.app
 
+import io.micrometer.prometheus.PrometheusConfig
+import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.app.config.KafkaKonfigurasjon
+import no.nav.paw.arbeidssokerregisteret.app.helse.Helse
+import no.nav.paw.arbeidssokerregisteret.app.helse.initKtor
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandSerde
 import org.apache.avro.specific.SpecificRecord
@@ -14,8 +18,6 @@ import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
 import org.apache.kafka.streams.state.internals.KeyValueStoreBuilder
 import org.apache.kafka.streams.state.internals.RocksDbKeyValueBytesStoreSupplier
 import org.slf4j.LoggerFactory
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.TimeUnit
 
 const val kafkaKonfigurasjonsfil = "kafka_konfigurasjon.toml"
 
@@ -24,14 +26,11 @@ typealias Hendelse = SpecificRecord
 fun main() {
     val streamLogger = LoggerFactory.getLogger("App")
     streamLogger.info("Starter applikasjon...")
-
     val kafkaKonfigurasjon = lastKonfigurasjon<KafkaKonfigurasjon>(kafkaKonfigurasjonsfil)
-
     val tilstandSerde: Serde<Tilstand> = TilstandSerde()
-
     val dbNavn = kafkaKonfigurasjon.streamKonfigurasjon.tilstandsDatabase
-    val builder = StreamsBuilder()
-    builder.addStateStore(
+    val strømBygger = StreamsBuilder()
+    strømBygger.addStateStore(
         KeyValueStoreBuilder(
             RocksDbKeyValueBytesStoreSupplier(dbNavn, false),
             Serdes.Long(),
@@ -40,7 +39,7 @@ fun main() {
         )
     )
     val topology = topology(
-        builder = builder,
+        builder = strømBygger,
         dbNavn = dbNavn,
         innTopic = kafkaKonfigurasjon.streamKonfigurasjon.eventlogTopic,
         periodeTopic = kafkaKonfigurasjon.streamKonfigurasjon.periodeTopic,
@@ -53,17 +52,12 @@ fun main() {
         StreamsUncaughtExceptionHandler.StreamThreadExceptionResponse.SHUTDOWN_APPLICATION
     }
     kafkaStreams.start()
-    streamLogger.info("KafkaStreams tilstand: ${kafkaStreams.state()}")
-    val avslutt = LinkedBlockingQueue<Unit>(1)
-    Runtime.getRuntime().addShutdownHook(Thread {
-        streamLogger.info("Avslutter...")
-        kafkaStreams.close()
-        avslutt.put(Unit)
-    })
-    while (avslutt.poll(30, TimeUnit.SECONDS) == null) {
-        streamLogger.info("KafkaStreams tilstand: ${kafkaStreams.state()}")
-    }
+    val helse = Helse(kafkaStreams)
+    val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+    initKtor(
+        prometheusRegistry = prometheusMeterRegistry,
+        helse = helse
+    ).start(wait = true)
     streamLogger.info("Avsluttet")
-    streamLogger.info("KafkaStreams tilstand: ${kafkaStreams.state()}")
 }
 
