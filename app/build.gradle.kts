@@ -3,6 +3,7 @@ import com.github.davidmc24.gradle.plugin.avro.GenerateAvroProtocolTask
 plugins {
     kotlin("jvm")
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
+    id("io.ktor.plugin") version "2.3.5"
     application
 }
 val logbackVersion = "1.4.5"
@@ -24,6 +25,12 @@ dependencies {
     implementation("org.apache.avro:avro:1.11.0")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:4.6.0")
     testImplementation("org.apache.kafka:kafka-streams-test-utils:3.5.1")
+}
+
+ktor {
+    fatJar {
+        archiveFileName.set("fat.jar")
+    }
 }
 
 tasks.named("generateAvroProtocol", GenerateAvroProtocolTask::class) {
