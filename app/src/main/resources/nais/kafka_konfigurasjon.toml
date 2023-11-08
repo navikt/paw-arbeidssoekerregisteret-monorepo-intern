@@ -1,6 +1,6 @@
 [streamKonfigurasjon]
-tilstandsDatabase = "paw.arbeidssokerregistereter-hendelsesprosessor-tilstand-beta-v1"
-applikasjonsId = "paw-arbeidssokerregisteret-event-prosessor"
+tilstandsDatabase = "tilstand-beta-v1"
+applikasjonsId = "paw.arbeidssokerregisteret-event-prosessor"
 eventlogTopic = "paw.arbeidssoker-hendelseslogg-beta-v1"
 periodeTopic = "paw.arbeidssokerperioder-beta-v1"
 situasjonTopic = "paw.arbeidssoker-situasjon-beta-v1"
