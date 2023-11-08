@@ -42,8 +42,8 @@
 
     <include resource="no/nav/common/audit_log/logback-naudit.xml"/>
 
-    <logger name="org.apache.kafka" level="WARN" />
-    <logger name="io.confluent" level="WARN" />
+    <logger name="org.apache.kafka" level="DEBUG" />
+    <logger name="io.confluent" level="DEBUG" />
     <logger name="no.nav" level="INFO" />
 
 
