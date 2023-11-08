@@ -7,7 +7,7 @@ import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
 
-class TilstandSerde(): Serde<Tilstand> {
+class TilstandSerde : Serde<Tilstand> {
     private val objectMapper = ObjectMapper()
         .registerModules(
             KotlinModule.Builder()
@@ -23,7 +23,6 @@ class TilstandSerde(): Serde<Tilstand> {
     override fun serializer() = TilstandSerializer(objectMapper)
     override fun deserializer() = TilstandDeserializer(objectMapper)
 }
-
 
 class TilstandSerializer(private val objectMapper: ObjectMapper): Serializer<Tilstand> {
     override fun serialize(topic: String?, data: Tilstand?): ByteArray {

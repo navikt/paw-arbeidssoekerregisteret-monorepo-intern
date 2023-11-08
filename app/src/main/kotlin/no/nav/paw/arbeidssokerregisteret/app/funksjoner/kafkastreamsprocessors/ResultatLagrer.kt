@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors
 
-import no.nav.paw.arbeidssokerregisteret.app.InternTilstandOgApiTilstander
+import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgApiTilstander
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.Named

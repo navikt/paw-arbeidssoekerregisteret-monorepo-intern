@@ -1,9 +1,8 @@
 package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 
 import no.nav.paw.arbeidssokerregisteret.app.Hendelse
-import no.nav.paw.arbeidssokerregisteret.app.InternTilstandOgHendelse
+import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgHendelse
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
 import no.nav.paw.arbeidssokerregisteret.intern.v1.SituasjonMottat
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Stoppet
