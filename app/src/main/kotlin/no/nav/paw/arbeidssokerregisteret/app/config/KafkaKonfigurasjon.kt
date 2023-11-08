@@ -27,10 +27,10 @@ data class KafkaKonfigurasjon(
     ) + (if (serverKonfigurasjon.autentisering.equals("SSL", true)) {
         mapOf(
             CommonClientConfigs.SECURITY_PROTOCOL_CONFIG to "SSL",
-            SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG to serverKonfigurasjon.keyStorePath,
-            SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG to serverKonfigurasjon.credStorePassword,
+            SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG to serverKonfigurasjon.keystorePath,
+            SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG to serverKonfigurasjon.credstorePassword,
             SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG to serverKonfigurasjon.truststorePath,
-            SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG to serverKonfigurasjon.credStorePassword
+            SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG to serverKonfigurasjon.credstorePassword
         )
     } else emptyMap())
 }

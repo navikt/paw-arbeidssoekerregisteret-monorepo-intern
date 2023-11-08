@@ -9,9 +9,9 @@ situasjonTopic = "paw.paw-arbeidssokerregisteret-situasjon"
 autentisering = "SSL"
 kafkaBrokers = "${KAFKA_BROKERS}"
 kafkaSchemaRegistry = "${KAFKA_SCHEMA_REGISTRY}"
-keyStorePath = "${KAFKA_KEYSTORE_PATH}"
-credStorePassword = "${KAFKA_CREDSTORE_PASSWORD}"
-trustStorePath = "${KAFKA_TRUSTSTORE_PATH}"
+keystorePath = "${KAFKA_KEYSTORE_PATH}"
+credstorePassword = "${KAFKA_CREDSTORE_PASSWORD}"
+truststorePath = "${KAFKA_TRUSTSTORE_PATH}"
 
 [schemaRegistryKonfigurasjon]
 url = "${KAFKA_SCHEMA_REGISTRY}"
