@@ -2,6 +2,7 @@ package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgApiTilstander
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand
+import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand.STARTET
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.vo.api
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.vo.situasjon
@@ -43,7 +44,9 @@ fun Tilstand?.situasjonMottatt(recordKey: Long, hendelse: SituasjonMottat): Inte
                     sisteSituasjon = situasjon(hendelse),
                     forrigeSituasjon = this.sisteSituasjon
                 ),
-                nySituasjonTilstand = situasjon(hendelse).api(this.gjeldenePeriode.id),
+                nySituasjonTilstand = if (gjeldeneTilstand == STARTET) {
+                    situasjon(hendelse).api(this.gjeldenePeriode.id)
+                } else null,
                 nyePeriodeTilstand = null
             )
         }
