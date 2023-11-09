@@ -32,3 +32,4 @@ spec:
       enabled: true
   kafka:
     pool: nav-dev
+    streams: true
