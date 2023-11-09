@@ -3,13 +3,23 @@ protocol Periode {
 	import idl "vo/metadata-v1.avdl";
 
 	record Periode {
+		/**
+		  * Unik identifikator for perioden.
+		  */
 		@logicalType("uuid")
 		string id;
-
+		/**
+		  * Inneholder informasjon om hvem perioden tilhører (fødselsnummer eller d-nummer)
+		  */
 		string identitetsnummer;
-
+		/**
+		  * Inneholder informasjon om når perioden startet og hvem som startet den
+		  */
 		Metadata startet;
-
+		/**
+		  * Dersom det er en pågående periode, vil denne være 'null'. Er den ikke 'null', er perioden avsluttet.
+		  * Inneholder informasjon om når perioden ble avsluttet og hvem som avsluttet den
+		  */
 		Metadata? avsluttet;
 	}
 }

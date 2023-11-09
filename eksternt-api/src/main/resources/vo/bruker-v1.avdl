@@ -5,7 +5,16 @@ protocol Bruker {
 	} = UKJENT_VERDI;
 
 	record  Bruker {
+		/**
+		  * Angir hvilken type bruker det er snakk om
+ 		*/
 		BrukerType type;
+		/**
+		  * Brukerens identifikator.
+		  * For sluttbruker er dette typisk fødselsnummer eller D-nummer.
+		  * For system vil det rett og slett være navnet på et system.
+		  * For veileder vil det være NAV identen til veilederen.
+ 		*/
 		string id;
 	}
 }

@@ -7,12 +7,19 @@ protocol Situasjon {
 	import idl "vo/arbeidsoekersituasjon-v1.avdl";
 
 	record Situasjon {
+		/**
+		  * Unik id for situasjonen
+		*/
 		@logicalType("uuid")
 		string id;
-
+		/**
+		  * Id til periode som situasjonen tilhører
+ 		*/
 		@logicalType("uuid")
 		string periodeId;
-
+		/**
+		  *Informasjon om hvem som har sendt inn situasjonen(og når)
+ 		*/
 		Metadata sendtInnAv;
 
 		Utdanning utdanning;

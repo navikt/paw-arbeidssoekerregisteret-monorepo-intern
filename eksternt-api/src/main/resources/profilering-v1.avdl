@@ -4,14 +4,23 @@ protocol Profilering {
 	import idl "vo/profilert_til-v1.avdl";
 
 	record Profilering {
+		/**
+		  * Profileringstjenesten(og den versjon) som har utført profileringen
+ 		*/
 		string profileringsTjenesteId;
-
+		/**
+		  * Unik id for profileringen
+ 		*/
 		@logicalType("uuid")
 		string id;
-
+		/**
+		  * Unik id for perioden som profileringen tilhører
+ 		*/
 		@logicalType("uuid")
 		string periodeId;
-
+		/**
+		  * Unik id for situasjonen som profileringen tilhører
+ 		*/
 		@logicalType("uuid")
 		string situasjonsId;
 

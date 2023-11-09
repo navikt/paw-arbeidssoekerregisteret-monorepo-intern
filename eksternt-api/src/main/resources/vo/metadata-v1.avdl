@@ -6,7 +6,13 @@ protocol Endring {
 		@logicalType("timestamp-millis")
 		long tidspunkt;
 		Bruker utfoertAv;
+		/**
+		 * Navn på systemet som utførte endringen.
+		 */
 		string kilde;
+		/**
+	  	 * Aarasek til endringen. Feks "Flyttet ut av landet" eller lignende.
+		 */
 		string aarsak;
 	}
 }
