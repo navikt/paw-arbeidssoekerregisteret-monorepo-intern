@@ -1,5 +1,26 @@
 @namespace("no.nav.paw.arbeidssokerregisteret.api.v1")
 protocol Arbeidssoekersituasjon {
+
+	record  Arbeidsoekersituasjon {
+		array<Element> beskrivelser;
+	}
+
+	record Element {
+		Beskrivelse beskrivelse;
+		/**
+		  * Feltene taes bare med dersom de er er tilgjengelige, i praksis må klienter støtte å motta en tom map.
+		  * Detaljer om situasjonen. Følgende nøkler er definert:
+		  *          Nøkkel						-			Verdi
+		  * gjelder_fra_dato_iso8601	-		datoen situasjonen gjelder fra (eksempel 2019-01-27)
+		  * gjelder_til_dato_iso8601	-		datoen situasjonen gjelder til (eksempel 2019-01-27)
+	  	  * stilling 					-	    tekstlig beskrivelse av stillingen situasjonen gjelder (eksempel "Lærer")
+	  	  * stilling_styrk08 			- 		stillingens kode i STYRK08 (eksempel "2359")
+	  	  * prosent 					- 		prosentandel stituasjonen gjelder for (feks kombinert med 'ER_PERMITERT' eller 'DELTIDSJOBB_VIL_MER')
+	  	  *
+ 		*/
+		map<string> detaljer;
+	}
+
 	enum Beskrivelse {
 		UKJENT_VERDI,
 		UDEFINERT,
@@ -17,8 +38,4 @@ protocol Arbeidssoekersituasjon {
 		KONKURS,
 		ANNET
 	} = UKJENT_VERDI;
-
-	record  Arbeidsoekersituasjon {
-		array<Beskrivelse> beskrivelser;
-	}
 }

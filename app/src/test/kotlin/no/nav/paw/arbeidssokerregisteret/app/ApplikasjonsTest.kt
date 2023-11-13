@@ -2,6 +2,10 @@ package no.nav.paw.arbeidssokerregisteret.app
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
+import no.nav.paw.arbeidssokerregisteret.app.tilstand.vo.GJELDER_FRA_DATO
+import no.nav.paw.arbeidssokerregisteret.app.tilstand.vo.PROSENT
+import no.nav.paw.arbeidssokerregisteret.app.tilstand.vo.STILLING
+import no.nav.paw.arbeidssokerregisteret.app.tilstand.vo.STILLING_STYRK08
 import no.nav.paw.arbeidssokerregisteret.intern.v1.*
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.TopologyTestDriver
@@ -87,7 +91,12 @@ class ApplikasjonsTest : FreeSpec({
                 Utdanning(Utdanningsnivaa.HOYERE_UTDANNING_1_TIL_4, JaNeiVetIkke.JA, JaNeiVetIkke.JA),
                 Helse(JaNeiVetIkke.JA),
                 Arbeidserfaring(JaNeiVetIkke.JA),
-                Arbeidsoekersituasjon(mutableListOf(Beskrivelse.ER_PERMITTERT))
+                Arbeidsoekersituasjon(mutableListOf(Element(Beskrivelse.ER_PERMITTERT, mutableMapOf(
+                    PROSENT to "100",
+                    GJELDER_FRA_DATO to "2020-01-01",
+                    STILLING to "Lærer",
+                    STILLING_STYRK08 to "2320"
+                ))))
             )
             eventlogTopic.pipeInput(key, situsjonMottat)
             periodeTopic.isEmpty shouldBe true

@@ -2,8 +2,30 @@ package no.nav.paw.arbeidssokerregisteret.app.tilstand.vo
 
 
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.vo.ArbeidsoekersituasjonBeskrivelse.*
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Element as InternApiElement
+import no.nav.paw.arbeidssokerregisteret.api.v1.Element as ApiElement
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Beskrivelse as InternApiBeskrivelse
 import no.nav.paw.arbeidssokerregisteret.api.v1.Beskrivelse as ApiBeskrivelse
+
+const val GJELDER_FRA_DATO = "gjelder_fra_dato_iso8601"
+const val GJELDER_TIL_DATO = "gjelder_til_dato_iso8601"
+const val STILLING = "stilling"
+const val STILLING_STYRK08 = "stilling_styrk08"
+const val KONSEPT_ID = "konsept_id"
+const val PROSENT = "prosent"
+
+data class Element(val beskrivelse: ArbeidsoekersituasjonBeskrivelse, val detaljer: Map<String, String>)
+
+fun element(internElement: InternApiElement): Element =
+    Element(
+        beskrivelse = arbeidsoekersituasjonBeskrivelse(internElement.beskrivelse),
+        detaljer = internElement.detaljer
+    )
+
+fun Element.api(): ApiElement = ApiElement(
+    beskrivelse.api(),
+    detaljer
+)
 
 enum class ArbeidsoekersituasjonBeskrivelse {
     UKJENT_VERDI,
@@ -23,15 +45,16 @@ enum class ArbeidsoekersituasjonBeskrivelse {
     ANNET
 }
 
+
 fun arbeidsoekersituasjonBeskrivelse(beskrivelse: InternApiBeskrivelse): ArbeidsoekersituasjonBeskrivelse =
-    when(beskrivelse) {
+    when (beskrivelse) {
         InternApiBeskrivelse.UKJENT_VERDI -> UKJENT_VERDI
         InternApiBeskrivelse.UDEFINERT -> UDEFINERT
         InternApiBeskrivelse.HAR_SAGT_OPP -> HAR_SAGT_OPP
         InternApiBeskrivelse.HAR_BLITT_SAGT_OPP -> HAR_BLITT_SAGT_OPP
         InternApiBeskrivelse.ER_PERMITTERT -> ER_PERMITTERT
         InternApiBeskrivelse.ALDRI_HATT_JOBB -> ALDRI_HATT_JOBB
-        InternApiBeskrivelse.IKKE_VEART_I_JOBB_SISTE_2_AAR -> IKKE_VAERT_I_JOBB_SISTE_2_AAR
+        InternApiBeskrivelse.IKKE_VAERT_I_JOBB_SISTE_2_AAR -> IKKE_VAERT_I_JOBB_SISTE_2_AAR
         InternApiBeskrivelse.AKKURAT_FULLFORT_UTDANNING -> AKKURAT_FULLFORT_UTDANNING
         InternApiBeskrivelse.VIL_BYTTE_JOBB -> VIL_BYTTE_JOBB
         InternApiBeskrivelse.USIKKER_JOBBSITUASJON -> USIKKER_JOBBSITUASJON
@@ -43,7 +66,7 @@ fun arbeidsoekersituasjonBeskrivelse(beskrivelse: InternApiBeskrivelse): Arbeids
     }
 
 fun ArbeidsoekersituasjonBeskrivelse.api(): ApiBeskrivelse =
-    when(this) {
+    when (this) {
         UKJENT_VERDI -> ApiBeskrivelse.UKJENT_VERDI
         UDEFINERT -> ApiBeskrivelse.UDEFINERT
         HAR_SAGT_OPP -> ApiBeskrivelse.HAR_SAGT_OPP
