@@ -7,13 +7,6 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Element as ApiElement
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Beskrivelse as InternApiBeskrivelse
 import no.nav.paw.arbeidssokerregisteret.api.v1.Beskrivelse as ApiBeskrivelse
 
-const val GJELDER_FRA_DATO = "gjelder_fra_dato_iso8601"
-const val GJELDER_TIL_DATO = "gjelder_til_dato_iso8601"
-const val STILLING = "stilling"
-const val STILLING_STYRK08 = "stilling_styrk08"
-const val KONSEPT_ID = "konsept_id"
-const val PROSENT = "prosent"
-
 data class Element(val beskrivelse: ArbeidsoekersituasjonBeskrivelse, val detaljer: Map<String, String>)
 
 fun element(internElement: InternApiElement): Element =

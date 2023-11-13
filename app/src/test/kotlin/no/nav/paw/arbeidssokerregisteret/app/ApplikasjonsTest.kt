@@ -2,10 +2,10 @@ package no.nav.paw.arbeidssokerregisteret.app
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.vo.GJELDER_FRA_DATO
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.vo.PROSENT
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.vo.STILLING
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.vo.STILLING_STYRK08
+import no.nav.paw.arbeidssokerregisteret.GJELDER_FRA_DATO
+import no.nav.paw.arbeidssokerregisteret.PROSENT
+import no.nav.paw.arbeidssokerregisteret.STILLING
+import no.nav.paw.arbeidssokerregisteret.STILLING_STYRK08
 import no.nav.paw.arbeidssokerregisteret.intern.v1.*
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.TopologyTestDriver

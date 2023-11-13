@@ -10,6 +10,7 @@ val logbackVersion = "1.4.5"
 val logstashVersion = "7.3"
 
 dependencies {
+    implementation(project(":arbeidssoekerregisteret-kotlin"))
     implementation(pawObservability.bundles.ktorNettyOpentelemetryMicrometerPrometheus)
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.3")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.3")
