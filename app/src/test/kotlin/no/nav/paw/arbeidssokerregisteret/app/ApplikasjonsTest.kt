@@ -145,5 +145,29 @@ class ApplikasjonsTest : FreeSpec({
                 mottattRecord = avsluttetPeriode
             )
         }
+
+        "Når vi mottar en ny situsjon etter at siste periode er avsluttet skal det ikke skje noe" {
+            val situsjonMottat = SituasjonMottat(
+                identitetnummer,
+                Metadata(
+                    Instant.now(),
+                    Bruker(BrukerType.SYSTEM, "test"),
+                    "unit-test",
+                    "tester"
+                ),
+                Utdanning(Utdanningsnivaa.HOYERE_UTDANNING_1_TIL_4, JaNeiVetIkke.JA, JaNeiVetIkke.NEI),
+                Helse(JaNeiVetIkke.JA),
+                Arbeidserfaring(JaNeiVetIkke.JA),
+                Arbeidsoekersituasjon(mutableListOf(Element(Beskrivelse.ER_PERMITTERT, mutableMapOf(
+                    PROSENT to "100",
+                    GJELDER_FRA_DATO to "2020-01-02",
+                    STILLING to "Lærer",
+                    STILLING_STYRK08 to "2320"
+                ))))
+            )
+            eventlogTopic.pipeInput(key, situsjonMottat)
+            periodeTopic.isEmpty shouldBe true
+            situasjonTopic.isEmpty shouldBe true
+        }
     }
 })
