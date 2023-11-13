@@ -7,6 +7,4 @@ data class Periode(
     val identitetsnummer: String,
     val startet: Metadata,
     val avsluttet: Metadata?
-
-    )
-
+)

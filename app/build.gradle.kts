@@ -49,13 +49,6 @@ tasks.named("compileKotlin", org.jetbrains.kotlin.gradle.tasks.KotlinCompilation
     }
 }
 
-//Add test source path
-sourceSets {
-    named("test") {
-        kotlin.srcDir("src/test/kotlin")
-    }
-}
-
 tasks.named<Test>("test") {
     useJUnitPlatform()
 }
