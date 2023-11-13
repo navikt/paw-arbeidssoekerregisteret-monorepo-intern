@@ -1,6 +1,8 @@
 package no.nav.paw.arbeidssokerregisteret.app
 
 import io.kotest.core.spec.style.FreeSpec
+import io.kotest.matchers.collections.shouldNotBeIn
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import no.nav.paw.arbeidssokerregisteret.GJELDER_FRA_DATO
 import no.nav.paw.arbeidssokerregisteret.PROSENT
@@ -11,6 +13,10 @@ import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.TopologyTestDriver
 import java.time.Instant
 import java.util.*
+import no.nav.paw.arbeidssokerregisteret.api.v1.Beskrivelse.ER_PERMITTERT as API_ER_PERMITTERT
+import no.nav.paw.arbeidssokerregisteret.api.v1.JaNeiVetIkke.JA as ApiJa
+import no.nav.paw.arbeidssokerregisteret.api.v1.JaNeiVetIkke.NEI as ApiNei
+import no.nav.paw.arbeidssokerregisteret.api.v1.Utdanningsnivaa.HOYERE_UTDANNING_1_TIL_4 as API_HOYERE_UTDANNING_1_TIL_4
 
 
 class ApplikasjonsTest : FreeSpec({
@@ -88,12 +94,12 @@ class ApplikasjonsTest : FreeSpec({
                     "unit-test",
                     "tester"
                 ),
-                Utdanning(Utdanningsnivaa.HOYERE_UTDANNING_1_TIL_4, JaNeiVetIkke.JA, JaNeiVetIkke.JA),
+                Utdanning(Utdanningsnivaa.HOYERE_UTDANNING_1_TIL_4, JaNeiVetIkke.JA, JaNeiVetIkke.NEI),
                 Helse(JaNeiVetIkke.JA),
                 Arbeidserfaring(JaNeiVetIkke.JA),
                 Arbeidsoekersituasjon(mutableListOf(Element(Beskrivelse.ER_PERMITTERT, mutableMapOf(
                     PROSENT to "100",
-                    GJELDER_FRA_DATO to "2020-01-01",
+                    GJELDER_FRA_DATO to "2020-01-02",
                     STILLING to "Lærer",
                     STILLING_STYRK08 to "2320"
                 ))))
@@ -103,6 +109,19 @@ class ApplikasjonsTest : FreeSpec({
             val situasjon = situasjonTopic.readKeyValue()
             situasjon.key shouldBe key
             situasjon.value.periodeId shouldBe periodeId
+            situasjon.value.utdanning.bestaatt shouldBe ApiJa
+            situasjon.value.utdanning.godkjent shouldBe ApiNei
+            situasjon.value.utdanning.lengde shouldBe API_HOYERE_UTDANNING_1_TIL_4
+            situasjon.value.arbeidsoekersituasjon.beskrivelser.size shouldBe 1
+            with(situasjon.value.arbeidsoekersituasjon) {
+                with(beskrivelser.firstOrNull { it.beskrivelse == API_ER_PERMITTERT }) {
+                    this.shouldNotBeNull()
+                    detaljer?.get(PROSENT) shouldBe "100"
+                    detaljer?.get(GJELDER_FRA_DATO) shouldBe "2020-01-02"
+                    detaljer?.get(STILLING) shouldBe "Lærer"
+                    detaljer?.get(STILLING_STYRK08) shouldBe "2320"
+                }
+            }
         }
 
         "Når vi mottat en 'stoppet' hendelse for en person med en aktiv periode skal vi avslutte perioden" {

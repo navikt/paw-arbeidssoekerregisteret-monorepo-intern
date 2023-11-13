@@ -91,3 +91,4 @@ val kafkaStreamProperties = Properties().apply {
     this[KafkaAvroSerializerConfig.AUTO_REGISTER_SCHEMAS] = "true"
     this[KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG] = "mock://$SCHEMA_REGISTRY_SCOPE"
 }
+
