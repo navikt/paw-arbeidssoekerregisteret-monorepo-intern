@@ -4,6 +4,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldNotBeIn
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import no.nav.paw.arbeidssokerregisteret.GJELDER_FRA_DATO
 import no.nav.paw.arbeidssokerregisteret.PROSENT
 import no.nav.paw.arbeidssokerregisteret.STILLING
@@ -168,6 +169,29 @@ class ApplikasjonsTest : FreeSpec({
             eventlogTopic.pipeInput(key, situsjonMottat)
             periodeTopic.isEmpty shouldBe true
             situasjonTopic.isEmpty shouldBe true
+        }
+
+        "Når vi mottar en 'startet' hendelse og forrige periode er avsluttet skal vi opprette en ny periode" {
+            val startet2 = Startet(
+                identitetnummer,
+                Metadata(
+                    Instant.now(),
+                    Bruker(BrukerType.SLUTTBRUKER, "123456788901"),
+                    "unit-test",
+                    "tester"
+                )
+            )
+            eventlogTopic.pipeInput(key, startet2)
+            val periode = periodeTopic.readKeyValue()
+            situasjonTopic.isEmpty shouldBe true
+            verifiserPeriodeOppMotStartetOgStoppetHendelser(
+                forventetKafkaKey = key,
+                startet = startet2,
+                stoppet = null,
+                mottattRecord = periode
+            )
+            periode.value.id shouldNotBe periodeId
+            periodeId = periode.value.id
         }
     }
 })
