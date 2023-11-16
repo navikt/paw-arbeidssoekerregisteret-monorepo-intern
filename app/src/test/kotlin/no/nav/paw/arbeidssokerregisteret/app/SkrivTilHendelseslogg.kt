@@ -52,12 +52,12 @@ fun main() {
     }
     producer.flush()
     producer.close()
-    Thread.sleep(5000)
+    println("Hendelser før start=${hendelserFørStart.count()}")
+    Thread.sleep(15000)
     val events = periodeConsumer.poll(Duration.ofSeconds(1))
     periodeConsumer.commitSync()
-    println("Antall eventer før start=${hendelserFørStart.count()}")
-    println("Antall eventer=${events.count()}")
-    assert(events.count() == 7)
+    println("Hendelser=${events.count()}")
+    require(events.count() == 7) { "Forventet 7 hendelser, faktisk antall ${events.count()}"}
     events.forEach { println(it.value()) }
 }
 
