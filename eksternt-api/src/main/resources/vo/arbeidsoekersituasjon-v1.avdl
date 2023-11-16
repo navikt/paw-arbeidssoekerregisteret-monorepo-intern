@@ -2,10 +2,10 @@
 protocol Arbeidssoekersituasjon {
 
 	record  Arbeidsoekersituasjon {
-		array<Element> beskrivelser;
+		array<BeskrivelseMedDetaljer> beskrivelser;
 	}
 
-	record Element {
+	record BeskrivelseMedDetaljer {
 		Beskrivelse beskrivelse;
 		/**
 		  * Feltene taes bare med dersom de er er tilgjengelige, i praksis må klienter støtte å motta en tom map.

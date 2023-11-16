@@ -14,7 +14,7 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Utdanningsnivaa as ApiUtdannings
 import no.nav.paw.arbeidssokerregisteret.api.v1.Arbeidserfaring as ApiArbeidserfaring
 import no.nav.paw.arbeidssokerregisteret.api.v1.Arbeidsoekersituasjon as ApiArbeidsoekersituasjon
 import no.nav.paw.arbeidssokerregisteret.api.v1.Beskrivelse as ApiBeskrivelse
-import no.nav.paw.arbeidssokerregisteret.api.v1.Element as ApiElement
+import no.nav.paw.arbeidssokerregisteret.api.v1.BeskrivelseMedDetaljer as ApiBeskrivelseMedDetaljer
 
 import java.util.*
 
@@ -92,8 +92,8 @@ fun Arbeidsoekersituasjon.api(): ApiArbeidsoekersituasjon =
         beskrivelser.map(ArbeidssoekersitusjonMedDetaljer::api)
     )
 
-fun ArbeidssoekersitusjonMedDetaljer.api(): ApiElement =
-    ApiElement(
+fun ArbeidssoekersitusjonMedDetaljer.api(): ApiBeskrivelseMedDetaljer =
+    ApiBeskrivelseMedDetaljer(
         beskrivelse.api(),
         detaljer
     )
