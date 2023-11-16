@@ -3,8 +3,6 @@ package no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors
 import no.nav.paw.arbeidssokerregisteret.app.StreamHendelse
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgHendelse
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.Named
 import org.apache.kafka.streams.processor.api.Processor

@@ -11,10 +11,10 @@ fun genererNyInternTilstandOgNyeApiTilstander(
     internTilstandOgHendelse: InternTilstandOgHendelse
 ): InternTilstandOgApiTilstander {
     val (tilstand, hendelse) = internTilstandOgHendelse
-    return when {
-        hendelse is Startet -> tilstand.startPeriode(recordKey, hendelse)
-        hendelse is Avsluttet -> tilstand.avsluttPeriode(hendelse)
-        hendelse is SituasjonMottatt -> tilstand.situasjonMottatt(recordKey, hendelse)
+    return when (hendelse) {
+        is Startet -> tilstand.startPeriode(recordKey, hendelse)
+        is Avsluttet -> tilstand.avsluttPeriode(hendelse)
+        is SituasjonMottatt -> tilstand.situasjonMottatt(recordKey, hendelse)
         else -> throw IllegalStateException("Uventet hendelse: $hendelse")
     }
 }
