@@ -129,6 +129,7 @@ class ApplikasjonsTest : FreeSpec({
             eventlogTopic.pipeInput(key, situsjonMottat)
             periodeTopic.isEmpty shouldBe true
             val situasjon = situasjonTopic.readKeyValue()
+            verifiserApiMetadataMotInternMetadata(situsjonMottat.metadata, situasjon.value.sendtInnAv)
             situasjon.key shouldBe key
             situasjon.value.periodeId shouldBe periodeId
             situasjon.value.utdanning.bestaatt shouldBe ApiJa

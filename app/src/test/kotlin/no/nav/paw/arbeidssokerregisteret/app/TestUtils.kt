@@ -5,11 +5,13 @@ import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.api.v1.Situasjon
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandSerde
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata as InternMetadata
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
@@ -51,13 +53,21 @@ fun verifiserPeriodeOppMotStartetOgStoppetHendelser(
         mottattRecord.value.avsluttet shouldBe null
     } else {
         val mottattApiMetadata = mottattRecord.value.avsluttet
-        mottattApiMetadata.shouldNotBeNull()
-        mottattApiMetadata.tidspunkt shouldBe avsluttet.metadata.tidspunkt.truncatedTo(ChronoUnit.MILLIS)
-        mottattApiMetadata.aarsak shouldBe avsluttet.metadata.aarsak
-        mottattApiMetadata.utfoertAv.type.name shouldBe avsluttet.metadata.utfoertAv.type.name
-        mottattApiMetadata.utfoertAv.id shouldBe avsluttet.metadata.utfoertAv.id
+        verifiserApiMetadataMotInternMetadata(avsluttet.metadata, mottattApiMetadata)
     }
 }
+
+fun verifiserApiMetadataMotInternMetadata(
+    forventedeMetadataVerdier: InternMetadata,
+    mottattApiMetadata: Metadata
+) {
+    mottattApiMetadata.shouldNotBeNull()
+    mottattApiMetadata.tidspunkt shouldBe forventedeMetadataVerdier.tidspunkt.truncatedTo(ChronoUnit.MILLIS)
+    mottattApiMetadata.aarsak shouldBe forventedeMetadataVerdier.aarsak
+    mottattApiMetadata.utfoertAv.type.name shouldBe forventedeMetadataVerdier.utfoertAv.type.name
+    mottattApiMetadata.utfoertAv.id shouldBe forventedeMetadataVerdier.utfoertAv.id
+}
+
 fun <T : SpecificRecord> opprettSerde(): Serde<T> {
     val schemaRegistryClient = MockSchemaRegistry.getClientForScope(SCHEMA_REGISTRY_SCOPE)
     val serde: Serde<T> = SpecificAvroSerde(schemaRegistryClient)
