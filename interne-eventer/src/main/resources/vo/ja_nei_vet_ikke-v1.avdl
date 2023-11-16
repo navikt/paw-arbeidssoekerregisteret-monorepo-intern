@@ -1,9 +1,0 @@
-@namespace("no.nav.paw.arbeidssokerregisteret.intern.v1")
-protocol JaNeiVetIkke {
-
-	enum JaNeiVetIkke {
-		JA,
-		NEI,
-		VET_IKKE
-	}
-}

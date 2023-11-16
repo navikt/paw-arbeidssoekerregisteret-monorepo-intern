@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 
-import no.nav.paw.arbeidssokerregisteret.app.Hendelse
+import no.nav.paw.arbeidssokerregisteret.app.StreamHendelse
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgHendelse
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand
 import no.nav.paw.arbeidssokerregisteret.intern.v1.SituasjonMottat
@@ -19,5 +19,5 @@ fun ignorerDuplikatStartOgStopp(recordKey: Long, tilstandOgHendelse: InternTilst
     }
 }
 
-inline fun <reified A : Hendelse> Hendelse.erIkke(): Boolean = this !is A
-inline fun <reified A : Hendelse, reified B : Hendelse> Hendelse.erIkkeEnAv(): Boolean = this !is A && this !is B
+inline fun <reified A : StreamHendelse> StreamHendelse.erIkke(): Boolean = this !is A
+inline fun <reified A : StreamHendelse, reified B : StreamHendelse> StreamHendelse.erIkkeEnAv(): Boolean = this !is A && this !is B

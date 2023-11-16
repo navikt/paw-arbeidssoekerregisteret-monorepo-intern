@@ -1,8 +1,0 @@
-@namespace("no.nav.paw.arbeidssokerregisteret.intern.v1")
-protocol HendelseStartetV1 {
-	import idl "vo/metadata-v1.avdl";
-	record Startet {
-		string identitetsnummer;
-		Metadata metadata;
-	}
-}

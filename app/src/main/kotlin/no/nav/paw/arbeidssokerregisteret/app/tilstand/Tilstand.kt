@@ -1,7 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.app.tilstand
 
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.vo.Periode
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.vo.Situasjon
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Situasjon
 
 data class Tilstand(
     val kafkaKey: Long,

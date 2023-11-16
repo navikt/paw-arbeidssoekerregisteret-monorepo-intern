@@ -4,8 +4,8 @@ import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgApiTilstan
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand.STARTET
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.vo.api
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.vo.situasjon
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.api
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.situasjon
 import no.nav.paw.arbeidssokerregisteret.intern.v1.SituasjonMottat
 
 fun Tilstand?.situasjonMottatt(recordKey: Long, hendelse: SituasjonMottat): InternTilstandOgApiTilstander =

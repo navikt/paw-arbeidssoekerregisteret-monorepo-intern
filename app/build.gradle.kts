@@ -10,6 +10,7 @@ val logbackVersion = "1.4.5"
 val logstashVersion = "7.3"
 
 dependencies {
+    implementation(project(":interne-eventer"))
     implementation(project(":arbeidssoekerregisteret-kotlin"))
     implementation(pawObservability.bundles.ktorNettyOpentelemetryMicrometerPrometheus)
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.3")
@@ -36,7 +37,7 @@ ktor {
 
 tasks.named("generateAvroProtocol", GenerateAvroProtocolTask::class) {
     source("$rootDir/eksternt-api/src/main")
-    source("$rootDir/interne-eventer/src/main")
+//    source("$rootDir/interne-eventer/src/main")
 }
 
 application {

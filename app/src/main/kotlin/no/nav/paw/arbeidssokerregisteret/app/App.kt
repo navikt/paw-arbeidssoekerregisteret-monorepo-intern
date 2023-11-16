@@ -7,6 +7,7 @@ import no.nav.paw.arbeidssokerregisteret.app.helse.Helse
 import no.nav.paw.arbeidssokerregisteret.app.helse.initKtor
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandSerde
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
@@ -21,7 +22,7 @@ import org.slf4j.LoggerFactory
 
 const val kafkaKonfigurasjonsfil = "kafka_konfigurasjon.toml"
 
-typealias Hendelse = SpecificRecord
+typealias StreamHendelse = Hendelse
 
 fun main() {
     val streamLogger = LoggerFactory.getLogger("App")

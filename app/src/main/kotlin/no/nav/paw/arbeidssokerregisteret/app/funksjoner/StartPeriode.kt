@@ -3,9 +3,9 @@ package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgApiTilstander
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.vo.Periode
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.vo.api
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.vo.metadata
+import no.nav.paw.arbeidssokerregisteret.app.tilstand.Periode
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.api
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.metadata
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import java.util.*
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode as ApiPeriode
