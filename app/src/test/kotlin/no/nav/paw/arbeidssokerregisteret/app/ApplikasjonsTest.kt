@@ -1,7 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.app
 
 import io.kotest.core.spec.style.FreeSpec
-import io.kotest.matchers.collections.shouldNotBeIn
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -9,7 +8,10 @@ import no.nav.paw.arbeidssokerregisteret.GJELDER_FRA_DATO
 import no.nav.paw.arbeidssokerregisteret.PROSENT
 import no.nav.paw.arbeidssokerregisteret.STILLING
 import no.nav.paw.arbeidssokerregisteret.STILLING_STYRK08
-import no.nav.paw.arbeidssokerregisteret.intern.v1.*
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.SituasjonMottatt
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.*
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.TopologyTestDriver
 import java.time.Instant
@@ -49,12 +51,16 @@ class ApplikasjonsTest : FreeSpec({
     val key = 5L
     "Verifiser applikasjonsflyt" - {
         val startet = Startet(
-            identitetnummer,
-            Metadata(
+            hendelseId = UUID.randomUUID(),
+            identitetsnummer = identitetnummer,
+            metadata = Metadata(
                 Instant.now(),
-                Bruker(BrukerType.SYSTEM, "test"),
-                "unit-test",
-                "tester"
+                Bruker(
+                    type = BrukerType.SYSTEM,
+                    id = "test"
+                ),
+                kilde = "unit-test",
+                aarsak = "tester"
             )
         )
         var periodeId: UUID? = null
@@ -65,7 +71,7 @@ class ApplikasjonsTest : FreeSpec({
             verifiserPeriodeOppMotStartetOgStoppetHendelser(
                 forventetKafkaKey = key,
                 startet = startet,
-                stoppet = null,
+                avsluttet = null,
                 mottattRecord = periode
             )
             periodeId = periode.value.id
@@ -73,12 +79,13 @@ class ApplikasjonsTest : FreeSpec({
 
         "Når vi mottar en 'startet' hendelse for en person med en aktiv periode skal det ikke skje noe" {
             val duplikatStart = Startet(
-                identitetnummer,
-                Metadata(
-                    Instant.now(),
-                    Bruker(BrukerType.SYSTEM, "test"),
-                    "unit-test",
-                    "tester"
+                hendelseId = UUID.randomUUID(),
+                identitetsnummer = identitetnummer,
+                metadata = Metadata(
+                    tidspunkt = Instant.now(),
+                    utfoertAv = Bruker(type = BrukerType.SYSTEM, id = "test"),
+                    kilde = "unit-test",
+                    aarsak = "tester"
                 )
             )
             eventlogTopic.pipeInput(key, duplikatStart)
@@ -87,23 +94,37 @@ class ApplikasjonsTest : FreeSpec({
         }
 
         "Når vi mottar en ny situsjon for en person med en aktiv periode skal vi sende ut en ny situasjon" {
-            val situsjonMottat = SituasjonMottat(
-                identitetnummer,
-                Metadata(
-                    Instant.now(),
-                    Bruker(BrukerType.SYSTEM, "test"),
-                    "unit-test",
-                    "tester"
-                ),
-                Utdanning(Utdanningsnivaa.HOYERE_UTDANNING_1_TIL_4, JaNeiVetIkke.JA, JaNeiVetIkke.NEI),
-                Helse(JaNeiVetIkke.JA),
-                Arbeidserfaring(JaNeiVetIkke.JA),
-                Arbeidsoekersituasjon(mutableListOf(Element(Beskrivelse.ER_PERMITTERT, mutableMapOf(
-                    PROSENT to "100",
-                    GJELDER_FRA_DATO to "2020-01-02",
-                    STILLING to "Lærer",
-                    STILLING_STYRK08 to "2320"
-                ))))
+            val situsjonMottat = SituasjonMottatt(
+                hendelseId = UUID.randomUUID(),
+                identitetsnummer = identitetnummer,
+                situasjon = Situasjon(
+                    id = UUID.randomUUID(),
+                    metadata = Metadata(
+                        Instant.now(),
+                        Bruker(BrukerType.SYSTEM, "test"),
+                        "unit-test",
+                        "tester"
+                    ),
+                    utdanning = Utdanning(
+                        utdanningsnivaa = Utdanningsnivaa.HOYERE_UTDANNING_1_TIL_4,
+                        bestaatt = JaNeiVetIkke.JA,
+                        godkjent = JaNeiVetIkke.NEI
+                    ),
+                    helse = Helse(JaNeiVetIkke.JA),
+                    arbeidserfaring = Arbeidserfaring(JaNeiVetIkke.JA),
+                    arbeidsoekersituasjon = Arbeidsoekersituasjon(
+                        mutableListOf(
+                            ArbeidssoekersitusjonMedDetaljer(
+                                beskrivelse = ArbeidsoekersituasjonBeskrivelse.ER_PERMITTERT, detaljer = mutableMapOf(
+                                    PROSENT to "100",
+                                    GJELDER_FRA_DATO to "2020-01-02",
+                                    STILLING to "Lærer",
+                                    STILLING_STYRK08 to "2320"
+                                )
+                            )
+                        )
+                    )
+                )
             )
             eventlogTopic.pipeInput(key, situsjonMottat)
             periodeTopic.isEmpty shouldBe true
@@ -126,9 +147,10 @@ class ApplikasjonsTest : FreeSpec({
         }
 
         "Når vi mottat en 'stoppet' hendelse for en person med en aktiv periode skal vi avslutte perioden" {
-            val stoppet = Stoppet(
-                identitetnummer,
-                Metadata(
+            val stoppet = Avsluttet(
+                hendelseId = UUID.randomUUID(),
+                identitetsnummer = identitetnummer,
+                metadata = Metadata(
                     Instant.now(),
                     Bruker(BrukerType.SYSTEM, "test"),
                     "unit-test",
@@ -142,29 +164,44 @@ class ApplikasjonsTest : FreeSpec({
             verifiserPeriodeOppMotStartetOgStoppetHendelser(
                 forventetKafkaKey = key,
                 startet = startet,
-                stoppet = stoppet,
+                avsluttet = stoppet,
                 mottattRecord = avsluttetPeriode
             )
         }
 
         "Når vi mottar en ny situsjon etter at siste periode er avsluttet skal det ikke skje noe" {
-            val situsjonMottat = SituasjonMottat(
-                identitetnummer,
-                Metadata(
-                    Instant.now(),
-                    Bruker(BrukerType.SYSTEM, "test"),
-                    "unit-test",
-                    "tester"
-                ),
-                Utdanning(Utdanningsnivaa.HOYERE_UTDANNING_1_TIL_4, JaNeiVetIkke.JA, JaNeiVetIkke.NEI),
-                Helse(JaNeiVetIkke.JA),
-                Arbeidserfaring(JaNeiVetIkke.JA),
-                Arbeidsoekersituasjon(mutableListOf(Element(Beskrivelse.ER_PERMITTERT, mutableMapOf(
-                    PROSENT to "100",
-                    GJELDER_FRA_DATO to "2020-01-02",
-                    STILLING to "Lærer",
-                    STILLING_STYRK08 to "2320"
-                ))))
+            val situsjonMottat = SituasjonMottatt(
+                hendelseId = UUID.randomUUID(),
+                identitetsnummer = identitetnummer,
+                situasjon = Situasjon(
+                    id = UUID.randomUUID(),
+                    metadata = Metadata(
+                        Instant.now(),
+                        Bruker(BrukerType.SYSTEM, "test"),
+                        "unit-test",
+                        "tester"
+                    ),
+                    utdanning = Utdanning(
+                        utdanningsnivaa = Utdanningsnivaa.HOYERE_UTDANNING_1_TIL_4,
+                        bestaatt = JaNeiVetIkke.JA,
+                        godkjent = JaNeiVetIkke.NEI
+                    ),
+                    helse = Helse(JaNeiVetIkke.JA),
+                    arbeidserfaring = Arbeidserfaring(JaNeiVetIkke.JA),
+                    arbeidsoekersituasjon = Arbeidsoekersituasjon(
+                        mutableListOf(
+                            ArbeidssoekersitusjonMedDetaljer(
+                                beskrivelse = ArbeidsoekersituasjonBeskrivelse.ER_PERMITTERT,
+                                detaljer = mapOf(
+                                    PROSENT to "100",
+                                    GJELDER_FRA_DATO to "2020-01-02",
+                                    STILLING to "Lærer",
+                                    STILLING_STYRK08 to "2320"
+                                )
+                            )
+                        )
+                    )
+                )
             )
             eventlogTopic.pipeInput(key, situsjonMottat)
             periodeTopic.isEmpty shouldBe true
@@ -173,12 +210,13 @@ class ApplikasjonsTest : FreeSpec({
 
         "Når vi mottar en 'startet' hendelse og forrige periode er avsluttet skal vi opprette en ny periode" {
             val startet2 = Startet(
-                identitetnummer,
-                Metadata(
-                    Instant.now(),
-                    Bruker(BrukerType.SLUTTBRUKER, "123456788901"),
-                    "unit-test",
-                    "tester"
+                hendelseId = UUID.randomUUID(),
+                identitetsnummer = identitetnummer,
+                metadata = Metadata(
+                    tidspunkt = Instant.now(),
+                    utfoertAv = Bruker(BrukerType.SLUTTBRUKER, "123456788901"),
+                    kilde = "unit-test",
+                    aarsak = "tester"
                 )
             )
             eventlogTopic.pipeInput(key, startet2)
@@ -187,7 +225,7 @@ class ApplikasjonsTest : FreeSpec({
             verifiserPeriodeOppMotStartetOgStoppetHendelser(
                 forventetKafkaKey = key,
                 startet = startet2,
-                stoppet = null,
+                avsluttet = null,
                 mottattRecord = periode
             )
             periode.value.id shouldNotBe periodeId

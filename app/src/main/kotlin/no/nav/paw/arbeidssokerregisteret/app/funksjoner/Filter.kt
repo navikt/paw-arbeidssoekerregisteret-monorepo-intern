@@ -3,19 +3,19 @@ package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 import no.nav.paw.arbeidssokerregisteret.app.StreamHendelse
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgHendelse
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand
-import no.nav.paw.arbeidssokerregisteret.intern.v1.SituasjonMottat
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Stoppet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.SituasjonMottatt
 
 
 
 fun ignorerDuplikatStartOgStopp(recordKey: Long, tilstandOgHendelse: InternTilstandOgHendelse): Boolean {
     val (tilstand, hendelse) = tilstandOgHendelse
     return when (tilstand?.gjeldeneTilstand) {
-        null -> hendelse.erIkkeEnAv<Stoppet, SituasjonMottat>()
+        null -> hendelse.erIkkeEnAv<Avsluttet, SituasjonMottatt>()
         GjeldeneTilstand.STARTET -> hendelse.erIkke<Startet>()
-        GjeldeneTilstand.STOPPET -> hendelse.erIkke<Stoppet>()
-        GjeldeneTilstand.AVVIST -> hendelse.erIkkeEnAv<Stoppet, SituasjonMottat>()
+        GjeldeneTilstand.STOPPET -> hendelse.erIkke<Avsluttet>()
+        GjeldeneTilstand.AVVIST -> hendelse.erIkkeEnAv<Avsluttet, SituasjonMottatt>()
     }
 }
 

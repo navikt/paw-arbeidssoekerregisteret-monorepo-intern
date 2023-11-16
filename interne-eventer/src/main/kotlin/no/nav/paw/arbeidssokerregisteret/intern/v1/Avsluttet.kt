@@ -8,5 +8,5 @@ data class Avsluttet(
     override val identitetsnummer: String,
     override val metadata: Metadata
 ): Hendelse {
-    override val hendelseType: HendelseType = avsluttetHendelseType
+    override val hendelseType: String = avsluttetHendelseType
 }

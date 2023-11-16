@@ -8,5 +8,5 @@ class Startet(
     override val identitetsnummer: String,
     override val metadata: Metadata
 ): Hendelse {
-    override val hendelseType: HendelseType = startetHendelseType
+    override val hendelseType: String = startetHendelseType
 }

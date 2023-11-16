@@ -1,11 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgApiTilstander
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.Periode
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.api
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.metadata
+import no.nav.paw.arbeidssokerregisteret.app.tilstand.*
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import java.util.*
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode as ApiPeriode
@@ -15,7 +10,7 @@ fun Tilstand?.startPeriode(recordKey: Long, hendelse: Startet): InternTilstandOg
     val startetPeriode = Periode(
         id = UUID.randomUUID(),
         identitetsnummer = hendelse.identitetsnummer,
-        startet = metadata(hendelse.metadata),
+        startet = hendelse.metadata,
         avsluttet = null
     )
     val tilstand: Tilstand = this?.copy(

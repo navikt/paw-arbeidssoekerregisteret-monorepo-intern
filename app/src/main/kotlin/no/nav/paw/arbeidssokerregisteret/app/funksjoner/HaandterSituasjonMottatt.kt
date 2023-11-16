@@ -1,14 +1,14 @@
 package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 
+import no.nav.paw.arbeidssokerregisteret.api.v1.Situasjon
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgApiTilstander
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand.STARTET
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.api
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.situasjon
-import no.nav.paw.arbeidssokerregisteret.intern.v1.SituasjonMottat
+import no.nav.paw.arbeidssokerregisteret.app.tilstand.api
+import no.nav.paw.arbeidssokerregisteret.intern.v1.SituasjonMottatt
 
-fun Tilstand?.situasjonMottatt(recordKey: Long, hendelse: SituasjonMottat): InternTilstandOgApiTilstander =
+fun Tilstand?.situasjonMottatt(recordKey: Long, hendelse: SituasjonMottatt): InternTilstandOgApiTilstander =
     when {
         this == null -> {
             InternTilstandOgApiTilstander(
@@ -19,7 +19,7 @@ fun Tilstand?.situasjonMottatt(recordKey: Long, hendelse: SituasjonMottat): Inte
                     gjeldeneTilstand = GjeldeneTilstand.STOPPET,
                     gjeldenePeriode = null,
                     forrigePeriode = null,
-                    sisteSituasjon = situasjon(hendelse),
+                    sisteSituasjon = hendelse.situasjon,
                     forrigeSituasjon = null
                 ),
                 nySituasjonTilstand = null,
@@ -30,7 +30,7 @@ fun Tilstand?.situasjonMottatt(recordKey: Long, hendelse: SituasjonMottat): Inte
         this.gjeldenePeriode == null -> {
             InternTilstandOgApiTilstander(
                 tilstand = this.copy(
-                    sisteSituasjon = situasjon(hendelse),
+                    sisteSituasjon = hendelse.situasjon,
                     forrigeSituasjon = this.sisteSituasjon
                 ),
                 nySituasjonTilstand = null,
@@ -41,11 +41,19 @@ fun Tilstand?.situasjonMottatt(recordKey: Long, hendelse: SituasjonMottat): Inte
         else -> {
             InternTilstandOgApiTilstander(
                 tilstand = this.copy(
-                    sisteSituasjon = situasjon(hendelse),
+                    sisteSituasjon = hendelse.situasjon,
                     forrigeSituasjon = this.sisteSituasjon
                 ),
                 nySituasjonTilstand = if (gjeldeneTilstand == STARTET) {
-                    situasjon(hendelse).api(this.gjeldenePeriode.id)
+                    Situasjon(
+                        hendelse.situasjon.id,
+                        gjeldenePeriode.id,
+                        hendelse.metadata.api(),
+                        hendelse.situasjon.utdanning.api(),
+                        hendelse.situasjon.helse.api(),
+                        hendelse.situasjon.arbeidserfaring.api(),
+                        hendelse.situasjon.arbeidsoekersituasjon.api()
+                    )
                 } else null,
                 nyePeriodeTilstand = null
             )

@@ -6,9 +6,9 @@ import java.util.*
 
 data class SituasjonMottatt(
     override val hendelseId: UUID,
-    override val metadata: Metadata,
     override val identitetsnummer: String,
     val situasjon: Situasjon
 ): Hendelse {
-    override val hendelseType: HendelseType = situasjonMottattHendelseType
+    override val hendelseType: String = situasjonMottattHendelseType
+    override val metadata: Metadata = situasjon.metadata
 }

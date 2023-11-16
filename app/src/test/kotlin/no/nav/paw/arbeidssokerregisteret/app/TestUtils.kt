@@ -8,8 +8,8 @@ import io.kotest.matchers.shouldBe
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.api.v1.Situasjon
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandSerde
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Stoppet
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
@@ -19,11 +19,12 @@ import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.state.internals.InMemoryKeyValueBytesStoreSupplier
 import org.apache.kafka.streams.state.internals.KeyValueStoreBuilder
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 const val SCHEMA_REGISTRY_SCOPE = "juni-registry"
 
-val hendelseSerde = opprettSerde<SpecificRecord>()
+val hendelseSerde = HendelseSerde()
 val periodeSerde = opprettSerde<Periode>()
 val situasjonSerde = opprettSerde<Situasjon>()
 val tilstandSerde = TilstandSerde()
@@ -36,25 +37,25 @@ const val situasjonTopicNavn = "situasjonTopic"
 fun verifiserPeriodeOppMotStartetOgStoppetHendelser(
     forventetKafkaKey: Long,
     startet: Startet,
-    stoppet: Stoppet?,
+    avsluttet: Avsluttet?,
     mottattRecord: KeyValue<Long, Periode>
 ) {
     mottattRecord.key shouldBe forventetKafkaKey
     mottattRecord.value.id.shouldNotBeNull()
     mottattRecord.value.identitetsnummer shouldBe startet.identitetsnummer
-    mottattRecord.value.startet.tidspunkt shouldBe startet.metadata.tidspunkt
+    mottattRecord.value.startet.tidspunkt shouldBe startet.metadata.tidspunkt.truncatedTo(ChronoUnit.MILLIS)
     mottattRecord.value.startet.aarsak shouldBe startet.metadata.aarsak
     mottattRecord.value.startet.utfoertAv.type.name shouldBe startet.metadata.utfoertAv.type.name
     mottattRecord.value.startet.utfoertAv.id shouldBe startet.metadata.utfoertAv.id
-    if (stoppet == null) {
+    if (avsluttet == null) {
         mottattRecord.value.avsluttet shouldBe null
     } else {
-        val avsluttet = mottattRecord.value.avsluttet
-        avsluttet.shouldNotBeNull()
-        avsluttet.tidspunkt shouldBe stoppet.metadata.tidspunkt
-        avsluttet.aarsak shouldBe stoppet.metadata.aarsak
-        avsluttet.utfoertAv.type.name shouldBe stoppet.metadata.utfoertAv.type.name
-        avsluttet.utfoertAv.id shouldBe stoppet.metadata.utfoertAv.id
+        val mottattApiMetadata = mottattRecord.value.avsluttet
+        mottattApiMetadata.shouldNotBeNull()
+        mottattApiMetadata.tidspunkt shouldBe avsluttet.metadata.tidspunkt.truncatedTo(ChronoUnit.MILLIS)
+        mottattApiMetadata.aarsak shouldBe avsluttet.metadata.aarsak
+        mottattApiMetadata.utfoertAv.type.name shouldBe avsluttet.metadata.utfoertAv.type.name
+        mottattApiMetadata.utfoertAv.id shouldBe avsluttet.metadata.utfoertAv.id
     }
 }
 fun <T : SpecificRecord> opprettSerde(): Serde<T> {
