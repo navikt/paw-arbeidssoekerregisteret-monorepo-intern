@@ -5,13 +5,9 @@ import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.jackson.*
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder
-import no.nav.paw.kafkakeygenerator.config.Autentiseringskonfigurasjon
 import no.nav.paw.kafkakeygenerator.config.AzureTokenKlientKonfigurasjon
 import no.nav.paw.kafkakeygenerator.config.PdlKlientKonfigurasjon
-import no.nav.paw.kafkakeygenerator.config.lastKonfigurasjon
-import no.nav.paw.kafkakeygenerator.pdlKlientKonfigFil
 import no.nav.paw.pdl.PdlClient
-
 
 fun opprettKtorKlient() = HttpClient(OkHttp) {
     install(ContentNegotiation) {

@@ -1,8 +1,10 @@
 package no.nav.paw.kafkakeygenerator.ktor
 
+import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.metrics.micrometer.*
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.swagger.*
 import io.ktor.server.routing.*
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
@@ -24,6 +26,7 @@ fun Application.konfigurerServer(
 ) {
     autentisering(autentiseringKonfigurasjon)
     micrometerMetrics(prometheusMeterRegistry)
+    serialisering()
     routing {
         konfigurereHelse(prometheusMeterRegistry)
         konfigurerApi(autentiseringKonfigurasjon, applikasjon)
@@ -60,5 +63,11 @@ fun Application.autentisering(autentiseringskonfigurasjon: Autentiseringskonfigu
                 ),
             )
         }
+    }
+}
+
+fun Application.serialisering() {
+    install(ContentNegotiation) {
+        jackson()
     }
 }
