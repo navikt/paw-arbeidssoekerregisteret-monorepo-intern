@@ -42,3 +42,7 @@ spec:
   azure:
     application:
       enabled: true
+  accessPolicy:
+      inbound:
+        rules:
+          - application: paw-migrering-veilarb-til-nytt-register
