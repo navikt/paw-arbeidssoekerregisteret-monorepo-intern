@@ -1,5 +1,6 @@
 package no.nav.paw.kafkakeygenerator.ktor
 
+import com.fasterxml.jackson.databind.DatabindException
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
@@ -79,20 +80,36 @@ fun Application.serialisering() {
     }
 }
 
-private val errorLogger = LoggerFactory.getLogger("error_logger")
+private val feilLogger = LoggerFactory.getLogger("error_logger")
 fun Application.statusPages() {
     install(StatusPages) {
         exception<Throwable> { call, throwable ->
-            errorLogger.error(
-                "Kall {}, feilet, grunnet: {}",
-                masker(call.request.path()),
-                masker(throwable.message)
-            )
-            call.respondText(
-                "En uventet feil oppstod",
-                ContentType.Text.Plain,
-                HttpStatusCode.InternalServerError
-            )
+            when (throwable) {
+                is DatabindException -> {
+                    feilLogger.info(
+                        "Ugyldig kall {}, feilet, grunnet: {}",
+                        masker(call.request.path()),
+                        masker(throwable.message)
+                    )
+                    call.respondText(
+                        "Bad request",
+                        ContentType.Text.Plain,
+                        HttpStatusCode.BadRequest
+                    )
+                }
+                else -> {
+                    feilLogger.error(
+                        "Kall {}, feilet, grunnet: {}",
+                        masker(call.request.path()),
+                        masker(throwable.message)
+                    )
+                    call.respondText(
+                        "En uventet feil oppstod",
+                        ContentType.Text.Plain,
+                        HttpStatusCode.InternalServerError
+                    )
+                }
+            }
         }
     }
 }
