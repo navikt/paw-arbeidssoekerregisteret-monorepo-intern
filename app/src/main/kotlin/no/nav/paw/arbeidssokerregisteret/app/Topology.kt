@@ -51,9 +51,11 @@ fun topology(
             )
             .branch(
                 { _, value -> value is Situasjon },
-                Branched.withConsumer { consumer -> consumer
-                    .peek { _, periode -> tellUtgåendeTilstand(situasjonTopic, periode) }
-                    .to(situasjonTopic) }
+                Branched.withConsumer { consumer ->
+                    consumer
+                        .peek { _, periode -> tellUtgåendeTilstand(situasjonTopic, periode) }
+                        .to(situasjonTopic)
+                }
             )
             .noDefaultBranch()
         return builder.build()
