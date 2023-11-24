@@ -43,6 +43,9 @@ spec:
     application:
       enabled: true
   accessPolicy:
+      outbound:
+        external:
+          - host: pdl-api.dev-fss-pub.nais.io
       inbound:
         rules:
           - application: paw-migrering-veilarb-til-nytt-register
