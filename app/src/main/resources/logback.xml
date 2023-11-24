@@ -24,21 +24,13 @@
         <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
     </appender>
 
-    <if condition='isDefined("NAIS_CLUSTER_NAME")'>
-        <then>
-            <logger name="tjenestekall" level="DEBUG" additivity="false">
-                <appender-ref ref="secureLog" />
-            </logger>
-            <root level="INFO">
-                <appender-ref ref="STDOUT_JSON" />
-            </root>
-        </then>
-        <else>
-            <root level="INFO">
-                <appender-ref ref="CONSOLE" />
-            </root>
-        </else>
-    </if>
+    <logger name="tjenestekall" level="DEBUG" additivity="false">
+        <appender-ref ref="secureLog" />
+    </logger>
+    <root level="INFO">
+        <appender-ref ref="STDOUT_JSON" />
+    </root>
+
 
     <include resource="no/nav/common/audit_log/logback-naudit.xml"/>
 
