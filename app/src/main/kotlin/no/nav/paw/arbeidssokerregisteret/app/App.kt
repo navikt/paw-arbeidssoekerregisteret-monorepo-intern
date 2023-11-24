@@ -38,7 +38,9 @@ fun main() {
             Time.SYSTEM
         )
     )
+    val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val topology = topology(
+        prometheusMeterRegistry = prometheusMeterRegistry,
         builder = strømBygger,
         dbNavn = dbNavn,
         innTopic = kafkaKonfigurasjon.streamKonfigurasjon.eventlogTopic,
@@ -53,7 +55,6 @@ fun main() {
     }
     kafkaStreams.start()
     val helse = Helse(kafkaStreams)
-    val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     initKtor(
         prometheusRegistry = prometheusMeterRegistry,
         helse = helse

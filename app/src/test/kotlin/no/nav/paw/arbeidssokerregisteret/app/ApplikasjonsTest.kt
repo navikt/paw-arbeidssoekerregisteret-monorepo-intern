@@ -4,6 +4,8 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.micrometer.prometheus.PrometheusConfig
+import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.GJELDER_FRA_DATO
 import no.nav.paw.arbeidssokerregisteret.PROSENT
 import no.nav.paw.arbeidssokerregisteret.STILLING
@@ -23,7 +25,9 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Utdanningsnivaa.HOYERE_UTDANNING
 
 
 class ApplikasjonsTest : FreeSpec({
+    val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val topology = topology(
+        prometheusMeterRegistry = prometheusMeterRegistry,
         builder = opprettStreamsBuilder(dbNavn, tilstandSerde),
         dbNavn = dbNavn,
         innTopic = eventlogTopicNavn,

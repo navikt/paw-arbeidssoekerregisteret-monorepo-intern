@@ -9,7 +9,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.SituasjonMottatt
 
 
 
-fun ignorerDuplikatStartOgStopp(recordKey: Long, tilstandOgHendelse: InternTilstandOgHendelse): Boolean {
+fun ignorerDuplikatStartOgStopp(@Suppress("UNUSED_PARAMETER") recordKey: Long, tilstandOgHendelse: InternTilstandOgHendelse): Boolean {
     val (tilstand, hendelse) = tilstandOgHendelse
     return when (tilstand?.gjeldeneTilstand) {
         null -> hendelse.erIkkeEnAv<Avsluttet, SituasjonMottatt>()

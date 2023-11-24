@@ -1,11 +1,14 @@
 package no.nav.paw.arbeidssokerregisteret.app
 
+import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.api.v1.Situasjon
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.genererNyInternTilstandOgNyeApiTilstander
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.ignorerDuplikatStartOgStopp
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors.lagreInternTilstand
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors.lastInternTilstand
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.tellHendelse
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.tellUtgåendeTilstand
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serdes
@@ -17,6 +20,7 @@ import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.KStream
 
 fun topology(
+    prometheusMeterRegistry: PrometheusMeterRegistry,
     builder: StreamsBuilder,
     dbNavn: String,
     innTopic: String,
@@ -24,25 +28,34 @@ fun topology(
     situasjonTopic: String
 ): Topology {
     val strøm: KStream<Long, Hendelse> = builder.stream(innTopic, Consumed.with(Serdes.Long(), HendelseSerde()))
-    strøm
-        .lastInternTilstand(dbNavn)
-        .filter(::ignorerDuplikatStartOgStopp)
-        .mapValues(::genererNyInternTilstandOgNyeApiTilstander)
-        .lagreInternTilstand(dbNavn)
-        .flatMap { key, value ->
-            listOfNotNull(
-                value.nyePeriodeTilstand?.let { KeyValue(key, it as SpecificRecord) },
-                value.nySituasjonTilstand?.let { KeyValue(key, it as SpecificRecord) }
+    with(prometheusMeterRegistry) {
+        strøm
+            .peek { _, hendelse -> tellHendelse(innTopic, hendelse) }
+            .lastInternTilstand(dbNavn)
+            .filter(::ignorerDuplikatStartOgStopp)
+            .mapValues(::genererNyInternTilstandOgNyeApiTilstander)
+            .lagreInternTilstand(dbNavn)
+            .flatMap { key, value ->
+                listOfNotNull(
+                    value.nyePeriodeTilstand?.let { KeyValue(key, it as SpecificRecord) },
+                    value.nySituasjonTilstand?.let { KeyValue(key, it as SpecificRecord) }
+                )
+            }.split()
+            .branch(
+                { _, value -> value is Periode },
+                Branched.withConsumer { consumer ->
+                    consumer
+                        .peek { _, periode -> tellUtgåendeTilstand(periodeTopic, periode) }
+                        .to(periodeTopic)
+                }
             )
-        }.split()
-        .branch(
-            { _, value -> value is Periode },
-            Branched.withConsumer { consumer -> consumer.to(periodeTopic) }
-        )
-        .branch(
-            { _, value -> value is Situasjon },
-            Branched.withConsumer { consumer -> consumer.to(situasjonTopic) }
-        )
-        .noDefaultBranch()
-    return builder.build()
+            .branch(
+                { _, value -> value is Situasjon },
+                Branched.withConsumer { consumer -> consumer
+                    .peek { _, periode -> tellUtgåendeTilstand(situasjonTopic, periode) }
+                    .to(situasjonTopic) }
+            )
+            .noDefaultBranch()
+        return builder.build()
+    }
 }
