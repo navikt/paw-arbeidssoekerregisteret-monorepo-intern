@@ -9,7 +9,7 @@ object Labels {
     const val MESSAGE_TYPE = "type"
     const val TOPIC = "topic"
     const val ACTION = "action"
-    const val DIRECTION = "diraction"
+    const val DIRECTION = "direction"
 }
 
 object Directions {
