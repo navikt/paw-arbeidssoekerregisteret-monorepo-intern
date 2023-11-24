@@ -9,6 +9,7 @@ import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors.l
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors.lastInternTilstand
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.tellHendelse
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.tellUtgåendeTilstand
+import no.nav.paw.arbeidssokerregisteret.app.metrics.registerGauge
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serdes
@@ -18,6 +19,9 @@ import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.kstream.Branched
 import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.KStream
+import java.time.Duration
+import java.time.Instant
+import java.util.concurrent.atomic.AtomicLong
 
 fun topology(
     prometheusMeterRegistry: PrometheusMeterRegistry,
@@ -29,6 +33,10 @@ fun topology(
 ): Topology {
     val strøm: KStream<Long, Hendelse> = builder.stream(innTopic, Consumed.with(Serdes.Long(), HendelseSerde()))
     with(prometheusMeterRegistry) {
+        val periodeLatency = AtomicLong(0)
+        val situasjonLatency = AtomicLong(0)
+        registerGauge(periodeTopic, periodeLatency)
+        registerGauge(situasjonTopic, situasjonLatency)
         strøm
             .peek { _, hendelse -> tellHendelse(innTopic, hendelse) }
             .lastInternTilstand(dbNavn)
@@ -46,6 +54,7 @@ fun topology(
                 Branched.withConsumer { consumer ->
                     consumer
                         .peek { _, periode -> tellUtgåendeTilstand(periodeTopic, periode) }
+                        .peek { _, periode -> kalkulerForsinkelse(periode)?.let { periodeLatency.set(it) } }
                         .to(periodeTopic)
                 }
             )
@@ -53,11 +62,20 @@ fun topology(
                 { _, value -> value is Situasjon },
                 Branched.withConsumer { consumer ->
                     consumer
-                        .peek { _, periode -> tellUtgåendeTilstand(situasjonTopic, periode) }
+                        .peek { _, situasjon -> tellUtgåendeTilstand(situasjonTopic, situasjon) }
+                        .peek { _, situasjon -> kalkulerForsinkelse(situasjon)?.let { situasjonLatency.set(it) } }
                         .to(situasjonTopic)
                 }
             )
             .noDefaultBranch()
         return builder.build()
+    }
+}
+
+fun kalkulerForsinkelse(tilstand: SpecificRecord): Long? {
+    return when (tilstand) {
+        is Periode -> Duration.between(Instant.now(), tilstand.avsluttet?.tidspunkt ?: tilstand.startet.tidspunkt).toMillis()
+        is Situasjon -> Duration.between(Instant.now(), tilstand.sendtInnAv.tidspunkt).toMillis()
+        else -> null
     }
 }

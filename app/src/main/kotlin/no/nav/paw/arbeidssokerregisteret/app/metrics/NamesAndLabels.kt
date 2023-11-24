@@ -3,6 +3,7 @@ package no.nav.paw.arbeidssokerregisteret.app.metrics
 
 object Names {
     const val MESSAGE = "message"
+    const val LATENCY = "latency"
 }
 
 object Labels {
