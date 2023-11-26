@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <appender name="STDOUT_JSON" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
     </appender>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
@@ -21,31 +21,30 @@
         <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
             <maxFileSize>50MB</maxFileSize>
         </triggeringPolicy>
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
     </appender>
 
-    <if condition='isDefined("NAIS_CLUSTER_NAME")'>
+    <if condition='"${NAIS_CLUSTER_NAME}" == "NAIS_CLUSTER_NAME_IS_UNDEFINED"'>
         <then>
-            <logger name="tjenestekall" level="DEBUG" additivity="false">
-                <appender-ref ref="secureLog" />
-            </logger>
             <root level="INFO">
-                <appender-ref ref="STDOUT_JSON" />
+                <appender-ref ref="CONSOLE"/>
             </root>
         </then>
         <else>
+            <logger name="tjenestekall" level="DEBUG" additivity="false">
+                <appender-ref ref="secureLog"/>
+            </logger>
             <root level="INFO">
-                <appender-ref ref="CONSOLE" />
+                <appender-ref ref="STDOUT_JSON"/>
             </root>
         </else>
     </if>
 
     <include resource="no/nav/common/audit_log/logback-naudit.xml"/>
 
-    <logger name="org.apache.kafka" level="INFO" />
-    <logger name="io.confluent" level="INFO" />
-    <logger name="no.nav" level="INFO" />
-
+    <logger name="org.apache.kafka" level="INFO"/>
+    <logger name="io.confluent" level="INFO"/>
+    <logger name="no.nav" level="INFO"/>
 
 
 </configuration>
