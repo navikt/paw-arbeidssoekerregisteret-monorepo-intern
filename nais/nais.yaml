@@ -14,7 +14,7 @@ spec:
     - name: OTEL_TRACES_EXPORTER
       value: "maskert_oltp"
     - name: OTEL_JAVAAGENT_DEBUG
-      value: "true"
+      value: "false"
   replicas:
     min: 1
     max: 1
