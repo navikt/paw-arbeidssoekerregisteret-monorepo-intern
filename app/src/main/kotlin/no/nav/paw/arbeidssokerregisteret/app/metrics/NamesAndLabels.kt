@@ -1,9 +1,10 @@
 package no.nav.paw.arbeidssokerregisteret.app.metrics
 
 
+private const val PREFIX = "paw_arbeidssokerregisteret"
 object Names {
-    const val MESSAGE = "message"
-    const val LATENCY = "latency"
+    const val MESSAGE = "${PREFIX}_message"
+    const val LATENCY = "${PREFIX}_latency"
 }
 
 object Labels {
