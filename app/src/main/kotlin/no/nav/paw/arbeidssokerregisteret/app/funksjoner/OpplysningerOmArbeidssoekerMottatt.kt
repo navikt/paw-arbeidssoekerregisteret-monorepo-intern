@@ -1,14 +1,14 @@
 package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 
-import no.nav.paw.arbeidssokerregisteret.api.v1.Situasjon
+import no.nav.paw.arbeidssokerregisteret.api.v1.OpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgApiTilstander
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand.STARTET
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.api
-import no.nav.paw.arbeidssokerregisteret.intern.v1.SituasjonMottatt
+import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
 
-fun Tilstand?.situasjonMottatt(recordKey: Long, hendelse: SituasjonMottatt): InternTilstandOgApiTilstander =
+fun Tilstand?.opplysningerOmArbeidssoekerMottatt(recordKey: Long, hendelse: OpplysningerOmArbeidssoekerMottatt): InternTilstandOgApiTilstander =
     when {
         this == null -> {
             InternTilstandOgApiTilstander(
@@ -19,10 +19,10 @@ fun Tilstand?.situasjonMottatt(recordKey: Long, hendelse: SituasjonMottatt): Int
                     gjeldeneTilstand = GjeldeneTilstand.STOPPET,
                     gjeldenePeriode = null,
                     forrigePeriode = null,
-                    sisteSituasjon = hendelse.situasjon,
-                    forrigeSituasjon = null
+                    sisteOpplysningerOmArbeidssoeker = hendelse.opplysningerOmArbeidssoeker,
+                    forrigeOpplysningerOmArbeidssoeker = null
                 ),
-                nySituasjonTilstand = null,
+                nyOpplysningerOmArbeidssoekerTilstand = null,
                 nyePeriodeTilstand = null
             )
         }
@@ -30,10 +30,10 @@ fun Tilstand?.situasjonMottatt(recordKey: Long, hendelse: SituasjonMottatt): Int
         this.gjeldenePeriode == null -> {
             InternTilstandOgApiTilstander(
                 tilstand = this.copy(
-                    sisteSituasjon = hendelse.situasjon,
-                    forrigeSituasjon = this.sisteSituasjon
+                    sisteOpplysningerOmArbeidssoeker = hendelse.opplysningerOmArbeidssoeker,
+                    forrigeOpplysningerOmArbeidssoeker = this.sisteOpplysningerOmArbeidssoeker
                 ),
-                nySituasjonTilstand = null,
+                nyOpplysningerOmArbeidssoekerTilstand = null,
                 nyePeriodeTilstand = null
             )
         }
@@ -41,18 +41,18 @@ fun Tilstand?.situasjonMottatt(recordKey: Long, hendelse: SituasjonMottatt): Int
         else -> {
             InternTilstandOgApiTilstander(
                 tilstand = this.copy(
-                    sisteSituasjon = hendelse.situasjon,
-                    forrigeSituasjon = this.sisteSituasjon
+                    sisteOpplysningerOmArbeidssoeker = hendelse.opplysningerOmArbeidssoeker,
+                    forrigeOpplysningerOmArbeidssoeker = this.sisteOpplysningerOmArbeidssoeker
                 ),
-                nySituasjonTilstand = if (gjeldeneTilstand == STARTET) {
-                    Situasjon(
-                        hendelse.situasjon.id,
+                nyOpplysningerOmArbeidssoekerTilstand = if (gjeldeneTilstand == STARTET) {
+                    OpplysningerOmArbeidssoeker(
+                        hendelse.opplysningerOmArbeidssoeker.id,
                         gjeldenePeriode.id,
                         hendelse.metadata.api(),
-                        hendelse.situasjon.utdanning.api(),
-                        hendelse.situasjon.helse.api(),
-                        hendelse.situasjon.arbeidserfaring.api(),
-                        hendelse.situasjon.arbeidsoekersituasjon.api()
+                        hendelse.opplysningerOmArbeidssoeker.utdanning.api(),
+                        hendelse.opplysningerOmArbeidssoeker.helse.api(),
+                        hendelse.opplysningerOmArbeidssoeker.arbeidserfaring.api(),
+                        hendelse.opplysningerOmArbeidssoeker.jobbsituasjon.api()
                     )
                 } else null,
                 nyePeriodeTilstand = null

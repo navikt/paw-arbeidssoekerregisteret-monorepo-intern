@@ -3,7 +3,7 @@ package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgApiTilstander
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgHendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
-import no.nav.paw.arbeidssokerregisteret.intern.v1.SituasjonMottatt
+import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 
 fun genererNyInternTilstandOgNyeApiTilstander(
@@ -14,7 +14,7 @@ fun genererNyInternTilstandOgNyeApiTilstander(
     return when (hendelse) {
         is Startet -> tilstand.startPeriode(recordKey, hendelse)
         is Avsluttet -> tilstand.avsluttPeriode(hendelse)
-        is SituasjonMottatt -> tilstand.situasjonMottatt(recordKey, hendelse)
+        is OpplysningerOmArbeidssoekerMottatt -> tilstand.opplysningerOmArbeidssoekerMottatt(recordKey, hendelse)
         else -> throw IllegalStateException("Uventet hendelse: $hendelse")
     }
 }

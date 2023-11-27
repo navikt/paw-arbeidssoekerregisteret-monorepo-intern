@@ -1,8 +1,8 @@
 package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 
 import io.micrometer.prometheus.PrometheusMeterRegistry
+import no.nav.paw.arbeidssokerregisteret.api.v1.OpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
-import no.nav.paw.arbeidssokerregisteret.api.v1.Situasjon
 import no.nav.paw.arbeidssokerregisteret.app.metrics.Actions
 import no.nav.paw.arbeidssokerregisteret.app.metrics.eventReceived
 import no.nav.paw.arbeidssokerregisteret.app.metrics.stateSent
@@ -17,7 +17,7 @@ fun tellHendelse(topic: String, hendelse: Hendelse) {
         action = when(hendelse) {
             is no.nav.paw.arbeidssokerregisteret.intern.v1.Startet -> Actions.START
             is no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet -> Actions.STOP
-            is no.nav.paw.arbeidssokerregisteret.intern.v1.SituasjonMottatt -> Actions.INFO_RECEIVED
+            is no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt -> Actions.INFO_RECEIVED
             else -> Actions.UNKNOWN
         }
     )
@@ -29,7 +29,7 @@ fun tellUtgåendeTilstand(topic: String, state: SpecificRecord) {
         topic = topic,
         action = when (state) {
             is Periode -> if (state.avsluttet == null) Actions.START else Actions.STOP
-            is Situasjon -> Actions.INFO_RECEIVED
+            is OpplysningerOmArbeidssoeker -> Actions.INFO_RECEIVED
             else -> Actions.UNKNOWN
         },
         messageType = "${state.schema.namespace}.${state.schema.name}"

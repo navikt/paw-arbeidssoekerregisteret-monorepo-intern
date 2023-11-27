@@ -22,7 +22,7 @@ fun Tilstand?.avsluttPeriode(hendelse: Avsluttet): InternTilstandOgApiTilstander
             stoppetPeriode.startet.api(),
             stoppetPeriode.avsluttet?.api()
         ),
-        nySituasjonTilstand = null
+        nyOpplysningerOmArbeidssoekerTilstand = null
     )
 }
 

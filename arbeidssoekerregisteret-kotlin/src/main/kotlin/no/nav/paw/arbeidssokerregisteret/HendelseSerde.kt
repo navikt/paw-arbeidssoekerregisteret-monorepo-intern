@@ -13,7 +13,7 @@ fun deserialize(objectMapper: ObjectMapper, json: ByteArray): Hendelse {
     return when (val hendelseType = node.get("hendelseType")?.asText()) {
         startetHendelseType -> objectMapper.readValue<Startet>(node.traverse())
         avsluttetHendelseType -> objectMapper.readValue<Avsluttet>(node.traverse())
-        situasjonMottattHendelseType -> objectMapper.readValue<SituasjonMottatt>(node.traverse())
+        opplysningerOmArbeidssoekerHendelseType -> objectMapper.readValue<OpplysningerOmArbeidssoekerMottatt>(node.traverse())
         else -> throw IllegalArgumentException("Ukjent hendelse type: '$hendelseType'")
     }
 }

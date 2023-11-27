@@ -3,7 +3,7 @@ tilstandsDatabase = "tilstand"
 applikasjonsId = "appId"
 eventlogTopic = "eventlog"
 periodeTopic = "periode"
-situasjonTopic = "situasjon"
+opplysningerOmArbeidssoekerTopic = "opplysninger-om-arbeidssoeker"
 
 [serverKonfigurasjon]
 autentisering = "PLAIN"

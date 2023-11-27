@@ -6,8 +6,8 @@ import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata
+import no.nav.paw.arbeidssokerregisteret.api.v1.OpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
-import no.nav.paw.arbeidssokerregisteret.api.v1.Situasjon
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandSerde
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
@@ -28,13 +28,13 @@ const val SCHEMA_REGISTRY_SCOPE = "juni-registry"
 
 val hendelseSerde = HendelseSerde()
 val periodeSerde = opprettSerde<Periode>()
-val situasjonSerde = opprettSerde<Situasjon>()
+val opplysningerOmArbeidssoekerSerde = opprettSerde<OpplysningerOmArbeidssoeker>()
 val tilstandSerde = TilstandSerde()
 const val dbNavn = "tilstandsDb"
 
 const val eventlogTopicNavn = "eventlogTopic"
 const val periodeTopicNavn = "periodeTopic"
-const val situasjonTopicNavn = "situasjonTopic"
+const val opplysningerOmArbeidssoekerTopicNavn = "opplysningerOmArbeidssoekerTopic"
 
 fun verifiserPeriodeOppMotStartetOgStoppetHendelser(
     forventetKafkaKey: Long,

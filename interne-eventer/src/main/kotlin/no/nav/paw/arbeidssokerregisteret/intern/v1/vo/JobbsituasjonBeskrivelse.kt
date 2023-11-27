@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.intern.v1.vo
 
-enum class ArbeidsoekersituasjonBeskrivelse {
+enum class JobbsituasjonBeskrivelse {
     UKJENT_VERDI,
     UDEFINERT,
     HAR_SAGT_OPP,

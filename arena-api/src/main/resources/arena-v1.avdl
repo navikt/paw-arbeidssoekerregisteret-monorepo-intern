@@ -3,11 +3,11 @@
 protocol ArenaArbeidssokerregisterTilstand {
 	import idl "periode-v1.avdl";
 	import idl "profilering-v1.avdl";
-	import idl "situasjon-v1.avdl";
+	import idl "opplysninger_om_arbeidssoeker-v1.avdl";
 
 	record ArenaArbeidssokerregisterTilstand {
 		Periode periode;
 		Profilering profilering;
-		Situasjon situasjon;
+		OpplysningerOmArbeidssoeker opplysningerOmArbeidssoeker;
 	}
 }

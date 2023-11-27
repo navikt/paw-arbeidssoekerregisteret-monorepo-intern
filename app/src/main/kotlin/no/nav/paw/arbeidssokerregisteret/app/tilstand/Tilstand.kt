@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.app.tilstand
 
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Situasjon
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.OpplysningerOmArbeidssoeker
 
 data class Tilstand(
     val kafkaKey: Long,
@@ -9,8 +9,8 @@ data class Tilstand(
     val allIdentitetsnummer: Set<String>,
     val gjeldenePeriode: Periode?,
     val forrigePeriode: Periode?,
-    val sisteSituasjon: Situasjon?,
-    val forrigeSituasjon: Situasjon?
+    val sisteOpplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker?,
+    val forrigeOpplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker?
 )
 enum class GjeldeneTilstand {
     AVVIST, STARTET, STOPPET

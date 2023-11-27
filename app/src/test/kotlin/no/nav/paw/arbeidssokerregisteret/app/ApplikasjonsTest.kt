@@ -11,7 +11,7 @@ import no.nav.paw.arbeidssokerregisteret.PROSENT
 import no.nav.paw.arbeidssokerregisteret.STILLING
 import no.nav.paw.arbeidssokerregisteret.STILLING_STYRK08
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
-import no.nav.paw.arbeidssokerregisteret.intern.v1.SituasjonMottatt
+import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.*
 import org.apache.kafka.common.serialization.Serdes
@@ -32,7 +32,7 @@ class ApplikasjonsTest : FreeSpec({
         dbNavn = dbNavn,
         innTopic = eventlogTopicNavn,
         periodeTopic = periodeTopicNavn,
-        situasjonTopic = situasjonTopicNavn
+        opplysningerOmArbeidssoekerTopic = opplysningerOmArbeidssoekerTopicNavn
     )
 
     val testDriver = TopologyTestDriver(topology, kafkaStreamProperties)
@@ -46,10 +46,10 @@ class ApplikasjonsTest : FreeSpec({
         Serdes.Long().deserializer(),
         periodeSerde.deserializer()
     )
-    val situasjonTopic = testDriver.createOutputTopic(
-        situasjonTopicNavn,
+    val opplysningerOmArbeidssoekerTopic = testDriver.createOutputTopic(
+        opplysningerOmArbeidssoekerTopicNavn,
         Serdes.Long().deserializer(),
-        situasjonSerde.deserializer()
+        opplysningerOmArbeidssoekerSerde.deserializer()
     )
     val identitetnummer = "12345678901"
     val key = 5L
@@ -71,7 +71,7 @@ class ApplikasjonsTest : FreeSpec({
         "Når vi mottar en 'startet' hendelse og ikke har noen tidligere tilstand skal vi opprette en ny periode" {
             eventlogTopic.pipeInput(key, startet)
             val periode = periodeTopic.readKeyValue()
-            situasjonTopic.isEmpty shouldBe true
+            opplysningerOmArbeidssoekerTopic.isEmpty shouldBe true
             verifiserPeriodeOppMotStartetOgStoppetHendelser(
                 forventetKafkaKey = key,
                 startet = startet,
@@ -94,14 +94,14 @@ class ApplikasjonsTest : FreeSpec({
             )
             eventlogTopic.pipeInput(key, duplikatStart)
             periodeTopic.isEmpty shouldBe true
-            situasjonTopic.isEmpty shouldBe true
+            opplysningerOmArbeidssoekerTopic.isEmpty shouldBe true
         }
 
         "Når vi mottar en ny situsjon for en person med en aktiv periode skal vi sende ut en ny situasjon" {
-            val situsjonMottat = SituasjonMottatt(
+            val situsjonMottat = OpplysningerOmArbeidssoekerMottatt(
                 hendelseId = UUID.randomUUID(),
                 identitetsnummer = identitetnummer,
-                situasjon = Situasjon(
+                opplysningerOmArbeidssoeker = OpplysningerOmArbeidssoeker(
                     id = UUID.randomUUID(),
                     metadata = Metadata(
                         Instant.now(),
@@ -116,10 +116,10 @@ class ApplikasjonsTest : FreeSpec({
                     ),
                     helse = Helse(JaNeiVetIkke.JA),
                     arbeidserfaring = Arbeidserfaring(JaNeiVetIkke.JA),
-                    arbeidsoekersituasjon = Arbeidsoekersituasjon(
+                    jobbsituasjon = Jobbsituasjon(
                         mutableListOf(
-                            ArbeidssoekersitusjonMedDetaljer(
-                                beskrivelse = ArbeidsoekersituasjonBeskrivelse.ER_PERMITTERT, detaljer = mutableMapOf(
+                            JobbsituasjonMedDetaljer(
+                                beskrivelse = JobbsituasjonBeskrivelse.ER_PERMITTERT, detaljer = mutableMapOf(
                                     PROSENT to "100",
                                     GJELDER_FRA_DATO to "2020-01-02",
                                     STILLING to "Lærer",
@@ -132,15 +132,15 @@ class ApplikasjonsTest : FreeSpec({
             )
             eventlogTopic.pipeInput(key, situsjonMottat)
             periodeTopic.isEmpty shouldBe true
-            val situasjon = situasjonTopic.readKeyValue()
+            val situasjon = opplysningerOmArbeidssoekerTopic.readKeyValue()
             verifiserApiMetadataMotInternMetadata(situsjonMottat.metadata, situasjon.value.sendtInnAv)
             situasjon.key shouldBe key
             situasjon.value.periodeId shouldBe periodeId
             situasjon.value.utdanning.bestaatt shouldBe ApiJa
             situasjon.value.utdanning.godkjent shouldBe ApiNei
             situasjon.value.utdanning.lengde shouldBe API_HOYERE_UTDANNING_1_TIL_4
-            situasjon.value.arbeidsoekersituasjon.beskrivelser.size shouldBe 1
-            with(situasjon.value.arbeidsoekersituasjon) {
+            situasjon.value.jobbsituasjon.beskrivelser.size shouldBe 1
+            with(situasjon.value.jobbsituasjon) {
                 with(beskrivelser.firstOrNull { it.beskrivelse == API_ER_PERMITTERT }) {
                     this.shouldNotBeNull()
                     detaljer?.get(PROSENT) shouldBe "100"
@@ -163,7 +163,7 @@ class ApplikasjonsTest : FreeSpec({
                 )
             )
             eventlogTopic.pipeInput(key, stoppet)
-            situasjonTopic.isEmpty shouldBe true
+            opplysningerOmArbeidssoekerTopic.isEmpty shouldBe true
             periodeTopic.isEmpty shouldBe false
             val avsluttetPeriode = periodeTopic.readKeyValue()
             verifiserPeriodeOppMotStartetOgStoppetHendelser(
@@ -175,10 +175,10 @@ class ApplikasjonsTest : FreeSpec({
         }
 
         "Når vi mottar en ny situsjon etter at siste periode er avsluttet skal det ikke skje noe" {
-            val situsjonMottat = SituasjonMottatt(
+            val situsjonMottat = OpplysningerOmArbeidssoekerMottatt(
                 hendelseId = UUID.randomUUID(),
                 identitetsnummer = identitetnummer,
-                situasjon = Situasjon(
+                opplysningerOmArbeidssoeker = OpplysningerOmArbeidssoeker(
                     id = UUID.randomUUID(),
                     metadata = Metadata(
                         Instant.now(),
@@ -193,10 +193,10 @@ class ApplikasjonsTest : FreeSpec({
                     ),
                     helse = Helse(JaNeiVetIkke.JA),
                     arbeidserfaring = Arbeidserfaring(JaNeiVetIkke.JA),
-                    arbeidsoekersituasjon = Arbeidsoekersituasjon(
+                    jobbsituasjon = Jobbsituasjon(
                         mutableListOf(
-                            ArbeidssoekersitusjonMedDetaljer(
-                                beskrivelse = ArbeidsoekersituasjonBeskrivelse.ER_PERMITTERT,
+                            JobbsituasjonMedDetaljer(
+                                beskrivelse = JobbsituasjonBeskrivelse.ER_PERMITTERT,
                                 detaljer = mapOf(
                                     PROSENT to "100",
                                     GJELDER_FRA_DATO to "2020-01-02",
@@ -210,7 +210,7 @@ class ApplikasjonsTest : FreeSpec({
             )
             eventlogTopic.pipeInput(key, situsjonMottat)
             periodeTopic.isEmpty shouldBe true
-            situasjonTopic.isEmpty shouldBe true
+            opplysningerOmArbeidssoekerTopic.isEmpty shouldBe true
         }
 
         "Når vi mottar en 'startet' hendelse og forrige periode er avsluttet skal vi opprette en ny periode" {
@@ -226,7 +226,7 @@ class ApplikasjonsTest : FreeSpec({
             )
             eventlogTopic.pipeInput(key, startet2)
             val periode = periodeTopic.readKeyValue()
-            situasjonTopic.isEmpty shouldBe true
+            opplysningerOmArbeidssoekerTopic.isEmpty shouldBe true
             verifiserPeriodeOppMotStartetOgStoppetHendelser(
                 forventetKafkaKey = key,
                 startet = startet2,

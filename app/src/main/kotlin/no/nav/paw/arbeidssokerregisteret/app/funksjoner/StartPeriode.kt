@@ -24,12 +24,12 @@ fun Tilstand?.startPeriode(recordKey: Long, hendelse: Startet): InternTilstandOg
             gjeldeneTilstand = GjeldeneTilstand.STARTET,
             gjeldenePeriode = startetPeriode,
             forrigePeriode = null,
-            sisteSituasjon = null,
-            forrigeSituasjon = null
+            sisteOpplysningerOmArbeidssoeker = null,
+            forrigeOpplysningerOmArbeidssoeker = null
         )
     return InternTilstandOgApiTilstander(
         tilstand = tilstand,
-        nySituasjonTilstand = null,
+        nyOpplysningerOmArbeidssoekerTilstand = null,
         nyePeriodeTilstand = ApiPeriode(
             startetPeriode.id,
             startetPeriode.identitetsnummer,

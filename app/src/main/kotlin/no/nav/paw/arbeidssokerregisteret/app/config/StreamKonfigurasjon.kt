@@ -5,5 +5,5 @@ data class StreamKonfigurasjon(
     val applikasjonsId: String,
     val eventlogTopic: String,
     val periodeTopic: String,
-    val situasjonTopic: String
+    val opplysningerOmArbeidssoekerTopic: String
 )

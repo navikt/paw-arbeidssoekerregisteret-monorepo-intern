@@ -1,12 +1,12 @@
 @namespace("no.nav.paw.arbeidssokerregisteret.api.v1")
-protocol Situasjon {
+protocol OpplysningerOmArbeidssoeker {
 	import idl "vo/metadata-v1.avdl";
 	import idl "vo/utdanning-v1.avdl";
 	import idl "vo/helse-v1.avdl";
 	import idl "vo/arbeidserfaring-v1.avdl";
-	import idl "vo/arbeidsoekersituasjon-v1.avdl";
+	import idl "vo/jobbsituasjon-v1.avdl";
 
-	record Situasjon {
+	record OpplysningerOmArbeidssoeker {
 		/**
 		  * Unik id for situasjonen
 		*/
@@ -25,7 +25,6 @@ protocol Situasjon {
 		Utdanning utdanning;
 		Helse helse;
 		Arbeidserfaring arbeidserfaring;
-		Arbeidsoekersituasjon arbeidsoekersituasjon;
-
+		Jobbsituasjon jobbsituasjon;
 	}
 }

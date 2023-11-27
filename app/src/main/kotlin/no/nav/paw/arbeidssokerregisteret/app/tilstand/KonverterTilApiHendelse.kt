@@ -1,23 +1,22 @@
 package no.nav.paw.arbeidssokerregisteret.app.tilstand
 
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.ArbeidsoekersituasjonBeskrivelse
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.ArbeidsoekersituasjonBeskrivelse.*
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.JobbsituasjonBeskrivelse
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.JobbsituasjonBeskrivelse.*
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.*
 import no.nav.paw.arbeidssokerregisteret.api.v1.Bruker as ApiBruker
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType as ApiBrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Helse as ApiHelse
 import no.nav.paw.arbeidssokerregisteret.api.v1.JaNeiVetIkke as ApiJaNeiVetIkke
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as ApiMetadata
-import no.nav.paw.arbeidssokerregisteret.api.v1.Situasjon as ApiSituasjon
+import no.nav.paw.arbeidssokerregisteret.api.v1.OpplysningerOmArbeidssoeker as ApiOpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.api.v1.Utdanning as ApiUtdanning
 import no.nav.paw.arbeidssokerregisteret.api.v1.Utdanningsnivaa as ApiUtdanningsnivaa
 import no.nav.paw.arbeidssokerregisteret.api.v1.Arbeidserfaring as ApiArbeidserfaring
-import no.nav.paw.arbeidssokerregisteret.api.v1.Arbeidsoekersituasjon as ApiArbeidsoekersituasjon
+import no.nav.paw.arbeidssokerregisteret.api.v1.Jobbsituasjon as ApiJobbsituasjon
 import no.nav.paw.arbeidssokerregisteret.api.v1.Beskrivelse as ApiBeskrivelse
 import no.nav.paw.arbeidssokerregisteret.api.v1.BeskrivelseMedDetaljer as ApiBeskrivelseMedDetaljer
 
 import java.util.*
-
 
 fun Bruker.api(): ApiBruker = ApiBruker(type.api(), id)
 
@@ -51,15 +50,15 @@ fun Metadata.api(): ApiMetadata =
         kilde,
         aarsak
     )
-fun Situasjon.api(periodeId: UUID, metadata: Metadata): ApiSituasjon =
-    ApiSituasjon(
+fun OpplysningerOmArbeidssoeker.api(periodeId: UUID, metadata: Metadata): ApiOpplysningerOmArbeidssoeker =
+    ApiOpplysningerOmArbeidssoeker(
         id,
         periodeId,
         metadata.api(),
         utdanning.api(),
         helse.api(),
         arbeidserfaring.api(),
-        arbeidsoekersituasjon.api()
+        jobbsituasjon.api()
     )
 
 
@@ -87,18 +86,18 @@ fun Arbeidserfaring.api(): ApiArbeidserfaring =
         harHattArbeid.api()
     )
 
-fun Arbeidsoekersituasjon.api(): ApiArbeidsoekersituasjon =
-    ApiArbeidsoekersituasjon(
-        beskrivelser.map(ArbeidssoekersitusjonMedDetaljer::api)
+fun Jobbsituasjon.api(): ApiJobbsituasjon =
+    ApiJobbsituasjon(
+        beskrivelser.map(JobbsituasjonMedDetaljer::api)
     )
 
-fun ArbeidssoekersitusjonMedDetaljer.api(): ApiBeskrivelseMedDetaljer =
+fun JobbsituasjonMedDetaljer.api(): ApiBeskrivelseMedDetaljer =
     ApiBeskrivelseMedDetaljer(
         beskrivelse.api(),
         detaljer
     )
 
-fun ArbeidsoekersituasjonBeskrivelse.api(): ApiBeskrivelse =
+fun JobbsituasjonBeskrivelse.api(): ApiBeskrivelse =
     when (this) {
         UKJENT_VERDI -> ApiBeskrivelse.UKJENT_VERDI
         UDEFINERT -> ApiBeskrivelse.UDEFINERT

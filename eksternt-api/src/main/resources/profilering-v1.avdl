@@ -19,10 +19,10 @@ protocol Profilering {
 		@logicalType("uuid")
 		string periodeId;
 		/**
-		  * Unik id for situasjonen som profileringen tilhører
+		  * Unik id for OpplysningerOmArbeidssøker som profileringen tilhører
  		*/
 		@logicalType("uuid")
-		string situasjonsId;
+		string opplysningerOmArbeidssokerId;
 
 		Metadata sendtInnAv;
 		ProfilertTil profilertTil;

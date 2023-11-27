@@ -45,7 +45,7 @@ fun main() {
         dbNavn = dbNavn,
         innTopic = kafkaKonfigurasjon.streamKonfigurasjon.eventlogTopic,
         periodeTopic = kafkaKonfigurasjon.streamKonfigurasjon.periodeTopic,
-        situasjonTopic = kafkaKonfigurasjon.streamKonfigurasjon.situasjonTopic
+        opplysningerOmArbeidssoekerTopic = kafkaKonfigurasjon.streamKonfigurasjon.opplysningerOmArbeidssoekerTopic
     )
 
     val kafkaStreams = KafkaStreams(topology, StreamsConfig(kafkaKonfigurasjon.properties))

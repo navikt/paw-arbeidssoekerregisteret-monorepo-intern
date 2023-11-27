@@ -1,8 +1,8 @@
 package no.nav.paw.arbeidssokerregisteret.app
 
 import io.micrometer.prometheus.PrometheusMeterRegistry
+import no.nav.paw.arbeidssokerregisteret.api.v1.OpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
-import no.nav.paw.arbeidssokerregisteret.api.v1.Situasjon
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.genererNyInternTilstandOgNyeApiTilstander
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.ignorerDuplikatStartOgStopp
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors.lagreInternTilstand
@@ -29,14 +29,14 @@ fun topology(
     dbNavn: String,
     innTopic: String,
     periodeTopic: String,
-    situasjonTopic: String
+    opplysningerOmArbeidssoekerTopic: String
 ): Topology {
     val strøm: KStream<Long, Hendelse> = builder.stream(innTopic, Consumed.with(Serdes.Long(), HendelseSerde()))
     with(prometheusMeterRegistry) {
         val periodeLatency = AtomicLong(0)
-        val situasjonLatency = AtomicLong(0)
+        val opplysningerOmArbeidssoekerLatency = AtomicLong(0)
         registerGauge(periodeTopic, periodeLatency)
-        registerGauge(situasjonTopic, situasjonLatency)
+        registerGauge(opplysningerOmArbeidssoekerTopic, opplysningerOmArbeidssoekerLatency)
         strøm
             .peek { _, hendelse -> tellHendelse(innTopic, hendelse) }
             .lastInternTilstand(dbNavn)
@@ -46,7 +46,7 @@ fun topology(
             .flatMap { key, value ->
                 listOfNotNull(
                     value.nyePeriodeTilstand?.let { KeyValue(key, it as SpecificRecord) },
-                    value.nySituasjonTilstand?.let { KeyValue(key, it as SpecificRecord) }
+                    value.nyOpplysningerOmArbeidssoekerTilstand?.let { KeyValue(key, it as SpecificRecord) }
                 )
             }.split()
             .branch(
@@ -59,12 +59,12 @@ fun topology(
                 }
             )
             .branch(
-                { _, value -> value is Situasjon },
+                { _, value -> value is OpplysningerOmArbeidssoeker },
                 Branched.withConsumer { consumer ->
                     consumer
-                        .peek { _, situasjon -> tellUtgåendeTilstand(situasjonTopic, situasjon) }
-                        .peek { _, situasjon -> kalkulerForsinkelse(situasjon)?.let { situasjonLatency.set(it) } }
-                        .to(situasjonTopic)
+                        .peek { _, opplysningerOmArbeidssoeker -> tellUtgåendeTilstand(opplysningerOmArbeidssoekerTopic, opplysningerOmArbeidssoeker) }
+                        .peek { _, opplysningerOmArbeidssoeker -> kalkulerForsinkelse(opplysningerOmArbeidssoeker)?.let { opplysningerOmArbeidssoekerLatency.set(it) } }
+                        .to(opplysningerOmArbeidssoekerTopic)
                 }
             )
             .noDefaultBranch()
@@ -75,7 +75,7 @@ fun topology(
 fun kalkulerForsinkelse(tilstand: SpecificRecord): Long? {
     return when (tilstand) {
         is Periode -> Duration.between(Instant.now(), tilstand.avsluttet?.tidspunkt ?: tilstand.startet.tidspunkt).toMillis()
-        is Situasjon -> Duration.between(Instant.now(), tilstand.sendtInnAv.tidspunkt).toMillis()
+        is OpplysningerOmArbeidssoeker -> Duration.between(Instant.now(), tilstand.sendtInnAv.tidspunkt).toMillis()
         else -> null
     }
 }
