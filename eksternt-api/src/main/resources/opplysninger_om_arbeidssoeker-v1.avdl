@@ -8,17 +8,17 @@ protocol OpplysningerOmArbeidssoeker {
 
 	record OpplysningerOmArbeidssoeker {
 		/**
-		  * Unik id for situasjonen
+		  * Unik id for opplysninger om arbeidssøker
 		*/
 		@logicalType("uuid")
 		string id;
 		/**
-		  * Id til periode som situasjonen tilhører
+		  * Id til periode som opplysninger om arbeidssøker tilhører
  		*/
 		@logicalType("uuid")
 		string periodeId;
 		/**
-		  *Informasjon om hvem som har sendt inn situasjonen(og når)
+		  *Informasjon om hvem som har sendt inn opplysningene om arbeidssøker (og når)
  		*/
 		Metadata sendtInnAv;
 
