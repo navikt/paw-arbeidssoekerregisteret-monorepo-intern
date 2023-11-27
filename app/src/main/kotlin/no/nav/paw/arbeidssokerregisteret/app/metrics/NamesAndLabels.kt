@@ -8,6 +8,7 @@ object Names {
 }
 
 object Labels {
+    const val PARTITION = "partition"
     const val MESSAGE_TYPE = "type"
     const val TOPIC = "topic"
     const val ACTION = "action"
