@@ -31,6 +31,7 @@ fun tellUtgåendeTilstand(topic: String, state: SpecificRecord) {
             is Periode -> if (state.avsluttet == null) Actions.START else Actions.STOP
             is Situasjon -> Actions.INFO_RECEIVED
             else -> Actions.UNKNOWN
-        }
+        },
+        messageType = "${state.schema.namespace}.${state.schema.name}"
     )
 }

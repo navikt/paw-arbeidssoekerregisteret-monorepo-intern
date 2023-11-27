@@ -14,11 +14,12 @@ fun eventReceived(topic: String, messageType: String, action: String) {
 }
 
 context(PrometheusMeterRegistry)
-fun stateSent(topic: String, action: String) {
+fun stateSent(topic: String, messageType: String, action: String) {
     counter(
         Names.MESSAGE,
         Labels.DIRECTION, Directions.OUT,
         Labels.TOPIC, topic,
+        Labels.MESSAGE_TYPE, messageType,
         Labels.ACTION, action
     ).increment()
 }
