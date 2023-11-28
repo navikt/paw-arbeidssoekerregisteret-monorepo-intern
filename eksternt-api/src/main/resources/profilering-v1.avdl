@@ -3,11 +3,12 @@ protocol Profilering {
 	import idl "vo/metadata-v1.avdl";
 	import idl "vo/profilert_til-v1.avdl";
 
+	/**
+	  * Profilering av arbeidssøker
+	  * Inneholder informasjon som brukes til ruting av arbeidssøker til riktig veiledningstjeneste.
+	  * Profileringen er koblet til et bestemt sett opplysninger om arbeidssøker og en bestemt periode.
+ 	*/
 	record Profilering {
-		/**
-		  * Profileringstjenesten(og den versjon) som har utført profileringen
- 		*/
-		string profileringsTjenesteId;
 		/**
 		  * Unik id for profileringen
  		*/
@@ -23,8 +24,15 @@ protocol Profilering {
  		*/
 		@logicalType("uuid")
 		string opplysningerOmArbeidssokerId;
-
+		/**
+		  * Inneholder informasjon om når profileringen ble opprettet.
+		  * Profileringen er en automatisk prosess så 'sendtInnAv.utfoertAv' vil alltid peke på en
+		  * 'SYSTEM' bruker med id på formen '[APP_NAVN]:[VERSJON]'
+ 		*/
 		Metadata sendtInnAv;
+		/**
+		  * Selve profileringsresultatet
+ 		*/
 		ProfilertTil profilertTil;
 		boolean jobbetSammenhengendeSeksAvTolvSisteMnd;
 		int alder;

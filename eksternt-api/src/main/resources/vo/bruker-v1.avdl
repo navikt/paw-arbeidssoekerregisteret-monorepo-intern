@@ -4,6 +4,9 @@ protocol Bruker {
 		UKJENT_VERDI, UDEFINERT, VEILEDER, SYSTEM, SLUTTBRUKER
 	} = UKJENT_VERDI;
 
+	/**
+	  *	En bruker er en person eller et system. Personer kan være sluttbrukere eller veiledere.
+ 	*/
 	record  Bruker {
 		/**
 		  * Angir hvilken type bruker det er snakk om
@@ -12,7 +15,7 @@ protocol Bruker {
 		/**
 		  * Brukerens identifikator.
 		  * For sluttbruker er dette typisk fødselsnummer eller D-nummer.
-		  * For system vil det rett og slett være navnet på et system.
+		  * For system vil det rett og slett være navnet på et system, eventuelt med versjonsnummer i tillegg (APP_NAVN:VERSJON).
 		  * For veileder vil det være NAV identen til veilederen.
  		*/
 		string id;

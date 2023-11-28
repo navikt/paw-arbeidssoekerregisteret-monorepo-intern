@@ -1,10 +1,17 @@
 @namespace("no.nav.paw.arbeidssokerregisteret.api.v1")
 protocol Jobbsituasjon {
 
+	/**
+	  * Inneholder et sett med beskrivelser av jobbsituasjonen. Det er mulig å ha flere beskrivelser av jobbsituasjonen,
+	  * feks kan personen være permittert og samtidig ha en deltidsjobb.
+ 	*/
 	record Jobbsituasjon {
 		array<BeskrivelseMedDetaljer> beskrivelser;
 	}
 
+	/**
+	  * Beskrivelse av et enkelt forhold som inngår i jobbsituasjonen, feks permitering eller oppsigelse
+ 	*/
 	record BeskrivelseMedDetaljer {
 		Beskrivelse beskrivelse;
 		/**
@@ -21,6 +28,23 @@ protocol Jobbsituasjon {
 		map<string> detaljer;
 	}
 
+	/**
+	  * Beskrivelse av jobbsituasjonen. Følgende beskrivelser er definert:
+	  * UKJENT_VERDI					-		Verdien er satt, men den er ikke definert i versjonen av APIet som klienten bruker.
+	  * UDEFINERT						-		Verdien er ikke satt.
+	  * HAR_SAGT_OPP					-		Personen har sagt opp sin stilling.
+	  * HAR_BLITT_SAGT_OPP				-		Personen har blitt sagt opp fra sin stilling.
+	  * ER_PERMITTERT					-		Personen er permittert.
+	  * ALDRI_HATT_JOBB					-		Personen har aldri hatt en jobb.
+	  * IKKE_VAERT_I_JOBB_SISTE_2_AAR	-		Personen har ikke vært i jobb de siste 2 årene.
+	  * AKKURAT_FULLFORT_UTDANNING		-		Personen har akkurat fullført sin utdanning.
+	  * USIKKER_JOBBSITUASJON			-		Personen er usikker på sin jobbsituasjon.
+	  * MIDLERTIDIG_JOBB				-		Personen har en midlertidig jobb.
+	  * DELTIDSJOBB_VIL_MER				-		Personen har en/flere deltidsjobber, men ønsker å jobbe mer.
+	  * NY_JOBB							-		Personen har fått seg ny jobb.
+	  * KONKURS							-		Personen har mistet jobben på grunn av konkurs.
+	  * ANNET							-		Personen har en annen jobbsituasjon.
+ */
 	enum Beskrivelse {
 		UKJENT_VERDI,
 		UDEFINERT,

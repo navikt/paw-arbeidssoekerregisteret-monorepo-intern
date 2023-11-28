@@ -2,8 +2,10 @@
 protocol Arbeidserfaring {
 	import idl "ja_nei_vet_ikke-v1.avdl";
 
+	/**
+	  * Informasjon om arbeidserfaring
+ 	*/
 	record Arbeidserfaring {
 		JaNeiVetIkke harHattArbeid;
-		//??string sisteStilling;
 	}
 }

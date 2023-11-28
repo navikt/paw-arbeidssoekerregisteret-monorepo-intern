@@ -5,7 +5,10 @@ protocol OpplysningerOmArbeidssoeker {
 	import idl "vo/helse-v1.avdl";
 	import idl "vo/arbeidserfaring-v1.avdl";
 	import idl "vo/jobbsituasjon-v1.avdl";
-
+	/**
+	  * Inneholder diverse opplysninger om arbeidssøker som er relevant for å kunne
+	  * hjelpe arbeidssøkeren med å finne arbeid på best mulig måte.
+	*/
 	record OpplysningerOmArbeidssoeker {
 		/**
 		  * Unik id for opplysninger om arbeidssøker
@@ -22,9 +25,21 @@ protocol OpplysningerOmArbeidssoeker {
  		*/
 		Metadata sendtInnAv;
 
+		/**
+		  * Informasjon om arbeidssøkerens utdanning
+ 		*/
 		Utdanning utdanning;
+		/**
+		  * Informasjon om arbeidssøkerens helse
+ 		*/
 		Helse helse;
+		/**
+		  * Informasjon om arbeidssøkerens arbeidserfaring
+ 		*/
 		Arbeidserfaring arbeidserfaring;
+		/**
+		  * Informasjon om arbeidssøkerens jobbsituasjon
+ 		*/
 		Jobbsituasjon jobbsituasjon;
 	}
 }

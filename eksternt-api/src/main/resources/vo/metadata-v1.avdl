@@ -2,12 +2,18 @@
 protocol Endring {
 	import idl "bruker-v1.avdl";
 
+	/**
+	  * Inneholder metadata om en endring i arbeidssøkerregisteret.
+	 */
 	record Metadata {
+		/**
+		 * Tidspunkt for endringen.
+		 */
 		@logicalType("timestamp-millis")
 		long tidspunkt;
 		Bruker utfoertAv;
 		/**
-		 * Navn på systemet som utførte endringen.
+		 * Navn på systemet som utførte endringen eller ble benyttet til å utføre endringen.
 		 */
 		string kilde;
 		/**

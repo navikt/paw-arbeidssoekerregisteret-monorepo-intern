@@ -2,6 +2,9 @@
 protocol Helse {
 	import idl "ja_nei_vet_ikke-v1.avdl";
 
+	/**
+	 * Helse
+	 */
 	record Helse {
 		JaNeiVetIkke helsetilstandHindrerArbeid;
 	}
