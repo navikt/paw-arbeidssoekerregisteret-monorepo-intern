@@ -7,8 +7,6 @@ metadata:
     team: paw
 spec:
   image: {{ image }}
-  ingresses:
-    - https://paw-kafka-key-generator.intern.dev.nav.no
   port: 8080
   env:
     - name: OTEL_METRICS_EXPORTER
