@@ -31,5 +31,5 @@ spec:
     tracing:
       enabled: true
   kafka:
-    pool: nav-dev
+    pool: {{ kafka }}
     streams: true
