@@ -32,7 +32,7 @@ jobs:
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }} # Provided as Organization Secret
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }} # Provided as Organization Variable
   deploy:
-    name: Deploy to NAIS
+    name: Deploy to dev-gcp
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -42,4 +42,19 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
           RESOURCE: nais/nais.yaml
+          VAR: image=${{ needs.build.outputs.image }}
+
+  deploy-prod:
+    if: github.ref == 'refs/heads/main'
+    name: Deploy to prod-gcp
+    needs: [build, deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: nais/deploy/actions/deploy@v1
+        env:
+          TEAM: paw
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          CLUSTER: prod-gcp
+          RESOURCE: nais/nais-prod.yaml
           VAR: image=${{ needs.build.outputs.image }}
