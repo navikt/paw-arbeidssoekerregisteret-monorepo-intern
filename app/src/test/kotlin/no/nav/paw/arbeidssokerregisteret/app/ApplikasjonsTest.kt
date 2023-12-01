@@ -127,7 +127,8 @@ class ApplikasjonsTest : FreeSpec({
                                 )
                             )
                         )
-                    )
+                    ),
+                    annet = Annet(andreForholdHindrerArbeid = JaNeiVetIkke.JA)
                 )
             )
             eventlogTopic.pipeInput(key, situsjonMottat)
@@ -140,6 +141,7 @@ class ApplikasjonsTest : FreeSpec({
             situasjon.value.utdanning.godkjent shouldBe ApiNei
             situasjon.value.utdanning.lengde shouldBe API_HOYERE_UTDANNING_1_TIL_4
             situasjon.value.jobbsituasjon.beskrivelser.size shouldBe 1
+            situasjon.value.annet.andreForholdHindrerArbeid shouldBe ApiJa
             with(situasjon.value.jobbsituasjon) {
                 with(beskrivelser.firstOrNull { it.beskrivelse == API_ER_PERMITTERT }) {
                     this.shouldNotBeNull()
@@ -205,7 +207,8 @@ class ApplikasjonsTest : FreeSpec({
                                 )
                             )
                         )
-                    )
+                    ),
+                    annet = Annet(andreForholdHindrerArbeid = JaNeiVetIkke.NEI)
                 )
             )
             eventlogTopic.pipeInput(key, situsjonMottat)

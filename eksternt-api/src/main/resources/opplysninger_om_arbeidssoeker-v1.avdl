@@ -5,6 +5,8 @@ protocol OpplysningerOmArbeidssoeker {
 	import idl "vo/helse-v1.avdl";
 	import idl "vo/arbeidserfaring-v1.avdl";
 	import idl "vo/jobbsituasjon-v1.avdl";
+	import idl "vo/annet-v1.avdl";
+
 	/**
 	  * Inneholder diverse opplysninger om arbeidssøker som er relevant for å kunne
 	  * hjelpe arbeidssøkeren med å finne arbeid på best mulig måte.
@@ -41,5 +43,9 @@ protocol OpplysningerOmArbeidssoeker {
 		  * Informasjon om arbeidssøkerens jobbsituasjon
  		*/
 		Jobbsituasjon jobbsituasjon;
+		/**
+		  * Er det annen informasjon om arbeidssøker som er relevant for å kunne hjelpe
+ 		*/
+		Annet annet;
 	}
 }

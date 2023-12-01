@@ -52,7 +52,8 @@ fun Tilstand?.opplysningerOmArbeidssoekerMottatt(recordKey: Long, hendelse: Oppl
                         hendelse.opplysningerOmArbeidssoeker.utdanning.api(),
                         hendelse.opplysningerOmArbeidssoeker.helse.api(),
                         hendelse.opplysningerOmArbeidssoeker.arbeidserfaring.api(),
-                        hendelse.opplysningerOmArbeidssoeker.jobbsituasjon.api()
+                        hendelse.opplysningerOmArbeidssoeker.jobbsituasjon.api(),
+                        hendelse.opplysningerOmArbeidssoeker.annet.api()
                     )
                 } else null,
                 nyePeriodeTilstand = null

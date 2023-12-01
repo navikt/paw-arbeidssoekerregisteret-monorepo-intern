@@ -14,6 +14,7 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Utdanningsnivaa as ApiUtdannings
 import no.nav.paw.arbeidssokerregisteret.api.v1.Arbeidserfaring as ApiArbeidserfaring
 import no.nav.paw.arbeidssokerregisteret.api.v1.Jobbsituasjon as ApiJobbsituasjon
 import no.nav.paw.arbeidssokerregisteret.api.v1.Beskrivelse as ApiBeskrivelse
+import no.nav.paw.arbeidssokerregisteret.api.v1.Annet as ApiAnnet
 import no.nav.paw.arbeidssokerregisteret.api.v1.BeskrivelseMedDetaljer as ApiBeskrivelseMedDetaljer
 
 import java.util.*
@@ -58,7 +59,8 @@ fun OpplysningerOmArbeidssoeker.api(periodeId: UUID, metadata: Metadata): ApiOpp
         utdanning.api(),
         helse.api(),
         arbeidserfaring.api(),
-        jobbsituasjon.api()
+        jobbsituasjon.api(),
+        annet.api()
     )
 
 
@@ -115,3 +117,7 @@ fun JobbsituasjonBeskrivelse.api(): ApiBeskrivelse =
         KONKURS -> ApiBeskrivelse.KONKURS
         ANNET -> ApiBeskrivelse.ANNET
     }
+
+fun Annet.api(): ApiAnnet = ApiAnnet(
+    andreForholdHindrerArbeid.api()
+)

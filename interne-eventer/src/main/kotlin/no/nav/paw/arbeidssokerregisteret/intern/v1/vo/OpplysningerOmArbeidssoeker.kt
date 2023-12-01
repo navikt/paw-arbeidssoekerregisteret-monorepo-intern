@@ -8,5 +8,6 @@ data class OpplysningerOmArbeidssoeker(
     val utdanning: Utdanning,
     val helse: Helse,
     val arbeidserfaring: Arbeidserfaring,
-    val jobbsituasjon: Jobbsituasjon
+    val jobbsituasjon: Jobbsituasjon,
+    val annet: Annet
 ) : HarMetadata
