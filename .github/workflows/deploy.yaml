@@ -56,5 +56,5 @@ jobs:
           TEAM: paw
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-gcp
-          RESOURCE: nais/nais-prod.yaml
+          RESOURCE: nais/nais.yaml
           VAR: image=${{ needs.build.outputs.image }}
