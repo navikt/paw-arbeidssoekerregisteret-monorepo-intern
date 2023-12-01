@@ -3,7 +3,7 @@ package no.nav.paw.arbeidssokerregisteret
 /**
  * Denne filen inneholder gyldige nøkler for map(no.nav.paw.arbeidssokerregisteret.api.v1.Element.detaljer).
  * Denne listen er nødvendigvis ikke dekkende, så klienter må takle å finne andre nøkler også. Det er heller ikke
- * gitt at alle nøklene alltid er tilstede.
+ * gitt at alle nøklene alltid er tilstede(selv om de er oppført som aktuelle for den gitte jobb situasjonen).
  */
 
 
