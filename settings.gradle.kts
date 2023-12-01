@@ -1,6 +1,6 @@
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.4.0"
-    kotlin("jvm") version "1.9.10" apply false
+    kotlin("jvm") version "1.9.20" apply false
 }
 
 rootProject.name = "paw-arbeidssokerregisteret-event-prosessor"

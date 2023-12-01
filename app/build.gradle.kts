@@ -35,6 +35,12 @@ ktor {
     }
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
 tasks.named("generateAvroProtocol", GenerateAvroProtocolTask::class) {
     source("$rootDir/eksternt-api/src/main")
 //    source("$rootDir/interne-eventer/src/main")
