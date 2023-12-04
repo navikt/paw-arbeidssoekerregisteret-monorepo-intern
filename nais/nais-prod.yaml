@@ -1,0 +1,49 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  name: paw-kafka-key-generator
+  namespace: paw
+  labels:
+    team: paw
+spec:
+  image: {{ image }}
+  port: 8080
+  env:
+    - name: OTEL_METRICS_EXPORTER
+      value: "none"
+    - name: OTEL_TRACES_EXPORTER
+      value: "maskert_oltp"
+    - name: OTEL_JAVAAGENT_DEBUG
+      value: "false"
+  replicas:
+    min: 1
+    max: 1
+  liveness:
+    path: /internal/isAlive
+    initialDelay: 10
+  readiness:
+    path: /internal/isReady
+    initialDelay: 10
+  prometheus:
+    enabled: true
+    path: /internal/metrics
+  observability:
+    tracing:
+      enabled: true
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_14
+        databases:
+          - name: pawkafkakeys
+  tokenx:
+    enabled: true
+  azure:
+    application:
+      enabled: true
+  accessPolicy:
+      outbound:
+        external:
+          - host: pdl-api.prod-fss-pub.nais.io
+      inbound:
+        rules:
+          - application: paw-migrering-veilarb-til-nytt-register
