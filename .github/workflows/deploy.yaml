@@ -31,8 +31,8 @@ jobs:
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }} # Provided as Organization Secret
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }} # Provided as Organization Variable
 
-  deploy-prod:
-    name: Deploy to NAIS prod
+  deploy-dev:
+    name: Deploy to NAIS dev
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -44,8 +44,8 @@ jobs:
           RESOURCE: nais/nais-dev.yaml
           VAR: image=${{ needs.build.outputs.image }}
 
-  deploy-dev:
-    name: Deploy to NAIS dev
+  deploy-prod:
+    name: Deploy to NAIS prod
     needs: build
     runs-on: ubuntu-latest
     steps:
