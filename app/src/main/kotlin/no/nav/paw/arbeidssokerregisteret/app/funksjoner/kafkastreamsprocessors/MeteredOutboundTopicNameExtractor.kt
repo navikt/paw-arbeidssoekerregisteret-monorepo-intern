@@ -4,7 +4,7 @@ import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.api.v1.OpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.tellUtgåendeTilstand
-import no.nav.paw.arbeidssokerregisteret.app.metrics.registerGauge
+import no.nav.paw.arbeidssokerregisteret.app.metrics.registerLatencyGauge
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.streams.processor.RecordContext
 import org.apache.kafka.streams.processor.TopicNameExtractor
@@ -56,7 +56,7 @@ class MeteredOutboundTopicNameExtractor(
                 } else {
                     val atomicLong = AtomicLong()
                     map[key] = atomicLong
-                    registerGauge(topic, partition, atomicLong)
+                    registerLatencyGauge(topic, partition, atomicLong)
                     return atomicLong
                 }
             }

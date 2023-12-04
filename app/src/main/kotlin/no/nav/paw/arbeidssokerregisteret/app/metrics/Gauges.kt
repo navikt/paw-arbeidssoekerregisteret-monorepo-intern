@@ -5,7 +5,7 @@ import io.micrometer.prometheus.PrometheusMeterRegistry
 import java.util.concurrent.atomic.AtomicLong
 
 context(PrometheusMeterRegistry)
-fun registerGauge(topic: String, partition: Int, latency: AtomicLong) {
+fun registerLatencyGauge(topic: String, partition: Int, latency: AtomicLong) {
     gauge(
         Names.LATENCY,
         listOf(
