@@ -25,6 +25,7 @@ data:
         "transforms.dropPrefix.replacement": "$1",
         "allowBigQueryRequiredFieldRelaxation": "true",
         "allowNewBigQueryFields": "true",
-        "value.converter.value.subject.name.strategy": "io.confluent.kafka.serializers.subject.TopicRecordNameStrategy"
+        "value.converter.value.subject.name.strategy": "io.confluent.kafka.serializers.subject.RecordNameStrategy",
+        "value.subject.name.strategy": "io.confluent.kafka.serializers.subject.RecordNameStrategy"
       }
     }
