@@ -1,4 +1,4 @@
-url = "https://pdl-api.prod-fss-pub.nais.io"
+url = "https://pdl-api.prod-fss-pub.nais.io/graphql"
 tema = "OPP"
 pdlCluster = "prod-fss"
 namespace = "pdl"
