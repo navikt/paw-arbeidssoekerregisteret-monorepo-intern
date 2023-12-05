@@ -6,4 +6,8 @@ data class RecordScope<A>(
     val offset: Long
 )
 
-fun <A> RecordScope<A>.currentScope() = this
+interface HasRecordScope<A> {
+    val recordScope: RecordScope<A>?
+}
+
+fun <A> RecordScope<A>.currentScope(): RecordScope<A> = this

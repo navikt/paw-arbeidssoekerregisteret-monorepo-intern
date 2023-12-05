@@ -10,8 +10,8 @@ fun genererNyInternTilstandOgNyeApiTilstander(
     internTilstandOgHendelse: InternTilstandOgHendelse
 ): InternTilstandOgApiTilstander {
     val (scope, tilstand, hendelse) = internTilstandOgHendelse
-    return with (scope) {
-        when (hendelse) {
+    with(scope) {
+        return when (hendelse) {
             is Startet -> tilstand.startPeriode(hendelse)
             is Avsluttet -> tilstand.avsluttPeriode(hendelse)
             is OpplysningerOmArbeidssoekerMottatt -> tilstand.opplysningerOmArbeidssoekerMottatt(hendelse)

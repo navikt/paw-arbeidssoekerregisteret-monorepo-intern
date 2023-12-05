@@ -1,10 +1,11 @@
 package no.nav.paw.arbeidssokerregisteret.app.tilstand
 
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.HasRecordScope
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.RecordScope
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.OpplysningerOmArbeidssoeker
 
 data class Tilstand(
-    val recordScope: RecordScope<Long>?,
+    override val recordScope: RecordScope<Long>?,
     val gjeldeneTilstand: GjeldeneTilstand,
     val gjeldeneIdentitetsnummer: String,
     val allIdentitetsnummer: Set<String>,
@@ -12,7 +13,7 @@ data class Tilstand(
     val forrigePeriode: Periode?,
     val sisteOpplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker?,
     val forrigeOpplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker?
-)
+): HasRecordScope<Long>
 enum class GjeldeneTilstand {
     AVVIST, STARTET, STOPPET
 }
