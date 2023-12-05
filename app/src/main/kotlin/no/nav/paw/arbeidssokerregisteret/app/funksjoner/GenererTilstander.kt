@@ -10,7 +10,7 @@ fun genererNyInternTilstandOgNyeApiTilstander(
     recordKey: Long,
     internTilstandOgHendelse: InternTilstandOgHendelse
 ): InternTilstandOgApiTilstander {
-    val (tilstand, hendelse) = internTilstandOgHendelse
+    val (_, tilstand, hendelse) = internTilstandOgHendelse
     return when (hendelse) {
         is Startet -> tilstand.startPeriode(recordKey, hendelse)
         is Avsluttet -> tilstand.avsluttPeriode(hendelse)

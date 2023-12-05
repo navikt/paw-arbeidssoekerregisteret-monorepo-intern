@@ -9,6 +9,7 @@ import org.apache.kafka.streams.processor.api.Processor
 import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
 import org.apache.kafka.streams.state.KeyValueStore
+import kotlin.jvm.optionals.getOrNull
 
 
 fun KStream<Long, StreamHendelse>.lastInternTilstand(
@@ -17,6 +18,7 @@ fun KStream<Long, StreamHendelse>.lastInternTilstand(
     val processorSupplier = { TilstandsLaster(tilstandDbNavn) }
     return process(processorSupplier, Named.`as`("lastInternTilstand"), tilstandDbNavn)
 }
+
 class TilstandsLaster(
     private val tilstandDbNavn: String
 ) : Processor<Long, StreamHendelse, Long, InternTilstandOgHendelse> {
@@ -45,7 +47,20 @@ class TilstandsLaster(
         record: Record<Long, StreamHendelse>
     ) {
         val tilstand: Tilstand? = db.get(record.key())
-        ctx.forward(record.withValue(InternTilstandOgHendelse(tilstand, record.value())))
+        val partisjon = ctx.recordMetadata().getOrNull()?.partition()
+            ?: throw IllegalStateException(
+                "TilstandLaster kan ikke hente record metadata, denne klassen kan bare brukes i en context" +
+                        " hvor record metadata er tilgjengelig"
+            )
+        ctx.forward(
+            record.withValue(
+                InternTilstandOgHendelse(
+                    partisjon =  partisjon,
+                    tilstand = tilstand?.copy(),
+                    hendelse = record.value()
+                )
+            )
+        )
     }
 
     override fun close() {

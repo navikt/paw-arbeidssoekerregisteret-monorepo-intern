@@ -4,7 +4,11 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.OpplysningerOmArbeidssoeker as A
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode as ApiPeriode
 import no.nav.paw.arbeidssokerregisteret.app.StreamHendelse
 
-data class InternTilstandOgHendelse(val tilstand: Tilstand?, val hendelse: StreamHendelse)
+data class InternTilstandOgHendelse(
+    val partisjon: Int,
+    val tilstand: Tilstand?,
+    val hendelse: StreamHendelse
+)
 
 data class InternTilstandOgApiTilstander(
     val tilstand: Tilstand?,
