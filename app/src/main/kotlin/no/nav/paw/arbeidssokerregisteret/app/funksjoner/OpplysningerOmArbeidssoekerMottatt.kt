@@ -8,12 +8,14 @@ import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.api
 import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
 
-fun Tilstand?.opplysningerOmArbeidssoekerMottatt(recordKey: Long, hendelse: OpplysningerOmArbeidssoekerMottatt): InternTilstandOgApiTilstander =
+context(RecordScope<Long>)
+fun Tilstand?.opplysningerOmArbeidssoekerMottatt(hendelse: OpplysningerOmArbeidssoekerMottatt): InternTilstandOgApiTilstander =
     when {
         this == null -> {
             InternTilstandOgApiTilstander(
+                recordScope = currentScope(),
                 tilstand = Tilstand(
-                    kafkaKey = recordKey,
+                    recordScope = currentScope(),
                     gjeldeneIdentitetsnummer = hendelse.identitetsnummer,
                     allIdentitetsnummer = setOf(hendelse.identitetsnummer),
                     gjeldeneTilstand = GjeldeneTilstand.STOPPET,
@@ -29,9 +31,11 @@ fun Tilstand?.opplysningerOmArbeidssoekerMottatt(recordKey: Long, hendelse: Oppl
 
         this.gjeldenePeriode == null -> {
             InternTilstandOgApiTilstander(
+                recordScope = currentScope(),
                 tilstand = this.copy(
                     sisteOpplysningerOmArbeidssoeker = hendelse.opplysningerOmArbeidssoeker,
-                    forrigeOpplysningerOmArbeidssoeker = this.sisteOpplysningerOmArbeidssoeker
+                    forrigeOpplysningerOmArbeidssoeker = this.sisteOpplysningerOmArbeidssoeker,
+                    recordScope = currentScope()
                 ),
                 nyOpplysningerOmArbeidssoekerTilstand = null,
                 nyePeriodeTilstand = null
@@ -40,9 +44,11 @@ fun Tilstand?.opplysningerOmArbeidssoekerMottatt(recordKey: Long, hendelse: Oppl
 
         else -> {
             InternTilstandOgApiTilstander(
+                recordScope = currentScope(),
                 tilstand = this.copy(
                     sisteOpplysningerOmArbeidssoeker = hendelse.opplysningerOmArbeidssoeker,
-                    forrigeOpplysningerOmArbeidssoeker = this.sisteOpplysningerOmArbeidssoeker
+                    forrigeOpplysningerOmArbeidssoeker = this.sisteOpplysningerOmArbeidssoeker,
+                    recordScope = currentScope()
                 ),
                 nyOpplysningerOmArbeidssoekerTilstand = if (gjeldeneTilstand == STARTET) {
                     OpplysningerOmArbeidssoeker(

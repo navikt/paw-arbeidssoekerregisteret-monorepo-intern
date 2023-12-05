@@ -5,7 +5,8 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import java.util.*
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode as ApiPeriode
 
-fun Tilstand?.startPeriode(recordKey: Long, hendelse: Startet): InternTilstandOgApiTilstander {
+context (RecordScope<Long>)
+fun Tilstand?.startPeriode(hendelse: Startet): InternTilstandOgApiTilstander {
     if (this?.gjeldenePeriode != null) throw IllegalStateException("Gjeldene periode er ikke null. Kan ikke starte ny periode.")
     val startetPeriode = Periode(
         id = UUID.randomUUID(),
@@ -18,7 +19,7 @@ fun Tilstand?.startPeriode(recordKey: Long, hendelse: Startet): InternTilstandOg
         gjeldenePeriode = startetPeriode
     )
         ?: Tilstand(
-            kafkaKey = recordKey,
+            recordScope = currentScope(),
             gjeldeneIdentitetsnummer = hendelse.identitetsnummer,
             allIdentitetsnummer = setOf(hendelse.identitetsnummer),
             gjeldeneTilstand = GjeldeneTilstand.STARTET,
@@ -28,6 +29,7 @@ fun Tilstand?.startPeriode(recordKey: Long, hendelse: Startet): InternTilstandOg
             forrigeOpplysningerOmArbeidssoeker = null
         )
     return InternTilstandOgApiTilstander(
+        recordScope = currentScope(),
         tilstand = tilstand,
         nyOpplysningerOmArbeidssoekerTilstand = null,
         nyePeriodeTilstand = ApiPeriode(

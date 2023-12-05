@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors
 
 import no.nav.paw.arbeidssokerregisteret.app.StreamHendelse
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.RecordScope
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgHendelse
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
 import org.apache.kafka.streams.kstream.KStream
@@ -47,16 +48,18 @@ class TilstandsLaster(
         record: Record<Long, StreamHendelse>
     ) {
         val tilstand: Tilstand? = db.get(record.key())
-        val partisjon = ctx.recordMetadata().getOrNull()?.partition()
-            ?: throw IllegalStateException(
-                "TilstandLaster kan ikke hente record metadata, denne klassen kan bare brukes i en context" +
-                        " hvor record metadata er tilgjengelig"
+        val recordScope = ctx.recordMetadata().getOrNull()?.let { metadata ->
+            RecordScope(
+                key = record.key(),
+                partition = metadata.partition(),
+                offset = metadata.offset()
             )
+        } ?: throw  IllegalStateException("Denne prosessoren kan kun brukes i en context hvor record metadata er tilgjengelig")
         ctx.forward(
             record.withValue(
                 InternTilstandOgHendelse(
-                    partisjon =  partisjon,
-                    tilstand = tilstand?.copy(),
+                    recordScope =  recordScope,
+                    tilstand = tilstand,
                     hendelse = record.value()
                 )
             )

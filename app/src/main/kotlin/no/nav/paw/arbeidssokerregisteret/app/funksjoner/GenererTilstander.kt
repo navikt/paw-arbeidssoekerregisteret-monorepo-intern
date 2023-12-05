@@ -7,15 +7,16 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMo
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 
 fun genererNyInternTilstandOgNyeApiTilstander(
-    recordKey: Long,
     internTilstandOgHendelse: InternTilstandOgHendelse
 ): InternTilstandOgApiTilstander {
-    val (_, tilstand, hendelse) = internTilstandOgHendelse
-    return when (hendelse) {
-        is Startet -> tilstand.startPeriode(recordKey, hendelse)
-        is Avsluttet -> tilstand.avsluttPeriode(hendelse)
-        is OpplysningerOmArbeidssoekerMottatt -> tilstand.opplysningerOmArbeidssoekerMottatt(recordKey, hendelse)
-        else -> throw IllegalStateException("Uventet hendelse: $hendelse")
+    val (scope, tilstand, hendelse) = internTilstandOgHendelse
+    return with (scope) {
+        when (hendelse) {
+            is Startet -> tilstand.startPeriode(hendelse)
+            is Avsluttet -> tilstand.avsluttPeriode(hendelse)
+            is OpplysningerOmArbeidssoekerMottatt -> tilstand.opplysningerOmArbeidssoekerMottatt(hendelse)
+            else -> throw IllegalStateException("Uventet hendelse: $hendelse")
+        }
     }
 }
 
