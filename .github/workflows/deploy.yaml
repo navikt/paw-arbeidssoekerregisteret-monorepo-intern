@@ -31,7 +31,7 @@ jobs:
           team: paw
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }} # Provided as Organization Secret
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }} # Provided as Organization Variable
-  deploy:
+  deploy-dev:
     name: Deploy to dev-gcp
     needs: build
     runs-on: ubuntu-latest
@@ -47,7 +47,7 @@ jobs:
   deploy-prod:
     if: github.ref == 'refs/heads/main'
     name: Deploy to prod-gcp
-    needs: [build, deploy]
+    needs: [build, deploy-dev]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
