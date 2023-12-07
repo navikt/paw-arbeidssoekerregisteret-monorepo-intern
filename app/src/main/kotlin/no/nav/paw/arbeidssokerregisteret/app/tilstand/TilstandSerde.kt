@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.app.tilstand
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
@@ -19,7 +20,7 @@ class TilstandSerde : Serde<Tilstand> {
                 .configure(KotlinFeature.StrictNullChecks, false)
                 .build(),
             com.fasterxml.jackson.datatype.jsr310.JavaTimeModule()
-        )
+        ).configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     override fun serializer() = TilstandSerializer(objectMapper)
     override fun deserializer() = TilstandDeserializer(objectMapper)
 }
