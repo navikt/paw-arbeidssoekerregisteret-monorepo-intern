@@ -10,6 +10,7 @@ import org.apache.kafka.common.serialization.Serializer
 
 class TilstandSerde : Serde<Tilstand> {
     private val objectMapper = ObjectMapper()
+        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .registerModules(
             KotlinModule.Builder()
                 .withReflectionCacheSize(512)
@@ -20,7 +21,7 @@ class TilstandSerde : Serde<Tilstand> {
                 .configure(KotlinFeature.StrictNullChecks, false)
                 .build(),
             com.fasterxml.jackson.datatype.jsr310.JavaTimeModule()
-        ).configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        )
     override fun serializer() = TilstandSerializer(objectMapper)
     override fun deserializer() = TilstandDeserializer(objectMapper)
 }

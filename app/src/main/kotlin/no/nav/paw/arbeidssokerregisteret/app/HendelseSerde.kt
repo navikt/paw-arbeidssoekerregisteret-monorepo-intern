@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.app
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinFeature
@@ -36,6 +37,7 @@ class HendelseDeserializer(private val objectMapper: ObjectMapper): Deserializer
 }
 
 private fun hendelseObjectMapper(): ObjectMapper = ObjectMapper()
+    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
     .registerModules(
         KotlinModule.Builder()
             .withReflectionCacheSize(512)
