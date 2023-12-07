@@ -33,3 +33,8 @@ spec:
   kafka:
     pool: {{ kafka }}
     streams: true
+  resources:
+    limits:
+      memory: 3048Mi
+    requests:
+      memory: 2048Mi
