@@ -33,8 +33,15 @@ spec:
   kafka:
     pool: {{ kafka }}
     streams: true
+  replicas:
+    cpuThresholdPercentage: 50
+    disableAutoScaling: true
+    max: 1
+    min: 1
   resources:
     limits:
-      memory: 3048Mi
+      cpu: 500m
+      memory: 3072Mi
     requests:
+      cpu: 200m
       memory: 2048Mi
