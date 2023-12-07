@@ -6,30 +6,34 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.atomic.AtomicLong
 
-class StateGauge<A : WithMetricsInfo>(
+class StateGauge(
     private val registry: PrometheusMeterRegistry
 ) {
-    private val stateObjects: ConcurrentMap<A, AtomicLong> = ConcurrentHashMap()
-    fun <E> update(source: Iterable<E>, mapper: (E) -> A) {
+    private val stateObjects: ConcurrentMap<WithMetricsInfo, AtomicLong> = ConcurrentHashMap()
+    fun update(source: Sequence<WithMetricsInfo>) {
         val candidatesForRemoval = stateObjects.filter { (_, value) ->
             value.get() == 0L
         }.map { (key, _) -> key }
             .toList()
-        val currentNumbers = source.map(mapper)
-            .fold(emptyMap<A, Long>()) { map, key ->
+        val currentNumbers = source
+            .fold(emptyMap<WithMetricsInfo, Long>()) { map, key ->
                 map + (key to (map[key] ?: 0L) + 1L)
             }
-        stateObjects.keys
-            .forEach { key ->
+        currentNumbers
+            .forEach { (key, currentValue) ->
                 val stateObject = stateObjects[key]
-                val currentNumber = currentNumbers[key] ?: 0L
                 if (stateObject != null) {
-                    stateObject.set(currentNumber)
+                    stateObject.set(currentValue)
                 } else {
-                    val newStateObject = AtomicLong(currentNumber)
+                    val newStateObject = AtomicLong(currentValue)
                     registry.gauge(key.name, key.labels, newStateObject)
                 }
             }
+        stateObjects.forEach { (key, value) ->
+            if (!currentNumbers.containsKey(key)) {
+                value.set(0L)
+            }
+        }
         candidatesForRemoval.forEach { key ->
             if (stateObjects[key]?.get() == 0L) {
                 stateObjects.remove(key)
@@ -39,8 +43,8 @@ class StateGauge<A : WithMetricsInfo>(
 }
 
 
-    interface WithMetricsInfo {
-        val partition: Int?
-        val name: String
-        val labels: List<Tag>
-    }
+interface WithMetricsInfo {
+    val partition: Int?
+    val name: String
+    val labels: List<Tag>
+}
