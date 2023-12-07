@@ -1,6 +1,8 @@
 package no.nav.paw.arbeidssokerregisteret.app
 
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+import no.nav.paw.arbeidssokerregisteret.PROSENT
+import no.nav.paw.arbeidssokerregisteret.STILLING_STYRK08
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.app.config.KafkaKonfigurasjon
 import no.nav.paw.arbeidssokerregisteret.intern.v1.*
@@ -45,6 +47,8 @@ fun main() {
         start(periodeBruker3)
         start(periodeBruker1)
         start(periodeBruker2)
+        opplysningerMottattPermitertOgDeltidsJobb(periodeBruker2)
+        Thread.sleep(Duration.ofSeconds(130))
         stop(periodeBruker2)
         stop(periodeBruker3)
         stop(periodeBruker1)
@@ -76,6 +80,101 @@ class TestContext(private val producer: KafkaProducer<Long, Hendelse>, private v
                         utfoertAv = Bruker(BrukerType.SLUTTBRUKER, "test"),
                         kilde = "unit-test",
                         aarsak = "tester"
+                    )
+                )
+            )
+        )
+            .get()
+    }
+
+    fun opplysningerMottattPermitertOgDeltidsJobb(id: String) {
+        producer.send(
+            ProducerRecord(
+                topic,
+                id.hashCode().toLong(),
+                OpplysningerOmArbeidssoekerMottatt(
+                    hendelseId = UUID.randomUUID(),
+                    identitetsnummer = id,
+                    opplysningerOmArbeidssoeker = OpplysningerOmArbeidssoeker(
+                        metadata = Metadata(
+                            tidspunkt = Instant.now(),
+                            utfoertAv = Bruker(BrukerType.SLUTTBRUKER, "test"),
+                            kilde = "unit-test",
+                            aarsak = "tester"
+                        ),
+                        jobbsituasjon = Jobbsituasjon(
+                            beskrivelser = listOf(
+                                JobbsituasjonMedDetaljer(
+                                    beskrivelse = JobbsituasjonBeskrivelse.ER_PERMITTERT,
+                                    detaljer = mapOf(
+                                        PROSENT to "100",
+                                        STILLING_STYRK08 to "123"
+                                    )
+                                ),
+                                JobbsituasjonMedDetaljer(
+                                    beskrivelse = JobbsituasjonBeskrivelse.DELTIDSJOBB_VIL_MER,
+                                    detaljer = mapOf(
+                                        "prosent" to "25",
+                                        "stillingStyrk08" to "124"
+                                    )
+                                )
+                            )
+                        ),
+                        annet = Annet(JaNeiVetIkke.NEI),
+                        utdanning = Utdanning(
+                            utdanningsnivaa = Utdanningsnivaa.HOYERE_UTDANNING_5_ELLER_MER,
+                            bestaatt = JaNeiVetIkke.JA,
+                            godkjent = JaNeiVetIkke.JA
+                        ),
+                        helse = Helse(
+                            helsetilstandHindrerArbeid = JaNeiVetIkke.NEI
+                        ),
+                        arbeidserfaring = Arbeidserfaring(harHattArbeid = JaNeiVetIkke.JA),
+                        id = UUID.randomUUID()
+                    )
+                )
+            )
+        )
+            .get()
+    }
+
+    fun opplysningerMottattPermitert(id: String) {
+        producer.send(
+            ProducerRecord(
+                topic,
+                id.hashCode().toLong(),
+                OpplysningerOmArbeidssoekerMottatt(
+                    hendelseId = UUID.randomUUID(),
+                    identitetsnummer = id,
+                    opplysningerOmArbeidssoeker = OpplysningerOmArbeidssoeker(
+                        metadata = Metadata(
+                            tidspunkt = Instant.now(),
+                            utfoertAv = Bruker(BrukerType.SLUTTBRUKER, "test"),
+                            kilde = "unit-test",
+                            aarsak = "tester"
+                        ),
+                        jobbsituasjon = Jobbsituasjon(
+                            beskrivelser = listOf(
+                                JobbsituasjonMedDetaljer(
+                                    beskrivelse = JobbsituasjonBeskrivelse.ER_PERMITTERT,
+                                    detaljer = mapOf(
+                                        PROSENT to "100",
+                                        STILLING_STYRK08 to "123"
+                                    )
+                                )
+                            )
+                        ),
+                        annet = Annet(JaNeiVetIkke.NEI),
+                        utdanning = Utdanning(
+                            utdanningsnivaa = Utdanningsnivaa.HOYERE_UTDANNING_5_ELLER_MER,
+                            bestaatt = JaNeiVetIkke.JA,
+                            godkjent = JaNeiVetIkke.JA
+                        ),
+                        helse = Helse(
+                            helsetilstandHindrerArbeid = JaNeiVetIkke.NEI
+                        ),
+                        arbeidserfaring = Arbeidserfaring(harHattArbeid = JaNeiVetIkke.JA),
+                        id = UUID.randomUUID()
                     )
                 )
             )

@@ -5,6 +5,9 @@ import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.app.config.KafkaKonfigurasjon
 import no.nav.paw.arbeidssokerregisteret.app.helse.Helse
 import no.nav.paw.arbeidssokerregisteret.app.helse.initKtor
+import no.nav.paw.arbeidssokerregisteret.app.metrics.StateGauge
+import no.nav.paw.arbeidssokerregisteret.app.metrics.arbeidssoekerSituasjonsMaaler
+import no.nav.paw.arbeidssokerregisteret.app.metrics.arbeidssokerMaaler
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandSerde
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
@@ -12,12 +15,19 @@ import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.utils.Time
 import org.apache.kafka.streams.KafkaStreams
+import org.apache.kafka.streams.StoreQueryParameters
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
+import org.apache.kafka.streams.state.QueryableStoreTypes
+import org.apache.kafka.streams.state.ReadOnlyKeyValueStore
 import org.apache.kafka.streams.state.internals.KeyValueStoreBuilder
 import org.apache.kafka.streams.state.internals.RocksDbKeyValueBytesStoreSupplier
 import org.slf4j.LoggerFactory
+import java.time.Duration
+import java.util.concurrent.CompletableFuture.runAsync
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 const val kafkaKonfigurasjonsfil = "kafka_konfigurasjon.toml"
 
