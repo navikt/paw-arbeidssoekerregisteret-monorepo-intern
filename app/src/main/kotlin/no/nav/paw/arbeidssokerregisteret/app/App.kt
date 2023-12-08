@@ -81,6 +81,7 @@ fun main() {
     }
     kafkaStreams.start()
     val helse = Helse(kafkaStreams)
+    registerStreamStateGauge(prometheusMeterRegistry, kafkaStreams)
     initKtor(
         prometheusRegistry = prometheusMeterRegistry,
         helse = helse
@@ -88,5 +89,30 @@ fun main() {
     keepGoing.set(false)
     metricsTask.cancel(true)
     streamLogger.info("Avsluttet")
+}
+
+private fun registerStreamStateGauge(
+    prometheusMeterRegistry: PrometheusMeterRegistry,
+    kafkaStreams: KafkaStreams
+) {
+    prometheusMeterRegistry.gauge(
+        Names.STREAM_STATE,
+        listOf(),
+        kafkaStreams
+    ) {
+        when (try {
+            kafkaStreams.state()
+        } catch (ex: TimeoutException) {
+            -1
+        }) {
+            KafkaStreams.State.RUNNING -> 0
+            KafkaStreams.State.CREATED -> 1
+            KafkaStreams.State.REBALANCING -> 2
+            KafkaStreams.State.PENDING_SHUTDOWN -> 3
+            KafkaStreams.State.NOT_RUNNING -> 4
+            KafkaStreams.State.ERROR -> -2
+            else -> 6
+        }.toDouble()
+    }
 }
 

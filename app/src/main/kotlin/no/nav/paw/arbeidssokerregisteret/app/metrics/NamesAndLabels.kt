@@ -5,6 +5,7 @@ private const val PREFIX = "paw_arbeidssokerregisteret"
 object Names {
     const val MESSAGE = "${PREFIX}_message"
     const val LATENCY = "${PREFIX}_latency"
+    const val STREAM_STATE = "${PREFIX}_stream_state"
     const val ARBEIDSSOEKER_ANTALL = "${PREFIX}_arbeidssoker_antall"
     const val ARBEIDSSOEKER_JOBB_SITUASJON = "${PREFIX}_arbeidssoker_jobb_situasjon"
 }
