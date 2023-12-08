@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.app
 
+import io.micrometer.core.instrument.binder.kafka.KafkaStreamsMetrics
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.app.config.KafkaKonfigurasjon
@@ -83,6 +84,7 @@ fun main() {
     val helse = Helse(kafkaStreams)
     registerStreamStateGauge(prometheusMeterRegistry, kafkaStreams)
     initKtor(
+        kafkaStreamsMetrics = KafkaStreamsMetrics(kafkaStreams),
         prometheusRegistry = prometheusMeterRegistry,
         helse = helse
     ).start(wait = true)
