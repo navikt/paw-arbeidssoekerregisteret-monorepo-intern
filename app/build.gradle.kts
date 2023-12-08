@@ -27,6 +27,8 @@ dependencies {
     implementation("org.apache.avro:avro:1.11.0")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:4.6.0")
     testImplementation("org.apache.kafka:kafka-streams-test-utils:3.5.1")
+    implementation("io.prometheus:client_java:1.1.0")
+    implementation("io.micrometer:micrometer-registry-prometheus:1.12.0")
 }
 
 ktor {

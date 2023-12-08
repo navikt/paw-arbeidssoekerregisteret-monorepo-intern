@@ -1,20 +1,17 @@
 package no.nav.paw.arbeidssokerregisteret.app.metrics
 
+import io.micrometer.core.instrument.Gauge.*
+import io.micrometer.core.instrument.Meter
 import io.micrometer.core.instrument.Tag
 import io.micrometer.prometheus.PrometheusMeterRegistry
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentMap
+import io.prometheus.client.Gauge
 import java.util.concurrent.atomic.AtomicLong
 
 class StateGauge(
     private val registry: PrometheusMeterRegistry
 ) {
-    private val stateObjects: ConcurrentMap<WithMetricsInfo, AtomicLong> = ConcurrentHashMap()
+    private val stateObjects: HashMap<WithMetricsInfo, Pair<Meter.Id, AtomicLong>> = HashMap()
     fun update(source: Sequence<WithMetricsInfo>) {
-        val candidatesForRemoval = stateObjects.filter { (_, value) ->
-            value.get() == 0L
-        }.map { (key, _) -> key }
-            .toList()
         val currentNumbers = source
             .fold(emptyMap<WithMetricsInfo, Long>()) { map, key ->
                 map + (key to (map[key] ?: 0L) + 1L)
@@ -23,20 +20,25 @@ class StateGauge(
             .forEach { (key, currentValue) ->
                 val stateObject = stateObjects[key]
                 if (stateObject != null) {
-                    stateObject.set(currentValue)
+                    stateObject.second.set(currentValue)
                 } else {
                     val newStateObject = AtomicLong(currentValue)
-                    registry.gauge(key.name, key.labels, newStateObject)
+                    val regInfo = builder(key.name, newStateObject, AtomicLong::toDouble)
+                        .tags(key.labels)
+                        .register(registry)
+                    stateObjects[key] = Pair(regInfo.id, newStateObject)
                 }
+            }
+        stateObjects
+            .filter { (_, value) -> value.second.get() == 0L }
+            .toList()
+            .forEach { (key, value) ->
+                registry.remove(value.first)
+                stateObjects.remove(key)
             }
         stateObjects.forEach { (key, value) ->
             if (!currentNumbers.containsKey(key)) {
-                value.set(0L)
-            }
-        }
-        candidatesForRemoval.forEach { key ->
-            if (stateObjects[key]?.get() == 0L) {
-                stateObjects.remove(key)
+                value.second.set(0L)
             }
         }
     }
