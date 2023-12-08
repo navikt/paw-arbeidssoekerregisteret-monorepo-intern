@@ -70,7 +70,9 @@ fun main() {
         keepGoing = keepGoing,
         registry = prometheusMeterRegistry,
         streamStateSupplier = kafkaStreams::state,
-        contentSupplier = { stateStore().all().asSequence().map { it.value } },
+        contentSupplier = { stateStore().all().asSequence()
+            .map { it.value }
+            .filter { it.gjeldenePeriode != null && it.gjeldenePeriode.avsluttet == null }},
         mapper = ::withMetricsInfoMapper
     )
     kafkaStreams.setUncaughtExceptionHandler { throwable ->
