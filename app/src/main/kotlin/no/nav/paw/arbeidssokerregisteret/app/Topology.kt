@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.app
 
 import io.micrometer.prometheus.PrometheusMeterRegistry
+import no.nav.paw.arbeidssokerregisteret.app.config.ApplicationLogicConfig
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.genererNyInternTilstandOgNyeApiTilstander
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.ignorerDuplikatStartOgStopp
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors.MeteredOutboundTopicNameExtractor
@@ -17,6 +18,7 @@ import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.KStream
 
 fun topology(
+    applicationLogicConfig: ApplicationLogicConfig,
     prometheusMeterRegistry: PrometheusMeterRegistry,
     builder: StreamsBuilder,
     dbNavn: String,
@@ -25,13 +27,19 @@ fun topology(
     opplysningerOmArbeidssoekerTopic: String
 ): Topology {
     val strøm: KStream<Long, Hendelse> = builder.stream(innTopic, Consumed.with(Serdes.Long(), HendelseSerde()))
-    val meteredTopicExtractor = MeteredOutboundTopicNameExtractor(periodeTopic, opplysningerOmArbeidssoekerTopic, prometheusMeterRegistry)
+    val meteredTopicExtractor =
+        MeteredOutboundTopicNameExtractor(periodeTopic, opplysningerOmArbeidssoekerTopic, prometheusMeterRegistry)
     with(prometheusMeterRegistry) {
         strøm
             .peek { _, hendelse -> tellHendelse(innTopic, hendelse) }
             .lastInternTilstand(dbNavn)
             .filter(::ignorerDuplikatStartOgStopp)
-            .mapValues(::genererNyInternTilstandOgNyeApiTilstander)
+            .mapValues { internTilstandOgHendelse ->
+                genererNyInternTilstandOgNyeApiTilstander(
+                    applicationLogicConfig,
+                    internTilstandOgHendelse
+                )
+            }
             .lagreInternTilstand(dbNavn)
             .flatMap { key, value ->
                 listOfNotNull(

@@ -31,6 +31,7 @@ import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 
 const val kafkaKonfigurasjonsfil = "kafka_konfigurasjon.toml"
+const val applicationLogicConfigFile = "application_logic_config.toml"
 
 typealias StreamHendelse = Hendelse
 
@@ -56,7 +57,8 @@ fun main() {
         dbNavn = dbNavn,
         innTopic = kafkaKonfigurasjon.streamKonfigurasjon.eventlogTopic,
         periodeTopic = kafkaKonfigurasjon.streamKonfigurasjon.periodeTopic,
-        opplysningerOmArbeidssoekerTopic = kafkaKonfigurasjon.streamKonfigurasjon.opplysningerOmArbeidssoekerTopic
+        opplysningerOmArbeidssoekerTopic = kafkaKonfigurasjon.streamKonfigurasjon.opplysningerOmArbeidssoekerTopic,
+        applicationLogicConfig = lastKonfigurasjon(applicationLogicConfigFile)
     )
 
     val kafkaStreams = KafkaStreams(topology, StreamsConfig(kafkaKonfigurasjon.properties))
