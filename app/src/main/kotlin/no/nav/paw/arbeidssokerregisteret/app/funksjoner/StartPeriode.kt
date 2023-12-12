@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.channelFlow
 import no.nav.paw.arbeidssokerregisteret.api.v1.OpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.*
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
+import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -58,6 +59,8 @@ fun Tilstand?.startPeriode(window: Duration, hendelse: Startet): InternTilstandO
     )
 }
 
+val windowLogger = LoggerFactory.getLogger("window_check")
 fun Duration.isWithinWindow(t1: Instant, t2: Instant): Boolean {
-    return Duration.between(t1, t2).abs() <= this
+    return (Duration.between(t1, t2).abs() <= this)
+        .also { windowLogger.debug("Tidsvindu($this), t1: $t1, t2: $t2, resultat: $it") }
 }

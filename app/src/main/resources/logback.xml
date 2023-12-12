@@ -46,6 +46,7 @@
     <logger name="io.confluent" level="INFO"/>
     <logger name="no.nav" level="INFO"/>
     <logger name="tilstand_metrics" level="DEBUG"/>
+    <logger name="window_check" level="DEBUG"/>
 
 
 </configuration>
