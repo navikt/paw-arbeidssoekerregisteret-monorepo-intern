@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.app.metrics
 
 import io.micrometer.prometheus.PrometheusMeterRegistry
+import no.nav.paw.arbeidssokerregisteret.app.metrics.Names.ANTALL_TILSTANDER
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.errors.InvalidStateStoreException
@@ -9,6 +10,7 @@ import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletableFuture.supplyAsync
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 
 private val metricLogger = LoggerFactory.getLogger("tilstand_metrics")
 fun <T1> initStateGaugeTask(
@@ -50,4 +52,5 @@ fun <T1> initStateGaugeTask(
 
 fun withMetricsInfoMapper(tilstand: Tilstand): List<WithMetricsInfo> =
     arbeidssoekerSituasjonsMaaler(tilstand) +
-            listOfNotNull(arbeidssokerMaaler(tilstand))
+            listOfNotNull(arbeidssokerMaaler(tilstand)) +
+            antallTilstanderMaaler(tilstand)

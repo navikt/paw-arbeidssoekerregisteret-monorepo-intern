@@ -8,6 +8,7 @@ object Names {
     const val STREAM_STATE = "${PREFIX}_stream_state"
     const val ARBEIDSSOEKER_ANTALL = "${PREFIX}_arbeidssoker_antall"
     const val ARBEIDSSOEKER_JOBB_SITUASJON = "${PREFIX}_arbeidssoker_jobb_situasjon"
+    const val ANTALL_TILSTANDER = "${PREFIX}_arbeidssoker_antall_tilstander"
 }
 
 object Labels {
