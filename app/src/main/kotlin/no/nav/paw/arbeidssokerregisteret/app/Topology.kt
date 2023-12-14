@@ -43,7 +43,7 @@ fun topology(
             .lagreInternTilstand(dbNavn)
             .flatMap { key, value ->
                 listOfNotNull(
-                    value.nyePeriodeTilstand?.let { KeyValue(key, it as SpecificRecord) },
+                    value.nyPeriodeTilstand?.let { KeyValue(key, it as SpecificRecord) },
                     value.nyOpplysningerOmArbeidssoekerTilstand?.let { KeyValue(key, it as SpecificRecord) }
                 )
             }.to(meteredTopicExtractor)

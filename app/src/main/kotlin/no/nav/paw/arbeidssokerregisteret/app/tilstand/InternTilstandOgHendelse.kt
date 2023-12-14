@@ -15,7 +15,7 @@ data class InternTilstandOgHendelse(
 data class InternTilstandOgApiTilstander(
     val recordScope: RecordScope<Long>,
     val tilstand: Tilstand?,
-    val nyePeriodeTilstand: ApiPeriode?,
+    val nyPeriodeTilstand: ApiPeriode?,
     val nyOpplysningerOmArbeidssoekerTilstand: ApiOpplysningerOmArbeidssoeker?
 )
 

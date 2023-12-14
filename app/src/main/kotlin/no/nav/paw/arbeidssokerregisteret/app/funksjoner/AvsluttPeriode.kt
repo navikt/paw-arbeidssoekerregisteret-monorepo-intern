@@ -18,7 +18,7 @@ fun Tilstand?.avsluttPeriode(hendelse: Avsluttet): InternTilstandOgApiTilstander
             gjeldenePeriode = null,
             forrigePeriode = stoppetPeriode
         ),
-        nyePeriodeTilstand = ApiPeriode(
+        nyPeriodeTilstand = ApiPeriode(
             stoppetPeriode.id,
             stoppetPeriode.identitetsnummer,
             stoppetPeriode.startet.api(),

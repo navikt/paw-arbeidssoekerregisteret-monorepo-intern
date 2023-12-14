@@ -25,7 +25,7 @@ fun Tilstand?.opplysningerOmArbeidssoekerMottatt(hendelse: OpplysningerOmArbeids
                     forrigeOpplysningerOmArbeidssoeker = null
                 ),
                 nyOpplysningerOmArbeidssoekerTilstand = null,
-                nyePeriodeTilstand = null
+                nyPeriodeTilstand = null
             )
         }
 
@@ -38,7 +38,7 @@ fun Tilstand?.opplysningerOmArbeidssoekerMottatt(hendelse: OpplysningerOmArbeids
                     recordScope = currentScope()
                 ),
                 nyOpplysningerOmArbeidssoekerTilstand = null,
-                nyePeriodeTilstand = null
+                nyPeriodeTilstand = null
             )
         }
 
@@ -62,7 +62,7 @@ fun Tilstand?.opplysningerOmArbeidssoekerMottatt(hendelse: OpplysningerOmArbeids
                         hendelse.opplysningerOmArbeidssoeker.annet.api()
                     )
                 } else null,
-                nyePeriodeTilstand = null
+                nyPeriodeTilstand = null
             )
         }
     }

@@ -1,6 +1,5 @@
 package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 
-import kotlinx.coroutines.flow.channelFlow
 import no.nav.paw.arbeidssokerregisteret.api.v1.OpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.*
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
@@ -50,7 +49,7 @@ fun Tilstand?.startPeriode(window: Duration, hendelse: Startet): InternTilstandO
                     intern.annet.api()
                 )
             },
-        nyePeriodeTilstand = ApiPeriode(
+        nyPeriodeTilstand = ApiPeriode(
             startetPeriode.id,
             startetPeriode.identitetsnummer,
             startetPeriode.startet.api(),

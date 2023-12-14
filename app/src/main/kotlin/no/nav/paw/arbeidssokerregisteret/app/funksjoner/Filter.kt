@@ -12,12 +12,11 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMo
 fun ignorerDuplikatStartOgStopp(@Suppress("UNUSED_PARAMETER") recordKey: Long, tilstandOgHendelse: InternTilstandOgHendelse): Boolean {
     val (_, tilstand, hendelse) = tilstandOgHendelse
     return when (tilstand?.gjeldeneTilstand) {
-        null -> hendelse.erIkkeEnAv<Avsluttet, OpplysningerOmArbeidssoekerMottatt>()
+        null -> hendelse.erIkke<Avsluttet>()
         GjeldeneTilstand.STARTET -> hendelse.erIkke<Startet>()
         GjeldeneTilstand.STOPPET -> hendelse.erIkke<Avsluttet>()
-        GjeldeneTilstand.AVVIST -> hendelse.erIkkeEnAv<Avsluttet, OpplysningerOmArbeidssoekerMottatt>()
+        GjeldeneTilstand.AVVIST -> hendelse.erIkke<Avsluttet>()
     }
 }
 
 inline fun <reified A : StreamHendelse> StreamHendelse.erIkke(): Boolean = this !is A
-inline fun <reified A : StreamHendelse, reified B : StreamHendelse> StreamHendelse.erIkkeEnAv(): Boolean = this !is A && this !is B

@@ -18,14 +18,3 @@ data class Tilstand(
 enum class GjeldeneTilstand {
     AVVIST, STARTET, STOPPET
 }
-
-val Tilstand.sisteOpplysningerHørerTilGjeldenePeriode: Boolean
-    get() {
-        return if (sisteOpplysningerOmArbeidssoeker == null) {
-            false
-        } else {
-            gjeldenePeriode?.startet?.tidspunkt
-                ?.isBefore(sisteOpplysningerOmArbeidssoeker.metadata.tidspunkt)
-                ?: false
-        }
-    }
