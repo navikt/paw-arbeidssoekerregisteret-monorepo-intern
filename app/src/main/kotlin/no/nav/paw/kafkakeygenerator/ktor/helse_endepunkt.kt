@@ -12,7 +12,7 @@ fun Routing.konfigurereHelse(prometheusMeterRegistry: PrometheusMeterRegistry) {
     get("/internal/isReady") {
         call.respondText("READY")
     }
-    get("/internal/prometheus") {
+    get("/internal/metrics") {
         call.respond(prometheusMeterRegistry.scrape())
     }
 }
