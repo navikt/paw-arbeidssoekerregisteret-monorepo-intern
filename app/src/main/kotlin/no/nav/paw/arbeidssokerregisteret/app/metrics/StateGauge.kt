@@ -23,7 +23,7 @@ class StateGauge(
                 } else {
                     val newStateObject = AtomicLong(currentValue)
                     val regInfo = builder(key.name, newStateObject, AtomicLong::toDouble)
-                        .tags(key.labels)
+                        .tags(key.labels + Tag.of(Labels.PARTITION, key.partition.toString()))
                         .register(registry)
                     stateObjects[key] = Pair(regInfo.id, newStateObject)
                 }
