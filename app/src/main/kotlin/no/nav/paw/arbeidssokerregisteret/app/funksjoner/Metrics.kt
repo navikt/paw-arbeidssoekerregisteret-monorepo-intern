@@ -18,6 +18,7 @@ fun tellHendelse(topic: String, hendelse: Hendelse) {
             is no.nav.paw.arbeidssokerregisteret.intern.v1.Startet -> Actions.START
             is no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet -> Actions.STOP
             is no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt -> Actions.INFO_RECEIVED
+            is no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist -> Actions.REJECTED
             else -> Actions.UNKNOWN
         }
     )

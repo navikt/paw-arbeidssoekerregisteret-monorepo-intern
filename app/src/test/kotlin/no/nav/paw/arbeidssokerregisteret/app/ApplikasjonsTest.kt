@@ -12,6 +12,7 @@ import no.nav.paw.arbeidssokerregisteret.STILLING
 import no.nav.paw.arbeidssokerregisteret.STILLING_STYRK08
 import no.nav.paw.arbeidssokerregisteret.app.config.ApplicationLogicConfig
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.*
@@ -74,6 +75,11 @@ class ApplikasjonsTest : FreeSpec({
                 aarsak = "tester"
             )
         )
+        "Når vi mottater en avvist hendelse skjer det ikke noe" {
+            eventlogTopic.pipeInput(key, Avvist(UUID.randomUUID(), identitetnummer, startet.metadata))
+            periodeTopic.isEmpty shouldBe true
+            opplysningerOmArbeidssoekerTopic.isEmpty shouldBe true
+        }
         "Når vi mottar opplysninger uten aktiv periode skal det ikke skje noe" {
             eventlogTopic.pipeInput(key, opplysningerMottatt(identitetnummer, Instant.now()
                 .minus(opplysningerTilPeriodeVindu.multipliedBy(2))))

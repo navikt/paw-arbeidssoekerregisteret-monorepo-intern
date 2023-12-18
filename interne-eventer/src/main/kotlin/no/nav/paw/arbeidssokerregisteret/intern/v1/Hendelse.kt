@@ -4,6 +4,7 @@ import java.util.*
 
 const val startetHendelseType = "intern.v1.startet"
 const val avsluttetHendelseType = "intern.v1.avsluttet"
+const val avvistHendelseType = "intern.v1.avvist"
 const val opplysningerOmArbeidssoekerHendelseType = "intern.v1.opplysninger_om_arbeidssoeker"
 
 interface Hendelse : HarIdentitetsnummer, HarMetadata {

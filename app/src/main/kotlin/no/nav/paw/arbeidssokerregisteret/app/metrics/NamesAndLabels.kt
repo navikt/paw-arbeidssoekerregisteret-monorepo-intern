@@ -25,6 +25,7 @@ object Directions {
 }
 
 object Actions {
+    val REJECTED = "avvist"
     val START = "start_periode"
     val STOP = "avslutt_periode"
     val INFO_RECEIVED = "opplysninger_mottatt"
