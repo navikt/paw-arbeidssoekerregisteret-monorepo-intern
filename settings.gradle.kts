@@ -14,7 +14,7 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("pawObservability") {
-            from("no.nav.paw.observability:observability-version-catalog:23.09.22.7-1")
+            from("no.nav.paw.observability:observability-version-catalog:23.10.25.8-1")
         }
     }
 }

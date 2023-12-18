@@ -6,7 +6,7 @@ import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder
 import no.nav.paw.arbeidssokerregisteret.config.Config
 import no.nav.paw.arbeidssokerregisteret.config.NaisEnv
-import no.nav.paw.arbeidssokerregisteret.intern.StartV1
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.kafka.producers.ArbeidssokerperiodeStartProducer
 import no.nav.paw.arbeidssokerregisteret.services.ArbeidssokerService
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
@@ -44,7 +44,7 @@ fun createDependencies(config: Config): Dependencies {
 
     val autorisasjonService = AutorisasjonService(poaoTilgangCachedClient)
 
-    val kafkaProducerClient = KafkaProducer<String, StartV1>(config.kafka.kafkaProducerProperties)
+    val kafkaProducerClient = KafkaProducer<Long, Startet>(config.kafka.kafkaProducerProperties)
 
     val arbeidssokerperiodeStartProducer = ArbeidssokerperiodeStartProducer(
         kafkaProducerClient,

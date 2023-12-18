@@ -1,18 +1,18 @@
 plugins {
-    kotlin("jvm") version "1.9.10"
-    id("io.ktor.plugin") version "2.3.4"
-    id("com.github.davidmc24.gradle.plugin.avro") version "1.7.0"
-    id("org.jmailen.kotlinter") version "3.16.0"
+    kotlin("jvm") version "1.9.20"
+    id("io.ktor.plugin") version "2.3.5"
+//    id("org.jmailen.kotlinter") version "3.16.0"
     application
 }
 
 val logbackVersion = "1.4.5"
 val logstashVersion = "7.3"
 val navCommonModulesVersion = "2.2023.01.02_13.51-1c6adeb1653b"
-val avroVersion = "1.11.0"
 val tokenSupportVersion = "3.1.5"
 val koTestVersion = "5.7.2"
 val hopliteVersion = "2.7.5"
+val ktorVersion = pawObservability.versions.ktor
+val arbeidssokerregisteretVersion = "23.12.01.82-1"
 
 repositories {
     mavenLocal()
@@ -27,6 +27,7 @@ repositories {
 }
 
 dependencies {
+    implementation("no.nav.paw.arbeidssokerregisteret.internt.schema:interne-eventer:$arbeidssokerregisteretVersion")
     implementation(pawObservability.bundles.ktorNettyOpentelemetryMicrometerPrometheus)
     implementation("no.nav.security:token-validation-ktor-v2:$tokenSupportVersion")
     implementation("no.nav.security:token-client-core:$tokenSupportVersion")
@@ -35,7 +36,6 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashVersion")
     implementation("org.apache.kafka:kafka-clients:3.5.1")
-    implementation("org.apache.avro:avro:$avroVersion")
     implementation("io.confluent:kafka-avro-serializer:7.4.0")
     implementation("com.github.navikt.poao-tilgang:client:2023.09.25_09.26-72043f243cad")
     implementation("no.nav.paw:pdl-client:0.3.1")
@@ -43,7 +43,6 @@ dependencies {
     implementation("com.sksamuel.hoplite:hoplite-yaml:$hopliteVersion")
 
     // TODO: Flytte til bundle KTOR
-    val ktorVersion = "2.3.4"
     implementation("io.ktor:ktor-server-cors:$ktorVersion")
     implementation("io.ktor:ktor-server-swagger:$ktorVersion")
     implementation("io.ktor:ktor-server-call-id:$ktorVersion")
@@ -65,22 +64,10 @@ dependencies {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
-tasks {
-    "run"(JavaExec::class) {
-        jvmArgs = listOf(
-            "-javaagent:agents/opentelemetry-javaagent.jar",
-            "-Dotel.javaagent.extensions=agents/opentelemetry-anonymisering-1.30.0-23.09.22.7-1.jar",
-            "-Dotel.resource.attributes=service.name=paw-arbeidssokerregisteret",
-        )
-        environment("OTEL_TRACES_EXPORTER", "maskert_oltp")
-        environment("OTEL_METRICS_EXPORTER", "none")
-        environment("OTEL_JAVAAGENT_DEBUG", "false")
-    }
-}
 
 application {
     mainClass.set("no.nav.paw.arbeidssokerregisteret.ApplicationKt")

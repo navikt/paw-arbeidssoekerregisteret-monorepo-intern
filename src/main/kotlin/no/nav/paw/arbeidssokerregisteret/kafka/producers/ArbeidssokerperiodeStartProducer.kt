@@ -1,20 +1,19 @@
 package no.nav.paw.arbeidssokerregisteret.kafka.producers
 
-import no.nav.paw.arbeidssokerregisteret.intern.StartV1
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.utils.logger
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
-import java.util.*
 
 class ArbeidssokerperiodeStartProducer(
-    private val kafkaProducerClient: KafkaProducer<String, StartV1>,
+    private val kafkaProducerClient: KafkaProducer<Long, Startet>,
     private val topic: String
 ) {
-    fun publish(value: StartV1) {
-        val record: ProducerRecord<String, StartV1> = ProducerRecord(
+    fun publish(key: Long, value: Startet) {
+        val record: ProducerRecord<Long, Startet> = ProducerRecord(
             topic,
             null,
-            UUID.randomUUID().toString(),
+            key,
             value
         )
 

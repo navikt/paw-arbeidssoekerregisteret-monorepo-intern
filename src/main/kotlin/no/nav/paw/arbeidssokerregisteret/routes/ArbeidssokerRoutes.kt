@@ -1,19 +1,14 @@
 package no.nav.paw.arbeidssokerregisteret.routes
 
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
-import io.ktor.server.auth.authenticate
-import io.ktor.server.request.receive
-import io.ktor.server.response.respond
-import io.ktor.server.routing.Route
-import io.ktor.server.routing.get
-import io.ktor.server.routing.post
-import io.ktor.server.routing.put
-import io.ktor.server.routing.route
-import no.nav.paw.arbeidssokerregisteret.domain.request.VeilederRequest
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.services.ArbeidssokerService
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
-import no.nav.paw.arbeidssokerregisteret.utils.getNavAnsatt
 import no.nav.paw.arbeidssokerregisteret.utils.getPidClaim
 import no.nav.paw.arbeidssokerregisteret.utils.logger
 
@@ -40,7 +35,13 @@ fun Route.arbeidssokerRoutes(arbeidssokerService: ArbeidssokerService, autorisas
 
                         val foedselsnummer = call.getPidClaim()
 
-                        arbeidssokerService.startArbeidssokerperiode(foedselsnummer, foedselsnummer.verdi)
+                        arbeidssokerService.startArbeidssokerperiode(
+                            foedselsnummer = foedselsnummer,
+                            utfoertAv = Bruker(
+                                id = foedselsnummer.verdi,
+                                type = BrukerType.SLUTTBRUKER
+                            )
+                        )
 
                         logger.info("Startet arbeidssøkerperiode for bruker")
 
@@ -51,7 +52,7 @@ fun Route.arbeidssokerRoutes(arbeidssokerService: ArbeidssokerService, autorisas
                         logger.info("Avslutter arbeidssøkerperiode for bruker")
 
                         val foedselsnummer = call.getPidClaim()
-                        arbeidssokerService.avsluttArbeidssokerperiode(foedselsnummer, foedselsnummer.verdi)
+                        arbeidssokerService.avsluttArbeidssokerperiode(foedselsnummer.verdi)
 
                         logger.info("Avsluttet arbeidssøkerperiode for bruker")
 
@@ -61,28 +62,28 @@ fun Route.arbeidssokerRoutes(arbeidssokerService: ArbeidssokerService, autorisas
             }
         }
 
-        route("/veileder/arbeidssoker/perioder") {
-            authenticate("azure") {
-                post {
-                    logger.info("Veileder starter ny arbeidssøkerperiode for bruker")
-
-                    val foedselsnummer = call.receive<VeilederRequest>().getFoedselsnummer()
-                    val navAnsatt = call.getNavAnsatt()
-
-                    val harNavBrukerTilgang =
-                        autorisasjonService.verifiserVeilederTilgangTilBruker(navAnsatt, foedselsnummer)
-
-                    if (!harNavBrukerTilgang) {
-                        return@post call.respond(HttpStatusCode.Forbidden, "NAV-ansatt har ikke tilgang")
-                    }
-
-                    arbeidssokerService.startArbeidssokerperiode(foedselsnummer, navAnsatt.ident)
-
-                    logger.info("Veileder startet arbeidssøkerperiode for bruker")
-
-                    call.respond(HttpStatusCode.Accepted)
-                }
-            }
-        }
+//        route("/veileder/arbeidssoker/perioder") {
+//            authenticate("azure") {
+//                post {
+//                    logger.info("Veileder starter ny arbeidssøkerperiode for bruker")
+//
+//                    val foedselsnummer = call.receive<VeilederRequest>().getFoedselsnummer()
+//                    val navAnsatt = call.getNavAnsatt()
+//
+//                    val harNavBrukerTilgang =
+//                        autorisasjonService.verifiserVeilederTilgangTilBruker(navAnsatt, foedselsnummer)
+//
+//                    if (!harNavBrukerTilgang) {
+//                        return@post call.respond(HttpStatusCode.Forbidden, "NAV-ansatt har ikke tilgang")
+//                    }
+//
+//                    arbeidssokerService.startArbeidssokerperiode(foedselsnummer, navAnsatt.ident)
+//
+//                    logger.info("Veileder startet arbeidssøkerperiode for bruker")
+//
+//                    call.respond(HttpStatusCode.Accepted)
+//                }
+//            }
+//        }
     }
 }
