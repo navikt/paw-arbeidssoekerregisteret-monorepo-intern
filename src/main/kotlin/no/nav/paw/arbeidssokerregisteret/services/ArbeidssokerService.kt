@@ -1,38 +1,47 @@
 package no.nav.paw.arbeidssokerregisteret.services
 
-import io.ktor.http.HttpStatusCode
+import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 import no.nav.paw.arbeidssokerregisteret.domain.Foedselsnummer
 import no.nav.paw.arbeidssokerregisteret.domain.harOppholdstillatelse
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
-import no.nav.paw.arbeidssokerregisteret.kafka.producers.ArbeidssokerperiodeStartProducer
+import no.nav.paw.arbeidssokerregisteret.kafka.producers.NonBlockingKafkaProducer
+import no.nav.paw.arbeidssokerregisteret.kafka.producers.awaitAndLog
 import no.nav.paw.arbeidssokerregisteret.plugins.StatusException
 import no.nav.paw.arbeidssokerregisteret.utils.logger
 import no.nav.paw.pdl.PdlClient
 import no.nav.paw.pdl.hentOpphold
+import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.MDC
 import java.time.Instant
 import java.util.*
 
 class ArbeidssokerService(
     private val pdlClient: PdlClient,
-    private val arbeidssokerperiodeStartProducer: ArbeidssokerperiodeStartProducer
+    private val nonBlockingKafkaProducer: NonBlockingKafkaProducer<Long, Hendelse>,
+    private val topic: String
 ) {
-    fun startArbeidssokerperiode(foedselsnummer: Foedselsnummer, utfoertAv: Bruker) {
-        val harOpphold = runBlocking {
+    suspend fun startArbeidssokerperiode(foedselsnummer: Foedselsnummer, utfoertAv: Bruker) {
+        val harOpphold =
             pdlClient.hentOpphold(foedselsnummer.verdi, MDC.get("x_callId"), "paw-arbeidssokerregisteret")
-        }
-            .harOppholdstillatelse()
+                .harOppholdstillatelse()
 
-        if (!harOpphold) {
-            logger.info("Bruker har ikke oppholdstillatelse, starter ikke arbeidssokerperiode")
-            // TODO: Dette er en beslutning som må loggføres
-            throw StatusException(HttpStatusCode.Forbidden, "Bruker har ikke oppholdstillatelse")
-        }
+        val hendelse = if (!harOpphold) {
+            Avvist(
+                hendelseId = UUID.randomUUID(),
+                identitetsnummer = foedselsnummer.verdi,
+                metadata = no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata(
+                    tidspunkt = Instant.now(),
+                    utfoertAv = utfoertAv,
+                    kilde = "paw-arbeidssokerregisteret",
+                    aarsak = "Bruker har ikke oppholdstillatelse"
+                )
+            )
 
-        arbeidssokerperiodeStartProducer.publish(
-            0L,
+        } else {
             Startet(
                 hendelseId = UUID.randomUUID(),
                 identitetsnummer = foedselsnummer.verdi,
@@ -43,7 +52,10 @@ class ArbeidssokerService(
                     aarsak = "Start av periode"
                 )
             )
-        )
+        }
+        val record = ProducerRecord(topic, 0L, hendelse)
+        nonBlockingKafkaProducer.send(record)
+            .awaitAndLog(hendelse.hendelseType)
     }
 
     fun avsluttArbeidssokerperiode(opprettetAv: String) {

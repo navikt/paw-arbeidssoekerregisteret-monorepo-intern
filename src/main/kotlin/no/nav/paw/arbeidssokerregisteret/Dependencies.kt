@@ -6,8 +6,9 @@ import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder
 import no.nav.paw.arbeidssokerregisteret.config.Config
 import no.nav.paw.arbeidssokerregisteret.config.NaisEnv
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
-import no.nav.paw.arbeidssokerregisteret.kafka.producers.ArbeidssokerperiodeStartProducer
+import no.nav.paw.arbeidssokerregisteret.kafka.producers.NonBlockingKafkaProducer
 import no.nav.paw.arbeidssokerregisteret.services.ArbeidssokerService
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.arbeidssokerregisteret.utils.createMockRSAKey
@@ -44,13 +45,16 @@ fun createDependencies(config: Config): Dependencies {
 
     val autorisasjonService = AutorisasjonService(poaoTilgangCachedClient)
 
-    val kafkaProducerClient = KafkaProducer<Long, Startet>(config.kafka.kafkaProducerProperties)
+    val kafkaProducerClient = KafkaProducer<Long, Hendelse>(config.kafka.kafkaProducerProperties)
 
-    val arbeidssokerperiodeStartProducer = ArbeidssokerperiodeStartProducer(
-        kafkaProducerClient,
-        config.kafka.producers.arbeidssokerperiodeStartV1.topic
+    val nonBlockingKafkaProducer = NonBlockingKafkaProducer(
+        kafkaProducerClient
     )
-    val arbeidssokerService = ArbeidssokerService(pdlClient, arbeidssokerperiodeStartProducer)
+    val arbeidssokerService = ArbeidssokerService(
+        pdlClient = pdlClient,
+        nonBlockingKafkaProducer = nonBlockingKafkaProducer,
+        topic = config.kafka.producers.arbeidssokerperiodeStartV1.topic
+    )
 
     return Dependencies(
         registry,

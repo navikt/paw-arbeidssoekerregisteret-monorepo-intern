@@ -10,9 +10,9 @@ val logstashVersion = "7.3"
 val navCommonModulesVersion = "2.2023.01.02_13.51-1c6adeb1653b"
 val tokenSupportVersion = "3.1.5"
 val koTestVersion = "5.7.2"
-val hopliteVersion = "2.7.5"
+val hopliteVersion = "2.8.0.RC3"
 val ktorVersion = pawObservability.versions.ktor
-val arbeidssokerregisteretVersion = "23.12.01.82-1"
+val arbeidssokerregisteretVersion = "23.12.18.110-1"
 
 repositories {
     mavenLocal()
