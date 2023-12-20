@@ -5,6 +5,7 @@ import io.ktor.server.engine.addShutdownHook
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.routing.routing
+import no.nav.paw.arbeidssokerregisteret.config.AuthProviders
 import no.nav.paw.arbeidssokerregisteret.config.Config
 import no.nav.paw.arbeidssokerregisteret.config.loadConfiguration
 import no.nav.paw.arbeidssokerregisteret.plugins.configureAuthentication
@@ -15,27 +16,28 @@ import no.nav.paw.arbeidssokerregisteret.plugins.configureSerialization
 import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutes
 import no.nav.paw.arbeidssokerregisteret.routes.healthRoutes
 import no.nav.paw.arbeidssokerregisteret.routes.swaggerRoutes
+import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
+import no.nav.paw.config.kafka.KafkaConfig
+import no.nav.paw.config.kafka.KafkaFactory
+import no.nav.paw.config.kafka.KAFKA_CONFIG
 
 fun main() {
-    val server = embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
-        .start(wait = true)
-
+    val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
+    val applicationConfig = loadConfiguration<Config>()
+    val dependencies = createDependencies(applicationConfig, KafkaFactory(kafkaConfig))
+    val server = embeddedServer(Netty, port = 8080) {
+        module(applicationConfig.authProviders, dependencies)
+    }.start(wait = true)
     server.addShutdownHook {
         server.stop(300, 300)
     }
 }
 
-fun Application.module() {
-    // Konfigurasjon
-    val config = loadConfiguration<Config>()
-
-    // Avhengigheter
-    val dependencies = createDependencies(config)
-
+fun Application.module(authProviders: AuthProviders, dependencies: Dependencies) {
     // Konfigurerer plugins
     configureMetrics(dependencies.registry)
     configureHTTP()
-    configureAuthentication(config.authProviders)
+    configureAuthentication(authProviders)
     configureLogging()
     configureSerialization()
 

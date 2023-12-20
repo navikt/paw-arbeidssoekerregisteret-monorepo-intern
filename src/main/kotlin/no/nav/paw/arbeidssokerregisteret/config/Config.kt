@@ -10,7 +10,7 @@ data class Config(
     val authProviders: AuthProviders,
     val pdlClientConfig: ServiceClientConfig,
     val poaoTilgangClientConfig: ServiceClientConfig,
-    val kafka: KafkaConfig,
+    val eventLogTopic: String,
     val naisEnv: NaisEnv = currentNaisEnv
 )
 
@@ -31,27 +31,6 @@ data class ServiceClientConfig(
     val url: String,
     val scope: String
 )
-
-data class KafkaConfig(
-    val brokerUrl: String,
-    val schemaRegistryUrl: String,
-    val producerId: String,
-    val producers: KafkaProducers
-) {
-    val kafkaProducerProperties
-        get() = Properties().apply {
-            this[ProducerConfig.CLIENT_ID_CONFIG] = producerId
-            this[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = brokerUrl
-            this[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
-            this[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = KafkaAvroSerializer::class.java.name
-            this[KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG] = schemaRegistryUrl
-        }
-}
-
 data class KafkaProducers(
-    val arbeidssokerperiodeStartV1: KafkaTopic
-)
-
-data class KafkaTopic(
-    val topic: String
+    val eventLogTopic: String
 )

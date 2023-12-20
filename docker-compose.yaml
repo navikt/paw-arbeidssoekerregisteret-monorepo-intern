@@ -48,7 +48,7 @@ services:
       KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8082
     depends_on:
       - kafka
-      - schema-registry
+      - init-kafka
 
   wiremock:
     image: wiremock/wiremock:2.32.0

@@ -8,12 +8,12 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
-import no.nav.paw.arbeidssokerregisteret.kafka.producers.NonBlockingKafkaProducer
-import no.nav.paw.arbeidssokerregisteret.kafka.producers.awaitAndLog
 import no.nav.paw.arbeidssokerregisteret.plugins.StatusException
 import no.nav.paw.arbeidssokerregisteret.utils.logger
+import no.nav.paw.config.kafka.sendDeferred
 import no.nav.paw.pdl.PdlClient
 import no.nav.paw.pdl.hentOpphold
+import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.MDC
 import java.time.Instant
@@ -21,7 +21,7 @@ import java.util.*
 
 class ArbeidssokerService(
     private val pdlClient: PdlClient,
-    private val nonBlockingKafkaProducer: NonBlockingKafkaProducer<Long, Hendelse>,
+    private val nonBlockingKafkaProducer: Producer<Long, Hendelse>,
     private val topic: String
 ) {
     suspend fun startArbeidssokerperiode(foedselsnummer: Foedselsnummer, utfoertAv: Bruker) {
@@ -54,8 +54,10 @@ class ArbeidssokerService(
             )
         }
         val record = ProducerRecord(topic, 0L, hendelse)
-        nonBlockingKafkaProducer.send(record)
-            .awaitAndLog(hendelse.hendelseType)
+        val recordMetadata = nonBlockingKafkaProducer
+            .sendDeferred(record)
+            .await()
+        logger.debug("Sendte hendelse '{}' til '{}' med offset {}", hendelse.hendelseType, topic, recordMetadata.offset())
     }
 
     fun avsluttArbeidssokerperiode(opprettetAv: String) {

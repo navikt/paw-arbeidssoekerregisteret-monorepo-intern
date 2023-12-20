@@ -13,6 +13,7 @@ val koTestVersion = "5.7.2"
 val hopliteVersion = "2.8.0.RC3"
 val ktorVersion = pawObservability.versions.ktor
 val arbeidssokerregisteretVersion = "23.12.18.110-1"
+val pawUtilsVersion = "23.12.20.5-1"
 
 repositories {
     mavenLocal()
@@ -41,6 +42,8 @@ dependencies {
     implementation("no.nav.paw:pdl-client:0.3.1")
     implementation("com.sksamuel.hoplite:hoplite-core:$hopliteVersion")
     implementation("com.sksamuel.hoplite:hoplite-yaml:$hopliteVersion")
+    implementation("no.nav.paw.kafka:kafka:$pawUtilsVersion")
+    implementation("no.nav.paw.hoplite-config:hoplite-config:$pawUtilsVersion")
 
     // TODO: Flytte til bundle KTOR
     implementation("io.ktor:ktor-server-cors:$ktorVersion")

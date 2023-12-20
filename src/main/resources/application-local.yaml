@@ -1,3 +1,4 @@
+eventLogTopic: arbeidssokerperiode-start-v1
 poaoTilgangClientConfig:
   url: http://localhost:8090/poao-tilgang
   scope: api://test.test.poao-tilgang/.default
@@ -20,9 +21,3 @@ authProviders:
     claims:
       - acr=Level4
       - acr=idporten-loa-high
-kafka:
-  brokerUrl: localhost:9092
-  schemaRegistryUrl: http://localhost:8082
-  producerId: paw-arbeidssokerregisteret
-  producers:
-    eventLogTopic: arbeidssokerperiode-start-v1

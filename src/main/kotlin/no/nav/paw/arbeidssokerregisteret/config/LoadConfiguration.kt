@@ -24,17 +24,3 @@ inline fun <reified T : Any> loadConfiguration(): T = ConfigLoaderBuilder.defaul
     .build()
     .loadConfigOrThrow()
 
-@OptIn(ExperimentalHoplite::class)
-inline fun <reified A> lastKonfigurasjon(navn: String): A {
-    val fulltNavn = when (System.getenv("NAIS_CLUSTER_NAME")) {
-        "prod-gcp" -> "/nais/$navn"
-        "dev-gcp" -> "/nais/$navn"
-        else -> "/local/$navn"
-    }
-    return ConfigLoaderBuilder
-        .default()
-        .withExplicitSealedTypes()
-        .addResourceSource(fulltNavn)
-        .build()
-        .loadConfigOrThrow()
-}
