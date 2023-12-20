@@ -7,7 +7,7 @@ suspend fun PdlClient.hentPerson(
     ident: String,
     callId: String?,
     traceparent: String? = null,
-    navConsumerId: String?
+    navConsumerId: String?,
 ): Person? {
     val query = HentPerson(HentPerson.Variables(ident))
 
@@ -17,6 +17,7 @@ suspend fun PdlClient.hentPerson(
         query = query,
         callId = callId,
         navConsumerId = navConsumerId,
+        traceparent = traceparent,
     )
 
     respons.errors?.let {
