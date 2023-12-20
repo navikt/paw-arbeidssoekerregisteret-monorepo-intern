@@ -13,11 +13,15 @@ suspend fun PdlClient.hentIdenter(ident: String, callId: String?, navConsumerId:
 
     logger.info("Henter 'hentIdenter' fra PDL")
 
-    val respons = execute(query, callId, navConsumerId)
+    val respons = execute(
+        query = query,
+        callId = callId,
+        navConsumerId = navConsumerId,
+    )
 
     respons.errors?.let {
         logger.error("Henter 'hentIdenter' fra PDL feilet med: ${respons.errors}")
-        throw PdlException(it)
+        throw PdlException("'hentIdenter' fra pdl feilet", it)
     }
 
     logger.info("Hentet 'hentIdenter' fra PDL")

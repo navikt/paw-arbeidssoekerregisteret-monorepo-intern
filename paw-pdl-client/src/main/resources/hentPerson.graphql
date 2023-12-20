@@ -1,0 +1,32 @@
+query($ident: ID!) {
+    hentPerson(ident: $ident) {
+        foedsel {
+            foedselsdato
+            foedselsaar
+        }
+        opphold {
+            oppholdFra
+            oppholdTil
+        }
+        bostedsadresse {
+            vegadresse {
+                adressenavn
+                husnummer
+                husbokstav
+                postnummer
+                kommunenummer
+            }
+            matrikkeladresse {
+                postnummer
+                kommunenummer
+                tilleggsnavn
+            }
+            utenlandskAdresse {
+                adressenavnNummer
+                bySted
+                regionDistriktOmraade
+                landkode
+            }
+        }
+    }
+}

@@ -8,11 +8,15 @@ suspend fun PdlClient.hentOpphold(ident: String, callId: String?, navConsumerId:
 
     logger.info("Henter 'hentPerson' fra PDL")
 
-    val respons = execute(query, callId, navConsumerId)
+    val respons = execute(
+        query = query,
+        callId = callId,
+        navConsumerId = navConsumerId,
+    )
 
     respons.errors?.let {
         logger.error("Henter 'hentPerson' fra PDL feilet med: ${respons.errors}")
-        throw PdlException(it)
+        throw PdlException("'hentPerson' feilet", it)
     }
 
     logger.info("Hentet 'hentPerson' fra PDL")
