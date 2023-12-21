@@ -8,25 +8,8 @@ query($ident: ID!) {
             oppholdFra
             oppholdTil
         }
-        bostedsadresse {
-            vegadresse {
-                adressenavn
-                husnummer
-                husbokstav
-                postnummer
-                kommunenummer
-            }
-            matrikkeladresse {
-                postnummer
-                kommunenummer
-                tilleggsnavn
-            }
-            utenlandskAdresse {
-                adressenavnNummer
-                bySted
-                regionDistriktOmraade
-                landkode
-            }
+        folkeregisterpersonstatus {
+            forenkletStatus
         }
     }
 }
