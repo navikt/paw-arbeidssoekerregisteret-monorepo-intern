@@ -1,4 +1,4 @@
-query($ident: ID!) {
+query($ident: ID!, $historisk: Boolean) {
     hentPerson(ident: $ident) {
         foedsel {
             foedselsdato
@@ -7,9 +7,36 @@ query($ident: ID!) {
         opphold {
             oppholdFra
             oppholdTil
+            type
         }
         folkeregisterpersonstatus {
             forenkletStatus
+        }
+        bostedsadresse(historikk: $historisk) {
+            angittFlyttedato
+            gyldigFraOgMed
+            gyldigTilOgMed
+            vegadresse {
+                kommunenummer
+            }
+            matrikkeladresse {
+                kommunenummer
+            }
+            ukjentBosted {
+                bostedskommune
+            }
+        }
+        innflyttingTilNorge {
+            folkeregistermetadata {
+                gyldighetstidspunkt
+                ajourholdstidspunkt
+            }
+        }
+        utflyttingFraNorge {
+            folkeregistermetadata {
+                gyldighetstidspunkt
+                ajourholdstidspunkt
+            }
         }
     }
 }
