@@ -25,7 +25,9 @@ data:
         "transforms.dropPrefix.replacement": "$1",
         "allowBigQueryRequiredFieldRelaxation": "true",
         "allowNewBigQueryFields": "true",
+        "value.subject.name.strategy": "io.confluent.kafka.serializers.subject.RecordNameStrategy",
+        "value.converter": "io.confluent.connect.avro.AvroConverter",
         "value.converter.value.subject.name.strategy": "io.confluent.kafka.serializers.subject.RecordNameStrategy",
-        "value.subject.name.strategy": "io.confluent.kafka.serializers.subject.RecordNameStrategy"
+        "value.converter.basic.auth.credentials.source": "USER_INFO"
       }
     }

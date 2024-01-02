@@ -59,28 +59,28 @@ jobs:
           RESOURCE: nais/nais.yaml
           VAR: image=${{ needs.build.outputs.image }},kafka=nav-prod
 
-  # deploy-kafka-connect-connectors-prod:
-  #   if: github.ref == 'refs/heads/main'
-  #   name: Deploy kafka connect connectors in prod
-  #   needs: [build, deploy-prod]
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       topic: [
-  #         opplysninger-om-arbeidssoeker-beta-v1,
-  #         arbeidssoker-profilering-beta-v1,
-  #         arbeidssokerperioder-beta-v1,
-  #       ]
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: nais/deploy/actions/deploy@v1
-  #       env:
-  #         TEAM: paw
-  #         APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-  #         CLUSTER: prod-gcp
-  #         RESOURCE: nais/connector.yaml
-  #         VAR: topic=${{ matrix.topic }},project=paw-prod-7151
-  #         PRINT_PAYLOAD: true
+  deploy-kafka-connect-connectors-prod:
+    if: github.ref == 'refs/heads/main'
+    name: Deploy kafka connect connectors in prod
+    needs: [build, deploy-prod]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        topic: [
+          opplysninger-om-arbeidssoeker-beta-v2,
+          arbeidssoker-profilering-beta-v1,
+          arbeidssokerperioder-beta-v2,
+        ]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: nais/deploy/actions/deploy@v1
+        env:
+          TEAM: paw
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          CLUSTER: prod-gcp
+          RESOURCE: nais/connector.yaml
+          VAR: topic=${{ matrix.topic }},project=paw-prod-7151
+          PRINT_PAYLOAD: true
 
   deploy-kafka-connect-connectors-dev:
     if: github.ref == 'refs/heads/main'
@@ -90,9 +90,9 @@ jobs:
     strategy:
       matrix:
         topic: [
-          opplysninger-om-arbeidssoeker-beta-v1,
+          opplysninger-om-arbeidssoeker-beta-v2,
           arbeidssoker-profilering-beta-v1,
-          arbeidssokerperioder-beta-v1,
+          arbeidssokerperioder-beta-v2,
         ]
     steps:
       - uses: actions/checkout@v3
