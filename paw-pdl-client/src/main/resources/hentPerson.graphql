@@ -33,6 +33,7 @@ query($ident: ID!, $historisk: Boolean) {
             }
         }
         utflyttingFraNorge {
+            utflyttingsdato
             folkeregistermetadata {
                 gyldighetstidspunkt
                 ajourholdstidspunkt
