@@ -1,6 +1,6 @@
 [streamKonfigurasjon]
 tilstandsDatabase = "tilstand-beta-v1"
-applikasjonsId = "${KAFKA_STREAMS_APPLICATION_ID}"
+applikasjonsId = "${KAFKA_STREAMS_APPLICATION_ID}-beta-v2"
 eventlogTopic = "paw.arbeidssoker-hendelseslogg-beta-v1"
 periodeTopic = "paw.arbeidssokerperioder-beta-v1"
 opplysningerOmArbeidssoekerTopic = "paw.opplysninger-om-arbeidssoeker-beta-v1"
