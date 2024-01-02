@@ -1,9 +1,9 @@
 [streamKonfigurasjon]
-tilstandsDatabase = "tilstand-beta-v2"
-applikasjonsId = "${KAFKA_STREAMS_APPLICATION_ID}-beta-v2"
-eventlogTopic = "paw.arbeidssoker-hendelseslogg-beta-v2"
-periodeTopic = "paw.arbeidssokerperioder-beta-v2"
-opplysningerOmArbeidssoekerTopic = "paw.opplysninger-om-arbeidssoeker-beta-v2"
+tilstandsDatabase = "tilstand-beta-v3"
+applikasjonsId = "${KAFKA_STREAMS_APPLICATION_ID}-beta-v3"
+eventlogTopic = "paw.arbeidssoker-hendelseslogg-beta-v3"
+periodeTopic = "paw.arbeidssokerperioder-beta-v3"
+opplysningerOmArbeidssoekerTopic = "paw.opplysninger-om-arbeidssoeker-beta-v3"
 
 [serverKonfigurasjon]
 autentisering = "SSL"
