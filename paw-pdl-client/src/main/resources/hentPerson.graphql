@@ -25,6 +25,9 @@ query($ident: ID!, $historisk: Boolean) {
             ukjentBosted {
                 bostedskommune
             }
+            utenlandskAdresse {
+                landkode
+            }
         }
         innflyttingTilNorge {
             folkeregistermetadata {
