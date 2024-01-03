@@ -11,7 +11,7 @@ suspend fun PdlClient.hentPerson(
     historisk: Boolean = false,
 ): Person? {
     val query = HentPerson(
-        HentPerson.Variables(ident, false),
+        HentPerson.Variables(ident, historisk),
     )
 
     logger.trace("Henter 'hentPerson' fra PDL")
