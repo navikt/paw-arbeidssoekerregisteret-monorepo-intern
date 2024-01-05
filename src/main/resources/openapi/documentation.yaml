@@ -6,43 +6,14 @@ info:
 servers:
 - url: "https://paw_arbeidssokerregisteret"
 paths:
-  /api/v1/arbeidssoker/kan-registreres:
-    get:
-      description: ""
-      responses:
-        "200":
-          description: "OK"
-          content:
-            '*/*':
-              schema:
-                type: "boolean"
-  /api/v1/arbeidssoker/perioder:
-    post:
-      description: ""
-      responses:
-        "202":
-          description: "Accepted"
-          content:
-            '*/*':
-              schema:
-                type: "object"
-    put:
-      description: ""
-      responses:
-        "202":
-          description: "Accepted"
-          content:
-            '*/*':
-              schema:
-                type: "object"
-  /api/v1/veileder/arbeidssoker/perioder:
+  /api/v1/arbeidssoker/periode/start:
     post:
       description: ""
       requestBody:
         content:
           '*/*':
             schema:
-              $ref: "#/components/schemas/VeilederRequest"
+              $ref: "#/components/schemas/Request"
         required: true
       responses:
         "403":
@@ -50,12 +21,91 @@ paths:
           content:
             '*/*':
               schema:
-                type: "string"
+                $ref: "#/components/schemas/Error"
               examples:
                 Example#1:
                   value: "NAV-ansatt har ikke tilgang"
+        "400":
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                Example#1:
+                  value: "Some json parsing error"
+        "424":
+          description: "Failed to call downstream service"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                Example#1:
+                  value: "Some IO error"
+        "500":
+          description: "Internal Server Error"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                Example#1:
+                  value: "Some weird error"
         "202":
           description: "Accepted"
+          content:
+            '*/*':
+              schema:
+                type: "object"
+  /api/v1/arbeidssoker/periode/kan-starte:
+    put:
+      description: ""
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: "#/components/schemas/Request"
+        required: true
+      responses:
+        "403":
+          description: "Forbidden"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                Example#1:
+                  value: "NAV-ansatt har ikke tilgang"
+        "400":
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                Example#1:
+                  value: "Some json parsing error"
+        "424":
+          description: "Failed to call downstream service"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                Example#1:
+                  value: "Some IO error"
+        "500":
+          description: "Internal Server Error"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                Example#1:
+                  value: "Some weird error"
+        "200":
+          description: "OK"
           content:
             '*/*':
               schema:
@@ -98,8 +148,18 @@ paths:
                 type: "string"
 components:
   schemas:
-    VeilederRequest:
+    Request:
       type: "object"
       properties:
-        foedselsnummer:
+        identitetsnummer:
           type: "string"
+    Error:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+        errorCode:
+          type: "string"
+          enum:
+            - "UVENTET_FEIL_MOT_EKSTERNE_TJENESTER"
+            - "UGYLDIG_JSON"

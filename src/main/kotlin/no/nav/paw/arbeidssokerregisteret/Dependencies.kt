@@ -9,12 +9,15 @@ import no.nav.common.token_client.builder.AzureAdTokenClientBuilder
 import no.nav.paw.arbeidssokerregisteret.config.Config
 import no.nav.paw.arbeidssokerregisteret.config.NaisEnv
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.arbeidssokerregisteret.services.ArbeidssokerService
+import no.nav.paw.arbeidssokerregisteret.services.RequestValidator
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
+import no.nav.paw.arbeidssokerregisteret.services.PersonInfoService
+import no.nav.paw.arbeidssokerregisteret.services.RequestHandler
 import no.nav.paw.arbeidssokerregisteret.utils.createMockRSAKey
 import no.nav.paw.config.kafka.KafkaFactory
 import no.nav.paw.pdl.PdlClient
 import no.nav.poao_tilgang.client.PoaoTilgangHttpClient
+import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.common.serialization.LongSerializer
 import org.apache.kafka.common.serialization.Serializer
 
@@ -56,21 +59,28 @@ fun createDependencies(config: Config, kafkaFactory: KafkaFactory): Dependencies
         }
     )
 
-    val arbeidssokerService = ArbeidssokerService(
-        pdlClient = pdlClient,
-        nonBlockingKafkaProducer = kafkaProducerClient,
-        topic = config.eventLogTopic
+    val personInfoService = PersonInfoService(pdlClient)
+
+    val requestValidator = RequestValidator(
+        autorisasjonService = autorisasjonService,
+        personInfoService = personInfoService,
     )
 
     return Dependencies(
-        registry,
-        autorisasjonService,
-        arbeidssokerService
+        registry = registry,
+        autorisasjonService = autorisasjonService,
+        requestHandler = RequestHandler(
+            hendelseTopic = config.eventLogTopic,
+            requestValidator = requestValidator,
+            producer = kafkaProducerClient
+        ),
+        kafkaProducer = kafkaProducerClient
     )
 }
 
 data class Dependencies(
     val registry: PrometheusMeterRegistry,
     val autorisasjonService: AutorisasjonService,
-    val arbeidssokerService: ArbeidssokerService
+    val requestHandler: RequestHandler,
+    val kafkaProducer: Producer<Long, Hendelse>
 )

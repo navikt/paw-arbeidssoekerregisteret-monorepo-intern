@@ -31,6 +31,3 @@ data class ServiceClientConfig(
     val url: String,
     val scope: String
 )
-data class KafkaProducers(
-    val eventLogTopic: String
-)

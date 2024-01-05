@@ -1,6 +1,9 @@
 package no.nav.paw.arbeidssokerregisteret.plugins
 
-import io.ktor.http.HttpStatusCode
+import io.ktor.http.*
 
-open class StatusException(val status: HttpStatusCode, val description: String? = null) :
-    Exception("Request failed with status: $status. Description: $description")
+class StatusException(
+    status: HttpStatusCode,
+    description: String? = null,
+    errorCode: ErrorCode
+) : ArbeidssoekerException(status, description, errorCode)
