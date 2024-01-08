@@ -34,7 +34,7 @@ class MeteredOutboundTopicNameExtractor(
         }
         with(prometheusMeterRegistry) {
             val atomicLong = getOrCreateLatencyHolder(topic, partition)
-            atomicLong.set(Duration.between(tidspunkt, Instant.now()).abs().toMillis())
+            atomicLong.set(Duration.between(tidspunkt, Instant.now()).toMillis())
             tellUtgåendeTilstand(topic, value)
         }
         return topic
