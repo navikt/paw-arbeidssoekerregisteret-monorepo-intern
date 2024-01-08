@@ -71,7 +71,7 @@ val tilgang: Map<String, List<Evaluation>> = mapOf(
         Evaluation.ANSATT_TILGANG
     ),
     "Bruker prøver å endre for seg selv" to listOf(
-        Evaluation.SAMME_SOM_INNLOGGER_BRUKER,
+        Evaluation.SAMME_SOM_INNLOGGET_BRUKER,
         Evaluation.IKKE_ANSATT
     )
 )

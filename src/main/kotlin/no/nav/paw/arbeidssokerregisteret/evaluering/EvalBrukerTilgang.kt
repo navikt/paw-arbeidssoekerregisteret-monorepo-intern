@@ -10,7 +10,7 @@ fun evalBrukerTilgang(identitetsnummer: Identitetsnummer): Evaluation {
         if (authenticatedUser != identitetsnummer) {
             Evaluation.IKKE_SAMME_SOM_INNLOGGER_BRUKER
         } else {
-            Evaluation.SAMME_SOM_INNLOGGER_BRUKER
+            Evaluation.SAMME_SOM_INNLOGGET_BRUKER
         }
     } ?: Evaluation.TOKENX_PID_IKKE_FUNNET
 }
