@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.services
 
 import no.nav.paw.arbeidssokerregisteret.RequestScope
-import no.nav.paw.arbeidssokerregisteret.plugins.ErrorCode
+import no.nav.paw.arbeidssokerregisteret.domain.Feilkode
 import no.nav.paw.pdl.PdlClient
 import no.nav.paw.pdl.PdlException
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
@@ -22,7 +22,7 @@ class PersonInfoService(
         } catch (ex: PdlException) {
             throw RemoteServiceException(
                 description = "Feil ved henting av personinfo fra PDL",
-                errorCode = ErrorCode.UVENTET_FEIL_MOT_EKSTERNE_TJENESTER,
+                feilkode = Feilkode.UVENTET_FEIL_MOT_EKSTERN_TJENESTE,
                 causedBy = ex
             )
         }

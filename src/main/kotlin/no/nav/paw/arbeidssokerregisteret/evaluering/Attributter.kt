@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.evaluering
 
-enum class Evaluation(val beskrivelse: String) {
+enum class Attributter(val beskrivelse: String) {
+    FORHAANDSGODKJENT_AV_ANSATT("Registrering er forhåndsgodkjent av NAV-ansatt"),
     SAMME_SOM_INNLOGGET_BRUKER("Start/stopp av periode er på samme bruker som er innlogget"),
     IKKE_SAMME_SOM_INNLOGGER_BRUKER("Start/stopp av periode er ikke på samme bruker som er innlogget"),
     ANSATT_IKKE_TILGANG("Innlogget bruker er en NAV-ansatt uten tilgang til bruker som start/stopp av periode utføres på"),
@@ -34,9 +35,9 @@ enum class Evaluation(val beskrivelse: String) {
 }
 
 fun <R: Any> haandterResultat(
-    regler: Map<String, List<Evaluation>>,
-    resultat: Set<Evaluation>,
-    transformasjon: (String, List<Evaluation>) -> R
+    regler: Map<String, List<Attributter>>,
+    resultat: Set<Attributter>,
+    transformasjon: (String, List<Attributter>) -> R
 ): List<R> =
     regler.filter { (_, evalueringer) ->
         evalueringer.all { resultat.contains(it) }

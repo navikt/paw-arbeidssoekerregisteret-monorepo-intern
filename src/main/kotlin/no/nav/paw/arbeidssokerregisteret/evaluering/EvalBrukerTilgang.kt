@@ -5,12 +5,12 @@ import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.utils.TokenXPID
 
 context(RequestScope)
-fun evalBrukerTilgang(identitetsnummer: Identitetsnummer): Evaluation {
+fun evalBrukerTilgang(identitetsnummer: Identitetsnummer): Attributter {
     return claims[TokenXPID]?.let { authenticatedUser ->
         if (authenticatedUser != identitetsnummer) {
-            Evaluation.IKKE_SAMME_SOM_INNLOGGER_BRUKER
+            Attributter.IKKE_SAMME_SOM_INNLOGGER_BRUKER
         } else {
-            Evaluation.SAMME_SOM_INNLOGGET_BRUKER
+            Attributter.SAMME_SOM_INNLOGGET_BRUKER
         }
-    } ?: Evaluation.TOKENX_PID_IKKE_FUNNET
+    } ?: Attributter.TOKENX_PID_IKKE_FUNNET
 }

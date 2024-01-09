@@ -4,19 +4,19 @@ import no.nav.paw.pdl.graphql.generated.hentperson.Foedsel
 import java.time.LocalDate
 import java.time.Month
 
-fun evalAlder(foedsel: Foedsel?): Set<Evaluation> {
+fun evalAlder(foedsel: Foedsel?): Set<Attributter> {
     val dateOfBirth = foedsel?.foedselsdato?.let(LocalDate::parse)
     val lastDayInYearOfBirth = { foedsel?.foedselsaar?.let { LocalDate.of(it, Month.DECEMBER, 31) } }
     val dob = dateOfBirth ?: lastDayInYearOfBirth()
-    val preliminaryEvalResult = if (dateOfBirth != null) emptySet() else setOf(Evaluation.UKJENT_FOEDSELSDATO)
+    val preliminaryEvalResult = if (dateOfBirth != null) emptySet() else setOf(Attributter.UKJENT_FOEDSELSDATO)
     return if (dob != null) {
         if (isAtLeast18YearsAgo(dob)) {
-            preliminaryEvalResult + Evaluation.ER_OVER_18_AAR
+            preliminaryEvalResult + Attributter.ER_OVER_18_AAR
         } else {
-            preliminaryEvalResult + Evaluation.ER_UNDER_18_AAR
+            preliminaryEvalResult + Attributter.ER_UNDER_18_AAR
         }
     } else {
-        preliminaryEvalResult + Evaluation.UKJENT_FOEDSELSAAR
+        preliminaryEvalResult + Attributter.UKJENT_FOEDSELSAAR
     }
 }
 

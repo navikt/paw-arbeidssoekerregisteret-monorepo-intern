@@ -2,10 +2,10 @@ package no.nav.paw.arbeidssokerregisteret.services
 
 import io.ktor.http.*
 import no.nav.paw.arbeidssokerregisteret.plugins.ArbeidssoekerException
-import no.nav.paw.arbeidssokerregisteret.plugins.ErrorCode
+import no.nav.paw.arbeidssokerregisteret.domain.Feilkode
 
 class RemoteServiceException(
     description: String? = null,
-    errorCode: ErrorCode,
+    feilkode: Feilkode,
     causedBy: Throwable? = null
-) : ArbeidssoekerException(HttpStatusCode.FailedDependency, description, errorCode, causedBy)
+) : ArbeidssoekerException(HttpStatusCode.FailedDependency, description, feilkode, causedBy)

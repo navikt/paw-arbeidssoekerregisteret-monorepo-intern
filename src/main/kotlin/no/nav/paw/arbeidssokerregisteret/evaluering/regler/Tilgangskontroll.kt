@@ -5,7 +5,7 @@ import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.domain.IkkeTilgang
 import no.nav.paw.arbeidssokerregisteret.domain.OK
 import no.nav.paw.arbeidssokerregisteret.domain.TilgangskontrollResultat
-import no.nav.paw.arbeidssokerregisteret.evaluering.Evaluation
+import no.nav.paw.arbeidssokerregisteret.evaluering.Attributter
 import no.nav.paw.arbeidssokerregisteret.evaluering.evalBrukerTilgang
 import no.nav.paw.arbeidssokerregisteret.evaluering.evalNavAnsattTilgang
 import no.nav.paw.arbeidssokerregisteret.evaluering.haandterResultat
@@ -19,14 +19,14 @@ fun genererTilgangsResultat(
     evalTilgang(autorisasjonService, identitetsnummer)
     .let(::genererTilgangsResultat)
 context(RequestScope)
-fun evalTilgang(autorisasjonService: AutorisasjonService, identitetsnummer: Identitetsnummer): Set<Evaluation> {
+fun evalTilgang(autorisasjonService: AutorisasjonService, identitetsnummer: Identitetsnummer): Set<Attributter> {
     val ansattEvaluation = autorisasjonService.evalNavAnsattTilgang(identitetsnummer)
     val brukerEvaluation = evalBrukerTilgang(identitetsnummer)
     return setOf(ansattEvaluation, brukerEvaluation)
 }
 
 fun genererTilgangsResultat(
-    tilgangsEvalueringResultat: Set<Evaluation>,
+    tilgangsEvalueringResultat: Set<Attributter>,
 ): TilgangskontrollResultat {
     val nektTilgang = haandterResultat(
         regler = ikkeTilgang,
@@ -34,7 +34,7 @@ fun genererTilgangsResultat(
     ) { regelBeskrivelse, evalueringer ->
         IkkeTilgang(
             melding = regelBeskrivelse,
-            evaluation = evalueringer
+            attributter = evalueringer
         )
     }.firstOrNull()
     if (nektTilgang != null) {
@@ -46,32 +46,32 @@ fun genererTilgangsResultat(
         ) { regelBeskrivelse, evalueringer ->
             OK(
                 melding = regelBeskrivelse,
-                evaluation = evalueringer
+                attributter = evalueringer
             )
         }.firstOrNull() ?: IkkeTilgang(
             melding = "Ingen regler funnet for evaluering: $tilgangsEvalueringResultat",
-            evaluation = tilgangsEvalueringResultat
+            attributter = tilgangsEvalueringResultat
         )
     }
 }
 
 
-val ikkeTilgang: Map<String, List<Evaluation>> = mapOf(
+val ikkeTilgang: Map<String, List<Attributter>> = mapOf(
     "Ansatt har ikke tilgang til bruker" to listOf(
-        Evaluation.ANSATT_IKKE_TILGANG
+        Attributter.ANSATT_IKKE_TILGANG
     ),
     "Bruker prøver å endre for annen bruker" to listOf(
-        Evaluation.IKKE_SAMME_SOM_INNLOGGER_BRUKER,
-        Evaluation.IKKE_ANSATT
+        Attributter.IKKE_SAMME_SOM_INNLOGGER_BRUKER,
+        Attributter.IKKE_ANSATT
     ),
 )
 
-val tilgang: Map<String, List<Evaluation>> = mapOf(
+val tilgang: Map<String, List<Attributter>> = mapOf(
     "Ansatt har tilgang til bruker" to listOf(
-        Evaluation.ANSATT_TILGANG
+        Attributter.ANSATT_TILGANG
     ),
     "Bruker prøver å endre for seg selv" to listOf(
-        Evaluation.SAMME_SOM_INNLOGGET_BRUKER,
-        Evaluation.IKKE_ANSATT
+        Attributter.SAMME_SOM_INNLOGGET_BRUKER,
+        Attributter.IKKE_ANSATT
     )
 )

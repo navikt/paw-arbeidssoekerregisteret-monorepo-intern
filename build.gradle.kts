@@ -94,6 +94,12 @@ tasks.withType<KotlinCompile>().configureEach {
     }
 }
 
+//tasks.withType(Jar::class) {
+//    manifest {
+//        attributes["Implementation-Version"] = project.version
+//    }
+//}
+
 fun RepositoryHandler.mavenNav(repo: String): MavenArtifactRepository {
     val githubPassword: String by project
 
