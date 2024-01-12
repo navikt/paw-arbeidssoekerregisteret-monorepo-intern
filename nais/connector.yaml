@@ -10,7 +10,7 @@ metadata:
 data:
   data.json: |-
     {
-      "name": "{{topic}}",
+      "name": "{{topic}}-r1",
       "config": {
         "connector.class": "com.wepay.kafka.connect.bigquery.BigQuerySinkConnector",
         "autoCreateTables": "true",
