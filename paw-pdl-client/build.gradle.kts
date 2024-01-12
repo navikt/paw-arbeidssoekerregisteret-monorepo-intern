@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "no.nav.paw"
-version = "0.3.7"
+version = "1.0-SNAPSHOT"
 
 plugins {
     kotlin("jvm")

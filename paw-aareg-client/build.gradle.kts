@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "no.nav.paw"
-version = "0.1.8"
+version = "1.0-SNAPSHOT"
 
 tasks {
     withType<KotlinCompile> {
