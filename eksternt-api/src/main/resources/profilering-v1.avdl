@@ -35,6 +35,6 @@ protocol Profilering {
  		*/
 		ProfilertTil profilertTil;
 		boolean jobbetSammenhengendeSeksAvTolvSisteMnd;
-		int alder;
+		int? alder;
 	}
 }
