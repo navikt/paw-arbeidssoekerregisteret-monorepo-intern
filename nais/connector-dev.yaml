@@ -13,7 +13,7 @@ spec:
 data:
   data.json: |-
     {
-      "name": "{{topic}}-r1",
+      "name": "{{topic}}",
       "config": {
         "connector.class": "com.wepay.kafka.connect.bigquery.BigQuerySinkConnector",
         "autoCreateTables": "true",
