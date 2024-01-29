@@ -7,9 +7,6 @@ metadata:
     team: paw
     destination: connect
     enabled: "true"
-spec:
-  kafka:
-    pool: nav-dev
 data:
   data.json: |-
     {
