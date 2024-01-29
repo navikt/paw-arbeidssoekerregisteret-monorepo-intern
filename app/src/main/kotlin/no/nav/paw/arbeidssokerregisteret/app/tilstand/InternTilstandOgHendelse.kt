@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.app.tilstand
 
-import no.nav.paw.arbeidssokerregisteret.api.v1.OpplysningerOmArbeidssoeker as ApiOpplysningerOmArbeidssoeker
+import no.nav.paw.arbeidssokerregisteret.api.v2.OpplysningerOmArbeidssoeker as ApiOpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode as ApiPeriode
 import no.nav.paw.arbeidssokerregisteret.app.StreamHendelse
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.HasRecordScope

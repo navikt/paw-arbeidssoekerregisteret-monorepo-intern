@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors
 
 import io.micrometer.prometheus.PrometheusMeterRegistry
-import no.nav.paw.arbeidssokerregisteret.api.v1.OpplysningerOmArbeidssoeker
+import no.nav.paw.arbeidssokerregisteret.api.v2.OpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.tellUtgåendeTilstand
 import no.nav.paw.arbeidssokerregisteret.app.metrics.registerLatencyGauge
