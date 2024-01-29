@@ -10,7 +10,6 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.JaNeiVetIkke as ApiJaNeiVetIkke
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as ApiMetadata
 import no.nav.paw.arbeidssokerregisteret.api.v1.OpplysningerOmArbeidssoeker as ApiOpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.api.v1.Utdanning as ApiUtdanning
-import no.nav.paw.arbeidssokerregisteret.api.v1.Utdanningsnivaa as ApiUtdanningsnivaa
 import no.nav.paw.arbeidssokerregisteret.api.v1.Arbeidserfaring as ApiArbeidserfaring
 import no.nav.paw.arbeidssokerregisteret.api.v1.Jobbsituasjon as ApiJobbsituasjon
 import no.nav.paw.arbeidssokerregisteret.api.v1.Beskrivelse as ApiBeskrivelse
@@ -66,22 +65,10 @@ fun OpplysningerOmArbeidssoeker.api(periodeId: UUID, metadata: Metadata): ApiOpp
 
 fun Utdanning.api(): ApiUtdanning =
     ApiUtdanning(
-        utdanningsnivaa.api(),
+        nus,
         bestaatt.api(),
         godkjent.api(),
     )
-
-fun Utdanningsnivaa.api(): ApiUtdanningsnivaa =
-    when(this) {
-        Utdanningsnivaa.UKJENT_VERDI -> ApiUtdanningsnivaa.UKJENT_VERDI
-        Utdanningsnivaa.UDEFINERT -> ApiUtdanningsnivaa.UDEFINERT
-        Utdanningsnivaa.GRUNNSKOLE -> ApiUtdanningsnivaa.GRUNNSKOLE
-        Utdanningsnivaa.VIDEREGAENDE_GRUNNUTDANNING -> ApiUtdanningsnivaa.VIDEREGAENDE_GRUNNUTDANNING
-        Utdanningsnivaa.VIDEREGAENDE_FAGUTDANNING_SVENNEBREV -> ApiUtdanningsnivaa.VIDEREGAENDE_FAGBREV_SVENNEBREV
-        Utdanningsnivaa.HOYERE_UTDANNING_1_TIL_4 -> ApiUtdanningsnivaa.HOYERE_UTDANNING_1_TIL_4
-        Utdanningsnivaa.HOYERE_UTDANNING_5_ELLER_MER -> ApiUtdanningsnivaa.HOYERE_UTDANNING_5_ELLER_MER
-        Utdanningsnivaa.INGEN_UTDANNING -> ApiUtdanningsnivaa.INGEN_UTDANNING
-    }
 
 fun Arbeidserfaring.api(): ApiArbeidserfaring =
     ApiArbeidserfaring(

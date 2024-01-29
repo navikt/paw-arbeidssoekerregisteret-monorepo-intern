@@ -21,11 +21,9 @@ import org.apache.kafka.streams.TopologyTestDriver
 import java.time.Duration
 import java.time.Instant
 import java.util.*
-import kotlin.collections.AbstractList
 import no.nav.paw.arbeidssokerregisteret.api.v1.Beskrivelse.ER_PERMITTERT as API_ER_PERMITTERT
 import no.nav.paw.arbeidssokerregisteret.api.v1.JaNeiVetIkke.JA as ApiJa
 import no.nav.paw.arbeidssokerregisteret.api.v1.JaNeiVetIkke.NEI as ApiNei
-import no.nav.paw.arbeidssokerregisteret.api.v1.Utdanningsnivaa.HOYERE_UTDANNING_1_TIL_4 as API_HOYERE_UTDANNING_1_TIL_4
 
 
 class ApplikasjonsTest : FreeSpec({
@@ -127,7 +125,7 @@ class ApplikasjonsTest : FreeSpec({
             situasjon.value.periodeId shouldBe periodeId
             situasjon.value.utdanning.bestaatt shouldBe ApiJa
             situasjon.value.utdanning.godkjent shouldBe ApiNei
-            situasjon.value.utdanning.lengde shouldBe API_HOYERE_UTDANNING_1_TIL_4
+            situasjon.value.utdanning.nus shouldBe 7
             situasjon.value.jobbsituasjon.beskrivelser.size shouldBe 1
             situasjon.value.annet.andreForholdHindrerArbeid shouldBe ApiJa
             with(situasjon.value.jobbsituasjon) {
@@ -176,7 +174,7 @@ class ApplikasjonsTest : FreeSpec({
                     "tester"
                 ),
                 utdanning = Utdanning(
-                    utdanningsnivaa = Utdanningsnivaa.HOYERE_UTDANNING_1_TIL_4,
+                    nus = 4,
                     bestaatt = JaNeiVetIkke.JA,
                     godkjent = JaNeiVetIkke.NEI
                 ),
@@ -232,7 +230,7 @@ class ApplikasjonsTest : FreeSpec({
             opplysninger.value.periodeId shouldBe periodeId
             opplysninger.value.utdanning.bestaatt shouldBe ApiJa
             opplysninger.value.utdanning.godkjent shouldBe ApiNei
-            opplysninger.value.utdanning.lengde shouldBe API_HOYERE_UTDANNING_1_TIL_4
+            opplysninger.value.utdanning.nus shouldBe 4
             opplysninger.value.jobbsituasjon.beskrivelser.size shouldBe 1
             opplysninger.value.annet.andreForholdHindrerArbeid shouldBe ApiNei
             with(opplysninger.value.jobbsituasjon) {
@@ -264,7 +262,7 @@ fun opplysningerMottatt(identitetnummer: String, timestamp: Instant) =
                 "tester"
             ),
             utdanning = Utdanning(
-                utdanningsnivaa = Utdanningsnivaa.HOYERE_UTDANNING_1_TIL_4,
+                nus = 7,
                 bestaatt = JaNeiVetIkke.JA,
                 godkjent = JaNeiVetIkke.NEI
             ),
