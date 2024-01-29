@@ -125,7 +125,7 @@ class ApplikasjonsTest : FreeSpec({
             situasjon.value.periodeId shouldBe periodeId
             situasjon.value.utdanning.bestaatt shouldBe ApiJa
             situasjon.value.utdanning.godkjent shouldBe ApiNei
-            situasjon.value.utdanning.nus shouldBe 7
+            situasjon.value.utdanning.nus shouldBe "7"
             situasjon.value.jobbsituasjon.beskrivelser.size shouldBe 1
             situasjon.value.annet.andreForholdHindrerArbeid shouldBe ApiJa
             with(situasjon.value.jobbsituasjon) {
@@ -174,7 +174,7 @@ class ApplikasjonsTest : FreeSpec({
                     "tester"
                 ),
                 utdanning = Utdanning(
-                    nus = 4,
+                    nus = "4",
                     bestaatt = JaNeiVetIkke.JA,
                     godkjent = JaNeiVetIkke.NEI
                 ),
@@ -230,7 +230,7 @@ class ApplikasjonsTest : FreeSpec({
             opplysninger.value.periodeId shouldBe periodeId
             opplysninger.value.utdanning.bestaatt shouldBe ApiJa
             opplysninger.value.utdanning.godkjent shouldBe ApiNei
-            opplysninger.value.utdanning.nus shouldBe 4
+            opplysninger.value.utdanning.nus shouldBe "4"
             opplysninger.value.jobbsituasjon.beskrivelser.size shouldBe 1
             opplysninger.value.annet.andreForholdHindrerArbeid shouldBe ApiNei
             with(opplysninger.value.jobbsituasjon) {
@@ -262,7 +262,7 @@ fun opplysningerMottatt(identitetnummer: String, timestamp: Instant) =
                 "tester"
             ),
             utdanning = Utdanning(
-                nus = 7,
+                nus = "7",
                 bestaatt = JaNeiVetIkke.JA,
                 godkjent = JaNeiVetIkke.NEI
             ),

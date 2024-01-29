@@ -125,7 +125,7 @@ class TestContext(private val producer: KafkaProducer<Long, Hendelse>, private v
                         ),
                         annet = Annet(JaNeiVetIkke.NEI),
                         utdanning = Utdanning(
-                            nus = 7,
+                            nus = "7",
                             bestaatt = JaNeiVetIkke.JA,
                             godkjent = JaNeiVetIkke.JA
                         ),
@@ -169,7 +169,7 @@ class TestContext(private val producer: KafkaProducer<Long, Hendelse>, private v
                         ),
                         annet = Annet(JaNeiVetIkke.NEI),
                         utdanning = Utdanning(
-                            nus = 7,
+                            nus = "7",
                             bestaatt = JaNeiVetIkke.JA,
                             godkjent = JaNeiVetIkke.JA
                         ),
