@@ -35,33 +35,33 @@ fun sjekkOmRettTilRegistrering(evalueringer: Set<Attributter>): Resultat {
     }
 }
 
-val harRettTilRegistrering: Map<String, List<Attributter>> = mapOf(
-    "Er registrert av ansatt med tilgang til bruker" to listOf(
+val harRettTilRegistrering: List<Regel> = listOf(
+    "Er registrert av ansatt med tilgang til bruker"(
         Attributter.ANSATT_TILGANG
     ),
-    "Er over 18 år, har norsk adresse og oppholdstillatelse" to listOf(
+    "Er over 18 år, har norsk adresse og oppholdstillatelse"(
         Attributter.ER_OVER_18_AAR,
         Attributter.HAR_NORSK_ADRESSE,
         Attributter.HAR_GYLDIG_OPPHOLDSTILLATELSE
     ),
-    "Er over 18 år, har norsk adresse og er bosatt i Norge etter Folkeregisterloven" to listOf(
+    "Er over 18 år, har norsk adresse og er bosatt i Norge etter Folkeregisterloven"(
         Attributter.ER_OVER_18_AAR,
         Attributter.HAR_NORSK_ADRESSE,
         Attributter.BOSATT_ETTER_FREG_LOVEN
     ),
-    "Er over 18 år, har norsk adresse og har d-nummer" to listOf(
+    "Er over 18 år, har norsk adresse og har d-nummer"(
         Attributter.ER_OVER_18_AAR,
         Attributter.HAR_NORSK_ADRESSE,
         Attributter.DNUMMER
     )
 )
 
-val harIkkeRettTilRegistrering: Map<String, List<Attributter>> = mapOf(
-    "Er under 18 år" to listOf(
+val harIkkeRettTilRegistrering: List<Regel> = listOf(
+    "Er under 18 år"(
         Attributter.ER_UNDER_18_AAR,
         Attributter.IKKE_ANSATT
     ),
-    "Bor i utlandet" to listOf(
+    "Bor i utlandet"(
         Attributter.HAR_UTENLANDSK_ADRESSE,
         Attributter.IKKE_ANSATT
     )

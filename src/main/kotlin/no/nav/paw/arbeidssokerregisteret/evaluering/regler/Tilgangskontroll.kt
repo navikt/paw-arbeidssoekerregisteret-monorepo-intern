@@ -17,7 +17,8 @@ fun genererTilgangsResultat(
     identitetsnummer: Identitetsnummer
 ): TilgangskontrollResultat =
     evalTilgang(autorisasjonService, identitetsnummer)
-    .let(::genererTilgangsResultat)
+        .let(::genererTilgangsResultat)
+
 context(RequestScope)
 fun evalTilgang(autorisasjonService: AutorisasjonService, identitetsnummer: Identitetsnummer): Set<Attributter> {
     val ansattEvaluation = autorisasjonService.evalNavAnsattTilgang(identitetsnummer)
@@ -56,21 +57,21 @@ fun genererTilgangsResultat(
 }
 
 
-val ikkeTilgang: Map<String, List<Attributter>> = mapOf(
-    "Ansatt har ikke tilgang til bruker" to listOf(
+val ikkeTilgang: List<Regel> = listOf(
+    "Ansatt har ikke tilgang til bruker"(
         Attributter.ANSATT_IKKE_TILGANG
     ),
-    "Bruker prøver å endre for annen bruker" to listOf(
+    "Bruker prøver å endre for annen bruker"(
         Attributter.IKKE_SAMME_SOM_INNLOGGER_BRUKER,
         Attributter.IKKE_ANSATT
     ),
 )
 
-val tilgang: Map<String, List<Attributter>> = mapOf(
-    "Ansatt har tilgang til bruker" to listOf(
+val tilgang: List<Regel> = listOf(
+    "Ansatt har tilgang til bruker"(
         Attributter.ANSATT_TILGANG
     ),
-    "Bruker prøver å endre for seg selv" to listOf(
+    "Bruker prøver å endre for seg selv"(
         Attributter.SAMME_SOM_INNLOGGET_BRUKER,
         Attributter.IKKE_ANSATT
     )
