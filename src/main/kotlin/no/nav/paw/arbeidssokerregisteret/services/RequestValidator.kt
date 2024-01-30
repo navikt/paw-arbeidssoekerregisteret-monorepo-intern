@@ -21,14 +21,14 @@ class RequestValidator(
         } else {
             val person = personInfoService.hentPersonInfo(identitetsnummer.verdi)
             val evalueringer = (person?.let { evaluerStartAvPeriodeOenske(identitetsnummer, person) }
-                ?: setOf(Attributt.PERSON_IKKE_FUNNET)) + tilgagsSjekkResultat.attributt
+                ?: setOf(Fakta.PERSON_IKKE_FUNNET)) + tilgagsSjekkResultat.fakta
             sjekkOmRettTilRegistrering(evalueringer)
         }
     }
 }
 
 context(RequestScope)
-fun evaluerStartAvPeriodeOenske(identitetsnummer: Identitetsnummer, person: Person): Set<Attributt> {
+fun evaluerStartAvPeriodeOenske(identitetsnummer: Identitetsnummer, person: Person): Set<Fakta> {
     require(person.foedsel.size <= 1) { "Personen har flere fødselsdatoer enn forventet" }
     require(person.bostedsadresse.size <= 1) { "Personen har flere bostedsadresser enn forventet" }
     require(person.opphold.size  <= 1) { "Personen har flere opphold enn forventet" }

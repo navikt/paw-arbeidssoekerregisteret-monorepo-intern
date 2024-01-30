@@ -6,15 +6,15 @@ import no.nav.paw.arbeidssokerregisteret.domain.navAnsatt
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 
 context(RequestScope)
-fun AutorisasjonService.evalNavAnsattTilgang(identitetsnummer: Identitetsnummer): Attributt {
+fun AutorisasjonService.evalNavAnsattTilgang(identitetsnummer: Identitetsnummer): Fakta {
     val navAnsatt = navAnsatt(claims)
     return if (navAnsatt != null) {
         if (verifiserVeilederTilgangTilBruker(navAnsatt, identitetsnummer)) {
-            Attributt.ANSATT_TILGANG
+            Fakta.ANSATT_TILGANG
         } else {
-            Attributt.ANSATT_IKKE_TILGANG
+            Fakta.ANSATT_IKKE_TILGANG
         }
     } else {
-        Attributt.IKKE_ANSATT
+        Fakta.IKKE_ANSATT
     }
 }

@@ -5,7 +5,7 @@ import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.domain.IkkeTilgang
 import no.nav.paw.arbeidssokerregisteret.domain.OK
 import no.nav.paw.arbeidssokerregisteret.domain.TilgangskontrollResultat
-import no.nav.paw.arbeidssokerregisteret.evaluering.Attributt
+import no.nav.paw.arbeidssokerregisteret.evaluering.Fakta
 import no.nav.paw.arbeidssokerregisteret.evaluering.evalBrukerTilgang
 import no.nav.paw.arbeidssokerregisteret.evaluering.evalNavAnsattTilgang
 import no.nav.paw.arbeidssokerregisteret.evaluering.haandterResultat
@@ -20,59 +20,56 @@ fun genererTilgangsResultat(
         .let(::genererTilgangsResultat)
 
 context(RequestScope)
-fun evalTilgang(autorisasjonService: AutorisasjonService, identitetsnummer: Identitetsnummer): Set<Attributt> {
+fun evalTilgang(autorisasjonService: AutorisasjonService, identitetsnummer: Identitetsnummer): Set<Fakta> {
     val ansattEvaluation = autorisasjonService.evalNavAnsattTilgang(identitetsnummer)
     val brukerEvaluation = evalBrukerTilgang(identitetsnummer)
     return setOf(ansattEvaluation, brukerEvaluation)
 }
 
 fun genererTilgangsResultat(
-    tilgangsEvalueringResultat: Set<Attributt>,
+    tilgangsEvalueringResultat: Set<Fakta>,
 ): TilgangskontrollResultat {
-    val nektTilgang = haandterResultat(
-        regler = ikkeTilgang,
-        resultat = tilgangsEvalueringResultat
-    ) { regelBeskrivelse, evalueringer ->
-        IkkeTilgang(
-            melding = regelBeskrivelse,
-            attributt = evalueringer
-        )
-    }.firstOrNull()
+    val nektTilgang = ikkeTilgang
+        .filter { regel -> regel.evaluer(tilgangsEvalueringResultat) }
+        .map { (regelBeskrivelse, _) ->
+            IkkeTilgang(
+                melding = regelBeskrivelse,
+                fakta = tilgangsEvalueringResultat
+            )
+        }.firstOrNull()
     if (nektTilgang != null) {
         return nektTilgang
     } else {
-        return haandterResultat(
-            regler = tilgang,
-            resultat = tilgangsEvalueringResultat
-        ) { regelBeskrivelse, evalueringer ->
-            OK(
-                melding = regelBeskrivelse,
-                attributt = evalueringer
-            )
-        }.firstOrNull() ?: IkkeTilgang(
+        return tilgang
+            .filter { regel -> regel.evaluer(tilgangsEvalueringResultat) }
+            .map { (regelBeskrivelse, _) ->
+                OK(
+                    melding = regelBeskrivelse,
+                    fakta = tilgangsEvalueringResultat
+                )
+            }.firstOrNull() ?: IkkeTilgang(
             melding = "Ingen regler funnet for evaluering: $tilgangsEvalueringResultat",
-            attributt = tilgangsEvalueringResultat
+            fakta = tilgangsEvalueringResultat
         )
     }
 }
 
-
 val ikkeTilgang: List<Regel> = listOf(
     "Ansatt har ikke tilgang til bruker"(
-        Attributt.ANSATT_IKKE_TILGANG
+        Fakta.ANSATT_IKKE_TILGANG
     ),
     "Bruker prøver å endre for annen bruker"(
-        Attributt.IKKE_SAMME_SOM_INNLOGGER_BRUKER,
-        Attributt.IKKE_ANSATT
+        Fakta.IKKE_SAMME_SOM_INNLOGGER_BRUKER,
+        Fakta.IKKE_ANSATT
     ),
 )
 
 val tilgang: List<Regel> = listOf(
     "Ansatt har tilgang til bruker"(
-        Attributt.ANSATT_TILGANG
+        Fakta.ANSATT_TILGANG
     ),
     "Bruker prøver å endre for seg selv"(
-        Attributt.SAMME_SOM_INNLOGGET_BRUKER,
-        Attributt.IKKE_ANSATT
+        Fakta.SAMME_SOM_INNLOGGET_BRUKER,
+        Fakta.IKKE_ANSATT
     )
 )
