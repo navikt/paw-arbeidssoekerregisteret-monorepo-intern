@@ -5,8 +5,8 @@ import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.domain.IkkeTilgang
 import no.nav.paw.arbeidssokerregisteret.domain.Resultat
 import no.nav.paw.arbeidssokerregisteret.evaluering.*
-import no.nav.paw.arbeidssokerregisteret.evaluering.regler.genererTilgangsResultat
-import no.nav.paw.arbeidssokerregisteret.evaluering.regler.sjekkOmRettTilRegistrering
+import no.nav.paw.arbeidssokerregisteret.evaluering.regler.tilgangskontroll.genererTilgangsResultat
+import no.nav.paw.arbeidssokerregisteret.evaluering.regler.retttilregistrering.sjekkOmRettTilRegistrering
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 
 class RequestValidator(
