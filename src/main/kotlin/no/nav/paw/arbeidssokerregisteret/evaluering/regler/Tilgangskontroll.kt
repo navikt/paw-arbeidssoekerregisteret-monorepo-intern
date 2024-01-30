@@ -5,7 +5,7 @@ import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.domain.IkkeTilgang
 import no.nav.paw.arbeidssokerregisteret.domain.OK
 import no.nav.paw.arbeidssokerregisteret.domain.TilgangskontrollResultat
-import no.nav.paw.arbeidssokerregisteret.evaluering.Attributter
+import no.nav.paw.arbeidssokerregisteret.evaluering.Attributt
 import no.nav.paw.arbeidssokerregisteret.evaluering.evalBrukerTilgang
 import no.nav.paw.arbeidssokerregisteret.evaluering.evalNavAnsattTilgang
 import no.nav.paw.arbeidssokerregisteret.evaluering.haandterResultat
@@ -20,14 +20,14 @@ fun genererTilgangsResultat(
         .let(::genererTilgangsResultat)
 
 context(RequestScope)
-fun evalTilgang(autorisasjonService: AutorisasjonService, identitetsnummer: Identitetsnummer): Set<Attributter> {
+fun evalTilgang(autorisasjonService: AutorisasjonService, identitetsnummer: Identitetsnummer): Set<Attributt> {
     val ansattEvaluation = autorisasjonService.evalNavAnsattTilgang(identitetsnummer)
     val brukerEvaluation = evalBrukerTilgang(identitetsnummer)
     return setOf(ansattEvaluation, brukerEvaluation)
 }
 
 fun genererTilgangsResultat(
-    tilgangsEvalueringResultat: Set<Attributter>,
+    tilgangsEvalueringResultat: Set<Attributt>,
 ): TilgangskontrollResultat {
     val nektTilgang = haandterResultat(
         regler = ikkeTilgang,
@@ -35,7 +35,7 @@ fun genererTilgangsResultat(
     ) { regelBeskrivelse, evalueringer ->
         IkkeTilgang(
             melding = regelBeskrivelse,
-            attributter = evalueringer
+            attributt = evalueringer
         )
     }.firstOrNull()
     if (nektTilgang != null) {
@@ -47,11 +47,11 @@ fun genererTilgangsResultat(
         ) { regelBeskrivelse, evalueringer ->
             OK(
                 melding = regelBeskrivelse,
-                attributter = evalueringer
+                attributt = evalueringer
             )
         }.firstOrNull() ?: IkkeTilgang(
             melding = "Ingen regler funnet for evaluering: $tilgangsEvalueringResultat",
-            attributter = tilgangsEvalueringResultat
+            attributt = tilgangsEvalueringResultat
         )
     }
 }
@@ -59,20 +59,20 @@ fun genererTilgangsResultat(
 
 val ikkeTilgang: List<Regel> = listOf(
     "Ansatt har ikke tilgang til bruker"(
-        Attributter.ANSATT_IKKE_TILGANG
+        Attributt.ANSATT_IKKE_TILGANG
     ),
     "Bruker prøver å endre for annen bruker"(
-        Attributter.IKKE_SAMME_SOM_INNLOGGER_BRUKER,
-        Attributter.IKKE_ANSATT
+        Attributt.IKKE_SAMME_SOM_INNLOGGER_BRUKER,
+        Attributt.IKKE_ANSATT
     ),
 )
 
 val tilgang: List<Regel> = listOf(
     "Ansatt har tilgang til bruker"(
-        Attributter.ANSATT_TILGANG
+        Attributt.ANSATT_TILGANG
     ),
     "Bruker prøver å endre for seg selv"(
-        Attributter.SAMME_SOM_INNLOGGET_BRUKER,
-        Attributter.IKKE_ANSATT
+        Attributt.SAMME_SOM_INNLOGGET_BRUKER,
+        Attributt.IKKE_ANSATT
     )
 )

@@ -4,17 +4,17 @@ import no.nav.paw.arbeidssokerregisteret.domain.Avvist
 import no.nav.paw.arbeidssokerregisteret.domain.OK
 import no.nav.paw.arbeidssokerregisteret.domain.Resultat
 import no.nav.paw.arbeidssokerregisteret.domain.Uavklart
-import no.nav.paw.arbeidssokerregisteret.evaluering.Attributter
+import no.nav.paw.arbeidssokerregisteret.evaluering.Attributt
 import no.nav.paw.arbeidssokerregisteret.evaluering.haandterResultat
 
-fun sjekkOmRettTilRegistrering(evalueringer: Set<Attributter>): Resultat {
+fun sjekkOmRettTilRegistrering(evalueringer: Set<Attributt>): Resultat {
     val ikkeRettTilRegistrering = haandterResultat(
         regler = harIkkeRettTilRegistrering,
         resultat = evalueringer
     ) { regelBeskrivelse, evalueringer ->
         Avvist(
             melding = regelBeskrivelse,
-            attributter = evalueringer
+            attributt = evalueringer
         )
     }.firstOrNull()
     if (ikkeRettTilRegistrering != null) {
@@ -26,43 +26,43 @@ fun sjekkOmRettTilRegistrering(evalueringer: Set<Attributter>): Resultat {
         ) { regelBeskrivelse, evalueringer ->
             OK(
                 melding = regelBeskrivelse,
-                attributter = evalueringer
+                attributt = evalueringer
             )
         }.firstOrNull() ?: Uavklart(
             melding = "Ingen regler funnet for evaluering: $evalueringer",
-            attributter = evalueringer
+            attributt = evalueringer
         )
     }
 }
 
 val harRettTilRegistrering: List<Regel> = listOf(
     "Er registrert av ansatt med tilgang til bruker"(
-        Attributter.ANSATT_TILGANG
+        Attributt.ANSATT_TILGANG
     ),
     "Er over 18 år, har norsk adresse og oppholdstillatelse"(
-        Attributter.ER_OVER_18_AAR,
-        Attributter.HAR_NORSK_ADRESSE,
-        Attributter.HAR_GYLDIG_OPPHOLDSTILLATELSE
+        Attributt.ER_OVER_18_AAR,
+        Attributt.HAR_NORSK_ADRESSE,
+        Attributt.HAR_GYLDIG_OPPHOLDSTILLATELSE
     ),
     "Er over 18 år, har norsk adresse og er bosatt i Norge etter Folkeregisterloven"(
-        Attributter.ER_OVER_18_AAR,
-        Attributter.HAR_NORSK_ADRESSE,
-        Attributter.BOSATT_ETTER_FREG_LOVEN
+        Attributt.ER_OVER_18_AAR,
+        Attributt.HAR_NORSK_ADRESSE,
+        Attributt.BOSATT_ETTER_FREG_LOVEN
     ),
     "Er over 18 år, har norsk adresse og har d-nummer"(
-        Attributter.ER_OVER_18_AAR,
-        Attributter.HAR_NORSK_ADRESSE,
-        Attributter.DNUMMER
+        Attributt.ER_OVER_18_AAR,
+        Attributt.HAR_NORSK_ADRESSE,
+        Attributt.DNUMMER
     )
 )
 
 val harIkkeRettTilRegistrering: List<Regel> = listOf(
     "Er under 18 år"(
-        Attributter.ER_UNDER_18_AAR,
-        Attributter.IKKE_ANSATT
+        Attributt.ER_UNDER_18_AAR,
+        Attributt.IKKE_ANSATT
     ),
     "Bor i utlandet"(
-        Attributter.HAR_UTENLANDSK_ADRESSE,
-        Attributter.IKKE_ANSATT
+        Attributt.HAR_UTENLANDSK_ADRESSE,
+        Attributt.IKKE_ANSATT
     )
 )

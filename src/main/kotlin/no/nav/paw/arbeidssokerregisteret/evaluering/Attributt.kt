@@ -2,7 +2,7 @@ package no.nav.paw.arbeidssokerregisteret.evaluering
 
 import no.nav.paw.arbeidssokerregisteret.evaluering.regler.Regel
 
-enum class Attributter(val beskrivelse: String) {
+enum class Attributt(val beskrivelse: String) {
     FORHAANDSGODKJENT_AV_ANSATT("Registrering er forhåndsgodkjent av NAV-ansatt"),
     SAMME_SOM_INNLOGGET_BRUKER("Start/stopp av periode er på samme bruker som er innlogget"),
     IKKE_SAMME_SOM_INNLOGGER_BRUKER("Start/stopp av periode er ikke på samme bruker som er innlogget"),
@@ -38,8 +38,8 @@ enum class Attributter(val beskrivelse: String) {
 
 fun <R: Any> haandterResultat(
     regler: List<Regel>,
-    resultat: Set<Attributter>,
-    transformasjon: (String, List<Attributter>) -> R
+    resultat: Set<Attributt>,
+    transformasjon: (String, List<Attributt>) -> R
 ): List<R> =
     regler.filter { (_, attributter) ->
         attributter.all { resultat.contains(it) }

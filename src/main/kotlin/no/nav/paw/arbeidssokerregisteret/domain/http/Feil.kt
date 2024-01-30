@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.domain.http
 
-import no.nav.paw.arbeidssokerregisteret.evaluering.Attributter
+import no.nav.paw.arbeidssokerregisteret.evaluering.Attributt
 import no.nav.paw.arbeidssokerregisteret.domain.Feilkode
 
 data class Feil(
@@ -11,5 +11,5 @@ data class Feil(
 
 data class AarsakTilAvvisning(
     val beskrivelse: String,
-    val detaljer: Set<Attributter>
+    val detaljer: Set<Attributt>
 )
