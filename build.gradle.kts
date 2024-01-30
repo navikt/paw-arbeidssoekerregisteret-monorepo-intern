@@ -47,7 +47,12 @@ dependencies {
     implementation("no.nav.paw.kafka:kafka:$pawUtilsVersion")
     implementation("no.nav.paw.hoplite-config:hoplite-config:$pawUtilsVersion")
 
+    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion}")
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
+    implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-jackson-jvm:$ktorVersion")
     // TODO: Flytte til bundle KTOR
+
     implementation("io.ktor:ktor-server-cors:$ktorVersion")
     implementation("io.ktor:ktor-server-swagger:$ktorVersion")
     implementation("io.ktor:ktor-server-call-id:$ktorVersion")

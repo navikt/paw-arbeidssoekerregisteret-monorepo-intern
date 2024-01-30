@@ -1,10 +1,10 @@
 openapi: "3.0.3"
 info:
-  title: "paw_arbeidssokerregisteret API"
-  description: "paw_arbeidssokerregisteret API"
+  title: "paw_arbeidssokerregisteret Inngang API"
+  description: "paw_arbeidssokerregisteret Inngang API"
   version: "1.0.0"
 servers:
-- url: "https://paw_arbeidssokerregisteret"
+- url: "https://paw_arbeidssokerregisteret-api-inngang"
 paths:
   /api/v1/arbeidssoker/periode/start:
     post:

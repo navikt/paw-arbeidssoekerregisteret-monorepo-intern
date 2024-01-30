@@ -10,6 +10,7 @@ data class Config(
     val authProviders: AuthProviders,
     val pdlClientConfig: ServiceClientConfig,
     val poaoTilgangClientConfig: ServiceClientConfig,
+    val kafkaKeysConfig: KafkaKeysConfig,
     val eventLogTopic: String,
     val naisEnv: NaisEnv = currentNaisEnv
 )
@@ -28,6 +29,11 @@ data class AuthProvider(
 )
 
 data class ServiceClientConfig(
+    val url: String,
+    val scope: String
+)
+
+data class KafkaKeysConfig(
     val url: String,
     val scope: String
 )

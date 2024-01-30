@@ -13,6 +13,7 @@ import no.nav.paw.arbeidssokerregisteret.services.RequestValidator
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.arbeidssokerregisteret.services.PersonInfoService
 import no.nav.paw.arbeidssokerregisteret.services.RequestHandler
+import no.nav.paw.arbeidssokerregisteret.services.kafkakeys.kafkaKeysKlient
 import no.nav.paw.arbeidssokerregisteret.utils.createMockRSAKey
 import no.nav.paw.config.kafka.KafkaFactory
 import no.nav.paw.pdl.PdlClient
@@ -47,6 +48,9 @@ fun createDependencies(config: Config, kafkaFactory: KafkaFactory): Dependencies
         config.poaoTilgangClientConfig.url,
         { azureAdMachineToMachineTokenClient.createMachineToMachineToken(config.poaoTilgangClientConfig.scope) }
     )
+    val kafkaKeysClient = kafkaKeysKlient(config.kafkaKeysConfig) { scope ->
+        azureAdMachineToMachineTokenClient.createMachineToMachineToken(scope)
+    }
 
     val autorisasjonService = AutorisasjonService(poaoTilgangCachedClient)
 
@@ -72,7 +76,8 @@ fun createDependencies(config: Config, kafkaFactory: KafkaFactory): Dependencies
         requestHandler = RequestHandler(
             hendelseTopic = config.eventLogTopic,
             requestValidator = requestValidator,
-            producer = kafkaProducerClient
+            producer = kafkaProducerClient,
+            kafkaKeysClient = kafkaKeysClient
         ),
         kafkaProducer = kafkaProducerClient
     )

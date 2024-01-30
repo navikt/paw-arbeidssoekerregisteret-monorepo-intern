@@ -6,6 +6,7 @@ import no.nav.paw.arbeidssokerregisteret.domain.Resultat
 import no.nav.paw.arbeidssokerregisteret.domain.somHendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.config.kafka.sendDeferred
+import no.nav.paw.migrering.app.kafkakeys.KafkaKeysClient
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
@@ -13,7 +14,8 @@ import org.slf4j.LoggerFactory
 class RequestHandler(
     private val hendelseTopic: String,
     private val requestValidator: RequestValidator,
-    private val producer: Producer<Long, Hendelse>
+    private val producer: Producer<Long, Hendelse>,
+    private val kafkaKeysClient: KafkaKeysClient
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
     context(RequestScope)
@@ -22,7 +24,7 @@ class RequestHandler(
         val hendelse = somHendelse(identitetsnummer, resultat)
         val record = ProducerRecord(
             hendelseTopic,
-            0L, //TODO integrere med kafka-keys slik at det blir riktig
+            kafkaKeysClient.getKey(identitetsnummer.verdi).id,
             hendelse
         )
         val recordMetadata = producer.sendDeferred(record).await()
