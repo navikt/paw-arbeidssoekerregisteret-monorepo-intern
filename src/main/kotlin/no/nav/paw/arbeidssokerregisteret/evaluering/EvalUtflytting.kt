@@ -20,8 +20,8 @@ fun evalFlytting(
                 flyttinger.distinctBy { it.dato }.size < 2 -> Fakta.IKKE_MULIG_AA_IDENTIFISERE_SISTE_FLYTTING
                 flyttinger.any { it.dato == null } -> Fakta.IKKE_MULIG_AA_IDENTIFISERE_SISTE_FLYTTING
                 else -> {
-                    val sisteFlytting = flyttinger.maxByOrNull { it.dato!! }!!
-                    if (sisteFlytting.inn) Fakta.SISTE_FLYTTING_VAR_INN_TIL_NORGE
+                    val sisteFlytting = flyttinger.maxByOrNull { it.dato!! }
+                    if (sisteFlytting?.inn == true) Fakta.SISTE_FLYTTING_VAR_INN_TIL_NORGE
                     else Fakta.SISTE_FLYTTING_VAR_UT_AV_NORGE
                 }
             }

@@ -6,7 +6,7 @@ import java.time.Month
 
 fun evalAlder(foedsel: Foedsel?): Set<Fakta> {
     val dateOfBirth = foedsel?.foedselsdato?.let(LocalDate::parse)
-    val lastDayInYearOfBirth = { foedsel?.foedselsaar?.let { LocalDate.of(it, Month.DECEMBER, 31) } }
+    val lastDayInYearOfBirth = { foedsel?.foedselsaar?.let { foedselsAar -> LocalDate.of(foedselsAar, Month.DECEMBER, 31) } }
     val dob = dateOfBirth ?: lastDayInYearOfBirth()
     val preliminaryEvalResult = if (dateOfBirth != null) emptySet() else setOf(Fakta.UKJENT_FOEDSELSDATO)
     return if (dob != null) {

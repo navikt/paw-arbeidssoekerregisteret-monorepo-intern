@@ -4,10 +4,10 @@ import no.nav.paw.pdl.graphql.generated.hentperson.Folkeregisterpersonstatus
 
 fun evalForenkletFRegStatus(status: List<Folkeregisterpersonstatus>): Set<Fakta> =
     status.map { it.forenkletStatus }
-        .map { simpleStatusToFakta[it] ?: Fakta.UKJENT_FORENKLET_FREG_STATUS }
+        .map { enkelFolkeRegStatusTilFakta[it] ?: Fakta.UKJENT_FORENKLET_FREG_STATUS }
         .toSet()
 
-val simpleStatusToFakta: Map<String, Fakta> = mapOf(
+private val enkelFolkeRegStatusTilFakta: Map<String, Fakta> = mapOf(
     "bosattEtterFolkeregisterloven" to Fakta.BOSATT_ETTER_FREG_LOVEN,
     "ikkeBosatt" to Fakta.IKKE_BOSATT,
     "doedIFolkeregisteret" to Fakta.DOED,
