@@ -3,7 +3,7 @@ package no.nav.paw.arbeidssokerregisteret.application.fakta
 import no.nav.paw.arbeidssokerregisteret.application.Fakta
 import no.nav.paw.pdl.graphql.generated.hentperson.Folkeregisterpersonstatus
 
-fun evalForenkletFRegStatus(status: List<Folkeregisterpersonstatus>): Set<Fakta> =
+fun forenkletFregFakta(status: List<Folkeregisterpersonstatus>): Set<Fakta> =
     status.map { it.forenkletStatus }
         .map { enkelFolkeRegStatusTilFakta[it] ?: Fakta.UKJENT_FORENKLET_FREG_STATUS }
         .toSet()

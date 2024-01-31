@@ -5,7 +5,7 @@ import no.nav.paw.pdl.graphql.generated.hentperson.Foedsel
 import java.time.LocalDate
 import java.time.Month
 
-fun evalAlder(foedsel: Foedsel?): Set<Fakta> {
+fun alderFakta(foedsel: Foedsel?): Set<Fakta> {
     val dateOfBirth = foedsel?.foedselsdato?.let(LocalDate::parse)
     val lastDayInYearOfBirth = { foedsel?.foedselsaar?.let { foedselsAar -> LocalDate.of(foedselsAar, Month.DECEMBER, 31) } }
     val dob = dateOfBirth ?: lastDayInYearOfBirth()

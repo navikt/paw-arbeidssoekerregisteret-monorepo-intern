@@ -7,7 +7,7 @@ import no.nav.paw.arbeidssokerregisteret.domain.navAnsatt
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 
 context(RequestScope)
-fun AutorisasjonService.evalNavAnsattTilgang(identitetsnummer: Identitetsnummer): Fakta {
+fun AutorisasjonService.navAnsattTilgangFakta(identitetsnummer: Identitetsnummer): Fakta {
     val navAnsatt = navAnsatt(claims)
     return if (navAnsatt != null) {
         if (verifiserVeilederTilgangTilBruker(navAnsatt, identitetsnummer)) {

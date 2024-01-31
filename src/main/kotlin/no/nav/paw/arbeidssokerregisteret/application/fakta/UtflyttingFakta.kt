@@ -6,7 +6,7 @@ import no.nav.paw.pdl.graphql.generated.hentperson.UtflyttingFraNorge
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-fun evalFlytting(
+fun utflyttingFakta(
     inn: InnflyttingTilNorge?,
     ut: UtflyttingFraNorge?
 ): Fakta =

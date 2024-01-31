@@ -6,7 +6,7 @@ import no.nav.paw.pdl.graphql.generated.hentperson.Opphold
 import java.time.LocalDate
 
 
-fun evalOppholdstillatelse(oppholdtillatelse: Opphold?): Fakta {
+fun oppholdstillatelseFakta(oppholdtillatelse: Opphold?): Fakta {
     val tilDato = oppholdtillatelse?.oppholdTil?.let(LocalDate::parse)
     val utloept = tilDato?.isBefore(LocalDate.now()) ?: false
     return if (utloept) {

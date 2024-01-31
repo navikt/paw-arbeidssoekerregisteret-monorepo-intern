@@ -15,8 +15,8 @@ class RequestValidator(
 ) {
     context(RequestScope)
     suspend fun validerStartAvPeriodeOenske(identitetsnummer: Identitetsnummer): EndeligResultat {
-        val autentiseringsFakta = evalBrukerTilgang(identitetsnummer) +
-            autorisasjonService.evalNavAnsattTilgang(identitetsnummer)
+        val autentiseringsFakta = tokenXPidFakta(identitetsnummer) +
+            autorisasjonService.navAnsattTilgangFakta(identitetsnummer)
         val tilgangsResultat = tilgangsReglerIPrioritertRekkefolge.evaluer(autentiseringsFakta)
         if (tilgangsResultat is EndeligResultat) {
             return tilgangsResultat
@@ -34,11 +34,11 @@ fun genererPersonFakta(person: Person): Set<Fakta> {
     require(person.opphold.size  <= 1) { "Personen har flere opphold enn forventet" }
     require(person.innflyttingTilNorge.size <= 1) { "Personen har flere innflyttinger enn forventet" }
     require(person.utflyttingFraNorge.size <= 1) { "Personen har flere utflyttinger enn forventet" }
-    return evalAlder(person.foedsel.firstOrNull()) +
-        evalAdresse(person.bostedsadresse.firstOrNull()) +
-        evalForenkletFRegStatus(person.folkeregisterpersonstatus) +
-        evalOppholdstillatelse(person.opphold.firstOrNull()) +
-        evalFlytting(person.innflyttingTilNorge.firstOrNull(), person.utflyttingFraNorge.firstOrNull())
+    return alderFakta(person.foedsel.firstOrNull()) +
+        adresseFakta(person.bostedsadresse.firstOrNull()) +
+        forenkletFregFakta(person.folkeregisterpersonstatus) +
+        oppholdstillatelseFakta(person.opphold.firstOrNull()) +
+        utflyttingFakta(person.innflyttingTilNorge.firstOrNull(), person.utflyttingFraNorge.firstOrNull())
 }
 
 

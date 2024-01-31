@@ -6,7 +6,7 @@ import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.utils.TokenXPID
 
 context(RequestScope)
-fun evalBrukerTilgang(identitetsnummer: Identitetsnummer): Fakta {
+fun tokenXPidFakta(identitetsnummer: Identitetsnummer): Fakta {
     return claims[TokenXPID]?.let { authenticatedUser ->
         if (authenticatedUser != identitetsnummer) {
             Fakta.IKKE_SAMME_SOM_INNLOGGER_BRUKER
