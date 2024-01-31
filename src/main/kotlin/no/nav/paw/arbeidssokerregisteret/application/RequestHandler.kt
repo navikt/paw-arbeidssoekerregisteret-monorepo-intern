@@ -1,9 +1,7 @@
-package no.nav.paw.arbeidssokerregisteret.services
+package no.nav.paw.arbeidssokerregisteret.application
 
 import no.nav.paw.arbeidssokerregisteret.RequestScope
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
-import no.nav.paw.arbeidssokerregisteret.domain.Resultat
-import no.nav.paw.arbeidssokerregisteret.domain.somHendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.config.kafka.sendDeferred
 import no.nav.paw.migrering.app.kafkakeys.KafkaKeysClient
@@ -19,7 +17,7 @@ class RequestHandler(
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
     context(RequestScope)
-    suspend fun startArbeidssokerperiode(identitetsnummer: Identitetsnummer): Resultat {
+    suspend fun startArbeidssokerperiode(identitetsnummer: Identitetsnummer): EndeligResultat {
         val resultat = requestValidator.validerStartAvPeriodeOenske(identitetsnummer)
         val hendelse = somHendelse(identitetsnummer, resultat)
         val record = ProducerRecord(
@@ -33,12 +31,12 @@ class RequestHandler(
     }
 
     context(RequestScope)
-    suspend fun avsluttArbeidssokerperiode(identitetsnummer: Identitetsnummer): Resultat {
+    suspend fun avsluttArbeidssokerperiode(identitetsnummer: Identitetsnummer): EndeligResultat {
         TODO("Ikke støttet enda")
     }
 
     context(RequestScope)
-    suspend fun kanRegistreresSomArbeidssoker(identitetsnummer: Identitetsnummer): Resultat {
+    suspend fun kanRegistreresSomArbeidssoker(identitetsnummer: Identitetsnummer): EndeligResultat {
         return requestValidator.validerStartAvPeriodeOenske(identitetsnummer)
     }
 }

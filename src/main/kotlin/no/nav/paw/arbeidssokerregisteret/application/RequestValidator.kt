@@ -1,12 +1,12 @@
-package no.nav.paw.arbeidssokerregisteret.services
+package no.nav.paw.arbeidssokerregisteret.application
 
 import no.nav.paw.arbeidssokerregisteret.RequestScope
+import no.nav.paw.arbeidssokerregisteret.application.fakta.*
+import no.nav.paw.arbeidssokerregisteret.application.regler.reglerForInngangIPrioritertRekkefolge
+import no.nav.paw.arbeidssokerregisteret.application.regler.tilgangsReglerIPrioritertRekkefolge
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
-import no.nav.paw.arbeidssokerregisteret.domain.IkkeTilgang
-import no.nav.paw.arbeidssokerregisteret.domain.Resultat
-import no.nav.paw.arbeidssokerregisteret.evaluering.*
-import no.nav.paw.arbeidssokerregisteret.evaluering.regler.tilgangskontroll.genererTilgangsResultat
-import no.nav.paw.arbeidssokerregisteret.evaluering.regler.retttilregistrering.sjekkOmRettTilRegistrering
+import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
+import no.nav.paw.arbeidssokerregisteret.services.PersonInfoService
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 
 class RequestValidator(
@@ -14,21 +14,21 @@ class RequestValidator(
     private val personInfoService: PersonInfoService,
 ) {
     context(RequestScope)
-    suspend fun validerStartAvPeriodeOenske(identitetsnummer: Identitetsnummer): Resultat {
-        val tilgagsSjekkResultat = genererTilgangsResultat(autorisasjonService, identitetsnummer)
-        return if (tilgagsSjekkResultat is IkkeTilgang) {
-            tilgagsSjekkResultat
+    suspend fun validerStartAvPeriodeOenske(identitetsnummer: Identitetsnummer): EndeligResultat {
+        val autentiseringsFakta = evalBrukerTilgang(identitetsnummer) +
+            autorisasjonService.evalNavAnsattTilgang(identitetsnummer)
+        val tilgangsResultat = tilgangsReglerIPrioritertRekkefolge.evaluer(autentiseringsFakta)
+        if (tilgangsResultat is EndeligResultat) {
+            return tilgangsResultat
         } else {
             val person = personInfoService.hentPersonInfo(identitetsnummer.verdi)
-            val evalueringer = (person?.let { evaluerStartAvPeriodeOenske(identitetsnummer, person) }
-                ?: setOf(Fakta.PERSON_IKKE_FUNNET)) + tilgagsSjekkResultat.fakta
-            sjekkOmRettTilRegistrering(evalueringer)
+            val fakta = person?.let { genererPersonFakta(it) } ?: setOf(Fakta.PERSON_IKKE_FUNNET)
+            return reglerForInngangIPrioritertRekkefolge.evaluer(fakta + autentiseringsFakta)
         }
     }
 }
 
-context(RequestScope)
-fun evaluerStartAvPeriodeOenske(identitetsnummer: Identitetsnummer, person: Person): Set<Fakta> {
+fun genererPersonFakta(person: Person): Set<Fakta> {
     require(person.foedsel.size <= 1) { "Personen har flere fødselsdatoer enn forventet" }
     require(person.bostedsadresse.size <= 1) { "Personen har flere bostedsadresser enn forventet" }
     require(person.opphold.size  <= 1) { "Personen har flere opphold enn forventet" }
@@ -37,7 +37,6 @@ fun evaluerStartAvPeriodeOenske(identitetsnummer: Identitetsnummer, person: Pers
     return evalAlder(person.foedsel.firstOrNull()) +
         evalAdresse(person.bostedsadresse.firstOrNull()) +
         evalForenkletFRegStatus(person.folkeregisterpersonstatus) +
-        evalBrukerTilgang(identitetsnummer) +
         evalOppholdstillatelse(person.opphold.firstOrNull()) +
         evalFlytting(person.innflyttingTilNorge.firstOrNull(), person.utflyttingFraNorge.firstOrNull())
 }

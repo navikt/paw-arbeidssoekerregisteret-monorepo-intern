@@ -1,7 +1,8 @@
-package no.nav.paw.arbeidssokerregisteret.domain
+package no.nav.paw.arbeidssokerregisteret.application
 
 import no.nav.paw.arbeidssokerregisteret.RequestScope
-import no.nav.paw.arbeidssokerregisteret.evaluering.Fakta
+import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
+import no.nav.paw.arbeidssokerregisteret.domain.navAnsatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
@@ -14,36 +15,43 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist as AvvistHendelse
 
 sealed interface Resultat {
     val fakta: Iterable<Fakta>
-    val melding: String
+    val regel: Regel<out Resultat>
 }
+
+sealed interface EndeligResultat : Resultat
 
 sealed interface TilgangskontrollResultat {
     val fakta: Iterable<Fakta>
-    val melding: String
+    val regel: Regel<out Resultat>?
 }
 
 data class OK(
-    override val melding: String,
+    override val regel: Regel<EndeligResultat>,
     override val fakta: Iterable<Fakta>
-) : Resultat, TilgangskontrollResultat
+) : EndeligResultat
 
 data class Avvist(
-    override val melding: String,
+    override val regel: Regel<EndeligResultat>,
     override val fakta: Iterable<Fakta>
-) : Resultat
+) : EndeligResultat
 
 data class Uavklart(
-    override val melding: String,
+    override val regel: Regel<EndeligResultat>,
     override val fakta: Iterable<Fakta>
-) : Resultat
+) : EndeligResultat
 
 data class IkkeTilgang(
-    override val melding: String,
+    override val regel: Regel<EndeligResultat>,
+    override val fakta: Iterable<Fakta>
+) : EndeligResultat, TilgangskontrollResultat
+
+data class TilgangOK(
+    override val regel: Regel<Resultat>,
     override val fakta: Iterable<Fakta>
 ) : Resultat, TilgangskontrollResultat
 
 context(RequestScope)
-fun somHendelse(identitetsnummer: Identitetsnummer, resultat: Resultat): Hendelse =
+fun somHendelse(identitetsnummer: Identitetsnummer, resultat: EndeligResultat): Hendelse =
     when (resultat) {
         is Avvist -> AvvistHendelse(
             hendelseId = UUID.randomUUID(),
@@ -87,6 +95,6 @@ fun hendelseMetadata(resultat: Resultat): HendelseMetadata {
         tidspunkt = Instant.now(),
         utfoertAv = bruker,
         kilde = "paw-arbeidssoelerregisteret-inngang",
-        aarsak = resultat.melding
+        aarsak = resultat.regel.beskrivelse
     )
 }

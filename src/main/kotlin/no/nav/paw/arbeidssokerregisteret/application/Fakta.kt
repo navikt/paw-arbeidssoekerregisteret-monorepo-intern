@@ -1,4 +1,4 @@
-package no.nav.paw.arbeidssokerregisteret.evaluering
+package no.nav.paw.arbeidssokerregisteret.application
 
 enum class Fakta(val beskrivelse: String) {
     FORHAANDSGODKJENT_AV_ANSATT("Registrering er forhåndsgodkjent av NAV-ansatt"),

@@ -1,6 +1,7 @@
-package no.nav.paw.arbeidssokerregisteret.evaluering
+package no.nav.paw.arbeidssokerregisteret.application.fakta
 
 import no.nav.paw.arbeidssokerregisteret.RequestScope
+import no.nav.paw.arbeidssokerregisteret.application.Fakta
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.utils.TokenXPID
 

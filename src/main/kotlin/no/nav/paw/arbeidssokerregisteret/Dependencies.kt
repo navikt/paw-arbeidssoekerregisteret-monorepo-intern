@@ -9,10 +9,10 @@ import no.nav.common.token_client.builder.AzureAdTokenClientBuilder
 import no.nav.paw.arbeidssokerregisteret.config.Config
 import no.nav.paw.arbeidssokerregisteret.config.NaisEnv
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.arbeidssokerregisteret.services.RequestValidator
+import no.nav.paw.arbeidssokerregisteret.application.RequestValidator
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.arbeidssokerregisteret.services.PersonInfoService
-import no.nav.paw.arbeidssokerregisteret.services.RequestHandler
+import no.nav.paw.arbeidssokerregisteret.application.RequestHandler
 import no.nav.paw.arbeidssokerregisteret.services.kafkakeys.kafkaKeysKlient
 import no.nav.paw.arbeidssokerregisteret.utils.createMockRSAKey
 import no.nav.paw.config.kafka.KafkaFactory

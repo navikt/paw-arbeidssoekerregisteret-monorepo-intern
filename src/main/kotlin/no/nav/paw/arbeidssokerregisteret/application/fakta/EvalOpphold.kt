@@ -1,5 +1,6 @@
-package no.nav.paw.arbeidssokerregisteret.evaluering
+package no.nav.paw.arbeidssokerregisteret.application.fakta
 
+import no.nav.paw.arbeidssokerregisteret.application.Fakta
 import no.nav.paw.pdl.graphql.generated.enums.Oppholdstillatelse
 import no.nav.paw.pdl.graphql.generated.hentperson.Opphold
 import java.time.LocalDate

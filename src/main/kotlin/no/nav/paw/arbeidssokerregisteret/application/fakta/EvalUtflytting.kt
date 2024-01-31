@@ -1,5 +1,6 @@
-package no.nav.paw.arbeidssokerregisteret.evaluering
+package no.nav.paw.arbeidssokerregisteret.application.fakta
 
+import no.nav.paw.arbeidssokerregisteret.application.Fakta
 import no.nav.paw.pdl.graphql.generated.hentperson.InnflyttingTilNorge
 import no.nav.paw.pdl.graphql.generated.hentperson.UtflyttingFraNorge
 import java.time.LocalDate
