@@ -1,14 +1,30 @@
 openapi: "3.0.3"
 info:
-  title: "paw_arbeidssokerregisteret Inngang API"
-  description: "paw_arbeidssokerregisteret Inngang API"
+  title: "paw_arbeidssokerregisteret_api_inngang API"
+  description: "paw_arbeidssokerregisteret_api_inngang API"
   version: "1.0.0"
 servers:
-- url: "https://paw_arbeidssokerregisteret-api-inngang"
+- url: "https://paw_arbeidssokerregisteret_api_inngang"
 paths:
-  /api/v1/arbeidssoker/periode/start:
-    post:
+  /api/v1/arbeidssoker/perioder:
+    delete:
       description: ""
+      parameters:
+      - name: "Nav-Call-Id"
+        in: "header"
+        required: false
+        schema:
+          type: "string"
+      - name: "traceparent"
+        in: "header"
+        required: false
+        schema:
+          type: "string"
+      - name: "Nav-Consumer-Id"
+        in: "header"
+        required: false
+        schema:
+          type: "string"
       requestBody:
         content:
           '*/*':
@@ -21,46 +37,31 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/Error"
-              examples:
-                Example#1:
-                  value: "NAV-ansatt har ikke tilgang"
-        "400":
-          description: "Bad Request"
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/Error"
-              examples:
-                Example#1:
-                  value: "Some json parsing error"
-        "424":
-          description: "Failed to call downstream service"
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/Error"
-              examples:
-                Example#1:
-                  value: "Some IO error"
-        "500":
-          description: "Internal Server Error"
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/Error"
-              examples:
-                Example#1:
-                  value: "Some weird error"
-        "202":
-          description: "Accepted"
+                $ref: "#/components/schemas/Feil"
+        "200":
+          description: "OK"
           content:
             '*/*':
               schema:
                 type: "object"
-  /api/v1/arbeidssoker/periode/kan-starte:
     put:
       description: ""
+      parameters:
+      - name: "Nav-Call-Id"
+        in: "header"
+        required: false
+        schema:
+          type: "string"
+      - name: "traceparent"
+        in: "header"
+        required: false
+        schema:
+          type: "string"
+      - name: "Nav-Consumer-Id"
+        in: "header"
+        required: false
+        schema:
+          type: "string"
       requestBody:
         content:
           '*/*':
@@ -68,42 +69,86 @@ paths:
               $ref: "#/components/schemas/Request"
         required: true
       responses:
-        "403":
-          description: "Forbidden"
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/Error"
-              examples:
-                Example#1:
-                  value: "NAV-ansatt har ikke tilgang"
         "400":
           description: "Bad Request"
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/Error"
-              examples:
-                Example#1:
-                  value: "Some json parsing error"
+                $ref: "#/components/schemas/Feil"
         "424":
-          description: "Failed to call downstream service"
+          description: "Failed Dependency"
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/Error"
-              examples:
-                Example#1:
-                  value: "Some IO error"
+                $ref: "#/components/schemas/Feil"
         "500":
           description: "Internal Server Error"
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/Error"
-              examples:
-                Example#1:
-                  value: "Some weird error"
+                $ref: "#/components/schemas/Feil"
+        "403":
+          description: "Forbidden"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Feil"
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "object"
+  /api/v1/arbeidssoker/perioder/kan-starte:
+    put:
+      description: ""
+      parameters:
+      - name: "Nav-Call-Id"
+        in: "header"
+        required: false
+        schema:
+          type: "string"
+      - name: "traceparent"
+        in: "header"
+        required: false
+        schema:
+          type: "string"
+      - name: "Nav-Consumer-Id"
+        in: "header"
+        required: false
+        schema:
+          type: "string"
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: "#/components/schemas/Request"
+        required: true
+      responses:
+        "400":
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Feil"
+        "424":
+          description: "Failed Dependency"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Feil"
+        "500":
+          description: "Internal Server Error"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Feil"
+        "403":
+          description: "Forbidden"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Feil"
         "200":
           description: "OK"
           content:
@@ -153,13 +198,72 @@ components:
       properties:
         identitetsnummer:
           type: "string"
-    Error:
+        registreringForhaandsGodkjentAvAnsatt:
+          type: "boolean"
+      required:
+      - "identitetsnummer"
+    AarsakTilAvvisning:
       type: "object"
       properties:
-        message:
+        beskrivelse:
           type: "string"
-        errorCode:
+        kode:
+          type: "integer"
+          format: "int32"
+        detaljer:
+          type: "array"
+          items:
+            type: "string"
+            enum:
+            - "FORHAANDSGODKJENT_AV_ANSATT"
+            - "SAMME_SOM_INNLOGGET_BRUKER"
+            - "IKKE_SAMME_SOM_INNLOGGER_BRUKER"
+            - "ANSATT_IKKE_TILGANG"
+            - "ANSATT_TILGANG"
+            - "IKKE_ANSATT"
+            - "ER_OVER_18_AAR"
+            - "ER_UNDER_18_AAR"
+            - "UKJENT_FOEDSELSDATO"
+            - "UKJENT_FOEDSELSAAR"
+            - "TOKENX_PID_IKKE_FUNNET"
+            - "OPPHOERT_IDENTITET"
+            - "IKKE_BOSATT"
+            - "DOED"
+            - "SAVNET"
+            - "HAR_NORSK_ADRESSE"
+            - "HAR_UTENLANDSK_ADRESSE"
+            - "INGEN_ADRESSE_FUNNET"
+            - "BOSATT_ETTER_FREG_LOVEN"
+            - "DNUMMER"
+            - "UKJENT_FORENKLET_FREG_STATUS"
+            - "HAR_GYLDIG_OPPHOLDSTILLATELSE"
+            - "OPPHOLDSTILATELSE_UTGAATT"
+            - "BARN_FOEDT_I_NORGE_UTEN_OPPHOLDSTILLATELSE"
+            - "INGEN_INFORMASJON_OM_OPPHOLDSTILLATELSE"
+            - "UKJENT_STATUS_FOR_OPPHOLDSTILLATELSE"
+            - "PERSON_IKKE_FUNNET"
+            - "SISTE_FLYTTING_VAR_UT_AV_NORGE"
+            - "SISTE_FLYTTING_VAR_INN_TIL_NORGE"
+            - "IKKE_MULIG_AA_IDENTIFISERE_SISTE_FLYTTING"
+            - "INGEN_FLYTTE_INFORMASJON"
+      required:
+      - "beskrivelse"
+      - "detaljer"
+    Feil:
+      type: "object"
+      properties:
+        melding:
+          type: "string"
+        feilKode:
           type: "string"
           enum:
-            - "UVENTET_FEIL_MOT_EKSTERNE_TJENESTER"
-            - "UGYLDIG_JSON"
+          - "UKJENT_FEIL"
+          - "UVENTET_FEIL_MOT_EKSTERN_TJENESTE"
+          - "FEIL_VED_LESING_AV_FORESPORSEL"
+          - "AVVIST"
+          - "IKKE_TILGANG"
+        aarasakTilAvvisning:
+          $ref: "#/components/schemas/AarsakTilAvvisning"
+      required:
+      - "melding"
+      - "feilKode"

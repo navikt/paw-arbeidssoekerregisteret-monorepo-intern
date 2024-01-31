@@ -13,17 +13,23 @@ class RequestValidator(
     private val autorisasjonService: AutorisasjonService,
     private val personInfoService: PersonInfoService,
 ) {
+
     context(RequestScope)
-    suspend fun validerStartAvPeriodeOenske(identitetsnummer: Identitetsnummer): EndeligResultat {
+    fun validerTilgang(identitetsnummer: Identitetsnummer): TilgangskontrollResultat {
         val autentiseringsFakta = tokenXPidFakta(identitetsnummer) +
             autorisasjonService.navAnsattTilgangFakta(identitetsnummer)
-        val tilgangsResultat = tilgangsReglerIPrioritertRekkefolge.evaluer(autentiseringsFakta)
+        return tilgangsReglerIPrioritertRekkefolge.evaluer(autentiseringsFakta)
+    }
+
+    context(RequestScope)
+    suspend fun validerStartAvPeriodeOenske(identitetsnummer: Identitetsnummer): EndeligResultat {
+        val tilgangsResultat = validerTilgang(identitetsnummer)
         if (tilgangsResultat is EndeligResultat) {
             return tilgangsResultat
         } else {
             val person = personInfoService.hentPersonInfo(identitetsnummer.verdi)
             val fakta = person?.let { genererPersonFakta(it) } ?: setOf(Fakta.PERSON_IKKE_FUNNET)
-            return reglerForInngangIPrioritertRekkefolge.evaluer(fakta + autentiseringsFakta)
+            return reglerForInngangIPrioritertRekkefolge.evaluer(fakta + tilgangsResultat.fakta)
         }
     }
 }

@@ -19,11 +19,7 @@ sealed interface Resultat {
 }
 
 sealed interface EndeligResultat : Resultat
-
-sealed interface TilgangskontrollResultat {
-    val fakta: Iterable<Fakta>
-    val regel: Regel<out Resultat>?
-}
+sealed interface TilgangskontrollResultat : Resultat
 
 data class OK(
     override val regel: Regel<EndeligResultat>,
@@ -41,14 +37,14 @@ data class Uavklart(
 ) : EndeligResultat
 
 data class IkkeTilgang(
-    override val regel: Regel<EndeligResultat>,
+    override val regel: Regel<out Resultat>,
     override val fakta: Iterable<Fakta>
 ) : EndeligResultat, TilgangskontrollResultat
 
 data class TilgangOK(
-    override val regel: Regel<Resultat>,
+    override val regel: Regel<TilgangskontrollResultat>,
     override val fakta: Iterable<Fakta>
-) : Resultat, TilgangskontrollResultat
+) : TilgangskontrollResultat
 
 context(RequestScope)
 fun somHendelse(identitetsnummer: Identitetsnummer, resultat: EndeligResultat): Hendelse =

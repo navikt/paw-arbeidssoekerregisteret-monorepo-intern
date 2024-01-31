@@ -9,13 +9,13 @@ import no.nav.paw.migrering.app.kafkakeys.StandardKafkaKeysClient
 import no.nav.paw.migrering.app.kafkakeys.inMemoryKafkaKeysMock
 
 
-fun kafkaKeysKlient(konfigurasjon: KafkaKeysConfig, m2mTokenFactory: (String) -> String): KafkaKeysClient =
+fun kafkaKeysKlient(konfigurasjon: KafkaKeysConfig, m2mTokenFactory: () -> String): KafkaKeysClient =
     when (konfigurasjon.url) {
         "MOCK" -> inMemoryKafkaKeysMock()
         else -> kafkaKeysMedHttpClient(konfigurasjon, m2mTokenFactory)
     }
 
-private fun kafkaKeysMedHttpClient(config: KafkaKeysConfig, m2mTokenFactory: (String) -> String): KafkaKeysClient {
+private fun kafkaKeysMedHttpClient(config: KafkaKeysConfig, m2mTokenFactory: () -> String): KafkaKeysClient {
     val httpClient = HttpClient {
         install(ContentNegotiation) {
             jackson()
@@ -24,5 +24,5 @@ private fun kafkaKeysMedHttpClient(config: KafkaKeysConfig, m2mTokenFactory: (St
     return StandardKafkaKeysClient(
         httpClient,
         config.url
-    ) { m2mTokenFactory(config.scope) }
+    ) { m2mTokenFactory() }
 }

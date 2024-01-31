@@ -2,7 +2,7 @@ package no.nav.paw.arbeidssokerregisteret.application.regler
 
 import no.nav.paw.arbeidssokerregisteret.application.*
 
-val tilgangsReglerIPrioritertRekkefolge: List<Regel<out Resultat>> = listOf(
+val tilgangsReglerIPrioritertRekkefolge: List<Regel<TilgangskontrollResultat>> = listOf(
     "Ansatt har tilgang til bruker"(
         Fakta.ANSATT_TILGANG,
         kode = MIDLERTIDIG_INTERNT_RESULTAT,
