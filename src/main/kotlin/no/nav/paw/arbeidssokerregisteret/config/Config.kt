@@ -1,11 +1,5 @@
 package no.nav.paw.arbeidssokerregisteret.config
 
-import io.confluent.kafka.serializers.KafkaAvroSerializer
-import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
-import org.apache.kafka.clients.producer.ProducerConfig
-import org.apache.kafka.common.serialization.StringSerializer
-import java.util.*
-
 data class Config(
     val authProviders: AuthProviders,
     val pdlClientConfig: ServiceClientConfig,

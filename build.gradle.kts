@@ -26,7 +26,7 @@ repositories {
     maven {
         url = uri("https://jitpack.io")
     }
-    mavenNav("paw-arbeidssokerregisteret")
+    mavenNav("paw-arbeidssokerregisteret-api-inngang")
 }
 
 dependencies {
@@ -39,7 +39,6 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashVersion")
     implementation("org.apache.kafka:kafka-clients:3.5.1")
-    implementation("io.confluent:kafka-avro-serializer:7.4.0")
     implementation("com.github.navikt.poao-tilgang:client:2023.09.25_09.26-72043f243cad")
     implementation("no.nav.paw:pdl-client:0.3.7")
     implementation("com.sksamuel.hoplite:hoplite-core:$hopliteVersion")
@@ -99,11 +98,13 @@ tasks.withType<KotlinCompile>().configureEach {
     }
 }
 
-//tasks.withType(Jar::class) {
-//    manifest {
-//        attributes["Implementation-Version"] = project.version
-//    }
-//}
+tasks.withType(Jar::class) {
+    manifest {
+        attributes["Implementation-Version"] = project.version
+        attributes["Main-Class"] = application.mainClass.get()
+        attributes["Implementation-Title"] = rootProject.name
+    }
+}
 
 fun RepositoryHandler.mavenNav(repo: String): MavenArtifactRepository {
     val githubPassword: String by project
