@@ -1,14 +1,14 @@
 apiVersion: nais.io/v1alpha1
 kind: Application
 metadata:
-  name: paw-arbeidssokerregisteret
+  name: paw-arbeidssokerregisteret-api-inngang
   namespace: paw
   labels:
     team: paw
 spec:
   image: {{ image }}
   ingresses:
-    - https://inngang.arbeidssokerregisteret.intern.dev.nav.no
+    - https://inngang-arbeidssokerregisteret.intern.nav.no
   port: 8080
   tokenx:
     enabled: true
@@ -48,4 +48,9 @@ spec:
     tracing:
       enabled: true
   kafka:
-    pool: nav-dev
+    pool: {{ kafka }}
+  accessPolicy:
+    outbound:
+      external:
+        - host: pdl-api.{{ fss }}-pub.nais.io
+
