@@ -88,7 +88,7 @@ tasks.withType<Test>().configureEach {
 
 ktor {
     fatJar {
-        archiveFileName.set("fat.jar")
+        archiveFileName.set("app.jar")
     }
 }
 

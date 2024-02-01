@@ -3,7 +3,7 @@ FROM ghcr.io/navikt/baseimages/temurin:21
 ENV SERVICE_NAVN=paw-arbeidssokerregisteret-api-inngang
 ENV AGENT=agents/opentelemetry-javaagent.jar
 ENV ANONYMISERING=agents/opentelemetry-anonymisering-1.31.0-23.10.25.8-1.jar
-ENV APPLIKASJON_JAR=fat.jar
+ENV APPLIKASJON_JAR=app.jar
 
 COPY build/libs/$APPLIKASJON_JAR $APPLIKASJON_JAR
 COPY $AGENT opentelemetry-javaagent.jar
