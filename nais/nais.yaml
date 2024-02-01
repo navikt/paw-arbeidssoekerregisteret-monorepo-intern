@@ -8,7 +8,7 @@ metadata:
 spec:
   image: {{ image }}
   ingresses:
-    - https://inngang-arbeidssokerregisteret.intern.nav.no
+    - https://inngang-arbeidssokerregisteret.{{ ingressDomain }}
   port: 8080
   tokenx:
     enabled: true
