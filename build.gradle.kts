@@ -43,6 +43,7 @@ dependencies {
     implementation("no.nav.paw:pdl-client:0.3.7")
     implementation("com.sksamuel.hoplite:hoplite-core:$hopliteVersion")
     implementation("com.sksamuel.hoplite:hoplite-yaml:$hopliteVersion")
+    implementation("com.sksamuel.hoplite:hoplite-toml:$hopliteVersion")
     implementation("no.nav.paw.kafka:kafka:$pawUtilsVersion")
     implementation("no.nav.paw.hoplite-config:hoplite-config:$pawUtilsVersion")
 
