@@ -67,9 +67,9 @@ jobs:
     strategy:
       matrix:
         topic: [
-          opplysninger-om-arbeidssoeker-beta-v6,
+          opplysninger-om-arbeidssoeker-beta-v7,
           arbeidssoker-profilering-beta-v1,
-          arbeidssokerperioder-beta-v6,
+          arbeidssokerperioder-beta-v7,
         ]
     steps:
       - uses: actions/checkout@v3
