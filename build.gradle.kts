@@ -15,7 +15,7 @@ val koTestVersion = "5.7.2"
 val hopliteVersion = "2.8.0.RC3"
 val ktorVersion = pawObservability.versions.ktor
 val arbeidssokerregisteretVersion = "23.12.18.110-1"
-val pawUtilsVersion = "23.12.20.5-1"
+val pawUtilsVersion = "24.01.11.9-1"
 
 repositories {
     mavenLocal()
