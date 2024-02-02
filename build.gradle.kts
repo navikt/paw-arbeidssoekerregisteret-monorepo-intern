@@ -41,9 +41,7 @@ dependencies {
     implementation("org.apache.kafka:kafka-clients:3.5.1")
     implementation("com.github.navikt.poao-tilgang:client:2023.09.25_09.26-72043f243cad")
     implementation("no.nav.paw:pdl-client:0.3.7")
-    implementation("com.sksamuel.hoplite:hoplite-core:$hopliteVersion")
     implementation("com.sksamuel.hoplite:hoplite-yaml:$hopliteVersion")
-    implementation("com.sksamuel.hoplite:hoplite-toml:$hopliteVersion")
     implementation("no.nav.paw.kafka:kafka:$pawUtilsVersion")
     implementation("no.nav.paw.hoplite-config:hoplite-config:$pawUtilsVersion")
 

@@ -20,6 +20,7 @@ import no.nav.paw.config.kafka.KafkaConfig
 import no.nav.paw.config.kafka.KafkaFactory
 
 fun main() {
+
     val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
     val applicationConfig = loadConfiguration<Config>()
     val requestHandler = requestHandler(applicationConfig, KafkaFactory(kafkaConfig))
