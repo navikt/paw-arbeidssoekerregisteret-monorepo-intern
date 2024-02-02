@@ -1,4 +1,4 @@
-@namespace("no.nav.paw.arbeidssokerregisteret.api.v2")
+@namespace("no.nav.paw.arbeidssokerregisteret.api.v3")
 protocol Utdanning {
 	import idl "ja_nei_vet_ikke-v1.avdl";
 	record Utdanning {

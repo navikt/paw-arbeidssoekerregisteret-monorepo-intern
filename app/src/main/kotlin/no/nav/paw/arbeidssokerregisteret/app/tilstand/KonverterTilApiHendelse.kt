@@ -8,8 +8,8 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType as ApiBrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Helse as ApiHelse
 import no.nav.paw.arbeidssokerregisteret.api.v1.JaNeiVetIkke as ApiJaNeiVetIkke
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as ApiMetadata
-import no.nav.paw.arbeidssokerregisteret.api.v2.OpplysningerOmArbeidssoeker as ApiOpplysningerOmArbeidssoeker
-import no.nav.paw.arbeidssokerregisteret.api.v2.Utdanning as ApiUtdanning
+import no.nav.paw.arbeidssokerregisteret.api.v3.OpplysningerOmArbeidssoeker as ApiOpplysningerOmArbeidssoeker
+import no.nav.paw.arbeidssokerregisteret.api.v3.Utdanning as ApiUtdanning
 import no.nav.paw.arbeidssokerregisteret.api.v1.Arbeidserfaring as ApiArbeidserfaring
 import no.nav.paw.arbeidssokerregisteret.api.v1.Jobbsituasjon as ApiJobbsituasjon
 import no.nav.paw.arbeidssokerregisteret.api.v1.Beskrivelse as ApiBeskrivelse

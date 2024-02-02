@@ -1,7 +1,7 @@
-@namespace("no.nav.paw.arbeidssokerregisteret.api.v2")
+@namespace("no.nav.paw.arbeidssokerregisteret.api.v3")
 protocol OpplysningerOmArbeidssoeker {
 	import idl "vo/metadata-v1.avdl";
-	import idl "vo/utdanning-v2.avdl";
+	import idl "vo/utdanning-v3.avdl";
 	import idl "vo/helse-v1.avdl";
 	import idl "vo/arbeidserfaring-v1.avdl";
 	import idl "vo/jobbsituasjon-v1.avdl";
