@@ -1,0 +1,60 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  name: paw-arbeidssokerregisteret-api-inngang
+  namespace: paw
+  labels:
+    team: paw
+spec:
+  image: {{ image }}
+  ingresses:
+    - https://inngang-arbeidssokerregisteret.intern.nav.no
+  port: 8080
+  tokenx:
+    enabled: true
+  azure:
+    application:
+      enabled: true
+      allowAllUsers: true
+      claims:
+        extra:
+          - NAVident
+  env:
+    - name: KAFKA_PRODUCER_ID
+      value: "paw-producer-arbeidssokerregisteret-v1"
+    - name: KAFKA_PRODUCER_PERIODER_TOPIC
+      value: "paw.arbeidssokerperioder-v1"
+    - name: KAFKA_GROUP_ID
+      value: "paw-consumer-arbeidssokerregisteret-v1"
+    - name: OTEL_METRICS_EXPORTER
+      value: "none"
+    - name: OTEL_TRACES_EXPORTER
+      value: "maskert_oltp"
+    - name: OTEL_JAVAAGENT_DEBUG
+      value: "false"
+    - name: KAFKA_KEYS_URL
+      value: http://paw-kafka-key-generator/api/v1/hentEllerOpprett
+    - name: KAFKA_KEYS_SCOPE
+      value: api://prod-gcp.paw.paw-kafka-key-generator/.default
+  replicas:
+    min: 1
+    max: 1
+  liveness:
+    path: /internal/isAlive
+    initialDelay: 10
+  readiness:
+    path: /internal/isReady
+    initialDelay: 10
+  prometheus:
+    enabled: true
+    path: /internal/metrics
+  observability:
+    tracing:
+      enabled: true
+  kafka:
+    pool: nav-prod
+  accessPolicy:
+    outbound:
+      external:
+        - host: pdl-api.prod-fss-pub.nais.io
+
