@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.config
 
-const val CONFIG_FILE_NAME = "application-prod.yaml"
+const val CONFIG_FILE_NAME = "application.yaml"
 
 data class Config(
     val authProviders: AuthProviders,
