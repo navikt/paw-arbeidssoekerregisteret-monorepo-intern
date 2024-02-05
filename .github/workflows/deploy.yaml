@@ -20,6 +20,8 @@ jobs:
           java-version: 21
           distribution: temurin
           cache: gradle
+      - name: Set version
+        run: echo "version=$(date +'%y.%m.%d').${{ github.run_number }}-${{ github.run_attempt }}" >> $GITHUB_ENV
       - name: Login GAR
         uses: nais/login@v0
         with:
@@ -29,9 +31,8 @@ jobs:
       - name: Build and push image with Gradle
         working-directory: ./
         run: |
-          VERSION=$(date +'%y.%m.%d').${{ github.run_number }}-${{ github.run_attempt }}
           echo "image=${{ env.IMAGE }}:${{ env.VERSION }}" >> $GITHUB_OUTPUT
-          echo Pversion=${{ env.VERSION }} -Pimage=${{ env.IMAGE }} build test jib
+          echo -Pversion=${{ env.VERSION }} -Pimage=${{ env.IMAGE }} build test jib
           ./gradlew -Pversion=${{ env.VERSION }} -Pimage=${{ env.IMAGE }} build test jib
           echo "DIGEST=$(cat build/jib-image.digest)" >> $GITHUB
         env:
