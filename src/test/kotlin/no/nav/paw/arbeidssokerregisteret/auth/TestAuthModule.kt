@@ -9,12 +9,12 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import no.nav.paw.arbeidssokerregisteret.config.Config
-import no.nav.paw.arbeidssokerregisteret.config.loadConfiguration
 import no.nav.paw.arbeidssokerregisteret.plugins.configureAuthentication
+import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.security.mock.oauth2.MockOAuth2Server
 
 fun Application.testAuthModule(oAuth2Server: MockOAuth2Server) {
-    val config = loadConfiguration<Config>()
+    val config = loadNaisOrLocalConfiguration<Config>("application.yaml")
     val authProviders = config.authProviders.copy(
         tokenx = config.authProviders.tokenx.copy(
             discoveryUrl = oAuth2Server.wellKnownUrl("default").toString(),
