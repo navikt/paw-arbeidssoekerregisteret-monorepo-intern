@@ -29,6 +29,7 @@ jobs:
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
           team: paw
       - name: Build and push image with Gradle
+        id: docker-build-push
         working-directory: ./
         run: |
           echo "image=${{ env.IMAGE }}:${{ env.VERSION }}" >> $GITHUB_OUTPUT
