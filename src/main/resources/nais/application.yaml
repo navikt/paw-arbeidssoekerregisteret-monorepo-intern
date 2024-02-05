@@ -6,12 +6,12 @@ pdlClientConfig:
   url: http://localhost:8090/pdl
   scope: api://test.test.pdl-api/.default
 kafkaKeysConfig:
-  url: http://localhost:8090/kafka-keys
-  scope: api://test.test.kafka-keys/.default
+  url: ${KAFKA_KEYS_URL}
+  scope: ${KAFKA_KEYS_SCOPE}
 authProviders:
   azure:
     name: azure
-    discoveryUrl: "${AZURE_APP_WELL_KNOWN_URL}"
+    discoveryUrl: ${AZURE_APP_WELL_KNOWN_URL}
     tokenEndpointUrl: http://localhost:8081/default/token
     clientId: paw-arbeidssokerregisteret-api-inngang
     claims:

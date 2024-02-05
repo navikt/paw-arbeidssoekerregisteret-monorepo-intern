@@ -8,7 +8,7 @@ metadata:
 spec:
   image: {{ image }}
   ingresses:
-    - https://inngang-arbeidssokerregisteret.{{ ingressDomain }}
+    - https://inngang-arbeidssokerregisteret.intern.dev.nav.no
   port: 8080
   tokenx:
     enabled: true
@@ -32,6 +32,10 @@ spec:
       value: "maskert_oltp"
     - name: OTEL_JAVAAGENT_DEBUG
       value: "false"
+    - name: KAFKA_KEYS_URL
+      value: http://paw-kafka-key-generator/api/v1/hentEllerOpprett
+    - name: KAFKA_KEYS_SCOPE
+      value: api://dev-gcp.paw.paw-kafka-key-generator/.default
   replicas:
     min: 1
     max: 1
@@ -48,9 +52,9 @@ spec:
     tracing:
       enabled: true
   kafka:
-    pool: {{ kafka }}
+    pool: nav-dev
   accessPolicy:
     outbound:
       external:
-        - host: pdl-api.{{ fss }}-pub.nais.io
+        - host: pdl-api.dev-fss-pub.nais.io
 
