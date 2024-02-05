@@ -21,7 +21,7 @@ jobs:
           distribution: temurin
           cache: gradle
       - name: Set version
-        run: echo "VERSION=$(date +'%y.%m.%d').${{ github.run_number }}-${{ github.run_attempt }}
+        run: echo "VERSION=$(date +'%y.%m.%d').${{ github.run_number }}-${{ github.run_attempt }}"
       - name: Login GAR
         uses: nais/login@v0
         with:
