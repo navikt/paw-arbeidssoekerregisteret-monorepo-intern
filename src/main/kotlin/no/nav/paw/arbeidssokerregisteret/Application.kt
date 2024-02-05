@@ -8,10 +8,7 @@ import io.ktor.server.routing.*
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.application.RequestHandler
-import no.nav.paw.arbeidssokerregisteret.config.AuthProviders
-import no.nav.paw.arbeidssokerregisteret.config.Config
-import no.nav.paw.arbeidssokerregisteret.config.loadConfiguration
-import no.nav.paw.arbeidssokerregisteret.config.loadKafkaConfiguration
+import no.nav.paw.arbeidssokerregisteret.config.*
 import no.nav.paw.arbeidssokerregisteret.plugins.*
 import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutes
 import no.nav.paw.arbeidssokerregisteret.routes.healthRoutes
@@ -20,13 +17,13 @@ import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.config.kafka.KAFKA_CONFIG
 import no.nav.paw.config.kafka.KafkaConfig
 import no.nav.paw.config.kafka.KafkaFactory
+import org.slf4j.LoggerFactory
 
 fun main() {
-
+    val logger = LoggerFactory.getLogger("application")
+    val applicationConfig = loadNaisOrLocalConfiguration<Config>(CONFIG_FILE_NAME)
     val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
-    val applicationConfig = loadConfiguration<Config>()
     val requestHandler = requestHandler(applicationConfig, KafkaFactory(kafkaConfig))
-
     val server = embeddedServer(Netty, port = 8080) {
         module(
             registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
