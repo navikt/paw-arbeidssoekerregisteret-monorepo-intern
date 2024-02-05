@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret
 
+import com.sksamuel.hoplite.ExperimentalHoplite
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -10,6 +11,7 @@ import no.nav.paw.arbeidssokerregisteret.application.RequestHandler
 import no.nav.paw.arbeidssokerregisteret.config.AuthProviders
 import no.nav.paw.arbeidssokerregisteret.config.Config
 import no.nav.paw.arbeidssokerregisteret.config.loadConfiguration
+import no.nav.paw.arbeidssokerregisteret.config.loadKafkaConfiguration
 import no.nav.paw.arbeidssokerregisteret.plugins.*
 import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutes
 import no.nav.paw.arbeidssokerregisteret.routes.healthRoutes

@@ -5,7 +5,10 @@ plugins {
     id("io.ktor.plugin") version "2.3.5"
 //    id("org.jmailen.kotlinter") version "3.16.0"
     application
+    id("com.google.cloud.tools.jib") version "3.4.0"
 }
+
+val jvmVersion = 21
 
 val logbackVersion = "1.4.5"
 val logstashVersion = "7.3"
@@ -16,6 +19,8 @@ val hopliteVersion = "2.8.0.RC3"
 val ktorVersion = pawObservability.versions.ktor
 val arbeidssokerregisteretVersion = "23.12.18.110-1"
 val pawUtilsVersion = "24.01.11.9-1"
+
+val image: String? by project
 
 repositories {
     mavenLocal()
@@ -41,6 +46,8 @@ dependencies {
     implementation("org.apache.kafka:kafka-clients:3.5.1")
     implementation("com.github.navikt.poao-tilgang:client:2023.09.25_09.26-72043f243cad")
     implementation("no.nav.paw:pdl-client:0.3.7")
+    implementation("com.sksamuel.hoplite:hoplite-core:$hopliteVersion")
+    implementation("com.sksamuel.hoplite:hoplite-toml:$hopliteVersion")
     implementation("com.sksamuel.hoplite:hoplite-yaml:$hopliteVersion")
     implementation("no.nav.paw.kafka:kafka:$pawUtilsVersion")
     implementation("no.nav.paw.hoplite-config:hoplite-config:$pawUtilsVersion")
@@ -72,7 +79,7 @@ dependencies {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(jvmVersion))
     }
 }
 
@@ -83,12 +90,6 @@ application {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
-}
-
-ktor {
-    fatJar {
-        archiveFileName.set("app.jar")
-    }
 }
 
 tasks.withType<KotlinCompile>().configureEach {
@@ -103,6 +104,15 @@ tasks.withType(Jar::class) {
         attributes["Main-Class"] = application.mainClass.get()
         attributes["Implementation-Title"] = rootProject.name
     }
+    //configurations["compileClasspath"].forEach { file: File ->
+    //    from(file)
+    //}
+    //duplicatesStrategy = DuplicatesStrategy.FAIL
+}
+
+jib {
+    from.image = "ghcr.io/navikt/baseimages/temurin:$jvmVersion"
+    to.image = "${image ?: project.name }:${project.version}"
 }
 
 fun RepositoryHandler.mavenNav(repo: String): MavenArtifactRepository {
