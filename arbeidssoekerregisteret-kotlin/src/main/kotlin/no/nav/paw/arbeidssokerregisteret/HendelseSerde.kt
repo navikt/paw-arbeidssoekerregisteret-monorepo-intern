@@ -14,6 +14,7 @@ fun deserialize(objectMapper: ObjectMapper, json: ByteArray): Hendelse {
         startetHendelseType -> objectMapper.readValue<Startet>(node.traverse())
         avsluttetHendelseType -> objectMapper.readValue<Avsluttet>(node.traverse())
         avvistHendelseType -> objectMapper.readValue<Avvist>(node.traverse())
+        avvistStoppAvPeriodeHendelseType -> objectMapper.readValue<AvvistStoppAvPeriode>(node.traverse())
         opplysningerOmArbeidssoekerHendelseType -> objectMapper.readValue<OpplysningerOmArbeidssoekerMottatt>(node.traverse())
         else -> throw IllegalArgumentException("Ukjent hendelse type: '$hendelseType'")
     }

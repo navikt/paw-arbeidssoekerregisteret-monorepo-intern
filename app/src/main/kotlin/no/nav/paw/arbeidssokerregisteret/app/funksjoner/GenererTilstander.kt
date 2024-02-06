@@ -3,10 +3,7 @@ package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 import no.nav.paw.arbeidssokerregisteret.app.config.ApplicationLogicConfig
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgApiTilstander
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgHendelse
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
-import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.*
 
 fun genererNyInternTilstandOgNyeApiTilstander(
     applicationLogicConfig: ApplicationLogicConfig,
@@ -19,7 +16,7 @@ fun genererNyInternTilstandOgNyeApiTilstander(
             is Avsluttet -> tilstand.avsluttPeriode(hendelse)
             is OpplysningerOmArbeidssoekerMottatt -> tilstand.opplysningerOmArbeidssoekerMottatt(hendelse)
             is Avvist -> tilstand.avvist(hendelse)
-            else -> throw IllegalStateException("Uventet hendelse: $hendelse")
+            is AvvistStoppAvPeriode -> tilstand.ingenEndringEllerUtgaaendeMeldinger()
         }
     }
 }
