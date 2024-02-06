@@ -43,7 +43,7 @@ fun Route.arbeidssokerRoutes(requestHandler: RequestHandler) {
                         val resultat = with(requestScope()) {
                             requestHandler.avsluttArbeidssokerperiode(request.getIdentitetsnummer())
                         }
-                        logger.debug("Registreringsresultat: {}", resultat)
+                        logger.debug("Avslutt resultat: {}", resultat)
                         respondWith(resultat)
                     }
                 }

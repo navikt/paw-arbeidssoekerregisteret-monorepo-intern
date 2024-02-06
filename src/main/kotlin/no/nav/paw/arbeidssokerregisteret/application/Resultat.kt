@@ -3,6 +3,8 @@ package no.nav.paw.arbeidssokerregisteret.application
 import no.nav.paw.arbeidssokerregisteret.RequestScope
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.domain.navAnsatt
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.AvvistStoppAvPeriode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
@@ -45,6 +47,22 @@ data class TilgangOK(
     override val regel: Regel<TilgangskontrollResultat>,
     override val fakta: Iterable<Fakta>
 ) : TilgangskontrollResultat
+
+
+context(RequestScope)
+fun stoppResultatSomHendelse(identitetsnummer: Identitetsnummer, resultat: TilgangskontrollResultat): Hendelse =
+    when (resultat) {
+        is IkkeTilgang -> AvvistStoppAvPeriode(
+            hendelseId = UUID.randomUUID(),
+            identitetsnummer = identitetsnummer.verdi,
+            metadata = hendelseMetadata(resultat)
+        )
+        is TilgangOK -> Avsluttet(
+            hendelseId = UUID.randomUUID(),
+            identitetsnummer = identitetsnummer.verdi,
+            metadata = hendelseMetadata(resultat)
+        )
+    }
 
 context(RequestScope)
 fun somHendelse(identitetsnummer: Identitetsnummer, resultat: EndeligResultat): Hendelse =
