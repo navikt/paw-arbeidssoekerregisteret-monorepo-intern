@@ -3,11 +3,11 @@ poaoTilgangClientConfig:
   url: http://localhost:8090/poao-tilgang
   scope: api://test.test.poao-tilgang/.default
 pdlClientConfig:
-  url: http://localhost:8090/pdl
-  scope: api://test.test.pdl-api/.default
+  url: ${PDL_URL}
+  scope: ${PDL_SCOPE}
 kafkaKeysConfig:
-  url: ${KAFKA_KEYS_URL}
-  scope: ${KAFKA_KEYS_SCOPE}
+  url: http://paw-kafka-key-generator/api/v1/hentEllerOpprett
+  scope: ${KAFKA_KEY_SCOPE}
 authProviders:
   azure:
     name: azure

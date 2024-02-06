@@ -32,10 +32,12 @@ spec:
       value: "maskert_oltp"
     - name: OTEL_JAVAAGENT_DEBUG
       value: "false"
-    - name: KAFKA_KEYS_URL
-      value: http://paw-kafka-key-generator/api/v1/hentEllerOpprett
-    - name: KAFKA_KEYS_SCOPE
-      value: api://dev-gcp.paw.paw-kafka-key-generator/.default
+    - name: PDL_SCOPE
+      value: "api://prof-fss.pdl.pdl-api/.default"
+    - name: PDL_URL
+      value: "https://pdl-api.prod-fss-pub.nais.io/graphql"
+    - name: KAFKA_KEY_SCOPE
+      value: "api://dev-gcp.paw.paw-kafka-key-generator/.default"
   replicas:
     min: 1
     max: 1
