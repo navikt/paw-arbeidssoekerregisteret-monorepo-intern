@@ -42,6 +42,11 @@ val agentExtension by configurations.creating {
     isTransitive = false
 }
 
+val agentExtensionJar = "agent-extension.jar"
+val agentJar = "agent.jar"
+val agentFolder = layout.buildDirectory.dir("agent").get().toString()
+val agentExtensionFolder = layout.buildDirectory.dir("agent-extension").get().toString()
+
 dependencies {
     agent("io.opentelemetry.javaagent:opentelemetry-javaagent:1.31.0")
     agentExtension("no.nav.paw.observability:opentelemetry-anonymisering-1.31.0:23.10.25.8-1")
@@ -93,27 +98,21 @@ java {
     }
 }
 
-val agentExtensionJar = "agent-extension.jar"
-val agentJar = "agent.jar"
-val agentsFolder = layout.buildDirectory.get().dir("agents").toString()
-
 tasks.create("addAgent", Copy::class) {
-    from(agent, agentExtension)
-    into(agentsFolder)
-    doFirst {
-        delete(agentsFolder)
-    }
-    rename { name ->
-        if (name.contains("anonymisering")) {
-            agentExtensionJar
-        } else {
-            agentJar
-        }
-    }
- }
+    from(agent)
+    into(agentFolder)
+    rename { _ -> agentJar}
+}
+
+tasks.create("addAgentExtension", Copy::class) {
+    from(agentExtension)
+    into(agentExtensionFolder)
+    rename { _ -> agentExtensionJar}
+}
 
 tasks.withType(KotlinCompile::class) {
     dependsOn.add("addAgent")
+    dependsOn.add("addAgentExtension")
 }
 
 application {
@@ -144,7 +143,11 @@ jib {
     extraDirectories {
         paths {
             path {
-                setFrom(agentsFolder)
+                setFrom(agentFolder)
+                into = "/app"
+            }
+            path {
+                setFrom(agentExtensionFolder)
                 into = "/app"
             }
         }
@@ -157,8 +160,6 @@ jib {
         "-Dotel.resource.attributes=service.name=${project.name}",
         application.mainClass.get()
     )
-
-    println("Container entrypoint: ${container.entrypoint}")
 }
 
 fun RepositoryHandler.mavenNav(repo: String): MavenArtifactRepository {
