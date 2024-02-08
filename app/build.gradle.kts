@@ -9,7 +9,14 @@ plugins {
 val logbackVersion = "1.4.5"
 val logstashVersion = "7.3"
 
+val arbeidssokerregisteretSchemaVersion = "1.10-1"
+
+val schema by configurations.creating {
+    isTransitive = false
+}
+
 dependencies {
+    schema("no.nav.paw.arbeidssokerregisteret.api:main-avro-schema:$arbeidssokerregisteretSchemaVersion")
     implementation(project(":interne-eventer"))
     implementation(project(":arbeidssoekerregisteret-kotlin"))
     implementation(pawObservability.bundles.ktorNettyOpentelemetryMicrometerPrometheus)
@@ -31,6 +38,12 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus:1.12.0")
 }
 
+tasks.named("generateAvroProtocol", GenerateAvroProtocolTask::class.java) {
+    schema.forEach {
+        source(zipTree(it))
+    }
+}
+
 ktor {
     fatJar {
         archiveFileName.set("fat.jar")
@@ -44,8 +57,7 @@ java {
 }
 
 tasks.named("generateAvroProtocol", GenerateAvroProtocolTask::class) {
-    source("$rootDir/eksternt-api/src/main")
-//    source("$rootDir/interne-eventer/src/main")
+
 }
 
 application {

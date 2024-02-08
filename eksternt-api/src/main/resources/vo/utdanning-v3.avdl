@@ -1,9 +1,0 @@
-@namespace("no.nav.paw.arbeidssokerregisteret.api.v3")
-protocol Utdanning {
-	import idl "ja_nei_vet_ikke-v1.avdl";
-	record Utdanning {
-		string  nus;
-		no.nav.paw.arbeidssokerregisteret.api.v1.JaNeiVetIkke bestaatt;
-		no.nav.paw.arbeidssokerregisteret.api.v1.JaNeiVetIkke godkjent;
-	}
-}

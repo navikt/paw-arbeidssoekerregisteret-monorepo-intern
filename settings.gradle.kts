@@ -7,9 +7,7 @@ rootProject.name = "paw-arbeidssokerregisteret-event-prosessor"
 include(
     "app",
     "interne-eventer",
-    "arbeidssoekerregisteret-kotlin",
-    "eksternt-api",
-    "arena-api"
+    "arbeidssoekerregisteret-kotlin"
 )
 
 dependencyResolutionManagement {
