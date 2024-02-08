@@ -5,6 +5,7 @@ plugins {
     kotlin("jvm")
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
     id("io.ktor.plugin") version "2.3.5"
+    id("com.google.cloud.tools.jib") version "3.4.0"
     application
 }
 val jvmVersion = JavaVersion.VERSION_21
