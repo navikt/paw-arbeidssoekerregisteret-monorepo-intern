@@ -16,21 +16,31 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
         with:
-          java-version: 17
+          java-version: 21
           distribution: temurin
           cache: gradle
-      - name: Build with Gradle and Publish artifact
+      - name: Set version
+        run: echo "VERSION=$(date +'%y.%m.%d').${{ github.run_number }}-${{ github.run_attempt }}" >> $GITHUB_ENV
+      - name: Login GAR
+        uses: nais/login@v0
+        with:
+          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
+          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+          team: paw
+      - name: Build and push image and artifacts with Gradle
+        id: docker-build-push
         working-directory: ./
-        run: ./gradlew -Pversion=$(date +'%y.%m.%d').${{ github.run_number }}-${{ github.run_attempt }} build test publish
+        run: |
+          echo "image=${{ env.IMAGE }}:${{ env.VERSION }}" >> $GITHUB_OUTPUT
+          echo -Pversion=${{ env.VERSION }} -Pimage=${{ env.IMAGE }} build test publish jib
+          ./gradlew -Pversion=${{ env.VERSION }} -Pimage=${{ env.IMAGE }} build test jib
+          echo "DIGEST=$(cat build/jib-image.digest)" >> $GITHUB_ENV
         env:
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
-      - name: Push docker image to GAR
-        uses: nais/docker-build-push@v0
-        id: docker-build-push
+      - name: Attest and sign
+        uses: nais/attest-sign@v1.3.4
         with:
-          team: paw
-          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }} # Provided as Organization Secret
-          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }} # Provided as Organization Variable
+          image_ref: ${{ env.IMAGE }}@${{ env.DIGEST }}
   deploy-dev:
     name: Deploy to dev-gcp
     needs: build
