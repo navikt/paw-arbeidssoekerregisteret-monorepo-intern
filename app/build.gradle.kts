@@ -63,12 +63,6 @@ tasks.named("generateAvroProtocol", GenerateAvroProtocolTask::class.java) {
     }
 }
 
-ktor {
-    fatJar {
-        archiveFileName.set("fat.jar")
-    }
-}
-
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(jvmVersion.majorVersion)
