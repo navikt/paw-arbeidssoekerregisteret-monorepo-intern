@@ -103,7 +103,7 @@ tasks.withType(KotlinCompile::class) {
 
 jib {
     from.image = "ghcr.io/navikt/baseimages/temurin:${jvmVersion.majorVersion}"
-    to.image = "${image ?: project.name }:${project.version}"
+    to.image = "${image ?: rootProject.name }:${project.version}"
     extraDirectories {
         paths {
             path {
