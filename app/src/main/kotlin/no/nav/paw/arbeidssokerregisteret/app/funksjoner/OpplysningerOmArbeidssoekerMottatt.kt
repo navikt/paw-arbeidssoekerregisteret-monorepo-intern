@@ -35,6 +35,8 @@ fun Tilstand?.opplysningerOmArbeidssoekerMottatt(hendelse: OpplysningerOmArbeids
                 tilstand = this.copy(
                     sisteOpplysningerOmArbeidssoeker = hendelse.opplysningerOmArbeidssoeker,
                     forrigeOpplysningerOmArbeidssoeker = this.sisteOpplysningerOmArbeidssoeker,
+                    gjeldeneIdentitetsnummer = hendelse.identitetsnummer,
+                    allIdentitetsnummer = this.allIdentitetsnummer + hendelse.identitetsnummer,
                     recordScope = currentScope()
                 ),
                 nyOpplysningerOmArbeidssoekerTilstand = null,
