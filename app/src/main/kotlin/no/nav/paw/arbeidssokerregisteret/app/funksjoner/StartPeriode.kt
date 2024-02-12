@@ -21,7 +21,9 @@ fun Tilstand?.startPeriode(window: Duration, hendelse: Startet): InternTilstandO
     val tilstand: Tilstand = this?.copy(
         recordScope = currentScope(),
         gjeldeneTilstand = GjeldeneTilstand.STARTET,
-        gjeldenePeriode = startetPeriode
+        gjeldenePeriode = startetPeriode,
+        gjeldeneIdentitetsnummer = hendelse.identitetsnummer,
+        allIdentitetsnummer = this.allIdentitetsnummer + hendelse.identitetsnummer
     )
         ?: Tilstand(
             recordScope = currentScope(),
