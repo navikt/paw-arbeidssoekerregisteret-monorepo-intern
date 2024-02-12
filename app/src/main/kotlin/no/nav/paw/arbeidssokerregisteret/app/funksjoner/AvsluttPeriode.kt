@@ -16,7 +16,9 @@ fun Tilstand?.avsluttPeriode(hendelse: Avsluttet): InternTilstandOgApiTilstander
         tilstand = copy(
             gjeldeneTilstand = GjeldeneTilstand.STOPPET,
             gjeldenePeriode = null,
-            forrigePeriode = stoppetPeriode
+            forrigePeriode = stoppetPeriode,
+            gjeldeneIdentitetsnummer = hendelse.identitetsnummer,
+            allIdentitetsnummer = allIdentitetsnummer + hendelse.identitetsnummer
         ),
         nyPeriodeTilstand = ApiPeriode(
             stoppetPeriode.id,
