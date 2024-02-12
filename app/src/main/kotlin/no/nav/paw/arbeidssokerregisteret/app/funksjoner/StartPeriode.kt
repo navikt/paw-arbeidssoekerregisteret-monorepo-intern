@@ -13,7 +13,7 @@ context (RecordScope<Long>)
 fun Tilstand?.startPeriode(window: Duration, hendelse: Startet): InternTilstandOgApiTilstander {
     if (this?.gjeldenePeriode != null) throw IllegalStateException("Gjeldene periode er ikke null. Kan ikke starte ny periode.")
     val startetPeriode = Periode(
-        id = UUID.randomUUID(),
+        id = hendelse.hendelseId,
         identitetsnummer = hendelse.identitetsnummer,
         startet = hendelse.metadata,
         avsluttet = null

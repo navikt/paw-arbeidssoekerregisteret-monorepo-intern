@@ -43,7 +43,7 @@ fun verifiserPeriodeOppMotStartetOgStoppetHendelser(
     mottattRecord: KeyValue<Long, Periode>
 ) {
     mottattRecord.key shouldBe forventetKafkaKey
-    mottattRecord.value.id.shouldNotBeNull()
+    mottattRecord.value.id shouldBe startet.hendelseId
     mottattRecord.value.identitetsnummer shouldBe startet.identitetsnummer
     mottattRecord.value.startet.tidspunkt shouldBe startet.metadata.tidspunkt.truncatedTo(ChronoUnit.MILLIS)
     mottattRecord.value.startet.aarsak shouldBe startet.metadata.aarsak
