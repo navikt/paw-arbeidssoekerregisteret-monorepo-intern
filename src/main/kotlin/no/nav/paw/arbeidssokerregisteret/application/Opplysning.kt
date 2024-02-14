@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.application
 
-enum class Fakta(val beskrivelse: String) {
+enum class Opplysning(val beskrivelse: String) {
     FORHAANDSGODKJENT_AV_ANSATT("Registrering er forhåndsgodkjent av NAV-ansatt"),
     SAMME_SOM_INNLOGGET_BRUKER("Start/stopp av periode er på samme bruker som er innlogget"),
     IKKE_SAMME_SOM_INNLOGGER_BRUKER("Start/stopp av periode er ikke på samme bruker som er innlogget"),
@@ -34,4 +34,4 @@ enum class Fakta(val beskrivelse: String) {
     INGEN_FLYTTE_INFORMASJON("Personen start/stopp av periode utføres på har ingen flytte informasjon"),
 }
 
-operator fun Fakta.plus(fakta: Fakta): Set<Fakta> = setOf(this, fakta)
+operator fun Opplysning.plus(opplysning: Opplysning): Set<Opplysning> = setOf(this, opplysning)

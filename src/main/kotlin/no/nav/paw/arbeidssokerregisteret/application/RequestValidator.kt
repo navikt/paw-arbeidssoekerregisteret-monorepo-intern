@@ -28,13 +28,13 @@ class RequestValidator(
             return tilgangsResultat
         } else {
             val person = personInfoService.hentPersonInfo(identitetsnummer.verdi)
-            val fakta = person?.let { genererPersonFakta(it) } ?: setOf(Fakta.PERSON_IKKE_FUNNET)
-            return reglerForInngangIPrioritertRekkefolge.evaluer(fakta + tilgangsResultat.fakta)
+            val opplysning = person?.let { genererPersonFakta(it) } ?: setOf(Opplysning.PERSON_IKKE_FUNNET)
+            return reglerForInngangIPrioritertRekkefolge.evaluer(opplysning + tilgangsResultat.opplysning)
         }
     }
 }
 
-fun genererPersonFakta(person: Person): Set<Fakta> {
+fun genererPersonFakta(person: Person): Set<Opplysning> {
     require(person.foedsel.size <= 1) { "Personen har flere fødselsdatoer enn forventet" }
     require(person.bostedsadresse.size <= 1) { "Personen har flere bostedsadresser enn forventet" }
     require(person.opphold.size  <= 1) { "Personen har flere opphold enn forventet" }

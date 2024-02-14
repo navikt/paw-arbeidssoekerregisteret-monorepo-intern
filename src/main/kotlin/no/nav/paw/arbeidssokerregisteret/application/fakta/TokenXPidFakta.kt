@@ -1,17 +1,17 @@
 package no.nav.paw.arbeidssokerregisteret.application.fakta
 
 import no.nav.paw.arbeidssokerregisteret.RequestScope
-import no.nav.paw.arbeidssokerregisteret.application.Fakta
+import no.nav.paw.arbeidssokerregisteret.application.Opplysning
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.utils.TokenXPID
 
 context(RequestScope)
-fun tokenXPidFakta(identitetsnummer: Identitetsnummer): Fakta {
+fun tokenXPidFakta(identitetsnummer: Identitetsnummer): Opplysning {
     return claims[TokenXPID]?.let { authenticatedUser ->
         if (authenticatedUser != identitetsnummer) {
-            Fakta.IKKE_SAMME_SOM_INNLOGGER_BRUKER
+            Opplysning.IKKE_SAMME_SOM_INNLOGGER_BRUKER
         } else {
-            Fakta.SAMME_SOM_INNLOGGET_BRUKER
+            Opplysning.SAMME_SOM_INNLOGGET_BRUKER
         }
-    } ?: Fakta.TOKENX_PID_IKKE_FUNNET
+    } ?: Opplysning.TOKENX_PID_IKKE_FUNNET
 }

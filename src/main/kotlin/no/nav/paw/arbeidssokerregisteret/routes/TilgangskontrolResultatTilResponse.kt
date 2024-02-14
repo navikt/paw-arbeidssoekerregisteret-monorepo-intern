@@ -22,7 +22,7 @@ suspend fun respondWith(resultat: TilgangskontrollResultat) =
                 aarasakTilAvvisning = AarsakTilAvvisning(
                     beskrivelse = resultat.regel.beskrivelse,
                     kode = resultat.regel.kode,
-                    detaljer = resultat.regel.fakta.toSet()
+                    detaljer = resultat.regel.opplysninger.toSet()
                 )
             )
         )

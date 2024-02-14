@@ -10,29 +10,29 @@ data class Regel<A: Resultat>(
      */
     val beskrivelse: String,
     /**
-     * Fakta som må være tilstede for at regelen skal være sann
+     * Opplysninger som må være tilstede for at regelen skal være sann
      */
-    val fakta: List<Fakta>,
+    val opplysninger: List<Opplysning>,
 
-    private val vedTreff: (Regel<A>, Iterable<Fakta>) -> A
+    private val vedTreff: (Regel<A>, Iterable<Opplysning>) -> A
 ) {
-    fun vedTreff(fakta: Iterable<Fakta>): A = vedTreff(this, fakta)
+    fun vedTreff(opplysning: Iterable<Opplysning>): A = vedTreff(this, opplysning)
 }
 
 operator fun <A: Resultat> String.invoke(
-    vararg fakta: Fakta,
+    vararg opplysninger: Opplysning,
     kode: Int,
-    vedTreff: (Regel<A>, Iterable<Fakta>) -> A
+    vedTreff: (Regel<A>, Iterable<Opplysning>) -> A
 ) = Regel(
     kode = kode,
     beskrivelse = this,
     vedTreff = vedTreff,
-    fakta = fakta.toList()
+    opplysninger = opplysninger.toList()
 )
 
-fun <A: Resultat> Regel<A>.evaluer(samletFakta: Iterable<Fakta>): Boolean = fakta.all { samletFakta.contains(it) }
+fun <A: Resultat> Regel<A>.evaluer(samletOpplysning: Iterable<Opplysning>): Boolean = opplysninger.all { samletOpplysning.contains(it) }
 
-fun <A: Resultat> List<Regel<out A>>.evaluer(samletFakta: Iterable<Fakta>): A =
-    filter { regel -> regel.evaluer(samletFakta) }
-        .map { regel -> regel.vedTreff(samletFakta) }
+fun <A: Resultat> List<Regel<out A>>.evaluer(opplysninger: Iterable<Opplysning>): A =
+    filter { regel -> regel.evaluer(opplysninger) }
+        .map { regel -> regel.vedTreff(opplysninger) }
         .first()

@@ -16,7 +16,7 @@ import java.util.*
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist as AvvistHendelse
 
 sealed interface Resultat {
-    val fakta: Iterable<Fakta>
+    val opplysning: Iterable<Opplysning>
     val regel: Regel<out Resultat>
 }
 
@@ -25,27 +25,27 @@ sealed interface TilgangskontrollResultat : Resultat
 
 data class OK(
     override val regel: Regel<EndeligResultat>,
-    override val fakta: Iterable<Fakta>
+    override val opplysning: Iterable<Opplysning>
 ) : EndeligResultat
 
 data class Avvist(
     override val regel: Regel<EndeligResultat>,
-    override val fakta: Iterable<Fakta>
+    override val opplysning: Iterable<Opplysning>
 ) : EndeligResultat
 
 data class Uavklart(
     override val regel: Regel<EndeligResultat>,
-    override val fakta: Iterable<Fakta>
+    override val opplysning: Iterable<Opplysning>
 ) : EndeligResultat
 
 data class IkkeTilgang(
     override val regel: Regel<out Resultat>,
-    override val fakta: Iterable<Fakta>
+    override val opplysning: Iterable<Opplysning>
 ) : EndeligResultat, TilgangskontrollResultat
 
 data class TilgangOK(
     override val regel: Regel<TilgangskontrollResultat>,
-    override val fakta: Iterable<Fakta>
+    override val opplysning: Iterable<Opplysning>
 ) : TilgangskontrollResultat
 
 

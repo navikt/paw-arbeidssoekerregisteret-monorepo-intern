@@ -19,7 +19,7 @@ suspend fun respondWith(resultat: EndeligResultat) =
                 aarasakTilAvvisning = AarsakTilAvvisning(
                     beskrivelse = resultat.regel.beskrivelse,
                     kode = resultat.regel.kode,
-                    detaljer = resultat.regel.fakta.toSet()
+                    detaljer = resultat.regel.opplysninger.toSet()
                 )
             )
         )
