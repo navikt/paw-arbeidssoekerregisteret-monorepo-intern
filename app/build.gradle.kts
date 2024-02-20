@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm")
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
-    id("io.ktor.plugin") version "2.3.5"
+    id("io.ktor.plugin") version "2.3.8"
     id("com.google.cloud.tools.jib") version "3.4.0"
     application
 }
@@ -35,8 +35,8 @@ val schema by configurations.creating {
 
 dependencies {
     schema("no.nav.paw.arbeidssokerregisteret.api:main-avro-schema:$arbeidssokerregisteretSchemaVersion")
-    agent("io.opentelemetry.javaagent:opentelemetry-javaagent:1.31.0")
-    agentExtension("no.nav.paw.observability:opentelemetry-anonymisering-1.31.0:23.10.25.8-1")
+    agent("io.opentelemetry.javaagent:opentelemetry-javaagent:${pawObservability.versions.openTelemetryInstrumentation.get()}")
+    agentExtension("no.nav.paw.observability:opentelemetry-anonymisering-${pawObservability.versions.openTelemetryInstrumentation.get()}:24.02.20.10-1")
     implementation(project(":interne-eventer"))
     implementation(project(":arbeidssoekerregisteret-kotlin"))
     implementation(pawObservability.bundles.ktorNettyOpentelemetryMicrometerPrometheus)
