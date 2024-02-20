@@ -58,7 +58,7 @@ class ApplikasjonsTest : FreeSpec({
         opplysningerOmArbeidssoekerSerde.deserializer()
     )
     val identitetnummer = "12345678901"
-    val key = 5L
+    val key = 5034L
     "Verifiser applikasjonsflyt" - {
         val startet = Startet(
             hendelseId = UUID.randomUUID(),
@@ -90,7 +90,7 @@ class ApplikasjonsTest : FreeSpec({
             val periode = periodeTopic.readKeyValue()
             opplysningerOmArbeidssoekerTopic.isEmpty shouldBe true
             verifiserPeriodeOppMotStartetOgStoppetHendelser(
-                forventetKafkaKey = key,
+                forventetKafkaKey = key % KEY_MODULO_VALUE_NEVER_CHANGE_THIS_VALUE,
                 startet = startet,
                 avsluttet = null,
                 mottattRecord = periode
@@ -121,7 +121,7 @@ class ApplikasjonsTest : FreeSpec({
             periodeTopic.isEmpty shouldBe true
             val situasjon = opplysningerOmArbeidssoekerTopic.readKeyValue()
             verifiserApiMetadataMotInternMetadata(situsjonMottat.metadata, situasjon.value.sendtInnAv)
-            situasjon.key shouldBe key
+            situasjon.key shouldBe (key % KEY_MODULO_VALUE_NEVER_CHANGE_THIS_VALUE)
             situasjon.value.periodeId shouldBe periodeId
             situasjon.value.utdanning.bestaatt shouldBe ApiJa
             situasjon.value.utdanning.godkjent shouldBe ApiNei
@@ -155,7 +155,7 @@ class ApplikasjonsTest : FreeSpec({
             periodeTopic.isEmpty shouldBe false
             val avsluttetPeriode = periodeTopic.readKeyValue()
             verifiserPeriodeOppMotStartetOgStoppetHendelser(
-                forventetKafkaKey = key,
+                forventetKafkaKey = key % KEY_MODULO_VALUE_NEVER_CHANGE_THIS_VALUE,
                 startet = startet,
                 avsluttet = stoppet,
                 mottattRecord = avsluttetPeriode
@@ -216,7 +216,7 @@ class ApplikasjonsTest : FreeSpec({
             eventlogTopic.pipeInput(key, startet2)
             val periode = periodeTopic.readKeyValue()
             verifiserPeriodeOppMotStartetOgStoppetHendelser(
-                forventetKafkaKey = key,
+                forventetKafkaKey = key % KEY_MODULO_VALUE_NEVER_CHANGE_THIS_VALUE,
                 startet = startet2,
                 avsluttet = null,
                 mottattRecord = periode
@@ -226,7 +226,7 @@ class ApplikasjonsTest : FreeSpec({
             opplysningerOmArbeidssoekerTopic.isEmpty shouldBe false
             val opplysninger = opplysningerOmArbeidssoekerTopic.readKeyValue()
             verifiserApiMetadataMotInternMetadata(situsjonMottat.metadata, opplysninger.value.sendtInnAv)
-            opplysninger.key shouldBe key
+            opplysninger.key shouldBe key % KEY_MODULO_VALUE_NEVER_CHANGE_THIS_VALUE
             opplysninger.value.periodeId shouldBe periodeId
             opplysninger.value.utdanning.bestaatt shouldBe ApiJa
             opplysninger.value.utdanning.godkjent shouldBe ApiNei

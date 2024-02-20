@@ -17,6 +17,11 @@ import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.KStream
 
+//Denne verdien må ikke endres. Vil endre nøkkelverdier i Kafka topic og dermed påvirke eksisterende data.
+const val KEY_MODULO_VALUE_NEVER_CHANGE_THIS_VALUE = 100L
+fun publicTopicKeyFunction(internalKey: Long): Long =
+    internalKey % KEY_MODULO_VALUE_NEVER_CHANGE_THIS_VALUE
+
 fun topology(
     applicationLogicConfig: ApplicationLogicConfig,
     prometheusMeterRegistry: PrometheusMeterRegistry,
@@ -42,9 +47,10 @@ fun topology(
             }
             .lagreInternTilstand(dbNavn)
             .flatMap { key, value ->
+                val publicKey = publicTopicKeyFunction(key)
                 listOfNotNull(
-                    value.nyPeriodeTilstand?.let { KeyValue(key, it as SpecificRecord) },
-                    value.nyOpplysningerOmArbeidssoekerTilstand?.let { KeyValue(key, it as SpecificRecord) }
+                    value.nyPeriodeTilstand?.let { KeyValue(publicKey, it as SpecificRecord) },
+                    value.nyOpplysningerOmArbeidssoekerTilstand?.let { KeyValue(publicKey, it as SpecificRecord) }
                 )
             }.to(meteredTopicExtractor)
         return builder.build()
