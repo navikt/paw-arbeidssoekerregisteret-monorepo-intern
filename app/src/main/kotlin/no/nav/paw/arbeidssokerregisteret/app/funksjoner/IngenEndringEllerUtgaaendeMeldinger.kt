@@ -8,6 +8,5 @@ fun Tilstand?.ingenEndringEllerUtgaaendeMeldinger(): InternTilstandOgApiTilstand
     InternTilstandOgApiTilstander(
         tilstand = this,
         nyPeriodeTilstand = null,
-        nyOpplysningerOmArbeidssoekerTilstand = null,
-        recordScope = currentScope()
+        nyOpplysningerOmArbeidssoekerTilstand = null
     )

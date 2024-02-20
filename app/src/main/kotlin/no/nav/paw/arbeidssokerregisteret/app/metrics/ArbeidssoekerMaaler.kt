@@ -26,7 +26,7 @@ fun arbeidssokerMaaler(tilstand: Tilstand): ArbeidssoekerMaaler? {
         "10+"
     }
     return ArbeidssoekerMaaler(
-        partition = tilstand.recordScope?.partition,
+        partition = tilstand.recordScope.partition,
         varighet = varighet,
         antallSituasjoner = antall
     )

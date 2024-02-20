@@ -12,4 +12,4 @@ data class AntallTilstanderMaaler(
 }
 
 fun antallTilstanderMaaler(tilstand: Tilstand): AntallTilstanderMaaler =
-    AntallTilstanderMaaler(tilstand.recordScope?.partition ?: - 1)
+    AntallTilstanderMaaler(tilstand.recordScope.partition)

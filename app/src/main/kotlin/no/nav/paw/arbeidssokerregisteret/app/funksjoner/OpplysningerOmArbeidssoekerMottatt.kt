@@ -13,7 +13,6 @@ fun Tilstand?.opplysningerOmArbeidssoekerMottatt(hendelse: OpplysningerOmArbeids
     when {
         this == null -> {
             InternTilstandOgApiTilstander(
-                recordScope = currentScope(),
                 tilstand = Tilstand(
                     recordScope = currentScope(),
                     gjeldeneIdentitetsnummer = hendelse.identitetsnummer,
@@ -31,7 +30,6 @@ fun Tilstand?.opplysningerOmArbeidssoekerMottatt(hendelse: OpplysningerOmArbeids
 
         this.gjeldenePeriode == null -> {
             InternTilstandOgApiTilstander(
-                recordScope = currentScope(),
                 tilstand = this.copy(
                     sisteOpplysningerOmArbeidssoeker = hendelse.opplysningerOmArbeidssoeker,
                     forrigeOpplysningerOmArbeidssoeker = this.sisteOpplysningerOmArbeidssoeker,
@@ -46,7 +44,6 @@ fun Tilstand?.opplysningerOmArbeidssoekerMottatt(hendelse: OpplysningerOmArbeids
 
         else -> {
             InternTilstandOgApiTilstander(
-                recordScope = currentScope(),
                 tilstand = this.copy(
                     sisteOpplysningerOmArbeidssoeker = hendelse.opplysningerOmArbeidssoeker,
                     forrigeOpplysningerOmArbeidssoeker = this.sisteOpplysningerOmArbeidssoeker,

@@ -27,7 +27,6 @@ fun Tilstand?.avvist(avvist: Avvist): InternTilstandOgApiTilstander =
         )
     }.let { nyTilstand: Tilstand ->
         InternTilstandOgApiTilstander(
-            recordScope = currentScope(),
             tilstand = nyTilstand,
             nyPeriodeTilstand = null,
             nyOpplysningerOmArbeidssoekerTilstand = null

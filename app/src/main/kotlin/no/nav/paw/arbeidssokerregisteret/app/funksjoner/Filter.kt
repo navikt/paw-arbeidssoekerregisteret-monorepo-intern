@@ -9,7 +9,10 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMo
 
 
 
-fun ignorerDuplikatStartOgStopp(@Suppress("UNUSED_PARAMETER") recordKey: Long, tilstandOgHendelse: InternTilstandOgHendelse): Boolean {
+fun ignorerDuplikatStartOgStopp(
+    @Suppress("UNUSED_PARAMETER") recordKey: Long,
+    tilstandOgHendelse: InternTilstandOgHendelse
+): Boolean {
     val (_, tilstand, hendelse) = tilstandOgHendelse
     return when (tilstand?.gjeldeneTilstand) {
         null -> hendelse.erIkke<Avsluttet>()

@@ -43,8 +43,7 @@ class ResultatLagrer(
         db: KeyValueStore<Long, Tilstand>,
         record: Record<Long, InternTilstandOgApiTilstander>
     ) {
-        val tilstandMedMetadata = record.value()
-            .tilstand?.copy(recordScope = record.value().recordScope)
+        val tilstandMedMetadata = record.value().tilstand
         db.put(record.key(), tilstandMedMetadata)
         ctx.forward(record)
     }

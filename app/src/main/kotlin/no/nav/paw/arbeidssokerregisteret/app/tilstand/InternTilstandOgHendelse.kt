@@ -13,7 +13,6 @@ data class InternTilstandOgHendelse(
 ): HasRecordScope<Long>
 
 data class InternTilstandOgApiTilstander(
-    val recordScope: RecordScope<Long>,
     val tilstand: Tilstand?,
     val nyPeriodeTilstand: ApiPeriode?,
     val nyOpplysningerOmArbeidssoekerTilstand: ApiOpplysningerOmArbeidssoeker?
