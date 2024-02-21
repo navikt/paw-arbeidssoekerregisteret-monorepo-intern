@@ -3,7 +3,7 @@ package no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors
 import no.nav.paw.arbeidssokerregisteret.app.StreamHendelse
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.RecordScope
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgHendelse
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
+import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandV1
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.Named
 import org.apache.kafka.streams.processor.api.Processor
@@ -24,7 +24,7 @@ class TilstandsLaster(
     private val tilstandDbNavn: String
 ) : Processor<Long, StreamHendelse, Long, InternTilstandOgHendelse> {
 
-    private var tilstandsDb: KeyValueStore<Long, Tilstand>? = null
+    private var tilstandsDb: KeyValueStore<Long, TilstandV1>? = null
     private var context: ProcessorContext<Long, InternTilstandOgHendelse>? = null
 
     override fun init(context: ProcessorContext<Long, InternTilstandOgHendelse>?) {
@@ -44,10 +44,10 @@ class TilstandsLaster(
 
     private fun process(
         ctx: ProcessorContext<Long, InternTilstandOgHendelse>,
-        db: KeyValueStore<Long, Tilstand>,
+        db: KeyValueStore<Long, TilstandV1>,
         record: Record<Long, StreamHendelse>
     ) {
-        val tilstand: Tilstand? = db.get(record.key())
+        val tilstand: TilstandV1? = db.get(record.key())
         val recordScope = ctx.recordMetadata().getOrNull()?.let { metadata ->
             RecordScope(
                 key = record.key(),

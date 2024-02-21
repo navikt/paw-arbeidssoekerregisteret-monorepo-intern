@@ -1,10 +1,10 @@
 package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgApiTilstander
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
+import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandV1
 
 context(RecordScope<Long>)
-fun Tilstand?.ingenEndringEllerUtgaaendeMeldinger(): InternTilstandOgApiTilstander =
+fun TilstandV1?.ingenEndringEllerUtgaaendeMeldinger(): InternTilstandOgApiTilstander =
     InternTilstandOgApiTilstander(
         tilstand = this,
         nyPeriodeTilstand = null,

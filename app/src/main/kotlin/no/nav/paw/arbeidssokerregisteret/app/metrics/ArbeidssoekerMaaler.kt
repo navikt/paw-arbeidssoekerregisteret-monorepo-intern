@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.app.metrics
 
 import io.micrometer.core.instrument.Tag
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
+import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandV1
 
 data class ArbeidssoekerMaaler(
     override val partition: Int?,
@@ -14,7 +14,7 @@ data class ArbeidssoekerMaaler(
         Tag.of("antallSituasjoner", antallSituasjoner))
 }
 
-fun arbeidssokerMaaler(tilstand: Tilstand): ArbeidssoekerMaaler? {
+fun arbeidssokerMaaler(tilstand: TilstandV1): ArbeidssoekerMaaler? {
     if (tilstand.gjeldenePeriode == null) return null
     if (tilstand.gjeldenePeriode.avsluttet != null) return null
     val varighet = durationToBucket(tilstand.gjeldenePeriode.startet.tidspunkt)

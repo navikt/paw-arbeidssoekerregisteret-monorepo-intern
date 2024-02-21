@@ -4,20 +4,20 @@ import no.nav.paw.arbeidssokerregisteret.api.v3.OpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgApiTilstander
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand.STARTET
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
+import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandV1
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.api
 import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
 
 context(RecordScope<Long>)
-fun Tilstand?.opplysningerOmArbeidssoekerMottatt(hendelse: OpplysningerOmArbeidssoekerMottatt): InternTilstandOgApiTilstander =
+fun TilstandV1?.opplysningerOmArbeidssoekerMottatt(hendelse: OpplysningerOmArbeidssoekerMottatt): InternTilstandOgApiTilstander =
     when {
         this == null -> {
             InternTilstandOgApiTilstander(
-                tilstand = Tilstand(
+                tilstand = TilstandV1(
                     recordScope = currentScope(),
                     gjeldeneIdentitetsnummer = hendelse.identitetsnummer,
-                    allIdentitetsnummer = setOf(hendelse.identitetsnummer),
-                    gjeldeneTilstand = GjeldeneTilstand.STOPPET,
+                    alleIdentitetsnummer = setOf(hendelse.identitetsnummer),
+                    gjeldeneTilstand = GjeldeneTilstand.AVSLUTTET,
                     gjeldenePeriode = null,
                     forrigePeriode = null,
                     sisteOpplysningerOmArbeidssoeker = hendelse.opplysningerOmArbeidssoeker,
@@ -34,7 +34,7 @@ fun Tilstand?.opplysningerOmArbeidssoekerMottatt(hendelse: OpplysningerOmArbeids
                     sisteOpplysningerOmArbeidssoeker = hendelse.opplysningerOmArbeidssoeker,
                     forrigeOpplysningerOmArbeidssoeker = this.sisteOpplysningerOmArbeidssoeker,
                     gjeldeneIdentitetsnummer = hendelse.identitetsnummer,
-                    allIdentitetsnummer = this.allIdentitetsnummer + hendelse.identitetsnummer,
+                    alleIdentitetsnummer = this.alleIdentitetsnummer + hendelse.identitetsnummer,
                     recordScope = currentScope()
                 ),
                 nyOpplysningerOmArbeidssoekerTilstand = null,

@@ -8,12 +8,12 @@ import no.nav.paw.arbeidssokerregisteret.app.funksjoner.RecordScope
 
 data class InternTilstandOgHendelse(
     override val recordScope: RecordScope<Long>,
-    val tilstand: Tilstand?,
+    val tilstand: TilstandV1?,
     val hendelse: StreamHendelse
 ): HasRecordScope<Long>
 
 data class InternTilstandOgApiTilstander(
-    val tilstand: Tilstand?,
+    val tilstand: TilstandV1?,
     val nyPeriodeTilstand: ApiPeriode?,
     val nyOpplysningerOmArbeidssoekerTilstand: ApiOpplysningerOmArbeidssoeker?
 )

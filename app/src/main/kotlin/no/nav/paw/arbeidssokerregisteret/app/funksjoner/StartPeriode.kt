@@ -6,11 +6,10 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Instant
-import java.util.*
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode as ApiPeriode
 
 context (RecordScope<Long>)
-fun Tilstand?.startPeriode(window: Duration, hendelse: Startet): InternTilstandOgApiTilstander {
+fun TilstandV1?.startPeriode(window: Duration, hendelse: Startet): InternTilstandOgApiTilstander {
     if (this?.gjeldenePeriode != null) throw IllegalStateException("Gjeldene periode er ikke null. Kan ikke starte ny periode.")
     val startetPeriode = Periode(
         id = hendelse.hendelseId,
@@ -18,17 +17,17 @@ fun Tilstand?.startPeriode(window: Duration, hendelse: Startet): InternTilstandO
         startet = hendelse.metadata,
         avsluttet = null
     )
-    val tilstand: Tilstand = this?.copy(
+    val tilstand: TilstandV1 = this?.copy(
         recordScope = currentScope(),
         gjeldeneTilstand = GjeldeneTilstand.STARTET,
         gjeldenePeriode = startetPeriode,
         gjeldeneIdentitetsnummer = hendelse.identitetsnummer,
-        allIdentitetsnummer = this.allIdentitetsnummer + hendelse.identitetsnummer
+        alleIdentitetsnummer = this.alleIdentitetsnummer + hendelse.identitetsnummer
     )
-        ?: Tilstand(
+        ?: TilstandV1(
             recordScope = currentScope(),
             gjeldeneIdentitetsnummer = hendelse.identitetsnummer,
-            allIdentitetsnummer = setOf(hendelse.identitetsnummer),
+            alleIdentitetsnummer = setOf(hendelse.identitetsnummer),
             gjeldeneTilstand = GjeldeneTilstand.STARTET,
             gjeldenePeriode = startetPeriode,
             forrigePeriode = null,

@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.app.metrics
 
 import io.micrometer.core.instrument.Tag
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
+import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandV1
 
 data class AntallTilstanderMaaler(
     override val partition: Int
@@ -11,5 +11,5 @@ data class AntallTilstanderMaaler(
         get() = emptyList()
 }
 
-fun antallTilstanderMaaler(tilstand: Tilstand): AntallTilstanderMaaler =
+fun antallTilstanderMaaler(tilstand: TilstandV1): AntallTilstanderMaaler =
     AntallTilstanderMaaler(tilstand.recordScope.partition)

@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors
 
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgApiTilstander
-import no.nav.paw.arbeidssokerregisteret.app.tilstand.Tilstand
+import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandV1
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.Named
 import org.apache.kafka.streams.processor.api.Processor
@@ -20,7 +20,7 @@ class ResultatLagrer(
     private val tilstandDbNavn: String
 ) : Processor<Long, InternTilstandOgApiTilstander, Long, InternTilstandOgApiTilstander> {
 
-    private var tilstandsDb: KeyValueStore<Long, Tilstand>? = null
+    private var tilstandsDb: KeyValueStore<Long, TilstandV1>? = null
     private var context: ProcessorContext<Long, InternTilstandOgApiTilstander>? = null
 
     override fun init(context: ProcessorContext<Long, InternTilstandOgApiTilstander>?) {
@@ -40,7 +40,7 @@ class ResultatLagrer(
 
     private fun process(
         ctx: ProcessorContext<Long, InternTilstandOgApiTilstander>,
-        db: KeyValueStore<Long, Tilstand>,
+        db: KeyValueStore<Long, TilstandV1>,
         record: Record<Long, InternTilstandOgApiTilstander>
     ) {
         val tilstandMedMetadata = record.value().tilstand
