@@ -43,10 +43,10 @@ fun TilstandV1?.startPeriode(window: Duration, hendelse: Startet): InternTilstan
                     intern.id,
                     startetPeriode.id,
                     intern.metadata.api(),
-                    intern.utdanning.api(),
-                    intern.helse.api(),
+                    intern.utdanning?.api(),
+                    intern.helse?.api(),
                     intern.jobbsituasjon.api(),
-                    intern.annet.api()
+                    intern.annet?.api()
                 )
             },
         nyPeriodeTilstand = ApiPeriode(

@@ -179,7 +179,6 @@ class ApplikasjonsTest : FreeSpec({
                     godkjent = JaNeiVetIkke.NEI
                 ),
                 helse = Helse(JaNeiVetIkke.JA),
-                arbeidserfaring = Arbeidserfaring(JaNeiVetIkke.JA),
                 jobbsituasjon = Jobbsituasjon(
                     mutableListOf(
                         JobbsituasjonMedDetaljer(
@@ -267,7 +266,6 @@ fun opplysningerMottatt(identitetnummer: String, timestamp: Instant) =
                 godkjent = JaNeiVetIkke.NEI
             ),
             helse = Helse(JaNeiVetIkke.JA),
-            arbeidserfaring = Arbeidserfaring(JaNeiVetIkke.JA),
             jobbsituasjon = Jobbsituasjon(
                 mutableListOf(
                     JobbsituasjonMedDetaljer(

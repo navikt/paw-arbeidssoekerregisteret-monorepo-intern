@@ -54,10 +54,10 @@ fun TilstandV1?.opplysningerOmArbeidssoekerMottatt(hendelse: OpplysningerOmArbei
                         hendelse.opplysningerOmArbeidssoeker.id,
                         gjeldenePeriode.id,
                         hendelse.metadata.api(),
-                        hendelse.opplysningerOmArbeidssoeker.utdanning.api(),
-                        hendelse.opplysningerOmArbeidssoeker.helse.api(),
+                        hendelse.opplysningerOmArbeidssoeker.utdanning?.api(),
+                        hendelse.opplysningerOmArbeidssoeker.helse?.api(),
                         hendelse.opplysningerOmArbeidssoeker.jobbsituasjon.api(),
-                        hendelse.opplysningerOmArbeidssoeker.annet.api()
+                        hendelse.opplysningerOmArbeidssoeker.annet?.api()
                     )
                 } else null,
                 nyPeriodeTilstand = null

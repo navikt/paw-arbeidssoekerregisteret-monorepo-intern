@@ -54,17 +54,17 @@ fun OpplysningerOmArbeidssoeker.api(periodeId: UUID, metadata: Metadata): ApiOpp
         id,
         periodeId,
         metadata.api(),
-        utdanning.api(),
-        helse.api(),
+        utdanning?.api(),
+        helse?.api(),
         jobbsituasjon.api(),
-        annet.api()
+        annet?.api()
     )
 
 fun Utdanning.api(): ApiUtdanning =
     ApiUtdanning(
         nus,
-        bestaatt.api(),
-        godkjent.api(),
+        bestaatt?.api(),
+        godkjent?.api(),
     )
 
 fun Jobbsituasjon.api(): ApiJobbsituasjon =
@@ -98,5 +98,5 @@ fun JobbsituasjonBeskrivelse.api(): ApiBeskrivelse =
     }
 
 fun Annet.api(): ApiAnnet = ApiAnnet(
-    andreForholdHindrerArbeid.api()
+    andreForholdHindrerArbeid?.api()
 )

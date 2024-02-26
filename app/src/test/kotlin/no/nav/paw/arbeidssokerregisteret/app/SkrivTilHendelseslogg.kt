@@ -132,7 +132,6 @@ class TestContext(private val producer: KafkaProducer<Long, Hendelse>, private v
                         helse = Helse(
                             helsetilstandHindrerArbeid = JaNeiVetIkke.NEI
                         ),
-                        arbeidserfaring = Arbeidserfaring(harHattArbeid = JaNeiVetIkke.JA),
                         id = UUID.randomUUID()
                     )
                 )
@@ -176,7 +175,6 @@ class TestContext(private val producer: KafkaProducer<Long, Hendelse>, private v
                         helse = Helse(
                             helsetilstandHindrerArbeid = JaNeiVetIkke.NEI
                         ),
-                        arbeidserfaring = Arbeidserfaring(harHattArbeid = JaNeiVetIkke.JA),
                         id = UUID.randomUUID()
                     )
                 )

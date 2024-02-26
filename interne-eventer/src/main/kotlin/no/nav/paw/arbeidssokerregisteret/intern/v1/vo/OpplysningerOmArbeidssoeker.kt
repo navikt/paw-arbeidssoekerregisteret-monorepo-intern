@@ -5,9 +5,8 @@ import java.util.*
 data class OpplysningerOmArbeidssoeker(
     val id: UUID,
     override val metadata: Metadata,
-    val utdanning: Utdanning,
-    val helse: Helse,
-    val arbeidserfaring: Arbeidserfaring,
+    val utdanning: Utdanning?,
+    val helse: Helse?,
     val jobbsituasjon: Jobbsituasjon,
-    val annet: Annet
+    val annet: Annet?
 ) : HarMetadata
