@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 
-import no.nav.paw.arbeidssokerregisteret.api.v3.OpplysningerOmArbeidssoeker
+import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgApiTilstander
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand.STARTET
@@ -56,7 +56,6 @@ fun TilstandV1?.opplysningerOmArbeidssoekerMottatt(hendelse: OpplysningerOmArbei
                         hendelse.metadata.api(),
                         hendelse.opplysningerOmArbeidssoeker.utdanning.api(),
                         hendelse.opplysningerOmArbeidssoeker.helse.api(),
-                        hendelse.opplysningerOmArbeidssoeker.arbeidserfaring.api(),
                         hendelse.opplysningerOmArbeidssoeker.jobbsituasjon.api(),
                         hendelse.opplysningerOmArbeidssoeker.annet.api()
                     )

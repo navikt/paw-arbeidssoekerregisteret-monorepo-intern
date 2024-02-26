@@ -27,7 +27,7 @@ val agentJar = "agent.jar"
 val agentFolder = layout.buildDirectory.dir("agent").get().toString()
 val agentExtensionFolder = layout.buildDirectory.dir("agent-extension").get().toString()
 
-val arbeidssokerregisteretSchemaVersion = "1.10-1"
+val arbeidssokerregisteretSchemaVersion = "1.8045441527.4-1-SNAPSHOT"
 
 val schema by configurations.creating {
     isTransitive = false

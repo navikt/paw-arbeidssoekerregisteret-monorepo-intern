@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 
 import io.micrometer.prometheus.PrometheusMeterRegistry
-import no.nav.paw.arbeidssokerregisteret.api.v3.OpplysningerOmArbeidssoeker
+import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.app.metrics.Actions
 import no.nav.paw.arbeidssokerregisteret.app.metrics.eventReceived
