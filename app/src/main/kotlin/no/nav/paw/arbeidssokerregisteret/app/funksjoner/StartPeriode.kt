@@ -34,7 +34,7 @@ fun TilstandV1?.startPeriode(window: Duration, hendelse: Startet): InternTilstan
             sisteOpplysningerOmArbeidssoeker = null,
             forrigeOpplysningerOmArbeidssoeker = null
         )
-    return InternTilstandOgApiTilstander(
+        return InternTilstandOgApiTilstander(
         tilstand = tilstand,
         nyOpplysningerOmArbeidssoekerTilstand = this?.sisteOpplysningerOmArbeidssoeker
             ?.takeIf { window.isWithinWindow(it.metadata.tidspunkt, hendelse.metadata.tidspunkt) }
@@ -45,7 +45,6 @@ fun TilstandV1?.startPeriode(window: Duration, hendelse: Startet): InternTilstan
                     intern.metadata.api(),
                     intern.utdanning.api(),
                     intern.helse.api(),
-                    intern.arbeidserfaring.api(),
                     intern.jobbsituasjon.api(),
                     intern.annet.api()
                 )

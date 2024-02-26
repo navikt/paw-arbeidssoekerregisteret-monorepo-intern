@@ -8,12 +8,11 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType as ApiBrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Helse as ApiHelse
 import no.nav.paw.arbeidssokerregisteret.api.v1.JaNeiVetIkke as ApiJaNeiVetIkke
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as ApiMetadata
-import no.nav.paw.arbeidssokerregisteret.api.v3.OpplysningerOmArbeidssoeker as ApiOpplysningerOmArbeidssoeker
-import no.nav.paw.arbeidssokerregisteret.api.v3.Utdanning as ApiUtdanning
-import no.nav.paw.arbeidssokerregisteret.api.v1.Arbeidserfaring as ApiArbeidserfaring
+import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as ApiOpplysningerOmArbeidssoeker
+import no.nav.paw.arbeidssokerregisteret.api.v4.Utdanning as ApiUtdanning
 import no.nav.paw.arbeidssokerregisteret.api.v1.Jobbsituasjon as ApiJobbsituasjon
 import no.nav.paw.arbeidssokerregisteret.api.v1.Beskrivelse as ApiBeskrivelse
-import no.nav.paw.arbeidssokerregisteret.api.v1.Annet as ApiAnnet
+import no.nav.paw.arbeidssokerregisteret.api.v2.Annet as ApiAnnet
 import no.nav.paw.arbeidssokerregisteret.api.v1.BeskrivelseMedDetaljer as ApiBeskrivelseMedDetaljer
 
 import java.util.*
@@ -57,22 +56,15 @@ fun OpplysningerOmArbeidssoeker.api(periodeId: UUID, metadata: Metadata): ApiOpp
         metadata.api(),
         utdanning.api(),
         helse.api(),
-        arbeidserfaring.api(),
         jobbsituasjon.api(),
         annet.api()
     )
-
 
 fun Utdanning.api(): ApiUtdanning =
     ApiUtdanning(
         nus,
         bestaatt.api(),
         godkjent.api(),
-    )
-
-fun Arbeidserfaring.api(): ApiArbeidserfaring =
-    ApiArbeidserfaring(
-        harHattArbeid.api()
     )
 
 fun Jobbsituasjon.api(): ApiJobbsituasjon =
