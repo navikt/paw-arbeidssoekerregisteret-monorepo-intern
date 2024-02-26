@@ -18,7 +18,7 @@ import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.KStream
 
 //Denne verdien må ikke endres. Vil endre nøkkelverdier i Kafka topic og dermed påvirke eksisterende data.
-const val KEY_MODULO_VALUE_NEVER_CHANGE_THIS_VALUE = 100L
+const val KEY_MODULO_VALUE_NEVER_CHANGE_THIS_VALUE = 6L
 fun publicTopicKeyFunction(internalKey: Long): Long =
     internalKey % KEY_MODULO_VALUE_NEVER_CHANGE_THIS_VALUE
 
