@@ -26,12 +26,6 @@ spec:
       value: "paw.arbeidssokerperioder-v1"
     - name: KAFKA_GROUP_ID
       value: "paw-consumer-arbeidssokerregisteret-v1"
-    - name: OTEL_METRICS_EXPORTER
-      value: "none"
-    - name: OTEL_TRACES_EXPORTER
-      value: "maskert_oltp"
-    - name: OTEL_JAVAAGENT_DEBUG
-      value: "false"
     - name: PDL_SCOPE
       value: "api://prof-fss.pdl.pdl-api/.default"
     - name: PDL_URL
@@ -51,8 +45,9 @@ spec:
     enabled: true
     path: /internal/metrics
   observability:
-    tracing:
+    autoInstrumentation:
       enabled: true
+      runtime: java
   kafka:
     pool: nav-dev
   accessPolicy:
