@@ -21,11 +21,11 @@ spec:
           - NAVident
   env:
     - name: KAFKA_PRODUCER_ID
-      value: "paw-producer-arbeidssokerregisteret-v1"
+      value: "paw-producer-arbeidssokerregisteret-periode-v1"
     - name: KAFKA_PRODUCER_PERIODER_TOPIC
       value: "paw.arbeidssokerperioder-v1"
     - name: KAFKA_GROUP_ID
-      value: "paw-consumer-arbeidssokerregisteret-v1"
+      value: "paw-consumer-arbeidssokerregisteret-periode-v1"
     - name: PDL_SCOPE
       value: "api://prod-fss.pdl.pdl-api/.default"
     - name: PDL_URL
