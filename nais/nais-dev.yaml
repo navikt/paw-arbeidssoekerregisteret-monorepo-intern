@@ -51,6 +51,14 @@ spec:
   kafka:
     pool: nav-dev
   accessPolicy:
+    inbound:
+      rules:
+        - application: azure-token-generator
+          namespace: aura
+          cluster: dev-gcp
+        - application: tokenx-token-generator
+          namespace: aura
+          cluster: dev-gcp
     outbound:
       rules:
         - application: poao-tilgang
