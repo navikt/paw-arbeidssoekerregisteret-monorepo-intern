@@ -34,22 +34,7 @@ repositories {
     mavenNav("paw-arbeidssokerregisteret-api-inngang")
 }
 
-val agent by configurations.creating {
-    isTransitive = false
-}
-
-val agentExtension by configurations.creating {
-    isTransitive = false
-}
-
-val agentExtensionJar = "agent-extension.jar"
-val agentJar = "agent.jar"
-val agentFolder = layout.buildDirectory.dir("agent").get().toString()
-val agentExtensionFolder = layout.buildDirectory.dir("agent-extension").get().toString()
-
 dependencies {
-    agent("io.opentelemetry.javaagent:opentelemetry-javaagent:1.31.0")
-    agentExtension("no.nav.paw.observability:opentelemetry-anonymisering-1.31.0:23.10.25.8-1")
     implementation("no.nav.paw.arbeidssokerregisteret.internt.schema:interne-eventer:$arbeidssokerregisteretVersion")
     implementation(pawObservability.bundles.ktorNettyOpentelemetryMicrometerPrometheus)
     implementation("no.nav.security:token-validation-ktor-v2:$tokenSupportVersion")
@@ -98,23 +83,6 @@ java {
     }
 }
 
-tasks.create("addAgent", Copy::class) {
-    from(agent)
-    into(agentFolder)
-    rename { _ -> agentJar}
-}
-
-tasks.create("addAgentExtension", Copy::class) {
-    from(agentExtension)
-    into(agentExtensionFolder)
-    rename { _ -> agentExtensionJar}
-}
-
-tasks.withType(KotlinCompile::class) {
-    dependsOn.add("addAgent")
-    dependsOn.add("addAgentExtension")
-}
-
 application {
     mainClass.set("no.nav.paw.arbeidssokerregisteret.ApplicationKt")
 }
@@ -140,26 +108,6 @@ tasks.withType(Jar::class) {
 jib {
     from.image = "ghcr.io/navikt/baseimages/temurin:$jvmVersion"
     to.image = "${image ?: project.name }:${project.version}"
-    extraDirectories {
-        paths {
-            path {
-                setFrom(agentFolder)
-                into = "/app"
-            }
-            path {
-                setFrom(agentExtensionFolder)
-                into = "/app"
-            }
-        }
-    }
-    container.entrypoint = listOf(
-        "java",
-        "-cp", "@/app/jib-classpath-file",
-        "-javaagent:/app/$agentJar",
-        "-Dotel.javaagent.extensions=/app/$agentExtensionJar",
-        "-Dotel.resource.attributes=service.name=${project.name}",
-        application.mainClass.get()
-    )
 }
 
 fun RepositoryHandler.mavenNav(repo: String): MavenArtifactRepository {
