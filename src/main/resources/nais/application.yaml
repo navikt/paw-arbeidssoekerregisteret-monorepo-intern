@@ -1,7 +1,7 @@
-eventLogTopic: arbeidssokerperiode-start-v1
+eventLogTopic: paw.arbeidssoker-hendelseslogg-beta-v9
 poaoTilgangClientConfig:
-  url: http://localhost:8090/poao-tilgang
-  scope: api://test.test.poao-tilgang/.default
+  url: http://poao-tilgang.poao.svc.cluster.local
+  scope: api://${NAIS_CLUSTER_NAME}.poao.poao-tilgang/.default
 pdlClientConfig:
   url: ${PDL_URL}
   scope: ${PDL_SCOPE}
@@ -12,15 +12,15 @@ authProviders:
   azure:
     name: azure
     discoveryUrl: ${AZURE_APP_WELL_KNOWN_URL}
-    tokenEndpointUrl: http://localhost:8081/default/token
-    clientId: paw-arbeidssokerregisteret-api-inngang
+    tokenEndpointUrl: ${AZURE_OPENID_CONFIG_TOKEN_ENDPOINT}
+    clientId: ${AZURE_APP_CLIENT_ID}
     claims:
       - NAVident
   tokenx:
     name: tokenx
-    discoveryUrl: http://localhost:8081/default/.well-known/openid-configuration
-    tokenEndpointUrl: http://localhost:8081/default/token
-    clientId: paw-arbeidssokerregisteret-api-inngang
+    discoveryUrl: ${TOKEN_X_WELL_KNOWN_URL}
+    tokenEndpointUrl: ${TOKEN_X_TOKEN_ENDPOINT}
+    clientId: ${TOKEN_X_CLIENT_ID}
     claims:
       - acr=Level4
       - acr=idporten-loa-high

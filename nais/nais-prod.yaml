@@ -8,7 +8,7 @@ metadata:
 spec:
   image: {{ image }}
   ingresses:
-    - https://inngang-arbeidssokerregisteret.intern.nav.no
+    - https://periode-arbeidssoekerregisteret.intern.nav.no
   port: 8080
   tokenx:
     enabled: true
@@ -27,7 +27,7 @@ spec:
     - name: KAFKA_GROUP_ID
       value: "paw-consumer-arbeidssokerregisteret-v1"
     - name: PDL_SCOPE
-      value: "api://prof-fss.pdl.pdl-api/.default"
+      value: "api://prod-fss.pdl.pdl-api/.default"
     - name: PDL_URL
       value: "https://pdl-api.prod-fss-pub.nais.io/graphql"
     - name: KAFKA_KEY_SCOPE
@@ -52,6 +52,9 @@ spec:
     pool: nav-prod
   accessPolicy:
     outbound:
+      rules:
+        - application: poao-tilgang
+          namespace: poao
       external:
         - host: pdl-api.prod-fss-pub.nais.io
 
