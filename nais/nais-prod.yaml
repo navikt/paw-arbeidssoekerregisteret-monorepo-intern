@@ -51,6 +51,10 @@ spec:
   kafka:
     pool: nav-prod
   accessPolicy:
+    inbound:
+      rules:
+        - application: arbeidssokerregistrering
+        - application: arbeidssokerregistrering-for-veileder
     outbound:
       rules:
         - application: poao-tilgang

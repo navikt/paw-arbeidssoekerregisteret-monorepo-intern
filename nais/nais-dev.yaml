@@ -53,6 +53,8 @@ spec:
   accessPolicy:
     inbound:
       rules:
+        - application: arbeidssokerregistrering
+        - application: arbeidssokerregistrering-for-veileder
         - application: azure-token-generator
           namespace: aura
           cluster: dev-gcp
