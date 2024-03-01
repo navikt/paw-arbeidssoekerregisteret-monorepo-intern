@@ -8,7 +8,7 @@ data class StartStoppRequest(
     val registreringForhaandsGodkjentAvAnsatt: Boolean = false,
     val periodeTilstand: PeriodeTilstand
 ) {
-    fun getIdentitetsnummer(): Identitetsnummer = identitetsnummer.tilIdentitetsnummer()
+    fun getId(): Identitetsnummer = identitetsnummer.tilIdentitetsnummer()
 }
 
 enum class PeriodeTilstand{

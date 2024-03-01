@@ -6,5 +6,5 @@ import no.nav.paw.arbeidssokerregisteret.domain.tilIdentitetsnummer
 data class KanStarteRequest(
     val identitetsnummer: String
 ) {
-    fun getIdentitetsnummer(): Identitetsnummer = identitetsnummer.tilIdentitetsnummer()
+    fun getId(): Identitetsnummer = identitetsnummer.tilIdentitetsnummer()
 }

@@ -21,7 +21,7 @@ fun Route.arbeidssokerRoutes(requestHandler: RequestHandler) {
                     logger.trace("Sjekker om bruker kan registreres som arbeidssøker")
                     val request = call.receive<KanStarteRequest>()
                     val resultat = with(requestScope()) {
-                        requestHandler.kanRegistreresSomArbeidssoker(request.getIdentitetsnummer())
+                        requestHandler.kanRegistreresSomArbeidssoker(request.getId())
                     }
                     logger.debug("Resultat av 'kan-starte': {}", resultat)
                     respondWith(resultat)
@@ -34,10 +34,10 @@ fun Route.arbeidssokerRoutes(requestHandler: RequestHandler) {
                     val resultat = with(requestScope()) {
                         when (startStoppRequest.periodeTilstand) {
                             PeriodeTilstand.STARTET ->
-                                requestHandler.startArbeidssokerperiode(startStoppRequest.getIdentitetsnummer())
+                                requestHandler.startArbeidssokerperiode(startStoppRequest.getId())
 
                             PeriodeTilstand.STOPPET ->
-                                requestHandler.avsluttArbeidssokerperiode(startStoppRequest.getIdentitetsnummer())
+                                requestHandler.avsluttArbeidssokerperiode(startStoppRequest.getId())
                         }
                     }
                     logger.debug("Registreringsresultat: {}", resultat)
