@@ -18,37 +18,15 @@ val reglerForInngangIPrioritertRekkefolge: List<Regel<EndeligResultat>> = listOf
         kode = AVVIST_ALDER,
         vedTreff = ::Avvist
     ),
-    // holder det med bosatt etter Folkeregisterloven så denne kan fjernes?
-    "Er over 18 år, har norsk adresse og oppholdstillatelse"(
+
+    "Er over 18 år, er bosatt i Norge etter Folkeregisterloven"(
         Opplysning.ER_OVER_18_AAR,
-        Opplysning.HAR_NORSK_ADRESSE,
-        Opplysning.HAR_GYLDIG_OPPHOLDSTILLATELSE,
-        kode = GODTATT,
-        vedTreff = ::OK
-    ),
-    //kan v iher fjerne adressegreia
-    "Er over 18 år, har norsk adresse og er bosatt i Norge etter Folkeregisterloven"(
-        Opplysning.ER_OVER_18_AAR,
-        Opplysning.HAR_NORSK_ADRESSE,
         Opplysning.BOSATT_ETTER_FREG_LOVEN,
         kode = GODTATT,
         vedTreff = ::OK
     ),
-    //fjernes?
-    "Er over 18 år, har norsk adresse og har d-nummer"(
-        Opplysning.ER_OVER_18_AAR,
-        Opplysning.HAR_NORSK_ADRESSE,
-        Opplysning.DNUMMER,
-        kode = GODTATT,
-        vedTreff = ::OK
-    ), //kunn sjekk om bosted ikke er good i Fakta.BOSATT_ETTER_FREG_LOVEN,
-    "Bor i utlandet"(
-        Opplysning.HAR_UTENLANDSK_ADRESSE,
-        kode = AVVIST_UTENLANDSK_ADRESSE,
+    "Avvist fordi personen ikke er bosatt i Norge i henhold til folkeregisterloven"(
+        kode = AVVIST_IKKE_BOSATT_I_NORGE_IHT_FOLKEREGISTERLOVEN,
         vedTreff = ::Avvist
-    ),
-    "Ingen regler funnet for evaluering av forespørsel"(
-        kode = AVVIST_UAVKLART,
-        vedTreff = ::Uavklart
     )
 )
