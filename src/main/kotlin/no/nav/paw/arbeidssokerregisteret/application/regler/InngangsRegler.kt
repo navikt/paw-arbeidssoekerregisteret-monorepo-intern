@@ -18,6 +18,7 @@ val reglerForInngangIPrioritertRekkefolge: List<Regel<EndeligResultat>> = listOf
         kode = AVVIST_ALDER,
         vedTreff = ::Avvist
     ),
+    // holder det med bosatt etter Folkeregisterloven så denne kan fjernes?
     "Er over 18 år, har norsk adresse og oppholdstillatelse"(
         Fakta.ER_OVER_18_AAR,
         Fakta.HAR_NORSK_ADRESSE,
@@ -25,6 +26,7 @@ val reglerForInngangIPrioritertRekkefolge: List<Regel<EndeligResultat>> = listOf
         kode = GODTATT,
         vedTreff = ::OK
     ),
+    //kan v iher fjerne adressegreia
     "Er over 18 år, har norsk adresse og er bosatt i Norge etter Folkeregisterloven"(
         Fakta.ER_OVER_18_AAR,
         Fakta.HAR_NORSK_ADRESSE,
@@ -32,13 +34,14 @@ val reglerForInngangIPrioritertRekkefolge: List<Regel<EndeligResultat>> = listOf
         kode = GODTATT,
         vedTreff = ::OK
     ),
+    //fjernes?
     "Er over 18 år, har norsk adresse og har d-nummer"(
         Fakta.ER_OVER_18_AAR,
         Fakta.HAR_NORSK_ADRESSE,
         Fakta.DNUMMER,
         kode = GODTATT,
         vedTreff = ::OK
-    ),
+    ), //kunn sjekk om bosted ikke er good i Fakta.BOSATT_ETTER_FREG_LOVEN,
     "Bor i utlandet"(
         Fakta.HAR_UTENLANDSK_ADRESSE,
         kode = AVVIST_UTENLANDSK_ADRESSE,
