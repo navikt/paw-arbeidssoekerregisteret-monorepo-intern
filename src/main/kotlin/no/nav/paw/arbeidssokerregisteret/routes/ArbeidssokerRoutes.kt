@@ -17,9 +17,8 @@ fun Route.arbeidssokerRoutes(requestHandler: RequestHandler) {
     route("/api/v1") {
         authenticate("tokenx", "azure") {
             route("/arbeidssoker/kanStartePeriode") {
-                put {
+                put<KanStarteRequest> {request ->
                     logger.trace("Sjekker om bruker kan registreres som arbeidssøker")
-                    val request = call.receive<KanStarteRequest>()
                     val resultat = with(requestScope()) {
                         requestHandler.kanRegistreresSomArbeidssoker(request.getId())
                     }
@@ -28,8 +27,7 @@ fun Route.arbeidssokerRoutes(requestHandler: RequestHandler) {
                 }
             }
             route("/arbeidssoker/periode") {
-                put<StartStoppRequest> {
-                    val startStoppRequest = call.receive<StartStoppRequest>()
+                put<StartStoppRequest> { startStoppRequest ->
                     logger.trace("Registrerer bruker som arbeidssøker {}", startStoppRequest.periodeTilstand)
                     val resultat = with(requestScope()) {
                         when (startStoppRequest.periodeTilstand) {
