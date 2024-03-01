@@ -18,8 +18,9 @@ import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.KStream
 
 //Endring av denne verdien eller funksjonen 'publicTopicKeyFunction' krever replay av eventlog til nye topics!!
-const val PUBLIC_KEY_MODULO_VALUE = 14_000
-fun publicTopicKeyFunction(internalKey: Long): Long = internalKey % PUBLIC_KEY_MODULO_VALUE
+const val PUBLIC_KEY_MODULO_VALUE = 7_500
+fun publicTopicKeyFunction(internalKey: Long): Long =
+    "internal_key_$internalKey".hashCode().toLong() % PUBLIC_KEY_MODULO_VALUE
 
 fun topology(
     applicationLogicConfig: ApplicationLogicConfig,
