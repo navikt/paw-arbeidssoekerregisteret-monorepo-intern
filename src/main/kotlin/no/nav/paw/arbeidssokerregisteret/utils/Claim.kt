@@ -3,7 +3,7 @@ package no.nav.paw.arbeidssokerregisteret.utils
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import java.util.*
 
-sealed class Claim<A>(
+sealed class Claim<A: Any>(
     val issuer: String,
     val claimName: String,
     val fromString: (String) -> A

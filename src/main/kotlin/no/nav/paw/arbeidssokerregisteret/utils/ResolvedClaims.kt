@@ -12,11 +12,15 @@ class ResolvedClaims private constructor(
     }
 
     @Suppress("UNCHECKED_CAST")
-    operator fun <T> get(claim: Claim<T>): T? = map[claim] as T?
+    operator fun <T: Any> get(claim: Claim<T>): T? = map[claim] as T?
     fun isResolved(claim: Claim<*>): Boolean = map.containsKey(claim)
 
-    fun <T> add(claim: Claim<T>, rawValue: String): ResolvedClaims =
-        ResolvedClaims(map + (claim to claim.fromString))
+    fun <T: Any> add(claim: Claim<T>, rawValue: String): ResolvedClaims {
+        val parsed = claim.fromString(rawValue)
+        val pair: Pair<Claim<T>, Any> = claim to parsed
+        return ResolvedClaims(map + pair)
+    }
+
 }
 
 fun TokenValidationContext?.resolveClaims(vararg claims: Claim<*>): ResolvedClaims =
@@ -25,8 +29,6 @@ fun TokenValidationContext?.resolveClaims(vararg claims: Claim<*>): ResolvedClai
         .fold(ResolvedClaims()) { resolvedClaims, (claim, value) ->
             resolvedClaims.add(claim, value)
         }
-
-fun <T> format(claim: Claim<T>, value: String): T = claim.fromString(value)
 
 fun TokenValidationContext?.resolve(claim: Claim<*>): String? =
     this?.getClaims(claim.issuer)
