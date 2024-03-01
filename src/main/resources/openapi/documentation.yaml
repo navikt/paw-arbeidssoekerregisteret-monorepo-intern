@@ -6,44 +6,7 @@ info:
 servers:
 - url: "https://paw_arbeidssokerregisteret_api_inngang"
 paths:
-  /api/v1/arbeidssoker/perioder:
-    delete:
-      description: ""
-      parameters:
-      - name: "Nav-Call-Id"
-        in: "header"
-        required: false
-        schema:
-          type: "string"
-      - name: "traceparent"
-        in: "header"
-        required: false
-        schema:
-          type: "string"
-      - name: "Nav-Consumer-Id"
-        in: "header"
-        required: false
-        schema:
-          type: "string"
-      requestBody:
-        content:
-          '*/*':
-            schema:
-              $ref: "#/components/schemas/Request"
-        required: true
-      responses:
-        "403":
-          description: "Forbidden"
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/Feil"
-        "200":
-          description: "OK"
-          content:
-            '*/*':
-              schema:
-                type: "object"
+  /api/v1/arbeidssoker/kanStartePeriode:
     put:
       description: ""
       parameters:
@@ -66,7 +29,7 @@ paths:
         content:
           '*/*':
             schema:
-              $ref: "#/components/schemas/Request"
+              $ref: "#/components/schemas/KanStarteRequest"
         required: true
       responses:
         "400":
@@ -99,7 +62,7 @@ paths:
             '*/*':
               schema:
                 type: "object"
-  /api/v1/arbeidssoker/perioder/kan-starte:
+  /api/v1/arbeidssoker/periode:
     put:
       description: ""
       parameters:
@@ -122,7 +85,7 @@ paths:
         content:
           '*/*':
             schema:
-              $ref: "#/components/schemas/Request"
+              $ref: "#/components/schemas/StartStoppRequest"
         required: true
       responses:
         "400":
@@ -193,13 +156,11 @@ paths:
                 type: "string"
 components:
   schemas:
-    Request:
+    KanStarteRequest:
       type: "object"
       properties:
         identitetsnummer:
           type: "string"
-        registreringForhaandsGodkjentAvAnsatt:
-          type: "boolean"
       required:
       - "identitetsnummer"
     AarsakTilAvvisning:
@@ -267,3 +228,18 @@ components:
       required:
       - "melding"
       - "feilKode"
+    StartStoppRequest:
+      type: "object"
+      properties:
+        identitetsnummer:
+          type: "string"
+        registreringForhaandsGodkjentAvAnsatt:
+          type: "boolean"
+        periodeTilstand:
+          type: "string"
+          enum:
+          - "STARTET"
+          - "STOPPET"
+      required:
+      - "identitetsnummer"
+      - "periodeTilstand"
