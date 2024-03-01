@@ -4,6 +4,7 @@ import io.confluent.kafka.schemaregistry.client.SchemaRegistryClientConfig
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.serializers.subject.RecordNameStrategy
+import io.confluent.kafka.serializers.subject.TopicNameStrategy
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.common.config.SslConfigs
@@ -29,7 +30,7 @@ data class KafkaKonfigurasjon(
         KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to schemaRegistryKonfigurasjon.url,
         KafkaAvroSerializerConfig.AUTO_REGISTER_SCHEMAS to schemaRegistryKonfigurasjon.autoRegistrerSchema,
         KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG to true,
-        KafkaAvroSerializerConfig.VALUE_SUBJECT_NAME_STRATEGY to RecordNameStrategy::class.java.name,
+        KafkaAvroSerializerConfig.VALUE_SUBJECT_NAME_STRATEGY to TopicNameStrategy::class.java.name,
     )
 
     private val kafkaSecutiryProperties: Map<String, Any?>? get() = if (serverKonfigurasjon.autentisering.equals("SSL", true)) {
