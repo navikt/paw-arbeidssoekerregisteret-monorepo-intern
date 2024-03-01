@@ -13,6 +13,7 @@ import no.nav.paw.arbeidssokerregisteret.domain.Feilkode
 import no.nav.paw.arbeidssokerregisteret.domain.http.Feil
 import no.nav.paw.arbeidssokerregisteret.services.RemoteServiceException
 import no.nav.paw.arbeidssokerregisteret.utils.logger
+import io.ktor.server.plugins.BadRequestException
 
 fun Application.configureHTTP() {
     install(IgnoreTrailingSlash)
@@ -34,6 +35,10 @@ fun Application.configureHTTP() {
                 is StatusException -> {
                     logger.error("Request failed with status: ${cause}. Description: ${cause.message}")
                     call.respond(cause.status, Feil(cause.message ?: "ukjent feil", cause.feilkode))
+                }
+                is BadRequestException -> {
+                    logger.error("Request failed: ${cause.message}")
+                    call.respond(HttpStatusCode.BadRequest, Feil(cause.message ?: "bad request", Feilkode.FEIL_VED_LESING_AV_FORESPORSEL))
                 }
                 else -> {
                     logger.error("Request failed with status: ${cause}. Description: ${cause.message}")
