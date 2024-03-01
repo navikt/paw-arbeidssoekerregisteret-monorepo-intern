@@ -14,6 +14,8 @@ import no.nav.paw.arbeidssokerregisteret.domain.http.Feil
 import no.nav.paw.arbeidssokerregisteret.services.RemoteServiceException
 import no.nav.paw.arbeidssokerregisteret.utils.logger
 import io.ktor.server.plugins.BadRequestException
+import io.ktor.server.plugins.ContentTransformationException
+import io.ktor.server.request.*
 
 fun Application.configureHTTP() {
     install(IgnoreTrailingSlash)
@@ -39,6 +41,10 @@ fun Application.configureHTTP() {
                 is BadRequestException -> {
                     logger.error("Request failed: ${cause.message}")
                     call.respond(HttpStatusCode.BadRequest, Feil(cause.message ?: "bad request", Feilkode.FEIL_VED_LESING_AV_FORESPORSEL))
+                }
+                is RequestAlreadyConsumedException -> {
+                    logger.error("Request failed: {}", cause.message, cause)
+                    call.respond(HttpStatusCode.InternalServerError, Feil(cause.message ?: "bad request", Feilkode.UKJENT_FEIL))
                 }
                 else -> {
                     logger.error("Request failed with status: ${cause}. Description: ${cause.message}")
