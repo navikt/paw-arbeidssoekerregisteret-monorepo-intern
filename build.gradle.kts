@@ -20,6 +20,7 @@ val ktorVersion = pawObservability.versions.ktor
 val arbeidssokerregisteretVersion = "24.02.06.129-1"
 val pawUtilsVersion = "24.02.21.12-1"
 
+
 val image: String? by project
 
 repositories {
@@ -73,9 +74,9 @@ dependencies {
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
     testImplementation("io.kotest:kotest-runner-junit5:$koTestVersion")
     testImplementation("io.kotest:kotest-assertions-core:$koTestVersion")
-    testImplementation("io.mockk:mockk:1.13.8")
     testImplementation("org.testcontainers:testcontainers:1.19.1")
     testImplementation("no.nav.security:mock-oauth2-server:2.0.0")
+    testImplementation("io.mockk:mockk:1.13.10")
 }
 
 java {

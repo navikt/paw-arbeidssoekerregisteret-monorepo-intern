@@ -15,7 +15,6 @@ import no.nav.paw.arbeidssokerregisteret.utils.logger
 
 fun Route.arbeidssokerRoutes(requestHandler: RequestHandler) {
     route("/api/v1") {
-        authenticate("tokenx", "azure") {
             route("/arbeidssoker/kanStartePeriode") {
                 put<KanStarteRequest> {request ->
                     logger.trace("Sjekker om bruker kan registreres som arbeidssøker")
@@ -47,4 +46,3 @@ fun Route.arbeidssokerRoutes(requestHandler: RequestHandler) {
             }
         }
     }
-}
