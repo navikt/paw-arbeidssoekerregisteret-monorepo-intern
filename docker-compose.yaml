@@ -76,15 +76,8 @@ services:
                   "requestParam": "scope",
                   "match": "openid somescope",
                   "claims": {
-                    "sub": "admin@paw-arbeidssokerregisteret",
-                    "aud": ["paw-arbeidssokerregisteret"]
-                  }
-                },
-                {
-                  "requestParam": "scope",
-                  "match": "default",
-                  "claims": {
-                    "aud": ["paw-arbeidssokerregisteret"]
+                    "sub": "admin@paw-arbeidssokerregisteret-api-inngang",
+                    "aud": ["paw-arbeidssokerregisteret-api-inngang"]
                   }
                 }
               ]
