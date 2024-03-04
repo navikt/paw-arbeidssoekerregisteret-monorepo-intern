@@ -98,7 +98,7 @@ Bruk `access_token` i "Token Response" (fra steg 3) til å gjøre forespørsler 
 Eksempel:
 
 ```sh
-$ curl -X PUT https://oppslag-arbeidssoekerregisteret.intern.dev.nav.no/api/v1/arbeidssoker/periode -H 'Authorization: Bearer <access_token>'
+$ curl -X PUT https://periode-arbeidssoekerregisteret.intern.dev.nav.no/api/v1/arbeidssoker/periode -H 'Authorization: Bearer <access_token>'
 -H 'Content-Type: application/json' \
 --data-raw '{
   "identitetsnummer": "12345678911",
