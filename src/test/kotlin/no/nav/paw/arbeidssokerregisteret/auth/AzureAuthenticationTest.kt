@@ -37,7 +37,7 @@ class AzureAuthenticationTest : FunSpec({
                 claims = tokenMap
             )
             routing {
-                authenticate("tokenx", "azure") {
+                authenticate("azure") {
                     get("/test") {
                         val scope = requestScope()
                         scope.shouldNotBeNull()
