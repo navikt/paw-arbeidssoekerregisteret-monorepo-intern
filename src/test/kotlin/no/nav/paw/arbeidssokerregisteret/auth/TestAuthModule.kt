@@ -14,18 +14,7 @@ import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.security.mock.oauth2.MockOAuth2Server
 
 fun Application.testAuthModule(oAuth2Server: MockOAuth2Server) {
-    val config = loadNaisOrLocalConfiguration<Config>("application.yaml")
-    val authProviders = config.authProviders.copy(
-        tokenx = config.authProviders.tokenx.copy(
-            discoveryUrl = oAuth2Server.wellKnownUrl("default").toString(),
-            clientId = "default"
-        ),
-        azure = config.authProviders.azure.copy(
-            discoveryUrl = oAuth2Server.wellKnownUrl("default").toString(),
-            clientId = "default"
-        )
-    )
-    configureAuthentication(authProviders)
+    configureAuthentication(oAuth2Server)
     routing {
         authenticate("tokenx") {
             route("/testAuthTokenx") {
@@ -42,4 +31,19 @@ fun Application.testAuthModule(oAuth2Server: MockOAuth2Server) {
             }
         }
     }
+}
+
+fun Application.configureAuthentication(oAuth2Server: MockOAuth2Server) {
+    val config = loadNaisOrLocalConfiguration<Config>("application.yaml")
+    val authProviders = config.authProviders.copy(
+        tokenx = config.authProviders.tokenx.copy(
+            discoveryUrl = oAuth2Server.wellKnownUrl("default").toString(),
+            clientId = "default"
+        ),
+        azure = config.authProviders.azure.copy(
+            discoveryUrl = oAuth2Server.wellKnownUrl("default").toString(),
+            clientId = "default"
+        )
+    )
+    configureAuthentication(authProviders)
 }

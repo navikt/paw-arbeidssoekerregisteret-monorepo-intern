@@ -11,9 +11,8 @@ data class NavAnsatt(
 fun navAnsatt(claims: ResolvedClaims): NavAnsatt? {
     val azureOid = claims[AzureOID]
     val azureNavIdent = claims[AzureNavIdent]
-    val azureName = claims[AzureName]
-    return if (azureOid != null && azureNavIdent != null && azureName != null) {
-        NavAnsatt(azureId = azureOid, ident = azureName)
+    return if (azureOid != null && azureNavIdent != null) {
+        NavAnsatt(azureId = azureOid, ident = azureNavIdent)
     } else {
         null
     }
