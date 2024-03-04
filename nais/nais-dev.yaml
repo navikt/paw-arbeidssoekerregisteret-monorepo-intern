@@ -27,9 +27,9 @@ spec:
     - name: KAFKA_GROUP_ID
       value: "paw-consumer-arbeidssokerregisteret-periode-v1"
     - name: PDL_SCOPE
-      value: "api://prod-fss.pdl.pdl-api/.default"
+      value: "api://dev-fss.pdl.pdl-api/.default"
     - name: PDL_URL
-      value: "https://pdl-api.prod-fss-pub.nais.io/graphql"
+      value: "https://pdl-api.dev-fss-pub.nais.io/graphql"
     - name: KAFKA_KEY_SCOPE
       value: "api://dev-gcp.paw.paw-kafka-key-generator/.default"
   replicas:
