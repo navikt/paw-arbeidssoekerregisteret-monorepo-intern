@@ -46,7 +46,7 @@ fun Route.arbeidssokerRoutes(requestHandler: RequestHandler) {
             }
         }
         route("/opplysninger") {
-            put {
+            post {
                 val opplysningerRequest = call.receive<OpplysningerRequest>()
                 logger.trace("Registrerer eller oppdaterer brukers opplysninger")
 

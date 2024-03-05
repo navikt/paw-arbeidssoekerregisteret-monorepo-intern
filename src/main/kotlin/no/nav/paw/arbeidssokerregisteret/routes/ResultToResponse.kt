@@ -31,7 +31,7 @@ suspend fun respondWith(resultat: EndeligResultat) =
             )
         )
 
-        is OK -> call.respond(HttpStatusCode.OK)
+        is OK -> call.respond(HttpStatusCode.NoContent)
         is Uavklart -> call.respond(
             HttpStatusCode.Forbidden, Feil(
                 melding = resultat.regel.beskrivelse,
