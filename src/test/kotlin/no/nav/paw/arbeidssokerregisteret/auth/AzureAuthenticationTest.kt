@@ -17,10 +17,9 @@ import no.nav.security.mock.oauth2.MockOAuth2Server
 
 class AzureAuthenticationTest : FunSpec({
     val oauth = MockOAuth2Server()
-    val testAuthUrl = "/testAuthTokenx"
 
     beforeSpec {
-        oauth.start(8081)
+        oauth.start()
     }
 
     afterSpec {

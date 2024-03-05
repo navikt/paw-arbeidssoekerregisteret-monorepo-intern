@@ -21,7 +21,7 @@ class TokenxAuthenticationTest : FunSpec({
     val testAuthUrl = "/testAuthTokenx"
 
     beforeSpec {
-        oauth.start(8081)
+        oauth.start()
     }
 
     afterSpec {
