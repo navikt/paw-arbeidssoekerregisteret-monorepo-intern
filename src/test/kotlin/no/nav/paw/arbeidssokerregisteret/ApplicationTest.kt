@@ -2,19 +2,14 @@ package no.nav.paw.arbeidssokerregisteret
 
 import io.kotest.core.spec.style.FunSpec
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.server.routing.*
 import io.ktor.server.testing.*
-import io.ktor.util.*
-import io.ktor.util.reflect.*
 import io.mockk.mockk
+import junit.framework.TestCase.assertTrue
+import kotlinx.serialization.json.Json
 import no.nav.paw.arbeidssokerregisteret.application.RequestHandler
-import no.nav.paw.arbeidssokerregisteret.application.invoke
-import no.nav.paw.arbeidssokerregisteret.auth.configureAuthentication
-import no.nav.paw.arbeidssokerregisteret.domain.http.PeriodeTilstand
-import no.nav.paw.arbeidssokerregisteret.domain.http.StartStoppRequest
 import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutes
-import no.nav.security.mock.oauth2.MockOAuth2Server
 
 class ApplicationTest: FunSpec({
     test("Application Test") {
@@ -35,7 +30,16 @@ class ApplicationTest: FunSpec({
                     append(HttpHeaders.ContentType, "text/json")
                 }
             }
-            println(response)
+        //assertTrue(response.headers[HttpHeaders.ContentType]?.contains(ContentType.Application.Json.toString()) ?: false)
+        val isJSON = try {
+            Json.parseToJsonElement(response.bodyAsText())
+            true // Parsing successful, response body is JSON
+        } catch (e: Exception) {
+            false // Parsing failed, response body is not JSON
+        }
+
+        //assertTrue(isJSON)
+
         }
     }
 })
