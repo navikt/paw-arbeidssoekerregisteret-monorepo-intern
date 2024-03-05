@@ -4,13 +4,19 @@ dependencyResolutionManagement {
     val githubPassword: String by settings
     repositories {
         maven {
-            setUrl("https://maven.pkg.github.com/navikt/paw-observability")
+            setUrl("https://maven.pkg.github.com/navikt/*")
             credentials {
                 username = "x-access-token"
                 password = githubPassword
             }
         }
-        mavenLocal()
+        mavenCentral()
+        maven {
+            url = uri("https://packages.confluent.io/maven/")
+        }
+        maven {
+            url = uri("https://jitpack.io")
+        }
     }
     versionCatalogs {
         create("pawObservability") {

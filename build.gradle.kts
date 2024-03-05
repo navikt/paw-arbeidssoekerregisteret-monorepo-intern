@@ -20,20 +20,7 @@ val ktorVersion = pawObservability.versions.ktor
 val arbeidssokerregisteretVersion = "24.02.06.129-1"
 val pawUtilsVersion = "24.02.21.12-1"
 
-
 val image: String? by project
-
-repositories {
-    mavenLocal()
-    mavenCentral()
-    maven {
-        url = uri("https://packages.confluent.io/maven/")
-    }
-    maven {
-        url = uri("https://jitpack.io")
-    }
-    mavenNav("paw-arbeidssokerregisteret-api-inngang")
-}
 
 dependencies {
     implementation("no.nav.paw.arbeidssokerregisteret.internt.schema:interne-eventer:$arbeidssokerregisteretVersion")
@@ -110,16 +97,4 @@ tasks.withType(Jar::class) {
 jib {
     from.image = "ghcr.io/navikt/baseimages/temurin:$jvmVersion"
     to.image = "${image ?: project.name }:${project.version}"
-}
-
-fun RepositoryHandler.mavenNav(repo: String): MavenArtifactRepository {
-    val githubPassword: String by project
-
-    return maven {
-        setUrl("https://maven.pkg.github.com/navikt/$repo")
-        credentials {
-            username = "x-access-token"
-            password = githubPassword
-        }
-    }
 }
