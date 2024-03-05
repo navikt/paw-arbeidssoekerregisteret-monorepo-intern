@@ -22,7 +22,7 @@ suspend fun respondWith(resultat: TilgangskontrollResultat) =
                 feilKode = Feilkode.AVVIST,
                 aarsakTilAvvisning = AarsakTilAvvisning(
                     beskrivelse = resultat.regel.beskrivelse,
-                    regel = resultat.regel.id.eksternRegelId ?: EksternRegelId.UKJENT,
+                    regel = resultat.regel.id.eksternRegelId ?: EksternRegelId.UKJENT_REGEL,
                     detaljer = resultat.regel.opplysninger.toSet()
                 )
             )

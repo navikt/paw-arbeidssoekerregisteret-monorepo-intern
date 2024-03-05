@@ -152,7 +152,7 @@ components:
         regel:
           type: "string"
           enum:
-          - "UKJENT"
+          - "UKJENT_REGEL"
           - "IKKE_FUNNET"
           - "SAVNET"
           - "DOED"

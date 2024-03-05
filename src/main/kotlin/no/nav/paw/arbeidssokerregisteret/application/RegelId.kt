@@ -23,7 +23,7 @@ enum class RegelId {
 }
 
 enum class EksternRegelId {
-    UKJENT,
+    UKJENT_REGEL,
     IKKE_FUNNET,
     SAVNET,
     DOED,
