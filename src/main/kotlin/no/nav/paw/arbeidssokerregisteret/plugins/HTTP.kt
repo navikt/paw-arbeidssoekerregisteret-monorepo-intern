@@ -39,7 +39,7 @@ fun Application.configureHTTP() {
                     call.respond(cause.status, Feil(cause.message ?: "ukjent feil", cause.feilkode))
                 }
                 is BadRequestException -> {
-                    logger.error("Request failed: ${cause.message}")
+                    logger.error("Request failed: ${cause.message}", cause)
                     call.respond(HttpStatusCode.BadRequest, Feil(cause.message ?: "bad request", Feilkode.FEIL_VED_LESING_AV_FORESPORSEL))
                 }
                 is RequestAlreadyConsumedException -> {
