@@ -5,27 +5,27 @@ import no.nav.paw.arbeidssokerregisteret.application.*
 val tilgangsReglerIPrioritertRekkefolge: List<Regel<TilgangskontrollResultat>> = listOf(
     "Ansatt har tilgang til bruker"(
         Opplysning.ANSATT_TILGANG,
-        kode = MIDLERTIDIG_INTERNT_RESULTAT,
+        id = RegelId.ANSATT_HAR_TILGANG_TIL_BRUKER,
         vedTreff = ::TilgangOK
     ),
     "Bruker prøver å endre for seg selv"(
         Opplysning.SAMME_SOM_INNLOGGET_BRUKER,
         Opplysning.IKKE_ANSATT,
-        kode = MIDLERTIDIG_INTERNT_RESULTAT,
+        id = RegelId.ENDRE_EGEN_BRUKER,
         vedTreff = ::TilgangOK
     ),
     "Prøver å endre for en annen bruker"(
         Opplysning.IKKE_SAMME_SOM_INNLOGGER_BRUKER,
-        kode = IKKE_TILGANG_ANNEN_BRUKER,
+        id = RegelId.ENDRE_FOR_ANNEN_BRUKER,
         vedTreff = ::IkkeTilgang
     ),
     "Ansatt har ikke tilgang til bruker"(
         Opplysning.ANSATT_IKKE_TILGANG,
-        kode = IKKE_TILGANG_ANSATT_IKKE_TILGANG_TIL_BRUKER,
+        id = RegelId.ANSATT_IKKE_TILGANG_TIL_BRUKER,
         vedTreff = ::IkkeTilgang
     ),
     "Ikke tilgang"(
-        kode = IKKE_TILGANG,
+        id = RegelId.IKKE_TILGANG,
         vedTreff = ::IkkeTilgang
     )
 )

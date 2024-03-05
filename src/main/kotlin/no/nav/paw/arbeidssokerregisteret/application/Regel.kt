@@ -1,10 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.application
 
 data class Regel<A: Resultat>(
-    /**
-     * kode for regelen, kan brukes til å identifisere feilsituasjoner i eksterne API.
-     */
-    val kode : Int,
+    val id: RegelId,
     /**
      * Beskrivelse av regelen
      */
@@ -19,12 +16,14 @@ data class Regel<A: Resultat>(
     fun vedTreff(opplysning: Iterable<Opplysning>): A = vedTreff(this, opplysning)
 }
 
+
+
 operator fun <A: Resultat> String.invoke(
     vararg opplysninger: Opplysning,
-    kode: Int,
+    id: RegelId,
     vedTreff: (Regel<A>, Iterable<Opplysning>) -> A
 ) = Regel(
-    kode = kode,
+    id = id,
     beskrivelse = this,
     vedTreff = vedTreff,
     opplysninger = opplysninger.toList()

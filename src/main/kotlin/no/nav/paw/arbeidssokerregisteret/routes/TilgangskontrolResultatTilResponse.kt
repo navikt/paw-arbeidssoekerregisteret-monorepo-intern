@@ -4,6 +4,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.util.pipeline.*
+import no.nav.paw.arbeidssokerregisteret.application.EksternRegelId
 import no.nav.paw.arbeidssokerregisteret.application.IkkeTilgang
 import no.nav.paw.arbeidssokerregisteret.application.TilgangOK
 import no.nav.paw.arbeidssokerregisteret.application.TilgangskontrollResultat
@@ -21,7 +22,7 @@ suspend fun respondWith(resultat: TilgangskontrollResultat) =
                 feilKode = Feilkode.AVVIST,
                 aarsakTilAvvisning = AarsakTilAvvisning(
                     beskrivelse = resultat.regel.beskrivelse,
-                    kode = resultat.regel.kode,
+                    regel = resultat.regel.id.eksternRegelId ?: EksternRegelId.UKJENT,
                     detaljer = resultat.regel.opplysninger.toSet()
                 )
             )

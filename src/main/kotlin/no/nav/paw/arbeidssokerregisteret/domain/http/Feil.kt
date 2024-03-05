@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.domain.http
 
+import no.nav.paw.arbeidssokerregisteret.application.EksternRegelId
 import no.nav.paw.arbeidssokerregisteret.application.Opplysning
 import no.nav.paw.arbeidssokerregisteret.domain.Feilkode
 
@@ -11,6 +12,6 @@ data class Feil(
 
 data class AarsakTilAvvisning(
     val beskrivelse: String,
-    val kode: Int,
+    val regel: EksternRegelId,
     val detaljer: Set<Opplysning>
 )

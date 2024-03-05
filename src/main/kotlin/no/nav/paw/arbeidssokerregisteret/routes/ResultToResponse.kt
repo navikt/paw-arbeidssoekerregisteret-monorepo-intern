@@ -18,7 +18,7 @@ suspend fun respondWith(resultat: EndeligResultat) =
                 feilKode = Feilkode.AVVIST,
                 aarsakTilAvvisning = AarsakTilAvvisning(
                     beskrivelse = resultat.regel.beskrivelse,
-                    kode = resultat.regel.kode,
+                    regel = resultat.regel.id.eksternRegelId ?: EksternRegelId.UKJENT,
                     detaljer = resultat.regel.opplysninger.toSet()
                 )
             )
