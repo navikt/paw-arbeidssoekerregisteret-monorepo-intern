@@ -2,14 +2,13 @@ package no.nav.paw.arbeidssokerregisteret.application
 
 import no.nav.paw.arbeidssokerregisteret.RequestScope
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
+import no.nav.paw.arbeidssokerregisteret.domain.http.OpplysningerRequest
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.config.kafka.sendDeferred
 import no.nav.paw.migrering.app.kafkakeys.KafkaKeysClient
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
-import java.util.*
 
 class RequestHandler(
     private val hendelseTopic: String,
@@ -49,5 +48,26 @@ class RequestHandler(
     context(RequestScope)
     suspend fun kanRegistreresSomArbeidssoker(identitetsnummer: Identitetsnummer): EndeligResultat {
         return requestValidator.validerStartAvPeriodeOenske(identitetsnummer)
+    }
+
+    context(RequestScope)
+    suspend fun oppdaterBrukeropplysninger(opplysningerRequest: OpplysningerRequest): Resultat {
+        val identitetsnummer = opplysningerRequest.getId()
+
+        val validerTilgangResultat = requestValidator.validerTilgang(identitetsnummer)
+
+        if (validerTilgangResultat is IkkeTilgang) {
+            return validerTilgangResultat
+        }
+
+        val hendelse = opplysningerHendelse(opplysningerRequest)
+        val record = ProducerRecord(
+            hendelseTopic,
+            kafkaKeysClient.getKey(identitetsnummer.verdi).id,
+            hendelse
+        )
+        val recordMetadata = producer.sendDeferred(record).await()
+        logger.trace("Sendte melding til kafka: type={}, offset={}", hendelse.hendelseType, recordMetadata.offset())
+        return validerTilgangResultat
     }
 }
