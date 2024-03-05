@@ -6,7 +6,7 @@ import no.nav.paw.arbeidssokerregisteret.domain.Feilkode
 data class Feil(
     val melding: String,
     val feilKode: Feilkode,
-    val aarasakTilAvvisning: AarsakTilAvvisning? = null
+    val aarsakTilAvvisning: AarsakTilAvvisning? = null
 )
 
 data class AarsakTilAvvisning(

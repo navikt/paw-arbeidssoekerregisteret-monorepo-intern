@@ -19,7 +19,7 @@ suspend fun respondWith(resultat: TilgangskontrollResultat) =
             HttpStatusCode.Forbidden, Feil(
                 melding = resultat.regel.beskrivelse,
                 feilKode = Feilkode.AVVIST,
-                aarasakTilAvvisning = AarsakTilAvvisning(
+                aarsakTilAvvisning = AarsakTilAvvisning(
                     beskrivelse = resultat.regel.beskrivelse,
                     kode = resultat.regel.kode,
                     detaljer = resultat.regel.opplysninger.toSet()
