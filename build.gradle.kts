@@ -12,7 +12,7 @@ val jvmVersion = 21
 
 val logbackVersion = "1.5.2"
 val logstashVersion = "7.3"
-val navCommonModulesVersion = "2.2023.01.02_13.51-1c6adeb1653b"
+val navCommonModulesVersion = "3.2024.02.21_11.18-8f9b43befae1"
 val tokenSupportVersion = "3.1.5"
 val koTestVersion = "5.7.2"
 val hopliteVersion = "2.8.0.RC3"
