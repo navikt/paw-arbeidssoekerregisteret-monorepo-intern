@@ -25,12 +25,6 @@ paths:
         required: false
         schema:
           type: "string"
-      requestBody:
-        content:
-          '*/*':
-            schema:
-              $ref: "#/components/schemas/KanStarteRequest"
-        required: true
       responses:
         "400":
           description: "Bad Request"
@@ -81,12 +75,6 @@ paths:
         required: false
         schema:
           type: "string"
-      requestBody:
-        content:
-          '*/*':
-            schema:
-              $ref: "#/components/schemas/StartStoppRequest"
-        required: true
       responses:
         "400":
           description: "Bad Request"
@@ -156,21 +144,23 @@ paths:
                 type: "string"
 components:
   schemas:
-    KanStarteRequest:
-      type: "object"
-      properties:
-        identitetsnummer:
-          type: "string"
-      required:
-      - "identitetsnummer"
     AarsakTilAvvisning:
       type: "object"
       properties:
         beskrivelse:
           type: "string"
-        kode:
-          type: "integer"
-          format: "int32"
+        regel:
+          type: "string"
+          enum:
+          - "UKJENT"
+          - "IKKE_FUNNET"
+          - "SAVNET"
+          - "DOED"
+          - "ENDRE_FOR_ANNEN_BRUKER"
+          - "ANSATT_IKKE_TILGANG_TIL_BRUKER"
+          - "IKKE_TILGANG"
+          - "UNDER_18_AAR"
+          - "IKKE_BOSATT_I_NORGE_I_HENHOLD_TIL_FOLKEREGISTERLOVEN"
         detaljer:
           type: "array"
           items:
@@ -209,6 +199,7 @@ components:
             - "INGEN_FLYTTE_INFORMASJON"
       required:
       - "beskrivelse"
+      - "regel"
       - "detaljer"
     Feil:
       type: "object"
@@ -223,23 +214,8 @@ components:
           - "FEIL_VED_LESING_AV_FORESPORSEL"
           - "AVVIST"
           - "IKKE_TILGANG"
-        aarasakTilAvvisning:
+        aarsakTilAvvisning:
           $ref: "#/components/schemas/AarsakTilAvvisning"
       required:
       - "melding"
       - "feilKode"
-    StartStoppRequest:
-      type: "object"
-      properties:
-        identitetsnummer:
-          type: "string"
-        registreringForhaandsGodkjentAvAnsatt:
-          type: "boolean"
-        periodeTilstand:
-          type: "string"
-          enum:
-          - "STARTET"
-          - "STOPPET"
-      required:
-      - "identitetsnummer"
-      - "periodeTilstand"
