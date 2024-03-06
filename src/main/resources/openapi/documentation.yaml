@@ -100,12 +100,6 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/Feil"
-        "200":
-          description: "OK"
-          content:
-            '*/*':
-              schema:
-                type: "object"
         "204":
           description: "No Content"
           content:
@@ -156,12 +150,6 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/Feil"
-        "200":
-          description: "OK"
-          content:
-            '*/*':
-              schema:
-                type: "object"
         "204":
           description: "No Content"
           content:

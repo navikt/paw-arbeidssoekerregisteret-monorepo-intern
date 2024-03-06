@@ -4,48 +4,53 @@ import com.fasterxml.jackson.databind.DatabindException
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
-import io.ktor.server.plugins.*
+import io.ktor.server.plugins.BadRequestException
+import io.ktor.server.plugins.ContentTransformationException
 import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.statuspages.StatusPages
+import io.ktor.server.request.RequestAlreadyConsumedException
 import io.ktor.server.response.respond
 import io.ktor.server.routing.IgnoreTrailingSlash
 import no.nav.paw.arbeidssokerregisteret.domain.Feilkode
 import no.nav.paw.arbeidssokerregisteret.domain.http.Feil
 import no.nav.paw.arbeidssokerregisteret.services.RemoteServiceException
 import no.nav.paw.arbeidssokerregisteret.utils.logger
-import io.ktor.server.plugins.BadRequestException
-import io.ktor.server.plugins.ContentTransformationException
-import io.ktor.server.request.*
 
 fun Application.configureHTTP() {
     install(IgnoreTrailingSlash)
     install(StatusPages) {
-       exception<Throwable> { call, cause ->
+        exception<Throwable> { call, cause ->
             when (cause) {
                 is ContentTransformationException -> {
                     logger.debug("Bad request", cause)
                     call.respond(HttpStatusCode.BadRequest, Feil(cause.message ?: "Bad request", Feilkode.FEIL_VED_LESING_AV_FORESPORSEL))
                 }
+
                 is DatabindException -> {
                     logger.debug("Bad request", cause)
                     call.respond(HttpStatusCode.BadRequest, Feil(cause.message ?: "Bad request", Feilkode.FEIL_VED_LESING_AV_FORESPORSEL))
                 }
+
                 is RemoteServiceException -> {
                     logger.warn("Request failed with status: ${cause}. Description: ${cause.message}")
                     call.respond(cause.status, Feil(cause.message ?: "ukjent feil knyttet til eksternt system", cause.feilkode))
                 }
+
                 is StatusException -> {
                     logger.error("Request failed with status: ${cause}. Description: ${cause.message}")
                     call.respond(cause.status, Feil(cause.message ?: "ukjent feil", cause.feilkode))
                 }
+
                 is BadRequestException -> {
                     logger.error("Request failed: ${cause.message}", cause)
                     call.respond(HttpStatusCode.BadRequest, Feil(cause.message ?: "bad request", Feilkode.FEIL_VED_LESING_AV_FORESPORSEL))
                 }
+
                 is RequestAlreadyConsumedException -> {
                     logger.error("Request failed: {}", cause.message, cause)
                     call.respond(HttpStatusCode.InternalServerError, Feil(cause.message ?: "bad request", Feilkode.UKJENT_FEIL))
                 }
+
                 else -> {
                     logger.error("Request failed with status: ${cause}. Description: ${cause.message}")
                     call.respond(HttpStatusCode.InternalServerError, Feil(cause.message ?: "ukjent feil", Feilkode.UKJENT_FEIL))

@@ -27,5 +27,5 @@ suspend fun respondWith(resultat: TilgangskontrollResultat) =
                 )
             )
         )
-        is TilgangOK -> call.respond(HttpStatusCode.OK)
+        is TilgangOK -> call.respond(HttpStatusCode.NoContent)
     }
