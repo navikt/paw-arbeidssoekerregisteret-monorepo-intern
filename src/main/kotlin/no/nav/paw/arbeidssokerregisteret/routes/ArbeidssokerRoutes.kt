@@ -1,7 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.routes
 
 import io.ktor.server.application.*
-import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import no.nav.paw.arbeidssokerregisteret.application.EndeligResultat
@@ -17,6 +16,7 @@ import no.nav.paw.arbeidssokerregisteret.utils.logger
 fun Route.arbeidssokerRoutes(requestHandler: RequestHandler) {
     route("/api/v1/arbeidssoker") {
         route("/kanStartePeriode") {
+            // Sjekker om bruker kan registreres som arbeidssøker
             put<KanStarteRequest> { request ->
                 logger.trace("Sjekker om bruker kan registreres som arbeidssøker")
                 val resultat = with(requestScope()) {
@@ -27,6 +27,7 @@ fun Route.arbeidssokerRoutes(requestHandler: RequestHandler) {
             }
         }
         route("/periode") {
+            // Registrerer bruker som arbeidssøker
             put<StartStoppRequest> { startStoppRequest ->
                 logger.trace("Registrerer bruker som arbeidssøker {}", startStoppRequest.periodeTilstand)
                 val resultat = with(requestScope()) {
@@ -46,6 +47,7 @@ fun Route.arbeidssokerRoutes(requestHandler: RequestHandler) {
             }
         }
         route("/opplysninger") {
+            // Registrerer eller oppdaterer brukers opplysninger
             post {
                 val opplysningerRequest = call.receive<OpplysningerRequest>()
                 logger.trace("Registrerer eller oppdaterer brukers opplysninger")

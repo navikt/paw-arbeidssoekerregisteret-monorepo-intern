@@ -8,7 +8,7 @@ servers:
 paths:
   /api/v1/arbeidssoker/kanStartePeriode:
     put:
-      description: ""
+      description: "Sjekker om bruker kan registreres som arbeidssøker"
       parameters:
       - name: "Nav-Call-Id"
         in: "header"
@@ -58,7 +58,7 @@ paths:
                 type: "object"
   /api/v1/arbeidssoker/opplysninger:
     post:
-      description: ""
+      description: "Registrerer eller oppdaterer brukers opplysninger"
       parameters:
       - name: "Nav-Call-Id"
         in: "header"
@@ -114,7 +114,7 @@ paths:
                 type: "object"
   /api/v1/arbeidssoker/periode:
     put:
-      description: ""
+      description: "Registrerer bruker som arbeidssøker"
       parameters:
       - name: "Nav-Call-Id"
         in: "header"
