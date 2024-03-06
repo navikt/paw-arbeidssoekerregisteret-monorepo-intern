@@ -2,7 +2,7 @@ package no.nav.paw.arbeidssokerregisteret.application
 
 import no.nav.paw.arbeidssokerregisteret.RequestScope
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
-import no.nav.paw.arbeidssokerregisteret.domain.http.OpplysningerRequest
+import no.nav.paw.arbeidssokerregisteret.domain.http.*
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.config.kafka.sendDeferred
 import no.nav.paw.migrering.app.kafkakeys.KafkaKeysClient
@@ -51,13 +51,19 @@ class RequestHandler(
     }
 
     context(RequestScope)
-    suspend fun oppdaterBrukeropplysninger(opplysningerRequest: OpplysningerRequest): Resultat {
+    suspend fun opprettBrukeropplysninger(opplysningerRequest: OpplysningerRequest): Either<out IkkeTilgang, out ValidationResult> {
         val identitetsnummer = opplysningerRequest.getId()
 
         val validerTilgangResultat = requestValidator.validerTilgang(identitetsnummer)
 
         if (validerTilgangResultat is IkkeTilgang) {
-            return validerTilgangResultat
+            return Left(validerTilgangResultat)
+        }
+
+        val validerOpplysninger = validerOpplysninger(opplysningerRequest.opplysningerOmArbeidssoeker)
+
+        if (validerOpplysninger is ValidationErrorResult) {
+            return Right(validerOpplysninger)
         }
 
         val hendelse = opplysningerHendelse(opplysningerRequest)
@@ -68,6 +74,11 @@ class RequestHandler(
         )
         val recordMetadata = producer.sendDeferred(record).await()
         logger.trace("Sendte melding til kafka: type={}, offset={}", hendelse.hendelseType, recordMetadata.offset())
-        return validerTilgangResultat
+        return Right(ValidationResultOk)
     }
 }
+
+
+sealed interface Either<L, R>
+data class Left<L>(val value: L) : Either<L, Nothing>
+data class Right<R>(val value: R) : Either<Nothing, R>

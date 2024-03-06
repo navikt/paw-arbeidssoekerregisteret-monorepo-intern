@@ -16,16 +16,22 @@ import no.nav.paw.arbeidssokerregisteret.domain.http.Feil
 context(PipelineContext<Unit, ApplicationCall>)
 suspend fun respondWith(resultat: TilgangskontrollResultat) =
     when (resultat) {
-        is IkkeTilgang -> call.respond(
-            HttpStatusCode.Forbidden, Feil(
-                melding = resultat.regel.beskrivelse,
-                feilKode = Feilkode.AVVIST,
-                aarsakTilAvvisning = AarsakTilAvvisning(
-                    beskrivelse = resultat.regel.beskrivelse,
-                    regel = resultat.regel.id.eksternRegelId ?: EksternRegelId.UKJENT_REGEL,
-                    detaljer = resultat.regel.opplysninger.toSet()
-                )
-            )
-        )
+        is IkkeTilgang -> ikkeTilgangTilResponse(resultat)
         is TilgangOK -> call.respond(HttpStatusCode.NoContent)
     }
+
+suspend fun PipelineContext<Unit, ApplicationCall>.ikkeTilgangTilResponse(
+    resultat: TilgangskontrollResultat
+) {
+    call.respond(
+        HttpStatusCode.Forbidden, Feil(
+            melding = resultat.regel.beskrivelse,
+            feilKode = Feilkode.AVVIST,
+            aarsakTilAvvisning = AarsakTilAvvisning(
+                beskrivelse = resultat.regel.beskrivelse,
+                regel = resultat.regel.id.eksternRegelId ?: EksternRegelId.UKJENT_REGEL,
+                detaljer = resultat.regel.opplysninger.toSet()
+            )
+        )
+    )
+}

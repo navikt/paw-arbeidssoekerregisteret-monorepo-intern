@@ -51,7 +51,6 @@ data class TilgangOK(
     override val opplysning: Iterable<Opplysning>
 ) : TilgangskontrollResultat
 
-
 context(RequestScope)
 fun stoppResultatSomHendelse(identitetsnummer: Identitetsnummer, resultat: TilgangskontrollResultat): Hendelse =
     when (resultat) {

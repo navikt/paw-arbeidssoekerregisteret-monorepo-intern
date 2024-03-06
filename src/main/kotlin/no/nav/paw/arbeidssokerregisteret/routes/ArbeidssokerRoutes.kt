@@ -3,9 +3,7 @@ package no.nav.paw.arbeidssokerregisteret.routes
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
-import no.nav.paw.arbeidssokerregisteret.application.EndeligResultat
-import no.nav.paw.arbeidssokerregisteret.application.RequestHandler
-import no.nav.paw.arbeidssokerregisteret.application.TilgangskontrollResultat
+import no.nav.paw.arbeidssokerregisteret.application.*
 import no.nav.paw.arbeidssokerregisteret.domain.http.KanStarteRequest
 import no.nav.paw.arbeidssokerregisteret.domain.http.OpplysningerRequest
 import no.nav.paw.arbeidssokerregisteret.domain.http.PeriodeTilstand
@@ -26,6 +24,7 @@ fun Route.arbeidssokerRoutes(requestHandler: RequestHandler) {
                 respondWith(resultat)
             }
         }
+
         route("/periode") {
             // Registrerer bruker som arbeidssøker
             put<StartStoppRequest> { startStoppRequest ->
@@ -54,12 +53,12 @@ fun Route.arbeidssokerRoutes(requestHandler: RequestHandler) {
 
                 val resultat =
                     with(requestScope()) {
-                        requestHandler.oppdaterBrukeropplysninger(opplysningerRequest)
+                        requestHandler.opprettBrukeropplysninger(opplysningerRequest)
                     }
                 logger.debug("Oppdateringsresultat: {}", resultat)
                 when (resultat) {
-                    is TilgangskontrollResultat -> respondWith(resultat)
-                    is EndeligResultat -> respondWith(resultat)
+                    is Left -> ikkeTilgangTilResponse(resultat.value)
+                    is Right -> respondWith(resultat.value)
                 }
             }
         }
