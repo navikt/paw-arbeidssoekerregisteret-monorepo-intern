@@ -106,6 +106,56 @@ paths:
             '*/*':
               schema:
                 type: "object"
+  /api/v1/arbeidssoker/periode:
+    put:
+      description: "Registrerer bruker som arbeidssøker"
+      parameters:
+      - name: "Nav-Call-Id"
+        in: "header"
+        required: false
+        schema:
+          type: "string"
+      - name: "traceparent"
+        in: "header"
+        required: false
+        schema:
+          type: "string"
+      - name: "Nav-Consumer-Id"
+        in: "header"
+        required: false
+        schema:
+          type: "string"
+      responses:
+        "400":
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Feil"
+        "424":
+          description: "Failed Dependency"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Feil"
+        "500":
+          description: "Internal Server Error"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Feil"
+        "403":
+          description: "Forbidden"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Feil"
+        "204":
+          description: "No Content"
+          content:
+            '*/*':
+              schema:
+                type: "object"
   /internal/isAlive:
     get:
       description: ""
