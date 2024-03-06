@@ -9,6 +9,7 @@ spec:
   image: {{ image }}
   ingresses:
     - https://periode-arbeidssoekerregisteret.intern.nav.no
+    - https://opplysninger-arbeidssoekerregisteret.intern.nav.no
   port: 8080
   tokenx:
     enabled: true
