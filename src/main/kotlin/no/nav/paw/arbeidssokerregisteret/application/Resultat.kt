@@ -111,7 +111,6 @@ fun opplysningerHendelse(opplysningerRequest: OpplysningerRequest): Hendelse = O
         annet = opplysningerRequest.opplysningerOmArbeidssoeker.annet,
         helse = opplysningerRequest.opplysningerOmArbeidssoeker.helse,
         jobbsituasjon = opplysningerRequest.opplysningerOmArbeidssoeker.jobbsituasjon,
-        arbeidserfaring = opplysningerRequest.opplysningerOmArbeidssoeker.arbeidserfaring,
         utdanning = opplysningerRequest.opplysningerOmArbeidssoeker.utdanning
     )
 )
