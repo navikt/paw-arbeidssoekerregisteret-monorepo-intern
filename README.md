@@ -1,32 +1,17 @@
 # paw-arbeidssokerregisteret-api-inngang
 
+REST-API for å starte arbeidssøkerperioder eller registrere opplysninger om arbeidssøker.
+
+Vi har to ingresser for denne: https://periode-arbeidssoekerregisteret.intern.dev.nav.no/docs og https://opplysninger-arbeidssoekerregisteret.intern.dev.nav.no/docs
+
 ```mermaid
-graph LR
-    %% Start bruker
-    Startpunkt -->|HTTP POST| ApiStart
-    ApiStart --> SjekkOppholdstillatelse
-    SjekkOppholdstillatelse --> OppholdstillatelseOK
-    SjekkOppholdstillatelse -->OppholdstillatelseIkkeOK
-    OppholdstillatelseIkkeOK -->|HTTP 403 Forbidden| Startpunkt
-    OppholdstillatelseOK --> SendStartMelding
-    OppholdstillatelseOK --> |HTTP 202 Accepted| Startpunkt
-
-    %% Stopp bruker
-    Startpunkt -->|HTTP PUT| ApiStop
-    ApiStop --> SendStoppMelding
-    SendStoppMelding --> |HTTP 202 Accepted| Startpunkt
-
-    Startpunkt[Arbeidssøkerregistrering frontend]
-    ApiStart["/api/v1/arbeidssoker/perioder"]
-    ApiStop["/api/v1/arbeidssoker/perioder"]
-    SendStartMelding[Send start-melding til Kafka-topic paw.arbeidssokerperiode-v1]
-    OppholdstillatelseOK[Oppholdstillatelse OK]:::ok
-    OppholdstillatelseIkkeOK[Oppholdstillatelse ikke OK]:::nok
-    SjekkOppholdstillatelse{Er oppholdstillatelse OK i PDL}
-    SendStoppMelding[Send stopp-melding til Kafka-topic paw.arbeidssokerperiode-v1]
-
-    classDef ok fill:#2ecc71, color:#000000, stroke:#000000;
-    classDef nok fill:#f51841, color:#000000, stroke:#000000;
+sequenceDiagram
+    HttpClient->>InngangApi: (HTTP PUT) Send start forespørsel
+    InngangApi->>PoaoTilgang: Dersom veileder, sjekk tilgang til person    
+    InngangApi->>PDL: Hent person info
+    InngangApi->>KafkaKey: Hent kafka key for person
+    InngangApi->>Kafka: Publiser startet eller avvist hendelse til loggen
+    InngangApi->>HttpClient: Svar 200 eller feilkode.
 ```
 
 ```
@@ -173,3 +158,34 @@ For veileder:
 
 6. Trykk Sign in
 7. Kopier verdien for access_token og benytt denne som Bearer i Authorization-header
+
+### Kafka
+
+Kafka UI ligger i docker-compose, og finnes på http://localhost:9000
+
+## Deploye kun til dev
+
+Ved å prefikse branch-navn med `dev/`, så vil branchen kun deployes i dev.
+
+```
+git checkout -b dev/<navn på branch>
+```
+
+evt. rename branch
+
+```
+git checkout <opprinnlig-branch>
+git branch -m dev/<opprinnlig-branch>
+```
+
+# Henvendelser
+
+Spørsmål knyttet til koden eller prosjektet kan stilles via issues her på github.
+
+## For NAV-ansatte
+
+Interne henvendelser kan sendes via Slack i kanalen [#team-paw-dev](https://nav-it.slack.com/archives/CLTFAEW75)
+
+# Lisens
+
+[MIT](LICENSE)
