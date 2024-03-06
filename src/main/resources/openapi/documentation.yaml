@@ -50,14 +50,14 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/Feil"
-        "200":
-          description: "OK"
+        "204":
+          description: "No Content"
           content:
             '*/*':
               schema:
                 type: "object"
   /api/v1/arbeidssoker/opplysninger:
-    put:
+    post:
       description: ""
       parameters:
       - name: "Nav-Call-Id"
@@ -102,6 +102,12 @@ paths:
                 $ref: "#/components/schemas/Feil"
         "200":
           description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "object"
+        "204":
+          description: "No Content"
           content:
             '*/*':
               schema:
@@ -152,6 +158,12 @@ paths:
                 $ref: "#/components/schemas/Feil"
         "200":
           description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "object"
+        "204":
+          description: "No Content"
           content:
             '*/*':
               schema:
