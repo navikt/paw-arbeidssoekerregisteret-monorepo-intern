@@ -337,17 +337,6 @@ components:
             $ref: "#/components/schemas/JobbsituasjonMedDetaljer"
       required:
       - "beskrivelser"
-    Arbeidserfaring:
-      type: "object"
-      properties:
-        harHattArbeid:
-          type: "string"
-          enum:
-          - "JA"
-          - "NEI"
-          - "VET_IKKE"
-      required:
-      - "harHattArbeid"
     Annet:
       type: "object"
       properties:
@@ -368,15 +357,12 @@ components:
           $ref: "#/components/schemas/Helse"
         jobbsituasjon:
           $ref: "#/components/schemas/Jobbsituasjon"
-        arbeidserfaring:
-          $ref: "#/components/schemas/Arbeidserfaring"
         annet:
           $ref: "#/components/schemas/Annet"
       required:
       - "utdanning"
       - "helse"
       - "jobbsituasjon"
-      - "arbeidserfaring"
       - "annet"
     OpplysningerRequest:
       type: "object"
