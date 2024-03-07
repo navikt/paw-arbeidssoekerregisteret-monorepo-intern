@@ -1,4 +1,4 @@
-FROM ghcr.io/navikt/baseimages/temurin:17
+FROM ghcr.io/navikt/baseimages/temurin:21
 
 ENV SERVICE_NAVN=paw-kafka-key-generator
 ENV AGENT=agents/opentelemetry-javaagent.jar

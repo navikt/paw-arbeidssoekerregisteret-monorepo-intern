@@ -1,15 +1,15 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.9.10"
-    id("io.ktor.plugin") version "2.3.5"
+    kotlin("jvm") version "1.9.22"
+    id("io.ktor.plugin") version "2.3.8"
     application
 }
-val exposedVersion = "0.42.1"
-val logbackVersion = "1.4.5"
-val logstashVersion = "7.3"
-val navCommonModulesVersion = "3.2023.10.23_12.41-bafec3836d28"
-val tokenSupportVersion = "3.1.5"
+val exposedVersion = "0.48.0"
+val logbackVersion = "1.5.2"
+val logstashVersion = "7.4"
+val navCommonModulesVersion = "3.2024.02.21_11.18-8f9b43befae1"
+val tokenSupportVersion = "4.1.3"
 val ktorVersion: Provider<String> = pawObservability.versions.ktor
 
 dependencies {
@@ -21,13 +21,13 @@ dependencies {
     implementation("no.nav.security:token-validation-ktor-v2:$tokenSupportVersion")
     implementation("no.nav.security:token-client-core:$tokenSupportVersion")
     implementation("no.nav.common:token-client:$navCommonModulesVersion")
-    implementation("no.nav.common:log:2.2023.01.10_13.49-81ddc732df3a")
+    implementation("no.nav.common:log:$navCommonModulesVersion")
     implementation("no.nav.security:token-validation-ktor-v2:$tokenSupportVersion")
     implementation("no.nav.security:token-client-core:$tokenSupportVersion")
     implementation("no.nav.paw:pdl-client:0.3.1")
 
     // Database
-    implementation("org.postgresql:postgresql:42.6.0")
+    implementation("org.postgresql:postgresql:42.7.2")
     implementation("org.flywaydb:flyway-core:9.21.2")
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-crypt:$exposedVersion")
@@ -56,7 +56,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:4.6.3")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
-    testImplementation("org.testcontainers:postgresql:1.18.0")
+    testImplementation("org.testcontainers:postgresql:1.19.7")
 }
 
 tasks.withType<KotlinCompile>().configureEach {
@@ -67,7 +67,7 @@ tasks.withType<KotlinCompile>().configureEach {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
