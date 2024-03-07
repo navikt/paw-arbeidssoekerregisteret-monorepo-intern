@@ -8,7 +8,7 @@ import java.time.Duration
 import java.time.Instant
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode as ApiPeriode
 
-context (RecordScope<Long>)
+context (HendelseScope<Long>)
 fun TilstandV1?.startPeriode(window: Duration, hendelse: Startet): InternTilstandOgApiTilstander {
     if (this?.gjeldenePeriode != null) throw IllegalStateException("Gjeldene periode er ikke null. Kan ikke starte ny periode.")
     val startetPeriode = Periode(
@@ -18,14 +18,14 @@ fun TilstandV1?.startPeriode(window: Duration, hendelse: Startet): InternTilstan
         avsluttet = null
     )
     val tilstand: TilstandV1 = this?.copy(
-        recordScope = currentScope(),
+        hendelseScope = currentScope(),
         gjeldeneTilstand = GjeldeneTilstand.STARTET,
         gjeldenePeriode = startetPeriode,
         gjeldeneIdentitetsnummer = hendelse.identitetsnummer,
         alleIdentitetsnummer = this.alleIdentitetsnummer + hendelse.identitetsnummer
     )
         ?: TilstandV1(
-            recordScope = currentScope(),
+            hendelseScope = currentScope(),
             gjeldeneIdentitetsnummer = hendelse.identitetsnummer,
             alleIdentitetsnummer = setOf(hendelse.identitetsnummer),
             gjeldeneTilstand = GjeldeneTilstand.STARTET,

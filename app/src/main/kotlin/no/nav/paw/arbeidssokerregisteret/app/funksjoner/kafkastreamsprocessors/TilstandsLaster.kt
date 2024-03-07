@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors
 
 import no.nav.paw.arbeidssokerregisteret.app.StreamHendelse
-import no.nav.paw.arbeidssokerregisteret.app.funksjoner.RecordScope
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.HendelseScope
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgHendelse
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandV1
 import org.apache.kafka.streams.kstream.KStream
@@ -48,8 +48,8 @@ class TilstandsLaster(
         record: Record<Long, StreamHendelse>
     ) {
         val tilstand: TilstandV1? = db.get(record.key())
-        val recordScope = ctx.recordMetadata().getOrNull()?.let { metadata ->
-            RecordScope(
+        val hendelseScope = ctx.recordMetadata().getOrNull()?.let { metadata ->
+            HendelseScope(
                 key = record.key(),
                 partition = metadata.partition(),
                 offset = metadata.offset()
@@ -58,7 +58,7 @@ class TilstandsLaster(
         ctx.forward(
             record.withValue(
                 InternTilstandOgHendelse(
-                    recordScope =  recordScope,
+                    hendelseScope =  hendelseScope,
                     tilstand = tilstand,
                     hendelse = record.value()
                 )

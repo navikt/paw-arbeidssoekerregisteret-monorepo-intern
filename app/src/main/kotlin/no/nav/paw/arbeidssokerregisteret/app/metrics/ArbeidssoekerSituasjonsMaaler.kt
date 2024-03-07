@@ -30,7 +30,7 @@ fun arbeidssoekerSituasjonsMaaler(tilstand: TilstandV1): List<ArbeidssoekerSitua
         ?.beskrivelser
         ?.map { jobbsituasjonMedDetaljer ->
             ArbeidssoekerSituasjonsMaaler(
-                partition = tilstand.recordScope.partition,
+                partition = tilstand.hendelseScope.partition,
                 varighet = varighet,
                 jobbSituasjon = jobbsituasjonMedDetaljer.beskrivelse.name,
                 prosent = percentageToBucket(jobbsituasjonMedDetaljer.detaljer[PROSENT]),

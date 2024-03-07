@@ -1,13 +1,13 @@
 package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 
-data class RecordScope<A>(
+data class HendelseScope<A>(
     val key: A,
     val partition: Int,
     val offset: Long
 )
 
 interface HasRecordScope<A> {
-    val recordScope: RecordScope<A>?
+    val hendelseScope: HendelseScope<A>?
 }
 
-fun <A> RecordScope<A>.currentScope(): RecordScope<A> = this
+fun <A> HendelseScope<A>.currentScope(): HendelseScope<A> = this

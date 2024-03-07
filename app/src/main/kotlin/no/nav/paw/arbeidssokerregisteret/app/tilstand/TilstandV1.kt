@@ -2,7 +2,7 @@ package no.nav.paw.arbeidssokerregisteret.app.tilstand
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.HasRecordScope
-import no.nav.paw.arbeidssokerregisteret.app.funksjoner.RecordScope
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.HendelseScope
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.OpplysningerOmArbeidssoeker
 
 /**
@@ -13,7 +13,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.OpplysningerOmArbeidssoeke
  * Først når alle tilstander er oppdatert til ny versjon, kan den gamle versjonen fjernes.
  */
 data class TilstandV1(
-    @JsonProperty("recordScope") override val recordScope: RecordScope<Long>,
+    @JsonProperty("recordScope") override val hendelseScope: HendelseScope<Long>,
     @JsonProperty("gjeldeneTilstand") val gjeldeneTilstand: GjeldeneTilstand,
     @JsonProperty("gjeldeneIdentitetsnummer") val gjeldeneIdentitetsnummer: String,
     @JsonProperty("alleIdentitetsnummer") val alleIdentitetsnummer: Set<String>,

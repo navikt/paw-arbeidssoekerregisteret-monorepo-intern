@@ -8,13 +8,13 @@ import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandV1
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.api
 import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
 
-context(RecordScope<Long>)
+context(HendelseScope<Long>)
 fun TilstandV1?.opplysningerOmArbeidssoekerMottatt(hendelse: OpplysningerOmArbeidssoekerMottatt): InternTilstandOgApiTilstander =
     when {
         this == null -> {
             InternTilstandOgApiTilstander(
                 tilstand = TilstandV1(
-                    recordScope = currentScope(),
+                    hendelseScope = currentScope(),
                     gjeldeneIdentitetsnummer = hendelse.identitetsnummer,
                     alleIdentitetsnummer = setOf(hendelse.identitetsnummer),
                     gjeldeneTilstand = GjeldeneTilstand.AVSLUTTET,
@@ -35,7 +35,7 @@ fun TilstandV1?.opplysningerOmArbeidssoekerMottatt(hendelse: OpplysningerOmArbei
                     forrigeOpplysningerOmArbeidssoeker = this.sisteOpplysningerOmArbeidssoeker,
                     gjeldeneIdentitetsnummer = hendelse.identitetsnummer,
                     alleIdentitetsnummer = this.alleIdentitetsnummer + hendelse.identitetsnummer,
-                    recordScope = currentScope()
+                    hendelseScope = currentScope()
                 ),
                 nyOpplysningerOmArbeidssoekerTilstand = null,
                 nyPeriodeTilstand = null
@@ -47,7 +47,7 @@ fun TilstandV1?.opplysningerOmArbeidssoekerMottatt(hendelse: OpplysningerOmArbei
                 tilstand = this.copy(
                     sisteOpplysningerOmArbeidssoeker = hendelse.opplysningerOmArbeidssoeker,
                     forrigeOpplysningerOmArbeidssoeker = this.sisteOpplysningerOmArbeidssoeker,
-                    recordScope = currentScope()
+                    hendelseScope = currentScope()
                 ),
                 nyOpplysningerOmArbeidssoekerTilstand = if (gjeldeneTilstand == STARTET) {
                     OpplysningerOmArbeidssoeker(
