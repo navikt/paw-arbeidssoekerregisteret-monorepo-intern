@@ -33,6 +33,9 @@ jobs:
 
   deploy-dev:
     name: Deploy to NAIS dev
+    permissions:
+      contents: read
+      id-token: write
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -45,6 +48,9 @@ jobs:
 
   deploy-prod:
     name: Deploy to NAIS prod
+    permissions:
+      contents: read
+      id-token: write
     needs: build
     runs-on: ubuntu-latest
     steps:
