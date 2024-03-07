@@ -34,7 +34,8 @@ fun TilstandV1?.startPeriode(window: Duration, hendelse: Startet): InternTilstan
             sisteOpplysningerOmArbeidssoeker = null,
             forrigeOpplysningerOmArbeidssoeker = null
         )
-        return InternTilstandOgApiTilstander(
+    return InternTilstandOgApiTilstander(
+        id = id,
         tilstand = tilstand,
         nyOpplysningerOmArbeidssoekerTilstand = this?.sisteOpplysningerOmArbeidssoeker
             ?.takeIf { window.isWithinWindow(it.metadata.tidspunkt, hendelse.metadata.tidspunkt) }

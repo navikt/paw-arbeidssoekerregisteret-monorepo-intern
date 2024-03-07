@@ -12,6 +12,7 @@ fun TilstandV1?.avsluttPeriode(hendelse: Avsluttet): InternTilstandOgApiTilstand
     if (this?.gjeldenePeriode == null) throw IllegalStateException("Gjeldene periode er null. Kan ikke avslutte periode.")
     val stoppetPeriode = gjeldenePeriode.copy(avsluttet = hendelse.metadata)
     return InternTilstandOgApiTilstander(
+        id = id,
         tilstand = copy(
             gjeldeneTilstand = GjeldeneTilstand.AVSLUTTET,
             gjeldenePeriode = null,

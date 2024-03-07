@@ -6,6 +6,7 @@ import java.util.*
 
 data class OpplysningerOmArbeidssoekerMottatt(
     override val hendelseId: UUID,
+    override val id: Long,
     override val identitetsnummer: String,
     val opplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker
 ) : Hendelse {

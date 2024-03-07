@@ -11,16 +11,10 @@ import no.nav.paw.arbeidssokerregisteret.app.funksjoner.tellHendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.KStream
-
-//Endring av denne verdien eller funksjonen 'publicTopicKeyFunction' krever replay av eventlog til nye topics!!
-const val PUBLIC_KEY_MODULO_VALUE = 7_500
-fun publicTopicKeyFunction(internalKey: Long): Long =
-    "internal_key_$internalKey".hashCode().toLong() % PUBLIC_KEY_MODULO_VALUE
 
 fun topology(
     applicationLogicConfig: ApplicationLogicConfig,
@@ -46,15 +40,12 @@ fun topology(
                 )
             }
             .lagreInternTilstand(dbNavn)
-            .flatMap { key, value ->
-                val publicKey = publicTopicKeyFunction(key)
+            .flatMapValues { _, value ->
                 listOfNotNull(
-                    value.nyPeriodeTilstand?.let { KeyValue(publicKey, it as SpecificRecord) },
-                    value.nyOpplysningerOmArbeidssoekerTilstand?.let { KeyValue(publicKey, it as SpecificRecord) }
+                    value.nyPeriodeTilstand as SpecificRecord?,
+                    value.nyOpplysningerOmArbeidssoekerTilstand as SpecificRecord?
                 )
             }.to(meteredTopicExtractor)
-        return builder.build()
     }
+    return builder.build()
 }
-
-

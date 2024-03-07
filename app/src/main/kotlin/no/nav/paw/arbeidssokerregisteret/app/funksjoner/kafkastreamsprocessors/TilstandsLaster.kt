@@ -47,9 +47,10 @@ class TilstandsLaster(
         db: KeyValueStore<Long, TilstandV1>,
         record: Record<Long, StreamHendelse>
     ) {
-        val tilstand: TilstandV1? = db.get(record.key())
+        val tilstand: TilstandV1? = db.get(record.value().id)
         val hendelseScope = ctx.recordMetadata().getOrNull()?.let { metadata ->
             HendelseScope(
+                id = record.value().id,
                 key = record.key(),
                 partition = metadata.partition(),
                 offset = metadata.offset()

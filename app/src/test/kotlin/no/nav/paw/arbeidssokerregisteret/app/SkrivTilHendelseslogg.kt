@@ -7,7 +7,6 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.app.config.KafkaKonfigurasjon
 import no.nav.paw.arbeidssokerregisteret.intern.v1.*
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.*
-import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -37,25 +36,25 @@ fun main() {
 
     val producer = KafkaProducer<Long, Hendelse>(kafkaKonfigurasjon.properties + producerCfg)
 
-    val periodeBruker1 = UUID.randomUUID().toString()
-    val periodeBruker2 = UUID.randomUUID().toString()
-    val periodeBruker3 = UUID.randomUUID().toString()
+    val periodeBruker1 = 100L to UUID.randomUUID().toString()
+    val periodeBruker2 = 101L to UUID.randomUUID().toString()
+    val periodeBruker3 = 102L to UUID.randomUUID().toString()
     with(TestContext(producer, kafkaKonfigurasjon.streamKonfigurasjon.eventlogTopic)) {
-        start(periodeBruker1)
-        start(periodeBruker1)
-        start(periodeBruker1)
-        start(periodeBruker3)
-        start(periodeBruker1)
-        start(periodeBruker2)
-        opplysningerMottattPermitertOgDeltidsJobb(periodeBruker2)
+        start(periodeBruker1.first, periodeBruker1.second)
+        start(periodeBruker1.first, periodeBruker1.second)
+        start(periodeBruker1.first, periodeBruker1.second)
+        start(periodeBruker3.first, periodeBruker3.second)
+        start(periodeBruker1.first, periodeBruker1.second)
+        start(periodeBruker2.first, periodeBruker2.second)
+        opplysningerMottattPermitertOgDeltidsJobb(periodeBruker2.first, periodeBruker2.second)
         println("Sover i 30 sekunder")
         Thread.sleep(Duration.ofSeconds(30))
         println("Våkner")
-        opplysningerMottattPermitert(periodeBruker2)
-        stop(periodeBruker2)
-        stop(periodeBruker3)
-        stop(periodeBruker1)
-        start(periodeBruker2)
+        opplysningerMottattPermitert(periodeBruker2.first, periodeBruker2.second)
+        stop(periodeBruker2.first, periodeBruker2.second)
+        stop(periodeBruker3.first, periodeBruker3.second)
+        stop(periodeBruker1.first, periodeBruker1.second)
+        start(periodeBruker2.first, periodeBruker2.second)
     }
     producer.flush()
     producer.close()
@@ -70,14 +69,15 @@ fun main() {
 
 class TestContext(private val producer: KafkaProducer<Long, Hendelse>, private val topic: String) {
 
-    fun start(id: String) {
+    fun start(id: Long, identitetsnummer: String) {
         producer.send(
             ProducerRecord(
                 topic,
-                id.hashCode().toLong(),
+                identitetsnummer.hashCode().toLong(),
                 Startet(
                     hendelseId = UUID.randomUUID(),
-                    identitetsnummer = id,
+                    id = id,
+                    identitetsnummer = identitetsnummer,
                     metadata = Metadata(
                         tidspunkt = Instant.now(),
                         utfoertAv = Bruker(BrukerType.SLUTTBRUKER, "test"),
@@ -90,14 +90,15 @@ class TestContext(private val producer: KafkaProducer<Long, Hendelse>, private v
             .get()
     }
 
-    fun opplysningerMottattPermitertOgDeltidsJobb(id: String) {
+    fun opplysningerMottattPermitertOgDeltidsJobb(id: Long, identitetsnummer: String) {
         producer.send(
             ProducerRecord(
                 topic,
-                id.hashCode().toLong(),
+                identitetsnummer.hashCode().toLong(),
                 OpplysningerOmArbeidssoekerMottatt(
                     hendelseId = UUID.randomUUID(),
-                    identitetsnummer = id,
+                    id = id,
+                    identitetsnummer = identitetsnummer,
                     opplysningerOmArbeidssoeker = OpplysningerOmArbeidssoeker(
                         metadata = Metadata(
                             tidspunkt = Instant.now(),
@@ -140,14 +141,15 @@ class TestContext(private val producer: KafkaProducer<Long, Hendelse>, private v
             .get()
     }
 
-    fun opplysningerMottattPermitert(id: String) {
+    fun opplysningerMottattPermitert(id: Long, identitietsnummer: String) {
         producer.send(
             ProducerRecord(
                 topic,
-                id.hashCode().toLong(),
+                identitietsnummer.hashCode().toLong(),
                 OpplysningerOmArbeidssoekerMottatt(
                     hendelseId = UUID.randomUUID(),
-                    identitetsnummer = id,
+                    id = id,
+                    identitetsnummer = identitietsnummer,
                     opplysningerOmArbeidssoeker = OpplysningerOmArbeidssoeker(
                         metadata = Metadata(
                             tidspunkt = Instant.now(),
@@ -183,14 +185,15 @@ class TestContext(private val producer: KafkaProducer<Long, Hendelse>, private v
             .get()
     }
 
-    fun stop(id: String) {
+    fun stop(id: Long, identitetsnummer: String) {
         producer.send(
             ProducerRecord(
                 topic,
-                id.hashCode().toLong(),
+                identitetsnummer.hashCode().toLong(),
                 Avsluttet(
                     hendelseId = UUID.randomUUID(),
-                    identitetsnummer = id,
+                    id = id,
+                    identitetsnummer = identitetsnummer,
                     metadata = Metadata(
                         tidspunkt = Instant.now(),
                         utfoertAv = Bruker(BrukerType.SYSTEM, "test"),

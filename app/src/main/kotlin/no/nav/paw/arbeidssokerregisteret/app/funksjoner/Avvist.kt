@@ -27,6 +27,7 @@ fun TilstandV1?.avvist(avvist: Avvist): InternTilstandOgApiTilstander =
         )
     }.let { nyTilstand: TilstandV1 ->
         InternTilstandOgApiTilstander(
+            id = id,
             tilstand = nyTilstand,
             nyPeriodeTilstand = null,
             nyOpplysningerOmArbeidssoekerTilstand = null

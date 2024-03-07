@@ -5,6 +5,7 @@ import java.util.*
 
 class Startet(
     override val hendelseId: UUID,
+    override val id: Long,
     override val identitetsnummer: String,
     override val metadata: Metadata
 ): Hendelse {

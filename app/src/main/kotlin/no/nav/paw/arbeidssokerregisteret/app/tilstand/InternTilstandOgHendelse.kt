@@ -14,6 +14,8 @@ data class InternTilstandOgHendelse(
 
 data class InternTilstandOgApiTilstander(
     val tilstand: TilstandV1?,
+    /**Unik id for personen som tilstanden gjelder for, generert av paw-kafka-key-generator*/
+    val id: Long,
     val nyPeriodeTilstand: ApiPeriode?,
     val nyOpplysningerOmArbeidssoekerTilstand: ApiOpplysningerOmArbeidssoeker?
 )

@@ -5,6 +5,7 @@ import java.util.*
 
 data class AvvistStoppAvPeriode(
     override val hendelseId: UUID,
+    override val id: Long,
     override val identitetsnummer: String,
     override val metadata: Metadata
 ) : Hendelse {
