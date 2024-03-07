@@ -18,6 +18,7 @@ import io.micrometer.core.instrument.binder.system.ProcessorMetrics
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.paw.kafkakeygenerator.Applikasjon
 import no.nav.paw.kafkakeygenerator.api.v1.konfigurerApi
+import no.nav.paw.kafkakeygenerator.api.v2.konfigurerApiV2
 import no.nav.paw.kafkakeygenerator.config.Autentiseringskonfigurasjon
 import no.nav.paw.kafkakeygenerator.masker
 import no.nav.security.token.support.v2.IssuerConfig
@@ -38,6 +39,7 @@ fun Application.konfigurerServer(
     routing {
         konfigurereHelse(prometheusMeterRegistry)
         konfigurerApi(autentiseringKonfigurasjon, applikasjon)
+        konfigurerApiV2(autentiseringKonfigurasjon, applikasjon)
         swaggerUI(path = "docs", swaggerFile = "openapi/documentation.yaml")
     }
 }
