@@ -14,16 +14,13 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.paw.arbeidssokerregisteret.application.*
 import no.nav.paw.arbeidssokerregisteret.domain.Feilkode
-import no.nav.paw.arbeidssokerregisteret.domain.http.AarsakTilAvvisning
-import no.nav.paw.arbeidssokerregisteret.domain.http.Feil
-import no.nav.paw.arbeidssokerregisteret.domain.http.PeriodeTilstand
-import no.nav.paw.arbeidssokerregisteret.domain.http.StartStoppRequest
+import no.nav.paw.arbeidssokerregisteret.domain.http.*
 import no.nav.paw.arbeidssokerregisteret.plugins.configureHTTP
 import no.nav.paw.arbeidssokerregisteret.plugins.configureSerialization
 import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutes
 
-class ApplicationTest : FunSpec({
-    test("Verifiser at vi returnerer 'Feil' objekt når vi avviser en periode") {
+class ApplicationOpplysningerTest : FunSpec({
+    test("Verifiser opplysninger happy path") {
         testApplication {
             application {
                 configureSerialization()
@@ -33,17 +30,9 @@ class ApplicationTest : FunSpec({
                 val requestHandler = mockk<RequestHandler>()
                 coEvery {
                     with(any<RequestScope>()) {
-                        requestHandler.startArbeidssokerperiode(any())
+                        requestHandler.opprettBrukeropplysninger(any())
                     }
-                } returns Avvist(
-                    regel = Regel(
-                        id = RegelId.UNDER_18_AAR,
-                        beskrivelse = "under 18 år",
-                        opplysninger = listOf(Opplysning.ER_UNDER_18_AAR),
-                        vedTreff = ::Avvist
-                    ),
-                    opplysning = listOf(Opplysning.ER_UNDER_18_AAR)
-                )
+                } returns Right(ValidationResultOk)
                 arbeidssokerRoutes(requestHandler)
             }
             val client = createClient {
@@ -54,26 +43,40 @@ class ApplicationTest : FunSpec({
                     }
                 }
             }
-            val response = client.put("/api/v1/arbeidssoker/periode") {
+            val response = client.post("/api/v1/arbeidssoker/opplysninger") {
                 headers {
                     append(HttpHeaders.ContentType, ContentType.Application.Json)
                 }
                 setBody(
-                    StartStoppRequest(
-                        identitetsnummer = "12345678911",
-                        periodeTilstand = PeriodeTilstand.STARTET
-                    )
+                    """
+                {
+                    "identitetsnummer":"12345678900",
+                    "opplysningerOmArbeidssoeker":{
+                        "utdanning":{
+                            "nus":"0"},
+                            "helse":{
+                                "helsetilstandHindrerArbeid":"NEI"
+                            },
+                            "jobbsituasjon":{
+                                "beskrivelser":[
+                                    {
+                                        "beskrivelse":"HAR_SAGT_OPP",
+                                        "detaljer":{
+                                            "stilling":"Bilskadereparatør",
+                                            "stilling_styrk08":"7213"
+                                        }
+                                    }
+                                ]
+                            }
+                            ,"annet":{
+                                "andreForholdHindrerArbeid":"NEI"
+                            }
+                        }
+                    }
+""".trimIndent()
                 )
             }
-            response.status shouldBe HttpStatusCode.Forbidden
-            val feil: Feil = response.body()
-            feil shouldBe Feil(
-                "under 18 år", Feilkode.AVVIST, AarsakTilAvvisning(
-                    beskrivelse = "under 18 år",
-                    regel = EksternRegelId.UNDER_18_AAR,
-                    detaljer = setOf(Opplysning.ER_UNDER_18_AAR)
-                )
-            )
+            response.status shouldBe HttpStatusCode.Accepted
         }
     }
 })
