@@ -31,6 +31,7 @@ dependencies {
     implementation("no.nav.security:token-validation-ktor-v2:$tokenSupportVersion")
     implementation("no.nav.security:token-client-core:$tokenSupportVersion")
     implementation("no.nav.common:token-client:$navCommonModulesVersion")
+    implementation("no.nav.common:audit-log:$navCommonModulesVersion")
     implementation("no.nav.common:log:$navCommonModulesVersion")
     implementation("com.github.navikt.poao-tilgang:client:2024.03.04_10.19-63a652788672")
     implementation("no.nav.paw:pdl-client:24.01.12.26-1")
