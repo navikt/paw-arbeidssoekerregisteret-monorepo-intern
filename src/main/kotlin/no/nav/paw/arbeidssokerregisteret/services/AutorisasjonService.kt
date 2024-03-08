@@ -2,6 +2,8 @@ package no.nav.paw.arbeidssokerregisteret.services
 
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
+import no.nav.paw.arbeidssokerregisteret.utils.auditLogMessage
+import no.nav.paw.arbeidssokerregisteret.utils.autitLogger
 import no.nav.paw.arbeidssokerregisteret.utils.logger
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput
 import no.nav.poao_tilgang.client.PoaoTilgangHttpClient
@@ -25,6 +27,9 @@ class AutorisasjonService(
         if (!harNavAnsattTilgang) {
             logger.warn("NAV-ansatt har ikke tilgang til bruker: $identitetsnummer (v/poao-tilgang)")
         } else {
+            autitLogger.info(
+                auditLogMessage(identitetsnummer, navAnsatt, "NAV-ansatt har registrert informasjon om bruker")
+            )
             logger.info("NAV-ansatt har hentet informasjon om bruker: $identitetsnummer")
         }
 

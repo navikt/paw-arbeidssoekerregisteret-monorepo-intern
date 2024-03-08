@@ -11,9 +11,9 @@ import org.slf4j.LoggerFactory
 inline val <reified T : Any> T.logger get() = LoggerFactory.getLogger(T::class.java.name)
 
 inline val autitLogger get() = LoggerFactory.getLogger("AuditLogger")
-fun auditLogMelding(identietsnummer: Identitetsnummer, navAnsatt: NavAnsatt, melding: String): String =
+fun auditLogMessage(identietsnummer: Identitetsnummer, navAnsatt: NavAnsatt, melding: String): String =
     CefMessage.builder()
-        .applicationName(getEnv("NAIS_APP_NAME"))
+        .applicationName(getEnv("NAIS_APP_NAME") ?: "paw-arbeidssokerregisteret-api-inngang")
         .event(CefMessageEvent.ACCESS)
         .name("Sporingslogg")
         .severity(CefMessageSeverity.INFO)
