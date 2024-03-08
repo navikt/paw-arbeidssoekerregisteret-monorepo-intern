@@ -1,4 +1,4 @@
-eventLogTopic: paw.arbeidssoker-hendelseslogg-beta-v9
+eventLogTopic: paw.arbeidssoker-hendelseslogg-beta-v12
 poaoTilgangClientConfig:
   url: http://poao-tilgang.poao.svc.cluster.local
   scope: api://${NAIS_CLUSTER_NAME}.poao.poao-tilgang/.default
@@ -6,7 +6,7 @@ pdlClientConfig:
   url: ${PDL_URL}
   scope: ${PDL_SCOPE}
 kafkaKeysConfig:
-  url: http://paw-kafka-key-generator/api/v1/hentEllerOpprett
+  url: http://paw-kafka-key-generator/api/v2/hentEllerOpprett
   scope: ${KAFKA_KEY_SCOPE}
 authProviders:
   azure:

@@ -9,7 +9,8 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 
 data class KafkaKeysResponse(
-    val id: Long
+    val id: Long,
+    val key: Long
 )
 
 data class KafkaKeysRequest(
@@ -17,7 +18,7 @@ data class KafkaKeysRequest(
 )
 
 interface KafkaKeysClient {
-    suspend fun getKey(identitetsnummer: String): KafkaKeysResponse
+    suspend fun getIdAndKey(identitetsnummer: String): KafkaKeysResponse
 }
 
 class StandardKafkaKeysClient(
@@ -25,7 +26,7 @@ class StandardKafkaKeysClient(
     private val kafkaKeysUrl: String,
     private val getAccessToken: () -> String
 ) : KafkaKeysClient {
-    override suspend fun getKey(identitetsnummer: String): KafkaKeysResponse =
+    override suspend fun getIdAndKey(identitetsnummer: String): KafkaKeysResponse =
         httpClient.post(kafkaKeysUrl) {
             header("Authorization", "Bearer ${getAccessToken()}")
             contentType(ContentType.Application.Json)

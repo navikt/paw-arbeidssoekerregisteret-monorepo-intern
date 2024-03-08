@@ -52,15 +52,17 @@ data class TilgangOK(
 ) : TilgangskontrollResultat
 
 context(RequestScope)
-fun stoppResultatSomHendelse(identitetsnummer: Identitetsnummer, resultat: TilgangskontrollResultat): Hendelse =
+fun stoppResultatSomHendelse(id: Long, identitetsnummer: Identitetsnummer, resultat: TilgangskontrollResultat): Hendelse =
     when (resultat) {
         is IkkeTilgang -> AvvistStoppAvPeriode(
+            id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
             metadata = hendelseMetadata(resultat)
         )
 
         is TilgangOK -> Avsluttet(
+            id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
             metadata = hendelseMetadata(resultat)
@@ -68,27 +70,31 @@ fun stoppResultatSomHendelse(identitetsnummer: Identitetsnummer, resultat: Tilga
     }
 
 context(RequestScope)
-fun somHendelse(identitetsnummer: Identitetsnummer, resultat: EndeligResultat): Hendelse =
+fun somHendelse(id: Long, identitetsnummer: Identitetsnummer, resultat: EndeligResultat): Hendelse =
     when (resultat) {
         is Avvist -> AvvistHendelse(
+            id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
             metadata = hendelseMetadata(resultat)
         )
 
         is IkkeTilgang -> AvvistHendelse(
+            id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
             metadata = hendelseMetadata(resultat)
         )
 
         is OK -> Startet(
+            id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
             metadata = hendelseMetadata(resultat)
         )
 
         is Uavklart -> AvvistHendelse(
+            id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
             metadata = hendelseMetadata(resultat)
@@ -96,8 +102,9 @@ fun somHendelse(identitetsnummer: Identitetsnummer, resultat: EndeligResultat): 
     }
 
 context(RequestScope)
-fun opplysningerHendelse(opplysningerRequest: OpplysningerRequest): Hendelse = OpplysningerOmArbeidssoekerMottatt(
+fun opplysningerHendelse(id: Long, opplysningerRequest: OpplysningerRequest): Hendelse = OpplysningerOmArbeidssoekerMottatt(
     hendelseId = UUID.randomUUID(),
+    id = id,
     identitetsnummer = opplysningerRequest.identitetsnummer,
     opplysningerOmArbeidssoeker = OpplysningerOmArbeidssoeker(
         id = UUID.randomUUID(),

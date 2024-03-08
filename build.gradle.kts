@@ -17,7 +17,7 @@ val tokenSupportVersion = "3.1.5"
 val koTestVersion = "5.7.2"
 val hopliteVersion = "2.8.0.RC3"
 val ktorVersion = pawObservability.versions.ktor
-val arbeidssokerregisteretVersion = "24.03.01.148-1"
+val arbeidssokerregisteretVersion = "24.03.07.150-1"
 val pawUtilsVersion = "24.02.21.12-1"
 
 val image: String? by project

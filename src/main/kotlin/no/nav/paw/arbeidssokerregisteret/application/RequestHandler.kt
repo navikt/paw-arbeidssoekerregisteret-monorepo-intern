@@ -8,6 +8,9 @@ import no.nav.paw.config.kafka.sendDeferred
 import no.nav.paw.migrering.app.kafkakeys.KafkaKeysClient
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.clients.producer.internals.BuiltInPartitioner
+import org.apache.kafka.clients.producer.internals.BuiltInPartitioner.partitionForKey
+import org.apache.kafka.common.serialization.LongSerializer
 import org.slf4j.LoggerFactory
 
 class RequestHandler(
@@ -17,13 +20,22 @@ class RequestHandler(
     private val kafkaKeysClient: KafkaKeysClient
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
+
+    private fun calculatePartition(recordKey: Long): Int? {
+        return if (hendelseTopic == "paw.arbeidssoker-hendelseslogg-beta-v9") {
+            partitionForKey(LongSerializer().serialize(hendelseTopic, recordKey), 6)
+        } else {
+            null
+        }
+    }
     context(RequestScope)
     suspend fun startArbeidssokerperiode(identitetsnummer: Identitetsnummer): EndeligResultat {
+        val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
         val resultat = requestValidator.validerStartAvPeriodeOenske(identitetsnummer)
-        val hendelse = somHendelse(identitetsnummer, resultat)
+        val hendelse = somHendelse(id, identitetsnummer, resultat)
         val record = ProducerRecord(
             hendelseTopic,
-            kafkaKeysClient.getKey(identitetsnummer.verdi).id,
+            key,
             hendelse
         )
         val recordMetadata = producer.sendDeferred(record).await()
@@ -33,11 +45,12 @@ class RequestHandler(
 
     context(RequestScope)
     suspend fun avsluttArbeidssokerperiode(identitetsnummer: Identitetsnummer): TilgangskontrollResultat {
+        val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
         val tilgangskontrollResultat = requestValidator.validerTilgang(identitetsnummer)
-        val hendelse = stoppResultatSomHendelse(identitetsnummer, tilgangskontrollResultat)
+        val hendelse = stoppResultatSomHendelse(id, identitetsnummer, tilgangskontrollResultat)
         val record = ProducerRecord(
             hendelseTopic,
-            kafkaKeysClient.getKey(identitetsnummer.verdi).id,
+            key,
             hendelse
         )
         val recordMetadata = producer.sendDeferred(record).await()
@@ -65,11 +78,11 @@ class RequestHandler(
         if (validerOpplysninger is ValidationErrorResult) {
             return Right(validerOpplysninger)
         }
-
-        val hendelse = opplysningerHendelse(opplysningerRequest)
+        val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
+        val hendelse = opplysningerHendelse(id, opplysningerRequest)
         val record = ProducerRecord(
             hendelseTopic,
-            kafkaKeysClient.getKey(identitetsnummer.verdi).id,
+            key,
             hendelse
         )
         val recordMetadata = producer.sendDeferred(record).await()
