@@ -9,18 +9,20 @@ suspend fun PdlClient.hentFoedsel(
     traceparent: String? = null,
     navConsumerId: String?,
 ): Foedsel? {
-    val query = HentFoedsel(
-        HentFoedsel.Variables(ident),
-    )
+    val query =
+        HentFoedsel(
+            HentFoedsel.Variables(ident),
+        )
 
     logger.trace("Henter 'hentFoedsel' fra PDL")
 
-    val respons = execute(
-        query = query,
-        callId = callId,
-        navConsumerId = navConsumerId,
-        traceparent = traceparent,
-    )
+    val respons =
+        execute(
+            query = query,
+            callId = callId,
+            navConsumerId = navConsumerId,
+            traceparent = traceparent,
+        )
 
     respons.errors?.let {
         throw PdlException("'hentPerson' feilet", it)

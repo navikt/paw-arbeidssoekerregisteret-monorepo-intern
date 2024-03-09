@@ -9,7 +9,7 @@ import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.header
 import org.slf4j.LoggerFactory
 import java.io.IOException
-import java.net.URL
+import java.net.URI
 
 // Se https://pdldocs-navno.msappproxy.net/ for dokumentasjon av PDL API-et
 class PdlClient(
@@ -21,10 +21,11 @@ class PdlClient(
 ) {
     internal val logger = LoggerFactory.getLogger(this::class.java)
 
-    private val graphQLClient = GraphQLKtorClient(
-        url = URL(url),
-        httpClient = httpClient,
-    )
+    private val graphQLClient =
+        GraphQLKtorClient(
+            url = URI.create(url).toURL(),
+            httpClient = httpClient,
+        )
 
     internal suspend fun <T : Any> execute(
         query: GraphQLClientRequest<T>,

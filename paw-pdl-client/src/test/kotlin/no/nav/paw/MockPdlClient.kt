@@ -10,12 +10,13 @@ import io.ktor.http.headersOf
 import no.nav.paw.pdl.PdlClient
 
 fun mockPdlClient(content: String): PdlClient {
-    val mockEngine = MockEngine {
-        respond(
-            content = content,
-            status = HttpStatusCode.OK,
-            headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
-        )
-    }
+    val mockEngine =
+        MockEngine {
+            respond(
+                content = content,
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+            )
+        }
     return PdlClient("https://url", "tema", HttpClient(mockEngine)) { "fake token" }
 }

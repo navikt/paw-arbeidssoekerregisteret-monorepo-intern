@@ -3,7 +3,7 @@ package no.nav.paw.pdl
 import kotlinx.coroutines.runBlocking
 import no.nav.paw.mockPdlClient
 import no.nav.paw.pdl.graphql.generated.enums.Oppholdstillatelse
-import java.util.*
+import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -54,7 +54,16 @@ class PdlClientTest {
         val forventet = Oppholdstillatelse.PERMANENT
         assertEquals(forventet, resultat!!.first().type)
     }
+
+    @Test
+    fun `Forventer gyldig respons fra hentPerson`() {
+        val respons = readResource("hentPerson-response.json")
+        val pdlClient = mockPdlClient(respons)
+
+        val resultat = runBlocking { pdlClient.hentPerson("2649500819544", callId, null, navConsumerId) }
+        val forventet = Oppholdstillatelse.PERMANENT
+        assertEquals(forventet, resultat!!.opphold.first().type)
+    }
 }
 
-private fun readResource(filename: String) =
-    ClassLoader.getSystemResource(filename).readText()
+private fun readResource(filename: String) = ClassLoader.getSystemResource(filename).readText()

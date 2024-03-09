@@ -10,18 +10,20 @@ suspend fun PdlClient.hentPerson(
     navConsumerId: String?,
     historisk: Boolean = false,
 ): Person? {
-    val query = HentPerson(
-        HentPerson.Variables(ident, historisk),
-    )
+    val query =
+        HentPerson(
+            HentPerson.Variables(ident, historisk),
+        )
 
     logger.trace("Henter 'hentPerson' fra PDL")
 
-    val respons = execute(
-        query = query,
-        callId = callId,
-        navConsumerId = navConsumerId,
-        traceparent = traceparent,
-    )
+    val respons =
+        execute(
+            query = query,
+            callId = callId,
+            navConsumerId = navConsumerId,
+            traceparent = traceparent,
+        )
 
     respons.errors?.let {
         throw PdlException("'hentPerson' feilet", it)
