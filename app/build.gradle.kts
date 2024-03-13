@@ -11,7 +11,7 @@ plugins {
 val jvmVersion = JavaVersion.VERSION_21
 val image: String? by project
 
-val logbackVersion = "1.4.5"
+val logbackVersion = "1.4.14"
 val logstashVersion = "7.3"
 
 val arbeidssokerregisteretSchemaVersion = "1.8050675667.20-1"
@@ -29,16 +29,16 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.3")
     implementation("com.sksamuel.hoplite:hoplite-core:2.8.0.RC3")
     implementation("com.sksamuel.hoplite:hoplite-toml:2.8.0.RC3")
-    implementation("no.nav.common:log:2.2023.01.10_13.49-81ddc732df3a")
+    implementation("no.nav.common:log:3.2024.02.21_11.18-8f9b43befae1")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashVersion")
-    implementation("org.apache.kafka:kafka-clients:3.5.1")
-    implementation("org.apache.kafka:kafka-streams:3.5.1")
-    implementation("io.confluent:kafka-avro-serializer:7.4.0")
-    implementation("io.confluent:kafka-streams-avro-serde:7.4.0")
-    implementation("org.apache.avro:avro:1.11.0")
+    implementation("org.apache.kafka:kafka-clients:3.7.0")
+    implementation("org.apache.kafka:kafka-streams:3.7.0")
+    implementation("io.confluent:kafka-avro-serializer:7.6.0")
+    implementation("io.confluent:kafka-streams-avro-serde:7.6.0")
+    implementation("org.apache.avro:avro:1.11.3")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:4.6.0")
-    testImplementation("org.apache.kafka:kafka-streams-test-utils:3.5.1")
+    testImplementation("org.apache.kafka:kafka-streams-test-utils:3.7.0")
     implementation("io.prometheus:client_java:1.1.0")
     implementation("io.micrometer:micrometer-registry-prometheus:1.12.0")
 }

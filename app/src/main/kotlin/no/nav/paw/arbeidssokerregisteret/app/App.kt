@@ -21,7 +21,7 @@ import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
 import org.apache.kafka.streams.state.QueryableStoreTypes
 import org.apache.kafka.streams.state.ReadOnlyKeyValueStore
 import org.apache.kafka.streams.state.internals.KeyValueStoreBuilder
-import org.apache.kafka.streams.state.internals.RocksDbKeyValueBytesStoreSupplier
+import org.apache.kafka.streams.state.internals.RocksDBKeyValueBytesStoreSupplier
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -40,7 +40,7 @@ fun main() {
     val strømBygger = StreamsBuilder()
     strømBygger.addStateStore(
         KeyValueStoreBuilder(
-            RocksDbKeyValueBytesStoreSupplier(dbNavn, false),
+            RocksDBKeyValueBytesStoreSupplier(dbNavn, false),
             Serdes.Long(),
             tilstandSerde,
             Time.SYSTEM
