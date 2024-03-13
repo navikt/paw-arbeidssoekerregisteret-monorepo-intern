@@ -8,13 +8,6 @@ metadata:
 spec:
   image: {{ image }}
   port: 8080
-  env:
-    - name: OTEL_METRICS_EXPORTER
-      value: "none"
-    - name: OTEL_TRACES_EXPORTER
-      value: "maskert_oltp"
-    - name: OTEL_JAVAAGENT_DEBUG
-      value: "false"
   replicas:
     min: 1
     max: 1
@@ -28,8 +21,9 @@ spec:
     enabled: true
     path: /metrics
   observability:
-    tracing:
+    autoInstrumentation:
       enabled: true
+      runtime: java
   kafka:
     pool: {{ kafka }}
     streams: true

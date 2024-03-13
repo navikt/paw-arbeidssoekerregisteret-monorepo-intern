@@ -5,7 +5,7 @@ plugins {
     kotlin("jvm")
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
     id("io.ktor.plugin") version "2.3.8"
-    id("com.google.cloud.tools.jib") version "3.4.0"
+    id("com.google.cloud.tools.jib") version "3.4.1"
     application
 }
 val jvmVersion = JavaVersion.VERSION_21
@@ -13,19 +13,6 @@ val image: String? by project
 
 val logbackVersion = "1.4.5"
 val logstashVersion = "7.3"
-
-val agent by configurations.creating {
-    isTransitive = false
-}
-
-val agentExtension by configurations.creating {
-    isTransitive = false
-}
-
-val agentExtensionJar = "agent-extension.jar"
-val agentJar = "agent.jar"
-val agentFolder = layout.buildDirectory.dir("agent").get().toString()
-val agentExtensionFolder = layout.buildDirectory.dir("agent-extension").get().toString()
 
 val arbeidssokerregisteretSchemaVersion = "1.8050675667.20-1"
 
@@ -35,8 +22,6 @@ val schema by configurations.creating {
 
 dependencies {
     schema("no.nav.paw.arbeidssokerregisteret.api:main-avro-schema:$arbeidssokerregisteretSchemaVersion")
-    agent("io.opentelemetry.javaagent:opentelemetry-javaagent:${pawObservability.versions.openTelemetryInstrumentation.get()}")
-    agentExtension("no.nav.paw.observability:opentelemetry-anonymisering-${pawObservability.versions.openTelemetryInstrumentation.get()}:24.02.20.10-1")
     implementation(project(":interne-eventer"))
     implementation(project(":arbeidssoekerregisteret-kotlin"))
     implementation(pawObservability.bundles.ktorNettyOpentelemetryMicrometerPrometheus)
@@ -84,46 +69,9 @@ tasks.named("compileKotlin", org.jetbrains.kotlin.gradle.tasks.KotlinCompilation
     }
 }
 
-tasks.create("addAgent", Copy::class) {
-    from(agent)
-    into(agentFolder)
-    rename { _ -> agentJar}
-}
-
-tasks.create("addAgentExtension", Copy::class) {
-    from(agentExtension)
-    into(agentExtensionFolder)
-    rename { _ -> agentExtensionJar}
-}
-
-tasks.withType(KotlinCompile::class) {
-    dependsOn.add("addAgent")
-    dependsOn.add("addAgentExtension")
-}
-
 jib {
     from.image = "ghcr.io/navikt/baseimages/temurin:${jvmVersion.majorVersion}"
     to.image = "${image ?: rootProject.name }:${project.version}"
-    extraDirectories {
-        paths {
-            path {
-                setFrom(agentFolder)
-                into = "/app"
-            }
-            path {
-                setFrom(agentExtensionFolder)
-                into = "/app"
-            }
-        }
-    }
-    container.entrypoint = listOf(
-        "java",
-        "-cp", "@/app/jib-classpath-file",
-        "-javaagent:/app/$agentJar",
-        "-Dotel.javaagent.extensions=/app/$agentExtensionJar",
-        "-Dotel.resource.attributes=service.name=${project.name}",
-        application.mainClass.get()
-    )
 }
 
 tasks.named<Test>("test") {
