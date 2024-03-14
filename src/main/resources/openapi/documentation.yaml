@@ -25,6 +25,12 @@ paths:
         required: false
         schema:
           type: "string"
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: "#/components/schemas/KanStarteRequest"
+        required: true
       responses:
         "400":
           description: "Bad Request"
@@ -125,6 +131,12 @@ paths:
         required: false
         schema:
           type: "string"
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: "#/components/schemas/StartStoppRequest"
+        required: true
       responses:
         "400":
           description: "Bad Request"
@@ -194,6 +206,13 @@ paths:
                 type: "string"
 components:
   schemas:
+    KanStarteRequest:
+      type: "object"
+      properties:
+        identitetsnummer:
+          type: "string"
+      required:
+      - "identitetsnummer"
     AarsakTilAvvisning:
       type: "object"
       properties:
@@ -367,3 +386,18 @@ components:
       required:
       - "identitetsnummer"
       - "opplysningerOmArbeidssoeker"
+    StartStoppRequest:
+      type: "object"
+      properties:
+        identitetsnummer:
+          type: "string"
+        registreringForhaandsGodkjentAvAnsatt:
+          type: "boolean"
+        periodeTilstand:
+          type: "string"
+          enum:
+          - "STARTET"
+          - "STOPPET"
+      required:
+      - "identitetsnummer"
+      - "periodeTilstand"
