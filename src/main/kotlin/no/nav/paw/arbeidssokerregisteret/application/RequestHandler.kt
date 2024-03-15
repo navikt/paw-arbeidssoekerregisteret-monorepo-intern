@@ -29,9 +29,9 @@ class RequestHandler(
         }
     }
     context(RequestScope)
-    suspend fun startArbeidssokerperiode(identitetsnummer: Identitetsnummer): EndeligResultat {
+    suspend fun startArbeidssokerperiode(identitetsnummer: Identitetsnummer, erForhaandsGodkjentAvVeileder: Boolean): EndeligResultat {
         val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
-        val resultat = requestValidator.validerStartAvPeriodeOenske(identitetsnummer)
+        val resultat = requestValidator.validerStartAvPeriodeOenske(identitetsnummer, erForhaandsGodkjentAvVeileder)
         val hendelse = somHendelse(id, identitetsnummer, resultat)
         val record = ProducerRecord(
             hendelseTopic,

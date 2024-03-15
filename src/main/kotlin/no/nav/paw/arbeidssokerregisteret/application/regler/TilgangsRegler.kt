@@ -8,6 +8,12 @@ val tilgangsReglerIPrioritertRekkefolge: List<Regel<TilgangskontrollResultat>> =
         id = RegelId.ANSATT_HAR_TILGANG_TIL_BRUKER,
         vedTreff = ::TilgangOK
     ),
+    "Ikke ansatt har satt forhåndsgodkjenningAvVeileder"(
+        Opplysning.FORHAANDSGODKJENT_AV_ANSATT,
+        Opplysning.IKKE_ANSATT,
+        id = RegelId.IKKE_ANSATT_OG_FORHAANDSGODKJENT_AV_ANSATT,
+        vedTreff = ::UgyldigRequestBasertPaaAutentisering
+    ),
     "Bruker prøver å endre for seg selv"(
         Opplysning.SAMME_SOM_INNLOGGET_BRUKER,
         Opplysning.IKKE_ANSATT,

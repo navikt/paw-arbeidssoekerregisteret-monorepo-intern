@@ -30,7 +30,7 @@ class AutorisasjonService(
             autitLogger.info(
                 auditLogMessage(identitetsnummer, navAnsatt, "NAV-ansatt har registrert informasjon om bruker")
             )
-            logger.info("NAV-ansatt har hentet informasjon om bruker: $identitetsnummer")
+            logger.info("NAV-ansatt har hentet informasjon om bruker: $identitetsnummer") // er dette sånn superlogging som ikke havner rett i elastic?
         }
 
         return harNavAnsattTilgang

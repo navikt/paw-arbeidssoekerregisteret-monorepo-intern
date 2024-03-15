@@ -15,7 +15,8 @@ fun AutorisasjonService.navAnsattTilgangFakta(identitetsnummer: Identitetsnummer
         } else {
             Opplysning.ANSATT_IKKE_TILGANG
         }
-    } else {
+    }
+    else {
         Opplysning.IKKE_ANSATT
     }
 }

@@ -51,6 +51,11 @@ data class TilgangOK(
     override val opplysning: Iterable<Opplysning>
 ) : TilgangskontrollResultat
 
+data class UgyldigRequestBasertPaaAutentisering(
+    override val regel: Regel<TilgangskontrollResultat>,
+    override val opplysning: Iterable<Opplysning>
+) : EndeligResultat, TilgangskontrollResultat
+
 context(RequestScope)
 fun stoppResultatSomHendelse(id: Long, identitetsnummer: Identitetsnummer, resultat: TilgangskontrollResultat): Hendelse =
     when (resultat) {
@@ -62,6 +67,13 @@ fun stoppResultatSomHendelse(id: Long, identitetsnummer: Identitetsnummer, resul
         )
 
         is TilgangOK -> Avsluttet(
+            id = id,
+            hendelseId = UUID.randomUUID(),
+            identitetsnummer = identitetsnummer.verdi,
+            metadata = hendelseMetadata(resultat)
+        )
+
+        is UgyldigRequestBasertPaaAutentisering -> AvvistStoppAvPeriode(
             id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
@@ -94,6 +106,13 @@ fun somHendelse(id: Long, identitetsnummer: Identitetsnummer, resultat: EndeligR
         )
 
         is Uavklart -> AvvistHendelse(
+            id = id,
+            hendelseId = UUID.randomUUID(),
+            identitetsnummer = identitetsnummer.verdi,
+            metadata = hendelseMetadata(resultat)
+        )
+
+        is UgyldigRequestBasertPaaAutentisering -> AvvistHendelse(
             id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,

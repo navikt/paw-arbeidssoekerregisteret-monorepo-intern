@@ -38,4 +38,10 @@ suspend fun respondWith(resultat: EndeligResultat) =
                 feilKode = Feilkode.AVVIST
             )
         )
+        is UgyldigRequestBasertPaaAutentisering -> call.respond(
+            HttpStatusCode.BadRequest, Feil(
+                melding = resultat.regel.beskrivelse,
+                feilKode = Feilkode.UGYLDIG_FORESPORSEL
+            )
+        )
     }

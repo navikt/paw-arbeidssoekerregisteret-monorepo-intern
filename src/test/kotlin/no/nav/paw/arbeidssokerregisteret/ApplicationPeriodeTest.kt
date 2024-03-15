@@ -33,7 +33,7 @@ class ApplicationPeriodeTest : FunSpec({
                 val requestHandler = mockk<RequestHandler>()
                 coEvery {
                     with(any<RequestScope>()) {
-                        requestHandler.startArbeidssokerperiode(any())
+                        requestHandler.startArbeidssokerperiode(any(), any())
                     }
                 } returns Avvist(
                     regel = Regel(

@@ -40,7 +40,7 @@ fun Route.arbeidssokerRoutes(requestHandler: RequestHandler) {
                 val resultat = with(requestScope()) {
                     when (startStoppRequest.periodeTilstand) {
                         PeriodeTilstand.STARTET ->
-                            requestHandler.startArbeidssokerperiode(startStoppRequest.getId())
+                            requestHandler.startArbeidssokerperiode(startStoppRequest.getId(), startStoppRequest.registreringForhaandsGodkjentAvAnsatt)
 
                         PeriodeTilstand.STOPPET ->
                             requestHandler.avsluttArbeidssokerperiode(startStoppRequest.getId())
