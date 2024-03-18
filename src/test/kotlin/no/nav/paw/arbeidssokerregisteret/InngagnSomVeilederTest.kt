@@ -44,7 +44,7 @@ class InngagnSomVeilederTest : FreeSpec({
         oauth.shutdown()
     }
 
-    "protected tokenx endpoints" - {
+    "inngang som veileder" - {
         "forhåndsgodkjent param skal taes med til validering" {
             val requestHandler: RequestHandler = mockk()
             coEvery {
@@ -53,7 +53,7 @@ class InngagnSomVeilederTest : FreeSpec({
                 }
             } returns OK(
                 regel = Regel(
-                    id = RegelId.ENDRE_EGEN_BRUKER,
+                    id = RegelId.ANSATT_HAR_TILGANG_TIL_BRUKER,
                     beskrivelse = "",
                     opplysninger = emptyList(),
                     vedTreff = ::OK
@@ -103,8 +103,29 @@ class InngagnSomVeilederTest : FreeSpec({
                         requestHandler.startArbeidssokerperiode(Identitetsnummer("12345678909"), true)
                     }
                 }
+
+
+
+                val response2 = client.put("/api/v1/arbeidssoker/periode") {
+                    bearerAuth(token.serialize())
+                    headers {
+                        append(HttpHeaders.ContentType, ContentType.Application.Json)
+                    }
+                    setBody(StartStoppRequest(
+                        identitetsnummer = "12345678909",
+                        registreringForhaandsGodkjentAvAnsatt = false,
+                        periodeTilstand = PeriodeTilstand.STARTET
+                    ))
+                }
+                response2.status shouldBe HttpStatusCode.NoContent
+                coVerify(exactly = 1) {
+                    with(any<RequestScope>()) {
+                        requestHandler.startArbeidssokerperiode(Identitetsnummer("12345678909"), false)
+                    }
+
             }
         }
     }
+}
 })
 
