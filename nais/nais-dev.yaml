@@ -42,3 +42,4 @@ spec:
         rules:
           - application: paw-migrering-veilarb-til-nytt-register
           - application: paw-arbeidssokerregisteret-api-inngang
+          - application: paw-arbsoekreg-utgang-formidlingsgruppe
