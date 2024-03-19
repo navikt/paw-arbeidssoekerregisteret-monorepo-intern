@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.application
 
+import io.kotest.assertions.any
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
@@ -9,14 +10,17 @@ import io.mockk.mockk
 import no.nav.paw.arbeidssokerregisteret.RequestScope
 import no.nav.paw.arbeidssokerregisteret.application.fakta.navAnsattTilgangFakta
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
+import no.nav.paw.arbeidssokerregisteret.requestScope
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.arbeidssokerregisteret.services.PersonInfoService
 import no.nav.paw.arbeidssokerregisteret.utils.AzureNavIdent
 import no.nav.paw.arbeidssokerregisteret.utils.AzureOID
 import no.nav.paw.arbeidssokerregisteret.utils.ResolvedClaims
 import no.nav.paw.arbeidssokerregisteret.utils.TokenXPID
+import no.nav.paw.pdl.graphql.generated.hentperson.Foedsel
+import no.nav.paw.pdl.graphql.generated.hentperson.Person
 import org.junit.jupiter.api.Assertions.*
-import java.util.UUID
+import java.util.*
 
 class RequestValidatorTest : FreeSpec({
     "Tester requestvalidator" - {
@@ -103,4 +107,35 @@ class RequestValidatorTest : FreeSpec({
             tilgangskontrollresultat.regel.id.shouldBe( RegelId.IKKE_ANSATT_OG_FORHAANDSGODKJENT_AV_ANSATT)
         }
     }
+    /*"start av periode" -{
+        val identitsnummer = Identitetsnummer("12345678909")
+        val personInfoService: PersonInfoService = mockk()
+        val requestScope = RequestScope(
+            claims = ResolvedClaims()
+                .add(TokenXPID, "12345678909"),
+            callId = "123",
+            traceparent = "123",
+            navConsumerId = "123"
+        )
+        coEvery{with (requestScope) {
+            personInfoService.hentPersonInfo(identitsnummer.verdi)
+        }} returns Person(
+            foedsel = listOf(Foedsel("2000-01-01", 2000)),
+            bostedsadresse = emptyList(),
+            folkeregisterpersonstatus = emptyList(),
+            opphold = emptyList(),
+            innflyttingTilNorge = emptyList(),
+            utflyttingFraNorge = emptyList()
+        )
+        val autorisasjonService: AutorisasjonService = mockk()
+        val requestValidator = RequestValidator(autorisasjonService, personInfoService)
+
+        coEvery {genererPersonFakta(any())} returns setOf(Opplysning.ER_OVER_18_AAR, Opplysning.BOSATT_ETTER_FREG_LOVEN)
+
+
+        val resultat = with(requestScope) {
+            requestValidator.validerStartAvPeriodeOenske(identitsnummer)
+        }
+        resultat.opplysning shouldContain Opplysning.IKKE_ANSATT
+    }*/
 })
