@@ -15,7 +15,8 @@ fun TilstandV1?.startPeriode(window: Duration, hendelse: Startet): InternTilstan
         id = hendelse.hendelseId,
         identitetsnummer = hendelse.identitetsnummer,
         startet = hendelse.metadata,
-        avsluttet = null
+        avsluttet = null,
+        startetVedOffset = currentScope().offset
     )
     val tilstand: TilstandV1 = this?.copy(
         hendelseScope = currentScope(),

@@ -10,7 +10,10 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 context (HendelseScope<Long>)
 fun TilstandV1?.avsluttPeriode(hendelse: Avsluttet): InternTilstandOgApiTilstander {
     if (this?.gjeldenePeriode == null) throw IllegalStateException("Gjeldene periode er null. Kan ikke avslutte periode.")
-    val stoppetPeriode = gjeldenePeriode.copy(avsluttet = hendelse.metadata)
+    val stoppetPeriode = gjeldenePeriode.copy(
+        avsluttet = hendelse.metadata,
+        avsluttetVedOffset = currentScope().offset
+    )
     return InternTilstandOgApiTilstander(
         id = id,
         tilstand = copy(
@@ -18,7 +21,8 @@ fun TilstandV1?.avsluttPeriode(hendelse: Avsluttet): InternTilstandOgApiTilstand
             gjeldenePeriode = null,
             forrigePeriode = stoppetPeriode,
             gjeldeneIdentitetsnummer = hendelse.identitetsnummer,
-            alleIdentitetsnummer = alleIdentitetsnummer + hendelse.identitetsnummer
+            alleIdentitetsnummer = alleIdentitetsnummer + hendelse.identitetsnummer,
+            hendelseScope = currentScope()
         ),
         nyPeriodeTilstand = ApiPeriode(
             stoppetPeriode.id,

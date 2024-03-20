@@ -7,5 +7,7 @@ data class Periode(
     val id: UUID,
     val identitetsnummer: String,
     val startet: Metadata,
-    val avsluttet: Metadata?
+    val startetVedOffset: Long = -1L,
+    val avsluttet: Metadata?,
+    val avsluttetVedOffset: Long? = null
 )
