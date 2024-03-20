@@ -1,13 +1,18 @@
 package no.nav.paw.arbeidssokerregisteret.app
 
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+import no.nav.paw.arbeidssokerregisteret.PROSENT
+import no.nav.paw.arbeidssokerregisteret.STILLING_STYRK08
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.app.config.KafkaKonfigurasjon
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
+import no.nav.paw.arbeidssokerregisteret.intern.v1.*
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.*
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serdes
 import java.time.Duration
+import java.time.Instant
 import java.util.*
 
 fun main() {
@@ -31,25 +36,15 @@ fun main() {
 
     val producer = KafkaProducer<Long, Hendelse>(kafkaKonfigurasjon.properties + producerCfg)
 
-    val periodeBruker1 = 100L to UUID.randomUUID().toString()
-    val periodeBruker2 = 101L to UUID.randomUUID().toString()
-    val periodeBruker3 = 102L to UUID.randomUUID().toString()
+    val periodeBruker1 = 100L to "12345678901"
+    val periodeBruker2 = 101L to "12345678902"
+    val periodeBruker3 = 102L to "12345678903"
     with(TestContext(producer, kafkaKonfigurasjon.streamKonfigurasjon.eventlogTopic)) {
         start(periodeBruker1.first, periodeBruker1.second)
-        start(periodeBruker1.first, periodeBruker1.second)
-        start(periodeBruker1.first, periodeBruker1.second)
-        start(periodeBruker3.first, periodeBruker3.second)
-        start(periodeBruker1.first, periodeBruker1.second)
-        start(periodeBruker2.first, periodeBruker2.second)
-        opplysningerMottattPermitertOgDeltidsJobb(periodeBruker2.first, periodeBruker2.second)
-        println("Sover i 30 sekunder")
-        Thread.sleep(Duration.ofSeconds(30))
-        println("Våkner")
-        opplysningerMottattPermitert(periodeBruker2.first, periodeBruker2.second)
-        stop(periodeBruker2.first, periodeBruker2.second)
-        stop(periodeBruker3.first, periodeBruker3.second)
+        println("Startet periode for bruker (id=${periodeBruker1.first}, identitetsnummer=${periodeBruker1.second})")
+        println("Trykker enter for å avslutte perioden")
+        readlnOrNull()
         stop(periodeBruker1.first, periodeBruker1.second)
-        start(periodeBruker2.first, periodeBruker2.second)
     }
     producer.flush()
     producer.close()
@@ -58,7 +53,7 @@ fun main() {
     val events = periodeConsumer.poll(Duration.ofSeconds(1))
     periodeConsumer.commitSync()
     println("Hendelser=${events.count()}")
-    require(events.count() == 7) { "Forventet 7 hendelser, faktisk antall ${events.count()}"}
+    require(events.count() == 2) { "Forventet 2 hendelser, faktisk antall ${events.count()}"}
     events.forEach { println(it.value()) }
 }
 
