@@ -7,6 +7,7 @@ import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class PdlClientTest {
     val callId = UUID.randomUUID().toString()
@@ -63,6 +64,16 @@ class PdlClientTest {
         val resultat = runBlocking { pdlClient.hentPerson("2649500819544", callId, null, navConsumerId) }
         val forventet = Oppholdstillatelse.PERMANENT
         assertEquals(forventet, resultat!!.opphold.first().type)
+    }
+
+    @Test
+    fun `Forventer gyldig respons fra hentForenkletStatus`() {
+        val respons = readResource("hentForenkletStatus-response.json")
+        val pdlClient = mockPdlClient(respons)
+
+        val resultat = runBlocking { pdlClient.hentForenkletStatus("2649500819544", callId, null, navConsumerId) }
+        val forventet = "bosattEtterFolkeregisterloven"
+        assertTrue { resultat!!.folkeregisterpersonstatus.any { it.forenkletStatus == forventet } }
     }
 }
 
