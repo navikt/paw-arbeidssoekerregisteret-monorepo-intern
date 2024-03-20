@@ -75,6 +75,16 @@ class PdlClientTest {
         val forventet = "bosattEtterFolkeregisterloven"
         assertTrue { resultat!!.folkeregisterpersonstatus.any { it.forenkletStatus == forventet } }
     }
+
+    @Test
+    fun `Forventer gyldig respons fra hentForenkletStatusBolk`() {
+        val respons = readResource("hentForenkletStatusBolk-response.json")
+        val pdlClient = mockPdlClient(respons)
+
+        val resultat = runBlocking { pdlClient.hentForenkletStatusBolk(listOf("2649500819544"), callId, null, navConsumerId) }
+        val forventet = "bosattEtterFolkeregisterloven"
+        assertTrue { resultat!!.first().person!!.folkeregisterpersonstatus.any { it.forenkletStatus == forventet } }
+    }
 }
 
 private fun readResource(filename: String) = ClassLoader.getSystemResource(filename).readText()
