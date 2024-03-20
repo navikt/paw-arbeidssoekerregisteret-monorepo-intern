@@ -10,8 +10,8 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class PdlClientTest {
-    val callId = UUID.randomUUID().toString()
-    val navConsumerId = "nav-consumer-id"
+    private val callId = UUID.randomUUID().toString()
+    private val navConsumerId = "nav-consumer-id"
 
     @Test
     fun `Forventer gyldig respons fra hentAktorId`() {
