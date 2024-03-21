@@ -46,60 +46,124 @@ class InngangSomBrukerTest : FreeSpec({
         oauth.shutdown()
     }
     "Teste inngang som bruker" - {
-        val requestHandler: RequestHandler = mockk()
-        coEvery {
-            with(any<RequestScope>()) {
-                requestHandler.startArbeidssokerperiode(any(), any())
-            }
-        } returns OK(
-            regel = Regel(
-                id = RegelId.OVER_18_AAR_OG_BOSATT_ETTER_FREG_LOVEN,
-                beskrivelse = "",
-                opplysninger = emptyList(),
-                vedTreff = ::OK
-            ),
-            opplysning = emptySet()
-        )
-        testApplication {
-            application {
-                configureHTTP()
-                configureSerialization()
-                configureAuthentication(oauth)
-                routing {
-                    authenticate("tokenx") {
-                        arbeidssokerRoutes(requestHandler)
-                    }
+
+        "På vegne av seg selv" - {
+            val requestHandler: RequestHandler = mockk()
+            coEvery {
+                with(any<RequestScope>()) {
+                    requestHandler.startArbeidssokerperiode(any(), any())
                 }
-            }
-            val token = oauth.issueToken(
-                claims = mapOf(
-                    "acr" to "idporten-loa-high",
-                    "pid" to "12345678909"
-                )
+            } returns OK(
+                regel = Regel(
+                    id = RegelId.OVER_18_AAR_OG_BOSATT_ETTER_FREG_LOVEN,
+                    beskrivelse = "",
+                    opplysninger = emptyList(),
+                    vedTreff = ::OK
+                ),
+                opplysning = emptySet()
             )
-            val client = createClient {
-                install(ContentNegotiation) {
-                    jackson {
-                        registerKotlinModule()
-                        registerModule(JavaTimeModule())
+            testApplication {
+                application {
+                    configureHTTP()
+                    configureSerialization()
+                    configureAuthentication(oauth)
+                    routing {
+                        authenticate("tokenx") {
+                            arbeidssokerRoutes(requestHandler)
+                        }
                     }
                 }
-            }
-            val response = client.put("/api/v1/arbeidssoker/periode") {
-                bearerAuth(token.serialize())
-                headers { append(HttpHeaders.ContentType, ContentType.Application.Json) }
-                setBody(
-                    StartStoppRequest(
-                        identitetsnummer = "12345678909",
-                        registreringForhaandsGodkjentAvAnsatt = false,
-                        periodeTilstand = PeriodeTilstand.STARTET
+                val token = oauth.issueToken(
+                    claims = mapOf(
+                        "acr" to "idporten-loa-high",
+                        "pid" to "12345678909"
                     )
                 )
+                val client = createClient {
+                    install(ContentNegotiation) {
+                        jackson {
+                            registerKotlinModule()
+                            registerModule(JavaTimeModule())
+                        }
+                    }
+                }
+                val response = client.put("/api/v1/arbeidssoker/periode") {
+                    bearerAuth(token.serialize())
+                    headers { append(HttpHeaders.ContentType, ContentType.Application.Json) }
+                    setBody(
+                        StartStoppRequest(
+                            identitetsnummer = "12345678909",
+                            registreringForhaandsGodkjentAvAnsatt = false,
+                            periodeTilstand = PeriodeTilstand.STARTET
+                        )
+                    )
+                }
+                response.status shouldBe HttpStatusCode.NoContent
+                coVerify(exactly = 1) {
+                    with(any<RequestScope>()) {
+                        requestHandler.startArbeidssokerperiode(Identitetsnummer("12345678909"), false)
+                    }
+                }
             }
-            response.status shouldBe HttpStatusCode.NoContent
-            coVerify(exactly = 1) {
+        }
+
+
+        "Bruker som har forhandsgodkjentflagg aktivt" - {
+            val requestHandler: RequestHandler = mockk()
+            coEvery {
                 with(any<RequestScope>()) {
-                    requestHandler.startArbeidssokerperiode(Identitetsnummer("12345678909"), false)
+                    requestHandler.startArbeidssokerperiode(any(), any())
+                }
+            } returns UgyldigRequestBasertPaaAutentisering(
+                regel = Regel(
+                    id = RegelId.IKKE_ANSATT_OG_FORHAANDSGODKJENT_AV_ANSATT,
+                    beskrivelse = "",
+                    opplysninger = emptyList(),
+                    vedTreff = ::UgyldigRequestBasertPaaAutentisering
+                ),
+                opplysning = emptySet()
+            )
+            testApplication {
+                application {
+                    configureHTTP()
+                    configureSerialization()
+                    configureAuthentication(oauth)
+                    routing {
+                        authenticate("tokenx") {
+                            arbeidssokerRoutes(requestHandler)
+                        }
+                    }
+                }
+                val token = oauth.issueToken(
+                    claims = mapOf(
+                        "acr" to "idporten-loa-high",
+                        "pid" to "12345678909"
+                    )
+                )
+                val client = createClient {
+                    install(ContentNegotiation) {
+                        jackson {
+                            registerKotlinModule()
+                            registerModule(JavaTimeModule())
+                        }
+                    }
+                }
+                val response = client.put("/api/v1/arbeidssoker/periode") {
+                    bearerAuth(token.serialize())
+                    headers { append(HttpHeaders.ContentType, ContentType.Application.Json) }
+                    setBody(
+                        StartStoppRequest(
+                            identitetsnummer = "12345678909",
+                            registreringForhaandsGodkjentAvAnsatt = false,
+                            periodeTilstand = PeriodeTilstand.STARTET
+                        )
+                    )
+                }
+                response.status shouldBe HttpStatusCode.BadRequest
+                coVerify(exactly = 1) {
+                    with(any<RequestScope>()) {
+                        requestHandler.startArbeidssokerperiode(Identitetsnummer("12345678909"), false)
+                    }
                 }
             }
         }
