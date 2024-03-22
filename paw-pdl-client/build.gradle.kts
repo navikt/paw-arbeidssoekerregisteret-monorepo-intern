@@ -70,7 +70,7 @@ dependencies {
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
-    implementation("com.expediagroup:graphql-kotlin-ktor-client:$graphQLKotlinVersion")
+    api("com.expediagroup:graphql-kotlin-ktor-client:$graphQLKotlinVersion")
 
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
