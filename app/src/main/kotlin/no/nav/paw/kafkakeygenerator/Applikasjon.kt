@@ -1,5 +1,7 @@
 package no.nav.paw.kafkakeygenerator
 
+import no.nav.paw.kafkakeygenerator.FailureCode.CONFLICT
+import no.nav.paw.kafkakeygenerator.FailureCode.DB_NOT_FOUND
 import no.nav.paw.kafkakeygenerator.pdl.PdlIdentitesTjeneste
 import no.nav.paw.kafkakeygenerator.vo.CallId
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
@@ -8,33 +10,25 @@ class Applikasjon(
     private val kafkaKeys: KafkaKeys,
     private val identitetsTjeneste: PdlIdentitesTjeneste
 ) {
-    suspend fun hentEllerOpprett(callId: CallId, identitet: Identitetsnummer): Long? {
-        return arrayOf<suspend () -> Long?>(
-            { kafkaKeys.hent(identitet) },
-            { sjekkMotAliaser(callId, identitet) },
-            { kafkaKeys.opprett(identitet) },
-            //'Opprett' returnerer null ved konflikt, da skal 'hent' finne noe under.
-            { kafkaKeys.hent(identitet) }
-        ).firstNonNullOrNull()
-    }
-
-    private suspend fun sjekkMotAliaser(callId: CallId, identitet: Identitetsnummer): Long? {
-        val identiter = identitetsTjeneste.hentIdentiter(callId, identitet)
-        return kafkaKeys.hent(identiter)
-            .values
-            .firstOrNull()
-            ?.also { nøkkel ->
-                kafkaKeys.lagre(identitet, nøkkel)
+    suspend fun hentEllerOpprett(callId: CallId, identitet: Identitetsnummer): Either<Failure, Long> {
+        return kafkaKeys.hent(identitet)
+            .recover(DB_NOT_FOUND) {
+                sjekkMotAliaser(callId, identitet)
+            }.recover(DB_NOT_FOUND) {
+                kafkaKeys.opprett(identitet)
+            }.recover(CONFLICT) {
+                kafkaKeys.hent(identitet)
             }
     }
-}
 
-private suspend fun <A> Array<suspend () -> A?>.firstNonNullOrNull(): A? {
-    for (element in this) {
-        val result = element()
-        if (result != null) {
-            return result
-        }
+    private suspend fun sjekkMotAliaser(callId: CallId, identitet: Identitetsnummer): Either<Failure, Long> {
+        return identitetsTjeneste.hentIdentiter(callId, identitet)
+            .flatMap(kafkaKeys::hent)
+            .flatMap { ids ->
+                ids.values
+                    .firstOrNull()?.let(::right)
+                    ?: left(Failure("database", DB_NOT_FOUND))
+            }
+            .onRight { key -> kafkaKeys.lagre(identitet, key) }
     }
-    return null
 }

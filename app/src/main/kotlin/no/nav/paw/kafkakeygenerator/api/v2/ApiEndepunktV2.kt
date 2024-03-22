@@ -1,5 +1,6 @@
 package no.nav.paw.kafkakeygenerator.api.v2
 
+import io.ktor.http.*
 import io.ktor.http.HttpStatusCode.Companion.InternalServerError
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.application.*
@@ -8,6 +9,9 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.paw.kafkakeygenerator.Applikasjon
+import no.nav.paw.kafkakeygenerator.FailureCode
+import no.nav.paw.kafkakeygenerator.Left
+import no.nav.paw.kafkakeygenerator.Right
 import no.nav.paw.kafkakeygenerator.config.Autentiseringskonfigurasjon
 import no.nav.paw.kafkakeygenerator.vo.CallId
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
@@ -25,18 +29,24 @@ fun Routing.konfigurerApiV2(
                 ?.let { CallId(it) }
                 ?: CallId(UUID.randomUUID().toString())
             val request = call.receive<RequestV2>()
-            val nøkkel = applikasjon.hentEllerOpprett(callId, Identitetsnummer(request.ident))
-            if (nøkkel != null) {
-                call.respond(
-                    status = OK,
-                    message = ResponseV2(
-                        id = nøkkel,
-                        key = publicTopicKeyFunction(nøkkel)
-                    )
-                )
-            } else {
-                logger.error("Kunne ikke opprette id for ident, resultatet ble 'null' noe som ikke skal kunne skje.")
-                call.respondText("Intern feil, prøv igjen senere", status = InternalServerError)
+            when (val resultat = applikasjon.hentEllerOpprett(callId, Identitetsnummer(request.ident))) {
+                is Right -> {
+                    call.respond(OK, ResponseV2(
+                        id = resultat.right,
+                        key = publicTopicKeyFunction(resultat.right)
+                    ))
+                }
+                is Left -> {
+                    logger.error("Kunne ikke opprette nøkkel for ident, resultatet ble 'null' noe som ikke skal kunne skje.")
+                    val (code, msg) = when (resultat.left.code) {
+                        FailureCode.PDL_NOT_FOUND -> HttpStatusCode.NotFound to "Person ikke i PDL"
+                        FailureCode.EXTERNAL_TECHINCAL_ERROR -> HttpStatusCode.ServiceUnavailable to "Ekstern feil, prøv igjen senere"
+                        FailureCode.INTERNAL_TECHINCAL_ERROR,
+                        FailureCode.DB_NOT_FOUND,
+                        FailureCode.CONFLICT -> InternalServerError to "Intern feil, rapporter til teamet med: kode=${resultat.left.code}, callId='${callId.value}'"
+                    }
+                    call.respondText(msg, status = code)
+                }
             }
         }
     }

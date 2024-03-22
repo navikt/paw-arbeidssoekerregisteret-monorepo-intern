@@ -24,7 +24,7 @@ dependencies {
     implementation("no.nav.common:log:$navCommonModulesVersion")
     implementation("no.nav.security:token-validation-ktor-v2:$tokenSupportVersion")
     implementation("no.nav.security:token-client-core:$tokenSupportVersion")
-    implementation("no.nav.paw:pdl-client:0.3.1")
+    implementation("no.nav.paw:pdl-client:24.03.22.31-1")
 
     // Database
     implementation("org.postgresql:postgresql:42.7.2")
