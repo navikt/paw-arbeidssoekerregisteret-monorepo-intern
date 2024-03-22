@@ -3,6 +3,7 @@ package no.nav.paw.kafkakeygenerator
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import kotlinx.coroutines.runBlocking
@@ -55,6 +56,18 @@ class ApplikasjonsTest : StringSpec({
     }
     "person1 og person2 skal ha forskjellig nøkkel" {
         hentEllerOpprett(person1_fødselsnummer) shouldNotBe hentEllerOpprett(person2_aktor_id)
+    }
+    "ingen treff i PDL skal feile med ${FailureCode.PDL_NOT_FOUND}" {
+        val person3KafkaNøkler = listOf(
+            "13579864201",
+            "13579864202"
+        ).map(::hentEllerOpprett)
+        person3KafkaNøkler.filterIsInstance<Left<Failure>>().size shouldBe 2
+        person3KafkaNøkler.filterIsInstance<Right<Long>>().size shouldBe 0
+        person3KafkaNøkler.forEach {
+            it.shouldBeInstanceOf<Left<Failure>>()
+            it.left.code shouldBe FailureCode.PDL_NOT_FOUND
+        }
     }
 })
 
