@@ -47,6 +47,7 @@ jobs:
           VAR: image=${{ needs.build.outputs.image }}
 
   deploy-prod:
+    if: github.ref == 'refs/heads/main'
     name: Deploy to NAIS prod
     permissions:
       contents: read
