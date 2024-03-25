@@ -19,8 +19,11 @@ import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.config.kafka.KAFKA_CONFIG
 import no.nav.paw.config.kafka.KafkaConfig
 import no.nav.paw.config.kafka.KafkaFactory
+import org.slf4j.LoggerFactory
 
 fun main() {
+    val logger = LoggerFactory.getLogger("app")
+    logger.info("Starter ${ApplicationInfo.id}")
     val applicationConfig = loadNaisOrLocalConfiguration<Config>(CONFIG_FILE_NAME)
     val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
     val requestHandler = requestHandler(applicationConfig, KafkaFactory(kafkaConfig))

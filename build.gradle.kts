@@ -99,4 +99,9 @@ tasks.withType(Jar::class) {
 jib {
     from.image = "ghcr.io/navikt/baseimages/temurin:$jvmVersion"
     to.image = "${image ?: project.name }:${project.version}"
+    container{
+        environment = mapOf(
+            "IMAGE_WITH_VERSION" to "${image ?: project.name }:${project.version}"
+        )
+    }
 }
