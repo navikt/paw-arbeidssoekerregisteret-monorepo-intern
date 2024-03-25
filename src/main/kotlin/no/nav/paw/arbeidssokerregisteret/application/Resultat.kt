@@ -89,7 +89,8 @@ fun somHendelse(id: Long, identitetsnummer: Identitetsnummer, resultat: EndeligR
             id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
-            metadata = hendelseMetadata(resultat)
+            metadata = hendelseMetadata(resultat),
+            opplysninger = resultat.opplysning.map(::mapToHendelseOpplysning).toSet()
         )
 
         is IkkeTilgang -> AvvistHendelse(
@@ -103,21 +104,24 @@ fun somHendelse(id: Long, identitetsnummer: Identitetsnummer, resultat: EndeligR
             id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
-            metadata = hendelseMetadata(resultat)
+            metadata = hendelseMetadata(resultat),
+            opplysninger = resultat.opplysning.map(::mapToHendelseOpplysning).toSet()
         )
 
         is Uavklart -> AvvistHendelse(
             id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
-            metadata = hendelseMetadata(resultat)
+            metadata = hendelseMetadata(resultat),
+            opplysninger = resultat.opplysning.map(::mapToHendelseOpplysning).toSet()
         )
 
         is UgyldigRequestBasertPaaAutentisering -> AvvistHendelse(
             id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
-            metadata = hendelseMetadata(resultat)
+            metadata = hendelseMetadata(resultat),
+            opplysninger = resultat.opplysning.map(::mapToHendelseOpplysning).toSet()
         )
     }
 

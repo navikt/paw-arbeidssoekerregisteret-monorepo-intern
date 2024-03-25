@@ -35,3 +35,38 @@ enum class Opplysning(val beskrivelse: String) {
 }
 
 operator fun Opplysning.plus(opplysning: Opplysning): Set<Opplysning> = setOf(this, opplysning)
+
+fun mapToHendelseOpplysning(opplysning: Opplysning): no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning =
+    when (opplysning) {
+        Opplysning.FORHAANDSGODKJENT_AV_ANSATT -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.FORHAANDSGODKJENT_AV_ANSATT
+        Opplysning.SAMME_SOM_INNLOGGET_BRUKER -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.SAMME_SOM_INNLOGGET_BRUKER
+        Opplysning.IKKE_SAMME_SOM_INNLOGGER_BRUKER -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.IKKE_SAMME_SOM_INNLOGGER_BRUKER
+        Opplysning.ANSATT_IKKE_TILGANG -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.ANSATT_IKKE_TILGANG
+        Opplysning.ANSATT_TILGANG -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.ANSATT_TILGANG
+        Opplysning.IKKE_ANSATT -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.IKKE_ANSATT
+        Opplysning.ER_OVER_18_AAR -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.ER_OVER_18_AAR
+        Opplysning.ER_UNDER_18_AAR -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.ER_UNDER_18_AAR
+        Opplysning.UKJENT_FOEDSELSDATO -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.UKJENT_FOEDSELSDATO
+        Opplysning.UKJENT_FOEDSELSAAR -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.UKJENT_FOEDSELSAAR
+        Opplysning.TOKENX_PID_IKKE_FUNNET -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.TOKENX_PID_IKKE_FUNNET
+        Opplysning.OPPHOERT_IDENTITET -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.OPPHOERT_IDENTITET
+        Opplysning.IKKE_BOSATT -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.IKKE_BOSATT
+        Opplysning.DOED -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.DOED
+        Opplysning.SAVNET -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.SAVNET
+        Opplysning.HAR_NORSK_ADRESSE -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.HAR_NORSK_ADRESSE
+        Opplysning.HAR_UTENLANDSK_ADRESSE -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.HAR_UTENLANDSK_ADRESSE
+        Opplysning.INGEN_ADRESSE_FUNNET -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.INGEN_ADRESSE_FUNNET
+        Opplysning.BOSATT_ETTER_FREG_LOVEN -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.BOSATT_ETTER_FREG_LOVEN
+        Opplysning.DNUMMER -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.DNUMMER
+        Opplysning.UKJENT_FORENKLET_FREG_STATUS -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.UKJENT_FORENKLET_FREG_STATUS
+        Opplysning.HAR_GYLDIG_OPPHOLDSTILLATELSE -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.HAR_GYLDIG_OPPHOLDSTILLATELSE
+        Opplysning.OPPHOLDSTILATELSE_UTGAATT -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.OPPHOLDSTILATELSE_UTGAATT
+        Opplysning.BARN_FOEDT_I_NORGE_UTEN_OPPHOLDSTILLATELSE -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.BARN_FOEDT_I_NORGE_UTEN_OPPHOLDSTILLATELSE
+        Opplysning.INGEN_INFORMASJON_OM_OPPHOLDSTILLATELSE -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.INGEN_INFORMASJON_OM_OPPHOLDSTILLATELSE
+        Opplysning.UKJENT_STATUS_FOR_OPPHOLDSTILLATELSE -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.UKJENT_STATUS_FOR_OPPHOLDSTILLATELSE
+        Opplysning.PERSON_IKKE_FUNNET -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.PERSON_IKKE_FUNNET
+        Opplysning.SISTE_FLYTTING_VAR_UT_AV_NORGE -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.SISTE_FLYTTING_VAR_UT_AV_NORGE
+        Opplysning.SISTE_FLYTTING_VAR_INN_TIL_NORGE -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.SISTE_FLYTTING_VAR_INN_TIL_NORGE
+        Opplysning.IKKE_MULIG_AA_IDENTIFISERE_SISTE_FLYTTING -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.IKKE_MULIG_AA_IDENTIFISERE_SISTE_FLYTTING
+        Opplysning.INGEN_FLYTTE_INFORMASJON -> no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.INGEN_FLYTTE_INFORMASJON
+    }
