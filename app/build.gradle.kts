@@ -25,6 +25,7 @@ dependencies {
     implementation(project(":interne-eventer"))
     implementation(project(":arbeidssoekerregisteret-kotlin"))
     implementation(pawObservability.bundles.ktorNettyOpentelemetryMicrometerPrometheus)
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.1.0")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.3")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.3")
     implementation("com.sksamuel.hoplite:hoplite-core:2.8.0.RC3")

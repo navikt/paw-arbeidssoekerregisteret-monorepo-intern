@@ -3,6 +3,8 @@ package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssokerregisteret.app.StreamHendelse
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgHendelse
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand
@@ -10,6 +12,10 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 
 
+@WithSpan(
+    value = "filter",
+    kind = SpanKind.INTERNAL
+)
 fun ignorerDuplikatStartOgStopp(
     @Suppress("UNUSED_PARAMETER") recordKey: Long,
     tilstandOgHendelse: InternTilstandOgHendelse
