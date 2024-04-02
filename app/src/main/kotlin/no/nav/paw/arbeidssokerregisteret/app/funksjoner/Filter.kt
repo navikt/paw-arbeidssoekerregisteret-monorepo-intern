@@ -1,5 +1,8 @@
 package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.trace.Span
 import no.nav.paw.arbeidssokerregisteret.app.StreamHendelse
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgHendelse
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand
@@ -17,6 +20,17 @@ fun ignorerDuplikatStartOgStopp(
         GjeldeneTilstand.STARTET -> hendelse.erIkke<Startet>()
         GjeldeneTilstand.AVSLUTTET -> hendelse.erIkke<Avsluttet>()
         GjeldeneTilstand.AVVIST -> hendelse.erIkke<Avsluttet>()
+    }.also { include ->
+        val eventName = if (include) "included" else "ignored"
+        Span.current().addEvent(
+            eventName,
+            Attributes.of(
+                AttributeKey.stringKey("paw.arbeidssoekerregisteret.hendelse.type"),
+                hendelse.hendelseType,
+                AttributeKey.stringKey("paw.arbeidssoekerregisteret.tilstand"),
+                tilstand?.gjeldeneTilstand?.name ?: "null"
+            )
+        )
     }
 }
 
