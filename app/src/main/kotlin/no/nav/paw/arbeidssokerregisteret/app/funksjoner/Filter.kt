@@ -13,7 +13,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 
 
 @WithSpan(
-    value = "filter",
+    value = "ignorerDuplikatStartOgStopp",
     kind = SpanKind.INTERNAL
 )
 fun ignorerDuplikatStartOgStopp(
