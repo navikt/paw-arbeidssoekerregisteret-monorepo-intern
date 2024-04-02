@@ -27,12 +27,12 @@ fun ignorerDuplikatStartOgStopp(
         GjeldeneTilstand.AVSLUTTET -> hendelse.erIkke<Avsluttet>()
         GjeldeneTilstand.AVVIST -> hendelse.erIkke<Avsluttet>()
     }.also { include ->
-        val eventName = if (include) "included" else "ignored"
-        Span.current().addEvent(
-            eventName,
+        Span.current().setAllAttributes(
             Attributes.of(
                 AttributeKey.stringKey("paw.arbeidssoekerregisteret.hendelse.type"),
                 hendelse.hendelseType,
+                AttributeKey.stringKey("paw.arbeidssoekerregisteret.hendelse.inkludert"),
+                include.toString(),
                 AttributeKey.stringKey("paw.arbeidssoekerregisteret.tilstand"),
                 tilstand?.gjeldeneTilstand?.name ?: "null"
             )
