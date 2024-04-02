@@ -6,10 +6,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.opentelemetry.api.OpenTelemetry
-import io.opentelemetry.api.common.AttributeKey
-import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.api.trace.Span
 import no.nav.paw.arbeidssokerregisteret.intern.v1.*
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
@@ -56,9 +52,7 @@ private fun hendelseObjectMapper(): ObjectMapper = ObjectMapper()
 
 fun deserialize(objectMapper: ObjectMapper, json: ByteArray): Hendelse {
     val node = objectMapper.readTree(json)
-    val hendelseType = node.get("hendelseType")?.asText()
-    Span.current().setAttribute("paw.arbeidssoekerregisteret.hendelseType", hendelseType ?: "null")
-    return when (hendelseType) {
+    return when (val hendelseType = node.get("hendelseType")?.asText()) {
         startetHendelseType -> objectMapper.readValue<Startet>(node.traverse())
         avsluttetHendelseType -> objectMapper.readValue<Avsluttet>(node.traverse())
         avvistHendelseType -> objectMapper.readValue<Avvist>(node.traverse())
