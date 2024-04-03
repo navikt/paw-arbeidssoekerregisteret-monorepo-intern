@@ -44,7 +44,7 @@ const val PROSENT = "prosent"
  * {@link no.nav.paw.arbeidssokerregisteret.api.v1.Element.JobbsituasjonBeskrivelse.HAR_SAGT_OPP}
  * {@link no.nav.paw.arbeidssokerregisteret.api.v1.Element.JobbsituasjonBeskrivelse.HAR_BLITT_SAGT_OPP}
  */
-const val SISTE_DAG_MED_LOENN = "siste_dag_med_loen_iso8601"
+const val SISTE_DAG_MED_LOENN = "siste_dag_med_loenn_iso8601"
 
 /**
  * Siste arbeidsdag, aktuelt for:
