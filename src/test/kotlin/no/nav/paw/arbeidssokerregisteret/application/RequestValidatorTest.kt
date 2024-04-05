@@ -8,6 +8,7 @@ import io.kotest.data.row
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.paw.arbeidssokerregisteret.RequestScope
@@ -171,6 +172,35 @@ class RequestValidatorTest : FreeSpec({
                     }
                     resultat.opplysning shouldContain Opplysning.IKKE_BOSATT
 
+                }
+                "Bruker har dNummer" - {
+                    val requestScope = RequestScope(
+                        claims = ResolvedClaims()
+                            .add(TokenXPID, "12345678909"),
+                        callId = "123",
+                        traceparent = "123",
+                        navConsumerId = "123"
+                    )
+                    coEvery {
+                        with(requestScope) {
+                            personInfoService.hentPersonInfo(identitsnummer.verdi)
+                        }
+                    } returns Person(
+                        foedsel = listOf(Foedsel("2000-01-01", 2000)),
+                        bostedsadresse = emptyList(),
+                        folkeregisterpersonstatus = listOf(
+                            Folkeregisterpersonstatus("ikkeBosatt"),
+                            Folkeregisterpersonstatus("dNummer")
+                        ),
+                        opphold = emptyList(),
+                        innflyttingTilNorge = emptyList(),
+                        utflyttingFraNorge = emptyList()
+                    )
+                    val resultat = with(requestScope) {
+                        requestValidator.validerStartAvPeriodeOenske(identitsnummer)
+                    }
+                    resultat.opplysning shouldContain Opplysning.IKKE_BOSATT
+                    resultat.opplysning shouldContain Opplysning.DNUMMER
                 }
                 "Person ikke funnet" - {
                     val requestScope = RequestScope(
