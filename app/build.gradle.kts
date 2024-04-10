@@ -14,7 +14,7 @@ val image: String? by project
 val logbackVersion = "1.4.14"
 val logstashVersion = "7.3"
 
-val arbeidssokerregisteretSchemaVersion = "1.8050675667.20-1"
+val arbeidssokerregisteretSchemaVersion = "1.8626012420.41-1"
 
 val schema by configurations.creating {
     isTransitive = false
