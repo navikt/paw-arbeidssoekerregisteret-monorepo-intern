@@ -14,7 +14,7 @@ import io.micrometer.core.instrument.binder.kafka.KafkaStreamsMetrics
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics
 import io.micrometer.prometheus.PrometheusMeterRegistry
 
-private val moduleInfo = getModuleInfo("avro-schema")
+val avroSchemaInfo = getModuleInfo("avro-schema")
 private val objectMapper = jacksonObjectMapper()
 
 fun initKtor(
@@ -46,7 +46,7 @@ fun initKtor(
             }
             get("/moduleInfo") {
                 call.respondText(
-                    text = objectMapper.writeValueAsString(moduleInfo),
+                    text = objectMapper.writeValueAsString(avroSchemaInfo),
                     contentType = ContentType.Application.Json
                 )
             }

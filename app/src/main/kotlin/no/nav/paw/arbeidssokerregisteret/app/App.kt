@@ -5,6 +5,7 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.app.config.KafkaKonfigurasjon
 import no.nav.paw.arbeidssokerregisteret.app.helse.Helse
+import no.nav.paw.arbeidssokerregisteret.app.helse.avroSchemaInfo
 import no.nav.paw.arbeidssokerregisteret.app.helse.initKtor
 import no.nav.paw.arbeidssokerregisteret.app.metrics.*
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandV1
@@ -33,7 +34,7 @@ typealias StreamHendelse = Hendelse
 
 fun main() {
     val streamLogger = LoggerFactory.getLogger("App")
-    streamLogger.info("Starter applikasjon...")
+    streamLogger.info("Starter applikasjon: $avroSchemaInfo")
     val kafkaKonfigurasjon = lastKonfigurasjon<KafkaKonfigurasjon>(kafkaKonfigurasjonsfil)
     val tilstandSerde: Serde<TilstandV1> = TilstandSerde()
     val dbNavn = kafkaKonfigurasjon.streamKonfigurasjon.tilstandsDatabase
@@ -47,6 +48,7 @@ fun main() {
         )
     )
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+    avroSchemaInfo?.run { prometheusMeterRegistry.registerAvroSchemaGauges(this) }
     val topology = topology(
         prometheusMeterRegistry = prometheusMeterRegistry,
         builder = strømBygger,
