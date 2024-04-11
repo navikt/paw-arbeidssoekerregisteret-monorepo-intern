@@ -16,6 +16,10 @@ fun Route.arbeidssokerRoutes(requestHandler: RequestHandler) {
         route("/kanStartePeriode") {
             // Sjekker om bruker kan registreres som arbeidssøker
             put<KanStarteRequest> { request: KanStarteRequest ->
+                // Når denne ble lagt inn tok ikke nyeste versjon av ktor openAPI genereringen med request uten kall til call.recieve"
+                if (false) {
+                    call.receive<KanStarteRequest>()
+                }
                 logger.trace("Sjekker om bruker kan registreres som arbeidssøker")
                 val resultat = with(requestScope()) {
                     requestHandler.kanRegistreresSomArbeidssoker(request.getId())
