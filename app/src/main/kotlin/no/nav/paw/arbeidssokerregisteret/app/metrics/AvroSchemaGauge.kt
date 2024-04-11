@@ -11,11 +11,14 @@ private val majorVersion = AtomicLong(0)
 fun PrometheusMeterRegistry.registerAvroSchemaGauges(info: ModuleInfo) {
     buildTime.set(info.buildTime.toEpochMilli())
     majorVersion.set(info.version.split(".").first().toLong())
-    gauge(Names.AVRO_MAJOR_VERSION, majorVersion) { it.toDouble() }
     gauge(Names.AVRO_SCHEMA_BUILD_TIME, buildTime) { it.toDouble() }
     gauge(
-        Names.AVRO_SCHEMA_AGE,
+        Names.AVRO_MAJOR_VERSION,
         Tags.of(Tag.of(Labels.VERSION, info.version)),
+        majorVersion
+    ) { it.toDouble() }
+    gauge(
+        Names.AVRO_SCHEMA_AGE,
         buildTime
     ) { bt ->
         (System.currentTimeMillis() - bt.get()).toDouble()

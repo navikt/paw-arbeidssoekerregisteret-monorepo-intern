@@ -13,8 +13,16 @@ import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
 import io.micrometer.core.instrument.binder.kafka.KafkaStreamsMetrics
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics
 import io.micrometer.prometheus.PrometheusMeterRegistry
+import java.time.Instant
 
-val avroSchemaInfo = getModuleInfo("avro-schema")
+val avroSchemaInfo = getModuleInfo("avro-schema") ?:
+    ModuleInfo(
+        name = "avro-schema",
+        version = "1.UNKNOWN_VERSION",
+        module = "unknown",
+        buildTime = Instant.ofEpochMilli(0),
+        gitSha = null
+    )
 private val objectMapper = jacksonObjectMapper()
 
 fun initKtor(
