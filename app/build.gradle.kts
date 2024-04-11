@@ -22,6 +22,7 @@ val schema by configurations.creating {
 
 dependencies {
     schema("no.nav.paw.arbeidssokerregisteret.api:main-avro-schema:$arbeidssokerregisteretSchemaVersion")
+    implementation("no.nav.paw.arbeidssokerregisteret.api:main-avro-schema:$arbeidssokerregisteretSchemaVersion")
     implementation(project(":interne-eventer"))
     implementation(project(":arbeidssoekerregisteret-kotlin"))
     implementation(pawObservability.bundles.ktorNettyOpentelemetryMicrometerPrometheus)
