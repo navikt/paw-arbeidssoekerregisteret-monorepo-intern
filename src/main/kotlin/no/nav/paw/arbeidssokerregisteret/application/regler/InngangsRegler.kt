@@ -24,7 +24,7 @@ val reglerForInngangIPrioritertRekkefolge: List<Regel<EndeligResultat>> = listOf
         id = RegelId.UKJENT_ALDER,
         vedTreff = ::Avvist
     ),
-    "Er registrert som doed"(
+    "Er registrert som død"(
         Opplysning.DOED,
         id = RegelId.DOED,
         vedTreff = ::Avvist
