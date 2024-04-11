@@ -18,7 +18,7 @@ val reglerForInngangIPrioritertRekkefolge: List<Regel<EndeligResultat>> = listOf
         id = RegelId.UNDER_18_AAR,
         vedTreff = ::Avvist
     ),
-    "Kunne ikke fatslå alder"(
+    "Kunne ikke fastslå alder"(
         Opplysning.UKJENT_FOEDSELSDATO,
         Opplysning.UKJENT_FOEDSELSAAR,
         id = RegelId.UKJENT_ALDER,
