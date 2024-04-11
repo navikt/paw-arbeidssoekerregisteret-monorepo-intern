@@ -17,5 +17,5 @@ suspend fun respondWith(resultat: ValidationResult) =
                 feilKode = Feilkode.FEIL_VED_LESING_AV_FORESPORSEL
             )
         )
-        ValidationResultOk -> call.respond(HttpStatusCode.Accepted)
+        ValidationResultOk -> call.response.status(HttpStatusCode.OK)
     }

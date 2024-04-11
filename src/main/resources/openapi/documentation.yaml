@@ -1,4 +1,4 @@
-openapi: "3.0.3"
+openapi: "3.1.0"
 info:
   title: "paw_arbeidssokerregisteret_api_inngang API"
   description: "paw_arbeidssokerregisteret_api_inngang API"
@@ -27,7 +27,7 @@ paths:
           type: "string"
       requestBody:
         content:
-          '*/*':
+          application/json:
             schema:
               $ref: "#/components/schemas/KanStarteRequest"
         required: true
@@ -35,33 +35,29 @@ paths:
         "400":
           description: "Bad Request"
           content:
-            '*/*':
+            application/json:
               schema:
                 $ref: "#/components/schemas/Feil"
         "424":
           description: "Failed Dependency"
           content:
-            '*/*':
+            application/json:
               schema:
                 $ref: "#/components/schemas/Feil"
         "500":
           description: "Internal Server Error"
           content:
-            '*/*':
+            application/json:
               schema:
                 $ref: "#/components/schemas/Feil"
         "403":
           description: "Forbidden"
           content:
-            '*/*':
+            application/json:
               schema:
                 $ref: "#/components/schemas/Feil"
         "204":
           description: "No Content"
-          content:
-            '*/*':
-              schema:
-                type: "object"
   /api/v1/arbeidssoker/opplysninger:
     post:
       description: "Registrerer eller oppdaterer brukers opplysninger"
@@ -83,7 +79,7 @@ paths:
           type: "string"
       requestBody:
         content:
-          '*/*':
+          application/json:
             schema:
               $ref: "#/components/schemas/OpplysningerRequest"
         required: true
@@ -91,27 +87,23 @@ paths:
         "400":
           description: "Bad Request"
           content:
-            '*/*':
+            application/json:
               schema:
                 $ref: "#/components/schemas/Feil"
         "500":
           description: "Internal Server Error"
           content:
-            '*/*':
+            application/json:
               schema:
                 $ref: "#/components/schemas/Feil"
         "403":
           description: "Forbidden"
           content:
-            '*/*':
+            application/json:
               schema:
                 $ref: "#/components/schemas/Feil"
         "202":
           description: "Accepted"
-          content:
-            '*/*':
-              schema:
-                type: "object"
   /api/v1/arbeidssoker/periode:
     put:
       description: "Registrerer bruker som arbeidssøker"
@@ -133,7 +125,7 @@ paths:
           type: "string"
       requestBody:
         content:
-          '*/*':
+          application/json:
             schema:
               $ref: "#/components/schemas/StartStoppRequest"
         required: true
@@ -206,13 +198,6 @@ paths:
                 type: "string"
 components:
   schemas:
-    KanStarteRequest:
-      type: "object"
-      properties:
-        identitetsnummer:
-          type: "string"
-      required:
-      - "identitetsnummer"
     AarsakTilAvvisning:
       type: "object"
       properties:
@@ -231,6 +216,7 @@ components:
           - "UNDER_18_AAR"
           - "IKKE_BOSATT_I_NORGE_I_HENHOLD_TIL_FOLKEREGISTERLOVEN"
           - "UKJENT_ALDER"
+          - "IKKE_ANSATT_OG_FORHAANDSGODKJENT_AV_ANSATT"
         detaljer:
           type: "array"
           items:
@@ -284,11 +270,19 @@ components:
           - "FEIL_VED_LESING_AV_FORESPORSEL"
           - "AVVIST"
           - "IKKE_TILGANG"
+          - "UGYLDIG_FORESPORSEL"
         aarsakTilAvvisning:
           $ref: "#/components/schemas/AarsakTilAvvisning"
       required:
       - "melding"
       - "feilKode"
+    KanStarteRequest:
+      type: "object"
+      properties:
+        identitetsnummer:
+          type: "string"
+      required:
+      - "identitetsnummer"
     Utdanning:
       type: "object"
       properties:
