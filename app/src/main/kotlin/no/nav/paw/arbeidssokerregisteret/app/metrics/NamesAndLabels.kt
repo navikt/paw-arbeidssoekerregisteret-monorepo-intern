@@ -20,6 +20,7 @@ object Labels {
     const val TOPIC = "topic"
     const val ACTION = "action"
     const val DIRECTION = "direction"
+    const val VERSION = "version"
 }
 
 object Directions {

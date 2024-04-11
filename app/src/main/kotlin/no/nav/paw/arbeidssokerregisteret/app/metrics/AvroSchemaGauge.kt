@@ -1,5 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.app.metrics
 
+import io.micrometer.core.instrument.Tag
+import io.micrometer.core.instrument.Tags
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.app.helse.ModuleInfo
 import java.util.concurrent.atomic.AtomicLong
@@ -11,7 +13,11 @@ fun PrometheusMeterRegistry.registerAvroSchemaGauges(info: ModuleInfo) {
     majorVersion.set(info.version.split(".").first().toLong())
     gauge(Names.AVRO_MAJOR_VERSION, majorVersion) { it.toDouble() }
     gauge(Names.AVRO_SCHEMA_BUILD_TIME, buildTime) { it.toDouble() }
-    gauge(Names.AVRO_SCHEMA_AGE, buildTime) { bt ->
+    gauge(
+        Names.AVRO_SCHEMA_AGE,
+        Tags.of(Tag.of(Labels.VERSION, info.version)),
+        buildTime
+    ) { bt ->
         (System.currentTimeMillis() - bt.get()).toDouble()
     }
 }
