@@ -3,14 +3,18 @@ package no.nav.paw.arbeidssokerregisteret.app
 import io.micrometer.core.instrument.binder.kafka.KafkaStreamsMetrics
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
+import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.app.config.KafkaKonfigurasjon
 import no.nav.paw.arbeidssokerregisteret.app.helse.Helse
-import no.nav.paw.arbeidssokerregisteret.app.helse.avroSchemaInfo
 import no.nav.paw.arbeidssokerregisteret.app.helse.initKtor
 import no.nav.paw.arbeidssokerregisteret.app.metrics.*
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandV1
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandSerde
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
+import no.nav.paw.arbeidssokerregisteret.profilering.TopicOperation
+import no.nav.paw.arbeidssokerregisteret.profilering.registerMainAvroSchemaGauges
+import no.nav.paw.arbeidssokerregisteret.profilering.registerTopicVersionGauge
+import no.nav.paw.arbeidssokerregisteret.profilering.topicInfo
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.utils.Time
@@ -34,8 +38,11 @@ typealias StreamHendelse = Hendelse
 
 fun main() {
     val streamLogger = LoggerFactory.getLogger("App")
-    streamLogger.info("Starter applikasjon: $avroSchemaInfo")
+    val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+    val moduleInfo = prometheusMeterRegistry.registerMainAvroSchemaGauges()
     val kafkaKonfigurasjon = lastKonfigurasjon<KafkaKonfigurasjon>(kafkaKonfigurasjonsfil)
+    streamLogger.info("Starter applikasjon: $moduleInfo")
+    registerTopicInfoGauge(prometheusMeterRegistry, kafkaKonfigurasjon)
     val tilstandSerde: Serde<TilstandV1> = TilstandSerde()
     val dbNavn = kafkaKonfigurasjon.streamKonfigurasjon.tilstandsDatabase
     val strømBygger = StreamsBuilder()
@@ -47,8 +54,6 @@ fun main() {
             Time.SYSTEM
         )
     )
-    val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-    avroSchemaInfo?.run { prometheusMeterRegistry.registerAvroSchemaGauges(this) }
     val topology = topology(
         prometheusMeterRegistry = prometheusMeterRegistry,
         builder = strømBygger,
@@ -60,19 +65,22 @@ fun main() {
     )
 
     val kafkaStreams = KafkaStreams(topology, StreamsConfig(kafkaKonfigurasjon.properties))
-    fun stateStore(): ReadOnlyKeyValueStore<Long, TilstandV1> =  kafkaStreams.store(
+    fun stateStore(): ReadOnlyKeyValueStore<Long, TilstandV1> = kafkaStreams.store(
         StoreQueryParameters.fromNameAndType(
             dbNavn,
             QueryableStoreTypes.keyValueStore()
         )
     )
+
     val keepGoing = AtomicBoolean(true)
     val metricsTask = initStateGaugeTask(
         keepGoing = keepGoing,
         registry = prometheusMeterRegistry,
         streamStateSupplier = kafkaStreams::state,
-        contentSupplier = { stateStore().all().asSequence()
-            .map { it.value } },
+        contentSupplier = {
+            stateStore().all().asSequence()
+                .map { it.value }
+        },
         mapper = ::withMetricsInfoMapper
     )
     kafkaStreams.setUncaughtExceptionHandler { throwable ->
@@ -90,6 +98,32 @@ fun main() {
     keepGoing.set(false)
     metricsTask.cancel(true)
     streamLogger.info("Avsluttet")
+}
+
+private fun registerTopicInfoGauge(
+    prometheusMeterRegistry: PrometheusMeterRegistry,
+    kafkaKonfigurasjon: KafkaKonfigurasjon
+) {
+    prometheusMeterRegistry.registerTopicVersionGauge(
+        topicInfo(
+            topic = kafkaKonfigurasjon.streamKonfigurasjon.eventlogTopic,
+            messageType = StreamHendelse::class.java.name,
+            description = "Hendelser som skal behandles",
+            topicOperation = TopicOperation.READ
+        ),
+        topicInfo(
+            topic = kafkaKonfigurasjon.streamKonfigurasjon.periodeTopic,
+            messageType = Periode.`SCHEMA$`.name,
+            description = "Arbeidssøkerperioder",
+            topicOperation = TopicOperation.WRITE
+        ),
+        topicInfo(
+            topic = kafkaKonfigurasjon.streamKonfigurasjon.opplysningerOmArbeidssoekerTopic,
+            messageType = StreamHendelse::class.java.name,
+            description = "Opplysninger om arbeidssøker",
+            topicOperation = TopicOperation.WRITE
+        )
+    )
 }
 
 private fun registerStreamStateGauge(

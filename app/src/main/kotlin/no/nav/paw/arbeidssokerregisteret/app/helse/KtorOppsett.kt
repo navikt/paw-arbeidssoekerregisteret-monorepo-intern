@@ -1,7 +1,5 @@
 package no.nav.paw.arbeidssokerregisteret.app.helse
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.metrics.micrometer.*
@@ -13,17 +11,6 @@ import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
 import io.micrometer.core.instrument.binder.kafka.KafkaStreamsMetrics
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics
 import io.micrometer.prometheus.PrometheusMeterRegistry
-import java.time.Instant
-
-val avroSchemaInfo = getModuleInfo("avro-schema") ?:
-    ModuleInfo(
-        name = "avro-schema",
-        version = "1.UNKNOWN_VERSION",
-        module = "unknown",
-        buildTime = Instant.ofEpochMilli(0),
-        gitSha = null
-    )
-private val objectMapper = jacksonObjectMapper()
 
 fun initKtor(
     kafkaStreamsMetrics: KafkaStreamsMetrics,
@@ -51,12 +38,6 @@ fun initKtor(
             }
             get("/metrics") {
                 call.respond(prometheusRegistry.scrape())
-            }
-            get("/moduleInfo") {
-                call.respondText(
-                    text = objectMapper.writeValueAsString(avroSchemaInfo),
-                    contentType = ContentType.Application.Json
-                )
             }
         }
     }
