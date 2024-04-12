@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.binder.kafka.KafkaStreamsMetrics
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
+import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.app.config.KafkaKonfigurasjon
 import no.nav.paw.arbeidssokerregisteret.app.helse.Helse
 import no.nav.paw.arbeidssokerregisteret.app.helse.initKtor
@@ -119,7 +120,7 @@ private fun registerTopicInfoGauge(
         ),
         topicInfo(
             topic = kafkaKonfigurasjon.streamKonfigurasjon.opplysningerOmArbeidssoekerTopic,
-            messageType = StreamHendelse::class.java.name,
+            messageType = OpplysningerOmArbeidssoeker.`SCHEMA$`.name,
             description = "Opplysninger om arbeidssøker",
             topicOperation = TopicOperation.WRITE
         )
