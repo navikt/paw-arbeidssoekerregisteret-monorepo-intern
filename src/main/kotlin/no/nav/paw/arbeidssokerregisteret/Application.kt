@@ -7,7 +7,8 @@ import io.ktor.server.netty.*
 import io.ktor.server.routing.*
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
-import no.nav.paw.arbeidssokerregisteret.application.RequestHandler
+import no.nav.paw.arbeidssokerregisteret.application.OpplysningerRequestHandler
+import no.nav.paw.arbeidssokerregisteret.application.StartStoppRequestHandler
 import no.nav.paw.arbeidssokerregisteret.config.AuthProviders
 import no.nav.paw.arbeidssokerregisteret.config.CONFIG_FILE_NAME
 import no.nav.paw.arbeidssokerregisteret.config.Config
@@ -26,12 +27,13 @@ fun main() {
     logger.info("Starter ${ApplicationInfo.id}")
     val applicationConfig = loadNaisOrLocalConfiguration<Config>(CONFIG_FILE_NAME)
     val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
-    val requestHandler = requestHandler(applicationConfig, KafkaFactory(kafkaConfig))
+    val (startStoppRequestHandler, opplysningerRequestHandler) = requestHandlers(applicationConfig, KafkaFactory(kafkaConfig))
     val server = embeddedServer(Netty, port = 8080) {
         module(
             registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
             authProviders = applicationConfig.authProviders,
-            requestHandler = requestHandler
+            startStoppRequestHandler = startStoppRequestHandler,
+            opplysningerRequestHandler = opplysningerRequestHandler
         )
     }
     server.addShutdownHook {
@@ -43,7 +45,8 @@ fun main() {
 fun Application.module(
     registry: PrometheusMeterRegistry,
     authProviders: AuthProviders,
-    requestHandler: RequestHandler
+    startStoppRequestHandler: StartStoppRequestHandler,
+    opplysningerRequestHandler: OpplysningerRequestHandler
 ) {
     configureMetrics(registry)
     configureHTTP()
@@ -55,7 +58,7 @@ fun Application.module(
         healthRoutes(registry)
         swaggerRoutes()
         authenticate("tokenx", "azure") {
-            arbeidssokerRoutes(requestHandler)
+            arbeidssokerRoutes(startStoppRequestHandler, opplysningerRequestHandler)
         }
     }
 }

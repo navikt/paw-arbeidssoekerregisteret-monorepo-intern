@@ -11,13 +11,18 @@ import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
+import io.mockk.verify
+import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.*
+import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.JobbsituasjonMedDetaljer.Beskrivelse.HAR_SAGT_OPP
 import no.nav.paw.arbeidssokerregisteret.application.*
-import no.nav.paw.arbeidssokerregisteret.domain.Feilkode
 import no.nav.paw.arbeidssokerregisteret.domain.http.*
 import no.nav.paw.arbeidssokerregisteret.plugins.configureHTTP
 import no.nav.paw.arbeidssokerregisteret.plugins.configureSerialization
 import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutes
+import java.time.LocalDate
+import kotlin.math.exp
 
 class ApplicationOpplysningerTest : FunSpec({
     test("Verifiser opplysninger happy path") {
@@ -26,14 +31,15 @@ class ApplicationOpplysningerTest : FunSpec({
                 configureSerialization()
                 configureHTTP()
             }
+            val opplysningerRequestHandler = mockk<OpplysningerRequestHandler>()
             routing {
-                val requestHandler = mockk<RequestHandler>()
+                val startStopppRequestHandler = mockk<StartStoppRequestHandler>()
                 coEvery {
                     with(any<RequestScope>()) {
-                        requestHandler.opprettBrukeropplysninger(any())
+                        opplysningerRequestHandler.opprettBrukeropplysninger(any())
                     }
                 } returns Right(ValidationResultOk)
-                arbeidssokerRoutes(requestHandler)
+                arbeidssokerRoutes(startStopppRequestHandler, opplysningerRequestHandler)
             }
             val client = createClient {
                 install(ContentNegotiation) {
@@ -53,17 +59,22 @@ class ApplicationOpplysningerTest : FunSpec({
                     "identitetsnummer":"12345678900",
                     "opplysningerOmArbeidssoeker":{
                         "utdanning":{
-                            "nus":"0"},
+                            "nus":"1"},
                             "helse":{
-                                "helsetilstandHindrerArbeid":"NEI"
+                                "helsetilstandHindrerArbeid":"JA"
                             },
                             "jobbsituasjon":{
                                 "beskrivelser":[
                                     {
-                                        "beskrivelse":"HAR_SAGT_OPP",
+                                        "beskrivelse":"$HAR_SAGT_OPP",
                                         "detaljer":{
-                                            "stilling":"Bilskadereparatør",
-                                            "stilling_styrk08":"7213"
+                                            "$STILLING":"Bilskadereparatør",
+                                            "$STILLING_STYRK08":"7213",
+                                            "$GJELDER_FRA_DATO":"2021-04-29",
+                                            "$GJELDER_TIL_DATO":"2021-05-29",
+                                            "$SISTE_DAG_MED_LOENN":"2021-06-29",
+                                            "$SISTE_ARBEIDSDAG":"2021-07-29",
+                                            "$PROSENT": "75"
                                         }
                                     }
                                 ]
@@ -77,8 +88,35 @@ class ApplicationOpplysningerTest : FunSpec({
                 )
             }
             response.status shouldBe HttpStatusCode.Accepted
+            coVerify {
+                with(any<RequestScope>()) {
+                    val expectedRequest = OpplysningerRequest(
+                        identitetsnummer = "12345678900",
+                        opplysningerOmArbeidssoeker = OpplysningerOmArbeidssoeker(
+                            utdanning = Utdanning(nus = "1"),
+                            helse = Helse(helsetilstandHindrerArbeid = JaNeiVetIkke.JA),
+                            jobbsituasjon = Jobbsituasjon(
+                                listOf(
+                                    JobbsituasjonMedDetaljer(
+                                        beskrivelse = HAR_SAGT_OPP,
+                                        detaljer = Detaljer(
+                                            stilling = "Bilskadereparatør",
+                                            stillingStyrk08 = "7213",
+                                            gjelderFraDatoIso8601 = LocalDate.parse("2021-04-29"),
+                                            gjelderTilDatoIso8601 = LocalDate.parse("2021-05-29"),
+                                            sisteDagMedLoennIso8601 = LocalDate.parse("2021-06-29"),
+                                            sisteArbeidsdagIso8601 = LocalDate.parse("2021-07-29"),
+                                            prosent = "75"
+                                        )
+                                    )
+                                )
+                            ),
+                            annet = Annet(andreForholdHindrerArbeid = JaNeiVetIkke.NEI)
+                        )
+                    )
+                    opplysningerRequestHandler.opprettBrukeropplysninger(expectedRequest)
+                }
+            }
         }
     }
 })
-
-

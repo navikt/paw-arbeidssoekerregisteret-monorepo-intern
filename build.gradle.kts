@@ -1,9 +1,12 @@
+import org.gradle.configurationcache.extensions.capitalized
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
     kotlin("jvm") version "1.9.20"
     id("io.ktor.plugin") version "2.3.9"
-//    id("org.jmailen.kotlinter") version "3.16.0"
+    id("org.openapi.generator") version "7.4.0"
     application
     id("com.google.cloud.tools.jib") version "3.4.0"
 }
@@ -67,6 +70,13 @@ dependencies {
     testImplementation("no.nav.security:mock-oauth2-server:2.0.0")
     testImplementation("io.mockk:mockk:1.13.10")
 }
+sourceSets {
+    main {
+        kotlin {
+            srcDir("${layout.buildDirectory.get()}/generated/src/main/kotlin")
+        }
+    }
+}
 
 java {
     toolchain {
@@ -98,10 +108,49 @@ tasks.withType(Jar::class) {
 
 jib {
     from.image = "ghcr.io/navikt/baseimages/temurin:$jvmVersion"
-    to.image = "${image ?: project.name }:${project.version}"
-    container{
+    to.image = "${image ?: project.name}:${project.version}"
+    container {
         environment = mapOf(
-            "IMAGE_WITH_VERSION" to "${image ?: project.name }:${project.version}"
+            "IMAGE_WITH_VERSION" to "${image ?: project.name}:${project.version}"
         )
+    }
+}
+
+val generatedCodePackageName = "no.nav.paw.arbeidssoekerregisteret.api"
+val generatedCodeOutputDir = "${layout.buildDirectory.get()}/generated/"
+
+mapOf(
+    "${layout.projectDirectory}/src/main/resources/openapi/opplysninger.yaml" to "${generatedCodePackageName}.opplysningermottatt",
+    "${layout.projectDirectory}/src/main/resources/openapi/startstopp.yaml" to "${generatedCodePackageName}.startstopp"
+).map { (openApiDocFile, pkgName) ->
+    val taskName = "generate${pkgName.capitalized()}"
+    tasks.register(taskName, GenerateTask::class) {
+        generatorName.set("kotlin-server")
+        library = "ktor"
+        inputSpec = openApiDocFile
+        outputDir = generatedCodeOutputDir
+        packageName = pkgName
+        configOptions.set(
+            mapOf(
+                "serializationLibrary" to "jackson",
+                "enumPropertyNaming" to "original",
+                "modelPropertyNaming" to "original"
+            ),
+        )
+        typeMappings = mapOf(
+            "DateTime" to "Instant"
+        )
+        globalProperties = mapOf(
+            "apis" to "none",
+            "models" to ""
+        )
+        importMappings = mapOf(
+            "Instant" to "java.time.Instant"
+        )
+    }
+    taskName
+}.also { generatorTasks ->
+    tasks.withType(KotlinCompilationTask::class) {
+        dependsOn(*generatorTasks.toTypedArray())
     }
 }

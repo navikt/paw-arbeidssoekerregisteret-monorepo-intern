@@ -2,7 +2,8 @@ package no.nav.paw.arbeidssokerregisteret
 
 import io.ktor.client.*
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient
-import no.nav.paw.arbeidssokerregisteret.application.RequestHandler
+import no.nav.paw.arbeidssokerregisteret.application.OpplysningerRequestHandler
+import no.nav.paw.arbeidssokerregisteret.application.StartStoppRequestHandler
 import no.nav.paw.arbeidssokerregisteret.application.RequestValidator
 import no.nav.paw.arbeidssokerregisteret.config.Config
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
@@ -16,7 +17,7 @@ import no.nav.poao_tilgang.client.PoaoTilgangHttpClient
 import org.apache.kafka.common.serialization.LongSerializer
 
 
-fun requestHandler(config: Config, kafkaFactory: KafkaFactory): RequestHandler {
+fun requestHandlers(config: Config, kafkaFactory: KafkaFactory): Pair<StartStoppRequestHandler, OpplysningerRequestHandler> {
     val clients = with(azureAdM2MTokenClient(config.naisEnv, config.authProviders.azure)) {
         clientsFactory(config)
     }
@@ -30,14 +31,21 @@ fun requestHandler(config: Config, kafkaFactory: KafkaFactory): RequestHandler {
         autorisasjonService = AutorisasjonService(clients.poaoTilgangClient),
         personInfoService = PersonInfoService(clients.pdlClient)
     )
-    val requestHandler = RequestHandler(
+    val startStoppRequestHandler = StartStoppRequestHandler(
         hendelseTopic = config.eventLogTopic,
         requestValidator = requestValidator,
         producer = kafkaProducer,
         kafkaKeysClient = clients.kafkaKeysClient
     )
 
-    return requestHandler
+    val opplysningerRequestHandler = OpplysningerRequestHandler(
+        hendelseTopic = config.eventLogTopic,
+        requestValidator = requestValidator,
+        producer = kafkaProducer,
+        kafkaKeysClient = clients.kafkaKeysClient
+    )
+
+    return startStoppRequestHandler to opplysningerRequestHandler
 }
 
 context(AzureAdMachineToMachineTokenClient)

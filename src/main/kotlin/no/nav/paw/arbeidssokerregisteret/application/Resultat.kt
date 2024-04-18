@@ -1,15 +1,12 @@
 package no.nav.paw.arbeidssokerregisteret.application
 
+import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.OpplysningerRequest
 import no.nav.paw.arbeidssokerregisteret.ApplicationInfo
 import no.nav.paw.arbeidssokerregisteret.RequestScope
+import no.nav.paw.arbeidssokerregisteret.api.extensions.toInternalApi
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
-import no.nav.paw.arbeidssokerregisteret.domain.http.OpplysningerRequest
 import no.nav.paw.arbeidssokerregisteret.domain.navAnsatt
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
-import no.nav.paw.arbeidssokerregisteret.intern.v1.AvvistStoppAvPeriode
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.*
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.OpplysningerOmArbeidssoeker
@@ -138,10 +135,10 @@ fun opplysningerHendelse(id: Long, opplysningerRequest: OpplysningerRequest): He
             kilde = "paw-arbeidssoekerregisteret-inngang",
             aarsak = "opplysning om arbeidssøker sendt inn"
         ),
-        annet = opplysningerRequest.opplysningerOmArbeidssoeker.annet,
-        helse = opplysningerRequest.opplysningerOmArbeidssoeker.helse,
-        jobbsituasjon = opplysningerRequest.opplysningerOmArbeidssoeker.jobbsituasjon,
-        utdanning = opplysningerRequest.opplysningerOmArbeidssoeker.utdanning
+        annet = opplysningerRequest.opplysningerOmArbeidssoeker.annet.toInternalApi(),
+        helse = opplysningerRequest.opplysningerOmArbeidssoeker.helse.toInternalApi(),
+        jobbsituasjon = opplysningerRequest.opplysningerOmArbeidssoeker.jobbsituasjon.toInternalApi(),
+        utdanning = opplysningerRequest.opplysningerOmArbeidssoeker.utdanning.toInternalApi()
     )
 )
 

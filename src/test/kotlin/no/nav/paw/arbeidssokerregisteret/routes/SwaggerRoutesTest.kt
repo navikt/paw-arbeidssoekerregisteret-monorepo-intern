@@ -13,9 +13,8 @@ class SwaggerRoutesTest : FunSpec({
                 routing {
                     swaggerRoutes()
                 }
-
-                val response = client.get("/docs")
-                response.status shouldBe HttpStatusCode.OK
+                client.get("/docs/opplysninger").status shouldBe HttpStatusCode.OK
+                client.get("/docs/startstopp").status shouldBe HttpStatusCode.OK
             }
         }
     }

@@ -3,24 +3,17 @@ package no.nav.paw.arbeidssokerregisteret
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FreeSpec
-import io.kotest.core.spec.style.FunSpec
-import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.*
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.*
-import io.ktor.http.headers
 import io.ktor.serialization.jackson.*
-import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.response.respond
 import io.ktor.server.routing.*
 import io.ktor.server.testing.testApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import no.nav.paw.arbeidssokerregisteret.TestData
 import no.nav.paw.arbeidssokerregisteret.application.*
 import no.nav.paw.arbeidssokerregisteret.application.OK
 import no.nav.paw.arbeidssokerregisteret.auth.configureAuthentication
@@ -29,14 +22,11 @@ import no.nav.paw.arbeidssokerregisteret.domain.http.PeriodeTilstand
 import no.nav.paw.arbeidssokerregisteret.domain.http.StartStoppRequest
 import no.nav.paw.arbeidssokerregisteret.plugins.configureHTTP
 import no.nav.paw.arbeidssokerregisteret.plugins.configureSerialization
-import no.nav.paw.arbeidssokerregisteret.requestScope
 import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutes
-import no.nav.paw.arbeidssokerregisteret.utils.TokenXPID
 import no.nav.security.mock.oauth2.MockOAuth2Server
 
 class InngangSomBrukerTest : FreeSpec({
     val oauth = MockOAuth2Server()
-    val testAuthUrl = "/testAuthTokenx"
 
     beforeSpec {
         oauth.start()
@@ -48,10 +38,10 @@ class InngangSomBrukerTest : FreeSpec({
     "Teste inngang som bruker" - {
 
         "På vegne av seg selv" - {
-            val requestHandler: RequestHandler = mockk()
+            val startStoppRequestHandler: StartStoppRequestHandler = mockk()
             coEvery {
                 with(any<RequestScope>()) {
-                    requestHandler.startArbeidssokerperiode(any(), any())
+                    startStoppRequestHandler.startArbeidssokerperiode(any(), any())
                 }
             } returns OK(
                 regel = Regel(
@@ -69,7 +59,7 @@ class InngangSomBrukerTest : FreeSpec({
                     configureAuthentication(oauth)
                     routing {
                         authenticate("tokenx") {
-                            arbeidssokerRoutes(requestHandler)
+                            arbeidssokerRoutes(startStoppRequestHandler, mockk())
                         }
                     }
                 }
@@ -101,7 +91,7 @@ class InngangSomBrukerTest : FreeSpec({
                 response.status shouldBe HttpStatusCode.NoContent
                 coVerify(exactly = 1) {
                     with(any<RequestScope>()) {
-                        requestHandler.startArbeidssokerperiode(Identitetsnummer("12345678909"), false)
+                        startStoppRequestHandler.startArbeidssokerperiode(Identitetsnummer("12345678909"), false)
                     }
                 }
             }
@@ -109,10 +99,10 @@ class InngangSomBrukerTest : FreeSpec({
 
 
         "Bruker som har forhandsgodkjentflagg aktivt" - {
-            val requestHandler: RequestHandler = mockk()
+            val startStoppRequestHandler: StartStoppRequestHandler = mockk()
             coEvery {
                 with(any<RequestScope>()) {
-                    requestHandler.startArbeidssokerperiode(any(), any())
+                    startStoppRequestHandler.startArbeidssokerperiode(any(), any())
                 }
             } returns UgyldigRequestBasertPaaAutentisering(
                 regel = Regel(
@@ -130,7 +120,7 @@ class InngangSomBrukerTest : FreeSpec({
                     configureAuthentication(oauth)
                     routing {
                         authenticate("tokenx") {
-                            arbeidssokerRoutes(requestHandler)
+                            arbeidssokerRoutes(startStoppRequestHandler, mockk())
                         }
                     }
                 }
@@ -162,7 +152,7 @@ class InngangSomBrukerTest : FreeSpec({
                 response.status shouldBe HttpStatusCode.BadRequest
                 coVerify(exactly = 1) {
                     with(any<RequestScope>()) {
-                        requestHandler.startArbeidssokerperiode(Identitetsnummer("12345678909"), false)
+                        startStoppRequestHandler.startArbeidssokerperiode(Identitetsnummer("12345678909"), false)
                     }
                 }
             }

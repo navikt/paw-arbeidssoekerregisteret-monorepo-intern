@@ -2,18 +2,16 @@ package no.nav.paw.arbeidssokerregisteret.application
 
 import no.nav.paw.arbeidssokerregisteret.RequestScope
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
-import no.nav.paw.arbeidssokerregisteret.domain.http.*
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.config.kafka.sendDeferred
 import no.nav.paw.migrering.app.kafkakeys.KafkaKeysClient
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.clients.producer.internals.BuiltInPartitioner
 import org.apache.kafka.clients.producer.internals.BuiltInPartitioner.partitionForKey
 import org.apache.kafka.common.serialization.LongSerializer
 import org.slf4j.LoggerFactory
 
-class RequestHandler(
+class StartStoppRequestHandler(
     private val hendelseTopic: String,
     private val requestValidator: RequestValidator,
     private val producer: Producer<Long, Hendelse>,
@@ -61,33 +59,6 @@ class RequestHandler(
     context(RequestScope)
     suspend fun kanRegistreresSomArbeidssoker(identitetsnummer: Identitetsnummer): EndeligResultat {
         return requestValidator.validerStartAvPeriodeOenske(identitetsnummer)
-    }
-
-    context(RequestScope)
-    suspend fun opprettBrukeropplysninger(opplysningerRequest: OpplysningerRequest): Either<out IkkeTilgang, out ValidationResult> {
-        val identitetsnummer = opplysningerRequest.getId()
-
-        val validerTilgangResultat = requestValidator.validerTilgang(identitetsnummer)
-
-        if (validerTilgangResultat is IkkeTilgang) {
-            return Left(validerTilgangResultat)
-        }
-
-        val validerOpplysninger = validerOpplysninger(opplysningerRequest.opplysningerOmArbeidssoeker)
-
-        if (validerOpplysninger is ValidationErrorResult) {
-            return Right(validerOpplysninger)
-        }
-        val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
-        val hendelse = opplysningerHendelse(id, opplysningerRequest)
-        val record = ProducerRecord(
-            hendelseTopic,
-            key,
-            hendelse
-        )
-        val recordMetadata = producer.sendDeferred(record).await()
-        logger.trace("Sendte melding til kafka: type={}, offset={}", hendelse.hendelseType, recordMetadata.offset())
-        return Right(ValidationResultOk)
     }
 }
 

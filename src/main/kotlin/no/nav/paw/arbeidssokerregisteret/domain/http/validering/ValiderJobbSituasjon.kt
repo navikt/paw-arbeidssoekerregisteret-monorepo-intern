@@ -1,11 +1,10 @@
 package no.nav.paw.arbeidssokerregisteret.domain.http.validering
 
+import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.Jobbsituasjon
+import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.JobbsituasjonMedDetaljer.Beskrivelse.*
 import no.nav.paw.arbeidssokerregisteret.STILLING_STYRK08
 import no.nav.paw.arbeidssokerregisteret.domain.http.ValidationErrorResult
 import no.nav.paw.arbeidssokerregisteret.domain.http.ValidationResult
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Jobbsituasjon
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.JobbsituasjonBeskrivelse
-
 
 /*
 UKJENT_VERDI
@@ -27,18 +26,18 @@ ANNET
 
 fun validerJobbsituasjon(jobbsituasjon: Jobbsituasjon): ValidationResult {
     val requiresStyrk08 = setOf(
-        JobbsituasjonBeskrivelse.ER_PERMITTERT,
-        JobbsituasjonBeskrivelse.HAR_SAGT_OPP,
-        JobbsituasjonBeskrivelse.HAR_BLITT_SAGT_OPP,
-        JobbsituasjonBeskrivelse.DELTIDSJOBB_VIL_MER,
-        JobbsituasjonBeskrivelse.KONKURS,
-        JobbsituasjonBeskrivelse.MIDLERTIDIG_JOBB,
-        JobbsituasjonBeskrivelse.USIKKER_JOBBSITUASJON,
-        JobbsituasjonBeskrivelse.NY_JOBB
+        ER_PERMITTERT,
+        HAR_SAGT_OPP,
+        HAR_BLITT_SAGT_OPP,
+        DELTIDSJOBB_VIL_MER,
+        KONKURS,
+        MIDLERTIDIG_JOBB,
+        USIKKER_JOBBSITUASJON,
+        NY_JOBB
     )
     val missingStyrk08 = jobbsituasjon.beskrivelser
         .filter { it.beskrivelse in requiresStyrk08 }
-        .filterNot { it.detaljer.contains(STILLING_STYRK08) }
+        .filterNot { it.detaljer.stillingStyrk08 != null }
     if (missingStyrk08.isNotEmpty()) {
         return ValidationErrorResult(
             setOf("jobbsituasjon.beskrivelser"),

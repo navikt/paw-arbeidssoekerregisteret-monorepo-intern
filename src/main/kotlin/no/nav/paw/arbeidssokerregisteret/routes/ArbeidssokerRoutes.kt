@@ -3,26 +3,26 @@ package no.nav.paw.arbeidssokerregisteret.routes
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
+import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.OpplysningerRequest
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV1ArbeidssokerKanStartePeriodePutRequest
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV1ArbeidssokerPeriodePutRequest
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV1ArbeidssokerPeriodePutRequest.PeriodeTilstand
+import no.nav.paw.arbeidssokerregisteret.api.extensions.getId
 import no.nav.paw.arbeidssokerregisteret.application.*
-import no.nav.paw.arbeidssokerregisteret.domain.http.KanStarteRequest
-import no.nav.paw.arbeidssokerregisteret.domain.http.OpplysningerRequest
-import no.nav.paw.arbeidssokerregisteret.domain.http.PeriodeTilstand
-import no.nav.paw.arbeidssokerregisteret.domain.http.StartStoppRequest
 import no.nav.paw.arbeidssokerregisteret.requestScope
 import no.nav.paw.arbeidssokerregisteret.utils.logger
 
-fun Route.arbeidssokerRoutes(requestHandler: RequestHandler) {
+fun Route.arbeidssokerRoutes(
+    startStoppRequestHandler: StartStoppRequestHandler,
+    opplysningerRequestHandler: OpplysningerRequestHandler
+) {
     route("/api/v1/arbeidssoker") {
         route("/kanStartePeriode") {
             // Sjekker om bruker kan registreres som arbeidssøker
-            put<KanStarteRequest> { request: KanStarteRequest ->
-                // Når denne ble lagt inn tok ikke nyeste versjon av ktor openAPI genereringen med request uten kall til call.recieve"
-                if (false) {
-                    call.receive<KanStarteRequest>()
-                }
+            put<ApiV1ArbeidssokerKanStartePeriodePutRequest> { request ->
                 logger.trace("Sjekker om bruker kan registreres som arbeidssøker")
                 val resultat = with(requestScope()) {
-                    requestHandler.kanRegistreresSomArbeidssoker(request.getId())
+                    startStoppRequestHandler.kanRegistreresSomArbeidssoker(request.getId())
                 }
                 logger.debug("Resultat av 'kan-starte': {}", resultat)
                 respondWith(resultat)
@@ -31,19 +31,17 @@ fun Route.arbeidssokerRoutes(requestHandler: RequestHandler) {
 
         route("/periode") {
             // Registrerer bruker som arbeidssøker
-            put<StartStoppRequest> { startStoppRequest: StartStoppRequest ->
-                // Når denne ble lagt inn tok ikke nyeste versjon av ktor openAPI genereringen med request uten kall til call.recieve"
-                if (false) {
-                    call.receive<StartStoppRequest>()
-                }
+            put<ApiV1ArbeidssokerPeriodePutRequest> { startStoppRequest ->
                 logger.trace("Registrerer bruker som arbeidssøker {}", startStoppRequest.periodeTilstand)
                 val resultat = with(requestScope()) {
                     when (startStoppRequest.periodeTilstand) {
                         PeriodeTilstand.STARTET ->
-                            requestHandler.startArbeidssokerperiode(startStoppRequest.getId(), startStoppRequest.registreringForhaandsGodkjentAvAnsatt)
-
+                            startStoppRequestHandler.startArbeidssokerperiode(
+                                identitetsnummer = startStoppRequest.getId(),
+                                erForhaandsGodkjentAvVeileder = startStoppRequest.registreringForhaandsGodkjentAvAnsatt ?: false
+                            )
                         PeriodeTilstand.STOPPET ->
-                            requestHandler.avsluttArbeidssokerperiode(startStoppRequest.getId())
+                            startStoppRequestHandler.avsluttArbeidssokerperiode(startStoppRequest.getId())
                     }
                 }
                 logger.debug("Registreringsresultat: {}", resultat)
@@ -61,7 +59,7 @@ fun Route.arbeidssokerRoutes(requestHandler: RequestHandler) {
 
                 val resultat =
                     with(requestScope()) {
-                        requestHandler.opprettBrukeropplysninger(opplysningerRequest)
+                        opplysningerRequestHandler.opprettBrukeropplysninger(opplysningerRequest)
                     }
                 logger.debug("Oppdateringsresultat: {}", resultat)
                 when (resultat) {

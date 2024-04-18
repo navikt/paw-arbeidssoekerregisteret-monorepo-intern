@@ -1,9 +1,9 @@
 package no.nav.paw.arbeidssokerregisteret.domain.http.validering
 
+import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.Utdanning
 import no.nav.paw.arbeidssokerregisteret.domain.http.ValidationErrorResult
 import no.nav.paw.arbeidssokerregisteret.domain.http.ValidationResult
 import no.nav.paw.arbeidssokerregisteret.domain.http.ValidationResultOk
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Utdanning
 
 /*
 0 - Ingen utdanning og førskoleutdanning

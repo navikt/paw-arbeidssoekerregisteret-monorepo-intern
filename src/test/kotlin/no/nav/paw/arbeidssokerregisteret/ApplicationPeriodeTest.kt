@@ -30,10 +30,10 @@ class ApplicationPeriodeTest : FunSpec({
                 configureHTTP()
             }
             routing {
-                val requestHandler = mockk<RequestHandler>()
+                val startStoppRequestHandler = mockk<StartStoppRequestHandler>()
                 coEvery {
                     with(any<RequestScope>()) {
-                        requestHandler.startArbeidssokerperiode(any(), any())
+                        startStoppRequestHandler.startArbeidssokerperiode(any(), any())
                     }
                 } returns Avvist(
                     regel = Regel(
@@ -44,7 +44,7 @@ class ApplicationPeriodeTest : FunSpec({
                     ),
                     opplysning = listOf(Opplysning.ER_UNDER_18_AAR)
                 )
-                arbeidssokerRoutes(requestHandler)
+                arbeidssokerRoutes(startStoppRequestHandler, mockk())
             }
             val client = createClient {
                 install(ContentNegotiation) {
