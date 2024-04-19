@@ -37,7 +37,7 @@ fun validerJobbsituasjon(jobbsituasjon: Jobbsituasjon): ValidationResult {
     )
     val missingStyrk08 = jobbsituasjon.beskrivelser
         .filter { it.beskrivelse in requiresStyrk08 }
-        .filterNot { it.detaljer.stillingStyrk08 != null }
+        .filterNot { it.detaljer?.stillingStyrk08 != null }
     if (missingStyrk08.isNotEmpty()) {
         return ValidationErrorResult(
             setOf("jobbsituasjon.beskrivelser"),

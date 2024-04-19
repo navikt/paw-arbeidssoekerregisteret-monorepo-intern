@@ -15,6 +15,7 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.verify
 import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.*
+import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.JobbsituasjonMedDetaljer.Beskrivelse.DELTIDSJOBB_VIL_MER
 import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.JobbsituasjonMedDetaljer.Beskrivelse.HAR_SAGT_OPP
 import no.nav.paw.arbeidssokerregisteret.application.*
 import no.nav.paw.arbeidssokerregisteret.domain.http.*
@@ -76,6 +77,9 @@ class ApplicationOpplysningerTest : FunSpec({
                                             "$SISTE_ARBEIDSDAG":"2021-07-29",
                                             "$PROSENT": "75"
                                         }
+                                    },
+                                    {
+                                        "beskrivelse":"$DELTIDSJOBB_VIL_MER"
                                     }
                                 ]
                             }
@@ -108,7 +112,8 @@ class ApplicationOpplysningerTest : FunSpec({
                                             sisteArbeidsdagIso8601 = LocalDate.parse("2021-07-29"),
                                             prosent = "75"
                                         )
-                                    )
+                                    ),
+                                    JobbsituasjonMedDetaljer(beskrivelse = DELTIDSJOBB_VIL_MER)
                                 )
                             ),
                             annet = Annet(andreForholdHindrerArbeid = JaNeiVetIkke.NEI)

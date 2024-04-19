@@ -115,7 +115,6 @@ components:
           $ref: "#/components/schemas/Detaljer"
       required:
       - "beskrivelse"
-      - "detaljer"
     Jobbsituasjon:
       type: "object"
       properties:

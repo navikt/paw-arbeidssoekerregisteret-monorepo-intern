@@ -67,15 +67,19 @@ fun Beskrivelse.toInternalApi(): JobbsituasjonBeskrivelse =
         Beskrivelse.ANNET -> JobbsituasjonBeskrivelse.ANNET
     }
 
-fun Detaljer.toInternalApi(): Map<String, String> =
-    listOf(
-        STILLING to stilling,
-        STILLING_STYRK08 to stillingStyrk08,
-        GJELDER_FRA_DATO to gjelderFraDatoIso8601.toString(),
-        GJELDER_TIL_DATO to gjelderTilDatoIso8601.toString(),
-        SISTE_ARBEIDSDAG to sisteArbeidsdagIso8601.toString(),
-        SISTE_DAG_MED_LOENN to sisteDagMedLoennIso8601.toString(),
-        PROSENT to prosent
-    )
-        .mapNotNull { (key, value) -> value?.let { key to it } }
-        .toMap()
+fun Detaljer?.toInternalApi(): Map<String, String> =
+    if (this == null) {
+        emptyMap()
+    } else {
+        listOf(
+            STILLING to stilling,
+            STILLING_STYRK08 to stillingStyrk08,
+            GJELDER_FRA_DATO to gjelderFraDatoIso8601.toString(),
+            GJELDER_TIL_DATO to gjelderTilDatoIso8601.toString(),
+            SISTE_ARBEIDSDAG to sisteArbeidsdagIso8601.toString(),
+            SISTE_DAG_MED_LOENN to sisteDagMedLoennIso8601.toString(),
+            PROSENT to prosent
+        )
+            .mapNotNull { (key, value) -> value?.let { key to it } }
+            .toMap()
+    }

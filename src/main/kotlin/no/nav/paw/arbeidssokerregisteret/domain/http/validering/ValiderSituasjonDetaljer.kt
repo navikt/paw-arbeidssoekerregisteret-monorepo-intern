@@ -13,10 +13,12 @@ val validationRules =
         Detaljer::stilling to ::isNotEmptyString
     )
 
+val ingenDetaljer: Detaljer = Detaljer(null, null, null)
+
 fun validerDetaljer(situasjonMedDetaljer: JobbsituasjonMedDetaljer): ValidationResult =
     validationRules
         .mapNotNull { (property, rule) ->
-            property(situasjonMedDetaljer.detaljer)
+            property(situasjonMedDetaljer.detaljer ?: ingenDetaljer)
                 ?.let { rule(property.name, it) }
         }.filterIsInstance<ValidationErrorResult>()
         .firstOrNull() ?: ValidationResultOk
