@@ -26,24 +26,44 @@ paths:
       responses:
         "400":
           description: "Bad Request"
+          headers:
+            X-Trace-Id:
+              description: "Trace id"
+              schema:
+                type: "string"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Feil"
         "500":
           description: "Internal Server Error"
+          headers:
+            X-Trace-Id:
+              description: "Trace id"
+              schema:
+                type: "string"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Feil"
         "403":
           description: "Forbidden"
+          headers:
+            X-Trace-Id:
+              description: "Trace id"
+              schema:
+                type: "string"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Feil"
         "202":
           description: "Accepted"
+          headers:
+            X-Trace-Id:
+              description: "Trace id"
+              schema:
+                type: "string"
           content:
             application/json:
               schema:

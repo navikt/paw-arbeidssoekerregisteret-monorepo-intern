@@ -7,6 +7,7 @@ import io.ktor.server.netty.*
 import io.ktor.server.routing.*
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.opentelemetry.api.trace.Span
 import no.nav.paw.arbeidssokerregisteret.application.OpplysningerRequestHandler
 import no.nav.paw.arbeidssokerregisteret.application.StartStoppRequestHandler
 import no.nav.paw.arbeidssokerregisteret.config.AuthProviders
@@ -53,6 +54,7 @@ fun Application.module(
     configureAuthentication(authProviders)
     configureLogging()
     configureSerialization()
+    install(OtelTraceIdPlugin)
 
     routing {
         healthRoutes(registry)
@@ -62,3 +64,11 @@ fun Application.module(
         }
     }
 }
+
+val OtelTraceIdPlugin =
+    createApplicationPlugin("OtelTraceIdPlugin") {
+        onCallRespond { call, _ ->
+            runCatching { Span.current().spanContext.traceId }
+                .onSuccess { call.response.headers.append("X-Trace-Id", it) }
+        }
+    }

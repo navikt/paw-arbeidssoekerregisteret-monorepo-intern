@@ -34,30 +34,55 @@ paths:
       responses:
         "400":
           description: "Bad Request"
+          headers:
+            X-Trace-Id:
+              description: "Trace id"
+              schema:
+                type: "string"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Feil"
         "424":
           description: "Failed Dependency"
+          headers:
+            X-Trace-Id:
+              description: "Trace id"
+              schema:
+                type: "string"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Feil"
         "500":
           description: "Internal Server Error"
+          headers:
+            X-Trace-Id:
+              description: "Trace id"
+              schema:
+                type: "string"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Feil"
         "403":
           description: "Forbidden"
+          headers:
+            X-Trace-Id:
+              description: "Trace id"
+              schema:
+                type: "string"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Feil"
         "204":
           description: "No Content"
+          headers:
+            X-Trace-Id:
+              description: "Trace id"
+              schema:
+                type: "string"
           content:
             application/json:
               schema:
