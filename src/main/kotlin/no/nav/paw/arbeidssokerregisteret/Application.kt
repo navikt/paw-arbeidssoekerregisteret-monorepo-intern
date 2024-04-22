@@ -69,6 +69,6 @@ val OtelTraceIdPlugin =
     createApplicationPlugin("OtelTraceIdPlugin") {
         onCallRespond { call, _ ->
             runCatching { Span.current().spanContext.traceId }
-                .onSuccess { call.response.headers.append("X-Trace-Id", it) }
+                .onSuccess { call.response.headers.append("x-trace-id", it) }
         }
     }

@@ -35,7 +35,7 @@ paths:
         "400":
           description: "Bad Request"
           headers:
-            X-Trace-Id:
+            x-trace-id:
               description: "Trace id"
               schema:
                 type: "string"
@@ -46,7 +46,7 @@ paths:
         "424":
           description: "Failed Dependency"
           headers:
-            X-Trace-Id:
+            x-trace-id:
               description: "Trace id"
               schema:
                 type: "string"
@@ -57,7 +57,7 @@ paths:
         "500":
           description: "Internal Server Error"
           headers:
-            X-Trace-Id:
+            x-trace-id:
               description: "Trace id"
               schema:
                 type: "string"
@@ -68,7 +68,7 @@ paths:
         "403":
           description: "Forbidden"
           headers:
-            X-Trace-Id:
+            x-trace-id:
               description: "Trace id"
               schema:
                 type: "string"
@@ -79,7 +79,7 @@ paths:
         "204":
           description: "No Content"
           headers:
-            X-Trace-Id:
+            x-trace-id:
               description: "Trace id"
               schema:
                 type: "string"
