@@ -5,6 +5,7 @@ import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.jackson.*
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder
+import no.nav.common.token_client.cache.CaffeineTokenCache
 import no.nav.paw.kafkakeygenerator.config.AzureTokenKlientKonfigurasjon
 import no.nav.paw.kafkakeygenerator.config.PdlKlientKonfigurasjon
 import no.nav.paw.pdl.PdlClient
@@ -29,6 +30,7 @@ private fun aadMachineToMachineTokenClient(konfig: AzureTokenKlientKonfigurasjon
         .withClientId(konfig.clientId)
         .withPrivateJwk(konfig.privateJwk)
         .withTokenEndpointUrl(konfig.tokenEndpointUrl)
+        .withCache(CaffeineTokenCache())
         .buildMachineToMachineTokenClient()
 
 private fun getAccessToken(
