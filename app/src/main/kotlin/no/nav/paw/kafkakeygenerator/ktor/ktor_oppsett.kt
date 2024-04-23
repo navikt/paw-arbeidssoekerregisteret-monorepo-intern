@@ -15,6 +15,7 @@ import io.ktor.server.routing.*
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics
+import io.micrometer.core.instrument.distribution.DistributionStatisticConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.paw.kafkakeygenerator.Applikasjon
 import no.nav.paw.kafkakeygenerator.api.v1.konfigurerApi
@@ -26,6 +27,7 @@ import no.nav.security.token.support.v2.RequiredClaims
 import no.nav.security.token.support.v2.TokenSupportConfig
 import no.nav.security.token.support.v2.tokenValidationSupport
 import org.slf4j.LoggerFactory
+import java.time.Duration
 
 fun Application.konfigurerServer(
     autentiseringKonfigurasjon: Autentiseringskonfigurasjon,
@@ -52,6 +54,16 @@ fun Application.micrometerMetrics(prometheusMeterRegistry: PrometheusMeterRegist
             JvmGcMetrics(),
             ProcessorMetrics(),
         )
+        distributionStatisticConfig =
+            DistributionStatisticConfig.builder()
+                .percentilesHistogram(true)
+                .maximumExpectedValue(Duration.ofMillis(750).toNanos().toDouble())
+                .minimumExpectedValue(Duration.ofMillis(20).toNanos().toDouble())
+                .serviceLevelObjectives(
+                    Duration.ofMillis(100).toNanos().toDouble(),
+                    Duration.ofMillis(200).toNanos().toDouble()
+                )
+                .build()
     }
 }
 
