@@ -16,7 +16,7 @@ spec:
       cpu: 750m
       memory: 256Mi
     requests:
-      cpu: 750m
+      cpu: 500m
       memory: 256Mi
   liveness:
     path: /internal/isAlive
