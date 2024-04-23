@@ -1,5 +1,6 @@
 package no.nav.paw.kafkakeygenerator
 
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.kafkakeygenerator.FailureCode.CONFLICT
 import no.nav.paw.kafkakeygenerator.FailureCode.DB_NOT_FOUND
 import no.nav.paw.kafkakeygenerator.pdl.PdlIdentitesTjeneste
@@ -10,6 +11,7 @@ class Applikasjon(
     private val kafkaKeys: KafkaKeys,
     private val identitetsTjeneste: PdlIdentitesTjeneste
 ) {
+    @WithSpan
     suspend fun hentEllerOpprett(callId: CallId, identitet: Identitetsnummer): Either<Failure, Long> {
         return kafkaKeys.hent(identitet)
             .recover(DB_NOT_FOUND) {
@@ -20,7 +22,7 @@ class Applikasjon(
                 kafkaKeys.hent(identitet)
             }
     }
-
+    @WithSpan
     private suspend fun sjekkMotAliaser(callId: CallId, identitet: Identitetsnummer): Either<Failure, Long> {
         return identitetsTjeneste.hentIdentiter(callId, identitet)
             .flatMap(kafkaKeys::hent)

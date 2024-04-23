@@ -13,6 +13,7 @@ val tokenSupportVersion = "4.1.3"
 val ktorVersion: Provider<String> = pawObservability.versions.ktor
 
 dependencies {
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.1.0")
     // Konfigurasjon
     implementation("com.sksamuel.hoplite:hoplite-core:2.8.0.RC3")
     implementation("com.sksamuel.hoplite:hoplite-toml:2.8.0.RC3")
