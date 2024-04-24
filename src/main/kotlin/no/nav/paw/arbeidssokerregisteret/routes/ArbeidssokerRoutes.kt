@@ -11,6 +11,7 @@ import no.nav.paw.arbeidssokerregisteret.api.extensions.getId
 import no.nav.paw.arbeidssokerregisteret.application.*
 import no.nav.paw.arbeidssokerregisteret.requestScope
 import no.nav.paw.arbeidssokerregisteret.utils.logger
+import java.util.*
 
 fun Route.arbeidssokerRoutes(
     startStoppRequestHandler: StartStoppRequestHandler,
@@ -20,6 +21,7 @@ fun Route.arbeidssokerRoutes(
         route("/kanStartePeriode") {
             // Sjekker om bruker kan registreres som arbeidssøker
             put<ApiV1ArbeidssokerKanStartePeriodePutRequest> { request ->
+                val uuid = UUID.randomUUID().toString()
                 val resultat = with(requestScope()) {
                     startStoppRequestHandler.kanRegistreresSomArbeidssoker(request.getId())
                 }
