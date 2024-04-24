@@ -22,7 +22,6 @@ fun Route.arbeidssokerRoutes(
             // Sjekker om bruker kan registreres som arbeidssøker
             put<ApiV1ArbeidssokerKanStartePeriodePutRequest> { request ->
                 val resultat = with(requestScope()) {
-                    val uuid = UUID.randomUUID().toString()
                     startStoppRequestHandler.kanRegistreresSomArbeidssoker(request.getId())
                 }
                 logger.debug("Resultat av 'kan-starte': {}", resultat)
