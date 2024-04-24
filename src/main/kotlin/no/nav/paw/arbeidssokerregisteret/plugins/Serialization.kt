@@ -10,6 +10,7 @@ import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.Detaljer
 import no.nav.paw.arbeidssokerregisteret.*
 import java.time.LocalDate
@@ -17,19 +18,18 @@ import java.time.LocalDate
 fun Application.configureSerialization() {
     install(ContentNegotiation) {
         jackson {
-            jackson {
-                disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                registerModule(JavaTimeModule())
-                registerKotlinModule()
-                registerModule(SimpleModule().addDeserializer(Detaljer::class.java, DetaljerDeserializer()))
-            }
+            disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            registerModule(JavaTimeModule())
+            registerKotlinModule()
+            registerModule(SimpleModule().addDeserializer(Detaljer::class.java, DetaljerDeserializer()))
         }
     }
 }
 
 class DetaljerDeserializer : StdDeserializer<Detaljer>(null as Class<Detaljer>?) {
 
+    @WithSpan
     override fun deserialize(parser: JsonParser?, context: DeserializationContext?): Detaljer? {
         if (parser == null) return null
         if (context == null) return null

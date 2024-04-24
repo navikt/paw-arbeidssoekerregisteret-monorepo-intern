@@ -9,13 +9,7 @@ import io.ktor.server.request.path
 import java.util.*
 
 fun Application.configureLogging() {
-    install(CallId) {
-        retrieveFromHeader("x_callId")
-        generate { UUID.randomUUID().toString() }
-        verify { it.isNotEmpty() }
-    }
     install(CallLogging) {
-        callIdMdc("x_callId")
         disableDefaultColors()
         filter { !it.request.path().startsWith("/internal") }
     }
