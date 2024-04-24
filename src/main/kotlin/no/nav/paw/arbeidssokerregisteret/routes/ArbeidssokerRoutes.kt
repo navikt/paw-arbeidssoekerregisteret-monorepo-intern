@@ -20,7 +20,6 @@ fun Route.arbeidssokerRoutes(
         route("/kanStartePeriode") {
             // Sjekker om bruker kan registreres som arbeidssøker
             put<ApiV1ArbeidssokerKanStartePeriodePutRequest> { request ->
-                logger.trace("Sjekker om bruker kan registreres som arbeidssøker")
                 val resultat = with(requestScope()) {
                     startStoppRequestHandler.kanRegistreresSomArbeidssoker(request.getId())
                 }
