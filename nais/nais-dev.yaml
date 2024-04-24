@@ -11,6 +11,13 @@ spec:
     - https://periode-arbeidssoekerregisteret.intern.dev.nav.no
     - https://opplysninger-arbeidssoekerregisteret.intern.dev.nav.no
   port: 8080
+  resources:
+    limits:
+      cpu: 1250m
+      memory: 1024Mi
+    requests:
+      cpu: 1000m
+      memory: 768Mi
   tokenx:
     enabled: true
   azure:
