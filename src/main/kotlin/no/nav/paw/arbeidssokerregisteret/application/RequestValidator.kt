@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.application
 
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssokerregisteret.RequestScope
 import no.nav.paw.arbeidssokerregisteret.application.fakta.*
 import no.nav.paw.arbeidssokerregisteret.application.regler.reglerForInngangIPrioritertRekkefolge
@@ -15,6 +16,7 @@ class RequestValidator(
 ) {
 
     context(RequestScope)
+    @WithSpan
     fun validerTilgang(identitetsnummer: Identitetsnummer, erForhaandsGodkjentAvVeileder: Boolean = false): TilgangskontrollResultat {
         val autentiseringsFakta = tokenXPidFakta(identitetsnummer) +
             autorisasjonService.navAnsattTilgangFakta(identitetsnummer) +
@@ -27,6 +29,7 @@ class RequestValidator(
     }
 
     context(RequestScope)
+    @WithSpan
     suspend fun validerStartAvPeriodeOenske(identitetsnummer: Identitetsnummer, erForhaandsGodkjentAvVeileder: Boolean = false): EndeligResultat {
         val tilgangsResultat = validerTilgang(identitetsnummer, erForhaandsGodkjentAvVeileder)
         if (tilgangsResultat is EndeligResultat) {

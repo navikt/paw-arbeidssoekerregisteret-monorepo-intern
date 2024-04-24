@@ -3,6 +3,7 @@ package no.nav.paw.arbeidssokerregisteret
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.util.pipeline.*
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssokerregisteret.utils.*
 import no.nav.security.token.support.v2.TokenValidationContextPrincipal
 
@@ -14,6 +15,7 @@ data class RequestScope(
 )
 
 context(PipelineContext<Unit, ApplicationCall>)
+@WithSpan
 fun requestScope(): RequestScope {
     val tokenValidationContext = call.principal<TokenValidationContextPrincipal>()
     val resolvedClaims = tokenValidationContext

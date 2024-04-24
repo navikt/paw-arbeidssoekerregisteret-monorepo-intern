@@ -7,6 +7,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import io.opentelemetry.instrumentation.annotations.WithSpan
 
 data class KafkaKeysResponse(
     val id: Long,
@@ -26,6 +27,7 @@ class StandardKafkaKeysClient(
     private val kafkaKeysUrl: String,
     private val getAccessToken: () -> String
 ) : KafkaKeysClient {
+    @WithSpan
     override suspend fun getIdAndKey(identitetsnummer: String): KafkaKeysResponse =
         httpClient.post(kafkaKeysUrl) {
             header("Authorization", "Bearer ${getAccessToken()}")

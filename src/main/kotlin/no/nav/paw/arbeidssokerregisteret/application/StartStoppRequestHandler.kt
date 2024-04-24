@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.application
 
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssokerregisteret.RequestScope
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
@@ -27,6 +28,7 @@ class StartStoppRequestHandler(
         }
     }
     context(RequestScope)
+    @WithSpan
     suspend fun startArbeidssokerperiode(identitetsnummer: Identitetsnummer, erForhaandsGodkjentAvVeileder: Boolean): EndeligResultat {
         val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
         val resultat = requestValidator.validerStartAvPeriodeOenske(identitetsnummer, erForhaandsGodkjentAvVeileder)
@@ -42,6 +44,7 @@ class StartStoppRequestHandler(
     }
 
     context(RequestScope)
+    @WithSpan
     suspend fun avsluttArbeidssokerperiode(identitetsnummer: Identitetsnummer): TilgangskontrollResultat {
         val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
         val tilgangskontrollResultat = requestValidator.validerTilgang(identitetsnummer)
