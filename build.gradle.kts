@@ -112,7 +112,8 @@ jib {
     to.image = "${image ?: project.name}:${project.version}"
     container {
         environment = mapOf(
-            "IMAGE_WITH_VERSION" to "${image ?: project.name}:${project.version}"
+            "IMAGE_WITH_VERSION" to "${image ?: project.name}:${project.version}",
+            "OTEL_INSTRUMENTATION_METHODS_INCLUDE" to "io.ktor.server.routing.Routing[interceptor,executeResult]"
         )
     }
 }
