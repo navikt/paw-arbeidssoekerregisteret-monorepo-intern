@@ -31,7 +31,6 @@ fun Route.arbeidssokerRoutes(
         route("/periode") {
             // Registrerer bruker som arbeidssøker
             put<ApiV1ArbeidssokerPeriodePutRequest> { startStoppRequest ->
-                logger.trace("Registrerer bruker som arbeidssøker {}", startStoppRequest.periodeTilstand)
                 val resultat = with(requestScope()) {
                     when (startStoppRequest.periodeTilstand) {
                         PeriodeTilstand.STARTET ->
@@ -54,8 +53,6 @@ fun Route.arbeidssokerRoutes(
             // Registrerer eller oppdaterer brukers opplysninger
             post {
                 val opplysningerRequest = call.receive<OpplysningerRequest>()
-                logger.trace("Registrerer eller oppdaterer brukers opplysninger")
-
                 val resultat =
                     with(requestScope()) {
                         opplysningerRequestHandler.opprettBrukeropplysninger(opplysningerRequest)
