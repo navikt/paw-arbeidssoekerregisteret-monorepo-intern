@@ -29,7 +29,15 @@ fun main() {
     val applicationConfig = loadNaisOrLocalConfiguration<Config>(CONFIG_FILE_NAME)
     val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
     val (startStoppRequestHandler, opplysningerRequestHandler) = requestHandlers(applicationConfig, KafkaFactory(kafkaConfig))
-    val server = embeddedServer(Netty, port = 8080) {
+    val server = embeddedServer(
+        factory = Netty,
+        port = 8080,
+        configure = {
+            connectionGroupSize = 8
+            workerGroupSize = 8
+            callGroupSize = 16
+        }
+    ) {
         module(
             registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
             authProviders = applicationConfig.authProviders,
