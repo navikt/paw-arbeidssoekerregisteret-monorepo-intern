@@ -113,7 +113,8 @@ jib {
     container {
         environment = mapOf(
             "IMAGE_WITH_VERSION" to "${image ?: project.name}:${project.version}",
-            "OTEL_INSTRUMENTATION_METHODS_INCLUDE" to "io.ktor.server.routing.Routing[interceptor,executeResult]"
+            "OTEL_INSTRUMENTATION_METHODS_INCLUDE" to ("io.ktor.server.routing.Routing[interceptor,executeResult];" +
+                "io.ktor.server.netty.NettyApplicationCallHandler[handleRequest,exceptionCaught]")
         )
     }
 }
