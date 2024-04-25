@@ -14,10 +14,10 @@ spec:
   resources:
     limits:
       cpu: 1250m
-      memory: 1024Mi
+      memory: 4096Mi
     requests:
       cpu: 1000m
-      memory: 768Mi
+      memory: 2048Mi
   tokenx:
     enabled: true
   azure:
