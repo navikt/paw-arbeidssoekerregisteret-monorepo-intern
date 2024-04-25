@@ -32,7 +32,6 @@ fun validerJobbsituasjon(jobbsituasjon: Jobbsituasjon): ValidationResult {
         DELTIDSJOBB_VIL_MER,
         KONKURS,
         MIDLERTIDIG_JOBB,
-        USIKKER_JOBBSITUASJON,
         NY_JOBB
     )
     val missingStyrk08 = jobbsituasjon.beskrivelser
