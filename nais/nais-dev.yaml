@@ -13,11 +13,10 @@ spec:
   port: 8080
   resources:
     limits:
-      cpu: 1000m
       memory: 512Mi
     requests:
-      cpu: 125m
-      memory: 512Mi
+      cpu: 200m
+      memory: 256Mi
   tokenx:
     enabled: true
   azure:
