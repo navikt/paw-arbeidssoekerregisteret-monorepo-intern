@@ -10,14 +10,6 @@ fun initKtorServer(
     autentiseringKonfigurasjon: Autentiseringskonfigurasjon,
     prometheusMeterRegistry: PrometheusMeterRegistry,
     applikasjon: Applikasjon
-) = embeddedServer(
-    factory = Netty,
-    port = 8080,
-    configure = {
-        connectionGroupSize = 8
-        workerGroupSize = 8
-        callGroupSize = 16
-    }
-) {
+) = embeddedServer(Netty, port = 8080) {
     konfigurerServer(autentiseringKonfigurasjon, prometheusMeterRegistry, applikasjon)
 }
