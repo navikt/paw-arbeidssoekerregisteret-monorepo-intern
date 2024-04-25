@@ -114,7 +114,8 @@ jib {
         environment = mapOf(
             "IMAGE_WITH_VERSION" to "${image ?: project.name}:${project.version}",
             "OTEL_INSTRUMENTATION_METHODS_INCLUDE" to ("io.ktor.server.routing.Routing[interceptor,executeResult];" +
-                "io.ktor.server.netty.NettyApplicationCallHandler[handleRequest,exceptionCaught]")
+                "io.ktor.server.netty.NettyApplicationCallHandler[handleRequest,exceptionCaught];") +
+            "io.ktor.serialization.jackson.JacksonConverter[deserialize]"
         )
         jvmFlags = listOf("-XX:+UseZGC", "-XX:+ZGenerational")
     }
