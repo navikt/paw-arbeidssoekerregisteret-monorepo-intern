@@ -13,10 +13,9 @@ spec:
     max: 1
   resources:
     limits:
-      cpu: 1000m
-      memory: 256Mi
+      memory: 1024Mi
     requests:
-      cpu: 750m
+      cpu: 200m
       memory: 256Mi
   liveness:
     path: /internal/isAlive
