@@ -117,7 +117,7 @@ jib {
                 "io.ktor.server.netty.NettyApplicationCallHandler[handleRequest,exceptionCaught];") +
             "io.ktor.serialization.jackson.JacksonConverter[deserialize,serializeNullable]"
         )
-        jvmFlags = listOf("-XX:+UseZGC", "-XX:+ZGenerational", "-Xmx2048m", "-Xms2048m")
+        //jvmFlags = listOf("-XX:+UseZGC", "-XX:+ZGenerational")
     }
 }
 
