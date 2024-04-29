@@ -4,7 +4,12 @@ plugins {
     kotlin("jvm") version "1.9.22"
     id("io.ktor.plugin") version "2.3.8"
     application
+    id("com.google.cloud.tools.jib") version "3.4.2"
 }
+val jvmVersion = 21
+val image: String? by project
+
+
 val exposedVersion = "0.48.0"
 val logbackVersion = "1.5.2"
 val logstashVersion = "7.4"
@@ -68,7 +73,7 @@ tasks.withType<KotlinCompile>().configureEach {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(jvmVersion))
     }
 }
 
@@ -80,9 +85,17 @@ tasks.named<Test>("test") {
     useJUnitPlatform()
 }
 
-ktor {
-    fatJar {
-        archiveFileName.set("fat.jar")
+jib {
+    from.image = "ghcr.io/navikt/baseimages/temurin:$jvmVersion"
+    to.image = "${image ?: project.name}:${project.version}"
+    container {
+        environment = mapOf(
+            "IMAGE_WITH_VERSION" to "${image ?: project.name}:${project.version}",
+            "OTEL_INSTRUMENTATION_METHODS_INCLUDE" to ("io.ktor.server.routing.Routing[interceptor,executeResult];" +
+                    "io.ktor.server.netty.NettyApplicationCallHandler[handleRequest,exceptionCaught];") +
+                    "io.ktor.serialization.jackson.JacksonConverter[deserialize,serializeNullable]"
+        )
+        jvmFlags = listOf("-XX:ActiveProcessorCount=4", "-XX:+UseZGC", "-XX:+ZGenerational")
     }
 }
 
