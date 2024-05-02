@@ -8,3 +8,4 @@ Eksempler på tjenester som skal ende opp her:
 - API for registering av opplysninger
 - Registerets egen meldeplikts løsning
   
+Tjenester som bare benytter periode, opplysninger og/eller profilerig topic plasseres i https://github.com/navikt/paw-arbeidssoekerregisteret-monorepo-ekstern.
