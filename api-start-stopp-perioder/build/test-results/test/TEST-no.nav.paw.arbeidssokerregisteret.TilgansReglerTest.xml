@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="no.nav.paw.arbeidssokerregisteret.TilgansReglerTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2024-05-03T04:07:00" hostname="nav-j4op-hpzg9" time="0.003">
-  <properties/>
-  <testcase name="ugydlig request ved IKKE_ANSATT kombinert med GODKJENT_AV_ANSATT" classname="no.nav.paw.arbeidssokerregisteret.TilgansReglerTest" time="0.002"/>
-  <testcase name="lovlig kombinasjon av ANSATT og FORHANDSGODKJENT_AV_ANSATT" classname="no.nav.paw.arbeidssokerregisteret.TilgansReglerTest" time="0.001"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

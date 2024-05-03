@@ -1,5 +1,0 @@
-Manifest-Version: 1.0
-Implementation-Version: unspecified
-Main-Class: no.nav.paw.arbeidssokerregisteret.ApplicationKt
-Implementation-Title: paw-arbeidssokerregisteret-api-inngang
-

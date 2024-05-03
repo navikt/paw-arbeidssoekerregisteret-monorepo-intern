@@ -4,11 +4,11 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
-    kotlin("jvm") version "1.9.20"
-    id("io.ktor.plugin") version "2.3.9"
-    id("org.openapi.generator") version "7.4.0"
+    kotlin("jvm")
+    id("io.ktor.plugin")
+    id("org.openapi.generator")
     application
-    id("com.google.cloud.tools.jib") version "3.4.0"
+    id("com.google.cloud.tools.jib")
 }
 
 val jvmVersion = 21
