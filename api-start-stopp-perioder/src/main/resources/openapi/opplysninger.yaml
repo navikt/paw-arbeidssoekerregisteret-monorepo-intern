@@ -1,0 +1,232 @@
+openapi: "3.0.3"
+info:
+  title: "paw_arbeidssokerregisteret_api_inngang API"
+  description: "paw_arbeidssokerregisteret_api_inngang API"
+  version: "1.0.0"
+servers:
+- url: "https://paw_arbeidssokerregisteret_api_inngang"
+paths:
+  /api/v1/arbeidssoker/opplysninger:
+    post:
+      description: "Registrerer eller oppdaterer brukers opplysninger"
+      parameters:
+      - name: "traceparent"
+        in: "header"
+        required: false
+        description: "https://www.w3.org/TR/trace-context/#traceparent-header-field-values"
+        schema:
+          type: "string"
+          format: "traceparent"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OpplysningerRequest"
+        required: true
+      responses:
+        "400":
+          description: "Bad Request"
+          headers:
+            x-trace-id:
+              description: "Trace id"
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Feil"
+        "500":
+          description: "Internal Server Error"
+          headers:
+            x-trace-id:
+              description: "Trace id"
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Feil"
+        "403":
+          description: "Forbidden"
+          headers:
+            x-trace-id:
+              description: "Trace id"
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Feil"
+        "202":
+          description: "Accepted"
+          headers:
+            x-trace-id:
+              description: "Trace id"
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                type: "object"
+
+components:
+  schemas:
+    JaNeiVetIkke:
+      type: "string"
+      enum:
+        - "JA"
+        - "NEI"
+        - "VET_IKKE"
+    Feil:
+      type: "object"
+      properties:
+        melding:
+          type: "string"
+        feilKode:
+          type: "string"
+          enum:
+          - "UKJENT_FEIL"
+          - "UVENTET_FEIL_MOT_EKSTERN_TJENESTE"
+          - "FEIL_VED_LESING_AV_FORESPORSEL"
+          - "IKKE_TILGANG"
+      required:
+      - "melding"
+      - "feilKode"
+    Utdanning:
+      type: "object"
+      properties:
+        nus:
+          type: "string"
+        bestaatt:
+          $ref: "#/components/schemas/JaNeiVetIkke"
+        godkjent:
+          $ref: "#/components/schemas/JaNeiVetIkke"
+      required:
+      - "nus"
+    Helse:
+      type: "object"
+      properties:
+        helsetilstandHindrerArbeid:
+          $ref: "#/components/schemas/JaNeiVetIkke"
+      required:
+      - "helsetilstandHindrerArbeid"
+    JobbsituasjonMedDetaljer:
+      type: "object"
+      properties:
+        beskrivelse:
+          type: "string"
+          enum:
+          - "UKJENT_VERDI"
+          - "UDEFINERT"
+          - "HAR_SAGT_OPP"
+          - "HAR_BLITT_SAGT_OPP"
+          - "ER_PERMITTERT"
+          - "ALDRI_HATT_JOBB"
+          - "IKKE_VAERT_I_JOBB_SISTE_2_AAR"
+          - "AKKURAT_FULLFORT_UTDANNING"
+          - "VIL_BYTTE_JOBB"
+          - "USIKKER_JOBBSITUASJON"
+          - "MIDLERTIDIG_JOBB"
+          - "DELTIDSJOBB_VIL_MER"
+          - "NY_JOBB"
+          - "KONKURS"
+          - "ANNET"
+        detaljer:
+          $ref: "#/components/schemas/Detaljer"
+      required:
+      - "beskrivelse"
+    Jobbsituasjon:
+      type: "object"
+      properties:
+        beskrivelser:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/JobbsituasjonMedDetaljer"
+      required:
+      - "beskrivelser"
+    Annet:
+      type: "object"
+      properties:
+        andreForholdHindrerArbeid:
+          $ref: "#/components/schemas/JaNeiVetIkke"
+    OpplysningerOmArbeidssoeker:
+      type: "object"
+      properties:
+        utdanning:
+          $ref: "#/components/schemas/Utdanning"
+        helse:
+          $ref: "#/components/schemas/Helse"
+        jobbsituasjon:
+          $ref: "#/components/schemas/Jobbsituasjon"
+        annet:
+          $ref: "#/components/schemas/Annet"
+      required:
+      - "jobbsituasjon"
+    OpplysningerRequest:
+      type: "object"
+      properties:
+        identitetsnummer:
+          type: "string"
+          pattern: "^[0-9]{11}$"
+        opplysningerOmArbeidssoeker:
+          $ref: "#/components/schemas/OpplysningerOmArbeidssoeker"
+      required:
+      - "identitetsnummer"
+      - "opplysningerOmArbeidssoeker"
+    Detaljer:
+      type: "object"
+      properties:
+        gjelder_fra_dato_iso8601:
+          type: "string"
+          format: "date"
+        gjelder_til_dato_iso8601:
+          type: "string"
+          format: "date"
+        stilling_styrk08:
+          type: "string"
+          pattern: "^[0-9]{1,4}$"
+        stilling:
+          type: "string"
+        prosent:
+          type: "string"
+          pattern: "^[0-9]{1,3}$"
+        siste_dag_med_loenn_iso8601:
+          type: "string"
+          format: "date"
+        siste_arbeidsdag_iso8601:
+          type: "string"
+          format: "date"
+    Opplysning:
+      type: "string"
+      enum:
+        - "FORHAANDSGODKJENT_AV_ANSATT"
+        - "SAMME_SOM_INNLOGGET_BRUKER"
+        - "IKKE_SAMME_SOM_INNLOGGER_BRUKER"
+        - "ANSATT_IKKE_TILGANG"
+        - "ANSATT_TILGANG"
+        - "IKKE_ANSATT"
+        - "ER_OVER_18_AAR"
+        - "ER_UNDER_18_AAR"
+        - "UKJENT_FOEDSELSDATO"
+        - "UKJENT_FOEDSELSAAR"
+        - "TOKENX_PID_IKKE_FUNNET"
+        - "OPPHOERT_IDENTITET"
+        - "IKKE_BOSATT"
+        - "DOED"
+        - "SAVNET"
+        - "HAR_NORSK_ADRESSE"
+        - "HAR_UTENLANDSK_ADRESSE"
+        - "INGEN_ADRESSE_FUNNET"
+        - "BOSATT_ETTER_FREG_LOVEN"
+        - "DNUMMER"
+        - "UKJENT_FORENKLET_FREG_STATUS"
+        - "HAR_GYLDIG_OPPHOLDSTILLATELSE"
+        - "OPPHOLDSTILATELSE_UTGAATT"
+        - "BARN_FOEDT_I_NORGE_UTEN_OPPHOLDSTILLATELSE"
+        - "INGEN_INFORMASJON_OM_OPPHOLDSTILLATELSE"
+        - "UKJENT_STATUS_FOR_OPPHOLDSTILLATELSE"
+        - "PERSON_IKKE_FUNNET"
+        - "SISTE_FLYTTING_VAR_UT_AV_NORGE"
+        - "SISTE_FLYTTING_VAR_INN_TIL_NORGE"
+        - "IKKE_MULIG_AA_IDENTIFISERE_SISTE_FLYTTING"
+        - "INGEN_FLYTTE_INFORMASJON"

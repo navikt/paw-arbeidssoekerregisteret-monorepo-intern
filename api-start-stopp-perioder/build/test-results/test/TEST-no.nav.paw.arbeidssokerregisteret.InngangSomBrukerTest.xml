@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="no.nav.paw.arbeidssokerregisteret.InngangSomBrukerTest" tests="0" skipped="0" failures="0" errors="0" timestamp="1970-01-01T00:00:00" hostname="nav-j4op-hpzg9" time="0.0">
+  <properties/>
+  <system-out><![CDATA[2024-05-03 06:07:00.132  INFO k.test:167 - No ktor.deployment.watch patterns specified, automatic reload is not active.
+2024-05-03 06:07:00.195  INFO k.test:65 - Application started in 0.063 seconds.
+2024-05-03 06:07:00.196  INFO k.test:77 - Responding at http://localhost:80
+2024-05-03 06:07:00.196  INFO k.test:77 - Responding at https://localhost:443
+2024-05-03 06:07:00.303  INFO k.test:167 - No ktor.deployment.watch patterns specified, automatic reload is not active.
+2024-05-03 06:07:00.359  INFO k.test:65 - Application started in 0.057 seconds.
+2024-05-03 06:07:00.359  INFO k.test:77 - Responding at http://localhost:80
+2024-05-03 06:07:00.360  INFO k.test:77 - Responding at https://localhost:443
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

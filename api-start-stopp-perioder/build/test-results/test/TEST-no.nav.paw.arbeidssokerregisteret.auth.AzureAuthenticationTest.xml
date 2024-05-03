@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="no.nav.paw.arbeidssokerregisteret.auth.AzureAuthenticationTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2024-05-03T04:07:00" hostname="nav-j4op-hpzg9" time="0.11">
+  <properties/>
+  <testcase name="For a authenticated Azure request we should be able to resolve 'NavAnsatt'" classname="no.nav.paw.arbeidssokerregisteret.auth.AzureAuthenticationTest" time="0.11"/>
+  <system-out><![CDATA[2024-05-03 06:07:00.668  INFO k.test:167 - No ktor.deployment.watch patterns specified, automatic reload is not active.
+2024-05-03 06:07:00.724  INFO k.test:65 - Application started in 0.056 seconds.
+2024-05-03 06:07:00.724  INFO k.test:77 - Responding at http://localhost:80
+2024-05-03 06:07:00.725  INFO k.test:77 - Responding at https://localhost:443
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
