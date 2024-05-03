@@ -52,283 +52,93 @@ dependencyResolutionManagement {
         val micrometerVersion = "1.12.3"
 
         create("loggingLibs") {
-            library(
-                "logbackClassic",
-                "ch.qos.logback",
-                "logback-classic"
-            ).version(logbackVersion)
-            library(
-                "logstashLogbackEncoder",
-                "net.logstash.logback",
-                "logstash-logback-encoder"
-            ).version(logstashVersion)
+            library("logbackClassic", "ch.qos.logback", "logback-classic").version(logbackVersion)
+            library("logstashLogbackEncoder", "net.logstash.logback", "logstash-logback-encoder").version(logstashVersion)
         }
         create("ktorClient") {
-            library(
-                "contentNegotiation",
-                "io.ktor",
-                "ktor-client-content-negotiation"
-            ).version(ktorVersion)
-            library(
-                "core",
-                "io.ktor",
-                "ktor-client-core"
-            ).version(ktorVersion)
-            library(
-                "cio",
-                "io.ktor",
-                "ktor-client-cio"
-            ).version(ktorVersion)
+            library("contentNegotiation", "io.ktor", "ktor-client-content-negotiation").version(ktorVersion)
+            library("core", "io.ktor", "ktor-client-core").version(ktorVersion)
+            library("cio", "io.ktor", "ktor-client-cio").version(ktorVersion)
         }
         create("ktorServer") {
-            library(
-                "cors",
-                "io.ktor",
-                "ktor-server-cors"
-            ).version(ktorVersion)
-            library(
-                "swagger",
-                "io.ktor",
-                "ktor-server-swagger"
-            ).version(ktorVersion)
-            library(
-                "callId",
-                "io.ktor",
-                "ktor-server-call-id"
-            ).version(ktorVersion)
-            library(
-                "statusPages",
-                "io.ktor",
-                "ktor-server-status-pages"
-            ).version(ktorVersion)
-            library(
-                "contentNegotiation",
-                "io.ktor",
-                "ktor-server-content-negotiation"
-            ).version(ktorVersion)
-            library(
-                "coreJvm",
-                "io.ktor",
-                "ktor-server-core-jvm"
-            ).version(ktorVersion)
-            library(
-                "core",
-                "io.ktor",
-                "ktor-server-core"
-            ).version(ktorVersion)
-            library(
-                "openapi",
-                "io.ktor",
-                "ktor-server-openapi"
-            ).version(ktorVersion)
-            library(
-                "netty",
-                "io.ktor",
-                "ktor-server-netty"
-            ).version(ktorVersion)
-            library(
-                "auth",
-                "io.ktor",
-                "ktor-server-auth"
-            ).version(ktorVersion)
-            library(
-                "micrometer",
-                "io.ktor",
-                "ktor-server-metrics-micrometer"
-            ).version(ktorVersion)
-
+            bundle(
+                "ktorNettyOpentelemetryMicrometerPrometheus", listOf(
+                    "core",
+                    "coreJvm",
+                    "ktorServerNetty",
+                    "ktorMetricsMicrometer",
+                    "openTelemetryApi",
+                    "openTelemetryKtor",
+                    "micrometerRegistryPrometheus"
+                )
+            )
+            library("cors", "io.ktor", "ktor-server-cors").version(ktorVersion)
+            library("swagger", "io.ktor", "ktor-server-swagger").version(ktorVersion)
+            library("callId", "io.ktor", "ktor-server-call-id").version(ktorVersion)
+            library("statusPages", "io.ktor", "ktor-server-status-pages").version(ktorVersion)
+            library("contentNegotiation", "io.ktor", "ktor-server-content-negotiation").version(ktorVersion)
+            library("coreJvm", "io.ktor", "ktor-server-core-jvm").version(ktorVersion)
+            library("core", "io.ktor", "ktor-server-core").version(ktorVersion)
+            library("openapi", "io.ktor", "ktor-server-openapi").version(ktorVersion)
+            library("netty", "io.ktor", "ktor-server-netty").version(ktorVersion)
+            library("auth", "io.ktor", "ktor-server-auth").version(ktorVersion)
+            library("micrometer", "io.ktor", "ktor-server-metrics-micrometer").version(ktorVersion)
         }
         create("micrometer") {
-            library(
-                "core",
-                "io.micrometer",
-                "micrometer-core"
-            ).version(micrometerVersion)
-            library(
-                "registryPrometheus",
-                "io.micrometer",
-                "micrometer-registry-prometheus"
-            ).version(micrometerVersion)
+            library("core", "io.micrometer", "micrometer-core").version(micrometerVersion)
+            library("registryPrometheus", "io.micrometer", "micrometer-registry-prometheus").version(micrometerVersion)
         }
         create("pawClients") {
-            library(
-                "pawPdlClient",
-                "no.nav.paw",
-                "pdl-client"
-            ).version(pawPdlClientVersion)
-            library(
-                "pawAaregClient",
-                "no.nav.paw",
-                "aareg-client"
-            ).version(pawAaregClientVersion)
+            library("pawPdlClient", "no.nav.paw", "pdl-client").version(pawPdlClientVersion)
+            library("pawAaregClient", "no.nav.paw", "aareg-client").version(pawAaregClientVersion)
         }
         create("arbeidssoekerRegisteret") {
-            library(
-                "apiKotlin",
-                "no.nav.paw.arbeidssokerregisteret.api.schema",
-                "arbeidssoekerregisteret-kotlin"
-            ).version(arbeidssokerregisteretVersion)
-            library(
-                "mainAvroSchema",
-                "no.nav.paw.arbeidssokerregisteret.api",
-                "main-avro-schema"
-            ).version(arbeidssokerregisteretVersion)
+            library("apiKotlin", "no.nav.paw.arbeidssokerregisteret.api.schema", "arbeidssoekerregisteret-kotlin").version(arbeidssokerregisteretVersion)
+            library("mainAvroSchema", "no.nav.paw.arbeidssokerregisteret.api", "main-avro-schema").version(arbeidssokerregisteretVersion)
         }
         create("orgApacheKafka") {
-            library(
-                "kafkaClients",
-                "org.apache.kafka",
-                "kafka-clients"
-            ).version(orgApacheKafkaVersion)
-            library(
-                "kafkaStreams",
-                "org.apache.kafka",
-                "kafka-streams"
-            ).version(orgApacheKafkaVersion)
-            library(
-                "streamsTest",
-                "org.apache.kafka",
-                "kafka-streams-test-utils"
-            ).version(orgApacheKafkaVersion)
+            library("kafkaClients", "org.apache.kafka", "kafka-clients").version(orgApacheKafkaVersion)
+            library("kafkaStreams", "org.apache.kafka", "kafka-streams").version(orgApacheKafkaVersion)
+            library("streamsTest", "org.apache.kafka", "kafka-streams-test-utils").version(orgApacheKafkaVersion)
         }
         create("apacheAvro") {
-            library(
-                "avro",
-                "org.apache.avro",
-                "avro"
-            ).version(orgApacheAvroVersion)
-            library(
-                "kafkaSerializer",
-                "io.confluent",
-                "kafka-avro-serializer"
-            ).version(ioConfluentKafkaVersion)
-            library(
-                "kafkaStreamsAvroSerde",
-                "io.confluent",
-                "kafka-streams-avro-serde"
-            ).version(ioConfluentKafkaVersion)
+            library("avro", "org.apache.avro", "avro").version(orgApacheAvroVersion)
+            library("kafkaSerializer", "io.confluent", "kafka-avro-serializer").version(ioConfluentKafkaVersion)
+            library("kafkaStreamsAvroSerde", "io.confluent", "kafka-streams-avro-serde").version(ioConfluentKafkaVersion)
         }
         create("jackson") {
-            library(
-                "datatypeJsr310",
-                "com.fasterxml.jackson.datatype",
-                "jackson-datatype-jsr310"
-            ).version(comFasterxmlJacksonVersion)
-            library(
-                "kotlin",
-                "com.fasterxml.jackson.module",
-                "jackson-module-kotlin"
-            ).version(comFasterxmlJacksonVersion)
-            library(
-                "ktorSerialization",
-                "io.ktor",
-                "ktor-serialization-jackson"
-            ).version(ktorVersion)
-            library(
-                "serializationJvm",
-                "io.ktor",
-                "ktor-serialization-jackson-jvm"
-            ).version(ktorVersion)
+            library("datatypeJsr310", "com.fasterxml.jackson.datatype", "jackson-datatype-jsr310").version(comFasterxmlJacksonVersion)
+            library("kotlin", "com.fasterxml.jackson.module", "jackson-module-kotlin").version(comFasterxmlJacksonVersion)
+            library("ktorSerialization", "io.ktor", "ktor-serialization-jackson").version(ktorVersion)
+            library("serializationJvm", "io.ktor", "ktor-serialization-jackson-jvm").version(ktorVersion)
         }
         create("navCommon") {
-            library(
-                "tokenClient",
-                "no.nav.common",
-                "token-client"
-            ).version(noNavCommonVersion)
-            library(
-                "log",
-                "no.nav.common",
-                "log"
-            ).version(noNavCommonVersion)
+            library("tokenClient", "no.nav.common", "token-client").version(noNavCommonVersion)
+            library("log", "no.nav.common", "log").version(noNavCommonVersion)
         }
         create("navSecurity") {
-            library(
-                "tokenValidationKtorV2",
-                "no.nav.security",
-                "token-validation-ktor-v2"
-            ).version(noNavSecurityVersion)
-            library(
-                "tokenClient",
-                "no.nav.security",
-                "token-client-core"
-            ).version(noNavSecurityVersion)
+            library("tokenValidationKtorV2", "no.nav.security", "token-validation-ktor-v2").version(noNavSecurityVersion)
+            library("tokenClient", "no.nav.security", "token-client-core").version(noNavSecurityVersion)
         }
         create("hoplite") {
-            library(
-                "hopliteCore",
-                "com.sksamuel.hoplite",
-                "hoplite-core"
-            ).version(comSksamuelHopliteVersion)
-            library(
-                "hopliteToml",
-                "com.sksamuel.hoplite",
-                "hoplite-toml"
-            ).version(comSksamuelHopliteVersion)
-            library(
-                "hopliteYaml",
-                "com.sksamuel.hoplite",
-                "hoplite-yaml"
-            ).version(comSksamuelHopliteVersion)
+            library("hopliteCore", "com.sksamuel.hoplite", "hoplite-core").version(comSksamuelHopliteVersion)
+            library("hopliteToml", "com.sksamuel.hoplite", "hoplite-toml").version(comSksamuelHopliteVersion)
+            library("hopliteYaml", "com.sksamuel.hoplite", "hoplite-yaml").version(comSksamuelHopliteVersion)
         }
         create("exposed") {
-            library(
-                "core",
-                "org.jetbrains.exposed",
-                "exposed-core"
-            ).version(kotlinExposedVersion)
-            library(
-                "crypt",
-                "org.jetbrains.exposed",
-                "exposed-crypt"
-            ).version(kotlinExposedVersion)
-            library(
-                "dao",
-                "org.jetbrains.exposed",
-                "exposed-dao"
-            ).version(kotlinExposedVersion)
-            library(
-                "jdbc",
-                "org.jetbrains.exposed",
-                "exposed-jdbc"
-            ).version(kotlinExposedVersion)
-            library(
-                "javaTime",
-                "org.jetbrains.exposed",
-                "exposed-java-time"
-            ).version(kotlinExposedVersion)
+            library("core", "org.jetbrains.exposed", "exposed-core").version(kotlinExposedVersion)
+            library("crypt", "org.jetbrains.exposed", "exposed-crypt").version(kotlinExposedVersion)
+            library("dao", "org.jetbrains.exposed", "exposed-dao").version(kotlinExposedVersion)
+            library("jdbc", "org.jetbrains.exposed", "exposed-jdbc").version(kotlinExposedVersion)
+            library("javaTime", "org.jetbrains.exposed", "exposed-java-time").version(kotlinExposedVersion)
         }
         create("testLibs") {
-            library(
-                "runnerJunit5",
-                "io.kotest",
-                "kotest-runner-junit5"
-            ).version(kotestVersion)
-            library(
-                "assertionsCore",
-                "io.kotest",
-                "kotest-assertions-core"
-            ).version(kotestVersion)
-            library(
-                "mockk",
-                "io.mockk",
-                "mockk"
-            ).version(mockkVersion)
-            library(
-                "testContainers",
-                "org.testcontainers",
-                "testcontainers"
-            ).version(testContainersVersion)
-            library(
-                "postgresql",
-                "org.testcontainers",
-                "postgresql"
-            ).version(testContainersVersion)
-            library(
-                "mockOauth2Server",
-                "no.nav.security",
-                "mock-oauth2-server"
-            ).version(mockOauth2ServerVersion)
+            library("runnerJunit5", "io.kotest", "kotest-runner-junit5").version(kotestVersion)
+            library("assertionsCore", "io.kotest", "kotest-assertions-core").version(kotestVersion)
+            library("mockk", "io.mockk", "mockk").version(mockkVersion)
+            library("testContainers", "org.testcontainers", "testcontainers").version(testContainersVersion)
+            library("postgresql", "org.testcontainers", "postgresql").version(testContainersVersion)
+            library("mockOauth2Server", "no.nav.security", "mock-oauth2-server").version(mockOauth2ServerVersion)
         }
     }
 }
