@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="no.nav.paw.arbeidssokerregisteret.ApplicationPeriodeTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2024-05-03T04:06:59" hostname="nav-j4op-hpzg9" time="0.153">
+  <properties/>
+  <testcase name="Verifiser at vi returnerer 'Feil' objekt når vi avviser en periode" classname="no.nav.paw.arbeidssokerregisteret.ApplicationPeriodeTest" time="0.153"/>
+  <system-out><![CDATA[2024-05-03 06:06:59.378  INFO k.test:167 - No ktor.deployment.watch patterns specified, automatic reload is not active.
+2024-05-03 06:06:59.453  INFO k.test:65 - Application started in 0.076 seconds.
+2024-05-03 06:06:59.454  INFO k.test:77 - Responding at http://localhost:80
+2024-05-03 06:06:59.454  INFO k.test:77 - Responding at https://localhost:443
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

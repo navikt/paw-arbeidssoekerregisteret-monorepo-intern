@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="no.nav.paw.arbeidssokerregisteret.services.AutorisasjonServiceTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2024-05-03T04:07:02" hostname="nav-j4op-hpzg9" time="0.107">
+  <properties/>
+  <testcase name="verifiserVeilederTilgangTilBruker should return true if access is granted" classname="no.nav.paw.arbeidssokerregisteret.services.AutorisasjonServiceTest" time="0.103"/>
+  <testcase name="verifiserVeilederTilgangTilBruker should return false if access is denied" classname="no.nav.paw.arbeidssokerregisteret.services.AutorisasjonServiceTest" time="0.001"/>
+  <testcase name="verifiser IKKE_NAVANSATT" classname="no.nav.paw.arbeidssokerregisteret.services.AutorisasjonServiceTest" time="0.001"/>
+  <system-out><![CDATA[2024-05-03 06:07:02.150  INFO n.n.p.a.s.AutorisasjonService:16 - NAV-ansatt forsøker å hente informasjon om bruker: ***********
+2024-05-03 06:07:02.155  INFO n.n.p.a.s.AutorisasjonService:33 - NAV-ansatt har hentet informasjon om bruker: ***********
+2024-05-03 06:07:02.157  INFO n.n.p.a.s.AutorisasjonService:16 - NAV-ansatt forsøker å hente informasjon om bruker: ***********
+2024-05-03 06:07:02.157  WARN n.n.p.a.s.AutorisasjonService:28 - NAV-ansatt har ikke tilgang til bruker: *********** (v/poao-tilgang)
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
