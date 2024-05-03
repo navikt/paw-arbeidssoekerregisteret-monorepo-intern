@@ -8,7 +8,7 @@ plugins {
 
 rootProject.name = "paw-arbeidssoekerregisteret-monorepo-intern"
 
-include()
+include("api-start-stopp-perioder")
 
 dependencyResolutionManagement {
     val githubPassword: String by settings
@@ -46,9 +46,10 @@ dependencyResolutionManagement {
         val logstashVersion = "7.3"
         val logbackVersion = "1.4.14"
         val kotestVersion = "5.8.1"
-        val mockkVersion= "1.13.10"
+        val mockkVersion = "1.13.10"
         val testContainersVersion = "1.19.6"
         val mockOauth2ServerVersion = "2.0.0"
+        val micrometerVersion = "1.12.3"
 
         create("loggingLibs") {
             library(
@@ -111,10 +112,43 @@ dependencyResolutionManagement {
                 "ktor-server-core-jvm"
             ).version(ktorVersion)
             library(
+                "core",
+                "io.ktor",
+                "ktor-server-core"
+            ).version(ktorVersion)
+            library(
                 "openapi",
                 "io.ktor",
                 "ktor-server-openapi"
             ).version(ktorVersion)
+            library(
+                "netty",
+                "io.ktor",
+                "ktor-server-netty"
+            ).version(ktorVersion)
+            library(
+                "auth",
+                "io.ktor",
+                "ktor-server-auth"
+            ).version(ktorVersion)
+            library(
+                "micrometer",
+                "io.ktor",
+                "ktor-server-metrics-micrometer"
+            ).version(ktorVersion)
+
+        }
+        create("micrometer") {
+            library(
+                "core",
+                "io.micrometer",
+                "micrometer-core"
+            ).version(micrometerVersion)
+            library(
+                "registryPrometheus",
+                "io.micrometer",
+                "micrometer-registry-prometheus"
+            ).version(micrometerVersion)
         }
         create("pawClients") {
             library(
