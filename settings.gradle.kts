@@ -1,14 +1,21 @@
+import io.ktor.client.*
+
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.4.0"
     kotlin("jvm") version "1.9.22" apply false
-    id("io.ktor.plugin") version "2.3.10" apply false //hold i synk med "val ktorVersion" lenger nede i filen
+    id("io.ktor.plugin") version "2.3.10" apply false
     id("com.google.cloud.tools.jib") version "3.4.1" apply false
     id("org.openapi.generator") version "7.4.0" apply false
 }
 
 rootProject.name = "paw-arbeidssoekerregisteret-monorepo-intern"
 
-include("api-start-stopp-perioder")
+include(
+    "lib:hoplite-config",
+    "lib:kafka",
+    "lib:kafka-streams",
+    "api-start-stopp-perioder"
+)
 
 dependencyResolutionManagement {
     val githubPassword: String by settings
@@ -17,9 +24,22 @@ dependencyResolutionManagement {
         maven {
             url = uri("https://packages.confluent.io/maven/")
         }
+        maven {
+            setUrl("https://maven.pkg.github.com/navikt/poao-tilgang")
+            credentials {
+                username = "x-access-token"
+                password = githubPassword
+            }
+        }
+        maven {
+            setUrl("https://maven.pkg.github.com/navikt/paw-arbeidssokerregisteret-api")
+            credentials {
+                username = "x-access-token"
+                password = githubPassword
+            }
+        }
     }
     versionCatalogs {
-        val jvmMajorVersion = 21
         // PAW greier
         val pawPdlClientVersion = "24.03.20.30-1"
         val pawAaregClientVersion = "24.01.12.16-1"
@@ -42,7 +62,6 @@ dependencyResolutionManagement {
 
         // ---- //
         val kotlinExposedVersion = "0.50.0"
-        val ktorVersion = "2.3.9"
         val logstashVersion = "7.3"
         val logbackVersion = "1.4.14"
         val kotestVersion = "5.8.1"
@@ -50,39 +69,51 @@ dependencyResolutionManagement {
         val testContainersVersion = "1.19.6"
         val mockOauth2ServerVersion = "2.0.0"
         val micrometerVersion = "1.12.3"
+        val otelTargetSdkVersion = "1.36.0"
+        val otelInstrumentationVersion = "2.1.0"
+        val coroutinesVersion = "1.8.0"
 
+        create("kotlinx") {
+            library("coroutinesCore", "org.jetbrains.kotlinx", "kotlinx-coroutines-core").version(coroutinesVersion)
+        }
         create("loggingLibs") {
             library("logbackClassic", "ch.qos.logback", "logback-classic").version(logbackVersion)
             library("logstashLogbackEncoder", "net.logstash.logback", "logstash-logback-encoder").version(logstashVersion)
         }
         create("ktorClient") {
-            library("contentNegotiation", "io.ktor", "ktor-client-content-negotiation").version(ktorVersion)
-            library("core", "io.ktor", "ktor-client-core").version(ktorVersion)
-            library("cio", "io.ktor", "ktor-client-cio").version(ktorVersion)
+            library("contentNegotiation", "io.ktor", "ktor-client-content-negotiation").withoutVersion()
+            library("core", "io.ktor", "ktor-client-core").withoutVersion()
+            library("cio", "io.ktor", "ktor-client-cio").withoutVersion()
+        }
+        create("otel") {
+            library("api", "io.opentelemetry", "opentelemetry-api").version(otelTargetSdkVersion)
+            library("ktor","io.opentelemetry.instrumentation", "opentelemetry-ktor-2.0").version(otelInstrumentationVersion)
+            library("annotations", "io.opentelemetry.instrumentation", "opentelemetry-instrumentation-annotations").version(otelInstrumentationVersion)
         }
         create("ktorServer") {
             bundle(
-                "ktorNettyOpentelemetryMicrometerPrometheus", listOf(
+                "withNettyAndMicrometer", listOf(
                     "core",
                     "coreJvm",
-                    "ktorServerNetty",
-                    "ktorMetricsMicrometer",
-                    "openTelemetryApi",
-                    "openTelemetryKtor",
-                    "micrometerRegistryPrometheus"
+                    "netty",
+                    "micrometer"
                 )
             )
-            library("cors", "io.ktor", "ktor-server-cors").version(ktorVersion)
-            library("swagger", "io.ktor", "ktor-server-swagger").version(ktorVersion)
-            library("callId", "io.ktor", "ktor-server-call-id").version(ktorVersion)
-            library("statusPages", "io.ktor", "ktor-server-status-pages").version(ktorVersion)
-            library("contentNegotiation", "io.ktor", "ktor-server-content-negotiation").version(ktorVersion)
-            library("coreJvm", "io.ktor", "ktor-server-core-jvm").version(ktorVersion)
-            library("core", "io.ktor", "ktor-server-core").version(ktorVersion)
-            library("openapi", "io.ktor", "ktor-server-openapi").version(ktorVersion)
-            library("netty", "io.ktor", "ktor-server-netty").version(ktorVersion)
-            library("auth", "io.ktor", "ktor-server-auth").version(ktorVersion)
-            library("micrometer", "io.ktor", "ktor-server-metrics-micrometer").version(ktorVersion)
+            library("cors", "io.ktor", "ktor-server-cors").withoutVersion()
+            library("swagger", "io.ktor", "ktor-server-swagger").withoutVersion()
+            library("callId", "io.ktor", "ktor-server-call-id").withoutVersion()
+            library("statusPages", "io.ktor", "ktor-server-status-pages").withoutVersion()
+            library("contentNegotiation", "io.ktor", "ktor-server-content-negotiation").withoutVersion()
+            library("coreJvm", "io.ktor", "ktor-server-core-jvm").withoutVersion()
+            library("core", "io.ktor", "ktor-server-core").withoutVersion()
+            library("openapi", "io.ktor", "ktor-server-openapi").withoutVersion()
+            library("netty", "io.ktor", "ktor-server-netty").withoutVersion()
+            library("auth", "io.ktor", "ktor-server-auth").withoutVersion()
+            library("micrometer", "io.ktor", "ktor-server-metrics-micrometer").withoutVersion()
+        }
+        create("ktor") {
+            library("serialization", "io.ktor", "ktor-serialization").withoutVersion()
+            library("serializationJvm", "io.ktor", "ktor-serialization-jvm").withoutVersion()
         }
         create("micrometer") {
             library("core", "io.micrometer", "micrometer-core").version(micrometerVersion)
@@ -109,12 +140,13 @@ dependencyResolutionManagement {
         create("jackson") {
             library("datatypeJsr310", "com.fasterxml.jackson.datatype", "jackson-datatype-jsr310").version(comFasterxmlJacksonVersion)
             library("kotlin", "com.fasterxml.jackson.module", "jackson-module-kotlin").version(comFasterxmlJacksonVersion)
-            library("ktorSerialization", "io.ktor", "ktor-serialization-jackson").version(ktorVersion)
-            library("serializationJvm", "io.ktor", "ktor-serialization-jackson-jvm").version(ktorVersion)
+            library("ktorSerialization", "io.ktor", "ktor-serialization-jackson").withoutVersion()
+            library("serializationJvm", "io.ktor", "ktor-serialization-jackson-jvm").withoutVersion()
         }
         create("navCommon") {
             library("tokenClient", "no.nav.common", "token-client").version(noNavCommonVersion)
             library("log", "no.nav.common", "log").version(noNavCommonVersion)
+            library("auditLog", "no.nav.common", "audit-log").version(noNavCommonVersion)
         }
         create("navSecurity") {
             library("tokenValidationKtorV2", "no.nav.security", "token-validation-ktor-v2").version(noNavSecurityVersion)

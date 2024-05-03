@@ -1,0 +1,6 @@
+brokers = "${KAFKA_BROKERS}"
+[authentication]
+keystorePath = "${KAFKA_KEYSTORE_PATH}"
+credstorePassword = "${KAFKA_CREDSTORE_PASSWORD}"
+truststorePath = "${KAFKA_TRUSTSTORE_PATH}"
+

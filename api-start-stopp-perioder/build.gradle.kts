@@ -5,21 +5,20 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
     kotlin("jvm")
-    id("io.ktor.plugin")
     id("org.openapi.generator")
     application
     id("com.google.cloud.tools.jib")
+    id("io.ktor.plugin")
 }
 
-val jvmVersion = 21
+val baseImage: String by project
+val jvmMajorVersion: String by project
 
 val logbackVersion = "1.5.2"
 val logstashVersion = "7.3"
 val navCommonModulesVersion = "3.2024.02.21_11.18-8f9b43befae1"
 val tokenSupportVersion = "3.1.5"
 val koTestVersion = "5.7.2"
-val hopliteVersion = "2.8.0.RC3"
-val ktorVersion = pawObservability.versions.ktor
 val arbeidssokerregisteretVersion = "24.03.25.160-1"
 val pawUtilsVersion = "24.02.21.12-1"
 
@@ -28,43 +27,44 @@ val image: String? by project
 dependencies {
     implementation("no.nav.paw.arbeidssokerregisteret.api.schema:arbeidssoekerregisteret-kotlin:$arbeidssokerregisteretVersion")
     implementation("no.nav.paw.arbeidssokerregisteret.internt.schema:interne-eventer:$arbeidssokerregisteretVersion")
-    implementation(pawObservability.bundles.ktorNettyOpentelemetryMicrometerPrometheus)
-    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.1.0")
-    implementation("no.nav.paw.kafka:kafka:$pawUtilsVersion")
-    implementation("no.nav.paw.hoplite-config:hoplite-config:$pawUtilsVersion")
-    implementation("no.nav.security:token-validation-ktor-v2:$tokenSupportVersion")
-    implementation("no.nav.security:token-client-core:$tokenSupportVersion")
-    implementation("no.nav.common:token-client:$navCommonModulesVersion")
-    implementation("no.nav.common:audit-log:$navCommonModulesVersion")
-    implementation("no.nav.common:log:$navCommonModulesVersion")
-    implementation("com.github.navikt.poao-tilgang:client:2024.03.04_10.19-63a652788672")
+    implementation(ktorServer.bundles.withNettyAndMicrometer)
+    implementation(micrometer.registryPrometheus)
+    implementation(otel.annotations)
+    implementation(project(":lib:kafka"))
+    implementation(project(":lib:hoplite-config"))
+    implementation(hoplite.hopliteCore)
+    implementation(hoplite.hopliteToml)
+    implementation(hoplite.hopliteYaml)
+    implementation(navSecurity.tokenValidationKtorV2)
+    implementation(navSecurity.tokenClient)
+    implementation(navCommon.tokenClient)
+    implementation(navCommon.auditLog)
+    implementation(navCommon.log)
+    implementation("no.nav.poao-tilgang:client:2024.04.29_13.59-a0ddddd36ac9")
     implementation("no.nav.paw:pdl-client:24.01.12.26-1")
 
-    implementation("ch.qos.logback:logback-classic:$logbackVersion")
-    implementation("net.logstash.logback:logstash-logback-encoder:$logstashVersion")
-    implementation("org.apache.kafka:kafka-clients:3.5.1")
-    implementation("com.sksamuel.hoplite:hoplite-core:$hopliteVersion")
-    implementation("com.sksamuel.hoplite:hoplite-toml:$hopliteVersion")
-    implementation("com.sksamuel.hoplite:hoplite-yaml:$hopliteVersion")
+    implementation(loggingLibs.logbackClassic)
+    implementation(loggingLibs.logstashLogbackEncoder)
+    implementation(orgApacheKafka.kafkaClients)
 
-    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion}")
-    implementation("io.ktor:ktor-client-core:$ktorVersion")
-    implementation("io.ktor:ktor-client-cio:$ktorVersion")
+    implementation(ktorClient.contentNegotiation)
+    implementation(ktorClient.core)
+    implementation(ktorClient.cio)
 
-    implementation("io.ktor:ktor-server-cors:$ktorVersion")
-    implementation("io.ktor:ktor-server-swagger:$ktorVersion")
-    implementation("io.ktor:ktor-server-call-id:$ktorVersion")
-    implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
-    implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
+    implementation(ktorServer.cors)
+    implementation(ktorServer.swagger)
+    implementation(ktorServer.callId)
+    implementation(ktorServer.statusPages)
+    implementation(ktorServer.contentNegotiation)
 
-    implementation("io.ktor:ktor-serialization-jackson-jvm:$ktorVersion")
-    implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+    //implementation("io.ktor:ktor-serialization-jackson-jvm:$ktorVersion")
+    //implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.1")
 
-    implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
-    implementation("io.ktor:ktor-server-openapi:$ktorVersion")
+    //implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
+    //implementation("io.ktor:ktor-server-openapi:$ktorVersion")
 
-    testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
+    //testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
     testImplementation("io.kotest:kotest-runner-junit5:$koTestVersion")
     testImplementation("io.kotest:kotest-assertions-core:$koTestVersion")
     testImplementation("org.testcontainers:testcontainers:1.19.6")
@@ -81,7 +81,7 @@ sourceSets {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(jvmVersion))
+        languageVersion.set(JavaLanguageVersion.of(jvmMajorVersion))
     }
 }
 
@@ -108,7 +108,7 @@ tasks.withType(Jar::class) {
 }
 
 jib {
-    from.image = "ghcr.io/navikt/baseimages/temurin:$jvmVersion"
+    from.image = "$baseImage:$jvmMajorVersion"
     to.image = "${image ?: project.name}:${project.version}"
     container {
         environment = mapOf(

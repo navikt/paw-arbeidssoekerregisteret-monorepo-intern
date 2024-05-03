@@ -1,0 +1,10 @@
+brokers = "${KAFKA_BROKERS}"
+[authentication]
+keystorePath = "${KAFKA_KEYSTORE_PATH}"
+credstorePassword = "${KAFKA_CREDSTORE_PASSWORD}"
+truststorePath = "${KAFKA_TRUSTSTORE_PATH}"
+
+[schemaRegistry]
+url = "${KAFKA_SCHEMA_REGISTRY}"
+username = "${KAFKA_SCHEMA_REGISTRY_USER}"
+password = "${KAFKA_SCHEMA_REGISTRY_PASSWORD}"
