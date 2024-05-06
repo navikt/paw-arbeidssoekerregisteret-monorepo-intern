@@ -8,19 +8,12 @@ plugins {
     id("org.openapi.generator")
     application
     id("com.google.cloud.tools.jib")
-    id("io.ktor.plugin")
 }
 
 val baseImage: String by project
 val jvmMajorVersion: String by project
 
-val logbackVersion = "1.5.2"
-val logstashVersion = "7.3"
-val navCommonModulesVersion = "3.2024.02.21_11.18-8f9b43befae1"
-val tokenSupportVersion = "3.1.5"
-val koTestVersion = "5.7.2"
 val arbeidssokerregisteretVersion = "24.03.25.160-1"
-val pawUtilsVersion = "24.02.21.12-1"
 
 val image: String? by project
 
@@ -40,8 +33,8 @@ dependencies {
     implementation(navCommon.tokenClient)
     implementation(navCommon.auditLog)
     implementation(navCommon.log)
-    implementation("no.nav.poao-tilgang:client:2024.04.29_13.59-a0ddddd36ac9")
-    implementation("no.nav.paw:pdl-client:24.01.12.26-1")
+    implementation(poao.tilgangClient)
+    implementation(pawClients.pawPdlClient)
 
     implementation(loggingLibs.logbackClassic)
     implementation(loggingLibs.logstashLogbackEncoder)
@@ -57,19 +50,19 @@ dependencies {
     implementation(ktorServer.statusPages)
     implementation(ktorServer.contentNegotiation)
 
-    //implementation("io.ktor:ktor-serialization-jackson-jvm:$ktorVersion")
-    //implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.1")
+    implementation(ktor.serializationJvm)
+    implementation(ktor.serializationJackson)
+    implementation(jackson.datatypeJsr310)
 
-    //implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
-    //implementation("io.ktor:ktor-server-openapi:$ktorVersion")
+    implementation(ktorServer.coreJvm)
+    implementation(ktorServer.openapi)
 
-    //testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
-    testImplementation("io.kotest:kotest-runner-junit5:$koTestVersion")
-    testImplementation("io.kotest:kotest-assertions-core:$koTestVersion")
-    testImplementation("org.testcontainers:testcontainers:1.19.6")
-    testImplementation("no.nav.security:mock-oauth2-server:2.0.0")
-    testImplementation("io.mockk:mockk:1.13.10")
+    testImplementation(ktorServer.testJvm)
+    testImplementation(testLibs.runnerJunit5)
+    testImplementation(testLibs.assertionsCore)
+    testImplementation(testLibs.testContainers)
+    testImplementation(testLibs.mockOauth2Server)
+    testImplementation(testLibs.mockk)
 }
 sourceSets {
     main {

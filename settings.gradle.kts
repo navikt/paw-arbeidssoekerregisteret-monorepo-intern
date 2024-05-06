@@ -1,9 +1,6 @@
-import io.ktor.client.*
-
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.4.0"
     kotlin("jvm") version "1.9.22" apply false
-    id("io.ktor.plugin") version "2.3.10" apply false
     id("com.google.cloud.tools.jib") version "3.4.1" apply false
     id("org.openapi.generator") version "7.4.0" apply false
 }
@@ -73,6 +70,8 @@ dependencyResolutionManagement {
         val otelInstrumentationVersion = "2.1.0"
         val coroutinesVersion = "1.8.0"
 
+        fun VersionCatalogBuilder.ktorLib(alias: String, artifactId: String) = library(alias, "io.ktor", artifactId).version("2.3.10")
+
         create("kotlinx") {
             library("coroutinesCore", "org.jetbrains.kotlinx", "kotlinx-coroutines-core").version(coroutinesVersion)
         }
@@ -81,9 +80,9 @@ dependencyResolutionManagement {
             library("logstashLogbackEncoder", "net.logstash.logback", "logstash-logback-encoder").version(logstashVersion)
         }
         create("ktorClient") {
-            library("contentNegotiation", "io.ktor", "ktor-client-content-negotiation").withoutVersion()
-            library("core", "io.ktor", "ktor-client-core").withoutVersion()
-            library("cio", "io.ktor", "ktor-client-cio").withoutVersion()
+            ktorLib("contentNegotiation", "ktor-client-content-negotiation")
+            ktorLib("core", "ktor-client-core")
+            ktorLib("cio", "ktor-client-cio")
         }
         create("otel") {
             library("api", "io.opentelemetry", "opentelemetry-api").version(otelTargetSdkVersion)
@@ -99,21 +98,23 @@ dependencyResolutionManagement {
                     "micrometer"
                 )
             )
-            library("cors", "io.ktor", "ktor-server-cors").withoutVersion()
-            library("swagger", "io.ktor", "ktor-server-swagger").withoutVersion()
-            library("callId", "io.ktor", "ktor-server-call-id").withoutVersion()
-            library("statusPages", "io.ktor", "ktor-server-status-pages").withoutVersion()
-            library("contentNegotiation", "io.ktor", "ktor-server-content-negotiation").withoutVersion()
-            library("coreJvm", "io.ktor", "ktor-server-core-jvm").withoutVersion()
-            library("core", "io.ktor", "ktor-server-core").withoutVersion()
-            library("openapi", "io.ktor", "ktor-server-openapi").withoutVersion()
-            library("netty", "io.ktor", "ktor-server-netty").withoutVersion()
-            library("auth", "io.ktor", "ktor-server-auth").withoutVersion()
-            library("micrometer", "io.ktor", "ktor-server-metrics-micrometer").withoutVersion()
+            ktorLib("cors", "ktor-server-cors")
+            ktorLib("swagger", "ktor-server-swagger")
+            ktorLib("callId", "ktor-server-call-id")
+            ktorLib("statusPages", "ktor-server-status-pages")
+            ktorLib("contentNegotiation", "ktor-server-content-negotiation")
+            ktorLib("coreJvm", "ktor-server-core-jvm")
+            ktorLib("core", "ktor-server-core")
+            ktorLib("openapi", "ktor-server-openapi")
+            ktorLib("netty", "ktor-server-netty")
+            ktorLib("auth", "ktor-server-auth")
+            ktorLib("micrometer", "ktor-server-metrics-micrometer")
+            ktorLib("testJvm", "ktor-server-tests-jvm")
         }
         create("ktor") {
-            library("serialization", "io.ktor", "ktor-serialization").withoutVersion()
-            library("serializationJvm", "io.ktor", "ktor-serialization-jvm").withoutVersion()
+            ktorLib("serialization", "ktor-serialization")
+            ktorLib("serializationJvm", "ktor-serialization-jvm")
+            ktorLib("serializationJackson", "ktor-serialization-jackson")
         }
         create("micrometer") {
             library("core", "io.micrometer", "micrometer-core").version(micrometerVersion)
@@ -171,6 +172,9 @@ dependencyResolutionManagement {
             library("testContainers", "org.testcontainers", "testcontainers").version(testContainersVersion)
             library("postgresql", "org.testcontainers", "postgresql").version(testContainersVersion)
             library("mockOauth2Server", "no.nav.security", "mock-oauth2-server").version(mockOauth2ServerVersion)
+        }
+        create("poao") {
+            library("tilgangClient", "no.nav.poao-tilgang", "client").version("2024.04.29_13.59-a0ddddd36ac9")
         }
     }
 }
