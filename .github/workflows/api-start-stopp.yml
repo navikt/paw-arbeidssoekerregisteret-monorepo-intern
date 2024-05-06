@@ -42,18 +42,18 @@ jobs:
         uses: nais/attest-sign@v1.3.4
         with:
           image_ref: ${{ env.IMAGE }}@${{ env.DIGEST }}
-#  deploy-dev:
-#    name: Deploy to dev-gcp
-#    needs: build
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v4
-#      - uses: nais/deploy/actions/deploy@v1
-#        env:
-#          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-#          CLUSTER: dev-gcp
-#          RESOURCE: api-start-stopp/nais/nais-dev.yaml
-#          VAR: image=${{ needs.build.outputs.image }}
+  deploy-dev:
+    name: Deploy to dev-gcp
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nais/deploy/actions/deploy@v1
+        env:
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          CLUSTER: dev-gcp
+          RESOURCE: api-start-stopp/nais/nais-dev.yaml
+          VAR: image=${{ needs.build.outputs.image }}
 
 #  deploy-prod:
 #    if: github.ref == 'refs/heads/main'
