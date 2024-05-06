@@ -46,6 +46,9 @@ jobs:
     name: Deploy to dev-gcp - API Start Stopp
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: nais/deploy/actions/deploy@v2
@@ -60,6 +63,9 @@ jobs:
 #    name: Deploy to prod-gcp - API Start Stopp
 #    needs: [build, deploy-dev]
 #    runs-on: ubuntu-latest
+#    permissions:
+#      contents: read
+#      id-token: write
 #    steps:
 #      - uses: actions/checkout@v4
 #      - uses: nais/deploy/actions/deploy@v1
