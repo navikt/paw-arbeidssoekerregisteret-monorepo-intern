@@ -71,7 +71,8 @@ dependencyResolutionManagement {
         val coroutinesVersion = "1.8.0"
 
         fun VersionCatalogBuilder.ktorLib(alias: String, artifactId: String) = library(alias, "io.ktor", artifactId).version("2.3.10")
-
+        fun VersionCatalogBuilder.ktorLibs(vararg aliases: Pair<String, String>) = aliases.forEach { (artifactId, alias) -> ktorLib(alias, artifactId) }
+        infix fun String.alias(alias: String) = this to alias
         create("kotlinx") {
             library("coroutinesCore", "org.jetbrains.kotlinx", "kotlinx-coroutines-core").version(coroutinesVersion)
         }
@@ -80,14 +81,11 @@ dependencyResolutionManagement {
             library("logstashLogbackEncoder", "net.logstash.logback", "logstash-logback-encoder").version(logstashVersion)
         }
         create("ktorClient") {
-            ktorLib("contentNegotiation", "ktor-client-content-negotiation")
-            ktorLib("core", "ktor-client-core")
-            ktorLib("cio", "ktor-client-cio")
-        }
-        create("otel") {
-            library("api", "io.opentelemetry", "opentelemetry-api").version(otelTargetSdkVersion)
-            library("ktor","io.opentelemetry.instrumentation", "opentelemetry-ktor-2.0").version(otelInstrumentationVersion)
-            library("annotations", "io.opentelemetry.instrumentation", "opentelemetry-instrumentation-annotations").version(otelInstrumentationVersion)
+            ktorLibs(
+                "ktor-client-content-negotiation" alias "contentNegotiation",
+                "ktor-client-core" alias "core",
+                "ktor-client-cio" alias "cio"
+            )
         }
         create("ktorServer") {
             bundle(
@@ -98,23 +96,32 @@ dependencyResolutionManagement {
                     "micrometer"
                 )
             )
-            ktorLib("cors", "ktor-server-cors")
-            ktorLib("swagger", "ktor-server-swagger")
-            ktorLib("callId", "ktor-server-call-id")
-            ktorLib("statusPages", "ktor-server-status-pages")
-            ktorLib("contentNegotiation", "ktor-server-content-negotiation")
-            ktorLib("coreJvm", "ktor-server-core-jvm")
-            ktorLib("core", "ktor-server-core")
-            ktorLib("openapi", "ktor-server-openapi")
-            ktorLib("netty", "ktor-server-netty")
-            ktorLib("auth", "ktor-server-auth")
-            ktorLib("micrometer", "ktor-server-metrics-micrometer")
-            ktorLib("testJvm", "ktor-server-tests-jvm")
+            ktorLibs(
+                "ktor-server-cors" alias "cors",
+                "ktor-server-swagger" alias "swagger",
+                "ktor-server-call-id" alias "callId",
+                "ktor-server-status-pages" alias "statusPages",
+                "ktor-server-content-negotiation" alias "contentNegotiation",
+                "ktor-server-core-jvm" alias "coreJvm",
+                "ktor-server-core" alias "core",
+                "ktor-server-openapi" alias "openapi",
+                "ktor-server-netty" alias "netty",
+                "ktor-server-auth" alias "auth",
+                "ktor-server-metrics-micrometer" alias "micrometer",
+                "ktor-server-tests-jvm" alias "testJvm"
+            )
         }
         create("ktor") {
-            ktorLib("serialization", "ktor-serialization")
-            ktorLib("serializationJvm", "ktor-serialization-jvm")
-            ktorLib("serializationJackson", "ktor-serialization-jackson")
+            ktorLibs(
+                "ktor-serialization" alias "serialization",
+                "ktor-serialization-jvm" alias "serializationJvm",
+                "ktor-serialization-jackson" alias "serializationJackson"
+            )
+        }
+        create("otel") {
+            library("api", "io.opentelemetry", "opentelemetry-api").version(otelTargetSdkVersion)
+            library("ktor","io.opentelemetry.instrumentation", "opentelemetry-ktor-2.0").version(otelInstrumentationVersion)
+            library("annotations", "io.opentelemetry.instrumentation", "opentelemetry-instrumentation-annotations").version(otelInstrumentationVersion)
         }
         create("micrometer") {
             library("core", "io.micrometer", "micrometer-core").version(micrometerVersion)
