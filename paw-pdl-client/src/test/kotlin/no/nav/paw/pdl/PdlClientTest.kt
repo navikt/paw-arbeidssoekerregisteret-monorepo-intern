@@ -18,7 +18,7 @@ class PdlClientTest {
         val respons = readResource("hentIdenter-response.json")
         val pdlClient = mockPdlClient(respons)
 
-        val resultat = runBlocking { pdlClient.hentAktorId("2649500819544", callId, navConsumerId) }
+        val resultat = runBlocking { pdlClient.hentAktorId("2649500819544", callId, navConsumerId, "B123") }
         val forventet = "2649500819544"
         assertEquals(forventet, resultat)
     }
@@ -30,7 +30,7 @@ class PdlClientTest {
         assertFailsWith<PdlException>(
             block = {
                 runBlocking {
-                    pdlClient.hentIdenter("2649500819544", callId, navConsumerId)
+                    pdlClient.hentIdenter("2649500819544", callId, navConsumerId, "B123")
                 }
             },
         )
@@ -41,7 +41,7 @@ class PdlClientTest {
         val respons = readResource("hentIdenter-response.json")
         val pdlClient = mockPdlClient(respons)
 
-        val resultat = runBlocking { pdlClient.hentIdenter("2649500819544", callId, navConsumerId) }
+        val resultat = runBlocking { pdlClient.hentIdenter("2649500819544", callId, navConsumerId, "B123") }
         val forventet = "09127821914"
         assertEquals(forventet, resultat!!.first().ident)
     }
@@ -51,7 +51,7 @@ class PdlClientTest {
         val respons = readResource("hentOpphold-response.json")
         val pdlClient = mockPdlClient(respons)
 
-        val resultat = runBlocking { pdlClient.hentOpphold("2649500819544", callId, navConsumerId) }
+        val resultat = runBlocking { pdlClient.hentOpphold("2649500819544", callId, navConsumerId, "B123") }
         val forventet = Oppholdstillatelse.PERMANENT
         assertEquals(forventet, resultat!!.first().type)
     }
@@ -61,7 +61,7 @@ class PdlClientTest {
         val respons = readResource("hentPerson-response.json")
         val pdlClient = mockPdlClient(respons)
 
-        val resultat = runBlocking { pdlClient.hentPerson("2649500819544", callId, null, navConsumerId) }
+        val resultat = runBlocking { pdlClient.hentPerson("2649500819544", callId, null, navConsumerId, behandlingsnummer = "B123") }
         val forventet = Oppholdstillatelse.PERMANENT
         assertEquals(forventet, resultat!!.opphold.first().type)
     }
@@ -71,7 +71,7 @@ class PdlClientTest {
         val respons = readResource("hentForenkletStatus-response.json")
         val pdlClient = mockPdlClient(respons)
 
-        val resultat = runBlocking { pdlClient.hentForenkletStatus("2649500819544", callId, null, navConsumerId) }
+        val resultat = runBlocking { pdlClient.hentForenkletStatus("2649500819544", callId, null, navConsumerId, "B123") }
         val forventet = "bosattEtterFolkeregisterloven"
         assertTrue { resultat!!.folkeregisterpersonstatus.any { it.forenkletStatus == forventet } }
     }
@@ -81,7 +81,7 @@ class PdlClientTest {
         val respons = readResource("hentForenkletStatusBolk-response.json")
         val pdlClient = mockPdlClient(respons)
 
-        val resultat = runBlocking { pdlClient.hentForenkletStatusBolk(listOf("2649500819544"), callId, null, navConsumerId) }
+        val resultat = runBlocking { pdlClient.hentForenkletStatusBolk(listOf("2649500819544"), callId, null, navConsumerId, "B123") }
         val forventet = "bosattEtterFolkeregisterloven"
         assertTrue { resultat!!.first().person!!.folkeregisterpersonstatus.any { it.forenkletStatus == forventet } }
     }

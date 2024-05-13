@@ -9,6 +9,7 @@ suspend fun PdlClient.hentPerson(
     traceparent: String? = null,
     navConsumerId: String?,
     historisk: Boolean = false,
+    behandlingsnummer: String,
 ): Person? {
     val query =
         HentPerson(
@@ -23,7 +24,7 @@ suspend fun PdlClient.hentPerson(
             callId = callId,
             navConsumerId = navConsumerId,
             traceparent = traceparent,
-            behandlingsnummer = "B123",
+            behandlingsnummer = behandlingsnummer,
         )
 
     respons.errors?.let {

@@ -8,6 +8,7 @@ suspend fun PdlClient.hentForenkletStatusBolk(
     callId: String?,
     traceparent: String? = null,
     navConsumerId: String?,
+    behandlingsnummer: String,
 ): List<HentPersonBolkResult>? {
     val query =
         HentForenkletStatusBolk(
@@ -20,7 +21,7 @@ suspend fun PdlClient.hentForenkletStatusBolk(
             callId = callId,
             navConsumerId = navConsumerId,
             traceparent = traceparent,
-            behandlingsnummer = "B123",
+            behandlingsnummer = behandlingsnummer,
         )
 
     response.errors?.let {

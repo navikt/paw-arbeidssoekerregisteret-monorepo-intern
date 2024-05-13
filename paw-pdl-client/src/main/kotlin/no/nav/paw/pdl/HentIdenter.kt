@@ -8,8 +8,9 @@ suspend fun PdlClient.hentAktorId(
     ident: String,
     callId: String?,
     navConsumerId: String?,
+    behandlingsnummer: String,
 ): String? =
-    hentIdenter(ident, callId, navConsumerId)
+    hentIdenter(ident, callId, navConsumerId, behandlingsnummer)
         ?.firstOrNull { it.gruppe == IdentGruppe.AKTORID }
         ?.ident
 
@@ -17,6 +18,7 @@ suspend fun PdlClient.hentIdenter(
     ident: String,
     callId: String?,
     navConsumerId: String?,
+    behandlingsnummer: String,
 ): List<IdentInformasjon>? {
     val query = HentIdenter(HentIdenter.Variables(ident))
 
@@ -27,7 +29,7 @@ suspend fun PdlClient.hentIdenter(
             query = query,
             callId = callId,
             navConsumerId = navConsumerId,
-            behandlingsnummer = "B123",
+            behandlingsnummer = behandlingsnummer,
         )
 
     respons.errors?.let {

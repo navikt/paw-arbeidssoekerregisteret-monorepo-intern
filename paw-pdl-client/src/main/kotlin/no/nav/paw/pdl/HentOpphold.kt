@@ -7,6 +7,7 @@ suspend fun PdlClient.hentOpphold(
     ident: String,
     callId: String?,
     navConsumerId: String?,
+    behandlingsnummer: String,
 ): List<Opphold>? {
     val query = HentOpphold(HentOpphold.Variables(ident))
 
@@ -17,7 +18,7 @@ suspend fun PdlClient.hentOpphold(
             query = query,
             callId = callId,
             navConsumerId = navConsumerId,
-            behandlingsnummer = "B123",
+            behandlingsnummer = behandlingsnummer,
         )
 
     respons.errors?.let {

@@ -8,6 +8,7 @@ suspend fun PdlClient.hentFoedsel(
     callId: String?,
     traceparent: String? = null,
     navConsumerId: String?,
+    behandlingsnummer: String,
 ): Foedsel? {
     val query =
         HentFoedsel(
@@ -22,7 +23,7 @@ suspend fun PdlClient.hentFoedsel(
             callId = callId,
             navConsumerId = navConsumerId,
             traceparent = traceparent,
-            behandlingsnummer = "B123",
+            behandlingsnummer = behandlingsnummer,
         )
 
     respons.errors?.let {
