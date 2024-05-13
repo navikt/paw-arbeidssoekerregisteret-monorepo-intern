@@ -29,17 +29,23 @@ class PdlClient(
 
     internal suspend fun <T : Any> execute(
         query: GraphQLClientRequest<T>,
+        behandlingsnummer: String,
         callId: String?,
         traceparent: String? = null,
         navConsumerId: String?,
-    ): GraphQLClientResponse<T> =
-        graphQLClient.execute(query) {
+    ): GraphQLClientResponse<T> {
+        if (behandlingsnummer.isBlank()) {
+            throw IllegalArgumentException("Behandlingsnummer kan ikke være tom")
+        }
+        return graphQLClient.execute(query) {
             bearerAuth(getAccessToken())
             header("Tema", tema)
             header("Nav-Call-Id", callId)
             header("Nav-Consumer-Id", navConsumerId)
+            header("Behandlingsnummer", behandlingsnummer)
             traceparent?.let { header("traceparent", it) }
         }
+    }
 }
 
 class PdlException(

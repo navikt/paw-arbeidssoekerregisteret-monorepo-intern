@@ -27,6 +27,7 @@ suspend fun PdlClient.hentIdenter(
             query = query,
             callId = callId,
             navConsumerId = navConsumerId,
+            behandlingsnummer = "B123",
         )
 
     respons.errors?.let {

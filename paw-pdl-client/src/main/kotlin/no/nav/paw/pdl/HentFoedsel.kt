@@ -22,6 +22,7 @@ suspend fun PdlClient.hentFoedsel(
             callId = callId,
             navConsumerId = navConsumerId,
             traceparent = traceparent,
+            behandlingsnummer = "B123",
         )
 
     respons.errors?.let {

@@ -20,6 +20,7 @@ suspend fun PdlClient.hentForenkletStatus(
             callId = callId,
             navConsumerId = navConsumerId,
             traceparent = traceparent,
+            behandlingsnummer = "B123",
         )
 
     response.errors?.let {
