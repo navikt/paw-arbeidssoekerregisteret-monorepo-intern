@@ -7,6 +7,8 @@ import no.nav.paw.pdl.PdlException
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 import no.nav.paw.pdl.hentPerson
 
+const val BEHANDLINGSNUMMER = "B452"
+
 class PersonInfoService(
     private val pdlClient: PdlClient
 ) {
@@ -17,7 +19,8 @@ class PersonInfoService(
                 ident = ident,
                 callId = callId,
                 traceparent = traceparent,
-                navConsumerId = navConsumerId
+                navConsumerId = navConsumerId,
+                behandlingsnummer = BEHANDLINGSNUMMER
             )
         } catch (ex: PdlException) {
             throw RemoteServiceException(
