@@ -1,6 +1,16 @@
 name: Build, push, and deploy
 
-on: [push]
+on:
+    push:
+        branches:
+          - main
+        paths:
+          - 'api-start-stopp-perioder/**'
+          - '.github/workflows/api-start-stopp.yml'
+          - 'gradle/**'
+          - 'settings.gradle.kts'
+          - 'gradle.properties'
+          - 'gradlew'
 
 env:
   IMAGE: europe-north1-docker.pkg.dev/${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}/paw/${{ github.event.repository.name }}
