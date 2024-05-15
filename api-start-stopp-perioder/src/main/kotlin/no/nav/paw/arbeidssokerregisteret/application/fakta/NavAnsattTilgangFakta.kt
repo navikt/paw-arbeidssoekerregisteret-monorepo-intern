@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.application.fakta
 
+import io.opentelemetry.api.trace.Span
 import no.nav.paw.arbeidssokerregisteret.RequestScope
 import no.nav.paw.arbeidssokerregisteret.application.Opplysning
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
@@ -9,7 +10,7 @@ import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 context(RequestScope)
 fun AutorisasjonService.navAnsattTilgangFakta(identitetsnummer: Identitetsnummer): Opplysning {
     val navAnsatt = navAnsatt(claims)
-    return if (navAnsatt != null) {
+    return (if (navAnsatt != null) {
         if (verifiserVeilederTilgangTilBruker(navAnsatt, identitetsnummer)) {
             Opplysning.ANSATT_TILGANG
         } else {
@@ -18,5 +19,8 @@ fun AutorisasjonService.navAnsattTilgangFakta(identitetsnummer: Identitetsnummer
     }
     else {
         Opplysning.IKKE_ANSATT
+    }).also { opplysning ->
+        Span.current()
+            .setAttribute("paw_nav_ansatt_tilgang", opplysning.toString())
     }
 }
