@@ -5,7 +5,7 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.jackson.*
 
 
-fun kafkaKeysKlient(konfigurasjon: KafkaKeyConfig, m2mTokenFactory: () -> String): KafkaKeysClient =
+fun kafkaKeysClient(konfigurasjon: KafkaKeyConfig, m2mTokenFactory: () -> String): KafkaKeysClient =
     when (konfigurasjon.url) {
         "MOCK" -> inMemoryKafkaKeysMock()
         else -> kafkaKeysMedHttpClient(konfigurasjon, m2mTokenFactory)

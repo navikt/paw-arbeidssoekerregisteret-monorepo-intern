@@ -8,10 +8,10 @@ import no.nav.paw.arbeidssokerregisteret.application.RequestValidator
 import no.nav.paw.arbeidssokerregisteret.config.Config
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.arbeidssokerregisteret.services.PersonInfoService
-import no.nav.paw.arbeidssokerregisteret.services.kafkakeys.kafkaKeysKlient
 import no.nav.paw.arbeidssokerregisteret.utils.azureAdM2MTokenClient
 import no.nav.paw.config.kafka.KafkaFactory
-import no.nav.paw.migrering.app.kafkakeys.KafkaKeysClient
+import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
+import no.nav.paw.kafkakeygenerator.client.kafkaKeysClient
 import no.nav.paw.pdl.PdlClient
 import no.nav.poao_tilgang.client.PoaoTilgangHttpClient
 import org.apache.kafka.common.serialization.LongSerializer
@@ -59,7 +59,7 @@ private fun clientsFactory(config: Config): Clients {
         config.poaoTilgangClientConfig.url,
         { createMachineToMachineToken(config.poaoTilgangClientConfig.scope) }
     )
-    val kafkaKeysClient = kafkaKeysKlient(config.kafkaKeysConfig) {
+    val kafkaKeysClient = kafkaKeysClient(config.kafkaKeysConfig) {
         createMachineToMachineToken(config.kafkaKeysConfig.scope)
     }
     return Clients(

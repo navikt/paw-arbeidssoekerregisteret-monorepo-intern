@@ -7,6 +7,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import java.lang.IllegalStateException
 
 data class KafkaKeysResponse(
     val id: Long,
@@ -18,7 +19,9 @@ data class KafkaKeysRequest(
 )
 
 interface KafkaKeysClient {
-    suspend fun getIdAndKey(identitetsnummer: String): KafkaKeysResponse?
+    suspend fun getIdAndKeyOrNull(identitetsnummer: String): KafkaKeysResponse?
+    suspend fun getIdAndKey(identitetsnummer: String): KafkaKeysResponse =
+        getIdAndKeyOrNull(identitetsnummer) ?: throw IllegalStateException("Kafka-key-client: Uventet feil mot server: http-status=404")
 }
 
 class StandardKafkaKeysClient(
@@ -26,7 +29,7 @@ class StandardKafkaKeysClient(
     private val kafkaKeysUrl: String,
     private val getAccessToken: () -> String
 ) : KafkaKeysClient {
-    override suspend fun getIdAndKey(identitetsnummer: String): KafkaKeysResponse? =
+    override suspend fun getIdAndKeyOrNull(identitetsnummer: String): KafkaKeysResponse? =
         httpClient.post(kafkaKeysUrl) {
             header("Authorization", "Bearer ${getAccessToken()}")
             contentType(ContentType.Application.Json)

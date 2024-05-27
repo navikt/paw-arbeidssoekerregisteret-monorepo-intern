@@ -9,7 +9,7 @@ import no.nav.paw.arbeidssokerregisteret.domain.http.ValidationResultOk
 import no.nav.paw.arbeidssokerregisteret.domain.http.validerOpplysninger
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.config.kafka.sendDeferred
-import no.nav.paw.migrering.app.kafkakeys.KafkaKeysClient
+import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
@@ -38,6 +38,7 @@ class OpplysningerRequestHandler(
             return Right(validerOpplysninger)
         }
         val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
+
         val hendelse = opplysningerHendelse(id, opplysningerRequest)
         val record = ProducerRecord(
             hendelseTopic,

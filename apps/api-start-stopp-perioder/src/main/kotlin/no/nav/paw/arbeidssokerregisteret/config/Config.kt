@@ -1,12 +1,14 @@
 package no.nav.paw.arbeidssokerregisteret.config
 
+import no.nav.paw.kafkakeygenerator.client.KafkaKeyConfig
+
 const val CONFIG_FILE_NAME = "application.yaml"
 
 data class Config(
     val authProviders: AuthProviders,
     val pdlClientConfig: ServiceClientConfig,
     val poaoTilgangClientConfig: ServiceClientConfig,
-    val kafkaKeysConfig: KafkaKeysConfig,
+    val kafkaKeysConfig: KafkaKeyConfig,
     val eventLogTopic: String,
     val naisEnv: NaisEnv = currentNaisEnv
 )
@@ -25,11 +27,6 @@ data class AuthProvider(
 )
 
 data class ServiceClientConfig(
-    val url: String,
-    val scope: String
-)
-
-data class KafkaKeysConfig(
     val url: String,
     val scope: String
 )
