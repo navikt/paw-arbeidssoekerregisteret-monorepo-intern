@@ -11,6 +11,7 @@ include(
     "lib:hoplite-config",
     "lib:kafka",
     "lib:kafka-streams",
+    "lib:kafka-key-generator-client",
     "apps:api-start-stopp-perioder"
 )
 
