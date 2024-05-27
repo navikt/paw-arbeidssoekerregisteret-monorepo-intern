@@ -43,7 +43,7 @@ jobs:
         working-directory: ./
         run: |
           echo "image=${{ env.IMAGE }}:${{ env.VERSION }}" >> $GITHUB_OUTPUT
-          ./gradlew -Pversion=${{ env.VERSION }} -Pimage=${{ env.IMAGE }} :apps:api-start-stopp-perioder:test :apps:api-start-stopp-perioder:build:jib
+          ./gradlew -Pversion=${{ env.VERSION }} -Pimage=${{ env.IMAGE }} :apps:api-start-stopp-perioder:test :apps:api-start-stopp-perioder:jib
           echo "DIGEST=$(cat apps/api-start-stopp-perioder/build/jib-image.digest)" >> $GITHUB_ENV
         env:
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
