@@ -39,6 +39,8 @@ spec:
       value: "https://pdl-api.prod-fss-pub.nais.io/graphql"
     - name: KAFKA_KEY_SCOPE
       value: "api://prod-gcp.paw.paw-kafka-key-generator/.default"
+    - name: HENDELSELOGG_TOPIC
+      value: "paw.arbeidssoker-hendelseslogg-v1-test"
   replicas:
     min: 1
     max: 1

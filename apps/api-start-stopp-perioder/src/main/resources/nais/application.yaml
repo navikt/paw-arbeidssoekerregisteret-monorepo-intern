@@ -1,4 +1,4 @@
-eventLogTopic: paw.arbeidssoker-hendelseslogg-v1-test
+eventLogTopic: ${HENDELSELOGG_TOPIC}
 poaoTilgangClientConfig:
   url: http://poao-tilgang.poao.svc.cluster.local
   scope: api://${NAIS_CLUSTER_NAME}.poao.poao-tilgang/.default
