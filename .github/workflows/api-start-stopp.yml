@@ -66,3 +66,17 @@ jobs:
           CLUSTER: dev-gcp
           RESOURCE: api-start-stopp-perioder/nais/nais-dev.yaml
           VAR: image=${{ needs.build.outputs.image }}
+  deploy-prod:
+    name: Deploy to prod-gcp - API Start Stopp
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: prod-gcp
+          RESOURCE: api-start-stopp-perioder/nais/nais-prod.yaml
+          VAR: image=${{ needs.build.outputs.image }}

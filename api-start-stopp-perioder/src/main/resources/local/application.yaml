@@ -1,4 +1,4 @@
-eventLogTopic: paw.arbeidssoker-hendelseslogg-v1
+eventLogTopic: paw.arbeidssoker-hendelseslogg-v1-test
 poaoTilgangClientConfig:
   url: http://localhost:8090/poao-tilgang
   scope: api://test.test.poao-tilgang/.default
