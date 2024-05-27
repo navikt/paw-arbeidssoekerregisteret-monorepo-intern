@@ -82,9 +82,6 @@ application {
     mainClass.set("no.nav.paw.arbeidssokerregisteret.ApplicationKt")
 }
 
-tasks.withType<Test>().configureEach {
-    useJUnitPlatform()
-}
 
 tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions {

@@ -11,7 +11,7 @@ include(
     "lib:hoplite-config",
     "lib:kafka",
     "lib:kafka-streams",
-    "api-start-stopp-perioder"
+    "apps:api-start-stopp-perioder"
 )
 
 dependencyResolutionManagement {

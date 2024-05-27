@@ -5,7 +5,7 @@ on:
         branches:
           - main
         paths:
-          - 'api-start-stopp-perioder/**'
+          - 'apps/api-start-stopp-perioder/**'
           - '.github/workflows/api-start-stopp.yml'
           - 'gradle/**'
           - 'settings.gradle.kts'
@@ -43,9 +43,8 @@ jobs:
         working-directory: ./
         run: |
           echo "image=${{ env.IMAGE }}:${{ env.VERSION }}" >> $GITHUB_OUTPUT
-          echo -Pversion=${{ env.VERSION }} -Pimage=${{ env.IMAGE }} build test jib
-          ./gradlew -Pversion=${{ env.VERSION }} -Pimage=${{ env.IMAGE }} build test jib
-          echo "DIGEST=$(cat api-start-stopp-perioder/build/jib-image.digest)" >> $GITHUB_ENV
+          ./gradlew -Pversion=${{ env.VERSION }} -Pimage=${{ env.IMAGE }} :apps:api-start-stopp-perioder:test :apps:api-start-stopp-perioder:build:jib
+          echo "DIGEST=$(cat apps/api-start-stopp-perioder/build/jib-image.digest)" >> $GITHUB_ENV
         env:
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
       - name: Attest and sign
@@ -64,7 +63,7 @@ jobs:
       - uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: dev-gcp
-          RESOURCE: api-start-stopp-perioder/nais/nais-dev.yaml
+          RESOURCE: apps/api-start-stopp-perioder/nais/nais-dev.yaml
           VAR: image=${{ needs.build.outputs.image }}
   deploy-prod:
     name: Deploy to prod-gcp - API Start Stopp
