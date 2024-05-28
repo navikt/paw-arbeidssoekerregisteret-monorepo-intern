@@ -50,3 +50,4 @@ spec:
           - application: paw-arbeidssokerregisteret-api-inngang
           - application: paw-arbeidssoekerregisteret-utgang-formidlingsgruppe
           - application: paw-arbeidssoekerregisteret-utgang-pdl
+          - application: aia-microfrontend-toggler
