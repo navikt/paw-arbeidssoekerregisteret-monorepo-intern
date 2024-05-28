@@ -6,6 +6,7 @@ on:
           - main
         paths:
           - 'apps/api-start-stopp-perioder/**'
+          - 'lib/kafka-key-generator-client/**'
           - '.github/workflows/api-start-stopp.yml'
           - 'gradle/**'
           - 'settings.gradle.kts'
