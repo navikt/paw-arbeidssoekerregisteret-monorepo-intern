@@ -40,7 +40,10 @@ const val partitionCount: Int = 6
 
 const val applicationStreamVersion = "v6"
 const val periodeTopic = "paw.arbeidssokerperioder-v1"
-const val hendelsesLogTopic = "paw.arbeidssoker-hendelseslogg-v1"
+val hendelsesLogTopic: String get() =
+    with(loadNaisOrLocalConfiguration<ApplicationConfiguration>("application_configuration.toml")) {
+        hendelsesloggTopic
+    }
 
 typealias kafkaKeyFunction = (String) -> KafkaKeysResponse
 

@@ -16,9 +16,9 @@ spec:
     max: 1
   env:
     - name: KAFKA_KEYS_SCOPE
-      value: api://dev-gcp.paw.paw-kafka-key-generator/.default
+      value: api://prod-gcp.paw.paw-kafka-key-generator/.default
     - name: HENDELSELOGG_TOPIC
-      value: "paw.arbeidssoker-hendelseslogg-v1"
+      value: "paw.arbeidssoker-hendelseslogg-v1-test"
   liveness:
     path: /isAlive
     initialDelay: 10
