@@ -47,3 +47,4 @@ spec:
       inbound:
         rules:
           - application: paw-migrering-veilarb-til-nytt-register
+          - application: paw-arbeidssoekerregisteret-utgang-formidlingsgruppe
