@@ -34,7 +34,7 @@ jobs:
           distribution: temurin
           cache: gradle
       - name: set module to build
-        run: echo "MODULE=utgang-formidlingsgruppe" >> $GITHUB_ENV
+        run: echo "MODULE=:apps:utgang-formidlingsgruppe" >> $GITHUB_ENV
       - name: Set version
         run: echo "VERSION=$(date +'%y.%m.%d').${{ github.run_number }}-${{ github.run_attempt }}" >> $GITHUB_ENV
       - name: Login GAR
