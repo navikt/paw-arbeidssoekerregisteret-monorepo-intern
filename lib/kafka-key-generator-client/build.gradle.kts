@@ -11,6 +11,7 @@ dependencies {
     implementation(ktorClient.cio)
     implementation(ktor.serializationJackson)
     implementation(navSecurity.tokenClient)
+    implementation(project(":lib:hoplite-config"))
     api(navCommon.tokenClient)
 }
 

@@ -3,6 +3,7 @@ plugins {
     kotlin("jvm") version "1.9.22" apply false
     id("com.google.cloud.tools.jib") version "3.4.1" apply false
     id("org.openapi.generator") version "7.4.0" apply false
+    id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1" apply false
 }
 
 rootProject.name = "paw-arbeidssoekerregisteret-monorepo-intern"
@@ -12,7 +13,12 @@ include(
     "lib:kafka",
     "lib:kafka-streams",
     "lib:kafka-key-generator-client",
-    "apps:api-start-stopp-perioder"
+    "apps:api-start-stopp-perioder",
+    "apps:utgang-formidlingsgruppe",
+    "domain:rapportering-interne-hendelser",
+    "domain:rapporteringsansvar-schema",
+    "domain:rapporteringsmelding-schema",
+    "domain:main-avro-schema"
 )
 
 dependencyResolutionManagement {
@@ -43,6 +49,7 @@ dependencyResolutionManagement {
         val pawPdlClientVersion = "24.05.13.33-1"
         val pawAaregClientVersion = "24.01.12.16-1"
         val arbeidssokerregisteretVersion = "1.8062260419.22-1"
+        val arbeidssokerregisteretInternalVersion = "24.04.19.176-1"
 
         // NAV
         val noNavCommonVersion = "3.2024.02.21_11.18-8f9b43befae1"
@@ -158,6 +165,8 @@ dependencyResolutionManagement {
             library("mainAvroSchema", "no.nav.paw.arbeidssokerregisteret.api", "main-avro-schema").version(
                 arbeidssokerregisteretVersion
             )
+            version("arbeidssokerregisteretVersion", arbeidssokerregisteretVersion)
+            version("arbeidssokerregisteretInternalVersion", arbeidssokerregisteretInternalVersion)
         }
         create("orgApacheKafka") {
             library("kafkaClients", "org.apache.kafka", "kafka-clients").version(orgApacheKafkaVersion)
