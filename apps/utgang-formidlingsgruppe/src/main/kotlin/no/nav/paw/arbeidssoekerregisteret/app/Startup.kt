@@ -5,24 +5,15 @@ import io.micrometer.core.instrument.binder.kafka.KafkaStreamsMetrics
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import kotlinx.coroutines.runBlocking
-import no.nav.paw.arbeidssoekerregisteret.app.vo.*
-import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.app.helse.Helse
 import no.nav.paw.arbeidssokerregisteret.app.helse.initKtor
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
-import no.nav.paw.config.kafka.KAFKA_CONFIG_WITH_SCHEME_REG
 import no.nav.paw.config.kafka.KafkaConfig
 import no.nav.paw.config.kafka.streams.KafkaStreamsFactory
 import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.StreamsBuilder
-import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.state.Stores
 import org.slf4j.LoggerFactory
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
 import no.nav.paw.config.kafka.KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG
 import no.nav.paw.kafkakeygenerator.auth.NaisEnv
 import no.nav.paw.kafkakeygenerator.auth.currentNaisEnv
@@ -31,10 +22,6 @@ import no.nav.paw.kafkakeygenerator.client.createKafkaKeyGeneratorClient
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
-import org.apache.kafka.streams.kstream.Produced
-import org.apache.kafka.streams.kstream.Repartitioned
-import java.time.Instant
-import java.util.*
 
 const val partitionCount: Int = 6
 
@@ -42,7 +29,7 @@ const val applicationStreamVersion = "v6"
 const val periodeTopic = "paw.arbeidssokerperioder-v1"
 val hendelsesLogTopic: String get() =
     with(loadNaisOrLocalConfiguration<ApplicationConfiguration>("application_configuration.toml")) {
-        hendelsesloggTopic
+        hendelseloggTopic
     }
 
 typealias kafkaKeyFunction = (String) -> KafkaKeysResponse
