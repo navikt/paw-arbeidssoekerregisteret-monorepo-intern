@@ -23,6 +23,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
+import no.nav.paw.config.kafka.KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG
 import no.nav.paw.kafkakeygenerator.auth.NaisEnv
 import no.nav.paw.kafkakeygenerator.auth.currentNaisEnv
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
@@ -50,7 +51,7 @@ fun main() {
     val logger = LoggerFactory.getLogger("app")
     logger.info("Starter: {}", ApplicationInfo.id)
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-    val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG_WITH_SCHEME_REG)
+    val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG)
     val idAndRecordKeyFunction = with(createKafkaKeyGeneratorClient()) {
         { identitetsnummer: String ->
             runBlocking { getIdAndKey(identitetsnummer) }
