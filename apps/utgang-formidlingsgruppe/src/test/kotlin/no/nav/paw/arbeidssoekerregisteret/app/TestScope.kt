@@ -41,6 +41,7 @@ fun testScope(): TestScope {
             runBlocking { getIdAndKey(identitetsnummer) }
         }
     }
+    val appCfg = applicationConfiguration
     val periodeSerde = createAvroSerde<Periode>()
     val formidlingsgruppeSerde = ArenaFormidlingsgruppeSerde()
     val avsluttetSerde = AvsluttetSerde()
@@ -58,7 +59,7 @@ fun testScope(): TestScope {
     val testDriver = TopologyTestDriver(
         streamBuilder.appTopology(
             stateStoreName = stateStoreName,
-            hendelseloggTopic = hendelsesLogTopic,
+            hendelseloggTopic = appCfg.hendelseloggTopic,
             periodeTopic = periodeTopic,
             formidlingsgrupperTopic = formidlingsGruppeTopic(NaisEnv.Local),
             idAndRecordKeyFunction = idAndRecordKeyFunction,
@@ -78,7 +79,7 @@ fun testScope(): TestScope {
         formidlingsgruppeSerde.serializer(),
     )
     val hendelseOutputTopic = testDriver.createOutputTopic(
-        hendelsesLogTopic,
+        appCfg.hendelseloggTopic,
         Serdes.Long().deserializer(),
         avsluttetSerde.deserializer()
     )

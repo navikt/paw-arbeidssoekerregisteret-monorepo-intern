@@ -25,12 +25,9 @@ import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
 
 const val partitionCount: Int = 6
 
-const val applicationStreamVersion = "v6"
 const val periodeTopic = "paw.arbeidssokerperioder-v1"
-val hendelsesLogTopic: String get() =
-    with(loadNaisOrLocalConfiguration<ApplicationConfiguration>("application_configuration.toml")) {
-        hendelseloggTopic
-    }
+val applicationConfiguration: ApplicationConfiguration get() =
+    loadNaisOrLocalConfiguration<ApplicationConfiguration>("application_configuration.toml")
 
 typealias kafkaKeyFunction = (String) -> KafkaKeysResponse
 
@@ -42,13 +39,14 @@ fun main() {
     logger.info("Starter: {}", ApplicationInfo.id)
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG)
+    val appCfg = applicationConfiguration
     val idAndRecordKeyFunction = with(createKafkaKeyGeneratorClient()) {
         { identitetsnummer: String ->
             runBlocking { getIdAndKey(identitetsnummer) }
         }
     }
     val streamsConfig = KafkaStreamsFactory(
-        applicationIdSuffix = applicationStreamVersion,
+        applicationIdSuffix = appCfg.applicationStreamVersion,
         config = kafkaConfig
     )
         .withDefaultKeySerde(Serdes.LongSerde::class)
@@ -67,7 +65,7 @@ fun main() {
         idAndRecordKeyFunction,
         periodeTopic,
         formidlingsGruppeTopic(currentNaisEnv),
-        hendelsesLogTopic
+        appCfg.hendelseloggTopic
     )
     val kafkaStreams = KafkaStreams(
         topology,

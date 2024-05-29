@@ -1,1 +1,2 @@
 hendelselogg_topic="${HENDELSESLOGG_TOPIC}"
+applicationStreamVersion="${APPLICATION_STREAM_VERSION}"
