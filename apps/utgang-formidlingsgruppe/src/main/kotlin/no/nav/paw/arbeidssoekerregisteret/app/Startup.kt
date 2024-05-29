@@ -29,7 +29,7 @@ const val periodeTopic = "paw.arbeidssokerperioder-v1"
 val applicationConfiguration: ApplicationConfiguration get() =
     loadNaisOrLocalConfiguration<ApplicationConfiguration>("application_configuration.toml")
 
-typealias kafkaKeyFunction = (String) -> KafkaKeysResponse
+typealias kafkaKeyFunction = (String) -> KafkaKeysResponse?
 
 fun formidlingsGruppeTopic(env: NaisEnv) =
     "teamarenanais.aapen-arena-formidlingsgruppeendret-v1-${if (env == NaisEnv.ProdGCP) "p" else "q"}"
@@ -42,7 +42,7 @@ fun main() {
     val appCfg = applicationConfiguration
     val idAndRecordKeyFunction = with(createKafkaKeyGeneratorClient()) {
         { identitetsnummer: String ->
-            runBlocking { getIdAndKey(identitetsnummer) }
+            runBlocking { getIdAndKeyOrNull(identitetsnummer) }
         }
     }
     val streamsConfig = KafkaStreamsFactory(

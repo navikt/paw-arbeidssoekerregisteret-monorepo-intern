@@ -19,7 +19,7 @@ import org.apache.kafka.streams.kstream.Repartitioned
 fun StreamsBuilder.appTopology(
     prometheusRegistry: PrometheusMeterRegistry,
     stateStoreName: String,
-    idAndRecordKeyFunction: (String) -> KafkaKeysResponse,
+    idAndRecordKeyFunction: kafkaKeyFunction,
     periodeTopic: String,
     formidlingsgrupperTopic: String,
     hendelseloggTopic: String
@@ -51,10 +51,10 @@ fun StreamsBuilder.appTopology(
         }
         .filter { _, data ->
             data.formidlingsgruppe.kode.equals("ISERV", ignoreCase = true).also { isServ ->
-            if (!isServ) {
-                prometheusRegistry.tellIgnorertGrunnetFormidlingsgruppe(data.formidlingsgruppe)
+                if (!isServ) {
+                    prometheusRegistry.tellIgnorertGrunnetFormidlingsgruppe(data.formidlingsgruppe)
+                }
             }
-        }
         }
         .mapNonNull("getKeyOrNull") { data ->
             idAndRecordKeyFunction(data.foedselsnummer.foedselsnummer)

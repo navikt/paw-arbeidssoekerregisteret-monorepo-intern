@@ -60,7 +60,7 @@ class PeriodeProsessor(
     override fun process(record: Record<Long, Periode>?) {
         if (record == null) return
         val store = requireNotNull(stateStore) { "State store is not initialized" }
-        val storeKey = arbeidssoekerIdFun(record.value().identitetsnummer).id
+        val storeKey = arbeidssoekerIdFun(record.value().identitetsnummer)?.id ?: return
         if (record.value().avsluttet == null) {
             store.put(storeKey, record.value())
         } else {
