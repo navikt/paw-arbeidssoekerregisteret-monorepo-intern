@@ -60,7 +60,8 @@ class PeriodeProsessor(
     override fun process(record: Record<Long, Periode>?) {
         if (record == null) return
         val store = requireNotNull(stateStore) { "State store is not initialized" }
-        val storeKey = arbeidssoekerIdFun(record.value().identitetsnummer)?.id ?: return
+        val storeKey = arbeidssoekerIdFun(record.value().identitetsnummer)?.id
+            ?: throw IllegalStateException("Forventer alltid treff i kafka-key-generator for id fra perioder")
         if (record.value().avsluttet == null) {
             store.put(storeKey, record.value())
         } else {
