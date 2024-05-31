@@ -4,14 +4,12 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":domain:interne-hendelser"))
-    compileOnly(jackson.datatypeJsr310)
-    compileOnly(jackson.kotlin)
+
 }
 
 val jvmMajorVersion: String by project
 
-group = "no.nav.paw.arbeidssokerregisteret.api.schema"
+group = "no.nav.paw.arbeidssokerregisteret.internt.schema"
 
 publishing {
     publications {

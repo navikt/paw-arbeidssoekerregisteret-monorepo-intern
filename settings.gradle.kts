@@ -18,7 +18,9 @@ include(
     "domain:rapportering-interne-hendelser",
     "domain:rapporteringsansvar-schema",
     "domain:rapporteringsmelding-schema",
-    "domain:main-avro-schema"
+    "domain:main-avro-schema",
+    "domain:interne-hendelser",
+    "domain:arbeidssoekerregisteret-kotlin",
 )
 
 dependencyResolutionManagement {
@@ -187,6 +189,7 @@ dependencyResolutionManagement {
             library("kotlin", "com.fasterxml.jackson.module", "jackson-module-kotlin").version(
                 comFasterxmlJacksonVersion
             )
+            library("core", "com.fasterxml.jackson.core", "jackson-core").version(comFasterxmlJacksonVersion)
         }
         create("navCommon") {
             library("tokenClient", "no.nav.common", "token-client").version(noNavCommonVersion)

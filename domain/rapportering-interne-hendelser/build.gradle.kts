@@ -4,8 +4,17 @@ plugins {
 }
 
 dependencies {
+    implementation(jackson.datatypeJsr310)
+    implementation(jackson.kotlin)
+    implementation(jackson.core)
+    compileOnly(orgApacheKafka.kafkaClients)
 
+    testImplementation(testLibs.runnerJunit5)
+    testImplementation(testLibs.assertionsCore)
+    testImplementation(orgApacheKafka.kafkaClients)
 }
+
+val jvmMajorVersion: String by project
 
 group = "no.nav.paw.arbeidssokerregisteret.internt.schema"
 
@@ -30,6 +39,6 @@ publishing {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(jvmMajorVersion)
     }
 }
