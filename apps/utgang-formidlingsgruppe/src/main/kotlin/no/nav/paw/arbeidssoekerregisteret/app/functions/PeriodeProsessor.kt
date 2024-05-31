@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssoekerregisteret.app.functions
 
 
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.app.kafkaKeyFunction
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import org.apache.kafka.streams.kstream.KStream

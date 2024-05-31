@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssoekerregisteret.app
 
 import io.micrometer.core.instrument.Tag
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.app.functions.FilterResultat
 import no.nav.paw.arbeidssoekerregisteret.app.vo.Formidlingsgruppe
 import no.nav.paw.arbeidssoekerregisteret.app.vo.OpType

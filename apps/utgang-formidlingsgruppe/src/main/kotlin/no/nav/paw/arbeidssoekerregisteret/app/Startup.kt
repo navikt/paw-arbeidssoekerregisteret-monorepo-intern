@@ -2,8 +2,8 @@ package no.nav.paw.arbeidssoekerregisteret.app
 
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import io.micrometer.core.instrument.binder.kafka.KafkaStreamsMetrics
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import kotlinx.coroutines.runBlocking
 import no.nav.paw.arbeidssokerregisteret.app.helse.Helse
 import no.nav.paw.arbeidssokerregisteret.app.helse.initKtor

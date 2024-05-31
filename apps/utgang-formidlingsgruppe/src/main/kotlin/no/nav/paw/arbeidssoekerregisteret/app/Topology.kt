@@ -1,13 +1,12 @@
 package no.nav.paw.arbeidssoekerregisteret.app
 
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.app.functions.filterePaaAktivePeriode
 import no.nav.paw.arbeidssoekerregisteret.app.functions.genericProcess
 import no.nav.paw.arbeidssoekerregisteret.app.functions.lagreEllerSlettPeriode
 import no.nav.paw.arbeidssoekerregisteret.app.functions.mapNonNull
 import no.nav.paw.arbeidssoekerregisteret.app.vo.*
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
-import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.StreamsBuilder

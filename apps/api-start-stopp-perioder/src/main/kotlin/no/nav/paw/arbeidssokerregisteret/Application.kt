@@ -5,8 +5,8 @@ import io.ktor.server.auth.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.routing.*
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.opentelemetry.api.trace.Span
 import no.nav.paw.arbeidssokerregisteret.application.OpplysningerRequestHandler
 import no.nav.paw.arbeidssokerregisteret.application.StartStoppRequestHandler

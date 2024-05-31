@@ -52,14 +52,14 @@ dependencyResolutionManagement {
         val arbeidssokerregisteretInternalVersion = "24.04.19.176-1"
 
         // NAV
-        val noNavCommonVersion = "3.2024.02.21_11.18-8f9b43befae1"
-        val noNavSecurityVersion = "3.1.5"
+        val noNavCommonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
+        val noNavSecurityVersion = "4.1.7"
 
         // Konfigurasjon
         val comSksamuelHopliteVersion = "2.8.0.RC3"
 
-        // Kafkawhic
-        val orgApacheKafkaVersion = "3.6.0"
+        // Kafka
+        val orgApacheKafkaVersion = "3.7.0"
         val ioConfluentKafkaVersion = "7.6.0"
 
         // Serialisering
@@ -68,20 +68,20 @@ dependencyResolutionManagement {
 
         // ---- //
         val kotlinExposedVersion = "0.50.0"
-        val logstashVersion = "7.3"
-        val logbackVersion = "1.4.14"
-        val kotestVersion = "5.8.1"
-        val mockkVersion = "1.13.10"
-        val testContainersVersion = "1.19.6"
-        val mockOauth2ServerVersion = "2.0.0"
-        val micrometerVersion = "1.12.3"
+        val logstashVersion = "7.4"
+        val logbackVersion = "1.5.6"
+        val kotestVersion = "5.9.0"
+        val mockkVersion = "1.13.11"
+        val testContainersVersion = "1.19.8"
+        val mockOauth2ServerVersion = "2.1.5"
+        val micrometerVersion = "1.13.0"
         val otelTargetSdkVersion = "1.36.0"
         val otelInstrumentationVersion = "2.1.0"
-        val coroutinesVersion = "1.8.0"
+        val coroutinesVersion = "1.8.1"
         val rapporteringsSchemaVersion = "24.05.15.2-1"
 
         fun VersionCatalogBuilder.ktorLib(alias: String, artifactId: String) =
-            library(alias, "io.ktor", artifactId).version("2.3.10")
+            library(alias, "io.ktor", artifactId).version("2.3.11")
 
         fun VersionCatalogBuilder.ktorLibs(vararg aliases: Pair<String, String>) =
             aliases.forEach { (artifactId, alias) -> ktorLib(alias, artifactId) }

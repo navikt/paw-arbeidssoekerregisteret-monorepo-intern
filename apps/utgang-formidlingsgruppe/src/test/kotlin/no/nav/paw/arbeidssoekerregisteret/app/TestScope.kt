@@ -3,8 +3,8 @@ package no.nav.paw.arbeidssoekerregisteret.app
 import io.confluent.kafka.schemaregistry.testutil.MockSchemaRegistry
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import kotlinx.coroutines.runBlocking
 import no.nav.paw.arbeidssoekerregisteret.app.vo.ArenaFormidlingsgruppeSerde
 import no.nav.paw.arbeidssoekerregisteret.app.vo.ArenaFormidlingsruppe

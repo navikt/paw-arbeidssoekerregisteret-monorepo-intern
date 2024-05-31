@@ -7,8 +7,7 @@ import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
-import org.apache.kafka.clients.producer.internals.ProducerMetrics
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import java.time.Duration
 
 fun Application.configureMetrics(prometheusMeterRegistry: PrometheusMeterRegistry) {

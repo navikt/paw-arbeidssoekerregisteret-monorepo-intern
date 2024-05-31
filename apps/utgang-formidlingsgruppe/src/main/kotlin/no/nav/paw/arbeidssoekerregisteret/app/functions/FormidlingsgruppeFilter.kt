@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.app.functions
 
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.app.tellFilterResultat
 import no.nav.paw.arbeidssoekerregisteret.app.vo.GyldigHendelse
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
