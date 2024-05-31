@@ -19,7 +19,7 @@ val image: String? by project
 
 dependencies {
     implementation("no.nav.paw.arbeidssokerregisteret.api.schema:arbeidssoekerregisteret-kotlin:$arbeidssokerregisteretVersion")
-    implementation("no.nav.paw.arbeidssokerregisteret.internt.schema:interne-eventer:$arbeidssokerregisteretVersion")
+    implementation(project(":domain:interne-hendelser"))
     implementation(ktorServer.bundles.withNettyAndMicrometer)
     implementation(micrometer.registryPrometheus)
     implementation(otel.annotations)

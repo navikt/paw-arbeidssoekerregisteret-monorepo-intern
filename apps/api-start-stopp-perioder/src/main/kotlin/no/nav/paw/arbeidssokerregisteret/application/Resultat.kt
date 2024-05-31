@@ -87,7 +87,8 @@ fun somHendelse(id: Long, identitetsnummer: Identitetsnummer, resultat: EndeligR
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
             metadata = hendelseMetadata(resultat),
-            opplysninger = resultat.opplysning.map(::mapToHendelseOpplysning).toSet()
+            opplysninger = resultat.opplysning.map(::mapToHendelseOpplysning).toSet(),
+            handling = path
         )
 
         is IkkeTilgang -> AvvistHendelse(

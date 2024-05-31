@@ -1,20 +1,13 @@
 package no.nav.paw.arbeidssokerregisteret.application
 
-import io.kotest.assertions.any
 import io.kotest.core.spec.style.FreeSpec
-import io.kotest.data.Row2
-import io.kotest.data.Row3
-import io.kotest.data.row
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.paw.arbeidssokerregisteret.RequestScope
-import no.nav.paw.arbeidssokerregisteret.application.fakta.navAnsattTilgangFakta
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
-import no.nav.paw.arbeidssokerregisteret.requestScope
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.arbeidssokerregisteret.services.PersonInfoService
 import no.nav.paw.arbeidssokerregisteret.utils.AzureNavIdent
@@ -24,7 +17,6 @@ import no.nav.paw.arbeidssokerregisteret.utils.TokenXPID
 import no.nav.paw.pdl.graphql.generated.hentperson.Foedsel
 import no.nav.paw.pdl.graphql.generated.hentperson.Folkeregisterpersonstatus
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
-import org.junit.jupiter.api.Assertions.*
 import java.util.*
 
 class RequestValidatorTest : FreeSpec({
@@ -39,7 +31,8 @@ class RequestValidatorTest : FreeSpec({
                     .add(AzureOID, UUID.randomUUID().toString()),
                 callId = "123",
                 traceparent = "123",
-                navConsumerId = "123"
+                navConsumerId = "123",
+                path = "test"
             )
 
             "Når veileder er har tilgang til bruker" - {
@@ -82,7 +75,8 @@ class RequestValidatorTest : FreeSpec({
                     .add(TokenXPID, "12345678909"),
                 callId = "123",
                 traceparent = "123",
-                navConsumerId = "123"
+                navConsumerId = "123",
+                path = "test"
             )
             val autorisasjonService: AutorisasjonService = mockk()
             val requestValidator = RequestValidator(autorisasjonService, personInfoService)
@@ -116,7 +110,8 @@ class RequestValidatorTest : FreeSpec({
                             .add(TokenXPID, "12345678909"),
                         callId = "123",
                         traceparent = "123",
-                        navConsumerId = "123"
+                        navConsumerId = "123",
+                        path = "test"
                     )
                     coEvery {
                         with(requestScope) {
@@ -153,7 +148,8 @@ class RequestValidatorTest : FreeSpec({
                             .add(TokenXPID, "12345678909"),
                         callId = "123",
                         traceparent = "123",
-                        navConsumerId = "123"
+                        navConsumerId = "123",
+                        path = "test"
                     )
                     coEvery {
                         with(requestScope) {
@@ -179,7 +175,8 @@ class RequestValidatorTest : FreeSpec({
                             .add(TokenXPID, "12345678909"),
                         callId = "123",
                         traceparent = "123",
-                        navConsumerId = "123"
+                        navConsumerId = "123",
+                        path = "test"
                     )
                     coEvery {
                         with(requestScope) {
@@ -208,7 +205,8 @@ class RequestValidatorTest : FreeSpec({
                             .add(TokenXPID, "12345678909"),
                         callId = "123",
                         traceparent = "123",
-                        navConsumerId = "123"
+                        navConsumerId = "123",
+                        path = "test"
                     )
                     coEvery {
                         with(requestScope) {
@@ -226,7 +224,8 @@ class RequestValidatorTest : FreeSpec({
                             .add(TokenXPID, "12345678909"),
                         callId = "123",
                         traceparent = "123",
-                        navConsumerId = "123"
+                        navConsumerId = "123",
+                        path = "test"
                     )
                     coEvery {
                         with(requestScope) {
@@ -251,7 +250,8 @@ class RequestValidatorTest : FreeSpec({
                             .add(TokenXPID, "12345678909"),
                         callId = "123",
                         traceparent = "123",
-                        navConsumerId = "123"
+                        navConsumerId = "123",
+                        path = "test"
                     )
                     coEvery {
                         with(requestScope) {
@@ -276,7 +276,8 @@ class RequestValidatorTest : FreeSpec({
                             .add(TokenXPID, "12345678909"),
                         callId = "123",
                         traceparent = "123",
-                        navConsumerId = "123"
+                        navConsumerId = "123",
+                        path = "test"
                     )
                     coEvery {
                         with(requestScope) {

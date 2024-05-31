@@ -9,7 +9,8 @@ data class Avvist(
     override val id: Long,
     override val identitetsnummer: String,
     override val metadata: Metadata,
-    override val opplysninger: Set<Opplysning> = emptySet()
+    override val opplysninger: Set<Opplysning> = emptySet(),
+    val handling: String? = null
 ) : Hendelse, HarOpplysninger {
     override val hendelseType: String = avvistHendelseType
 }

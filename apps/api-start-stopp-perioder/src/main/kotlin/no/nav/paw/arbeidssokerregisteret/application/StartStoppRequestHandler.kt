@@ -65,7 +65,19 @@ class StartStoppRequestHandler(
 
     context(RequestScope)
     suspend fun kanRegistreresSomArbeidssoker(identitetsnummer: Identitetsnummer): EndeligResultat {
-        return requestValidator.validerStartAvPeriodeOenske(identitetsnummer)
+        val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
+        val resultat = requestValidator.validerStartAvPeriodeOenske(identitetsnummer)
+        if (resultat !is OK) {
+            val hendelse = somHendelse(id, identitetsnummer, resultat)
+            val record = ProducerRecord(
+                hendelseTopic,
+                key,
+                hendelse
+            )
+            val recordMetadata = producer.sendDeferred(record).await()
+            logger.trace("Sendte melding til kafka: type={}, offset={}", hendelse.hendelseType, recordMetadata.offset())
+        }
+        return resultat
     }
 }
 

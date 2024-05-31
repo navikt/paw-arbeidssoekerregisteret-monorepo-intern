@@ -57,7 +57,13 @@ class AutorisasjonServiceTest : FreeSpec({
     "verifiser IKKE_NAVANSATT" {
         val autorisasjonService = mockk<AutorisasjonService>()
         val identitet =  Identitetsnummer("12345678909")
-        val requestScope = RequestScope(claims = ResolvedClaims().add(TokenXPID, "12345678909"), callId = "123", traceparent = "123", navConsumerId = "123")
+        val requestScope = RequestScope(
+            claims = ResolvedClaims().add(TokenXPID, "12345678909"),
+            callId = "123",
+            traceparent = "123",
+            navConsumerId = "123",
+            path = "test"
+        )
         with (requestScope) {
             autorisasjonService.navAnsattTilgangFakta(identitet) shouldBe Opplysning.IKKE_ANSATT
         }
