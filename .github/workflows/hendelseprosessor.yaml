@@ -1,6 +1,17 @@
 name: Hendelseprosessor
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/hendelseprosessor/**'
+      - 'lib/kafka-key-generator-client/**'
+      - '.github/workflows/ahendelseprosessor.yaml'
+      - 'gradle/**'
+      - 'settings.gradle.kts'
+      - 'gradle.properties'
+      - 'gradlew'
 env:
   IMAGE: europe-north1-docker.pkg.dev/${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}/paw/paw-arbeidssokerregisteret-event-prosessor
 jobs:
