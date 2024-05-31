@@ -11,6 +11,7 @@ val schema by configurations.creating {
 
 dependencies {
     schema(arbeidssoekerRegisteret.mainAvroSchema)
+    api(arbeidssoekerRegisteret.mainAvroSchema)
     api(apacheAvro.avro)
 }
 
