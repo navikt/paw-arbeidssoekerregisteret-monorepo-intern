@@ -2,7 +2,7 @@ package no.nav.paw.arbeidssokerregisteret.profilering
 
 import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.Tags
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 
 fun PrometheusMeterRegistry.registerTopicVersionGauge(vararg topicInfos: TopicInfo) {
     topicInfos.forEach { topicInfo ->

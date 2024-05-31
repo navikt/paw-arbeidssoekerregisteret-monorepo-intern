@@ -1,8 +1,10 @@
-package no.nav.paw.arbeidssokerregisteret.profilering
+package no.nav.paw.arbeidssokerregisteret.app.metrics
 
 import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.Tags
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import no.nav.paw.arbeidssokerregisteret.profilering.ModuleInfo
+import no.nav.paw.arbeidssokerregisteret.profilering.getModuleInfo
 import java.util.concurrent.atomic.AtomicLong
 
 private val buildTime = AtomicLong(0)

@@ -3,7 +3,7 @@ package no.nav.paw.arbeidssokerregisteret.app.metrics
 import io.micrometer.core.instrument.Gauge.builder
 import io.micrometer.core.instrument.Meter
 import io.micrometer.core.instrument.Tag
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import java.util.concurrent.atomic.AtomicLong
 
 class StateGauge(

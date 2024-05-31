@@ -4,6 +4,8 @@ import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.app.config.KafkaKonfigurasjon
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
+import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
+import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.Serdes
@@ -11,7 +13,7 @@ import java.time.Duration
 import java.util.*
 
 fun main() {
-    val kafkaKonfigurasjon = lastKonfigurasjon<KafkaKonfigurasjon>(kafkaKonfigurasjonsfil)
+    val kafkaKonfigurasjon = loadNaisOrLocalConfiguration<KafkaKonfigurasjon>(kafkaKonfigurasjonsfil)
     val producerCfg = kafkaProducerProperties(
         producerId = "test",
         keySerializer = Serdes.Long().serializer()::class,

@@ -1,8 +1,8 @@
 package no.nav.paw.arbeidssokerregisteret.app
 
 import io.micrometer.core.instrument.binder.kafka.KafkaStreamsMetrics
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.app.config.KafkaKonfigurasjon
@@ -13,9 +13,10 @@ import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandV1
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandSerde
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.profilering.TopicOperation
-import no.nav.paw.arbeidssokerregisteret.profilering.registerMainAvroSchemaGauges
+import no.nav.paw.arbeidssokerregisteret.app.metrics.registerMainAvroSchemaGauges
 import no.nav.paw.arbeidssokerregisteret.profilering.registerTopicVersionGauge
 import no.nav.paw.arbeidssokerregisteret.profilering.topicInfo
+import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.utils.Time
@@ -41,7 +42,7 @@ fun main() {
     val streamLogger = LoggerFactory.getLogger("App")
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val moduleInfo = prometheusMeterRegistry.registerMainAvroSchemaGauges()
-    val kafkaKonfigurasjon = lastKonfigurasjon<KafkaKonfigurasjon>(kafkaKonfigurasjonsfil)
+    val kafkaKonfigurasjon = loadNaisOrLocalConfiguration<KafkaKonfigurasjon>(kafkaKonfigurasjonsfil)
     streamLogger.info("Starter applikasjon: $moduleInfo")
     registerTopicInfoGauge(prometheusMeterRegistry, kafkaKonfigurasjon)
     val tilstandSerde: Serde<TilstandV1> = TilstandSerde()
@@ -62,7 +63,7 @@ fun main() {
         innTopic = kafkaKonfigurasjon.streamKonfigurasjon.eventlogTopic,
         periodeTopic = kafkaKonfigurasjon.streamKonfigurasjon.periodeTopic,
         opplysningerOmArbeidssoekerTopic = kafkaKonfigurasjon.streamKonfigurasjon.opplysningerOmArbeidssoekerTopic,
-        applicationLogicConfig = lastKonfigurasjon(applicationLogicConfigFile)
+        applicationLogicConfig = loadNaisOrLocalConfiguration(applicationLogicConfigFile)
     )
 
     val kafkaStreams = KafkaStreams(topology, StreamsConfig(kafkaKonfigurasjon.properties))

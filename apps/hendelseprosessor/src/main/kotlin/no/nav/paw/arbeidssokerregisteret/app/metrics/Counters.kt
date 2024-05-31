@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.app.metrics
 
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 
 context(PrometheusMeterRegistry)
 fun eventReceived(topic: String, messageType: String, action: String) {

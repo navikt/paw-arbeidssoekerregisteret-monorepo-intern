@@ -14,6 +14,7 @@ include(
     "lib:kafka-streams",
     "lib:kafka-key-generator-client",
     "apps:api-start-stopp-perioder",
+    "apps:hendelseprosessor",
     "apps:utgang-formidlingsgruppe",
     "domain:rapportering-interne-hendelser",
     "domain:rapporteringsansvar-schema",

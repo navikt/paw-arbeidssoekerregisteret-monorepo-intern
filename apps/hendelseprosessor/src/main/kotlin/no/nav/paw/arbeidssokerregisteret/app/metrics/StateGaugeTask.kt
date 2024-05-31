@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.app.metrics
 
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandV1
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.errors.InvalidStateStoreException

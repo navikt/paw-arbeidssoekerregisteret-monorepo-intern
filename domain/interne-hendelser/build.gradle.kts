@@ -4,7 +4,10 @@ plugins {
 }
 
 dependencies {
-
+    compileOnly(jackson.datatypeJsr310)
+    compileOnly(jackson.kotlin)
+    compileOnly(jackson.core)
+    compileOnly(orgApacheKafka.kafkaClients)
 }
 
 val jvmMajorVersion: String by project

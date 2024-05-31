@@ -7,7 +7,7 @@ on:
     paths:
       - 'apps/hendelseprosessor/**'
       - 'lib/kafka-key-generator-client/**'
-      - '.github/workflows/ahendelseprosessor.yaml'
+      - '.github/workflows/hendelseprosessor.yaml'
       - 'gradle/**'
       - 'settings.gradle.kts'
       - 'gradle.properties'
@@ -53,7 +53,6 @@ jobs:
         with:
           image_ref: ${{ env.IMAGE }}@${{ env.DIGEST }}
   deploy-dev:
-    if: false
     name: Deploy to dev-gcp
     needs: build
     runs-on: ubuntu-latest
@@ -67,8 +66,7 @@ jobs:
           VAR: image=${{ needs.build.outputs.image }},kafka=nav-dev
 
   deploy-prod:
-    if: false
-#    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     name: Deploy to prod-gcp
     needs: [build, deploy-dev]
     runs-on: ubuntu-latest

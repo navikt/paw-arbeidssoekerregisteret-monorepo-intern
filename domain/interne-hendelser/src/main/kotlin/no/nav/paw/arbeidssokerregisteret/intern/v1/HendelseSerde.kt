@@ -1,4 +1,4 @@
-package no.nav.paw.arbeidssokerregisteret.app
+package no.nav.paw.arbeidssokerregisteret.intern.v1
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -32,7 +32,7 @@ class HendelseDeserializer(private val objectMapper: ObjectMapper): Deserializer
 
     override fun deserialize(topic: String?, data: ByteArray?): Hendelse? {
         if (data == null) return null
-        return deserialize(objectMapper, data)
+        return no.nav.paw.arbeidssokerregisteret.intern.v1.deserialize(objectMapper, data)
     }
 }
 
