@@ -1,5 +1,4 @@
-name: Build, push, and deploy
-
+name: Api Start stopp
 on:
     push:
         branches:
