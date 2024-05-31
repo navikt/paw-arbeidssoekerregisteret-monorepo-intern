@@ -12,10 +12,10 @@ import no.nav.paw.arbeidssokerregisteret.app.metrics.*
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandV1
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandSerde
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.arbeidssokerregisteret.profilering.TopicOperation
+import no.nav.paw.arbeidssokerregisteret.app.metrics.TopicOperation
 import no.nav.paw.arbeidssokerregisteret.app.metrics.registerMainAvroSchemaGauges
-import no.nav.paw.arbeidssokerregisteret.profilering.registerTopicVersionGauge
-import no.nav.paw.arbeidssokerregisteret.profilering.topicInfo
+import no.nav.paw.arbeidssokerregisteret.app.metrics.registerTopicVersionGauge
+import no.nav.paw.arbeidssokerregisteret.app.metrics.topicInfo
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes

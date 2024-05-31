@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":domain:main-avro-schema"))
     implementation(project(":domain:interne-hendelser"))
     implementation(project(":domain:arbeidssoekerregisteret-kotlin"))
+    implementation(arbeidssoekerRegisteret.mainAvroSchema) //Sørger for at vi får med schema manifestet på classpath
 
     implementation(otel.annotations)
     implementation(jackson.datatypeJsr310)

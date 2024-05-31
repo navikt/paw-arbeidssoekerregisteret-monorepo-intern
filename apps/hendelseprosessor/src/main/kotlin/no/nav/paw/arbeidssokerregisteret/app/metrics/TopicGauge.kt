@@ -1,4 +1,4 @@
-package no.nav.paw.arbeidssokerregisteret.profilering
+package no.nav.paw.arbeidssokerregisteret.app.metrics
 
 import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.Tags
