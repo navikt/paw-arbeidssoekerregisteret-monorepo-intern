@@ -2,9 +2,7 @@ package no.nav.paw.arbeidssoekerregisteret.app.vo
 
 import no.nav.paw.arbeidssoekerregisteret.app.ApplicationInfo
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.*
 import java.time.Instant
 import java.util.*
 
@@ -31,6 +29,10 @@ fun avsluttet(topic: String, periodeId: UUID, hendelse: GyldigHendelse): Avslutt
             utfoertAv = Bruker(
                 type = BrukerType.SYSTEM,
                 id = ApplicationInfo.id
+            ),
+            tidspunktFraKilde = TidspunktFraKilde(
+                tidspunkt = hendelse.formidlingsgruppeEndret,
+                avviksType = AvviksType.FORSINKELSE
             )
         ),
         periodeId = periodeId

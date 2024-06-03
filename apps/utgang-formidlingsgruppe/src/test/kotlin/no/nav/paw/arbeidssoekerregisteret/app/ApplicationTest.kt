@@ -2,6 +2,7 @@ package no.nav.paw.arbeidssoekerregisteret.app
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.comparables.shouldBeLessThan
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import no.nav.paw.arbeidssoekerregisteret.app.vo.*
@@ -9,10 +10,12 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Bruker
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType
 import java.time.*
 import java.time.Duration.between
 import java.time.Duration.ofSeconds
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.*
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as ApiMetadata
 
@@ -113,14 +116,19 @@ class ApplicationTest : FreeSpec({
                 hendelseloggTopic.isEmpty shouldBe true
             }
             "Når vi mottar ISERV datert etter periode start, med 'op_type = U' genereres en 'stoppet' melding" {
+                val formidlingsGruppeEndret = Instant.now().plus(1.dager)
+                    .truncatedTo(ChronoUnit.SECONDS)
+                val formidlingsGruppeHendelse = formilingsgruppeHendelse(
+                    foedselsnummer = periodeStart.identitetsnummer,
+                    formidlingsgruppe = iserv,
+                    formidlingsgruppeEndret = formidlingsGruppeEndret
+                        .atZone(ZoneId.of("Europe/Oslo"))
+                        .toLocalDateTime(),
+                    opType = "U"
+                )
                 formidlingsgruppeTopic.pipeInput(
                     "Some random key",
-                    formilingsgruppeHendelse(
-                        foedselsnummer = periodeStart.identitetsnummer,
-                        formidlingsgruppe = iserv,
-                        formidlingsgruppeEndret = localNow.plus(1.dager),
-                        opType = "U"
-                    )
+                    formidlingsGruppeHendelse
                 )
                 hendelseloggTopic.isEmpty shouldBe false
                 val kv = hendelseloggTopic.readKeyValue()
@@ -130,6 +138,10 @@ class ApplicationTest : FreeSpec({
                 value.periodeId shouldBe periodeStart.id
                 kv.value.id shouldBe kafkaKeysClient(periodeStart.identitetsnummer)?.id
                 between(kv.value.metadata.tidspunkt, Instant.now()).abs() shouldBeLessThan ofSeconds(60)
+                val fraKilde = value.metadata.tidspunktFraKilde
+                fraKilde.shouldNotBeNull()
+                fraKilde.tidspunkt shouldBe formidlingsGruppeEndret
+                fraKilde.avviksType shouldBe AvviksType.FORSINKELSE
             }
             "Når perioden stoppes slettes den fra state store" {
                 periodeTopic.pipeInput(
