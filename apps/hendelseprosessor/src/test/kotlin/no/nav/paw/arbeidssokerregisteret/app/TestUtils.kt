@@ -3,8 +3,10 @@ package no.nav.paw.arbeidssokerregisteret.app
 import io.confluent.kafka.schemaregistry.testutil.MockSchemaRegistry
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+import io.kotest.assertions.fail
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvviksType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
@@ -12,6 +14,7 @@ import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandSerde
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType.*
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata as InternMetadata
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serde
@@ -46,10 +49,10 @@ fun verifiserPeriodeOppMotStartetOgStoppetHendelser(
     mottattRecord.key shouldBe forventetKafkaKey
     mottattRecord.value.id shouldBe startet.hendelseId
     mottattRecord.value.identitetsnummer shouldBe startet.identitetsnummer
-    mottattRecord.value.startet.tidspunkt shouldBe startet.metadata.tidspunkt.truncatedTo(ChronoUnit.MILLIS)
-    mottattRecord.value.startet.aarsak shouldBe startet.metadata.aarsak
-    mottattRecord.value.startet.utfoertAv.type.name shouldBe startet.metadata.utfoertAv.type.name
-    mottattRecord.value.startet.utfoertAv.id shouldBe startet.metadata.utfoertAv.id
+    verifiserApiMetadataMotInternMetadata(
+        forventedeMetadataVerdier = startet.metadata,
+        mottattApiMetadata = mottattRecord.value.startet
+    )
     if (avsluttet == null) {
         mottattRecord.value.avsluttet shouldBe null
     } else {
@@ -67,6 +70,12 @@ fun verifiserApiMetadataMotInternMetadata(
     mottattApiMetadata.aarsak shouldBe forventedeMetadataVerdier.aarsak
     mottattApiMetadata.utfoertAv.type.name shouldBe forventedeMetadataVerdier.utfoertAv.type.name
     mottattApiMetadata.utfoertAv.id shouldBe forventedeMetadataVerdier.utfoertAv.id
+    mottattApiMetadata.tidspunktFraKilde?.tidspunkt shouldBe forventedeMetadataVerdier.tidspunktFraKilde?.tidspunkt
+    when (forventedeMetadataVerdier.tidspunktFraKilde?.avviksType) {
+        FORSINKELSE -> mottattApiMetadata.tidspunktFraKilde?.avviksType shouldBe AvviksType.FORSINKELSE
+        RETTING -> mottattApiMetadata.tidspunktFraKilde?.avviksType shouldBe AvviksType.RETTING
+        null -> mottattApiMetadata.tidspunktFraKilde shouldBe null
+    }
 }
 
 fun <T : SpecificRecord> opprettSerde(): Serde<T> {

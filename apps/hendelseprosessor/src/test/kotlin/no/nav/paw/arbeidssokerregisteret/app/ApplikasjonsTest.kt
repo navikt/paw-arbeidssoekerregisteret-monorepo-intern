@@ -71,7 +71,11 @@ class ApplikasjonsTest : FreeSpec({
                     id = "test"
                 ),
                 kilde = "unit-test",
-                aarsak = "tester"
+                aarsak = "tester",
+                tidspunktFraKilde = TidspunktFraKilde(
+                    Instant.parse("2024-03-07T15:41:01Z"),
+                    AvviksType.RETTING
+                )
             )
         )
         "Når vi mottater en avvist hendelse skjer det ikke noe" {
