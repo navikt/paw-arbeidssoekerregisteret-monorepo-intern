@@ -125,7 +125,9 @@ class ApplicationTest : FreeSpec({
                 hendelseloggTopic.isEmpty shouldBe false
                 val kv = hendelseloggTopic.readKeyValue()
                 kv.key shouldBe 1L
-                kv.value.shouldBeInstanceOf<Avsluttet>()
+                val value = kv.value
+                value.shouldBeInstanceOf<Avsluttet>()
+                value.periodeId shouldBe periodeStart.id
                 kv.value.id shouldBe kafkaKeysClient(periodeStart.identitetsnummer)?.id
                 between(kv.value.metadata.tidspunkt, Instant.now()).abs() shouldBeLessThan ofSeconds(60)
             }

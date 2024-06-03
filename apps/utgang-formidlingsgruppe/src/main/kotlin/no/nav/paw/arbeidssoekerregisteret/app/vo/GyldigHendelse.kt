@@ -19,7 +19,7 @@ data class Formidlingsgruppe(val kode: String)
 
 data class Foedselsnummer(val foedselsnummer: String)
 
-fun avsluttet(topic: String, hendelse: GyldigHendelse): Avsluttet =
+fun avsluttet(topic: String, periodeId: UUID, hendelse: GyldigHendelse): Avsluttet =
     Avsluttet(
         hendelseId = UUID.randomUUID(),
         id = hendelse.id,
@@ -32,6 +32,7 @@ fun avsluttet(topic: String, hendelse: GyldigHendelse): Avsluttet =
                 type = BrukerType.SYSTEM,
                 id = ApplicationInfo.id
             )
-        )
+        ),
+        periodeId = periodeId
     )
 

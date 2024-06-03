@@ -82,7 +82,9 @@ fun StreamsBuilder.appTopology(
             stateStoreName,
             prometheusRegistry
         )
-        .mapValues { _, hendelse -> avsluttet(formidlingsgrupperTopic, hendelse) }
+        .mapValues { _, periodeIdOgHendelse ->
+            avsluttet(formidlingsgrupperTopic, periodeIdOgHendelse.first, periodeIdOgHendelse.second)
+        }
         .genericProcess("setRecordTimestamp") { record ->
             forward(record.withTimestamp(record.value().metadata.tidspunkt.toEpochMilli()))
         }.to(hendelseloggTopic, Produced.with(Serdes.Long(), AvsluttetSerde()))

@@ -12,12 +12,13 @@ import org.apache.kafka.streams.processor.api.Record
 import org.apache.kafka.streams.state.KeyValueStore
 import java.time.Duration
 import java.time.Duration.*
+import java.util.*
 
 
 fun KStream<Long, GyldigHendelse>.filterePaaAktivePeriode(
     stateStoreName: String,
     prometheusMeterRegistry: PrometheusMeterRegistry
-): KStream<Long, GyldigHendelse> {
+): KStream<Long, Pair<UUID, GyldigHendelse>> {
     val processor = {
         FormidlingsgruppeFilter(stateStoreName, prometheusMeterRegistry)
     }
@@ -27,11 +28,11 @@ fun KStream<Long, GyldigHendelse>.filterePaaAktivePeriode(
 class FormidlingsgruppeFilter(
     private val stateStoreName: String,
     private val prometheusMeterRegistry: PrometheusMeterRegistry
-) : Processor<Long, GyldigHendelse, Long, GyldigHendelse> {
+) : Processor<Long, GyldigHendelse, Long, Pair<UUID, GyldigHendelse>> {
     private var stateStore: KeyValueStore<Long, Periode>? = null
-    private var context: ProcessorContext<Long, GyldigHendelse>? = null
+    private var context: ProcessorContext<Long, Pair<UUID, GyldigHendelse>>? = null
 
-    override fun init(context: ProcessorContext<Long, GyldigHendelse>?) {
+    override fun init(context: ProcessorContext<Long, Pair<UUID, GyldigHendelse>>?) {
         super.init(context)
         this.context = context
         stateStore = context?.getStateStore(stateStoreName)
@@ -42,7 +43,8 @@ class FormidlingsgruppeFilter(
         val store = requireNotNull(stateStore) { "State store is not initialized" }
         val ctx = requireNotNull(context) { "Context is not initialized" }
         val hendelse = record.value()
-        val periodeStartTime = store.get(hendelse.id)?.startet?.tidspunkt
+        val periode = store.get(hendelse.id)
+        val periodeStartTime = periode?.startet?.tidspunkt
         val resultat = if (periodeStartTime == null) {
             FilterResultat.INGEN_PERIODE
         } else {
@@ -59,7 +61,7 @@ class FormidlingsgruppeFilter(
         }
         prometheusMeterRegistry.tellFilterResultat(resultat)
         if (resultat == FilterResultat.INKLUDER) {
-            ctx.forward(record)
+            ctx.forward(record.withValue(periode.id to record.value()))
         }
     }
 
