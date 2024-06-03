@@ -7,7 +7,8 @@ data class Avsluttet(
     override val hendelseId: UUID,
     override val id: Long,
     override val identitetsnummer: String,
-    override val metadata: Metadata
+    override val metadata: Metadata,
+    val periodeId: UUID? = null
 ): Hendelse {
     override val hendelseType: String = avsluttetHendelseType
 }

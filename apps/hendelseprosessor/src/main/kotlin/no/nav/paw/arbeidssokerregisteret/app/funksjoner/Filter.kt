@@ -10,6 +10,7 @@ import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgHendelse
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
+import java.util.*
 
 
 @WithSpan(
@@ -41,3 +42,31 @@ fun ignorerDuplikatStartOgStopp(
 }
 
 inline fun <reified A : StreamHendelse> StreamHendelse.erIkke(): Boolean = this !is A
+
+@WithSpan(
+    value = "ignorerAvsluttetForAnnenPeriode",
+    kind = SpanKind.INTERNAL
+)
+fun ignorerAvsluttetForAnnenPeriode(
+    @Suppress("UNUSED_PARAMETER") recordKey: Long,
+    tilstandOgHendelse: InternTilstandOgHendelse
+): Boolean {
+    val (_, tilstand, hendelse) = tilstandOgHendelse
+    if (hendelse !is Avsluttet) return true
+    val gjeldenePeriodeId = tilstand?.gjeldenePeriode?.id
+    return (((gjeldenePeriodeId == null) || (hendelse.periodeId == null) || (gjeldenePeriodeId == hendelse.periodeId)))
+        .also { include ->
+            Span.current().setAllAttributes(
+                Attributes.of(
+                    AttributeKey.stringKey("paw.arbeidssoekerregisteret.hendelse.type"),
+                    hendelse.hendelseType,
+                    AttributeKey.stringKey("paw.arbeidssoekerregisteret.hendelse.periodeIdErSatt"),
+                    (hendelse as? Avsluttet)?.let { it.periodeId != null }?.toString() ?: "NA",
+                    AttributeKey.stringKey("paw.arbeidssoekerregisteret.hendelse.inkludert"),
+                    include.toString(),
+                    AttributeKey.stringKey("paw.arbeidssoekerregisteret.tilstand.periodeIdErSatt"),
+                    (tilstandOgHendelse.tilstand?.gjeldenePeriode?.id != null).toString()
+                )
+            )
+        }
+}

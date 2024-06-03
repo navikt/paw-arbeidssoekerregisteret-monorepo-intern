@@ -94,7 +94,6 @@ class ApplikasjonsTest : FreeSpec({
             periodeTopic.isEmpty shouldBe true
             opplysningerOmArbeidssoekerTopic.isEmpty shouldBe true
         }
-        var periodeId: UUID? = null
         "Når vi mottar en 'startet' hendelse etter at vinduet har passert og ikke har noen tidligere tilstand skal vi opprette en ny periode" {
             eventlogTopic.pipeInput(key, startet)
             val periode = periodeTopic.readKeyValue()
@@ -105,7 +104,6 @@ class ApplikasjonsTest : FreeSpec({
                 avsluttet = null,
                 mottattRecord = periode
             )
-            periodeId = periode.value.id
             opplysningerOmArbeidssoekerTopic.isEmpty shouldBe true
         }
 
@@ -133,7 +131,7 @@ class ApplikasjonsTest : FreeSpec({
             val situasjon = opplysningerOmArbeidssoekerTopic.readKeyValue()
             verifiserApiMetadataMotInternMetadata(situsjonMottat.metadata, situasjon.value.sendtInnAv)
             situasjon.key shouldBe key
-            situasjon.value.periodeId shouldBe periodeId
+            situasjon.value.periodeId shouldBe startet.hendelseId
             situasjon.value.utdanning.bestaatt shouldBe ApiJa
             situasjon.value.utdanning.godkjent shouldBe ApiNei
             situasjon.value.utdanning.nus shouldBe "7"
@@ -148,6 +146,24 @@ class ApplikasjonsTest : FreeSpec({
                     detaljer?.get(STILLING_STYRK08) shouldBe "2320"
                 }
             }
+        }
+
+        "Når vi mottat en 'stoppet' hendelse for en person med en aktiv periode, men id i avsluttet er forskjellig fra periodeId skal det ikke skje noe" {
+            val stoppet = Avsluttet(
+                hendelseId = UUID.randomUUID(),
+                id = 1L,
+                identitetsnummer = identitetnummer,
+                metadata = Metadata(
+                    Instant.now(),
+                    Bruker(BrukerType.SYSTEM, "test"),
+                    "unit-test",
+                    "tester"
+                ),
+                periodeId = UUID.randomUUID()
+            )
+            eventlogTopic.pipeInput(key, stoppet)
+            opplysningerOmArbeidssoekerTopic.isEmpty shouldBe true
+            periodeTopic.isEmpty shouldBe true
         }
 
         "Når vi mottat en 'stoppet' hendelse for en person med en aktiv periode skal vi avslutte perioden" {
@@ -214,9 +230,10 @@ class ApplikasjonsTest : FreeSpec({
             opplysningerOmArbeidssoekerTopic.isEmpty shouldBe true
         }
 
+        val periodeId2: UUID = UUID.randomUUID()
         "Når vi mottar en 'startet' innenfor tidsvinduet for opplysninger og forrige periode er avsluttet skal vi opprette en ny periode og sende ut opplysningene" {
             val startet2 = Startet(
-                hendelseId = UUID.randomUUID(),
+                hendelseId = periodeId2,
                 id = 1L,
                 identitetsnummer = identitetnummer,
                 metadata = Metadata(
@@ -234,13 +251,12 @@ class ApplikasjonsTest : FreeSpec({
                 avsluttet = null,
                 mottattRecord = periode
             )
-            periode.value.id shouldNotBe periodeId
-            periodeId = periode.value.id
+            periode.value.id shouldBe periodeId2
             opplysningerOmArbeidssoekerTopic.isEmpty shouldBe false
             val opplysninger = opplysningerOmArbeidssoekerTopic.readKeyValue()
             verifiserApiMetadataMotInternMetadata(situsjonMottat.metadata, opplysninger.value.sendtInnAv)
             opplysninger.key shouldBe key
-            opplysninger.value.periodeId shouldBe periodeId
+            opplysninger.value.periodeId shouldBe periodeId2
             opplysninger.value.utdanning.bestaatt shouldBe ApiJa
             opplysninger.value.utdanning.godkjent shouldBe ApiNei
             opplysninger.value.utdanning.nus shouldBe "4"
@@ -256,6 +272,30 @@ class ApplikasjonsTest : FreeSpec({
                 }
             }
 
+        }
+
+        "Når vi avsluttet periode med riktig periodeId blir den avsluttet" {
+            val stoppet = Avsluttet(
+                hendelseId = UUID.randomUUID(),
+                id = 1L,
+                identitetsnummer = identitetnummer,
+                metadata = Metadata(
+                    Instant.now(),
+                    Bruker(BrukerType.SYSTEM, "test"),
+                    "unit-test",
+                    "tester"
+                ),
+                periodeId = periodeId2
+            )
+            eventlogTopic.pipeInput(key, stoppet)
+            opplysningerOmArbeidssoekerTopic.isEmpty shouldBe true
+            periodeTopic.isEmpty shouldBe false
+            val avsluttetPeriode = periodeTopic.readKeyValue()
+            avsluttetPeriode.value.id shouldBe periodeId2
+            verifiserApiMetadataMotInternMetadata(
+                forventedeMetadataVerdier = stoppet.metadata,
+                mottattApiMetadata = avsluttetPeriode.value.avsluttet
+            )
         }
 
     }

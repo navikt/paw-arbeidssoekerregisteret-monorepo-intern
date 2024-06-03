@@ -3,6 +3,7 @@ package no.nav.paw.arbeidssokerregisteret.app
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.app.config.ApplicationLogicConfig
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.genererNyInternTilstandOgNyeApiTilstander
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.ignorerAvsluttetForAnnenPeriode
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.ignorerDuplikatStartOgStopp
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors.MeteredOutboundTopicNameExtractor
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors.lagreInternTilstand
@@ -34,6 +35,7 @@ fun topology(
             .peek { _, hendelse -> tellHendelse(innTopic, hendelse) }
             .lastInternTilstand(dbNavn)
             .filter(::ignorerDuplikatStartOgStopp)
+            .filter(::ignorerAvsluttetForAnnenPeriode)
             .mapValues { internTilstandOgHendelse ->
                 genererNyInternTilstandOgNyeApiTilstander(
                     applicationLogicConfig,
