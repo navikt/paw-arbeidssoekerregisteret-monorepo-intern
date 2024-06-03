@@ -8,7 +8,6 @@ opplysningerOmArbeidssoekerTopic = "paw.opplysninger-om-arbeidssoeker-v1"
 [serverKonfigurasjon]
 autentisering = "SSL"
 kafkaBrokers = "${KAFKA_BROKERS}"
-kafkaSchemaRegistry = "${KAFKA_SCHEMA_REGISTRY}"
 keystorePath = "${KAFKA_KEYSTORE_PATH}"
 credstorePassword = "${KAFKA_CREDSTORE_PASSWORD}"
 truststorePath = "${KAFKA_TRUSTSTORE_PATH}"
