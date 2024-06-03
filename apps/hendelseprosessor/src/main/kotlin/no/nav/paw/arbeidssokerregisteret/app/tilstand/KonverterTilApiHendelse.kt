@@ -16,6 +16,8 @@ import no.nav.paw.arbeidssokerregisteret.api.v2.Annet as ApiAnnet
 import no.nav.paw.arbeidssokerregisteret.api.v1.BeskrivelseMedDetaljer as ApiBeskrivelseMedDetaljer
 
 import java.util.*
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvviksType as ApiAvviksType
+import no.nav.paw.arbeidssokerregisteret.api.v1.TidspunktFraKilde as ApiTidspunktFraKilde
 
 fun Bruker.api(): ApiBruker = ApiBruker(type.api(), id)
 
@@ -47,8 +49,19 @@ fun Metadata.api(): ApiMetadata =
         tidspunkt,
         utfoertAv.api(),
         kilde,
-        aarsak
+        aarsak,
+        tidspunktFraKilde?.api()
     )
+
+fun TidspunktFraKilde.api(): ApiTidspunktFraKilde =
+    ApiTidspunktFraKilde(
+        tidspunkt,
+        when (avviksType) {
+            AvviksType.FORSINKELSE -> ApiAvviksType.FORSINKELSE
+            AvviksType.RETTING -> ApiAvviksType.RETTING
+        }
+    )
+
 fun OpplysningerOmArbeidssoeker.api(periodeId: UUID, metadata: Metadata): ApiOpplysningerOmArbeidssoeker =
     ApiOpplysningerOmArbeidssoeker(
         id,

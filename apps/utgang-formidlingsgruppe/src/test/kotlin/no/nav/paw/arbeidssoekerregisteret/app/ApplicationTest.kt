@@ -49,9 +49,11 @@ class ApplicationTest : FreeSpec({
                     instantNow.minus(10.dager),
                     bruker,
                     "junit",
-                    "testing"
+                    "testing",
+                    null
                 ),
-                null
+                null,
+
             )
             "Når vi mottar periode start skjer det ingenting" {
                 periodeTopic.pipeInput(1L, periodeStart)
@@ -138,7 +140,8 @@ class ApplicationTest : FreeSpec({
                             periodeStart.startet.tidspunkt + 1.dager,
                             bruker,
                             "junit",
-                            "iserv"
+                            "iserv",
+                            null
                         )
                     )
                 )

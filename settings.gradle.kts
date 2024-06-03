@@ -51,7 +51,7 @@ dependencyResolutionManagement {
         // PAW greier
         val pawPdlClientVersion = "24.05.13.33-1"
         val pawAaregClientVersion = "24.01.12.16-1"
-        val arbeidssokerregisteretVersion = "1.9249834574.45-1"
+        val arbeidssokerregisteretVersion = "1.9348086045.48-1"
 
         // NAV
         val noNavCommonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
