@@ -6,5 +6,6 @@ data class Metadata(
     val tidspunkt: Instant,
     val utfoertAv: Bruker,
     val kilde: String,
-    val aarsak: String
+    val aarsak: String,
+    val tidspunktFraKilde: TidspunktFraKilde? = null
 )
