@@ -11,9 +11,9 @@ val jvmVersion = JavaVersion.VERSION_21
 val image: String? by project
 
 dependencies {
-    implementation(project(":domain:main-avro-schema"))
     implementation(project(":domain:interne-hendelser"))
     implementation(project(":domain:arbeidssoekerregisteret-kotlin"))
+    implementation(project(":domain:main-avro-schema"))
 
     implementation(otel.annotations)
     implementation(jackson.datatypeJsr310)

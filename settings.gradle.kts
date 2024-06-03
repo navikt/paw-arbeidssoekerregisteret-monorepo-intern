@@ -51,8 +51,7 @@ dependencyResolutionManagement {
         // PAW greier
         val pawPdlClientVersion = "24.05.13.33-1"
         val pawAaregClientVersion = "24.01.12.16-1"
-        val arbeidssokerregisteretVersion = "1.8062260419.22-1"
-        val arbeidssokerregisteretInternalVersion = "24.04.19.176-1"
+        val arbeidssokerregisteretVersion = "1.9249834574.45-1"
 
         // NAV
         val noNavCommonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
@@ -160,16 +159,10 @@ dependencyResolutionManagement {
             library("pawAaregClient", "no.nav.paw", "aareg-client").version(pawAaregClientVersion)
         }
         create("arbeidssoekerRegisteret") {
-            library(
-                "apiKotlin",
-                "no.nav.paw.arbeidssokerregisteret.api.schema",
-                "arbeidssoekerregisteret-kotlin"
-            ).version(arbeidssokerregisteretVersion)
             library("mainAvroSchema", "no.nav.paw.arbeidssokerregisteret.api", "main-avro-schema").version(
                 arbeidssokerregisteretVersion
             )
             version("arbeidssokerregisteretVersion", arbeidssokerregisteretVersion)
-            version("arbeidssokerregisteretInternalVersion", arbeidssokerregisteretInternalVersion)
         }
         create("orgApacheKafka") {
             library("kafkaClients", "org.apache.kafka", "kafka-clients").version(orgApacheKafkaVersion)

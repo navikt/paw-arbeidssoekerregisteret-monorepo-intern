@@ -18,7 +18,7 @@ val arbeidssokerregisteretVersion = "24.03.25.160-1"
 val image: String? by project
 
 dependencies {
-    implementation("no.nav.paw.arbeidssokerregisteret.api.schema:arbeidssoekerregisteret-kotlin:$arbeidssokerregisteretVersion")
+    implementation(project(":domain:arbeidssoekerregisteret-kotlin"))
     implementation(project(":domain:interne-hendelser"))
     implementation(ktorServer.bundles.withNettyAndMicrometer)
     implementation(micrometer.registryPrometheus)

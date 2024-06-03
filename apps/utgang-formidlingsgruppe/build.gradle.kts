@@ -18,8 +18,8 @@ val schema by configurations.creating {
 dependencies {
     implementation(project(":lib:kafka-key-generator-client"))
     implementation(project(":domain:main-avro-schema"))
-    implementation("no.nav.paw.arbeidssokerregisteret.api.schema:arbeidssoekerregisteret-kotlin:${arbeidssoekerRegisteret.versions.arbeidssokerregisteretInternalVersion.get()}")
-    implementation("no.nav.paw.arbeidssokerregisteret.internt.schema:interne-eventer:${arbeidssoekerRegisteret.versions.arbeidssokerregisteretInternalVersion.get()}")
+    implementation(project(":domain:interne-hendelser"))
+    implementation(project(":domain:arbeidssoekerregisteret-kotlin"))
 
     implementation(ktorServer.netty)
     implementation(ktorServer.core)
