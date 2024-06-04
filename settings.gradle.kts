@@ -16,6 +16,7 @@ include(
     "apps:api-start-stopp-perioder",
     "apps:hendelseprosessor",
     "apps:utgang-formidlingsgruppe",
+    "apps:hendelselogg-backup",
     "domain:rapportering-interne-hendelser",
     "domain:rapporteringsansvar-schema",
     "domain:rapporteringsmelding-schema",
