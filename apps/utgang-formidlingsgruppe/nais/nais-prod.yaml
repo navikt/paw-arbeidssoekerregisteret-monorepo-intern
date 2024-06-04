@@ -20,7 +20,7 @@ spec:
     - name: HENDELSELOGG_TOPIC
       value: "paw.arbeidssoker-hendelseslogg-v1-test"
     - name: APPLICATION_STREAM_VERSION
-      value: "v6-test"
+      value: "v6"
   liveness:
     path: /isAlive
     initialDelay: 10
