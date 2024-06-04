@@ -18,7 +18,7 @@ val reglerForInngangIPrioritertRekkefolge: List<Regel<EndeligResultat>> = listOf
         id = RegelId.FORHAANDSGODKJENT_AV_ANSATT,
         vedTreff = ::OK
     ),
-    "Er bosatt i Norge i hendhold Folkeregisterloven, men er under 18 år"(
+    "Er bosatt i Norge i henhold Folkeregisterloven, men er under 18 år"(
         Opplysning.ER_UNDER_18_AAR,
         Opplysning.BOSATT_ETTER_FREG_LOVEN,
         id = RegelId.UNDER_18_AAR,
@@ -35,7 +35,7 @@ val reglerForInngangIPrioritertRekkefolge: List<Regel<EndeligResultat>> = listOf
         id = RegelId.SAVNET,
         vedTreff = ::Avvist
     ),
-    "Er over 18 år, er bosatt i Norge i hendhold Folkeregisterloven"(
+    "Er over 18 år, er bosatt i Norge i henhold Folkeregisterloven"(
         Opplysning.ER_OVER_18_AAR,
         Opplysning.BOSATT_ETTER_FREG_LOVEN,
         id = RegelId.OVER_18_AAR_OG_BOSATT_ETTER_FREG_LOVEN,

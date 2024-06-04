@@ -19,7 +19,7 @@ enum class Opplysning(val beskrivelse: String) {
     HAR_NORSK_ADRESSE("Personen start/stopp av periode utføres på har norsk adresse"),
     HAR_UTENLANDSK_ADRESSE("Personen start/stopp av periode utføres på har utenlandsk adresse"),
     INGEN_ADRESSE_FUNNET("Personen start/stopp av periode utføres på har ingen adresse i våre systemer"),
-    BOSATT_ETTER_FREG_LOVEN("Personen start/stopp av periode utføres på er bosatt i Norge i hendhold til Folkeregisterloven"),
+    BOSATT_ETTER_FREG_LOVEN("Personen start/stopp av periode utføres på er bosatt i Norge i henhold til Folkeregisterloven"),
     DNUMMER("Personen start/stopp av periode utføres på har D-nummer"),
     UKJENT_FORENKLET_FREG_STATUS("Personen start/stopp av periode utføres på har ukjent forenklet folkeregisterstatus"),
     HAR_GYLDIG_OPPHOLDSTILLATELSE("Personen start/stopp av periode utføres på har gyldig oppholdstillatelse"),
