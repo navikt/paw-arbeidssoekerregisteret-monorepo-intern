@@ -68,7 +68,7 @@ jobs:
   deploy-prod:
     if: github.ref == 'refs/heads/main'
     name: Deploy to prod-gcp - API Start Stopp
-    needs: [build, dev]
+    needs: [build, deploy-dev]
     runs-on: ubuntu-latest
     permissions:
       contents: read
