@@ -48,3 +48,4 @@ spec:
         rules:
           - application: paw-migrering-veilarb-til-nytt-register
           - application: paw-arbeidssoekerregisteret-utgang-formidlingsgruppe
+          - application: paw-microfrontend-toggler
