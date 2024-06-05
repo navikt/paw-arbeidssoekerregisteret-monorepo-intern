@@ -66,8 +66,9 @@ jobs:
           RESOURCE: apps/api-start-stopp-perioder/nais/nais-dev.yaml
           VAR: image=${{ needs.build.outputs.image }}
   deploy-prod:
+    if: github.ref == 'refs/heads/main'
     name: Deploy to prod-gcp - API Start Stopp
-    needs: build
+    needs: [build, dev]
     runs-on: ubuntu-latest
     permissions:
       contents: read
