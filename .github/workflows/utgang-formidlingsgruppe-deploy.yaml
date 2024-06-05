@@ -72,6 +72,7 @@ jobs:
           RESOURCE: apps/utgang-formidlingsgruppe/nais/nais-dev.yaml
           VAR: image=${{ needs.build.outputs.image }},kafka=nav-dev
   deploy-prod:
+    if: github.ref == 'refs/heads/main'
     name: Deploy to prod-gcp
     permissions:
       contents: read
