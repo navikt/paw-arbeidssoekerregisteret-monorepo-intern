@@ -7,16 +7,17 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 fun utflyttingFakta(
-    inn: InnflyttingTilNorge?,
-    ut: UtflyttingFraNorge?
+    inn: List<InnflyttingTilNorge>,
+    ut: List<UtflyttingFraNorge>
 ): Opplysning =
     when {
-        inn == null && ut == null -> Opplysning.INGEN_FLYTTE_INFORMASJON
-        inn != null && ut != null -> {
-            val flyttinger = listOf(
-                Flytting(inn = true, dato = inn.folkeregistermetadata?.ajourholdstidspunkt?.let(LocalDateTime::parse)?.toLocalDate()),
-                Flytting(inn = false, dato = ut.utflyttingsdato?.let(LocalDate::parse))
-            )
+        inn.isEmpty() && ut.isEmpty() -> Opplysning.INGEN_FLYTTE_INFORMASJON
+        inn.isNotEmpty() && ut.isNotEmpty() -> {
+            val flyttinger = inn.map {
+                flyttingInn -> Flytting(inn = true, dato = flyttingInn.folkeregistermetadata?.ajourholdstidspunkt?.let(LocalDateTime::parse)?.toLocalDate())
+            } + ut.map { utflytting ->
+                Flytting(inn = false, dato = utflytting.utflyttingsdato?.let(LocalDate::parse))
+            }
             when {
                 flyttinger.distinctBy { it.dato }.size < 2 -> Opplysning.IKKE_MULIG_AA_IDENTIFISERE_SISTE_FLYTTING
                 flyttinger.any { it.dato == null } -> Opplysning.IKKE_MULIG_AA_IDENTIFISERE_SISTE_FLYTTING
@@ -27,7 +28,7 @@ fun utflyttingFakta(
                 }
             }
         }
-        inn != null -> Opplysning.SISTE_FLYTTING_VAR_INN_TIL_NORGE
+        inn.isNotEmpty() -> Opplysning.SISTE_FLYTTING_VAR_INN_TIL_NORGE
         else -> Opplysning.SISTE_FLYTTING_VAR_UT_AV_NORGE
     }
 
