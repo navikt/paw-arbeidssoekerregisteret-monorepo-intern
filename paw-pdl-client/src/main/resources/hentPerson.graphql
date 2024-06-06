@@ -29,13 +29,13 @@ query($ident: ID!, $historisk: Boolean) {
                 landkode
             }
         }
-        innflyttingTilNorge {
+        innflyttingTilNorge(historikk: $historisk) {
             folkeregistermetadata {
                 gyldighetstidspunkt
                 ajourholdstidspunkt
             }
         }
-        utflyttingFraNorge {
+        utflyttingFraNorge(historikk: $historisk) {
             utflyttingsdato
             folkeregistermetadata {
                 gyldighetstidspunkt
