@@ -18,7 +18,7 @@ fun <A: Hendelse> Transaction.writeRecord(record: ConsumerRecord<Long, A>) {
         it[offset] = record.offset()
         it[recordKey] = record.key()
         it[arbeidssoekerId] = record.value().id
-        it[data] = serialize(null, record.value())
+        it[data] = serializeToString(record.value())
     }
 }
 
@@ -29,14 +29,12 @@ fun Transaction.readRecord(partition: Int, offset: Long): StoredData? =
         .where { (HendelseTable.partition eq partition) and (HendelseTable.offset eq offset) }
         .singleOrNull()
         ?.let {
-            deserialize(null, it[HendelseTable.data])?.let { hendelse ->
-                StoredData(
-                    partition = it[HendelseTable.partition],
-                    offset = it[HendelseTable.offset],
-                    recordKey = it[recordKey],
-                    arbeidssoekerId = it[HendelseTable.arbeidssoekerId],
-                    data = hendelse
-                )
-            }
+            StoredData(
+                partition = it[HendelseTable.partition],
+                offset = it[HendelseTable.offset],
+                recordKey = it[recordKey],
+                arbeidssoekerId = it[HendelseTable.arbeidssoekerId],
+                data = deserializeFromString(it[HendelseTable.data])
+            )
         }
 

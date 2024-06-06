@@ -7,6 +7,6 @@ object HendelseTable: Table() {
     val offset = long("offset")
     val recordKey = long("record_key")
     val arbeidssoekerId = long("arbeidssoeker_id")
-    val data = binary("data")
+    val data = text("data")
     override val primaryKey: PrimaryKey = PrimaryKey(partition, offset)
 }

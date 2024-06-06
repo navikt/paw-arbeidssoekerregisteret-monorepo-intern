@@ -10,6 +10,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.*
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
+import kotlin.reflect.KClass
 
 class HendelseSerde : Serde<Hendelse> {
     private val objectMapper = hendelseObjectMapper()
@@ -17,23 +18,32 @@ class HendelseSerde : Serde<Hendelse> {
     override fun deserializer() = HendelseDeserializer(objectMapper)
 }
 
-class HendelseSerializer(private val objectMapper: ObjectMapper): Serializer<Hendelse> {
-    constructor(): this(hendelseObjectMapper())
+class HendelseSerializer(private val objectMapper: ObjectMapper) : Serializer<Hendelse> {
+    constructor() : this(hendelseObjectMapper())
 
     override fun serialize(topic: String?, data: Hendelse?): ByteArray {
         return data?.let {
             objectMapper.writeValueAsBytes(it)
         } ?: ByteArray(0)
     }
+
+    fun serializeToString(data: Hendelse): String = objectMapper.writeValueAsString(data)
 }
 
-class HendelseDeserializer(private val objectMapper: ObjectMapper): Deserializer<Hendelse> {
-    constructor(): this(hendelseObjectMapper())
+class HendelseDeserializer(private val objectMapper: ObjectMapper) : Deserializer<Hendelse> {
+    constructor() : this(hendelseObjectMapper())
 
     override fun deserialize(topic: String?, data: ByteArray?): Hendelse? {
         if (data == null) return null
         return no.nav.paw.arbeidssokerregisteret.intern.v1.deserialize(objectMapper, data)
     }
+
+    fun deserializeFromString(json: String): Hendelse {
+        val node = objectMapper.readTree(json)
+        val eventClass = eventTypeToClass(node.get("hendelseType")?.asText())
+        return objectMapper.treeToValue(node, eventClass.java)
+    }
+
 }
 
 private fun hendelseObjectMapper(): ObjectMapper = ObjectMapper()
@@ -52,12 +62,17 @@ private fun hendelseObjectMapper(): ObjectMapper = ObjectMapper()
 
 fun deserialize(objectMapper: ObjectMapper, json: ByteArray): Hendelse {
     val node = objectMapper.readTree(json)
-    return when (val hendelseType = node.get("hendelseType")?.asText()) {
-        startetHendelseType -> objectMapper.readValue<Startet>(node.traverse())
-        avsluttetHendelseType -> objectMapper.readValue<Avsluttet>(node.traverse())
-        avvistHendelseType -> objectMapper.readValue<Avvist>(node.traverse())
-        avvistStoppAvPeriodeHendelseType -> objectMapper.readValue<AvvistStoppAvPeriode>(node.traverse())
-        opplysningerOmArbeidssoekerHendelseType -> objectMapper.readValue<OpplysningerOmArbeidssoekerMottatt>(node.traverse())
-        else -> throw IllegalArgumentException("Ukjent hendelse type: '$hendelseType'")
-    }
+    val eventClass =  eventTypeToClass(node.get("hendelseType")?.asText())
+    return objectMapper.treeToValue(node, eventClass.java)
 }
+
+fun eventTypeToClass(type: String?): KClass<out Hendelse> =
+    when (type) {
+        null -> throw IllegalArgumentException("Hendelse mangler type")
+        startetHendelseType -> Startet::class
+        avsluttetHendelseType -> Avsluttet::class
+        avvistHendelseType -> Avvist::class
+        avvistStoppAvPeriodeHendelseType -> AvvistStoppAvPeriode::class
+        opplysningerOmArbeidssoekerHendelseType -> OpplysningerOmArbeidssoekerMottatt::class
+        else -> throw IllegalArgumentException("Ukjent hendelse type: '$type'")
+    }

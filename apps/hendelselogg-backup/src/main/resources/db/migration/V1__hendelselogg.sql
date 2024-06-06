@@ -4,6 +4,7 @@ CREATE TABLE hendelselogg
     offset bigint NOT NULL,
     record_key bigint NOT NULL,
     arbeidssoeker_id bigint NOT NULL,
+    data jsonb NOT NULL,
     primary key (partition, offset),
     index (arbeidssoeker_id)
 );
