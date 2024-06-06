@@ -9,7 +9,7 @@ query($ident: ID!, $historisk: Boolean) {
             oppholdTil
             type
         }
-        folkeregisterpersonstatus {
+        folkeregisterpersonstatus(historikk: $historisk) {
             forenkletStatus
         }
         bostedsadresse(historikk: $historisk) {
