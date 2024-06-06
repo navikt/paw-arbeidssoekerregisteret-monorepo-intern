@@ -4,7 +4,7 @@ query($ident: ID!, $historisk: Boolean) {
             foedselsdato
             foedselsaar
         }
-        opphold {
+        opphold(historikk: $historisk) {
             oppholdFra
             oppholdTil
             type
@@ -29,13 +29,13 @@ query($ident: ID!, $historisk: Boolean) {
                 landkode
             }
         }
-        innflyttingTilNorge(historikk: $historisk) {
+        innflyttingTilNorge {
             folkeregistermetadata {
                 gyldighetstidspunkt
                 ajourholdstidspunkt
             }
         }
-        utflyttingFraNorge(historikk: $historisk) {
+        utflyttingFraNorge {
             utflyttingsdato
             folkeregistermetadata {
                 gyldighetstidspunkt
