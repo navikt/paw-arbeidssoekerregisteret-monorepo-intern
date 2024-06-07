@@ -19,11 +19,15 @@ fun opprettKtorKlient() = HttpClient(OkHttp) {
 fun opprettPdlKlient(
     konfig: PdlKlientKonfigurasjon,
     autentiseringskonfigurasjon: AzureTokenKlientKonfigurasjon
-) = PdlClient(
-    url = konfig.url,
-    tema = konfig.tema,
-    httpClient = opprettKtorKlient()
-) { getAccessToken(konfig, autentiseringskonfigurasjon) }
+) : PdlClient {
+    val scope = "api://${konfig.pdlCluster}.${konfig.namespace}.${konfig.appName}/.default"
+    val azureTokenClient = aadMachineToMachineTokenClient(autentiseringskonfigurasjon)
+    return PdlClient(
+        url = konfig.url,
+        tema = konfig.tema,
+        httpClient = opprettKtorKlient()
+    ) { azureTokenClient.createMachineToMachineToken(scope) }
+}
 
 private fun aadMachineToMachineTokenClient(konfig: AzureTokenKlientKonfigurasjon) =
     AzureAdTokenClientBuilder.builder()
@@ -32,12 +36,3 @@ private fun aadMachineToMachineTokenClient(konfig: AzureTokenKlientKonfigurasjon
         .withTokenEndpointUrl(konfig.tokenEndpointUrl)
         .withCache(CaffeineTokenCache())
         .buildMachineToMachineTokenClient()
-
-private fun getAccessToken(
-    pdlKlientKonfig: PdlKlientKonfigurasjon,
-    autKonfig: AzureTokenKlientKonfigurasjon
-): String {
-    return aadMachineToMachineTokenClient(autKonfig).createMachineToMachineToken(
-        "api://${pdlKlientKonfig.pdlCluster}.${pdlKlientKonfig.namespace}.${pdlKlientKonfig.appName}/.default"
-    )
-}
