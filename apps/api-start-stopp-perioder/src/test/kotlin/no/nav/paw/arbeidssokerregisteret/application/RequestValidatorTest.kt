@@ -14,9 +14,8 @@ import no.nav.paw.arbeidssokerregisteret.utils.AzureNavIdent
 import no.nav.paw.arbeidssokerregisteret.utils.AzureOID
 import no.nav.paw.arbeidssokerregisteret.utils.ResolvedClaims
 import no.nav.paw.arbeidssokerregisteret.utils.TokenXPID
-import no.nav.paw.pdl.graphql.generated.hentperson.Foedsel
-import no.nav.paw.pdl.graphql.generated.hentperson.Folkeregisterpersonstatus
-import no.nav.paw.pdl.graphql.generated.hentperson.Person
+import no.nav.paw.pdl.graphql.generated.enums.Endringstype
+import no.nav.paw.pdl.graphql.generated.hentperson.*
 import java.util.*
 
 class RequestValidatorTest : FreeSpec({
@@ -120,7 +119,14 @@ class RequestValidatorTest : FreeSpec({
                     } returns Person(
                         foedsel = listOf(Foedsel("2000-01-01", 2000)),
                         bostedsadresse = emptyList(),
-                        folkeregisterpersonstatus = listOf(Folkeregisterpersonstatus("bosattEtterFolkeregisterloven")),
+                        folkeregisterpersonstatus = listOf(
+                            Folkeregisterpersonstatus(
+                                forenkletStatus = "bosattEtterFolkeregisterloven",
+                                metadata = Metadata(
+                                    endringer = emptyList()
+                                )
+                            )
+                        ),
                         opphold = emptyList(),
                         innflyttingTilNorge = emptyList(),
                         utflyttingFraNorge = emptyList()
@@ -158,7 +164,14 @@ class RequestValidatorTest : FreeSpec({
                     } returns Person(
                         foedsel = listOf(Foedsel("2000-01-01", 2000)),
                         bostedsadresse = emptyList(),
-                        folkeregisterpersonstatus = listOf(Folkeregisterpersonstatus("ikkeBosatt")),
+                        folkeregisterpersonstatus = listOf(
+                            Folkeregisterpersonstatus(
+                                forenkletStatus = "ikkeBosatt",
+                                metadata = Metadata(
+                                    endringer = emptyList()
+                                )
+                            )
+                        ),
                         opphold = emptyList(),
                         innflyttingTilNorge = emptyList(),
                         utflyttingFraNorge = emptyList()
@@ -186,8 +199,18 @@ class RequestValidatorTest : FreeSpec({
                         foedsel = listOf(Foedsel("2000-01-01", 2000)),
                         bostedsadresse = emptyList(),
                         folkeregisterpersonstatus = listOf(
-                            Folkeregisterpersonstatus("ikkeBosatt"),
-                            Folkeregisterpersonstatus("dNummer")
+                            Folkeregisterpersonstatus(
+                                forenkletStatus = "ikkeBosatt",
+                                metadata = Metadata(
+                                    endringer = emptyList()
+                                )
+                            ),
+                            Folkeregisterpersonstatus(
+                                forenkletStatus = "dNummer",
+                                metadata = Metadata(
+                                    endringer = emptyList()
+                                )
+                            )
                         ),
                         opphold = emptyList(),
                         innflyttingTilNorge = emptyList(),
@@ -260,7 +283,14 @@ class RequestValidatorTest : FreeSpec({
                     } returns Person(
                         foedsel = listOf(Foedsel("2000-01-01", 2000)),
                         bostedsadresse = emptyList(),
-                        folkeregisterpersonstatus = listOf(Folkeregisterpersonstatus("doedIFolkeregisteret")),
+                        folkeregisterpersonstatus = listOf(
+                            Folkeregisterpersonstatus(
+                                forenkletStatus = "doedIFolkeregisteret",
+                                metadata = Metadata(
+                                    endringer = emptyList()
+                                )
+                            )
+                        ),
                         opphold = emptyList(),
                         innflyttingTilNorge = emptyList(),
                         utflyttingFraNorge = emptyList()
@@ -286,7 +316,20 @@ class RequestValidatorTest : FreeSpec({
                     } returns Person(
                         foedsel = listOf(Foedsel("2000-01-01", 2000)),
                         bostedsadresse = emptyList(),
-                        folkeregisterpersonstatus = listOf(Folkeregisterpersonstatus("forsvunnet")),
+                        folkeregisterpersonstatus = listOf(
+                            Folkeregisterpersonstatus(
+                                forenkletStatus = "forsvunnet",
+                                metadata = Metadata(
+                                    endringer = listOf(
+                                        Endring(
+                                            type = Endringstype.OPPRETT,
+                                            registrert = "2021-01-01",
+                                            kilde = "test",
+                                        )
+                                    )
+                                )
+                            )
+                        ),
                         opphold = emptyList(),
                         innflyttingTilNorge = emptyList(),
                         utflyttingFraNorge = emptyList()
