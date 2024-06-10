@@ -11,12 +11,30 @@
         {
           "oppholdFra": "2010-01-20",
           "oppholdTil": "2022-01-20",
-          "type": "PERMANENT"
+          "type": "PERMANENT",
+          "metadata": {
+            "endringer": [
+              {
+                "type:": "OPPRETT",
+                "registrert": "2010-01-20",
+                "kilde": "FOLKEREGISTERET"
+              }
+            ]
+          }
         }
       ],
       "folkeregisterpersonstatus": [
         {
-          "forenkletStatus": "bosattEtterFolkeregisterloven"
+          "forenkletStatus": "bosattEtterFolkeregisterloven",
+          "metadata": {
+            "endringer": [
+              {
+                "type:": "OPPRETT",
+                "registrert": "2010-01-20",
+                "kilde": "FOLKEREGISTERET"
+              }
+            ]
+          }
         }
       ],
       "bostedsadresse": [

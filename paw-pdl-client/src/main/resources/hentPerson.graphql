@@ -8,9 +8,23 @@ query($ident: ID!, $historisk: Boolean) {
             oppholdFra
             oppholdTil
             type
+            metadata {
+                endringer {
+                    type
+                    registrert
+                    kilde
+                }
+            }
         }
         folkeregisterpersonstatus(historikk: $historisk) {
             forenkletStatus
+            metadata {
+                endringer {
+                    type
+                    registrert
+                    kilde
+                }
+            }
         }
         bostedsadresse(historikk: $historisk) {
             angittFlyttedato
