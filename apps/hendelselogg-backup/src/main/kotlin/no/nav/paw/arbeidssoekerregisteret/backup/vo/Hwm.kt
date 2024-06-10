@@ -1,4 +1,4 @@
-package no.nav.paw.arbeidssokerregisteret.backup.vo
+package no.nav.paw.arbeidssoekerregisteret.backup.vo
 
 data class Hwm(
     val partition: Int,

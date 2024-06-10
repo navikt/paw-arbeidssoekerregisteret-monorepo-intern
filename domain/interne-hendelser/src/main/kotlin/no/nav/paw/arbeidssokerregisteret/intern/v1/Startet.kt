@@ -4,7 +4,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
 import java.util.*
 
-class Startet(
+data class Startet(
     override val hendelseId: UUID,
     override val id: Long,
     override val identitetsnummer: String,

@@ -1,7 +1,4 @@
-import org.gradle.configurationcache.extensions.capitalized
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
     kotlin("jvm")
@@ -31,15 +28,18 @@ dependencies {
     implementation(exposed.core)
     implementation(exposed.jdbc)
     implementation(exposed.javaTime)
+    implementation(postgres.driver)
+    implementation(flyway.core)
+    implementation(flyway.postgres)
 
     implementation(jackson.datatypeJsr310)
+    implementation(jackson.kotlin)
 
-    implementation(ktorServer.coreJvm)
-
-    testImplementation(ktorServer.testJvm)
     testImplementation(testLibs.runnerJunit5)
     testImplementation(testLibs.assertionsCore)
     testImplementation(testLibs.mockk)
+    testImplementation(testLibs.testContainers)
+    testImplementation(testLibs.postgresql)
 }
 
 java {
@@ -49,21 +49,13 @@ java {
 }
 
 application {
-    mainClass.set("no.nav.paw.arbeidssokerregisteret.backup.ApplicationKt")
+    mainClass.set("no.nav.paw.arbeidssokerregisteret.backup.StartAppKt")
 }
-
 
 tasks.withType<KotlinCompile>().configureEach {
     compilerOptions {
         freeCompilerArgs.add("-Xcontext-receivers")
-    }
-}
-
-tasks.withType(Jar::class) {
-    manifest {
-        attributes["Implementation-Version"] = project.version
-        attributes["Main-Class"] = application.mainClass.get()
-        attributes["Implementation-Title"] = rootProject.name
+        allWarningsAsErrors = true
     }
 }
 
@@ -71,9 +63,10 @@ jib {
     from.image = "$baseImage:$jvmMajorVersion"
     to.image = "${image ?: project.name}:${project.version}"
     container {
-        environment = mapOf(
-            "IMAGE_WITH_VERSION" to "${image ?: project.name}:${project.version}"
-        )
         jvmFlags = listOf("-XX:ActiveProcessorCount=4", "-XX:+UseZGC", "-XX:+ZGenerational")
     }
+}
+
+tasks.named<Test>("test") {
+    useJUnitPlatform()
 }

@@ -1,17 +1,19 @@
-CREATE TABLE hendelselogg
+CREATE TABLE hendelser
 (
-    partition smallint NOT NULL ,
-    offset bigint NOT NULL,
+    version smallint NOT NULL,
+    kafka_partition smallint NOT NULL,
+    kafka_offset bigint NOT NULL,
     record_key bigint NOT NULL,
     arbeidssoeker_id bigint NOT NULL,
+    traceparent varchar(58),
     data jsonb NOT NULL,
-    primary key (partition, offset),
-    index (arbeidssoeker_id)
+    primary key (version, kafka_partition, kafka_offset)
 );
 
 create table hwm
 (
-    partition smallint NOT NULL,
-    offset bigint NOT NULL,
-    primary key (partition)
+    version smallint NOT NULL,
+    kafka_partition smallint NOT NULL,
+    kafka_offset bigint NOT NULL,
+    primary key (version, kafka_partition)
 );

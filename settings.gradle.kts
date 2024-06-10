@@ -83,6 +83,8 @@ dependencyResolutionManagement {
         val otelInstrumentationVersion = "2.1.0"
         val coroutinesVersion = "1.8.1"
         val rapporteringsSchemaVersion = "24.05.15.2-1"
+        val postgresDriverVersion = "42.7.3"
+        val flywayVersion = "10.14.0"
 
         fun VersionCatalogBuilder.ktorLib(alias: String, artifactId: String) =
             library(alias, "io.ktor", artifactId).version("2.3.11")
@@ -224,6 +226,13 @@ dependencyResolutionManagement {
             library("testContainers", "org.testcontainers", "testcontainers").version(testContainersVersion)
             library("postgresql", "org.testcontainers", "postgresql").version(testContainersVersion)
             library("mockOauth2Server", "no.nav.security", "mock-oauth2-server").version(mockOauth2ServerVersion)
+        }
+        create("postgres") {
+            library("driver", "org.postgresql", "postgresql").version(postgresDriverVersion)
+        }
+        create("flyway") {
+            library("core", "org.flywaydb", "flyway-core").version(flywayVersion)
+            library("postgres", "org.flywaydb", "flyway-database-postgresql").version(flywayVersion)
         }
         create("poao") {
             library("tilgangClient", "no.nav.poao-tilgang", "client").version("2024.04.29_13.59-a0ddddd36ac9")
