@@ -1,0 +1,4 @@
+applicationIdSuffix = "v3"
+periodeTopic = "paw.arbeidssokerperioder-v1"
+hendelseloggTopic = "${HENDELSELOGG_TOPIC}"
+hendelseStateStoreName = "hendelseState"
