@@ -1,8 +1,7 @@
 package no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka
 
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.ApplicationInfo
-import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.BEHANDLINGSNUMMER
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentForenkletStatus
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseState
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.metrics.tellPdlAvsluttetHendelser

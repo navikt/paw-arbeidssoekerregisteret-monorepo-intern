@@ -20,7 +20,7 @@ spec:
     application:
       enabled: true
   kafka:
-    pool: nav-prod
+    pool: {{ kafka }}
     streams: true
   replicas:
     min: 6

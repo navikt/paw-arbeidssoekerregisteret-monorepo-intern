@@ -17,6 +17,7 @@ include(
     "apps:hendelseprosessor",
     "apps:utgang-formidlingsgruppe",
     "apps:hendelselogg-backup",
+    "apps:utgang-pdl",
     "domain:rapportering-interne-hendelser",
     "domain:rapporteringsansvar-schema",
     "domain:rapporteringsmelding-schema",

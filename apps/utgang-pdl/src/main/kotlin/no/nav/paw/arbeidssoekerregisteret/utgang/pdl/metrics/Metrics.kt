@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssoekerregisteret.utgang.pdl.metrics
 
 import io.micrometer.core.instrument.Tag
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 
 const val METRICS_UTGANG_PDL = "paw_arbeidssoekerregisteret_utgang_pdl"
 
