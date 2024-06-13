@@ -150,3 +150,7 @@ mapOf(
         dependsOn(*generatorTasks.toTypedArray())
     }
 }
+
+tasks.named<Test>("test") {
+    useJUnitPlatform()
+}

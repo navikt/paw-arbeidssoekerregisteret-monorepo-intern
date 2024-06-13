@@ -42,7 +42,7 @@ class ApplicationPeriodeTest : FunSpec({
                         opplysninger = listOf(Opplysning.ER_UNDER_18_AAR),
                         vedTreff = ::Avvist
                     ),
-                    opplysning = listOf(Opplysning.ER_UNDER_18_AAR)
+                    opplysning = listOf(Opplysning.ER_UNDER_18_AAR, Opplysning.BOSATT_ETTER_FREG_LOVEN)
                 )
                 arbeidssokerRoutes(startStoppRequestHandler, mockk())
             }
@@ -71,7 +71,7 @@ class ApplicationPeriodeTest : FunSpec({
                 "under 18 år", Feilkode.AVVIST, AarsakTilAvvisning(
                     beskrivelse = "under 18 år",
                     regel = EksternRegelId.UNDER_18_AAR,
-                    detaljer = setOf(Opplysning.ER_UNDER_18_AAR)
+                    detaljer = setOf(Opplysning.ER_UNDER_18_AAR, Opplysning.BOSATT_ETTER_FREG_LOVEN)
                 )
             )
         }

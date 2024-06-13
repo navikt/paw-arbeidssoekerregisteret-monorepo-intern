@@ -26,7 +26,7 @@ suspend fun respondWith(resultat: EndeligResultat) {
                 aarsakTilAvvisning = AarsakTilAvvisning(
                     beskrivelse = resultat.regel.beskrivelse,
                     regel = resultat.regel.id.eksternRegelId ?: EksternRegelId.UKJENT_REGEL,
-                    detaljer = resultat.regel.opplysninger.toSet()
+                    detaljer = resultat.opplysning.toSet()
                 )
             )
         )
