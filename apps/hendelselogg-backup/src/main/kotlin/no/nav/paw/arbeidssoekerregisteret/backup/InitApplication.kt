@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssoekerregisteret.backup
 
 import io.micrometer.core.instrument.Tag
+import io.micrometer.core.instrument.Tags
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.backup.database.*
@@ -25,6 +26,7 @@ const val HENDELSE_TOPIC = "paw.arbeidssoker-hendelseslogg-v1"
 val CONSUMER_GROUP = "arbeidssoekerregisteret-backup-$CURRENT_VERSION"
 const val ACTIVE_PARTITIONS_GAUGE = "paw_arbeidssoekerregisteret_backup_active_partitions"
 const val RECORD_COUNTER = "paw_arbeidssoekerregisteret_backup_records_written"
+const val HWM_GAUGE = "paw_arbeidssoekerregisteret_backup_hwm"
 
 fun initApplication(): Pair<Consumer<Long, Hendelse>, ApplicationContext> {
     val logger = LoggerFactory.getLogger("backup-init")
@@ -58,8 +60,18 @@ fun initApplication(): Pair<Consumer<Long, Hendelse>, ApplicationContext> {
     )
     val partitions = consumer.partitionsFor(HENDELSE_TOPIC).count()
     with(context) {
-        transaction {
+        val allHwms = transaction {
             initHwm(partitions)
+            getAllHwms()
+        }
+        allHwms.forEach { hwm ->
+            meterRegistry.gauge(HWM_GAUGE, listOf(Tag.of("partition", hwm.partition.toString())), this) { so ->
+                transaction {
+                    with(so) {
+                        getHwm(hwm.partition)?.toDouble() ?: -1.0
+                    }
+                }
+            }
         }
     }
     logger.info("Application initialized")
