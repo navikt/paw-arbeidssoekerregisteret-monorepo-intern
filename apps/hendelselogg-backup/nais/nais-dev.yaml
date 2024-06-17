@@ -26,7 +26,6 @@ spec:
       runtime: java
   kafka:
     pool: {{ kafka }}
-    streams: false
   resources:
     limits:
       memory: 1024Mi

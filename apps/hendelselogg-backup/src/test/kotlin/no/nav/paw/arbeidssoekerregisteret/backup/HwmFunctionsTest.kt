@@ -2,6 +2,8 @@ package no.nav.paw.arbeidssoekerregisteret.backup
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.backup.database.getAllHwms
 import no.nav.paw.arbeidssoekerregisteret.backup.database.getHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.database.initHwm
@@ -15,7 +17,11 @@ class HwmFunctionsTest : FreeSpec({
     "Verify Hwm functions" - {
         initDbContainer()
         "We run som tests with backup version 1" - {
-            with(ApplicationContext(consumerVersion = 1, logger = logger)) {
+            with(ApplicationContext(
+                consumerVersion = 1,
+                logger = logger,
+                meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+            )) {
                 "When there is no hwm for the partition, getHwm should return null" {
                     transaction {
                         getHwm(0) shouldBe null
@@ -83,7 +89,11 @@ class HwmFunctionsTest : FreeSpec({
             }
         }
         "we run some tests with backup version 2" - {
-            with(ApplicationContext(consumerVersion = 2, logger = logger)) {
+            with(ApplicationContext(
+                consumerVersion = 2,
+                logger = logger,
+                meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+            )) {
                 "We find no hwms for version 2" {
                     transaction {
                         getAllHwms() shouldBe emptyList()

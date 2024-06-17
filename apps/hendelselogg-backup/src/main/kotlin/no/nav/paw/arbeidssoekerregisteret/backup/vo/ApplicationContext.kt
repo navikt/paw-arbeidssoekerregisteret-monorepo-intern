@@ -9,6 +9,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 data class ApplicationContext(
     val consumerVersion: Int,
     val logger: Logger,
-    val meterRegistry: PrometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+    val meterRegistry: PrometheusMeterRegistry,
     val shutdownCalled: AtomicBoolean = AtomicBoolean(false)
 )

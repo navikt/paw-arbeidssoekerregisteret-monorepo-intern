@@ -3,6 +3,8 @@ package no.nav.paw.arbeidssoekerregisteret.backup
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.backup.database.DatabaseConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.database.readRecord
 import no.nav.paw.arbeidssoekerregisteret.backup.database.writeRecord
@@ -54,7 +56,11 @@ class DataFunctionsTest : FreeSpec({
         ).apply { headers().add("traceparent", "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01".toByteArray())}
         "we can write to the log without errors" {
             transaction {
-                with(ApplicationContext(consumerVersion = 1, logger = logger)) {
+                with(ApplicationContext(
+                    consumerVersion = 1,
+                    logger = logger,
+                    meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+                )) {
                     with(hendelseSerde.serializer()) {
                         writeRecord(record)
                     }
@@ -72,7 +78,11 @@ class DataFunctionsTest : FreeSpec({
         )
         "we can write a different version to the log without errors" {
             transaction {
-                with(ApplicationContext(consumerVersion = 2, logger = logger)) {
+                with(ApplicationContext(
+                    consumerVersion = 2,
+                    logger = logger,
+                    meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+                )) {
                     with(hendelseSerde.serializer()) {
                         writeRecord(recordVersion2)
                     }
@@ -82,7 +92,11 @@ class DataFunctionsTest : FreeSpec({
         "we can read multiple versions from the log" {
             transaction {
                 val storedDataV1 =
-                    with(ApplicationContext(consumerVersion = 1, logger = logger)) {
+                    with(ApplicationContext(
+                        consumerVersion = 1,
+                        logger = logger,
+                        meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+                    )) {
                         with(hendelseSerde.deserializer()) {
                             readRecord(record.partition(), record.offset())
                         }.shouldNotBeNull()
@@ -94,7 +108,11 @@ class DataFunctionsTest : FreeSpec({
                 storedDataV1.data shouldBe record.value()
                 storedDataV1.traceparent shouldBe record.headers().lastHeader("traceparent")?.let { h -> String(h.value()) }
                 val storedDataV2 =
-                    with(ApplicationContext(consumerVersion = 2, logger = logger)) {
+                    with(ApplicationContext(
+                        consumerVersion = 2,
+                        logger = logger,
+                        meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+                    )) {
                         with(hendelseSerde.deserializer()) {
                             readRecord(record.partition(), record.offset())
                         }.shouldNotBeNull()

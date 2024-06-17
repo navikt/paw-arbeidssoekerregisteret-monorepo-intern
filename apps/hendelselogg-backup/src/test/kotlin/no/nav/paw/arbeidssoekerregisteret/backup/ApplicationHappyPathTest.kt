@@ -3,6 +3,8 @@ package no.nav.paw.arbeidssoekerregisteret.backup
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.backup.database.getAllHwms
 import no.nav.paw.arbeidssoekerregisteret.backup.database.initHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.database.readRecord
@@ -17,7 +19,8 @@ class ApplicationHappyPathTest : FreeSpec({
         with(
             ApplicationContext(
                 consumerVersion = 1,
-                logger = LoggerFactory.getLogger("test-logger")
+                logger = LoggerFactory.getLogger("test-logger"),
+                meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
             )
         ) {
             initDbContainer()
