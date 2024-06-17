@@ -22,9 +22,9 @@ fun main() {
             consumer.use {
                 val hwmRebalanceListener = HwmRebalanceListener(context = this, consumer = consumer)
                 meterRegistry.gauge(ACTIVE_PARTITIONS_GAUGE, hwmRebalanceListener) { it.currentlyAssignedPartitions.size.toDouble() }
-                initHealthMonitoring(consumer, meterRegistry)
                 consumer.subscribe(listOf(HENDELSE_TOPIC), hwmRebalanceListener)
                 logger.info("Started subscription. Currently assigned partitions: ${consumer.assignment()}")
+                initHealthMonitoring(consumer, meterRegistry)
                 with(HendelseSerializer()) {
                     runApplication(
                         source = consumer.asSequence(
