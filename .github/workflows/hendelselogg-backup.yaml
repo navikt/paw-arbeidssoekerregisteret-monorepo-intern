@@ -81,5 +81,5 @@ jobs:
         env:
           TEAM: paw
           CLUSTER: prod-gcp
-          RESOURCE: apps/hendelselogg-backup/nais/nais.yaml
+          RESOURCE: apps/hendelselogg-backup/nais/nais-prod.yaml
           VAR: image=${{ needs.build.outputs.image }},kafka=nav-prod
