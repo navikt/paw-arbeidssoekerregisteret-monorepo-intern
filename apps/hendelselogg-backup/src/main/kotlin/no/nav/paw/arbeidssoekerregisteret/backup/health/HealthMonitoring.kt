@@ -15,9 +15,6 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.prometheus.metrics.model.registry.PrometheusRegistry
 import no.nav.paw.arbeidssoekerregisteret.backup.HwmRebalanceListener
 import org.apache.kafka.clients.consumer.Consumer
-import org.slf4j.LoggerFactory
-
-val scrapeLogger = LoggerFactory.getLogger("scrape")
 
 fun initHealthMonitoring(
     consumer: Consumer<*, *>,
@@ -35,14 +32,7 @@ fun initHealthMonitoring(
         }
         routing {
             get("/internal/metrics") {
-                val scrape = prometheusRegistry.scrape()
-                scrapeLogger.info(
-                    scrape
-                        .split("\n")
-                        .filter { it.contains("paw_arbeidssoekerregisteret_backup_") }
-                        .joinToString("\n")
-                )
-                call.respondTextWriter {  }
+                call.respondTextWriter { prometheusRegistry.scrape() }
             }
             get("/internal/isAlive") {
                 call.respondText("ALIVE")
