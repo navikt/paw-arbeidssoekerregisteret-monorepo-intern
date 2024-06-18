@@ -24,9 +24,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 const val CURRENT_VERSION = 1
 const val HENDELSE_TOPIC = "paw.arbeidssoker-hendelseslogg-v1"
 val CONSUMER_GROUP = "arbeidssoekerregisteret-backup-$CURRENT_VERSION"
-const val ACTIVE_PARTITIONS_GAUGE = "paw_arbeidssoekerregisteret_backup_active_partitions"
-const val RECORD_COUNTER = "paw_arbeidssoekerregisteret_backup_records_written"
-const val HWM_GAUGE = "paw_arbeidssoekerregisteret_backup_hwm"
+const val ACTIVE_PARTITIONS_GAUGE = "paw_arbeidssoekerregisteret_hendelselogg_backup_active_partitions"
+const val RECORD_COUNTER = "paw_arbeidssoekerregisteret_hendelselogg_backup_records_written"
+const val HWM_GAUGE = "paw_arbeidssoekerregisteret_hendelselogg_backup_hwm"
 
 fun initApplication(): Pair<Consumer<Long, Hendelse>, ApplicationContext> {
     val logger = LoggerFactory.getLogger("backup-init")
