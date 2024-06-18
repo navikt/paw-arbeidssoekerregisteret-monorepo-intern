@@ -7,6 +7,8 @@ metadata:
     team: paw
 spec:
   image: {{ image }}
+  ingresses:
+    - https://backup-arbeidssoekerregisteret.intern.nav.no
   port: 8080
   replicas:
     min: 1
