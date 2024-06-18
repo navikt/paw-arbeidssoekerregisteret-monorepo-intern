@@ -32,7 +32,7 @@ fun initHealthMonitoring(
         }
         routing {
             get("/internal/metrics") {
-                call.respondTextWriter { prometheusRegistry.scrape() }
+                call.respondText(prometheusRegistry.scrape())
             }
             get("/internal/isAlive") {
                 call.respondText("ALIVE")
