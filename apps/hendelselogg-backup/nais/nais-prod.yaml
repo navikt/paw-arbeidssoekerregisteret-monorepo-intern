@@ -30,8 +30,8 @@ spec:
     limits:
       memory: 1024Mi
     requests:
-      memory: 256Mi
-      cpu: 50m
+      memory: 384Mi
+      cpu: 40m
   gcp:
     sqlInstances:
       - type: POSTGRES_15

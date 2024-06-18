@@ -31,7 +31,7 @@ spec:
       memory: 1024Mi
     requests:
       memory: 256Mi
-      cpu: 50m
+      cpu: 25m
   gcp:
     sqlInstances:
       - type: POSTGRES_15
