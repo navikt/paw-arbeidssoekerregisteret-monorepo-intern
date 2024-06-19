@@ -35,6 +35,11 @@ spec:
           - NAVident
         groups:
           - id: 88b552ab-2cd9-41e1-bd44-3868605d6f6a
+    sidecar:
+      enabled: true
+      autoLogin: true
+      autoLoginIgnorePaths:
+        - /internal/*
   kafka:
     pool: {{ kafka }}
   resources:
