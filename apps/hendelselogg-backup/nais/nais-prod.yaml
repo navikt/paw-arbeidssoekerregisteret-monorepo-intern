@@ -28,6 +28,15 @@ spec:
       runtime: java
   kafka:
     pool: {{ kafka }}
+  azure:
+    application:
+      enabled: true
+      tenant: nav.no
+      claims:
+        extra:
+          - NAVident
+        groups:
+          - id: 88b552ab-2cd9-41e1-bd44-3868605d6f6a
   resources:
     limits:
       memory: 1024Mi

@@ -26,6 +26,11 @@ dependencies {
     implementation(ktorServer.callId)
     implementation(ktorServer.statusPages)
     implementation(ktorServer.contentNegotiation)
+    implementation(navSecurity.tokenValidationKtorV2)
+    implementation(navSecurity.tokenClient)
+    implementation(navCommon.tokenClient)
+    implementation(navCommon.auditLog)
+    implementation(navCommon.log)
 
     implementation(micrometer.registryPrometheus)
     implementation(otel.annotations)

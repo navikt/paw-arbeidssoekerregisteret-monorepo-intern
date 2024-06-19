@@ -26,6 +26,15 @@ spec:
     autoInstrumentation:
       enabled: true
       runtime: java
+  azure:
+    application:
+      enabled: true
+      tenant: nav.no
+      claims:
+        extra:
+          - NAVident
+        groups:
+          - id: 88b552ab-2cd9-41e1-bd44-3868605d6f6a
   kafka:
     pool: {{ kafka }}
   resources:
