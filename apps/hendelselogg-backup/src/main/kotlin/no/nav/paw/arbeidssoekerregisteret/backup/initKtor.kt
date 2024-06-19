@@ -43,7 +43,7 @@ fun initKtor(
         routing {
             swaggerUI(path = "docs/brukerstoette", swaggerFile = "openapi/Brukerstoette.yaml")
             configureHealthRoutes(prometheusMeterRegistry)
-            authenticate {
+            authenticate("azure") {
                 post("/api/v1/arbeidssoeker/detaljer") {
                     val request = call.receive<DetaljerRequest>()
                     call.respond(getMockResponse())
