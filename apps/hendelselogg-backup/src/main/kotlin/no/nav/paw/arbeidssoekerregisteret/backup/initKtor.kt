@@ -30,7 +30,6 @@ fun initKtor(
         authentication {
             tokenValidationSupport(
                 name = azureConfig.name,
-                requiredClaims = RequiredClaims(azureConfig.claim, arrayOf(azureConfig.claim)),
                 config = TokenSupportConfig(
                     IssuerConfig(
                         name = azureConfig.name,
