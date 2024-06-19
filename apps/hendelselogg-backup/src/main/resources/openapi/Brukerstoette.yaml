@@ -1,0 +1,208 @@
+openapi: "3.0.3"
+info:
+  title: "paw_arbeidssokerregisteret_api_inngang API"
+  description: "paw_arbeidssokerregisteret_api_inngang API"
+  version: "1.0.0"
+servers:
+- url: "https://intern-brukerstoette-arbeidssoekerregisteret.intern.dev.nav.no"
+  description: "Development environment"
+- url: "https://intern-brukerstoette-arbeidssoekerregisteret.intern.nav.no"
+  description: "Production environment"
+paths:
+  /api/v1/arbeidssoker/detaljer:
+    post:
+      description: "Hent detaljer om bruker "
+      parameters:
+      - name: "traceparent"
+        in: "header"
+        required: false
+        description: "https://www.w3.org/TR/trace-context/#traceparent-header-field-values"
+        schema:
+          type: "string"
+          format: "traceparent"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DetaljerRequest"
+        required: true
+      responses:
+        "400":
+          description: "Bad Request"
+          headers:
+            x-trace-id:
+              description: "Trace id"
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Feil"
+        "500":
+          description: "Internal Server Error"
+          headers:
+            x-trace-id:
+              description: "Trace id"
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Feil"
+        "403":
+          description: "Forbidden"
+          headers:
+            x-trace-id:
+              description: "Trace id"
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Feil"
+        "200":
+          description: "OK"
+          headers:
+            x-trace-id:
+              description: "Trace id"
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DetaljerResponse"
+
+components:
+  schemas:
+    Feil:
+      type: "object"
+      properties:
+        melding:
+          type: "string"
+        feilKode:
+          type: "string"
+      required:
+      - "melding"
+      - "feilKode"
+    DetaljerRequest:
+      type: "object"
+      properties:
+        identitetsnummer:
+          type: "string"
+          example: "12345678901"
+      required:
+      - "id"
+    Tilstand:
+      type: "object"
+      properties:
+        harAktivePeriode:
+          type: "boolean"
+          description: "Har aktiv periode"
+          example: true
+        startet:
+          type: "integer"
+          format: "int64"
+          description: "Tidspunkt for start av periode"
+          example: 1718772771899
+        avsluttet:
+          type: "integer"
+          format: "int64"
+          description: "Tidspunkt for avslutning av periode"
+          example: 1718772871899
+        harOpplysningerMottattHendelse:
+          type: "boolean"
+          description: "Har opplysninger"
+          example: true
+        apiKall:
+          type: "object"
+          properties:
+            harOpplysning:
+              type: "boolean"
+              description: "Har opplysning"
+              example: true
+            harProfilering:
+              type: "boolean"
+              description: "Har profilerin"
+              example: true
+          required:
+            - harOpplysning
+            - harProfilering
+      required:
+        - harAktivePeriode
+        - startet
+        - harOpplysningerMottattHendelse
+        - apiKall
+    Hendelse:
+      type: "object"
+      properties:
+        hendelseId:
+          type: "string"
+          format: "uuid"
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        hendelseType:
+          type: "string"
+          description: "Type hendelse: Startet, Avsluttet, OpplysningerMottatt, Avvist"
+          example: "Startet"
+        timestamp:
+          type: "integer"
+          format: "int64"
+          description: "Tidspunkt for hendelse"
+          example: 1718772771899
+        kafkaOffset:
+          type: "integer"
+          format: "int64"
+          description: "Kafka offset"
+          example: 123234
+        api:
+          type: "boolean"
+          description: "Hendelsen finnes i API, bare inkludert dersom relevant"
+          example: true
+        data:
+          type: "object"
+          description: "Selve hendelsen"
+      required:
+        - hendelseId
+        - hendelseType
+        - timestamp
+        - kafkaOffset
+        - data
+    InnkommendeHendelse:
+      type: "object"
+      properties:
+        gjeldeneTilstand:
+          $ref: "#/components/schemas/Tilstand"
+        nyTilstand:
+          $ref: "#/components/schemas/Tilstand"
+        hendelse:
+          $ref: "#/components/schemas/Hendelse"
+      required:
+        - hendelse
+
+    DetaljerResponse:
+      type: "object"
+      properties:
+        arbeidssoekId:
+          type: "integer"
+          format: "int64"
+          description: "Arbeidssøker id (intern id fra kafka keys"
+          example: 123
+        recordKey:
+          type: "integer"
+          format: "int64"
+          description: "Record key brukt på kafka meldinger"
+        kafkaPartition:
+          type: "integer"
+          format: "int32"
+          description: "Kafka partition"
+          example: 1
+        gjeldeneTilstand:
+          $ref: "#/components/schemas/Tilstand"
+        historikk:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/InnkommendeHendelse"
+      required:
+        - arbeidssoekId
+        - recordKey
+        - kafkaPartition
+        - historikk

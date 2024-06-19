@@ -8,7 +8,7 @@ metadata:
 spec:
   image: {{ image }}
   ingresses:
-    - https://backup-arbeidssoekerregisteret.intern.nav.no
+    - https://intern-brukerstoette-arbeidssoekerregisteret.intern.nav.no
   port: 8080
   replicas:
     min: 1
