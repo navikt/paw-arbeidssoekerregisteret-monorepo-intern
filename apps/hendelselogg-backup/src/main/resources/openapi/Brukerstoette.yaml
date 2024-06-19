@@ -100,15 +100,15 @@ components:
           description: "Har aktiv periode"
           example: true
         startet:
-          type: "integer"
-          format: "int64"
+          type: "string"
+          format: "date-time"
           description: "Tidspunkt for start av periode"
-          example: 1718772771899
+          example: "2021-01-01T12:00:00Z"
         avsluttet:
-          type: "integer"
-          format: "int64"
+          type: "string"
+          format: "date-time"
           description: "Tidspunkt for avslutning av periode"
-          example: 1718772871899
+          example: "2021-01-02T12:00:00Z"
         harOpplysningerMottattHendelse:
           type: "boolean"
           description: "Har opplysninger"
@@ -144,10 +144,10 @@ components:
           description: "Type hendelse: Startet, Avsluttet, OpplysningerMottatt, Avvist"
           example: "Startet"
         timestamp:
-          type: "integer"
-          format: "int64"
+          type: "string"
+          format: "date-time"
           description: "Tidspunkt for hendelse"
-          example: 1718772771899
+          example: "2021-01-01T12:00:00Z"
         kafkaOffset:
           type: "integer"
           format: "int64"
