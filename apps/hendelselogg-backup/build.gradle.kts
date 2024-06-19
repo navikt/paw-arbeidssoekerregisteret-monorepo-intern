@@ -17,11 +17,18 @@ val image: String? by project
 
 dependencies {
     implementation(project(":domain:interne-hendelser"))
-    implementation(ktorServer.bundles.withNettyAndMicrometer)
-    implementation(micrometer.registryPrometheus)
-    implementation(otel.annotations)
     implementation(project(":lib:kafka"))
     implementation(project(":lib:hoplite-config"))
+
+    implementation(ktorServer.bundles.withNettyAndMicrometer)
+    implementation(ktorServer.cors)
+    implementation(ktorServer.swagger)
+    implementation(ktorServer.callId)
+    implementation(ktorServer.statusPages)
+    implementation(ktorServer.contentNegotiation)
+
+    implementation(micrometer.registryPrometheus)
+    implementation(otel.annotations)
     implementation(hoplite.hopliteCore)
     implementation(hoplite.hopliteToml)
     implementation(navCommon.auditLog)

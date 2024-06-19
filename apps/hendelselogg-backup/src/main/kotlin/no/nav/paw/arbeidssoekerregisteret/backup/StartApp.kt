@@ -3,7 +3,6 @@ package no.nav.paw.arbeidssoekerregisteret.backup
 import io.micrometer.core.instrument.Tag
 import no.nav.paw.arbeidssoekerregisteret.backup.database.updateHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.database.writeRecord
-import no.nav.paw.arbeidssoekerregisteret.backup.health.initHealthMonitoring
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerializer
@@ -24,7 +23,7 @@ fun main() {
                 meterRegistry.gauge(ACTIVE_PARTITIONS_GAUGE, hwmRebalanceListener) { it.currentlyAssignedPartitions.size.toDouble() }
                 consumer.subscribe(listOf(HENDELSE_TOPIC), hwmRebalanceListener)
                 logger.info("Started subscription. Currently assigned partitions: ${consumer.assignment()}")
-                initHealthMonitoring(consumer, meterRegistry)
+                initKtor(meterRegistry, consumer)
                 with(HendelseSerializer()) {
                     runApplication(
                         source = consumer.asSequence(
