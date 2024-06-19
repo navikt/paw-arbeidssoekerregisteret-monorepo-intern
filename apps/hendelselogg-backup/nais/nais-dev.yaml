@@ -48,3 +48,9 @@ spec:
       - type: POSTGRES_15
         databases:
           - name: hendelselogg
+  accessPolicy:
+    inbound:
+      rules:
+        - application: azure-token-generator
+          namespace: aura
+          cluster: dev-gcp
