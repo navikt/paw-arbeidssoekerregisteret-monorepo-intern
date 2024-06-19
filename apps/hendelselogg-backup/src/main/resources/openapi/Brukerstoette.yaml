@@ -9,7 +9,7 @@ servers:
 - url: "https://intern-brukerstoette-arbeidssoekerregisteret.intern.nav.no"
   description: "Production environment"
 paths:
-  /api/v1/arbeidssoker/detaljer:
+  /api/v1/arbeidssoeker/detaljer:
     post:
       description: "Hent detaljer om bruker "
       parameters:
