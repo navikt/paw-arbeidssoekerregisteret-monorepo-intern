@@ -181,7 +181,7 @@ components:
     DetaljerResponse:
       type: "object"
       properties:
-        arbeidssoekId:
+        arbeidssoekerId:
           type: "integer"
           format: "int64"
           description: "Arbeidssøker id (intern id fra kafka keys"
@@ -189,7 +189,7 @@ components:
         recordKey:
           type: "integer"
           format: "int64"
-          description: "Record key brukt på kafka meldinger"
+          description: "Record key brukt på kafka meldinger for denne personen"
         kafkaPartition:
           type: "integer"
           format: "int32"
