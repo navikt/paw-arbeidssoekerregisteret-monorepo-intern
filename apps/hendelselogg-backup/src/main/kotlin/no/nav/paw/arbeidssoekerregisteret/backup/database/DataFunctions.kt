@@ -46,3 +46,22 @@ fun Transaction.readRecord(partition: Int, offset: Long): StoredData? =
                 data = deserializeFromString(it[HendelseTable.data])
             )
         }
+
+context(HendelseDeserializer, ApplicationContext)
+fun Transaction.readAllRecordsForId(arbeidssoekerId: Long): List<StoredData> =
+    HendelseTable
+        .selectAll()
+        .where {
+            (HendelseTable.arbeidssoekerId eq arbeidssoekerId) and
+                    (HendelseTable.version eq consumerVersion)
+        }
+        .map {
+            StoredData(
+                partition = it[HendelseTable.partition],
+                offset = it[HendelseTable.offset],
+                recordKey = it[recordKey],
+                arbeidssoekerId = it[HendelseTable.arbeidssoekerId],
+                traceparent = it[HendelseTable.traceparent],
+                data = deserializeFromString(it[HendelseTable.data])
+            )
+        }

@@ -19,6 +19,7 @@ dependencies {
     implementation(project(":domain:interne-hendelser"))
     implementation(project(":lib:kafka"))
     implementation(project(":lib:hoplite-config"))
+    implementation(project(":lib:kafka-key-generator-client"))
 
     implementation(ktorServer.bundles.withNettyAndMicrometer)
     implementation(ktorServer.cors)
@@ -26,6 +27,8 @@ dependencies {
     implementation(ktorServer.callId)
     implementation(ktorServer.statusPages)
     implementation(ktorServer.contentNegotiation)
+    implementation(ktorClient.core)
+    implementation(ktorClient.contentNegotiation)
     implementation(navSecurity.tokenValidationKtorV2)
     implementation(navSecurity.tokenClient)
     implementation(navCommon.tokenClient)

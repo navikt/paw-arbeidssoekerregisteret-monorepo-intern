@@ -56,7 +56,8 @@ fun initApplication(): Pair<Consumer<Long, Hendelse>, ApplicationContext> {
         logger = LoggerFactory.getLogger("backup-context"),
         consumerVersion = CURRENT_VERSION,
         meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
-        shutdownCalled = shutdown
+        shutdownCalled = shutdown,
+        azureConfig = loadNaisOrLocalConfiguration("azure.toml")
     )
     val partitions = consumer.partitionsFor(HENDELSE_TOPIC).count()
     with(context) {

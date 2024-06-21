@@ -49,7 +49,15 @@ fun getMockResponse(): DetaljerResponse {
                 hendelse = Hendelse(
                     hendelseId = UUID.randomUUID(),
                     hendelseType = "Startet",
-                    timestamp = Instant.now().minusSeconds(19000),
+                    metadata = HendelseMetadata(
+                        tidspunkt = Instant.now().minusSeconds(19000),
+                        utfoertAv = HendelseMetadataUtfoertAv(
+                            id = "12345678901",
+                            type = "SLUTTBRUKER"
+                        ),
+                        kilde = "mock data",
+                        aarsak = "bare mock data"
+                    ),
                     kafkaOffset = 2345423L,
                     data = Startet(
                         identitetsnummer = "12345678901",
@@ -91,7 +99,15 @@ fun getMockResponse(): DetaljerResponse {
                 hendelse = Hendelse(
                     hendelseId = UUID.randomUUID(),
                     hendelseType = "Avsluttet",
-                    timestamp = Instant.now().minusSeconds(19000),
+                    metadata = HendelseMetadata(
+                        tidspunkt = Instant.now().minusSeconds(29000),
+                        utfoertAv = HendelseMetadataUtfoertAv(
+                            id = "12345678901",
+                            type = "SLUTTBRUKER"
+                        ),
+                        kilde = "mock data",
+                        aarsak = "bare mock data"
+                    ),
                     kafkaOffset = 2345423L,
                     data = Avsluttet(
                         identitetsnummer = "12345678901",

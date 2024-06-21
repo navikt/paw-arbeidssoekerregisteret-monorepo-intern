@@ -91,7 +91,7 @@ components:
           type: "string"
           example: "12345678901"
       required:
-      - "id"
+      - "identitetsnummer"
     Tilstand:
       type: "object"
       properties:
@@ -125,13 +125,54 @@ components:
               description: "Har profilerin"
               example: true
           required:
-            - harOpplysning
-            - harProfilering
+            - "harOpplysning"
+            - "harProfilering"
       required:
-        - harAktivePeriode
-        - startet
-        - harOpplysningerMottattHendelse
-        - apiKall
+        - "harAktivePeriode"
+        - "startet"
+        - "harOpplysningerMottattHendelse"
+    HendelseMetadata:
+      type: "object"
+      properties:
+        tidspunkt:
+          type: "string"
+          format: "date-time"
+          description: "Tidspunkt for hendelse"
+          example: "2021-01-01T12:00:00Z"
+        utfoertAv:
+          type: "object"
+          properties:
+            type:
+              type: "string"
+              example: "System"
+            id:
+              type: "string"
+              example: "Start stopp API: 1.0.0"
+        kilde:
+          type: "string"
+          example: "Start stopp API"
+        aarsak:
+          type: "string"
+          example: "Opplysninger mottatt fra bruker"
+        tidspunktFraKilde:
+          type: "object"
+          properties:
+            tidspunkt:
+              type: "string"
+              format: "date-time"
+              description: "Tidspunkt for hendelse fra kilde"
+              example: "2021-01-01T12:00:00Z"
+            avvikstype:
+              type: "string"
+              example: "Avviks type"
+          required:
+            - "tidspunkt"
+            - "avvikstype"
+      required:
+        - "tidspunkt"
+        - "utfoertAv"
+        - "kilde"
+        - "aarsak"
     Hendelse:
       type: "object"
       properties:
@@ -143,11 +184,8 @@ components:
           type: "string"
           description: "Type hendelse: Startet, Avsluttet, OpplysningerMottatt, Avvist"
           example: "Startet"
-        timestamp:
-          type: "string"
-          format: "date-time"
-          description: "Tidspunkt for hendelse"
-          example: "2021-01-01T12:00:00Z"
+        metadata:
+          $ref: "#/components/schemas/HendelseMetadata"
         kafkaOffset:
           type: "integer"
           format: "int64"
@@ -161,11 +199,11 @@ components:
           type: "object"
           description: "Selve hendelsen"
       required:
-        - hendelseId
-        - hendelseType
-        - timestamp
-        - kafkaOffset
-        - data
+        - "hendelseId"
+        - "hendelseType"
+        - "metadata"
+        - "kafkaOffset"
+        - "data"
     InnkommendeHendelse:
       type: "object"
       properties:
@@ -176,7 +214,7 @@ components:
         hendelse:
           $ref: "#/components/schemas/Hendelse"
       required:
-        - hendelse
+        - "hendelse"
 
     DetaljerResponse:
       type: "object"
@@ -202,7 +240,6 @@ components:
           items:
             $ref: "#/components/schemas/InnkommendeHendelse"
       required:
-        - arbeidssoekId
-        - recordKey
-        - kafkaPartition
-        - historikk
+        - "arbeidssoekId"
+        - "recordKey"
+        - "historikk"

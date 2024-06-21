@@ -33,6 +33,11 @@ spec:
       claims:
         groups:
           - id: 88b552ab-2cd9-41e1-bd44-3868605d6f6a
+  env:
+    - name: API_OPPSLAG_SCOPE
+      value: "api://dev-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag/.default"
+    - name: KAFKA_KEY_SCOPE
+      value: "api://dev-gcp.paw.paw-kafka-key-generator/.default"
   kafka:
     pool: {{ kafka }}
   resources:

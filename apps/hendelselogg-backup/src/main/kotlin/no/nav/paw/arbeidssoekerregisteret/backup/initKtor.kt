@@ -13,18 +13,16 @@ import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Detalj
 import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.getMockResponse
 import no.nav.paw.arbeidssoekerregisteret.backup.health.configureHealthRoutes
 import no.nav.paw.arbeidssoekerregisteret.backup.health.installMetrics
-import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.security.token.support.v2.IssuerConfig
-import no.nav.security.token.support.v2.RequiredClaims
 import no.nav.security.token.support.v2.TokenSupportConfig
 import no.nav.security.token.support.v2.tokenValidationSupport
 import org.apache.kafka.clients.consumer.Consumer
 
 fun initKtor(
     prometheusMeterRegistry: PrometheusMeterRegistry,
-    consumer: Consumer<*, *>
+    consumer: Consumer<*, *>,
+    azureConfig: AzureConfig
 ) {
-    val azureConfig = loadNaisOrLocalConfiguration<AzureConfig>("azure.toml")
     embeddedServer(Netty, port = 8080) {
         installMetrics(consumer, prometheusMeterRegistry)
         authentication {
@@ -45,7 +43,7 @@ fun initKtor(
             authenticate("azure") {
                 post("/api/v1/arbeidssoeker/detaljer") {
                     val request = call.receive<DetaljerRequest>()
-                    call.respond(getMockResponse())
+                    val id = request.identitetsnummer
                 }
                 get("/hello") {
                     call.respondText("Hello, world!")

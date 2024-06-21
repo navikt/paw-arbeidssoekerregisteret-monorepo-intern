@@ -15,6 +15,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
+import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.slf4j.LoggerFactory
@@ -59,7 +60,8 @@ class DataFunctionsTest : FreeSpec({
                 with(ApplicationContext(
                     consumerVersion = 1,
                     logger = logger,
-                    meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+                    meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+                    azureConfig = loadNaisOrLocalConfiguration("azure.toml")
                 )) {
                     with(hendelseSerde.serializer()) {
                         writeRecord(record)
@@ -81,7 +83,8 @@ class DataFunctionsTest : FreeSpec({
                 with(ApplicationContext(
                     consumerVersion = 2,
                     logger = logger,
-                    meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+                    meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+                    azureConfig = loadNaisOrLocalConfiguration("azure.toml")
                 )) {
                     with(hendelseSerde.serializer()) {
                         writeRecord(recordVersion2)
@@ -95,7 +98,8 @@ class DataFunctionsTest : FreeSpec({
                     with(ApplicationContext(
                         consumerVersion = 1,
                         logger = logger,
-                        meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+                        meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+                        azureConfig = loadNaisOrLocalConfiguration("azure.toml")
                     )) {
                         with(hendelseSerde.deserializer()) {
                             readRecord(record.partition(), record.offset())
@@ -111,7 +115,8 @@ class DataFunctionsTest : FreeSpec({
                     with(ApplicationContext(
                         consumerVersion = 2,
                         logger = logger,
-                        meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+                        meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+                        azureConfig = loadNaisOrLocalConfiguration("azure.toml")
                     )) {
                         with(hendelseSerde.deserializer()) {
                             readRecord(record.partition(), record.offset())

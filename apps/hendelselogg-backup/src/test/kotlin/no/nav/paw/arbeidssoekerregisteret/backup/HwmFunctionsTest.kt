@@ -9,6 +9,7 @@ import no.nav.paw.arbeidssoekerregisteret.backup.database.getHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.database.initHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.database.updateHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
+import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.slf4j.LoggerFactory
 
@@ -20,7 +21,8 @@ class HwmFunctionsTest : FreeSpec({
             with(ApplicationContext(
                 consumerVersion = 1,
                 logger = logger,
-                meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+                meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+                azureConfig = loadNaisOrLocalConfiguration("azure.toml")
             )) {
                 "When there is no hwm for the partition, getHwm should return null" {
                     transaction {
@@ -92,7 +94,8 @@ class HwmFunctionsTest : FreeSpec({
             with(ApplicationContext(
                 consumerVersion = 2,
                 logger = logger,
-                meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+                meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+                azureConfig = loadNaisOrLocalConfiguration("azure.toml")
             )) {
                 "We find no hwms for version 2" {
                     transaction {

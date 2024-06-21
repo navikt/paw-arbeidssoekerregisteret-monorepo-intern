@@ -1,9 +1,10 @@
 package no.nav.paw.arbeidssoekerregisteret.backup
 
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
+import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.HendelseMetadata
+import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.HendelseMetadataTidspunktFraKilde
+import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.HendelseMetadataUtfoertAv
+import no.nav.paw.arbeidssoekerregisteret.backup.vo.StoredData
+import no.nav.paw.arbeidssokerregisteret.intern.v1.*
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.*
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -26,27 +27,50 @@ fun hendelser(): Sequence<Hendelse> {
 }
 
 
-fun startet(): Startet = Startet(
+fun startet(
+    identitetsnummer: String = nextLong(10000000000, 10002000000).toString(),
+    id: Long = nextLong(0, 20),
+    timestamp: Instant = Instant.now().truncatedTo(ChronoUnit.MILLIS)
+): Startet = Startet(
     hendelseId = UUID.randomUUID(),
-    id = nextLong(0, 20),
-    identitetsnummer = nextLong(10000000000, 10002000000).toString(),
-    metadata = metadata()
+    id = id,
+    identitetsnummer = identitetsnummer,
+    metadata = metadata(timestamp)
 )
 
-fun avsluttet(): Avsluttet = Avsluttet(
+fun avvist(
+    identitetsnummer: String = nextLong(10000000000, 10002000000).toString(),
+    id: Long = nextLong(0, 20),
+    timestamp: Instant = Instant.now().truncatedTo(ChronoUnit.MILLIS)
+): Avvist = Avvist(
     hendelseId = UUID.randomUUID(),
-    id = nextLong(0, 20),
-    identitetsnummer = nextLong(10000000000, 10002000000).toString(),
-    metadata = metadata()
+    id = id,
+    identitetsnummer = identitetsnummer,
+    metadata = metadata(timestamp)
 )
 
-fun opplysninger(): OpplysningerOmArbeidssoekerMottatt = OpplysningerOmArbeidssoekerMottatt(
+fun avsluttet(
+    identitetsnummer: String = nextLong(10000000000, 10002000000).toString(),
+    id: Long = nextLong(0, 20),
+    timestamp: Instant = Instant.now().truncatedTo(ChronoUnit.MILLIS)
+): Avsluttet = Avsluttet(
     hendelseId = UUID.randomUUID(),
-    id = nextLong(0, 20),
-    identitetsnummer = nextLong(10000000000, 10002000000).toString(),
+    id = id,
+    identitetsnummer = identitetsnummer,
+    metadata = metadata(timestamp)
+)
+
+fun opplysninger(
+    identitetsnummer: String = nextLong(10000000000, 10002000000).toString(),
+    id: Long = nextLong(0, 20),
+    timestamp: Instant = Instant.now().truncatedTo(ChronoUnit.MILLIS)
+): OpplysningerOmArbeidssoekerMottatt = OpplysningerOmArbeidssoekerMottatt(
+    hendelseId = UUID.randomUUID(),
+    id = id,
+    identitetsnummer = identitetsnummer,
     opplysningerOmArbeidssoeker = OpplysningerOmArbeidssoeker(
         id = UUID.randomUUID(),
-        metadata = metadata(),
+        metadata = metadata(timestamp),
         utdanning = Utdanning(
             nus = "4",
             bestaatt = JaNeiVetIkke.JA,
@@ -69,7 +93,9 @@ fun opplysninger(): OpplysningerOmArbeidssoekerMottatt = OpplysningerOmArbeidsso
     ),
 )
 
-fun metadata(): Metadata = Metadata(
+fun metadata(
+    timestamp: Instant = Instant.now().truncatedTo(ChronoUnit.MILLIS)
+): Metadata = Metadata(
     tidspunkt = Instant.now().truncatedTo(ChronoUnit.MILLIS),
     utfoertAv = Bruker(
         id = nextLong(0, 20).toString(),
@@ -78,7 +104,46 @@ fun metadata(): Metadata = Metadata(
     kilde = "test",
     aarsak = "tester",
     tidspunktFraKilde = if (Random.nextBoolean()) null else TidspunktFraKilde(
-        tidspunkt = Instant.now().minusSeconds(300).truncatedTo(ChronoUnit.MILLIS),
+        tidspunkt = timestamp.minusSeconds(20),
         avviksType = AvviksType.entries.toTypedArray().random()
     )
 )
+
+fun Hendelse.storedData(
+    partition: Int  = 1,
+    offset: Long = 1,
+    recordKey: Long = 1,
+    arbeidssoekerId: Long = 1,
+    traceparent: String = "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01"
+) = StoredData(
+    partition = 1,
+    offset = 1,
+    recordKey = 1,
+    arbeidssoekerId = 1,
+    traceparent = traceparent,
+    data = this
+)
+
+fun StoredData.apiHendelse(): no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Hendelse =
+    no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Hendelse(
+        hendelseId = data.hendelseId,
+        hendelseType = data.hendelseType,
+        metadata = HendelseMetadata(
+            tidspunkt = data.metadata.tidspunkt,
+            utfoertAv = HendelseMetadataUtfoertAv(
+                type = data.metadata.utfoertAv.type.name,
+                id = data.metadata.utfoertAv.id
+            ),
+            kilde = data.metadata.kilde,
+            aarsak = data.metadata.aarsak,
+            tidspunktFraKilde = data.metadata.tidspunktFraKilde?.let {
+                HendelseMetadataTidspunktFraKilde(
+                    tidspunkt = it.tidspunkt,
+                    avvikstype = it.avviksType.name
+                )
+            }
+        ),
+        kafkaOffset = offset,
+        data = data,
+        api = null
+    )

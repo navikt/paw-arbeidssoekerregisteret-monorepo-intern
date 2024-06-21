@@ -10,6 +10,7 @@ import no.nav.paw.arbeidssoekerregisteret.backup.database.initHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.database.readRecord
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
+import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.slf4j.LoggerFactory
@@ -20,7 +21,8 @@ class ApplicationHappyPathTest : FreeSpec({
             ApplicationContext(
                 consumerVersion = 1,
                 logger = LoggerFactory.getLogger("test-logger"),
-                meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+                meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+                azureConfig = loadNaisOrLocalConfiguration("azure.toml")
             )
         ) {
             initDbContainer()

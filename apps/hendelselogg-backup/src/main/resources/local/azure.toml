@@ -1,0 +1,4 @@
+name = "azure"
+discoveryUrl = "discovery"
+tokenEndpointUrl = "localhost"
+clientId = "clientId"
