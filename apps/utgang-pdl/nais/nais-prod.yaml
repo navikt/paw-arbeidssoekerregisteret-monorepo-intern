@@ -27,11 +27,10 @@ spec:
     max: 6
   resources:
     limits:
-      cpu: 3500m
-      memory: 2048Mi
-    requests:
-      cpu: 1000m
       memory: 1024Mi
+    requests:
+      cpu: 25m
+      memory: 768Mi
   liveness:
     path: /isAlive
     initialDelay: 10
