@@ -40,7 +40,7 @@ spec:
   env:
     - name: API_OPPSLAG_SCOPE
       value: "api://dev-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag/.default"
-    - name: KAFKA_KEY_SCOPE
+    - name: KAFKA_KEYS_SCOPE
       value: "api://prod-gcp.paw.paw-kafka-key-generator/.default"
   resources:
     limits:
