@@ -22,6 +22,8 @@ import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Feil
 import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.BrukerstoetteService
 import no.nav.paw.arbeidssoekerregisteret.backup.health.configureHealthRoutes
 import no.nav.paw.arbeidssoekerregisteret.backup.health.installMetrics
+import no.nav.paw.kafkakeygenerator.auth.NaisEnv
+import no.nav.paw.kafkakeygenerator.auth.currentNaisEnv
 import no.nav.security.token.support.v2.IssuerConfig
 import no.nav.security.token.support.v2.TokenSupportConfig
 import no.nav.security.token.support.v2.tokenValidationSupport
@@ -48,8 +50,17 @@ fun initKtor(
 fun Route.configureBrukerstoetteRoutes(brukerstoetteService: BrukerstoetteService) {
     post("/api/v1/arbeidssoeker/detaljer") {
         runCatching {
-            val request = call.receive<DetaljerRequest>()
-            brukerstoetteService.hentDetaljer(request.identitetsnummer)
+            if (currentNaisEnv == NaisEnv.ProdGCP) {
+                call.respond(
+                    HttpStatusCode.ServiceUnavailable, Feil(
+                        melding = "Tjenesten er ikke tilgjengelig i produksjon",
+                        feilKode = "utilgjengelig"
+                    )
+                )
+            } else {
+                val request = call.receive<DetaljerRequest>()
+                brukerstoetteService.hentDetaljer(request.identitetsnummer)
+            }
         }.onSuccess { detaljer ->
             detaljer?.let { call.respond(it) } ?: call.respond(
                 HttpStatusCode.NotFound, Feil(
