@@ -4,6 +4,16 @@ query($ident: ID!, $historisk: Boolean) {
             foedselsdato
             foedselsaar
         }
+        statsborgerskap(historikk: $historisk) {
+            land
+            metadata {
+                endringer {
+                    type
+                    registrert
+                    kilde
+                }
+            }
+        }
         opphold(historikk: $historisk) {
             oppholdFra
             oppholdTil
