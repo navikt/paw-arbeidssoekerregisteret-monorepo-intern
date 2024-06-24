@@ -204,9 +204,13 @@ components:
         - "metadata"
         - "kafkaOffset"
         - "data"
-    InnkommendeHendelse:
+    Snapshot:
       type: "object"
       properties:
+        endret:
+          type: "boolean"
+          example: true
+          description: "'true' indikerer at denne hendelsen har endret tilstanden til brukeren"
         gjeldeneTilstand:
           $ref: "#/components/schemas/Tilstand"
         nyTilstand:
@@ -215,6 +219,7 @@ components:
           $ref: "#/components/schemas/Hendelse"
       required:
         - "hendelse"
+        - "endret"
 
     DetaljerResponse:
       type: "object"
@@ -238,7 +243,7 @@ components:
         historikk:
           type: "array"
           items:
-            $ref: "#/components/schemas/InnkommendeHendelse"
+            $ref: "#/components/schemas/Snapshot"
       required:
         - "arbeidssoekId"
         - "recordKey"

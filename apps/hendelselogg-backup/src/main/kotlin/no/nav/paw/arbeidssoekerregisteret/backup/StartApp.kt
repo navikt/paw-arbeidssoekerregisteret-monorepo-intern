@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssoekerregisteret.backup
 
 import io.micrometer.core.instrument.Tag
+import io.micrometer.core.instrument.binder.kafka.KafkaClientMetrics
 import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.BrukerstoetteService
 import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.initClients
 import no.nav.paw.arbeidssoekerregisteret.backup.database.updateHwm
@@ -34,7 +35,12 @@ fun main() {
                         applicationContext = applicationContext,
                         hendelseDeserializer = HendelseDeserializer()
                     )
-                    initKtor(meterRegistry, consumer, azureConfig)
+                    initKtor(
+                        prometheusMeterRegistry = meterRegistry,
+                        binders = listOf(KafkaClientMetrics(consumer)),
+                        azureConfig = azureConfig,
+                        brukerstoetteService = service
+                    )
                     runApplication(
                         source = consumer.asSequence(
                             stop = shutdownCalled,

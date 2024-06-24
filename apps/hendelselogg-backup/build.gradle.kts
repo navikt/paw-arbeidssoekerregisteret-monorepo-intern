@@ -29,6 +29,8 @@ dependencies {
     implementation(ktorServer.contentNegotiation)
     implementation(ktorClient.core)
     implementation(ktorClient.contentNegotiation)
+    implementation(ktor.serializationJvm)
+    implementation(ktor.serializationJackson)
     implementation(navSecurity.tokenValidationKtorV2)
     implementation(navSecurity.tokenClient)
     implementation(navCommon.tokenClient)
@@ -59,6 +61,7 @@ dependencies {
     testImplementation(testLibs.mockk)
     testImplementation(testLibs.testContainers)
     testImplementation(testLibs.postgresql)
+    testImplementation(ktorServer.testJvm)
 }
 
 java {

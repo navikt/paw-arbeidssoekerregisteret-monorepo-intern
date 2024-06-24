@@ -7,6 +7,7 @@ import io.ktor.server.netty.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.pipeline.*
+import io.micrometer.core.instrument.binder.MeterBinder
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmInfoMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
@@ -18,17 +19,16 @@ import no.nav.paw.arbeidssoekerregisteret.backup.HwmRebalanceListener
 import org.apache.kafka.clients.consumer.Consumer
 
 fun Application.installMetrics(
-    consumer: Consumer<*, *>,
+    binders: List<MeterBinder>,
     prometheusRegistry: PrometheusMeterRegistry
 ) {
     install(MicrometerMetrics) {
         registry = prometheusRegistry
         meterBinders = listOf(
-            KafkaClientMetrics(consumer),
             JvmMemoryMetrics(),
             JvmGcMetrics(),
             ProcessorMetrics()
-        )
+        ) + binders
     }
 }
 

@@ -3,7 +3,7 @@ package no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import no.nav.paw.arbeidssoekerregisteret.backup.*
-import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.InnkommendeHendelse
+import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Snapshot
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Tilstand
 
 class HistoriskeTilstanderTest : FreeSpec({
@@ -22,7 +22,7 @@ class HistoriskeTilstanderTest : FreeSpec({
                     startet
                 )
             ) shouldBe listOf(
-                InnkommendeHendelse(
+                Snapshot(
                     hendelse = startet.apiHendelse(),
                     gjeldeneTilstand = null,
                     nyTilstand = Tilstand(
@@ -31,7 +31,8 @@ class HistoriskeTilstanderTest : FreeSpec({
                         harOpplysningerMottattHendelse = false,
                         avsluttet = null,
                         apiKall = null
-                    )
+                    ),
+                    endret = true
                 )
             )
         }
@@ -48,12 +49,13 @@ class HistoriskeTilstanderTest : FreeSpec({
             )
             val result = historiskeTilstander(hendelser).toList()
             val expected = listOf(
-                InnkommendeHendelse(
+                Snapshot(
                     hendelse = hendelser[0].apiHendelse(),
                     gjeldeneTilstand = null,
-                    nyTilstand = null
+                    nyTilstand = null,
+                    endret = false
                 ),
-                InnkommendeHendelse(
+                Snapshot(
                     hendelse = hendelser[1].apiHendelse(),
                     gjeldeneTilstand = null,
                     nyTilstand = Tilstand(
@@ -62,9 +64,10 @@ class HistoriskeTilstanderTest : FreeSpec({
                         harOpplysningerMottattHendelse = false,
                         avsluttet = null,
                         apiKall = null
-                    )
+                    ),
+                    endret = true
                 ),
-                InnkommendeHendelse(
+                Snapshot(
                     hendelse = hendelser[2].apiHendelse(),
                     gjeldeneTilstand = Tilstand(
                         harAktivePeriode = true,
@@ -79,9 +82,10 @@ class HistoriskeTilstanderTest : FreeSpec({
                         harOpplysningerMottattHendelse = true,
                         avsluttet = null,
                         apiKall = null
-                    )
+                    ),
+                    endret = true
                 ),
-                InnkommendeHendelse(
+                Snapshot(
                     hendelse = hendelser[3].apiHendelse(),
                     gjeldeneTilstand = Tilstand(
                         harAktivePeriode = true,
@@ -96,9 +100,10 @@ class HistoriskeTilstanderTest : FreeSpec({
                         harOpplysningerMottattHendelse = true,
                         avsluttet = hendelser[3].data.metadata.tidspunkt,
                         apiKall = null
-                    )
+                    ),
+                    endret = true
                 ),
-                InnkommendeHendelse(
+                Snapshot(
                     hendelse = hendelser[4].apiHendelse(),
                     gjeldeneTilstand = Tilstand(
                         harAktivePeriode = false,
@@ -113,9 +118,10 @@ class HistoriskeTilstanderTest : FreeSpec({
                         harOpplysningerMottattHendelse = false,
                         avsluttet = null,
                         apiKall = null
-                    )
+                    ),
+                    endret = true
                 ),
-                InnkommendeHendelse(
+                Snapshot(
                     hendelse = hendelser[5].apiHendelse(),
                     gjeldeneTilstand = Tilstand(
                         harAktivePeriode = true,
@@ -130,9 +136,10 @@ class HistoriskeTilstanderTest : FreeSpec({
                         harOpplysningerMottattHendelse = true,
                         avsluttet = null,
                         apiKall = null
-                    )
+                    ),
+                    endret = true
                 ),
-                InnkommendeHendelse(
+                Snapshot(
                     hendelse = hendelser[6].apiHendelse(),
                     gjeldeneTilstand = Tilstand(
                         harAktivePeriode = true,
@@ -147,9 +154,10 @@ class HistoriskeTilstanderTest : FreeSpec({
                         harOpplysningerMottattHendelse = true,
                         avsluttet = hendelser[6].data.metadata.tidspunkt,
                         apiKall = null
-                    )
+                    ),
+                    endret = true
                 ),
-                InnkommendeHendelse(
+                Snapshot(
                     hendelse = hendelser[7].apiHendelse(),
                     gjeldeneTilstand = Tilstand(
                         harAktivePeriode = false,
@@ -164,7 +172,8 @@ class HistoriskeTilstanderTest : FreeSpec({
                         harOpplysningerMottattHendelse = true,
                         avsluttet = hendelser[6].data.metadata.tidspunkt,
                         apiKall = null
-                    )
+                    ),
+                    endret = false
                 )
             )
             result.size shouldBe expected.size

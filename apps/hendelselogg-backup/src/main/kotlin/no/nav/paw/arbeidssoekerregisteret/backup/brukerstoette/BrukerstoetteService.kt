@@ -20,21 +20,25 @@ class BrukerstoetteService(
     private val hendelseDeserializer: HendelseDeserializer
 ) {
 
-    suspend fun henterDetaljer(identitetsnummer: String): DetaljerResponse? {
+    suspend fun hentDetaljer(identitetsnummer: String): DetaljerResponse? {
         val response = kafkaKeysClient.getIdAndKeyOrNull(identitetsnummer) ?: return null
         val hendelser = transaction {
             (::readAllRecordsForId)(hendelseDeserializer, applicationContext, response.id)
         }
-        val sistePeriode = sistePeriode(hendelser)
-        val innkommendeHendelse = historiskeTilstander(hendelser).toList()
-        val partition = hendelser.firstOrNull()?.partition
-        return DetaljerResponse(
-            recordKey = response.key,
-            kafkaPartition = partition,
-            historikk = innkommendeHendelse,
-            arbeidssoekerId = response.id,
-            gjeldeneTilstand = sistePeriode
-        )
+        if (hendelser.isEmpty()) {
+            return null
+        } else {
+            val sistePeriode = sistePeriode(hendelser)
+            val innkommendeHendelse = historiskeTilstander(hendelser).toList()
+            val partition = hendelser.firstOrNull()?.partition
+            return DetaljerResponse(
+                recordKey = response.key,
+                kafkaPartition = partition,
+                historikk = innkommendeHendelse,
+                arbeidssoekerId = response.id,
+                gjeldeneTilstand = sistePeriode
+            )
+        }
     }
 }
 
@@ -43,10 +47,11 @@ fun sistePeriode(hendelser: List<StoredData>): Tilstand? =
         .sortedBy { it.offset }
         .fold(null as Tilstand?, ::beregnTilstand)
 
-fun historiskeTilstander(hendelser: List<StoredData>): Iterable<InnkommendeHendelse> =
+fun historiskeTilstander(hendelser: List<StoredData>): Iterable<Snapshot> =
     hendelser.map(null as Tilstand?) { tilstand, hendelse ->
         val nyTilstand = beregnTilstand(tilstand, hendelse)
-        val resultat = InnkommendeHendelse(
+        val resultat = Snapshot(
+            endret = nyTilstand !== tilstand,
             hendelse = Hendelse(
                 hendelseId = hendelse.data.hendelseId,
                 hendelseType = hendelse.data.hendelseType,
