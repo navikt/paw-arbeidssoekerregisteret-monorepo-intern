@@ -1,6 +1,18 @@
 {
   "data": {
     "hentPerson": {
+      "statsborgerskap": [
+        {
+          "land": "NOR",
+          "metadata": {
+            "endringer": [{
+              "type:": "OPPRETT",
+              "registrert": "2010-01-20",
+              "kilde": "FOLKEREGISTERET"
+            }]
+          }
+        }
+      ],
       "foedsel": [
         {
           "foedselsdato": "1986-11-26",
