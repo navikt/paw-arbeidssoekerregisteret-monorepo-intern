@@ -24,6 +24,7 @@ include(
     "domain:main-avro-schema",
     "domain:interne-hendelser",
     "domain:arbeidssoekerregisteret-kotlin",
+    "domain:arbeidssoeker-regler"
 )
 
 dependencyResolutionManagement {
@@ -51,13 +52,16 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         // PAW greier
-        val pawPdlClientVersion = "24.06.10.36-1"
+        val pawPdlClientVersion = "24.06.24.38-1"
         val pawAaregClientVersion = "24.01.12.16-1"
         val arbeidssokerregisteretVersion = "1.9348086045.48-1"
 
+        //Arrow
+        val arrowVersion = "1.2.4"
+
         // NAV
-        val noNavCommonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
-        val noNavSecurityVersion = "4.1.7"
+        val noNavCommonVersion = "3.2024.05.23_05.46-2b29fa343e8e" //https://github.com/navikt/common-java-modules
+        val noNavSecurityVersion = "5.0.1" //https://github.com/navikt/token-support
 
         // Konfigurasjon
         val comSksamuelHopliteVersion = "2.8.0.RC3"
@@ -71,23 +75,23 @@ dependencyResolutionManagement {
         val comFasterxmlJacksonVersion = "2.17.1"
 
         // ---- //
-        val kotlinExposedVersion = "0.50.0"
+        val kotlinExposedVersion = "0.51.1"
         val logstashVersion = "7.4"
         val logbackVersion = "1.5.6"
-        val kotestVersion = "5.9.0"
+        val kotestVersion = "5.9.1"
         val mockkVersion = "1.13.11"
         val testContainersVersion = "1.19.8"
         val mockOauth2ServerVersion = "2.1.5"
-        val micrometerVersion = "1.13.0"
-        val otelTargetSdkVersion = "1.36.0"
-        val otelInstrumentationVersion = "2.1.0"
+        val micrometerVersion = "1.13.1"
+        val otelTargetSdkVersion = "1.39.0"
+        val otelInstrumentationVersion = "2.4.0"
         val coroutinesVersion = "1.8.1"
         val rapporteringsSchemaVersion = "24.05.15.2-1"
         val postgresDriverVersion = "42.7.3"
-        val flywayVersion = "10.14.0"
+        val flywayVersion = "10.15.0"
 
         fun VersionCatalogBuilder.ktorLib(alias: String, artifactId: String) =
-            library(alias, "io.ktor", artifactId).version("2.3.11")
+            library(alias, "io.ktor", artifactId).version("2.3.12")
 
         fun VersionCatalogBuilder.ktorLibs(vararg aliases: Pair<String, String>) =
             aliases.forEach { (artifactId, alias) -> ktorLib(alias, artifactId) }
@@ -95,6 +99,9 @@ dependencyResolutionManagement {
         infix fun String.alias(alias: String) = this to alias
         create("kotlinx") {
             library("coroutinesCore", "org.jetbrains.kotlinx", "kotlinx-coroutines-core").version(coroutinesVersion)
+        }
+        create("arrow") {
+            library("core", "io.arrow-kt", "arrow-core").version(arrowVersion)
         }
         create("loggingLibs") {
             library("logbackClassic", "ch.qos.logback", "logback-classic").version(logbackVersion)

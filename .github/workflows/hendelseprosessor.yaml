@@ -2,11 +2,10 @@ name: Hendelseprosessor
 
 on:
   push:
-    branches:
-      - main
     paths:
       - 'apps/hendelseprosessor/**'
-      - 'lib/kafka-key-generator-client/**'
+      - 'lib/**'
+      - 'domain/**'
       - '.github/workflows/hendelseprosessor.yaml'
       - 'gradle/**'
       - 'settings.gradle.kts'

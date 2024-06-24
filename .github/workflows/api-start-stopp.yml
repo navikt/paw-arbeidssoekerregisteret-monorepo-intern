@@ -1,11 +1,10 @@
 name: Api Start stopp
 on:
     push:
-        branches:
-          - main
         paths:
           - 'apps/api-start-stopp-perioder/**'
-          - 'lib/kafka-key-generator-client/**'
+          - 'domain/**'
+          - 'lib/**'
           - '.github/workflows/api-start-stopp.yml'
           - 'gradle/**'
           - 'settings.gradle.kts'

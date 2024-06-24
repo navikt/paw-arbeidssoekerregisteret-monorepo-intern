@@ -178,18 +178,7 @@ components:
         beskrivelse:
           type: "string"
         regel:
-          type: "string"
-          enum:
-            - "UKJENT_REGEL"
-            - "IKKE_FUNNET"
-            - "SAVNET"
-            - "DOED"
-            - "ENDRE_FOR_ANNEN_BRUKER"
-            - "ANSATT_IKKE_TILGANG_TIL_BRUKER"
-            - "IKKE_TILGANG"
-            - "UNDER_18_AAR"
-            - "IKKE_BOSATT_I_NORGE_I_HENHOLD_TIL_FOLKEREGISTERLOVEN"
-            - "UKJENT_ALDER"
+          $ref: "#/components/schemas/ApiRegelId"
         detaljer:
           type: "array"
           items:
@@ -232,3 +221,19 @@ components:
         - "SISTE_FLYTTING_VAR_INN_TIL_NORGE"
         - "IKKE_MULIG_AA_IDENTIFISERE_SISTE_FLYTTING"
         - "INGEN_FLYTTE_INFORMASJON"
+        - "ER_GBR_STATSBORGER"
+        - "ER_EU_EOES_STATSBORGER"
+        - "UKJENT_OPPLYSNING"
+    ApiRegelId:
+      type: "string"
+      enum:
+        - "UKJENT_REGEL"
+        - "IKKE_FUNNET"
+        - "SAVNET"
+        - "DOED"
+        - "ENDRE_FOR_ANNEN_BRUKER"
+        - "ANSATT_IKKE_TILGANG_TIL_BRUKER"
+        - "IKKE_TILGANG"
+        - "UNDER_18_AAR"
+        - "IKKE_BOSATT_I_NORGE_I_HENHOLD_TIL_FOLKEREGISTERLOVEN"
+        - "UKJENT_ALDER"

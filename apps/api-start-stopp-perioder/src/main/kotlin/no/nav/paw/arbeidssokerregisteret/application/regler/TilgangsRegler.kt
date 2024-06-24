@@ -1,37 +1,67 @@
 package no.nav.paw.arbeidssokerregisteret.application.regler
 
 import no.nav.paw.arbeidssokerregisteret.application.*
+import no.nav.paw.arbeidssokerregisteret.application.authfaktka.*
+import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
 
-val tilgangsReglerIPrioritertRekkefolge: List<Regel<TilgangskontrollResultat>> = listOf(
+val tilgangsReglerIPrioritertRekkefolge: List<Regel> = listOf(
     "Ansatt har tilgang til bruker"(
-        Opplysning.ANSATT_TILGANG,
-        id = RegelId.ANSATT_HAR_TILGANG_TIL_BRUKER,
-        vedTreff = ::TilgangOK
+        AuthOpplysning.AnsattTilgang,
+        id = AnsattHarTilgangTilBruker,
+        vedTreff = ::ok
     ),
     "Ikke ansatt har satt forhåndsgodkjenningAvVeileder"(
-        Opplysning.FORHAANDSGODKJENT_AV_ANSATT,
-        Opplysning.IKKE_ANSATT,
-        id = RegelId.IKKE_ANSATT_OG_FORHAANDSGODKJENT_AV_ANSATT,
-        vedTreff = ::UgyldigRequestBasertPaaAutentisering
+        DomeneOpplysning.ErForhaandsgodkjent,
+        AuthOpplysning.IkkeAnsatt,
+        id = IkkeAnsattOgForhaandsgodkjentAvAnsatt,
+        vedTreff = ::problem
     ),
     "Bruker prøver å endre for seg selv"(
-        Opplysning.SAMME_SOM_INNLOGGET_BRUKER,
-        Opplysning.IKKE_ANSATT,
-        id = RegelId.ENDRE_EGEN_BRUKER,
-        vedTreff = ::TilgangOK
+        AuthOpplysning.SammeSomInnloggetBruker,
+        AuthOpplysning.IkkeAnsatt,
+        id = EndreEgenBruker,
+        vedTreff = ::ok
     ),
     "Prøver å endre for en annen bruker"(
-        Opplysning.IKKE_SAMME_SOM_INNLOGGER_BRUKER,
-        id = RegelId.ENDRE_FOR_ANNEN_BRUKER,
-        vedTreff = ::IkkeTilgang
+        AuthOpplysning.IkkeSammeSomInnloggerBruker,
+        id = EndreForAnnenBruker,
+        vedTreff = ::problem
     ),
     "Ansatt har ikke tilgang til bruker"(
-        Opplysning.ANSATT_IKKE_TILGANG,
-        id = RegelId.ANSATT_IKKE_TILGANG_TIL_BRUKER,
-        vedTreff = ::IkkeTilgang
+        AuthOpplysning.AnsattIkkeTilgang,
+        id = AnsattIkkeTilgangTilBruker,
+        vedTreff = ::problem
     ),
     "Ikke tilgang"(
-        id = RegelId.IKKE_TILGANG,
-        vedTreff = ::IkkeTilgang
+        id = IkkeTilgang,
+        vedTreff = ::problem
     )
 )
+
+sealed interface AuthRegelId: RegelId
+
+data object IkkeTilgang : AuthRegelId {
+    override val id: String = "IKKE_TILGANG"
+}
+
+data object AnsattIkkeTilgangTilBruker : AuthRegelId {
+    override val id: String = "ANSATT_IKKE_TILGANG_TIL_BRUKER"
+}
+
+data object EndreForAnnenBruker : AuthRegelId {
+    override val id: String = "ENDRE_FOR_ANNEN_BRUKER"
+}
+
+data object EndreEgenBruker : AuthRegelId {
+    override val id: String = "ENDRE_EGEN_BRUKER"
+}
+
+data object IkkeAnsattOgForhaandsgodkjentAvAnsatt : AuthRegelId {
+    override val id: String = "IKKE_ANSATT_OG_FORHAANDSGODKJENT_AV_ANSATT"
+}
+
+data object AnsattHarTilgangTilBruker : AuthRegelId {
+    override val id: String = "ANSATT_HAR_TILGANG_TIL_BRUKER"
+}
+
+

@@ -1,14 +1,13 @@
 package no.nav.paw.arbeidssokerregisteret.services
 
 import io.kotest.core.spec.style.FreeSpec
-import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.paw.arbeidssokerregisteret.RequestScope
 import no.nav.paw.arbeidssokerregisteret.TestData
-import no.nav.paw.arbeidssokerregisteret.application.Opplysning
-import no.nav.paw.arbeidssokerregisteret.application.fakta.navAnsattTilgangFakta
+import no.nav.paw.arbeidssokerregisteret.application.authfaktka.AuthOpplysning.IkkeAnsatt
+import no.nav.paw.arbeidssokerregisteret.application.authfaktka.navAnsattTilgangFakta
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.utils.ResolvedClaims
 import no.nav.paw.arbeidssokerregisteret.utils.TokenXPID
@@ -65,7 +64,7 @@ class AutorisasjonServiceTest : FreeSpec({
             path = "test"
         )
         with (requestScope) {
-            autorisasjonService.navAnsattTilgangFakta(identitet) shouldBe Opplysning.IKKE_ANSATT
+            autorisasjonService.navAnsattTilgangFakta(identitet) shouldBe IkkeAnsatt
         }
     }
 })

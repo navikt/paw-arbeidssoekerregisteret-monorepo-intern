@@ -1,5 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.intern.v1.vo
 
+import com.fasterxml.jackson.annotation.JsonEnumDefaultValue
+
 enum class Opplysning {
     FORHAANDSGODKJENT_AV_ANSATT,
     SAMME_SOM_INNLOGGET_BRUKER,
@@ -31,5 +33,9 @@ enum class Opplysning {
     SISTE_FLYTTING_VAR_UT_AV_NORGE,
     SISTE_FLYTTING_VAR_INN_TIL_NORGE,
     IKKE_MULIG_AA_IDENTIFISERE_SISTE_FLYTTING,
-    INGEN_FLYTTE_INFORMASJON
+    INGEN_FLYTTE_INFORMASJON,
+    ER_EU_EOES_STATSBORGER,
+    ER_GBR_STATSBORGER,
+    @JsonEnumDefaultValue
+    UKJENT_OPPLYSNING
 }

@@ -1,12 +1,19 @@
 package no.nav.paw.arbeidssokerregisteret.application
 
+import arrow.core.Either
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.paw.arbeidssokerregisteret.RequestScope
+import no.nav.paw.arbeidssokerregisteret.application.authfaktka.AuthOpplysning.AnsattIkkeTilgang
+import no.nav.paw.arbeidssokerregisteret.application.authfaktka.AuthOpplysning.AnsattTilgang
+import no.nav.paw.arbeidssokerregisteret.application.authfaktka.AuthOpplysning.IkkeAnsatt
+import no.nav.paw.arbeidssokerregisteret.application.opplysninger.*
+import no.nav.paw.arbeidssokerregisteret.application.regler.IkkeAnsattOgForhaandsgodkjentAvAnsatt
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.arbeidssokerregisteret.services.PersonInfoService
@@ -40,22 +47,22 @@ class RequestValidatorTest : FreeSpec({
                     autorisasjonService.verifiserVeilederTilgangTilBruker(any(), any())
                 } returns true
                 val requestValidator = RequestValidator(autorisasjonService, personInfoService)
-                "Når forhandsgodkjent av veileder er false" - {
+                "Når forhandsgodkjent av veileder er false" {
                     val tilgangskontrollresultat = with(requestScope) {
                         requestValidator.validerTilgang(identitsnummer)
-                    }
-                    tilgangskontrollresultat.opplysning shouldContain Opplysning.ANSATT_TILGANG
-                    tilgangskontrollresultat.opplysning shouldNotContain Opplysning.FORHAANDSGODKJENT_AV_ANSATT
+                    }.shouldBeInstanceOf<Either.Right<OK>>()
+                    tilgangskontrollresultat.value.opplysning shouldContain AnsattTilgang
+                    tilgangskontrollresultat.value.opplysning shouldNotContain DomeneOpplysning.ErForhaandsgodkjent
                 }
-                "Når forhandsgodkjent av ansatt er true" - {
+                "Når forhandsgodkjent av ansatt er true" {
                     val tilgangskontrollresultat = with(requestScope) {
                         requestValidator.validerTilgang(identitsnummer, true)
-                    }
-                    tilgangskontrollresultat.opplysning shouldContain Opplysning.ANSATT_TILGANG
-                    tilgangskontrollresultat.opplysning shouldContain Opplysning.FORHAANDSGODKJENT_AV_ANSATT
+                    }.shouldBeInstanceOf<Either.Right<OK>>()
+                    tilgangskontrollresultat.value.opplysning shouldContain AnsattTilgang
+                    tilgangskontrollresultat.value.opplysning shouldContain DomeneOpplysning.ErForhaandsgodkjent
                 }
             }
-            "Når veileder ikke har tilgang til bruker" - {
+            "Når veileder ikke har tilgang til bruker" {
                 val autorisasjonService: AutorisasjonService = mockk()
                 coEvery {
                     autorisasjonService.verifiserVeilederTilgangTilBruker(any(), any())
@@ -64,8 +71,8 @@ class RequestValidatorTest : FreeSpec({
 
                 val tilgangskontrollresultat = with(requestScope) {
                     requestValidator.validerTilgang(identitsnummer)
-                }
-                tilgangskontrollresultat.opplysning shouldContain Opplysning.ANSATT_IKKE_TILGANG
+                }.shouldBeInstanceOf<Either.Left<Problem>>()
+                tilgangskontrollresultat.value.opplysning shouldContain AnsattIkkeTilgang
             }
         }
         "Når bruker er logget inn" - {
@@ -79,20 +86,20 @@ class RequestValidatorTest : FreeSpec({
             )
             val autorisasjonService: AutorisasjonService = mockk()
             val requestValidator = RequestValidator(autorisasjonService, personInfoService)
-            "standardbruker" - {
+            "standardbruker" {
                 val tilgangskontrollresultat = with(requestScope) {
                     requestValidator.validerTilgang(identitsnummer)
-                }
-                tilgangskontrollresultat.opplysning shouldContain Opplysning.IKKE_ANSATT
-                tilgangskontrollresultat.opplysning shouldNotContain Opplysning.FORHAANDSGODKJENT_AV_ANSATT
+                }.shouldBeInstanceOf<Either.Right<OK>>()
+                tilgangskontrollresultat.value.opplysning shouldContain IkkeAnsatt
+                tilgangskontrollresultat.value.opplysning shouldNotContain DomeneOpplysning.ErForhaandsgodkjent
             }
-            "forhåndsgodkjentflagg" - {
+            "forhåndsgodkjentflagg" {
                 val tilgangskontrollresultat = with(requestScope) {
                     requestValidator.validerTilgang(identitsnummer, true)
-                }
-                tilgangskontrollresultat.opplysning shouldContain Opplysning.IKKE_ANSATT
-                tilgangskontrollresultat.opplysning shouldContain Opplysning.FORHAANDSGODKJENT_AV_ANSATT
-                tilgangskontrollresultat.regel.id.shouldBe(RegelId.IKKE_ANSATT_OG_FORHAANDSGODKJENT_AV_ANSATT)
+                }.shouldBeInstanceOf<Either.Left<Problem>>()
+                tilgangskontrollresultat.value.opplysning shouldContain IkkeAnsatt
+                tilgangskontrollresultat.value.opplysning shouldContain DomeneOpplysning.ErForhaandsgodkjent
+                tilgangskontrollresultat.value.regel.id.shouldBe(IkkeAnsattOgForhaandsgodkjentAvAnsatt)
             }
         }
 
@@ -129,26 +136,27 @@ class RequestValidatorTest : FreeSpec({
                         ),
                         opphold = emptyList(),
                         innflyttingTilNorge = emptyList(),
-                        utflyttingFraNorge = emptyList()
+                        utflyttingFraNorge = emptyList(),
+                        statsborgerskap = listOf(Statsborgerskap("ARG", Metadata(emptyList())))
                     )
-                    "godkjent av veilederflagg er true" - {
+                    "godkjent av veilederflagg er true" {
                         val resultat = with(requestScope) {
                             requestValidator.validerStartAvPeriodeOenske(identitsnummer, true)
-                        }
-                        resultat.opplysning shouldContain Opplysning.IKKE_ANSATT
-                        resultat.opplysning shouldContain Opplysning.FORHAANDSGODKJENT_AV_ANSATT
+                        }.shouldBeInstanceOf<Either.Left<Problem>>()
+                        resultat.value.opplysning shouldContain IkkeAnsatt
+                        resultat.value.opplysning shouldContain DomeneOpplysning.ErForhaandsgodkjent
                     }
 
-                    "godkjent av veileder er false" - {
+                    "godkjent av veileder er false" {
                         val resultat = with(requestScope) {
                             requestValidator.validerStartAvPeriodeOenske(identitsnummer)
-                        }
-                        resultat.opplysning shouldContain Opplysning.IKKE_ANSATT
-                        resultat.opplysning shouldNotContain Opplysning.FORHAANDSGODKJENT_AV_ANSATT
+                        }.shouldBeInstanceOf<Either.Right<OK>>()
+                        resultat.value.opplysning shouldContain IkkeAnsatt
+                        resultat.value.opplysning shouldNotContain DomeneOpplysning.ErForhaandsgodkjent
                     }
                 }
 
-                "Bruker ikke bosatt" - {
+                "Bruker ikke bosatt" {
                     val requestScope = RequestScope(
                         claims = ResolvedClaims()
                             .add(TokenXPID, "12345678909"),
@@ -174,15 +182,16 @@ class RequestValidatorTest : FreeSpec({
                         ),
                         opphold = emptyList(),
                         innflyttingTilNorge = emptyList(),
-                        utflyttingFraNorge = emptyList()
+                        utflyttingFraNorge = emptyList(),
+                        statsborgerskap = listOf(Statsborgerskap("ARG", Metadata(emptyList())))
                     )
                     val resultat = with(requestScope) {
                         requestValidator.validerStartAvPeriodeOenske(identitsnummer)
-                    }
-                    resultat.opplysning shouldContain Opplysning.IKKE_BOSATT
-
+                    }.shouldBeInstanceOf<Either.Left<Problem>>()
+                    resultat.value.opplysning shouldContain DomeneOpplysning.IkkeBosatt
+                    resultat.value.regel.id shouldBe IkkeBosattINorgeIHenholdTilFolkeregisterloven
                 }
-                "Bruker har dNummer" - {
+                "Bruker har dNummer" {
                     val requestScope = RequestScope(
                         claims = ResolvedClaims()
                             .add(TokenXPID, "12345678909"),
@@ -214,15 +223,17 @@ class RequestValidatorTest : FreeSpec({
                         ),
                         opphold = emptyList(),
                         innflyttingTilNorge = emptyList(),
-                        utflyttingFraNorge = emptyList()
+                        utflyttingFraNorge = emptyList(),
+                        statsborgerskap = listOf(Statsborgerskap("ARG", Metadata(emptyList())))
                     )
                     val resultat = with(requestScope) {
                         requestValidator.validerStartAvPeriodeOenske(identitsnummer)
-                    }
-                    resultat.opplysning shouldContain Opplysning.IKKE_BOSATT
-                    resultat.opplysning shouldContain Opplysning.DNUMMER
+                    }.shouldBeInstanceOf<Either.Left<Problem>>()
+                    resultat.value.opplysning shouldContain DomeneOpplysning.IkkeBosatt
+                    resultat.value.opplysning shouldContain DomeneOpplysning.Dnummer
+                    resultat.value.regel.id shouldBe IkkeBosattINorgeIHenholdTilFolkeregisterloven
                 }
-                "Person ikke funnet" - {
+                "Person ikke funnet" {
                     val requestScope = RequestScope(
                         claims = ResolvedClaims()
                             .add(TokenXPID, "12345678909"),
@@ -238,10 +249,11 @@ class RequestValidatorTest : FreeSpec({
                     } returns null
                     val resultat = with(requestScope) {
                         requestValidator.validerStartAvPeriodeOenske(identitsnummer)
-                    }
-                    resultat.opplysning shouldContain Opplysning.PERSON_IKKE_FUNNET
+                    }.shouldBeInstanceOf<Either.Left<Problem>>()
+                    resultat.value.opplysning shouldContain DomeneOpplysning.PersonIkkeFunnet
+                    resultat.value.regel.id shouldBe IkkeFunnet
                 }
-                "Ukjent alder" - {
+                "Ukjent alder" {
                     val requestScope = RequestScope(
                         claims = ResolvedClaims()
                             .add(TokenXPID, "12345678909"),
@@ -260,14 +272,15 @@ class RequestValidatorTest : FreeSpec({
                         folkeregisterpersonstatus = emptyList(),
                         opphold = emptyList(),
                         innflyttingTilNorge = emptyList(),
-                        utflyttingFraNorge = emptyList()
+                        utflyttingFraNorge = emptyList(),
+                        statsborgerskap = listOf(Statsborgerskap("ARG", Metadata(emptyList())))
                     )
                     val resultat = with(requestScope) {
                         requestValidator.validerStartAvPeriodeOenske(identitsnummer)
-                    }
-                    resultat.opplysning shouldContain Opplysning.UKJENT_FOEDSELSDATO
+                    }.shouldBeInstanceOf<Either.Left<Problem>>()
+                    resultat.value.opplysning shouldContain DomeneOpplysning.UkjentFoedselsdato
                 }
-                "Registrert som død" - {
+                "Registrert som død" {
                     val requestScope = RequestScope(
                         claims = ResolvedClaims()
                             .add(TokenXPID, "12345678909"),
@@ -293,14 +306,15 @@ class RequestValidatorTest : FreeSpec({
                         ),
                         opphold = emptyList(),
                         innflyttingTilNorge = emptyList(),
-                        utflyttingFraNorge = emptyList()
+                        utflyttingFraNorge = emptyList(),
+                        statsborgerskap = listOf(Statsborgerskap("ARG", Metadata(emptyList())))
                     )
                     val resultat = with(requestScope) {
                         requestValidator.validerStartAvPeriodeOenske(identitsnummer)
-                    }
-                    resultat.opplysning shouldContain Opplysning.DOED
+                    }.shouldBeInstanceOf<Either.Left<Problem>>()
+                    resultat.value.opplysning shouldContain DomeneOpplysning.ErDoed
                 }
-                "Registrert som savnet" - {
+                "Registrert som savnet" {
                     val requestScope = RequestScope(
                         claims = ResolvedClaims()
                             .add(TokenXPID, "12345678909"),
@@ -332,12 +346,13 @@ class RequestValidatorTest : FreeSpec({
                         ),
                         opphold = emptyList(),
                         innflyttingTilNorge = emptyList(),
-                        utflyttingFraNorge = emptyList()
+                        utflyttingFraNorge = emptyList(),
+                        statsborgerskap = listOf(Statsborgerskap("ARG", Metadata(emptyList())))
                     )
                     val resultat = with(requestScope) {
                         requestValidator.validerStartAvPeriodeOenske(identitsnummer)
-                    }
-                    resultat.opplysning shouldContain Opplysning.SAVNET
+                    }.shouldBeInstanceOf<Either.Left<Problem>>()
+                    resultat.value.opplysning shouldContain DomeneOpplysning.ErSavnet
                 }
 
             }

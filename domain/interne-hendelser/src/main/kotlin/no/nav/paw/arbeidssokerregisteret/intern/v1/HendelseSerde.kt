@@ -48,6 +48,7 @@ class HendelseDeserializer(private val objectMapper: ObjectMapper) : Deserialize
 
 private fun hendelseObjectMapper(): ObjectMapper = ObjectMapper()
     .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+    .enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE)
     .registerModules(
         KotlinModule.Builder()
             .withReflectionCacheSize(512)

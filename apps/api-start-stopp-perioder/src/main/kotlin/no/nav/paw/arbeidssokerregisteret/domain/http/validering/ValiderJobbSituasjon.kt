@@ -1,10 +1,10 @@
 package no.nav.paw.arbeidssokerregisteret.domain.http.validering
 
+import arrow.core.Either
+import arrow.core.left
 import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.Jobbsituasjon
 import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.JobbsituasjonMedDetaljer.Beskrivelse.*
 import no.nav.paw.arbeidssokerregisteret.STILLING_STYRK08
-import no.nav.paw.arbeidssokerregisteret.domain.http.ValidationErrorResult
-import no.nav.paw.arbeidssokerregisteret.domain.http.ValidationResult
 
 /*
 UKJENT_VERDI
@@ -24,7 +24,7 @@ KONKURS
 ANNET
  */
 
-fun validerJobbsituasjon(jobbsituasjon: Jobbsituasjon): ValidationResult {
+fun validerJobbsituasjon(jobbsituasjon: Jobbsituasjon): Either<ValidationErrorResult, Unit> {
     val requiresStyrk08 = setOf(
         ER_PERMITTERT,
         HAR_SAGT_OPP,
@@ -41,14 +41,14 @@ fun validerJobbsituasjon(jobbsituasjon: Jobbsituasjon): ValidationResult {
         return ValidationErrorResult(
             setOf("jobbsituasjon.beskrivelser"),
             "Mangler '$STILLING_STYRK08' for ${missingStyrk08.joinToString { it.beskrivelse.name }}"
-        )
+        ).left()
     }
 
     val detaljerError = jobbsituasjon.beskrivelser
         .map(::validerDetaljer)
         .filterIsInstance<ValidationErrorResult>()
     if (detaljerError.isNotEmpty()){
-        return  detaljerError.first()
+        return  detaljerError.first().left()
     }
 
     return validerBeskrivelser(jobbsituasjon.beskrivelser.map { it.beskrivelse })

@@ -1,11 +1,11 @@
 package no.nav.paw.arbeidssokerregisteret
 
+import arrow.core.right
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import io.ktor.client.call.*
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
@@ -13,17 +13,15 @@ import io.ktor.server.testing.*
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import io.mockk.verify
 import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.*
 import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.JobbsituasjonMedDetaljer.Beskrivelse.DELTIDSJOBB_VIL_MER
 import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.JobbsituasjonMedDetaljer.Beskrivelse.HAR_SAGT_OPP
-import no.nav.paw.arbeidssokerregisteret.application.*
-import no.nav.paw.arbeidssokerregisteret.domain.http.*
+import no.nav.paw.arbeidssokerregisteret.application.OpplysningerRequestHandler
+import no.nav.paw.arbeidssokerregisteret.application.StartStoppRequestHandler
 import no.nav.paw.arbeidssokerregisteret.plugins.configureHTTP
 import no.nav.paw.arbeidssokerregisteret.plugins.configureSerialization
 import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutes
 import java.time.LocalDate
-import kotlin.math.exp
 
 class ApplicationOpplysningerTest : FunSpec({
     test("Verifiser opplysninger happy path") {
@@ -39,7 +37,7 @@ class ApplicationOpplysningerTest : FunSpec({
                     with(any<RequestScope>()) {
                         opplysningerRequestHandler.opprettBrukeropplysninger(any())
                     }
-                } returns Right(ValidationResultOk)
+                } returns Unit.right()
                 arbeidssokerRoutes(startStopppRequestHandler, opplysningerRequestHandler)
             }
             val client = createClient {

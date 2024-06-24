@@ -6,11 +6,11 @@ import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.appTopology
-import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseSerde
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseState
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseStateSerde
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
+import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.pdl.graphql.generated.hentforenkletstatusbolk.HentPersonBolkResult
 import org.apache.avro.specific.SpecificRecord

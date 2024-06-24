@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret
 
+import arrow.core.right
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FreeSpec
@@ -10,17 +11,22 @@ import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.auth.*
 import io.ktor.server.routing.*
-import io.ktor.server.testing.testApplication
-import io.mockk.*
+import io.ktor.server.testing.*
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV1ArbeidssokerPeriodePutRequest
+import no.nav.paw.arbeidssokerregisteret.application.OK
+import no.nav.paw.arbeidssokerregisteret.application.Regel
+import no.nav.paw.arbeidssokerregisteret.application.StartStoppRequestHandler
+import no.nav.paw.arbeidssokerregisteret.application.ok
+import no.nav.paw.arbeidssokerregisteret.application.regler.AnsattHarTilgangTilBruker
 import no.nav.paw.arbeidssokerregisteret.auth.configureAuthentication
-import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutes
-import no.nav.security.mock.oauth2.MockOAuth2Server
-import no.nav.paw.arbeidssokerregisteret.application.*
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
-import no.nav.paw.arbeidssokerregisteret.domain.http.PeriodeTilstand
-import no.nav.paw.arbeidssokerregisteret.domain.http.StartStoppRequest
 import no.nav.paw.arbeidssokerregisteret.plugins.configureHTTP
 import no.nav.paw.arbeidssokerregisteret.plugins.configureSerialization
+import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutes
+import no.nav.security.mock.oauth2.MockOAuth2Server
 
 class InngagnSomVeilederTest : FreeSpec({
     val oauth = MockOAuth2Server()
@@ -42,13 +48,13 @@ class InngagnSomVeilederTest : FreeSpec({
                 }
             } returns OK(
                 regel = Regel(
-                    id = RegelId.ANSATT_HAR_TILGANG_TIL_BRUKER,
+                    id = AnsattHarTilgangTilBruker,
                     beskrivelse = "",
                     opplysninger = emptyList(),
-                    vedTreff = ::OK
+                    vedTreff = ::ok
                 ),
                 opplysning = emptySet()
-            )
+            ).right()
             testApplication {
                 application {
                     configureHTTP()
@@ -80,10 +86,10 @@ class InngagnSomVeilederTest : FreeSpec({
                     headers {
                         append(HttpHeaders.ContentType, ContentType.Application.Json)
                     }
-                    setBody(StartStoppRequest(
+                    setBody(ApiV1ArbeidssokerPeriodePutRequest(
                         identitetsnummer = "12345678909",
                         registreringForhaandsGodkjentAvAnsatt = true,
-                        periodeTilstand = PeriodeTilstand.STARTET
+                        periodeTilstand = ApiV1ArbeidssokerPeriodePutRequest.PeriodeTilstand.STARTET
                     ))
                 }
                 response.status shouldBe HttpStatusCode.NoContent
@@ -100,10 +106,10 @@ class InngagnSomVeilederTest : FreeSpec({
                     headers {
                         append(HttpHeaders.ContentType, ContentType.Application.Json)
                     }
-                    setBody(StartStoppRequest(
+                    setBody(ApiV1ArbeidssokerPeriodePutRequest(
                         identitetsnummer = "12345678909",
                         registreringForhaandsGodkjentAvAnsatt = false,
-                        periodeTilstand = PeriodeTilstand.STARTET
+                        periodeTilstand = ApiV1ArbeidssokerPeriodePutRequest.PeriodeTilstand.STARTET
                     ))
                 }
                 response2.status shouldBe HttpStatusCode.NoContent
@@ -117,4 +123,3 @@ class InngagnSomVeilederTest : FreeSpec({
     }
 }
 })
-

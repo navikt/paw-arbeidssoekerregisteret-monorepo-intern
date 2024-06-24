@@ -1,0 +1,129 @@
+package no.nav.paw.arbeidssokerregisteret.routes
+
+import arrow.core.Either
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.response.*
+import io.ktor.util.pipeline.*
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.AarsakTilAvvisning
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiRegelId
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feil
+import no.nav.paw.arbeidssokerregisteret.application.*
+import no.nav.paw.arbeidssokerregisteret.application.authfaktka.*
+import no.nav.paw.arbeidssokerregisteret.application.opplysninger.*
+import no.nav.paw.arbeidssokerregisteret.application.regler.*
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Opplysning as ApiOpplysning
+
+
+context(PipelineContext<Unit, ApplicationCall>)
+suspend fun respondWith(resultat: Either<Problem, OK>) =
+    when (resultat) {
+        is Either.Left -> respondWithError(resultat.value)
+        is Either.Right -> call.respond(HttpStatusCode.NoContent)
+    }
+
+suspend fun PipelineContext<Unit, ApplicationCall>.respondWithError(problem: Problem){
+    call.respond(
+        problem.httpCode(), Feil(
+            melding = problem.regel.beskrivelse,
+            feilKode = problem.feilKode(),
+            aarsakTilAvvisning = if (problem.regel.id is DomeneRegelId) {
+                AarsakTilAvvisning(
+                    beskrivelse = problem.regel.beskrivelse,
+                    regel = problem.regel.id.apiRegelId(),
+                    detaljer = problem.opplysning.map(::opplysningTilApiOpplysning)
+                )
+            } else null
+        )
+    )
+}
+
+fun opplysningTilApiOpplysning(opplysning: Opplysning): ApiOpplysning =
+    when (opplysning) {
+        is DomeneOpplysning -> when (opplysning) {
+            DomeneOpplysning.BarnFoedtINorgeUtenOppholdstillatelse -> ApiOpplysning.BARN_FOEDT_I_NORGE_UTEN_OPPHOLDSTILLATELSE
+            DomeneOpplysning.BosattEtterFregLoven -> ApiOpplysning.BOSATT_ETTER_FREG_LOVEN
+            DomeneOpplysning.Dnummer -> ApiOpplysning.DNUMMER
+            DomeneOpplysning.ErDoed -> ApiOpplysning.DOED
+            DomeneOpplysning.ErEuEoesStatsborger -> ApiOpplysning.ER_EU_EOES_STATSBORGER
+            DomeneOpplysning.ErForhaandsgodkjent -> ApiOpplysning.FORHAANDSGODKJENT_AV_ANSATT
+            DomeneOpplysning.ErGbrStatsborger -> ApiOpplysning.ER_GBR_STATSBORGER
+            DomeneOpplysning.ErOver18Aar -> ApiOpplysning.ER_OVER_18_AAR
+            DomeneOpplysning.ErSavnet -> ApiOpplysning.SAVNET
+            DomeneOpplysning.ErUnder18Aar -> ApiOpplysning.ER_UNDER_18_AAR
+            DomeneOpplysning.HarGyldigOppholdstillatelse -> ApiOpplysning.HAR_GYLDIG_OPPHOLDSTILLATELSE
+            DomeneOpplysning.HarNorskAdresse -> ApiOpplysning.HAR_NORSK_ADRESSE
+            DomeneOpplysning.HarUtenlandskAdresse -> ApiOpplysning.HAR_UTENLANDSK_ADRESSE
+            DomeneOpplysning.IkkeBosatt -> ApiOpplysning.IKKE_BOSATT
+            DomeneOpplysning.IkkeMuligAAIdentifisereSisteFlytting -> ApiOpplysning.IKKE_MULIG_AA_IDENTIFISERE_SISTE_FLYTTING
+            DomeneOpplysning.IngenAdresseFunnet -> ApiOpplysning.INGEN_ADRESSE_FUNNET
+            DomeneOpplysning.IngenFlytteInformasjon -> ApiOpplysning.INGEN_FLYTTE_INFORMASJON
+            DomeneOpplysning.IngenInformasjonOmOppholdstillatelse -> ApiOpplysning.INGEN_INFORMASJON_OM_OPPHOLDSTILLATELSE
+            DomeneOpplysning.OpphoertIdentitet -> ApiOpplysning.OPPHOERT_IDENTITET
+            DomeneOpplysning.OppholdstillatelseUtgaaatt -> ApiOpplysning.OPPHOLDSTILATELSE_UTGAATT
+            DomeneOpplysning.PersonIkkeFunnet -> ApiOpplysning.PERSON_IKKE_FUNNET
+            DomeneOpplysning.SisteFlyttingVarInnTilNorge -> ApiOpplysning.SISTE_FLYTTING_VAR_INN_TIL_NORGE
+            DomeneOpplysning.SisteFlyttingVarUtAvNorge -> ApiOpplysning.SISTE_FLYTTING_VAR_UT_AV_NORGE
+            DomeneOpplysning.TokenxPidIkkeFunnet -> ApiOpplysning.TOKENX_PID_IKKE_FUNNET
+            DomeneOpplysning.UkjentFoedselsaar -> ApiOpplysning.UKJENT_FOEDSELSAAR
+            DomeneOpplysning.UkjentFoedselsdato -> ApiOpplysning.UKJENT_FOEDSELSDATO
+            DomeneOpplysning.UkjentForenkletFregStatus -> ApiOpplysning.UKJENT_FORENKLET_FREG_STATUS
+            DomeneOpplysning.UkjentStatusForOppholdstillatelse -> ApiOpplysning.UKJENT_STATUS_FOR_OPPHOLDSTILLATELSE
+        }
+        is AuthOpplysning -> when (opplysning) {
+            AuthOpplysning.IkkeSammeSomInnloggerBruker -> ApiOpplysning.IKKE_SAMME_SOM_INNLOGGER_BRUKER
+            AuthOpplysning.SammeSomInnloggetBruker -> ApiOpplysning.SAMME_SOM_INNLOGGET_BRUKER
+            AuthOpplysning.TokenXPidIkkeFunnet -> ApiOpplysning.TOKENX_PID_IKKE_FUNNET
+            AuthOpplysning.AnsattIkkeTilgang -> ApiOpplysning.ANSATT_IKKE_TILGANG
+            AuthOpplysning.AnsattTilgang -> ApiOpplysning.ANSATT_TILGANG
+            AuthOpplysning.IkkeAnsatt -> ApiOpplysning.IKKE_ANSATT
+        }
+        else -> ApiOpplysning.UKJENT_OPPLYSNING
+    }
+
+fun RegelId.apiRegelId(): ApiRegelId = when (this) {
+    is AuthRegelId -> ApiRegelId.IKKE_TILGANG
+    is DomeneRegelId -> when(this) {
+        ForhaandsgodkjentAvAnsatt -> ApiRegelId.UKJENT_REGEL
+        Over18AarOgBosattEtterFregLoven -> ApiRegelId.UKJENT_REGEL
+        Doed -> ApiRegelId.DOED
+        IkkeBosattINorgeIHenholdTilFolkeregisterloven -> ApiRegelId.IKKE_BOSATT_I_NORGE_I_HENHOLD_TIL_FOLKEREGISTERLOVEN
+        IkkeFunnet -> ApiRegelId.IKKE_FUNNET
+        Savnet -> ApiRegelId.SAVNET
+        UkjentAlder -> ApiRegelId.UKJENT_ALDER
+        Under18Aar -> ApiRegelId.UNDER_18_AAR
+    }
+    else -> ApiRegelId.UKJENT_REGEL
+}
+
+fun Problem.feilKode(): Feil.FeilKode = when (regel.id) {
+    is AuthRegelId -> Feil.FeilKode.IKKE_TILGANG
+    is DomeneRegelId -> Feil.FeilKode.AVVIST
+    else -> Feil.FeilKode.UKJENT_FEIL
+}
+
+fun Problem.httpCode(): HttpStatusCode = when (val regelId = this.regel.id) {
+    is AuthRegelId -> regelId.httpCode()
+    is DomeneRegelId -> regelId.httpCode()
+    else -> HttpStatusCode.InternalServerError
+}
+
+fun AuthRegelId.httpCode(): HttpStatusCode = when (this) {
+    AnsattHarTilgangTilBruker -> HttpStatusCode.OK
+    EndreEgenBruker -> HttpStatusCode.OK
+    AnsattIkkeTilgangTilBruker -> HttpStatusCode.Forbidden
+    EndreForAnnenBruker -> HttpStatusCode.Forbidden
+    IkkeAnsattOgForhaandsgodkjentAvAnsatt -> HttpStatusCode.BadRequest
+    IkkeTilgang -> HttpStatusCode.Forbidden
+}
+
+fun DomeneRegelId.httpCode(): HttpStatusCode = when (this) {
+    ForhaandsgodkjentAvAnsatt -> HttpStatusCode.Accepted
+    Over18AarOgBosattEtterFregLoven -> HttpStatusCode.Accepted
+    Doed -> HttpStatusCode.Forbidden
+    IkkeBosattINorgeIHenholdTilFolkeregisterloven -> HttpStatusCode.Forbidden
+    IkkeFunnet -> HttpStatusCode.Forbidden
+    Savnet -> HttpStatusCode.Forbidden
+    UkjentAlder -> HttpStatusCode.Forbidden
+    Under18Aar -> HttpStatusCode.Forbidden
+}

@@ -4,8 +4,8 @@ on:
   push:
     paths:
       - 'apps/hendelselogg-backup/**'
-      - 'lib/kafka/**'
-      - 'lib/hoplite-config/**'
+      - 'lib/**'
+      - 'domain/**'
       - '.github/workflows/hendelselogg-backup.yaml'
       - 'gradle/**'
       - 'settings.gradle.kts'

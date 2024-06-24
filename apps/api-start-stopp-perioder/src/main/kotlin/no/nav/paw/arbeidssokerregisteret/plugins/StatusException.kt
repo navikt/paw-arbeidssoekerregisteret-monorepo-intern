@@ -1,10 +1,9 @@
 package no.nav.paw.arbeidssokerregisteret.plugins
 
 import io.ktor.http.*
-import no.nav.paw.arbeidssokerregisteret.domain.Feilkode
 
 class StatusException(
     status: HttpStatusCode,
     beskrivelse: String? = null,
-    feilkode: Feilkode
+    feilkode: InternFeilkode
 ) : ArbeidssoekerException(status, beskrivelse, feilkode)

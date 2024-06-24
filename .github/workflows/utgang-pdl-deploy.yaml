@@ -2,13 +2,11 @@ name: PDL - Utgang
 
 on:
   push:
-    branches:
-      - main
     paths:
       - 'apps/utgang-pdl/**'
       - '.github/workflows/utgang-pdl-deploy.yaml'
-      - 'lib/kafka-key-generator-client/**'
-      - 'domain/main-avro-schema-classes/**'
+      - 'lib/**'
+      - 'domain/**'
       - 'gradle/**'
       - 'settings.gradle.kts'
       - 'gradle.properties'

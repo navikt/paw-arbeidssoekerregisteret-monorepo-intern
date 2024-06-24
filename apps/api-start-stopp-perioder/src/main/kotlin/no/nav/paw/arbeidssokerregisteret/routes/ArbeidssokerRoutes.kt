@@ -8,17 +8,22 @@ import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV1Arbeidssoke
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV1ArbeidssokerPeriodePutRequest
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV1ArbeidssokerPeriodePutRequest.PeriodeTilstand
 import no.nav.paw.arbeidssokerregisteret.api.extensions.getId
-import no.nav.paw.arbeidssokerregisteret.application.*
+import no.nav.paw.arbeidssokerregisteret.application.OpplysningerRequestHandler
+import no.nav.paw.arbeidssokerregisteret.application.StartStoppRequestHandler
 import no.nav.paw.arbeidssokerregisteret.requestScope
 import no.nav.paw.arbeidssokerregisteret.utils.logger
-import java.util.*
+
+const val startStopApi = "/api/v1/arbeidssoker"
+const val kanStarte = "/kanStartePeriode"
+const val periode = "/periode"
+const val opplysninger = "/opplysninger"
 
 fun Route.arbeidssokerRoutes(
     startStoppRequestHandler: StartStoppRequestHandler,
     opplysningerRequestHandler: OpplysningerRequestHandler
 ) {
-    route("/api/v1/arbeidssoker") {
-        route("/kanStartePeriode") {
+    route(startStopApi) {
+        route(kanStarte) {
             // Sjekker om bruker kan registreres som arbeidssøker
             put<ApiV1ArbeidssokerKanStartePeriodePutRequest> { request ->
                 val resultat = with(requestScope()) {
@@ -29,7 +34,7 @@ fun Route.arbeidssokerRoutes(
             }
         }
 
-        route("/periode") {
+        route(periode) {
             // Registrerer bruker som arbeidssøker
             put<ApiV1ArbeidssokerPeriodePutRequest> { startStoppRequest ->
                 val resultat = with(requestScope()) {
@@ -44,13 +49,10 @@ fun Route.arbeidssokerRoutes(
                     }
                 }
                 logger.debug("Registreringsresultat: {}", resultat)
-                when (resultat) {
-                    is TilgangskontrollResultat -> respondWith(resultat)
-                    is EndeligResultat -> respondWith(resultat)
-                }
+                respondWith(resultat)
             }
         }
-        route("/opplysninger") {
+        route(opplysninger) {
             // Registrerer eller oppdaterer brukers opplysninger
             post {
                 val opplysningerRequest = call.receive<OpplysningerRequest>()
@@ -59,10 +61,7 @@ fun Route.arbeidssokerRoutes(
                         opplysningerRequestHandler.opprettBrukeropplysninger(opplysningerRequest)
                     }
                 logger.debug("Oppdateringsresultat: {}", resultat)
-                when (resultat) {
-                    is Left -> ikkeTilgangTilResponse(resultat.value)
-                    is Right -> respondWith(resultat.value)
-                }
+                respondWith(resultat)
             }
         }
     }

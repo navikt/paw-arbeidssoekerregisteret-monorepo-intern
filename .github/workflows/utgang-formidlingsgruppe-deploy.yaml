@@ -2,12 +2,10 @@ name: Formidlingsgruppe - Utgang
 
 on:
   push:
-    branches:
-      - main
     paths:
       - 'apps/utgang-formidlingsgruppe/**'
-      - 'lib/kafka-key-generator-client/**'
-      - 'domain/main-avro-schema/**'
+      - 'lib/**'
+      - 'domain/**'
       - '.github/workflows/utgang-formidlingsgruppe-deploy.yaml'
       - 'gradle/**'
       - 'settings.gradle.kts'

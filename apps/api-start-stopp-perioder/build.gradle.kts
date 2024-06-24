@@ -26,6 +26,7 @@ dependencies {
     implementation(project(":lib:kafka"))
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:kafka-key-generator-client"))
+    implementation(project(":domain:arbeidssoeker-regler"))
     implementation(hoplite.hopliteCore)
     implementation(hoplite.hopliteToml)
     implementation(hoplite.hopliteYaml)

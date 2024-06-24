@@ -8,6 +8,13 @@ dependencies {
     compileOnly(jackson.kotlin)
     compileOnly(jackson.core)
     compileOnly(orgApacheKafka.kafkaClients)
+
+    testImplementation(testLibs.runnerJunit5)
+    testImplementation(testLibs.assertionsCore)
+    testImplementation(orgApacheKafka.kafkaClients)
+    testImplementation(jackson.datatypeJsr310)
+    testImplementation(jackson.kotlin)
+    testImplementation(jackson.core)
 }
 
 val jvmMajorVersion: String by project
@@ -38,3 +45,8 @@ java {
         languageVersion = JavaLanguageVersion.of(jvmMajorVersion)
     }
 }
+
+tasks.named<Test>("test") {
+    useJUnitPlatform()
+}
+
