@@ -54,3 +54,17 @@ spec:
         tier: db-custom-1-6144
         databases:
           - name: hendelselogg
+  accessPolicy:
+    inbound:
+      rules:
+        - application: paw-brukerstotte
+        - application: azure-token-generator
+          namespace: aura
+          cluster: prod-gcp
+        - application: tokenx-token-generator
+          namespace: aura
+          cluster: prod-gcp
+    outbound:
+      rules:
+        - application: paw-kafka-key-generator
+          namespace: paw

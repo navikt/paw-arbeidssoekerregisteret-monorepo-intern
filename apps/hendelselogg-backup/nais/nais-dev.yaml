@@ -51,3 +51,17 @@ spec:
       - type: POSTGRES_15
         databases:
           - name: hendelselogg
+  accessPolicy:
+    inbound:
+      rules:
+        - application: paw-brukerstotte
+        - application: azure-token-generator
+          namespace: aura
+          cluster: dev-gcp
+        - application: tokenx-token-generator
+          namespace: aura
+          cluster: dev-gcp
+    outbound:
+      rules:
+        - application: paw-kafka-key-generator
+          namespace: paw
