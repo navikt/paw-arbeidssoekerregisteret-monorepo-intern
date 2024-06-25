@@ -51,3 +51,4 @@ spec:
           - application: paw-arbeidssoekerregisteret-utgang-pdl
           - application: paw-microfrontend-toggler
           - application: paw-microfrontend-toggler-beta
+          - application: paw-arbeidssoekerregisteret-hendelselogg-backup
