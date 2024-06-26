@@ -58,12 +58,7 @@ spec:
     inbound:
       rules:
         - application: paw-brukerstotte
-        - application: azure-token-generator
-          namespace: aura
-          cluster: prod-gcp
-        - application: tokenx-token-generator
-          namespace: aura
-          cluster: prod-gcp
+          namespace: paw
     outbound:
       rules:
         - application: paw-kafka-key-generator
