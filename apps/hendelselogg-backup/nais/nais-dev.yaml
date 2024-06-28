@@ -29,10 +29,10 @@ spec:
   azure:
     application:
       enabled: true
-      tenant: nav.no
+      allowAllUsers: true
       claims:
-        groups:
-          - id: 88b552ab-2cd9-41e1-bd44-3868605d6f6a
+        extra:
+          - NAVident
   env:
     - name: API_OPPSLAG_SCOPE
       value: "api://dev-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag/.default"

@@ -26,7 +26,11 @@ import no.nav.paw.kafkakeygenerator.auth.NaisEnv
 import no.nav.paw.kafkakeygenerator.auth.currentNaisEnv
 import no.nav.security.token.support.v2.IssuerConfig
 import no.nav.security.token.support.v2.TokenSupportConfig
+import no.nav.security.token.support.v2.TokenValidationContextPrincipal
 import no.nav.security.token.support.v2.tokenValidationSupport
+import org.slf4j.LoggerFactory
+
+private val authLogger = LoggerFactory.getLogger("auth_logger")
 
 fun initKtor(
     prometheusMeterRegistry: PrometheusMeterRegistry,
@@ -50,6 +54,17 @@ fun initKtor(
 fun Route.configureBrukerstoetteRoutes(brukerstoetteService: BrukerstoetteService) {
     post("/api/v1/arbeidssoeker/detaljer") {
         runCatching {
+            val principal = call.principal<TokenValidationContextPrincipal>()
+            val (navIdent, oid) = with(principal?.context) {
+                this?.issuers
+                    ?.firstOrNull { it.equals("azure", ignoreCase = true) }
+                    ?.let { issuer -> this.getClaims(issuer) }
+                    ?.let { claims ->
+                        claims.get("NAVident") to claims.get("oid")
+                    } ?: (null to null)
+            }
+            authLogger.info("Brukerstoette request fra navIdent='$navIdent' med oid='$oid'")
+
             if (currentNaisEnv == NaisEnv.ProdGCP) {
                 call.respond(
                     HttpStatusCode.ServiceUnavailable, Feil(
