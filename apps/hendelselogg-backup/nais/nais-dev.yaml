@@ -30,9 +30,6 @@ spec:
     application:
       enabled: true
       allowAllUsers: true
-      claims:
-        extra:
-          - NAVident
   env:
     - name: API_OPPSLAG_SCOPE
       value: "api://dev-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag/.default"
