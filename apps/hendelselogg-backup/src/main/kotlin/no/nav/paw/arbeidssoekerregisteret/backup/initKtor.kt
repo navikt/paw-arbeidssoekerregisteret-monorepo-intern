@@ -74,6 +74,9 @@ fun Route.configureBrukerstoetteRoutes(brukerstoetteService: BrukerstoetteServic
                 )
             } else {
                 val request = call.receive<DetaljerRequest>()
+                LoggerFactory.getLogger("test").info(
+                    "Brukerstoette request fra navIdent='$navIdent' med oid='$oid', request='$request'"
+                )
                 brukerstoetteService.hentDetaljer(request.identitetsnummer)
             }
         }.onSuccess { detaljer ->
