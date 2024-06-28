@@ -6,6 +6,7 @@ import io.kotest.matchers.shouldBe
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.backup.database.DatabaseConfig
+import no.nav.paw.arbeidssoekerregisteret.backup.database.getOneRecordForId
 import no.nav.paw.arbeidssoekerregisteret.backup.database.readRecord
 import no.nav.paw.arbeidssoekerregisteret.backup.database.writeRecord
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
@@ -90,6 +91,27 @@ class DataFunctionsTest : FreeSpec({
                         writeRecord(recordVersion2)
                     }
                 }
+            }
+        }
+        "we can read a record based on id" {
+            transaction {
+                val storedData =
+                    with(ApplicationContext(
+                        consumerVersion = 1,
+                        logger = logger,
+                        meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+                        azureConfig = loadNaisOrLocalConfiguration("azure.toml")
+                    )) {
+                        with(hendelseSerde.deserializer()) {
+                            getOneRecordForId(record.value().identitetsnummer)
+                        }.shouldNotBeNull()
+                    }
+                storedData.partition shouldBe record.partition()
+                storedData.offset shouldBe record.offset()
+                storedData.recordKey shouldBe record.key()
+                storedData.arbeidssoekerId shouldBe record.value().id
+                storedData.data shouldBe record.value()
+                storedData.traceparent shouldBe record.headers().lastHeader("traceparent")?.let { h -> String(h.value()) }
             }
         }
         "we can read multiple versions from the log" {

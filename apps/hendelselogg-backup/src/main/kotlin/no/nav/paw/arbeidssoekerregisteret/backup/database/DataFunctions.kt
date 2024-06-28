@@ -12,7 +12,6 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.TransactionManager
-import java.sql.ResultSet
 
 context(HendelseSerializer, ApplicationContext)
 fun <A : Hendelse> Transaction.writeRecord(record: ConsumerRecord<Long, A>) {
@@ -65,3 +64,26 @@ fun Transaction.readAllRecordsForId(arbeidssoekerId: Long): List<StoredData> =
                 data = deserializeFromString(it[HendelseTable.data])
             )
         }
+
+context(HendelseDeserializer, ApplicationContext)
+fun Transaction.getOneRecordForId(id: String): StoredData? =
+    TransactionManager.current()
+        .exec(
+            stmt = """select * from hendelser where data @> '{"identitetsnummer": "$id"}' limit 1;""",
+            transform = { rs ->
+                sequence {
+                    while (rs.next()) {
+                        yield(
+                            StoredData(
+                                partition = rs.getInt(HendelseTable.partition.name),
+                                offset = rs.getLong(HendelseTable.offset.name),
+                                recordKey = rs.getLong(HendelseTable.recordKey.name),
+                                arbeidssoekerId = rs.getLong(HendelseTable.arbeidssoekerId.name),
+                                data = deserializeFromString(rs.getString(HendelseTable.data.name)),
+                                traceparent = rs.getString(HendelseTable.traceparent.name)
+                            )
+                        )
+                    }
+                }.toList().firstOrNull()
+            }
+        )

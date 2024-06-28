@@ -4,6 +4,7 @@ package no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette
 
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.*
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Hendelse
+import no.nav.paw.arbeidssoekerregisteret.backup.database.getOneRecordForId
 import no.nav.paw.arbeidssoekerregisteret.backup.database.readAllRecordsForId
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.StoredData
@@ -21,9 +22,11 @@ class BrukerstoetteService(
 ) {
 
     suspend fun hentDetaljer(identitetsnummer: String): DetaljerResponse? {
-        val response = kafkaKeysClient.getIdAndKeyOrNull(identitetsnummer) ?: return null
         val hendelser = transaction {
-            (::readAllRecordsForId)(hendelseDeserializer, applicationContext, response.id)
+            (::getOneRecordForId)(hendelseDeserializer, applicationContext, identitetsnummer)
+                ?.arbeidssoekerId
+                ?.let{ id -> (::readAllRecordsForId)(hendelseDeserializer, applicationContext, id) }
+                ?: emptyList()
         }
         if (hendelser.isEmpty()) {
             return null
@@ -32,10 +35,10 @@ class BrukerstoetteService(
             val innkommendeHendelse = historiskeTilstander(hendelser).toList()
             val partition = hendelser.firstOrNull()?.partition
             return DetaljerResponse(
-                recordKey = response.key,
+                recordKey = hendelser.first().recordKey,
                 kafkaPartition = partition,
                 historikk = innkommendeHendelse,
-                arbeidssoekerId = response.id,
+                arbeidssoekerId = hendelser.first().arbeidssoekerId,
                 gjeldeneTilstand = sistePeriode
             )
         }
