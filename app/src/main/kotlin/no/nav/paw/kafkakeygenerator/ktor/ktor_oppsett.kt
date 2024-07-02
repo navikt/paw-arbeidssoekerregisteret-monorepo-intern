@@ -6,6 +6,7 @@ import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.metrics.micrometer.*
+import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.plugins.swagger.*
@@ -36,6 +37,7 @@ fun Application.konfigurerServer(
 ) {
     autentisering(autentiseringKonfigurasjon)
     micrometerMetrics(prometheusMeterRegistry)
+    configureLogging()
     serialisering()
     statusPages()
     routing {
@@ -125,5 +127,12 @@ fun Application.statusPages() {
                 }
             }
         }
+    }
+}
+
+fun Application.configureLogging() {
+    install(CallLogging) {
+        disableDefaultColors()
+        filter { !it.request.path().startsWith("/internal") }
     }
 }
