@@ -44,7 +44,11 @@ fun initKtor(
         routing {
             swaggerUI(path = "docs/brukerstoette", swaggerFile = "openapi/Brukerstoette.yaml")
             configureHealthRoutes(prometheusMeterRegistry)
-            authenticate("azure") {
+            if (currentNaisEnv == NaisEnv.ProdGCP) {
+                authenticate("azure") {
+                    configureBrukerstoetteRoutes(brukerstoetteService)
+                }
+            } else {
                 configureBrukerstoetteRoutes(brukerstoetteService)
             }
         }
