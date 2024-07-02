@@ -1,10 +1,9 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.9.22"
-    id("io.ktor.plugin") version "2.3.12"
+    kotlin("jvm") version "2.0.0"
     application
-    id("com.google.cloud.tools.jib") version "3.4.2"
+    id("com.google.cloud.tools.jib") version "3.4.3"
 }
 val jvmVersion = 21
 val image: String? by project
@@ -13,9 +12,9 @@ val image: String? by project
 val exposedVersion = "0.52.0"
 val logbackVersion = "1.5.2"
 val logstashVersion = "7.4"
-val navCommonModulesVersion = "3.2024.02.21_11.18-8f9b43befae1"
-val tokenSupportVersion = "4.1.3"
-val ktorVersion: Provider<String> = pawObservability.versions.ktor
+val navCommonModulesVersion = "3.2024.05.23_05.46-2b29fa343e8e"
+val tokenSupportVersion = "5.0.1"
+val ktorVersion = "2.3.12"
 
 dependencies {
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.1.0")
@@ -33,16 +32,19 @@ dependencies {
     implementation("no.nav.paw:pdl-client:24.03.22.31-1")
 
     // Database
-    implementation("org.postgresql:postgresql:42.7.2")
+    implementation("org.postgresql:postgresql:42.7.3")
     implementation("org.flywaydb:flyway-core:9.21.2")
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-crypt:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
-    implementation("com.zaxxer:HikariCP:5.0.1")
+    implementation("com.zaxxer:HikariCP:5.1.0")
 
     // Ktor
-    implementation(pawObservability.bundles.ktorNettyOpentelemetryMicrometerPrometheus)
+    implementation("io.ktor:ktor-server-core:$ktorVersion")
+    implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-server-metrics-micrometer:$ktorVersion")
     implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-swagger:$ktorVersion")
     implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
@@ -51,6 +53,12 @@ dependencies {
     implementation("io.ktor:ktor-client-logging-jvm:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
 
+    //Otel
+    implementation("io.opentelemetry:opentelemetry-api:1.39.0")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-ktor-2.0:2.4.0-alpha")
+
+    // Micrometer
+    implementation("io.micrometer:micrometer-registry-prometheus:1.12.3")
 
     // Logging
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
@@ -62,12 +70,12 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:4.6.3")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
-    testImplementation("org.testcontainers:postgresql:1.19.7")
+    testImplementation("org.testcontainers:postgresql:1.19.8")
 }
 
 tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions {
-        freeCompilerArgs = freeCompilerArgs + "-Xcontext-receivers"
+    compilerOptions {
+        freeCompilerArgs.add("-Xcontext-receivers")
     }
 }
 

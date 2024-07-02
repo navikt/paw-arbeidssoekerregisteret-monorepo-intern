@@ -10,13 +10,6 @@ dependencyResolutionManagement {
     repositories {
         gradlePluginPortal()
         maven {
-            setUrl("https://maven.pkg.github.com/navikt/paw-observability")
-            credentials {
-                username = "x-access-token"
-                password = githubPassword
-            }
-        }
-        maven {
             setUrl("https://maven.pkg.github.com/navikt/paw-kotlin-clients")
             credentials {
                 username = "x-access-token"
@@ -24,10 +17,5 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
-    }
-    versionCatalogs {
-        create("pawObservability") {
-            from("no.nav.paw.observability:observability-version-catalog:24.03.05.11-1")
-        }
     }
 }
