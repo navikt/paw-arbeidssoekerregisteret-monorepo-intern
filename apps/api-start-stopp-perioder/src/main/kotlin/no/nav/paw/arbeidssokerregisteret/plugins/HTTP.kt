@@ -118,7 +118,7 @@ fun Application.configureHTTP() {
                 }
 
                 else -> {
-                    logger.error("Request failed with status: ${cause}. Description: ${cause.message}")
+                    logger.error("Request failed with status: ${cause}. Description: ${cause.message}", cause)
                     when {
                         call.isStartStopRequest() ||
                                 call.isKanStarteRequest() -> call.respond(
