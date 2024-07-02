@@ -63,7 +63,7 @@ jobs:
       - uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: dev-gcp
-          RESOURCE: apps/hendelseprosessor/nais/nais.yaml
+          RESOURCE: apps/hendelseprosessor/nais/nais-dev.yaml
           VAR: image=${{ needs.build.outputs.image }},kafka=nav-dev
 
   deploy-prod:
@@ -80,5 +80,5 @@ jobs:
         env:
           TEAM: paw
           CLUSTER: prod-gcp
-          RESOURCE: apps/hendelseprosessor/nais/nais.yaml
+          RESOURCE: apps/hendelseprosessor/nais/nais-prod.yaml
           VAR: image=${{ needs.build.outputs.image }},kafka=nav-prod
