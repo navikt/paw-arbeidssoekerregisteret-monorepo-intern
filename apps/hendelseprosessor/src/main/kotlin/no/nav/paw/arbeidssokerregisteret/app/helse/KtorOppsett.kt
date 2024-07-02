@@ -28,16 +28,18 @@ fun initKtor(
             )
         }
         routing {
-            get("/isReady") {
-                val status = helse.ready()
-                call.respond(status.code, status.message)
-            }
-            get("/isAlive") {
-                val alive = helse.alive()
-                call.respond(alive.code, alive.message)
-            }
-            get("/metrics") {
-                call.respond(prometheusRegistry.scrape())
+            route("internal") {
+                get("/isReady") {
+                    val status = helse.ready()
+                    call.respond(status.code, status.message)
+                }
+                get("/isAlive") {
+                    val alive = helse.alive()
+                    call.respond(alive.code, alive.message)
+                }
+                get("/metrics") {
+                    call.respond(prometheusRegistry.scrape())
+                }
             }
         }
     }
