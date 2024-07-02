@@ -33,7 +33,7 @@ spec:
   gcp:
     sqlInstances:
       - type: POSTGRES_14
-        tier: db-custom-1-2048
+        tier: db-custom-1-3840
         databases:
           - name: pawkafkakeys
   tokenx:
