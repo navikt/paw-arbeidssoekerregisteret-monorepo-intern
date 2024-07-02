@@ -131,6 +131,6 @@ fun Application.statusPages() {
 fun Application.configureLogging() {
     install(CallLogging) {
         disableDefaultColors()
-        filter { !it.request.path().startsWith("/internal") }
+        filter { !it.request.path().startsWith("/internal") && it.response.status() != HttpStatusCode.OK}
     }
 }
