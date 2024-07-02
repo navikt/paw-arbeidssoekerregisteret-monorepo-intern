@@ -10,7 +10,7 @@ val jvmVersion = 21
 val image: String? by project
 
 
-val exposedVersion = "0.48.0"
+val exposedVersion = "0.52.0"
 val logbackVersion = "1.5.2"
 val logstashVersion = "7.4"
 val navCommonModulesVersion = "3.2024.02.21_11.18-8f9b43befae1"
