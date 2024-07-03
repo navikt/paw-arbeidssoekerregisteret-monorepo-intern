@@ -69,6 +69,7 @@ fun opplysningTilApiOpplysning(opplysning: Opplysning): ApiOpplysning =
             DomeneOpplysning.UkjentFoedselsdato -> ApiOpplysning.UKJENT_FOEDSELSDATO
             DomeneOpplysning.UkjentForenkletFregStatus -> ApiOpplysning.UKJENT_FORENKLET_FREG_STATUS
             DomeneOpplysning.UkjentStatusForOppholdstillatelse -> ApiOpplysning.UKJENT_STATUS_FOR_OPPHOLDSTILLATELSE
+            DomeneOpplysning.ErNorskStatsborger -> ApiOpplysning.ER_NORSK_STATSBORGER
         }
         is AuthOpplysning -> when (opplysning) {
             AuthOpplysning.IkkeSammeSomInnloggerBruker -> ApiOpplysning.IKKE_SAMME_SOM_INNLOGGER_BRUKER

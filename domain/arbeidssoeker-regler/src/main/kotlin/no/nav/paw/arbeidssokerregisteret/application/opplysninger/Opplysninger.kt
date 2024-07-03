@@ -34,6 +34,11 @@ sealed interface DomeneOpplysning: Opplysning {
         override val beskrivelse = "Personen start/stopp av periode utføres på er britisk statsborger"
     }
 
+    data object ErNorskStatsborger: DomeneOpplysning, Effect.Positive {
+        override val id = "ER_NORSK_STATSBORGER"
+        override val beskrivelse = "Personen start/stopp av periode utføres på er norsk statsborger"
+    }
+
     data object UkjentFoedselsdato : DomeneOpplysning, Effect.Negative {
         override val id = "UKJENT_FOEDSELSDATO"
         override val beskrivelse = "Personen start/stopp av periode utføres på har ukjent fødselsdato"

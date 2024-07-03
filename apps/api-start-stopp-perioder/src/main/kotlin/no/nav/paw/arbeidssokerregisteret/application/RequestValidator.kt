@@ -57,6 +57,7 @@ class RequestValidator(
                 adreseOpplysning(person.bostedsadresse.firstOrNull()) +
                 euEoesStatsborgerOpplysning(person.statsborgerskap) +
                 gbrStatsborgerOpplysning(person.statsborgerskap) +
+                norskStatsborgerOpplysning(person.statsborgerskap) +
                 forenkletFregOpplysning(person.folkeregisterpersonstatus) +
                 oppholdstillatelseOpplysning(person.opphold.firstOrNull()) +
                 utflyttingOpplysning(person.innflyttingTilNorge, person.utflyttingFraNorge)

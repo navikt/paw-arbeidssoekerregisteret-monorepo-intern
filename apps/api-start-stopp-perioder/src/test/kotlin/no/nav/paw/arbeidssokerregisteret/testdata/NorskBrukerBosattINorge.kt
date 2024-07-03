@@ -64,7 +64,8 @@ data object NorskBrukerBosattINorge: TestCase {
                 Opplysning.SISTE_FLYTTING_VAR_INN_TIL_NORGE,
                 Opplysning.IKKE_ANSATT,
                 Opplysning.SAMME_SOM_INNLOGGET_BRUKER,
-                Opplysning.INGEN_INFORMASJON_OM_OPPHOLDSTILLATELSE
+                Opplysning.INGEN_INFORMASJON_OM_OPPHOLDSTILLATELSE,
+                Opplysning.ER_NORSK_STATSBORGER
             )
         )
     )

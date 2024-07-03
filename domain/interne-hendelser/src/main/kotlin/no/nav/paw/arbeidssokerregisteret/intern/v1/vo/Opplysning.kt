@@ -36,6 +36,7 @@ enum class Opplysning {
     INGEN_FLYTTE_INFORMASJON,
     ER_EU_EOES_STATSBORGER,
     ER_GBR_STATSBORGER,
+    ER_NORSK_STATSBORGER,
     @JsonEnumDefaultValue
     UKJENT_OPPLYSNING
 }

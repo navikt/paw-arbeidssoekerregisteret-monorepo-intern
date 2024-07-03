@@ -54,4 +54,5 @@ fun domeneOpplysningTilHendelseOpplysning(opplysning: DomeneOpplysning): Hendels
         DomeneOpplysning.UkjentFoedselsdato -> HendelseOpplysning.UKJENT_FOEDSELSDATO
         DomeneOpplysning.UkjentForenkletFregStatus -> HendelseOpplysning.UKJENT_FORENKLET_FREG_STATUS
         DomeneOpplysning.UkjentStatusForOppholdstillatelse -> HendelseOpplysning.UKJENT_STATUS_FOR_OPPHOLDSTILLATELSE
+        DomeneOpplysning.ErNorskStatsborger -> HendelseOpplysning.ER_NORSK_STATSBORGER
     }
