@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.plugins
 
 import com.fasterxml.jackson.databind.DatabindException
+import io.ktor.client.plugins.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
@@ -69,7 +70,8 @@ fun Application.configureHTTP() {
                     }
                 }
 
-                is RemoteServiceException -> {
+                is RemoteServiceException,
+                is HttpRequestTimeoutException -> {
                     logger.warn("Request failed with status: ${cause}. Description: ${cause.message}")
                     when {
                         call.isStartStopRequest() ||
