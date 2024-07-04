@@ -52,8 +52,8 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         // PAW greier
-        val pawPdlClientVersion = "24.06.24.38-1"
-        val pawAaregClientVersion = "24.01.12.16-1"
+        val pawPdlClientVersion = "24.07.04.39-1"
+        val pawAaregClientVersion = "24.07.04.18-1"
         val arbeidssokerregisteretVersion = "1.9348086045.48-1"
 
         //Arrow
