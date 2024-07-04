@@ -8,6 +8,7 @@ import no.nav.paw.pdl.PdlException
 import no.nav.paw.pdl.hentIdenter
 
 private const val consumerId = "paw-arbeidssoekerregisteret"
+private const val behandlingsnummer = "B452"
 
 class PdlIdentitesTjeneste(private val pdlKlient: PdlClient) {
     suspend fun hentIdentiter(
@@ -16,7 +17,7 @@ class PdlIdentitesTjeneste(private val pdlKlient: PdlClient) {
     ): Either<Failure, List<String>> {
         return suspendeableAttempt {
             pdlKlient
-                .hentIdenter(identitet.value, callId.value, consumerId)
+                .hentIdenter(identitet.value, callId.value, consumerId, behandlingsnummer)
                 ?.map { it.ident }
         }.mapToFailure { exception ->
             when (exception) {
