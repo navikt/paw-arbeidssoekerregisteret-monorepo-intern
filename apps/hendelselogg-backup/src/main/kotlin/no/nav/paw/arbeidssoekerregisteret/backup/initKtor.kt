@@ -55,6 +55,7 @@ fun initKtor(
     }.start(wait = false)
 }
 
+private val auditLogger = LoggerFactory.getLogger("audit_logger")
 fun Route.configureBrukerstoetteRoutes(brukerstoetteService: BrukerstoetteService) {
     post("/api/v1/arbeidssoeker/detaljer") {
         runCatching {
@@ -68,21 +69,8 @@ fun Route.configureBrukerstoetteRoutes(brukerstoetteService: BrukerstoetteServic
                     } ?: (null to null)
             }
             authLogger.info("Brukerstoette request fra navIdent='$navIdent' med oid='$oid'")
-
-            if (currentNaisEnv == NaisEnv.ProdGCP) {
-                call.respond(
-                    HttpStatusCode.ServiceUnavailable, Feil(
-                        melding = "Tjenesten er ikke tilgjengelig i produksjon",
-                        feilKode = "utilgjengelig"
-                    )
-                )
-            } else {
-                val request = call.receive<DetaljerRequest>()
-                LoggerFactory.getLogger("test").info(
-                    "Brukerstoette request fra navIdent='$navIdent' med oid='$oid', request='$request'"
-                )
-                brukerstoetteService.hentDetaljer(request.identitetsnummer)
-            }
+            val request: DetaljerRequest = call.receive()
+            brukerstoetteService.hentDetaljer(request.identitetsnummer)
         }.onSuccess { detaljer ->
             detaljer?.let { call.respond(it) } ?: call.respond(
                 HttpStatusCode.NotFound, Feil(
