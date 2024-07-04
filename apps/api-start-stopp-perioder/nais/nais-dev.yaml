@@ -65,12 +65,6 @@ spec:
         - application: arbeidssokerregistrering
         - application: arbeidssokerregistrering-for-veileder
         - application: aia-backend
-        - application: azure-token-generator
-          namespace: aura
-          cluster: dev-gcp
-        - application: tokenx-token-generator
-          namespace: aura
-          cluster: dev-gcp
     outbound:
       rules:
         - application: poao-tilgang
