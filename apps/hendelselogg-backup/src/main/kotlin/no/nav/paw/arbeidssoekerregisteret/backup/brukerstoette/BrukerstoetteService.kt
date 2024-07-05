@@ -2,24 +2,23 @@
 
 package no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette
 
-import kotlinx.coroutines.Deferred
+import arrow.core.Either
+import arrow.core.raise.either
+import arrow.core.right
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.*
-import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Hendelse
-import no.nav.paw.arbeidssoekerregisteret.backup.database.getOneRecordForId
+import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.ArbeidssoekerperiodeResponse
 import no.nav.paw.arbeidssoekerregisteret.backup.database.readAllRecordsForId
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.StoredData
-import no.nav.paw.arbeidssokerregisteret.intern.v1.*
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
+import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
+import java.util.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
-
-const val periode: Int = 0
-const val opplysning: Int = 1
-const val profilering: Int = 2
 
 class BrukerstoetteService(
     private val oppslagAPI: OppslagApiClient,
@@ -47,7 +46,33 @@ class BrukerstoetteService(
             )
         }
     }
+
+    private suspend fun hentFraOppslagsApi(identitetsnummer: String): Either<Error, List<ApiData>> {
+        return either {
+            val perioder = oppslagAPI.perioder(identitetsnummer).bind().map(ArbeidssoekerperiodeResponse::periodeId)
+            val opplysninger =
+                perioder.flatMap { periodeId ->
+                    oppslagAPI.opplysninger(identitetsnummer, periodeId).bind()
+                        .map { opplysning -> ApiData(periodeId, opplysning.opplysningerOmArbeidssoekerId, null) }
+                        .let { it.ifEmpty { listOf(ApiData(periodeId, null, null)) } }
+                }
+            val profilernger = perioder.flatMap { periodeId ->
+                oppslagAPI.profileringer(identitetsnummer, periodeId).bind()
+                    .map { ApiData(periodeId, it.opplysningerOmArbeidssoekerId, it.profileringId) }
+            }
+            return perioder.map { periodeId -> ApiData(periodeId, null, null) }
+                .filterNot { periode -> opplysninger.any { periode.periodeId == it.periodeId } }
+                .plus(opplysninger.filterNot { opplysning -> profilernger.any { profilering -> profilering.periodeId == opplysning.periodeId } })
+                .right()
+        }
+    }
 }
+
+data class ApiData(
+    val periodeId: UUID,
+    val opplysningsId: UUID?,
+    val profileringsId: UUID?
+)
 
 fun sistePeriode(hendelser: List<StoredData>): Tilstand? =
     hendelser
