@@ -30,6 +30,7 @@ import no.nav.security.token.support.v2.TokenSupportConfig
 import no.nav.security.token.support.v2.TokenValidationContextPrincipal
 import no.nav.security.token.support.v2.tokenValidationSupport
 import org.slf4j.LoggerFactory
+import org.slf4j.event.Level
 
 private val errorLogger = LoggerFactory.getLogger("error_logger")
 
@@ -41,7 +42,10 @@ fun initKtor(
 ) {
     embeddedServer(Netty, port = 8080) {
         configureHTTP(binders, prometheusMeterRegistry)
-        install(CallLogging)
+        install(CallLogging) {
+            level = Level.INFO
+            filter { call -> call.request.path().startsWith("/api") }
+        }
         configureAuthentication(azureConfig)
         routing {
             swaggerUI(path = "docs/brukerstoette", swaggerFile = "openapi/Brukerstoette.yaml")
