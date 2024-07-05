@@ -85,7 +85,7 @@ class BrukerstoetteService(
                     apiOppslagLogger.info("Hentet data fra oppslagsapi, perioder: {}, opplysninger: {}, profileringer: {}",
                         result.distinctBy { it.periodeId }.size,
                         result.distinctBy { it.opplysningsId }.size,
-                        result.distinctBy { it.profileringsId }.size
+                        result.distinctBy { it.profileringsId }.size)
                 }
         }
     }
