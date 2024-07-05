@@ -11,16 +11,16 @@ import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.*
 import java.util.*
 
 class OppslagApiClient(
-    private val url: String,
+    config: OppslagApiConfig,
     private val getAccessToken: () -> String,
     private val httpClient: HttpClient
 ) {
-    private val perioderPath = "/api/v1/veileder/arbeidssoekerperioder"
-    private val opplysningerPath = "/api/v1/veileder/opplysninger-om-arbeidssoeker"
-    private val profileringPath = "/api/v1/veileder/profilering"
+    private val perioderUrl = "${config.baseUrl}${config.perioderPath}"
+    private val opplysningerUrl = "${config.baseUrl}${config.opplysningerPath}"
+    private val profileringUrl = "${config.baseUrl}${config.profileringPath}"
 
     suspend fun perioder(identitetsnunmer: String): Either<Error, List<ArbeidssoekerperiodeResponse>> {
-        val response = httpClient.post(url + perioderPath) {
+        val response = httpClient.post(perioderUrl) {
             headers {
                 append(HttpHeaders.ContentType, ContentType.Application.Json)
                 append("Authorization", "Bearer ${getAccessToken()}")
@@ -38,7 +38,7 @@ class OppslagApiClient(
         identitetsnunmer: String,
         periodeId: UUID
     ): Either<Error, List<OpplysningerOmArbeidssoekerResponse>> {
-        val response = httpClient.post(url + opplysningerPath) {
+        val response = httpClient.post(opplysningerUrl) {
             headers {
                 append(HttpHeaders.ContentType, ContentType.Application.Json)
                 append("Authorization", "Bearer ${getAccessToken()}")
@@ -59,7 +59,7 @@ class OppslagApiClient(
         identitetsnunmer: String,
         periodeId: UUID
     ): Either<Error, List<ProfileringResponse>> {
-        val response = httpClient.post(url + profileringPath) {
+        val response = httpClient.post(profileringUrl) {
             headers {
                 append(HttpHeaders.ContentType, ContentType.Application.Json)
                 append("Authorization", "Bearer ${getAccessToken()}")
@@ -77,11 +77,14 @@ class OppslagApiClient(
     }
 }
 
-const val OPPSLAG_API_CONFIG = "oppslags_api_config.toml"
+const val OPPSLAG_API_CONFIG = "api_oppslag_configuration.toml"
 
 data class OppslagApiConfig(
-    val url: String,
-    val scope: String
+    val baseUrl: String,
+    val scope: String,
+    val perioderPath: String,
+    val opplysningerPath: String,
+    val profileringPath: String
 )
 
 data class Error(

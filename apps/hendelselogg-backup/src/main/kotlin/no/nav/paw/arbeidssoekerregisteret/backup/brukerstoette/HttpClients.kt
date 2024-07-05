@@ -28,7 +28,7 @@ fun oppslagsApiClient(
         }
     }
     return OppslagApiClient(
-        url = cfg.url,
+        config = cfg,
         getAccessToken = { azureM2M.createMachineToMachineToken(cfg.scope) },
         httpClient = httpClient
     )

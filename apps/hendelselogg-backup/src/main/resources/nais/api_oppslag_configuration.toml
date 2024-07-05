@@ -1,5 +1,5 @@
 url="http://paw-arbeidssoekerregisteret-api-oppslag"
-perioder="/api/v1/veileder/arbeidssoekerperioder"
-opplysninger="/api/v1/veileder/opplysninger-om-arbeidssoeker"
-profilering="/api/v1/veileder/profilering"
 scope="${API_OPPSLAG_SCOPE}"
+perioderPath="/api/v1/veileder/arbeidssoekerperioder"
+opplysningerPath="/api/v1/veileder/opplysninger-om-arbeidssoeker"
+profileringPath="/api/v1/veileder/profilering"
