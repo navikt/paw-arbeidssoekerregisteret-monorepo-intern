@@ -31,7 +31,7 @@ import no.nav.security.token.support.v2.TokenValidationContextPrincipal
 import no.nav.security.token.support.v2.tokenValidationSupport
 import org.slf4j.LoggerFactory
 
-private val authLogger = LoggerFactory.getLogger("auth_logger")
+private val errorLogger = LoggerFactory.getLogger("error_logger")
 
 fun initKtor(
     prometheusMeterRegistry: PrometheusMeterRegistry,
@@ -70,7 +70,7 @@ fun Route.configureBrukerstoetteRoutes(brukerstoetteService: BrukerstoetteServic
                         claims.get("NAVident") to claims.get("oid")
                     } ?: (null to null)
             }
-            authLogger.info("Brukerstoette request fra navIdent='$navIdent' med oid='$oid'")
+            auditLogger.info("Brukerstoette request fra navIdent='$navIdent' med oid='$oid'")
             val request: DetaljerRequest = call.receive()
             brukerstoetteService.hentDetaljer(request.identitetsnummer)
         }.onSuccess { detaljer ->
@@ -81,6 +81,7 @@ fun Route.configureBrukerstoetteRoutes(brukerstoetteService: BrukerstoetteServic
                 )
             )
         }.onFailure {
+            errorLogger.error("Feil ved henting av detaljer", it)
             call.respond(
                 HttpStatusCode.InternalServerError, Feil(
                     melding = "Feil ved henting av detaljer",
