@@ -28,6 +28,7 @@ class BrukerstoetteService(
     private val hendelseDeserializer: HendelseDeserializer
 ) {
     private val errorLogger = LoggerFactory.getLogger("error_logger")
+    private val apiOppslagLogger = LoggerFactory.getLogger("api_oppslag_logger")
     suspend fun hentDetaljer(identitetsnummer: String): DetaljerResponse? {
         val (id, _) = kafkaKeysClient.getIdAndKey(identitetsnummer)
         val hendelser = transaction {
@@ -80,6 +81,12 @@ class BrukerstoetteService(
                 .filterNot { periode -> opplysninger.any { periode.periodeId == it.periodeId } }
                 .plus(opplysninger.filterNot { opplysning -> profilernger.any { profilering -> profilering.periodeId == opplysning.periodeId } })
                 .right()
+                .onRight { result ->
+                    apiOppslagLogger.info("Hentet data fra oppslagsapi, perioder: {}, opplysninger: {}, profileringer: {}",
+                        result.distinctBy { it.periodeId }.size,
+                        result.distinctBy { it.opplysningsId }.size,
+                        result.distinctBy { it.profileringsId }.size
+                }
         }
     }
 }
@@ -91,7 +98,7 @@ fun enrich(tilstand: Tilstand, apiData: List<ApiData>): Tilstand {
         periodeData.any { it.opplysningsId == opplysningId }
     } ?: false
     val harProfilering = tilstand.gjeldeneOpplysningsId?.let { opplysningId ->
-        periodeData.any { it.opplysningsId == opplysningId }
+        periodeData.any { it.opplysningsId == opplysningId && it.profileringsId != null }
     } ?: false
     return tilstand.copy(
         apiKall = TilstandApiKall(
