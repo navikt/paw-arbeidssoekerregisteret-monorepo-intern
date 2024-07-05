@@ -12,6 +12,7 @@ import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import io.mockk.mockk
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.DetaljerRequest
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.DetaljerResponse
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Feil
@@ -54,7 +55,7 @@ class ApiTest : FreeSpec({
         val kafkaKeysClient = inMemoryKafkaKeysMock()
         with(applicationContext) {
             val service = BrukerstoetteService(
-                oppslagAPI = OppslagApiClient(),
+                oppslagAPI = mockk(),
                 kafkaKeysClient = kafkaKeysClient,
                 applicationContext = applicationContext,
                 hendelseDeserializer = HendelseDeserializer()

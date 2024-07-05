@@ -21,6 +21,7 @@ dependencies {
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:kafka-key-generator-client"))
 
+    implementation(arrow.core)
     implementation(ktorServer.bundles.withNettyAndMicrometer)
     implementation(ktorServer.cors)
     implementation(ktorServer.swagger)
@@ -111,6 +112,41 @@ mapOf(
     tasks.register(taskName, GenerateTask::class) {
         generatorName.set("kotlin-server")
         library = "ktor"
+        inputSpec = openApiDocFile
+        outputDir = generatedCodeOutputDir
+        packageName = pkgName
+        configOptions.set(
+            mapOf(
+                "serializationLibrary" to "jackson",
+                "enumPropertyNaming" to "original",
+                "modelPropertyNaming" to "original"
+            ),
+        )
+        typeMappings = mapOf(
+            "DateTime" to "Instant"
+        )
+        globalProperties = mapOf(
+            "apis" to "none",
+            "models" to ""
+        )
+        importMappings = mapOf(
+            "Instant" to "java.time.Instant"
+        )
+    }
+    taskName
+}.also { generatorTasks ->
+    tasks.withType(KotlinCompilationTask::class) {
+        dependsOn(*generatorTasks.toTypedArray())
+    }
+}
+
+mapOf(
+    "${layout.projectDirectory}/src/main/resources/openapi/oppslags-api.yaml" to "${generatedCodePackageName}.oppslagsapi"
+).map { (openApiDocFile, pkgName) ->
+    val taskName = "generate${pkgName.capitalized()}"
+    tasks.register(taskName, GenerateTask::class) {
+        generatorName.set("kotlin")
+        library = "jvm-ktor"
         inputSpec = openApiDocFile
         outputDir = generatedCodeOutputDir
         packageName = pkgName

@@ -1,0 +1,483 @@
+openapi: "3.0.3"
+info:
+  title: "paw_arbeidssoekerregisteret_api_oppslag API"
+  description: "API for synkront oppslag mot arbeidssøkerregisteret."
+  version: "1.0.0"
+servers:
+  - url: "https://oppslag-arbeidssoekerregisteret.intern.nav.no"
+    description: "Production"
+  - url: "https://oppslag-arbeidssoekerregisteret.intern.dev.nav.no"
+    description: "Development"
+paths:
+  /api/v1/arbeidssoekerperioder:
+    get:
+      description: ""
+      security:
+        - TokenXAuth: []
+      responses:
+        "403":
+          description: "Forbidden"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+        "500":
+          description: "Internal Server Error"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/ArbeidssoekerperiodeResponse"
+  /api/v1/opplysninger-om-arbeidssoeker/{periodeId}:
+    get:
+      description: ""
+      security:
+        - TokenXAuth: []
+      parameters:
+        - name: "periodeId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "500":
+          description: "Internal Server Error"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/OpplysningerOmArbeidssoekerResponse"
+  /api/v1/profilering/{periodeId}:
+    get:
+      description: ""
+      security:
+        - TokenXAuth: []
+      parameters:
+        - name: "periodeId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "500":
+          description: "Internal Server Error"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/ProfileringResponse"
+  /api/v1/veileder/arbeidssoekerperioder:
+    post:
+      description: ""
+      security:
+        - AzureAuth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArbeidssoekerperiodeRequest"
+        required: true
+      responses:
+        "500":
+          description: "Internal Server Error"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+        "403":
+          description: "Forbidden"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/ArbeidssoekerperiodeResponse"
+  /api/v1/veileder/opplysninger-om-arbeidssoeker:
+    post:
+      description: ""
+      security:
+        - AzureAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OpplysningerOmArbeidssoekerRequest"
+        required: true
+      responses:
+        "500":
+          description: "Internal Server Error"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+        "403":
+          description: "Forbidden"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/OpplysningerOmArbeidssoekerResponse"
+  /api/v1/veileder/profilering:
+    post:
+      description: ""
+      security:
+        - AzureAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileringRequest"
+        required: true
+      responses:
+        "500":
+          description: "Internal Server Error"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+        "403":
+          description: "Forbidden"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/ProfileringResponse"
+  /internal/isAlive:
+    get:
+      description: ""
+      responses:
+        "200":
+          description: "OK"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "ALIVE"
+  /internal/isReady:
+    get:
+      description: ""
+      responses:
+        "200":
+          description: "OK"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "READY"
+  /internal/metrics:
+    get:
+      description: ""
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "string"
+components:
+  securitySchemes:
+    TokenXAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Oppslag som gjøres av arbeidssøker selv. Bruk et Bearer token fra TokenX.
+        
+        Eksempel: `Authorization: Bearer <token>`
+        
+        ```json
+        { "acr": "Level4", "pid": "<fnr>" }
+        ```
+    AzureAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Oppslag som gjøres av veileder eller system. Bruk et Bearer token fra Azure.
+        
+        Eksempel: `Authorization: Bearer <token>`
+        
+        Veileder:
+        
+        ```json
+        {
+          "oid": "989f736f-14db-45dc-b8d1-94d621dbf2bb",
+          "NAVident": "<veileder-ident>"
+        }
+        ```
+        
+        System:
+        
+        ```json
+        {
+          "oid": "989f736f-14db-45dc-b8d1-94d621dbf2bb",
+          "roles": ["access_as_application"]
+        }
+        ```
+  schemas:
+    BrukerResponse:
+      type: "object"
+      properties:
+        type:
+          $ref: "#/components/schemas/BrukerType"
+        id:
+          type: "string"
+          example: "12345678910"
+      required:
+        - "type"
+        - "id"
+    AvviksTypeResponse:
+      type: "string"
+      enum:
+        - "UKJENT_VERDI"
+        - "FORSINKELSE"
+        - "RETTING"
+    TidspunktFraKildeResponse:
+        type: "object"
+        properties:
+            tidspunkt:
+              type: "string"
+              format: "date-time"
+              example: "2021-09-29T11:20:33.444Z"
+            avviksType:
+              $ref: "#/components/schemas/AvviksTypeResponse"
+        required:
+            - "tidspunkt"
+            - "avviksType"
+    MetadataResponse:
+      type: "object"
+      properties:
+        tidspunkt:
+          type: "string"
+          format: "date-time"
+          example: "2021-09-29T11:22:33.444Z"
+        utfoertAv:
+          $ref: "#/components/schemas/BrukerResponse"
+        kilde:
+          type: "string"
+        aarsak:
+          type: "string"
+        tidspunktFraKilde:
+          $ref: "#/components/schemas/TidspunktFraKildeResponse"
+      required:
+        - "tidspunkt"
+        - "utfoertAv"
+        - "kilde"
+        - "aarsak"
+    ArbeidssoekerperiodeResponse:
+      type: "object"
+      properties:
+        periodeId:
+          type: "string"
+          format: "uuid"
+        startet:
+          $ref: "#/components/schemas/MetadataResponse"
+        avsluttet:
+          $ref: "#/components/schemas/MetadataResponse"
+      required:
+        - "periodeId"
+        - "startet"
+    UtdanningResponse:
+      type: "object"
+      properties:
+        nus:
+          type: "string"
+        bestaatt:
+          $ref: "#/components/schemas/JaNeiVetIkke"
+        godkjent:
+          $ref: "#/components/schemas/JaNeiVetIkke"
+      required:
+        - "nus"
+    HelseResponse:
+      type: "object"
+      properties:
+        helsetilstandHindrerArbeid:
+          $ref: "#/components/schemas/JaNeiVetIkke"
+      required:
+        - "helsetilstandHindrerArbeid"
+    AnnetResponse:
+      type: "object"
+      properties:
+        andreForholdHindrerArbeid:
+          $ref: "#/components/schemas/JaNeiVetIkke"
+    BeskrivelseMedDetaljerResponse:
+      type: "object"
+      properties:
+        beskrivelse:
+          $ref: '#/components/schemas/JobbSituasjonBeskrivelse'
+        detaljer:
+          type: "object"
+          additionalProperties:
+            type: string
+          example:
+            "prosent": "25"
+      required:
+        - "beskrivelse"
+        - "detaljer"
+    OpplysningerOmArbeidssoekerResponse:
+      type: "object"
+      properties:
+        opplysningerOmArbeidssoekerId:
+          type: "string"
+          format: "uuid"
+        periodeId:
+          type: "string"
+          format: "uuid"
+        sendtInnAv:
+          $ref: "#/components/schemas/MetadataResponse"
+        utdanning:
+          $ref: "#/components/schemas/UtdanningResponse"
+        helse:
+          $ref: "#/components/schemas/HelseResponse"
+        annet:
+          $ref: "#/components/schemas/AnnetResponse"
+        jobbsituasjon:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/BeskrivelseMedDetaljerResponse"
+      required:
+        - "opplysningerOmArbeidssoekerId"
+        - "periodeId"
+        - "sendtInnAv"
+        - "jobbsituasjon"
+    ProfileringResponse:
+      type: "object"
+      properties:
+        profileringId:
+          type: "string"
+          format: "uuid"
+        periodeId:
+          type: "string"
+          format: "uuid"
+        opplysningerOmArbeidssoekerId:
+          type: "string"
+          format: "uuid"
+        sendtInnAv:
+          $ref: "#/components/schemas/MetadataResponse"
+        profilertTil:
+          $ref: '#/components/schemas/ProfileringsResultat'
+        jobbetSammenhengendeSeksAvTolvSisteManeder:
+          type: "boolean"
+        alder:
+          type: "integer"
+          format: "int32"
+      required:
+        - "profileringId"
+        - "periodeId"
+        - "opplysningerOmArbeidssoekerId"
+        - "sendtInnAv"
+        - "profilertTil"
+    ArbeidssoekerperiodeRequest:
+      type: "object"
+      properties:
+        identitetsnummer:
+          type: "string"
+      required:
+        - "identitetsnummer"
+    OpplysningerOmArbeidssoekerRequest:
+      type: "object"
+      properties:
+        identitetsnummer:
+          type: "string"
+        periodeId:
+          type: "string"
+          format: "uuid"
+      required:
+        - "identitetsnummer"
+        - "periodeId"
+    ProfileringRequest:
+      type: "object"
+      properties:
+        identitetsnummer:
+          type: "string"
+        periodeId:
+          type: "string"
+          format: "uuid"
+      required:
+        - "identitetsnummer"
+        - "periodeId"
+    JaNeiVetIkke:
+      type: "string"
+      enum:
+        - "JA"
+        - "NEI"
+        - "VET_IKKE"
+    JobbSituasjonBeskrivelse:
+      type: "string"
+      enum:
+        - "UKJENT_VERDI"
+        - "UDEFINERT"
+        - "HAR_SAGT_OPP"
+        - "HAR_BLITT_SAGT_OPP"
+        - "ER_PERMITTERT"
+        - "ALDRI_HATT_JOBB"
+        - "IKKE_VAERT_I_JOBB_SISTE_2_AAR"
+        - "AKKURAT_FULLFORT_UTDANNING"
+        - "VIL_BYTTE_JOBB"
+        - "USIKKER_JOBBSITUASJON"
+        - "MIDLERTIDIG_JOBB"
+        - "DELTIDSJOBB_VIL_MER"
+        - "NY_JOBB"
+        - "KONKURS"
+        - "ANNET"
+    BrukerType:
+      type: "string"
+      enum:
+        - "UKJENT_VERDI"
+        - "UDEFINERT"
+        - "VEILEDER"
+        - "SYSTEM"
+        - "SLUTTBRUKER"
+    ProfileringsResultat:
+      type: "string"
+      enum:
+        - "UKJENT_VERDI"
+        - "UDEFINERT"
+        - "ANTATT_GODE_MULIGHETER"
+        - "ANTATT_BEHOV_FOR_VEILEDNING"
+        - "OPPGITT_HINDRINGER"
