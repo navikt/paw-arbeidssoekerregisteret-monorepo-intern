@@ -30,7 +30,8 @@ class HistoriskeTilstanderTest : FreeSpec({
                         startet = startet.data.metadata.tidspunkt,
                         harOpplysningerMottattHendelse = false,
                         avsluttet = null,
-                        apiKall = null
+                        apiKall = null,
+                        periodeId = startet.data.hendelseId
                     ),
                     endret = true
                 )
@@ -63,7 +64,8 @@ class HistoriskeTilstanderTest : FreeSpec({
                         startet = hendelser[1].data.metadata.tidspunkt,
                         harOpplysningerMottattHendelse = false,
                         avsluttet = null,
-                        apiKall = null
+                        apiKall = null,
+                        periodeId = hendelser[1].data.hendelseId
                     ),
                     endret = true
                 ),
@@ -74,14 +76,16 @@ class HistoriskeTilstanderTest : FreeSpec({
                         startet = hendelser[1].data.metadata.tidspunkt,
                         harOpplysningerMottattHendelse = false,
                         avsluttet = null,
-                        apiKall = null
+                        apiKall = null,
+                        periodeId = hendelser[1].data.hendelseId
                     ),
                     nyTilstand = Tilstand(
                         harAktivePeriode = true,
                         startet = hendelser[1].data.metadata.tidspunkt,
                         harOpplysningerMottattHendelse = true,
                         avsluttet = null,
-                        apiKall = null
+                        apiKall = null,
+                        periodeId = hendelser[1].data.hendelseId
                     ),
                     endret = true
                 ),
@@ -92,14 +96,16 @@ class HistoriskeTilstanderTest : FreeSpec({
                         startet = hendelser[1].data.metadata.tidspunkt,
                         harOpplysningerMottattHendelse = true,
                         avsluttet = null,
-                        apiKall = null
+                        apiKall = null,
+                        periodeId = hendelser[1].data.hendelseId
                     ),
                     nyTilstand = Tilstand(
                         harAktivePeriode = false,
                         startet = hendelser[1].data.metadata.tidspunkt,
                         harOpplysningerMottattHendelse = true,
                         avsluttet = hendelser[3].data.metadata.tidspunkt,
-                        apiKall = null
+                        apiKall = null,
+                        periodeId = hendelser[1].data.hendelseId
                     ),
                     endret = true
                 ),
@@ -110,14 +116,16 @@ class HistoriskeTilstanderTest : FreeSpec({
                         startet = hendelser[1].data.metadata.tidspunkt,
                         harOpplysningerMottattHendelse = true,
                         avsluttet = hendelser[3].data.metadata.tidspunkt,
-                        apiKall = null
+                        apiKall = null,
+                        periodeId = hendelser[1].data.hendelseId
                     ),
                     nyTilstand = Tilstand(
                         harAktivePeriode = true,
                         startet = hendelser[4].data.metadata.tidspunkt,
                         harOpplysningerMottattHendelse = false,
                         avsluttet = null,
-                        apiKall = null
+                        apiKall = null,
+                        periodeId = hendelser[4].data.hendelseId
                     ),
                     endret = true
                 ),
@@ -128,14 +136,16 @@ class HistoriskeTilstanderTest : FreeSpec({
                         startet = hendelser[4].data.metadata.tidspunkt,
                         harOpplysningerMottattHendelse = false,
                         avsluttet = null,
-                        apiKall = null
+                        apiKall = null,
+                        periodeId = hendelser[4].data.hendelseId
                     ),
                     nyTilstand = Tilstand(
                         harAktivePeriode = true,
                         startet = hendelser[4].data.metadata.tidspunkt,
                         harOpplysningerMottattHendelse = true,
                         avsluttet = null,
-                        apiKall = null
+                        apiKall = null,
+                        periodeId = hendelser[4].data.hendelseId
                     ),
                     endret = true
                 ),
@@ -146,14 +156,16 @@ class HistoriskeTilstanderTest : FreeSpec({
                         startet = hendelser[4].data.metadata.tidspunkt,
                         harOpplysningerMottattHendelse = true,
                         avsluttet = null,
-                        apiKall = null
+                        apiKall = null,
+                        periodeId = hendelser[4].data.hendelseId
                     ),
                     nyTilstand = Tilstand(
                         harAktivePeriode = false,
                         startet = hendelser[4].data.metadata.tidspunkt,
                         harOpplysningerMottattHendelse = true,
                         avsluttet = hendelser[6].data.metadata.tidspunkt,
-                        apiKall = null
+                        apiKall = null,
+                        periodeId = hendelser[4].data.hendelseId
                     ),
                     endret = true
                 ),
@@ -164,14 +176,16 @@ class HistoriskeTilstanderTest : FreeSpec({
                         startet = hendelser[4].data.metadata.tidspunkt,
                         harOpplysningerMottattHendelse = true,
                         avsluttet = hendelser[6].data.metadata.tidspunkt,
-                        apiKall = null
+                        apiKall = null,
+                        periodeId = hendelser[4].data.hendelseId
                     ),
                     nyTilstand = Tilstand(
                         harAktivePeriode = false,
                         startet = hendelser[4].data.metadata.tidspunkt,
                         harOpplysningerMottattHendelse = true,
                         avsluttet = hendelser[6].data.metadata.tidspunkt,
-                        apiKall = null
+                        apiKall = null,
+                        periodeId = hendelser[4].data.hendelseId
                     ),
                     endret = false
                 )

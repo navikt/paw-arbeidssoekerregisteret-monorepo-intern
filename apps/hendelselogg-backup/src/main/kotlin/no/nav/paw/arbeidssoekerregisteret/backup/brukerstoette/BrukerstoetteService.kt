@@ -2,6 +2,7 @@
 
 package no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette
 
+import kotlinx.coroutines.Deferred
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.*
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Hendelse
 import no.nav.paw.arbeidssoekerregisteret.backup.database.getOneRecordForId
@@ -11,8 +12,14 @@ import no.nav.paw.arbeidssoekerregisteret.backup.vo.StoredData
 import no.nav.paw.arbeidssokerregisteret.intern.v1.*
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
+
+const val periode: Int = 0
+const val opplysning: Int = 1
+const val profilering: Int = 2
 
 class BrukerstoetteService(
     private val oppslagAPI: OppslagApiClient,
@@ -20,19 +27,17 @@ class BrukerstoetteService(
     private val applicationContext: ApplicationContext,
     private val hendelseDeserializer: HendelseDeserializer
 ) {
-
     suspend fun hentDetaljer(identitetsnummer: String): DetaljerResponse? {
+        val (id, _) = kafkaKeysClient.getIdAndKey(identitetsnummer)
         val hendelser = transaction {
-            (::getOneRecordForId)(hendelseDeserializer, applicationContext, identitetsnummer)
-                ?.arbeidssoekerId
-                ?.let{ id -> (::readAllRecordsForId)(hendelseDeserializer, applicationContext, id) }
-                ?: emptyList()
+            (::readAllRecordsForId)(hendelseDeserializer, applicationContext, id)
         }
         if (hendelser.isEmpty()) {
             return null
         } else {
             val sistePeriode = sistePeriode(hendelser)
             val innkommendeHendelse = historiskeTilstander(hendelser).toList()
+            val apiMap: Map<Pair<UUID, Int>, Deferred<Boolean>> = ConcurrentHashMap()
             val partition = hendelser.firstOrNull()?.partition
             return DetaljerResponse(
                 recordKey = hendelser.first().recordKey,
@@ -101,7 +106,8 @@ fun beregnTilstand(tilstand: Tilstand?, hendelse: StoredData): Tilstand? =
                 startet = hendelse.data.metadata.tidspunkt,
                 avsluttet = null,
                 harOpplysningerMottattHendelse = false,
-                apiKall = null
+                apiKall = null,
+                periodeId = hendelse.data.hendelseId
             )
         }
 

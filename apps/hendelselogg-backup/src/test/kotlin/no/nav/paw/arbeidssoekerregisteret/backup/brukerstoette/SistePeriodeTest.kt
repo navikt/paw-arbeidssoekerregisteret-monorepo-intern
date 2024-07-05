@@ -32,7 +32,8 @@ class SistePeriodeTest: FreeSpec({
                 startet = startet.metadata.tidspunkt,
                 harOpplysningerMottattHendelse = false,
                 avsluttet = null,
-                apiKall = null
+                apiKall = null,
+                periodeId = startet.hendelseId
             )
         }
         "med flere perioder returneres den siste" {
@@ -53,7 +54,8 @@ class SistePeriodeTest: FreeSpec({
                 startet = nyesteperiode.metadata.tidspunkt,
                 harOpplysningerMottattHendelse = true,
                 avsluttet = avsluttet.metadata.tidspunkt,
-                apiKall = null
+                apiKall = null,
+                periodeId = nyesteperiode.hendelseId
             )
         }
     }

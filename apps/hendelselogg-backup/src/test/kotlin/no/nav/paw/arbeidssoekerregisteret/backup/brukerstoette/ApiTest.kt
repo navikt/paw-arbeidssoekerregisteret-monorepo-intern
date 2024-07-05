@@ -127,7 +127,8 @@ class ApiTest : FreeSpec({
                     startet = testRecord.value().metadata.tidspunkt,
                     harOpplysningerMottattHendelse = false,
                     avsluttet = null,
-                    apiKall = null
+                    apiKall = null,
+                    periodeId = testRecord.value().hendelseId
                 )
             }
         }

@@ -99,6 +99,11 @@ components:
           type: "boolean"
           description: "Har aktiv periode"
           example: true
+        periodeId:
+          type: "string"
+          format: "uuid"
+          example: "123e4567-e89b-12d3-a456-426614174000"
+          description: "Id for periode"
         startet:
           type: "string"
           format: "date-time"
@@ -131,6 +136,7 @@ components:
         - "harAktivePeriode"
         - "startet"
         - "harOpplysningerMottattHendelse"
+        - "periodeId"
     HendelseMetadata:
       type: "object"
       properties:
