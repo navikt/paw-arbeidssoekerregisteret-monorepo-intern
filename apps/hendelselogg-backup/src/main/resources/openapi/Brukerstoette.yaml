@@ -118,6 +118,11 @@ components:
           type: "boolean"
           description: "Har opplysninger"
           example: true
+        gjeldeneOpplysningsId:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+            description: "Id for gjeldene opplysninger for perioden, utelatt dersom ingen opplysninger er gitt"
         apiKall:
           type: "object"
           properties:

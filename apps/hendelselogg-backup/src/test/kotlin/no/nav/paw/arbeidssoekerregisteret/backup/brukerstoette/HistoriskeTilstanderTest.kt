@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldBe
 import no.nav.paw.arbeidssoekerregisteret.backup.*
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Snapshot
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Tilstand
+import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
 
 class HistoriskeTilstanderTest : FreeSpec({
     "verifiser at historiskeTilstander funksjonen fungerer" - {
@@ -31,7 +32,8 @@ class HistoriskeTilstanderTest : FreeSpec({
                         harOpplysningerMottattHendelse = false,
                         avsluttet = null,
                         apiKall = null,
-                        periodeId = startet.data.hendelseId
+                        periodeId = startet.data.hendelseId,
+                        gjeldeneOpplysningsId = null
                     ),
                     endret = true
                 )
@@ -65,7 +67,8 @@ class HistoriskeTilstanderTest : FreeSpec({
                         harOpplysningerMottattHendelse = false,
                         avsluttet = null,
                         apiKall = null,
-                        periodeId = hendelser[1].data.hendelseId
+                        periodeId = hendelser[1].data.hendelseId,
+                        gjeldeneOpplysningsId = null
                     ),
                     endret = true
                 ),
@@ -77,7 +80,8 @@ class HistoriskeTilstanderTest : FreeSpec({
                         harOpplysningerMottattHendelse = false,
                         avsluttet = null,
                         apiKall = null,
-                        periodeId = hendelser[1].data.hendelseId
+                        periodeId = hendelser[1].data.hendelseId,
+                        gjeldeneOpplysningsId = null
                     ),
                     nyTilstand = Tilstand(
                         harAktivePeriode = true,
@@ -85,7 +89,9 @@ class HistoriskeTilstanderTest : FreeSpec({
                         harOpplysningerMottattHendelse = true,
                         avsluttet = null,
                         apiKall = null,
-                        periodeId = hendelser[1].data.hendelseId
+                        periodeId = hendelser[1].data.hendelseId,
+                        gjeldeneOpplysningsId = (hendelser[2].data as OpplysningerOmArbeidssoekerMottatt)
+                            .opplysningerOmArbeidssoeker.id
                     ),
                     endret = true
                 ),
@@ -97,7 +103,9 @@ class HistoriskeTilstanderTest : FreeSpec({
                         harOpplysningerMottattHendelse = true,
                         avsluttet = null,
                         apiKall = null,
-                        periodeId = hendelser[1].data.hendelseId
+                        periodeId = hendelser[1].data.hendelseId,
+                        gjeldeneOpplysningsId = (hendelser[2].data as OpplysningerOmArbeidssoekerMottatt)
+                            .opplysningerOmArbeidssoeker.id
                     ),
                     nyTilstand = Tilstand(
                         harAktivePeriode = false,
@@ -105,7 +113,9 @@ class HistoriskeTilstanderTest : FreeSpec({
                         harOpplysningerMottattHendelse = true,
                         avsluttet = hendelser[3].data.metadata.tidspunkt,
                         apiKall = null,
-                        periodeId = hendelser[1].data.hendelseId
+                        periodeId = hendelser[1].data.hendelseId,
+                        gjeldeneOpplysningsId = (hendelser[2].data as OpplysningerOmArbeidssoekerMottatt)
+                            .opplysningerOmArbeidssoeker.id
                     ),
                     endret = true
                 ),
@@ -117,7 +127,9 @@ class HistoriskeTilstanderTest : FreeSpec({
                         harOpplysningerMottattHendelse = true,
                         avsluttet = hendelser[3].data.metadata.tidspunkt,
                         apiKall = null,
-                        periodeId = hendelser[1].data.hendelseId
+                        periodeId = hendelser[1].data.hendelseId,
+                        gjeldeneOpplysningsId = (hendelser[2].data as OpplysningerOmArbeidssoekerMottatt)
+                            .opplysningerOmArbeidssoeker.id
                     ),
                     nyTilstand = Tilstand(
                         harAktivePeriode = true,
@@ -125,7 +137,8 @@ class HistoriskeTilstanderTest : FreeSpec({
                         harOpplysningerMottattHendelse = false,
                         avsluttet = null,
                         apiKall = null,
-                        periodeId = hendelser[4].data.hendelseId
+                        periodeId = hendelser[4].data.hendelseId,
+                        gjeldeneOpplysningsId = null
                     ),
                     endret = true
                 ),
@@ -145,7 +158,9 @@ class HistoriskeTilstanderTest : FreeSpec({
                         harOpplysningerMottattHendelse = true,
                         avsluttet = null,
                         apiKall = null,
-                        periodeId = hendelser[4].data.hendelseId
+                        periodeId = hendelser[4].data.hendelseId,
+                        gjeldeneOpplysningsId = (hendelser[5].data as OpplysningerOmArbeidssoekerMottatt)
+                            .opplysningerOmArbeidssoeker.id
                     ),
                     endret = true
                 ),
@@ -157,7 +172,9 @@ class HistoriskeTilstanderTest : FreeSpec({
                         harOpplysningerMottattHendelse = true,
                         avsluttet = null,
                         apiKall = null,
-                        periodeId = hendelser[4].data.hendelseId
+                        periodeId = hendelser[4].data.hendelseId,
+                        gjeldeneOpplysningsId = (hendelser[5].data as OpplysningerOmArbeidssoekerMottatt)
+                            .opplysningerOmArbeidssoeker.id
                     ),
                     nyTilstand = Tilstand(
                         harAktivePeriode = false,
@@ -165,7 +182,9 @@ class HistoriskeTilstanderTest : FreeSpec({
                         harOpplysningerMottattHendelse = true,
                         avsluttet = hendelser[6].data.metadata.tidspunkt,
                         apiKall = null,
-                        periodeId = hendelser[4].data.hendelseId
+                        periodeId = hendelser[4].data.hendelseId,
+                        gjeldeneOpplysningsId = (hendelser[5].data as OpplysningerOmArbeidssoekerMottatt)
+                            .opplysningerOmArbeidssoeker.id
                     ),
                     endret = true
                 ),
@@ -177,7 +196,9 @@ class HistoriskeTilstanderTest : FreeSpec({
                         harOpplysningerMottattHendelse = true,
                         avsluttet = hendelser[6].data.metadata.tidspunkt,
                         apiKall = null,
-                        periodeId = hendelser[4].data.hendelseId
+                        periodeId = hendelser[4].data.hendelseId,
+                        gjeldeneOpplysningsId = (hendelser[5].data as OpplysningerOmArbeidssoekerMottatt)
+                            .opplysningerOmArbeidssoeker.id
                     ),
                     nyTilstand = Tilstand(
                         harAktivePeriode = false,
@@ -185,7 +206,9 @@ class HistoriskeTilstanderTest : FreeSpec({
                         harOpplysningerMottattHendelse = true,
                         avsluttet = hendelser[6].data.metadata.tidspunkt,
                         apiKall = null,
-                        periodeId = hendelser[4].data.hendelseId
+                        periodeId = hendelser[4].data.hendelseId,
+                        gjeldeneOpplysningsId = (hendelser[5].data as OpplysningerOmArbeidssoekerMottatt)
+                            .opplysningerOmArbeidssoeker.id
                     ),
                     endret = false
                 )

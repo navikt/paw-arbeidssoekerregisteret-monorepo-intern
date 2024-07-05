@@ -39,6 +39,7 @@ class SistePeriodeTest: FreeSpec({
         "med flere perioder returneres den siste" {
             val nyesteperiode = startet()
             val avsluttet = avsluttet()
+            val gjeldeneOpplysninger = opplysninger()
             sistePeriode(
                 listOf(
                     startet().storedData(offset = 1),
@@ -46,7 +47,7 @@ class SistePeriodeTest: FreeSpec({
                     avsluttet().storedData(offset = 3),
                     nyesteperiode.storedData(offset = 4),
                     startet().storedData(offset = 5),
-                    opplysninger().storedData(offset = 6),
+                    gjeldeneOpplysninger.storedData(offset = 6),
                     avsluttet.storedData(offset = 7)
                 )
             ) shouldBe Tilstand(
@@ -55,7 +56,8 @@ class SistePeriodeTest: FreeSpec({
                 harOpplysningerMottattHendelse = true,
                 avsluttet = avsluttet.metadata.tidspunkt,
                 apiKall = null,
-                periodeId = nyesteperiode.hendelseId
+                periodeId = nyesteperiode.hendelseId,
+                gjeldeneOpplysningsId = gjeldeneOpplysninger.opplysningerOmArbeidssoeker.id
             )
         }
     }

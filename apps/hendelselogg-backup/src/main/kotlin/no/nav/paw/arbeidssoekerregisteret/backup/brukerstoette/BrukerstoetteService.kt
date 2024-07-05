@@ -37,7 +37,6 @@ class BrukerstoetteService(
         } else {
             val sistePeriode = sistePeriode(hendelser)
             val innkommendeHendelse = historiskeTilstander(hendelser).toList()
-            val apiMap: Map<Pair<UUID, Int>, Deferred<Boolean>> = ConcurrentHashMap()
             val partition = hendelser.firstOrNull()?.partition
             return DetaljerResponse(
                 recordKey = hendelser.first().recordKey,
@@ -114,7 +113,9 @@ fun beregnTilstand(tilstand: Tilstand?, hendelse: StoredData): Tilstand? =
         !tilstand.harAktivPeriode() -> tilstand
         tilstand.harAktivPeriode() && hendelse.erOpplysningerMottatt() -> {
             tilstand.copy(
-                harOpplysningerMottattHendelse = true
+                harOpplysningerMottattHendelse = true,
+                gjeldeneOpplysningsId = (hendelse.data as OpplysningerOmArbeidssoekerMottatt)
+                    .opplysningerOmArbeidssoeker.id
             )
         }
 
