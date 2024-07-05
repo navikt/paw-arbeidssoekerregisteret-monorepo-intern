@@ -63,3 +63,5 @@ spec:
       rules:
         - application: paw-kafka-key-generator
           namespace: paw
+        - application: paw-arbeidssoekerregisteret-api-oppslag
+          namespace: paw
