@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette
 
+import arrow.core.right
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FreeSpec
@@ -12,11 +13,11 @@ import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import io.mockk.every
 import io.mockk.mockk
-import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.DetaljerRequest
-import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.DetaljerResponse
-import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Feil
-import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Tilstand
+import kotlinx.coroutines.runBlocking
+import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.*
+import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.*
 import no.nav.paw.arbeidssoekerregisteret.backup.configureBrukerstoetteRoutes
 import no.nav.paw.arbeidssoekerregisteret.backup.configureHTTP
 import no.nav.paw.arbeidssoekerregisteret.backup.database.writeRecord
@@ -53,9 +54,26 @@ class ApiTest : FreeSpec({
             azureConfig = loadNaisOrLocalConfiguration("azure.toml"),
         )
         val kafkaKeysClient = inMemoryKafkaKeysMock()
+        val oppslagsApi: OppslagApiClient = mockk()
+        every { runBlocking { oppslagsApi.perioder(any()) } } returns listOf(ArbeidssoekerperiodeResponse(
+            periodeId = UUID.randomUUID(),
+            startet = MetadataResponse(
+                tidspunkt = Instant.now().truncatedTo(ChronoUnit.MILLIS),
+                utfoertAv = BrukerResponse(
+                    type = no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.BrukerType.SYSTEM,
+                    id = "system"
+                ),
+                kilde = "system",
+                aarsak = "test"
+
+            ),
+            avsluttet = null
+        )).right()
+        every { runBlocking { oppslagsApi.opplysninger(any(), any()) } } returns emptyList<OpplysningerOmArbeidssoekerResponse>().right()
+        every { runBlocking { oppslagsApi.profileringer(any(), any()) } } returns emptyList<ProfileringResponse>().right()
         with(applicationContext) {
             val service = BrukerstoetteService(
-                oppslagAPI = mockk(),
+                oppslagAPI = oppslagsApi,
                 kafkaKeysClient = kafkaKeysClient,
                 applicationContext = applicationContext,
                 hendelseDeserializer = HendelseDeserializer()
@@ -127,7 +145,11 @@ class ApiTest : FreeSpec({
                     startet = testRecord.value().metadata.tidspunkt,
                     harOpplysningerMottattHendelse = false,
                     avsluttet = null,
-                    apiKall = null,
+                    apiKall = TilstandApiKall(
+                        harPeriode = false,
+                        harOpplysning = false,
+                        harProfilering = false
+                    ),
                     periodeId = testRecord.value().hendelseId,
                     gjeldeneOpplysningsId = null
                 )

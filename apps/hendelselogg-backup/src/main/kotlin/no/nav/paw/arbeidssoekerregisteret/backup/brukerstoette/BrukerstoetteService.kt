@@ -16,6 +16,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMo
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.slf4j.LoggerFactory
 import java.util.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -26,6 +27,7 @@ class BrukerstoetteService(
     private val applicationContext: ApplicationContext,
     private val hendelseDeserializer: HendelseDeserializer
 ) {
+    private val errorLogger = LoggerFactory.getLogger("error_logger")
     suspend fun hentDetaljer(identitetsnummer: String): DetaljerResponse? {
         val (id, _) = kafkaKeysClient.getIdAndKey(identitetsnummer)
         val hendelser = transaction {
@@ -36,13 +38,27 @@ class BrukerstoetteService(
         } else {
             val sistePeriode = sistePeriode(hendelser)
             val innkommendeHendelse = historiskeTilstander(hendelser).toList()
+            val fraOppslagsApi = hentFraOppslagsApi(identitetsnummer)
+                .fold(
+                    { error ->
+                        errorLogger.error("Feil ved henting av opplysninger fra oppslagsapi: {}:{}", error.httpCode, error.message)
+                        emptyList()
+                    },
+                    { it }
+                )
+
             val partition = hendelser.firstOrNull()?.partition
             return DetaljerResponse(
                 recordKey = hendelser.first().recordKey,
                 kafkaPartition = partition,
-                historikk = innkommendeHendelse,
+                historikk = innkommendeHendelse.map { snapshot ->
+                    snapshot.copy(
+                        nyTilstand = snapshot.nyTilstand?.let { enrich(it, fraOppslagsApi) },
+                        gjeldeneTilstand = snapshot.gjeldeneTilstand?.let { enrich(it, fraOppslagsApi) }
+                    )
+                },
                 arbeidssoekerId = hendelser.first().arbeidssoekerId,
-                gjeldeneTilstand = sistePeriode
+                gjeldeneTilstand = sistePeriode?.let { enrich(it, fraOppslagsApi) }
             )
         }
     }
@@ -66,6 +82,24 @@ class BrukerstoetteService(
                 .right()
         }
     }
+}
+
+fun enrich(tilstand: Tilstand, apiData: List<ApiData>): Tilstand {
+    val periodeData = apiData.filter { it.periodeId == tilstand.periodeId }
+    val harPeriode = periodeData.isNotEmpty()
+    val harOpplysning = tilstand.gjeldeneOpplysningsId?.let { opplysningId ->
+        periodeData.any { it.opplysningsId == opplysningId }
+    } ?: false
+    val harProfilering = tilstand.gjeldeneOpplysningsId?.let { opplysningId ->
+        periodeData.any { it.opplysningsId == opplysningId }
+    } ?: false
+    return tilstand.copy(
+        apiKall = TilstandApiKall(
+            harPeriode = harPeriode,
+            harOpplysning = harOpplysning,
+            harProfilering = harProfilering
+        )
+    )
 }
 
 data class ApiData(
