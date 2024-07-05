@@ -125,7 +125,12 @@ components:
             description: "Id for gjeldene opplysninger for perioden, utelatt dersom ingen opplysninger er gitt"
         apiKall:
           type: "object"
+          description: "Informasjons om resultatet av kall mot OpplsagsAPI, dersom ingen kall er gjort er dette feltet utelatt"
           properties:
+            harPeriode:
+              type: "boolean"
+              description: "Har periode"
+              example: true
             harOpplysning:
               type: "boolean"
               description: "Har opplysning"
@@ -135,6 +140,7 @@ components:
               description: "Har profilerin"
               example: true
           required:
+            - "harPeriode"
             - "harOpplysning"
             - "harProfilering"
       required:
