@@ -1,8 +1,8 @@
-package no.nav.paw.arbeidssoekerregisteret.config
+package no.nav.paw.arbeidssoekerregisteret.properties
 
 const val SERVER_CONFIG_FILE_NAME = "server_configuration.toml"
 
-data class ServerConfig(
+data class ServerProperties(
     val port: Int,
     val callGroupSize: Int,
     val workerGroupSize: Int,

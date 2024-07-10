@@ -3,8 +3,11 @@ package no.nav.paw.arbeidssoekerregisteret.config
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker
 import no.nav.paw.config.env.NaisEnv
 import no.nav.paw.config.env.currentNaisEnv
+import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
@@ -46,3 +49,12 @@ inline fun <reified T> buildJsonSerde(naisEnv: NaisEnv, objectMapper: ObjectMapp
 inline fun <reified T> buildJsonSerde(): Serde<T> {
     return buildJsonSerde<T>(currentNaisEnv, buildObjectMapper)
 }
+
+inline fun <reified T : SpecificRecord> buildAvroSerde(): Serde<T> {
+    return SpecificAvroSerde()
+}
+
+fun buildOpplysningerOmArbeidssoekerAvroSerde(): Serde<OpplysningerOmArbeidssoeker> {
+    return buildAvroSerde()
+}
+
