@@ -1,0 +1,18 @@
+[kafka]
+brokers = "${KAFKA_BROKERS}"
+applicationIdPrefix = "${KAFKA_STREAMS_APPLICATION_ID}"
+
+[kafka.authentication]
+keystorePath = "${KAFKA_KEYSTORE_PATH}"
+truststorePath = "${KAFKA_TRUSTSTORE_PATH}"
+credstorePassword = "${KAFKA_CREDSTORE_PASSWORD}"
+
+[kafka.schemaRegistry]
+url = "${KAFKA_SCHEMA_REGISTRY}"
+username = "${KAFKA_SCHEMA_REGISTRY_USER}"
+password = "${KAFKA_SCHEMA_REGISTRY_PASSWORD}"
+
+[kafkaStreams]
+shutDownTimeout = "PT5S"
+opplysingerStreamIdSuffix = "${KAFKA_OPPLYSNINGER_OM_ARBEIDSSOEKER_STREAM_ID_SUFFIX}"
+opplysningerTopic = "${KAFKA_PAW_OPPLYSNINGER_OM_ARBEIDSSOEKER_TOPIC}"

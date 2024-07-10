@@ -5,6 +5,7 @@ import com.nimbusds.jose.jwk.RSAKey
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder
 import no.nav.common.token_client.cache.CaffeineTokenCache
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient
+import no.nav.paw.config.env.NaisEnv
 import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey

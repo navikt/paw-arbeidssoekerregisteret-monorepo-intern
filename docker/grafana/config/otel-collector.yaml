@@ -1,0 +1,24 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+    #  http:
+    #    endpoint: 0.0.0.0:4318
+exporters:
+  otlp:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+processors:
+  filter:
+    error_mode: ignore
+    traces:
+      span:
+        - IsMatch(attributes["url.path"], "/internal/*")
+service:
+  pipelines:
+    traces:
+      receivers: [ otlp ]
+      processors: [ filter ]
+      exporters: [ otlp ]

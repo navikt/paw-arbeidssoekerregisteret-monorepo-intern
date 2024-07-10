@@ -1,0 +1,35 @@
+{
+  "interactiveLogin": true,
+  "httpServer": "NettyWrapper",
+  "tokenCallbacks": [
+    {
+      "issuerId": "default",
+      "tokenExpiry": 3600,
+      "requestMappings": [
+        {
+          "requestParam": "scope",
+          "match": "openid",
+          "claims": {
+            "sub": "admin@paw-microfrontend-toggler",
+            "aud": [
+              "paw-microfrontend-toggler"
+            ],
+            "acr": "idporten-loa-high"
+          }
+        },
+        {
+          "requestParam": "scope",
+          "match": "openid pid",
+          "claims": {
+            "sub": "admin@paw-microfrontend-toggler",
+            "aud": [
+              "paw-microfrontend-toggler"
+            ],
+            "pid": "01017012345",
+            "acr": "idporten-loa-high"
+          }
+        }
+      ]
+    }
+  ]
+}

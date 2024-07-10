@@ -2,6 +2,9 @@ name: PDL - Utgang
 
 on:
   push:
+    branches:
+      - main
+      - dev/*
     paths:
       - 'apps/utgang-pdl/**'
       - '.github/workflows/utgang-pdl-deploy.yaml'
@@ -55,7 +58,9 @@ jobs:
         uses: nais/attest-sign@v1.3.4
         with:
           image_ref: ${{ env.IMAGE }}@${{ env.DIGEST }}
+
   deploy-dev:
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/dev')
     name: Deploy to dev-gcp
     permissions:
       contents: read
@@ -69,6 +74,7 @@ jobs:
           CLUSTER: dev-gcp
           RESOURCE: apps/utgang-pdl/nais/nais-dev.yaml
           VAR: image=${{ needs.build.outputs.image }},kafka=nav-dev
+
   deploy-prod:
     if: github.ref == 'refs/heads/main'
     name: Deploy to prod-gcp

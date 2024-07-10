@@ -2,6 +2,9 @@ name: Hendelseprosessor
 
 on:
   push:
+    branches:
+      - main
+      - dev/*
     paths:
       - 'apps/hendelseprosessor/**'
       - 'lib/**'
@@ -11,6 +14,7 @@ on:
       - 'settings.gradle.kts'
       - 'gradle.properties'
       - 'gradlew'
+
 env:
   IMAGE: europe-north1-docker.pkg.dev/${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}/paw/paw-arbeidssokerregisteret-event-prosessor
 jobs:
@@ -51,7 +55,9 @@ jobs:
         uses: nais/attest-sign@v1.3.4
         with:
           image_ref: ${{ env.IMAGE }}@${{ env.DIGEST }}
+
   deploy-dev:
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/dev')
     name: Deploy to dev-gcp
     needs: build
     runs-on: ubuntu-latest
@@ -69,7 +75,7 @@ jobs:
   deploy-prod:
     if: github.ref == 'refs/heads/main'
     name: Deploy to prod-gcp
-    needs: [build, deploy-dev]
+    needs: [ build, deploy-dev ]
     runs-on: ubuntu-latest
     permissions:
       contents: read
