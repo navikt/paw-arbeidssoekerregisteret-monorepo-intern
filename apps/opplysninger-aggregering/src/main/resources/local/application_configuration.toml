@@ -1,0 +1,11 @@
+[kafka]
+brokers = "localhost:9092"
+applicationIdPrefix = "paw.paw-arbeidssoeker-opplysninger-aggregering"
+
+[kafka.schemaRegistry]
+url = "http://localhost:8082"
+
+[kafkaStreams]
+shutDownTimeout = "PT1S"
+opplysingerStreamIdSuffix = "opplysninger-stream-v1"
+opplysningerTopic = "paw.opplysninger-om-arbeidssoeker-v1"

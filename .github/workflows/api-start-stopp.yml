@@ -1,15 +1,18 @@
 name: Api Start stopp
 on:
-    push:
-        paths:
-          - 'apps/api-start-stopp-perioder/**'
-          - 'domain/**'
-          - 'lib/**'
-          - '.github/workflows/api-start-stopp.yml'
-          - 'gradle/**'
-          - 'settings.gradle.kts'
-          - 'gradle.properties'
-          - 'gradlew'
+  push:
+    branches:
+      - main
+      - dev/*
+    paths:
+      - 'apps/api-start-stopp-perioder/**'
+      - 'domain/**'
+      - 'lib/**'
+      - '.github/workflows/api-start-stopp.yml'
+      - 'gradle/**'
+      - 'settings.gradle.kts'
+      - 'gradle.properties'
+      - 'gradlew'
 
 env:
   IMAGE: europe-north1-docker.pkg.dev/${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}/paw/paw-arbeidssokerregisteret-api-inngang
@@ -50,7 +53,9 @@ jobs:
         uses: nais/attest-sign@v1.3.4
         with:
           image_ref: ${{ env.IMAGE }}@${{ env.DIGEST }}
+
   deploy-dev:
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/dev')
     name: Deploy to dev-gcp - API Start Stopp
     needs: build
     runs-on: ubuntu-latest
@@ -64,10 +69,11 @@ jobs:
           CLUSTER: dev-gcp
           RESOURCE: apps/api-start-stopp-perioder/nais/nais-dev.yaml
           VAR: image=${{ needs.build.outputs.image }}
+
   deploy-prod:
     if: github.ref == 'refs/heads/main'
     name: Deploy to prod-gcp - API Start Stopp
-    needs: [build, deploy-dev]
+    needs: [ build, deploy-dev ]
     runs-on: ubuntu-latest
     permissions:
       contents: read

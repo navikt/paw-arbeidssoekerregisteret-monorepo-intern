@@ -1,0 +1,29 @@
+### SERVICES ###
+services:
+  wiremock:
+    image: wiremock/wiremock:3.4.2
+    container_name: wiremock
+    ports:
+      - "8090:8080"
+    volumes:
+      - ./config/wiremock:/home/wiremock/mappings/
+    networks:
+      - mocks
+
+  mock-oauth2-server:
+    image: ghcr.io/navikt/mock-oauth2-server:2.1.5
+    container_name: mock-oauth2-server
+    ports:
+      - "8081:8081"
+    environment:
+      SERVER_PORT: 8081
+      JSON_CONFIG_PATH: /config.json
+    volumes:
+      - ./config/mock-oauth2-server/config.json:/config.json
+    networks:
+      - mocks
+
+### NETWORKS ###
+networks:
+  mocks:
+    name: mocks

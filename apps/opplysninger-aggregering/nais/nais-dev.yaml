@@ -1,0 +1,40 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  name: paw-arbeidssoeker-opplysninger-aggregering
+  namespace: paw
+  labels:
+    team: paw
+spec:
+  image: {{ image }}
+  port: 8080
+  env:
+    - name: KAFKA_OPPLYSNINGER_OM_ARBEIDSSOEKER_STREAM_ID_SUFFIX
+      value: "opplysninger-stream-v1"
+    - name: KAFKA_PAW_OPPLYSNINGER_OM_ARBEIDSSOEKER_TOPIC
+      value: "paw.opplysninger-om-arbeidssoeker-v1"
+  resources:
+    limits:
+      memory: 1024Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  replicas:
+    min: 1
+    max: 1
+  liveness:
+    path: /internal/isAlive
+    initialDelay: 10
+  readiness:
+    path: /internal/isReady
+    initialDelay: 10
+  prometheus:
+    enabled: true
+    path: /internal/metrics
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
+  kafka:
+    pool: nav-dev
+    streams: true

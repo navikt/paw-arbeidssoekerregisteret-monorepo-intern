@@ -18,6 +18,7 @@ include(
     "apps:utgang-formidlingsgruppe",
     "apps:hendelselogg-backup",
     "apps:utgang-pdl",
+    "apps:opplysninger-aggregering",
     "domain:rapportering-interne-hendelser",
     "domain:rapporteringsansvar-schema",
     "domain:rapporteringsmelding-schema",
@@ -85,6 +86,7 @@ dependencyResolutionManagement {
         val micrometerVersion = "1.13.1"
         val otelTargetSdkVersion = "1.39.0"
         val otelInstrumentationVersion = "2.4.0"
+        val otelJavaagentVersion = "2.5.0"
         val coroutinesVersion = "1.8.1"
         val rapporteringsSchemaVersion = "24.05.15.2-1"
         val postgresDriverVersion = "42.7.3"
@@ -110,6 +112,7 @@ dependencyResolutionManagement {
             )
         }
         create("ktorClient") {
+            bundle("withCio", listOf("core", "cio"))
             ktorLibs(
                 "ktor-client-content-negotiation" alias "contentNegotiation",
                 "ktor-client-core" alias "core",
@@ -158,6 +161,7 @@ dependencyResolutionManagement {
                 "io.opentelemetry.instrumentation",
                 "opentelemetry-instrumentation-annotations"
             ).version(otelInstrumentationVersion)
+            library("javaagent", "io.opentelemetry.javaagent", "opentelemetry-javaagent").version(otelJavaagentVersion)
         }
         create("micrometer") {
             library("core", "io.micrometer", "micrometer-core").version(micrometerVersion)

@@ -1,0 +1,6 @@
+port = 8080
+callGroupSize = 16
+workerGroupSize = 8
+connectionGroupSize = 8
+gracePeriodMillis = 300
+timeoutMillis = 300
