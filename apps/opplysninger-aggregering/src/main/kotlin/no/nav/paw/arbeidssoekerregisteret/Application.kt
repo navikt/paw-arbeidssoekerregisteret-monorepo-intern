@@ -6,12 +6,12 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import no.nav.paw.arbeidssoekerregisteret.config.APPLICATION_CONFIG_FILE_NAME
-import no.nav.paw.arbeidssoekerregisteret.config.APPLICATION_LOGGER_NAME
-import no.nav.paw.arbeidssoekerregisteret.config.AppConfig
-import no.nav.paw.arbeidssoekerregisteret.config.SERVER_CONFIG_FILE_NAME
-import no.nav.paw.arbeidssoekerregisteret.config.SERVER_LOGGER_NAME
-import no.nav.paw.arbeidssoekerregisteret.config.ServerConfig
+import no.nav.paw.arbeidssoekerregisteret.properties.APPLICATION_CONFIG_FILE_NAME
+import no.nav.paw.arbeidssoekerregisteret.properties.APPLICATION_LOGGER_NAME
+import no.nav.paw.arbeidssoekerregisteret.properties.ApplicationProperties
+import no.nav.paw.arbeidssoekerregisteret.properties.SERVER_CONFIG_FILE_NAME
+import no.nav.paw.arbeidssoekerregisteret.properties.SERVER_LOGGER_NAME
+import no.nav.paw.arbeidssoekerregisteret.properties.ServerProperties
 import no.nav.paw.arbeidssoekerregisteret.context.ApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.plugins.configureKafka
 import no.nav.paw.arbeidssoekerregisteret.plugins.configureMetrics
@@ -23,8 +23,8 @@ import org.slf4j.LoggerFactory
 
 fun main() {
     val logger = LoggerFactory.getLogger(SERVER_LOGGER_NAME)
-    val serverProperties = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG_FILE_NAME)
-    val applicationProperties = loadNaisOrLocalConfiguration<AppConfig>(APPLICATION_CONFIG_FILE_NAME)
+    val serverProperties = loadNaisOrLocalConfiguration<ServerProperties>(SERVER_CONFIG_FILE_NAME)
+    val applicationProperties = loadNaisOrLocalConfiguration<ApplicationProperties>(APPLICATION_CONFIG_FILE_NAME)
 
     logger.info("Starter ${applicationProperties.appId}")
 
@@ -47,7 +47,7 @@ fun main() {
     server.start(wait = true)
 }
 
-fun Application.module(properties: AppConfig) {
+fun Application.module(properties: ApplicationProperties) {
     val logger = LoggerFactory.getLogger(APPLICATION_LOGGER_NAME)
     val healthIndicatorService = HealthIndicatorService()
     val meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)

@@ -13,12 +13,16 @@ spec:
       value: "opplysninger-stream-v1"
     - name: KAFKA_PAW_OPPLYSNINGER_OM_ARBEIDSSOEKER_TOPIC
       value: "paw.opplysninger-om-arbeidssoeker-v1"
+    - name: OPPLYSNINGER_PUNCTUATOR_SCHEDULE
+      value: "PT10M"
+    - name: OPPLYSNINGER_LAGRET_TIDSPERIODE
+      value: "PT1H"
   resources:
     limits:
-      memory: 3072Mi
+      memory: 2048Mi
     requests:
       cpu: 250m
-      memory: 2048Mi
+      memory: 512Mi
   replicas:
     min: 2
     max: 4

@@ -7,12 +7,12 @@ import io.ktor.server.application.createApplicationPlugin
 import io.ktor.server.application.hooks.MonitoringEvent
 import io.ktor.server.application.log
 import io.ktor.util.KtorDsl
-import no.nav.paw.arbeidssoekerregisteret.config.KafkaStreamsConfig
+import no.nav.paw.arbeidssoekerregisteret.properties.KafkaStreamsProperties
 import org.apache.kafka.streams.KafkaStreams
 
 @KtorDsl
 class KafkaStreamsPluginConfig {
-    var kafkaStreamsConfig: KafkaStreamsConfig? = null
+    var kafkaStreamsConfig: KafkaStreamsProperties? = null
     var kafkaStreams: List<KafkaStreams>? = null
 }
 
