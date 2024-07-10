@@ -7,27 +7,28 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import kotlinx.coroutines.runBlocking
 import no.nav.paw.arbeidssokerregisteret.app.helse.Helse
 import no.nav.paw.arbeidssokerregisteret.app.helse.initKtor
+import no.nav.paw.config.env.NaisEnv
+import no.nav.paw.config.env.currentNaisEnv
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
+import no.nav.paw.config.kafka.KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG
 import no.nav.paw.config.kafka.KafkaConfig
 import no.nav.paw.config.kafka.streams.KafkaStreamsFactory
-import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.StreamsBuilder
-import org.apache.kafka.streams.state.Stores
-import org.slf4j.LoggerFactory
-import no.nav.paw.config.kafka.KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG
-import no.nav.paw.kafkakeygenerator.auth.NaisEnv
-import no.nav.paw.kafkakeygenerator.auth.currentNaisEnv
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
 import no.nav.paw.kafkakeygenerator.client.createKafkaKeyGeneratorClient
+import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
+import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
+import org.apache.kafka.streams.state.Stores
+import org.slf4j.LoggerFactory
 
 const val partitionCount: Int = 6
 
 const val periodeTopic = "paw.arbeidssokerperioder-v1"
-val applicationConfiguration: ApplicationConfiguration get() =
-    loadNaisOrLocalConfiguration<ApplicationConfiguration>("application_configuration.toml")
+val applicationConfiguration: ApplicationConfiguration
+    get() =
+        loadNaisOrLocalConfiguration<ApplicationConfiguration>("application_configuration.toml")
 
 typealias kafkaKeyFunction = (String) -> KafkaKeysResponse?
 
