@@ -1,0 +1,14 @@
+[kafka]
+brokers = "dummy:1234"
+applicationIdPrefix = "test"
+
+[kafka.schemaRegistry]
+url = "mock://dummy:1234"
+
+[kafkaStreams]
+shutDownTimeout = "PT1S"
+opplysingerStreamIdSuffix = "opplysninger-stream-v1"
+opplysningerTopic = "paw.opplysninger-om-arbeidssoeker-v1"
+opplysningerStore = "opplysninger-store"
+opplysningerPunctuatorSchedule = "PT10M"
+opplysningerLagretTidsperiode = "PT1H"

@@ -12,7 +12,6 @@ import no.nav.paw.config.kafka.streams.genericProcess
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
-import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.processor.PunctuationType
 import org.apache.kafka.streams.state.Stores
 import org.apache.kafka.streams.state.TimestampedKeyValueStore
@@ -37,22 +36,19 @@ private fun StreamsBuilder.addOpplysningerStateStore() {
     this.addStateStore(
         Stores.timestampedKeyValueStoreBuilder(
             Stores.persistentKeyValueStore(kafkaStreamsProperties.opplysningerStore),
-            Serdes.Long(),
+            Serdes.String(),
             buildOpplysningerOmArbeidssoekerAvroSerde()
         )
     )
 }
 
 context(ApplicationContext)
-private fun StreamsBuilder.addOpplysningerKStream(meterRegistry: MeterRegistry) {
+fun StreamsBuilder.addOpplysningerKStream(meterRegistry: MeterRegistry) {
     logger.info("Oppretter KStream for opplysninger om arbeidssøker")
     val kafkaStreamsProperties = properties.kafkaStreams
 
     this
-        .stream(
-            kafkaStreamsProperties.opplysningerTopic,
-            Consumed.with(Serdes.Long(), buildOpplysningerOmArbeidssoekerAvroSerde())
-        )
+        .stream<Long, OpplysningerOmArbeidssoeker>(kafkaStreamsProperties.opplysningerTopic)
         .peek { key, _ ->
             logger.debug("Mottok event på {} med key {}", kafkaStreamsProperties.opplysningerTopic, key)
             meterRegistry.tellMottatteOpplysninger()
@@ -61,10 +57,20 @@ private fun StreamsBuilder.addOpplysningerKStream(meterRegistry: MeterRegistry) 
             stateStoreNames = arrayOf(kafkaStreamsProperties.opplysningerStore),
             punctuation = buildPunctuation(meterRegistry)
         ) { record ->
-            val stateStore: TimestampedKeyValueStore<Long, OpplysningerOmArbeidssoeker> =
+            val opplysninger = record.value()
+            val stateStore: TimestampedKeyValueStore<String, OpplysningerOmArbeidssoeker> =
                 getStateStore(kafkaStreamsProperties.opplysningerStore)
-            logger.debug("Lagrer opplysninger for periode {}", record.value().periodeId)
-            stateStore.put(record.key(), ValueAndTimestamp.make(record.value(), Instant.now().toEpochMilli()))
+            val lagretTidspunkt = Instant.now()
+            logger.info(
+                "Lagrer opplysninger {} for periode {} med tidspunkt {}",
+                opplysninger.id,
+                opplysninger.periodeId,
+                lagretTidspunkt
+            )
+            stateStore.put(
+                opplysninger.id.toString(),
+                ValueAndTimestamp.make(opplysninger, lagretTidspunkt.toEpochMilli())
+            )
         }
 }
 
@@ -82,26 +88,37 @@ private fun buildPunctuation(meterRegistry: MeterRegistry): Punctuation<Long, Op
             val antallTotalt = AtomicLong(0)
             val histogram = mutableMapOf<UUID, AtomicLong>()
 
-            val stateStore: TimestampedKeyValueStore<Long, OpplysningerOmArbeidssoeker> =
+            val stateStore: TimestampedKeyValueStore<String, OpplysningerOmArbeidssoeker> =
                 getStateStore(kafkaStreamsProperties.opplysningerStore)
             for (keyValue in stateStore.all()) {
                 antallTotalt.incrementAndGet()
+
+                val opplysninger = keyValue.value.value()
                 val lagretTidspunkt = Instant.ofEpochMilli(keyValue.value.timestamp())
-                val utloepTidspunkt = Instant.now().minus(kafkaStreamsProperties.opplysningerLagretTidsperiode)
+                val utloepTidspunkt = timestamp.minus(kafkaStreamsProperties.opplysningerLagretTidsperiode)
                 if (utloepTidspunkt.isAfter(lagretTidspunkt)
                 ) {
-                    logger.debug(
-                        "Sletter opplysninger for periode {} fordi de har vært lagret mer enn {}m (utløp {} > lagret {})",
-                        keyValue.value.value().periodeId,
+                    logger.info(
+                        "Sletter opplysninger {} for periode {} fordi de har vært lagret mer enn {}m (utløp {} > lagret {})",
+                        opplysninger.id,
+                        opplysninger.periodeId,
                         kafkaStreamsProperties.opplysningerLagretTidsperiode.toMinutes(),
                         utloepTidspunkt,
                         lagretTidspunkt
                     )
-                    stateStore.delete(keyValue.key)
+                    stateStore.delete(opplysninger.id.toString())
                     continue
+                } else {
+                    logger.debug(
+                        "Opplysninger {} for periode {} har vært lagret mindre enn {}m (utløp {} < lagret {})",
+                        opplysninger.id,
+                        opplysninger.periodeId,
+                        kafkaStreamsProperties.opplysningerLagretTidsperiode.toMinutes(),
+                        utloepTidspunkt,
+                        lagretTidspunkt
+                    )
                 }
 
-                val opplysninger = keyValue.value.value()
                 val antall = histogram[opplysninger.periodeId]
                 if (antall != null) {
                     antall.incrementAndGet()
