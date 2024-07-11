@@ -31,13 +31,14 @@ fun buildOpplysningerTopology(
 context(ApplicationContext)
 private fun StreamsBuilder.addOpplysningerStateStore() {
     logger.info("Oppretter state store for opplysninger om arbeidssøker")
+    val kafkaProperties = properties.kafka
     val kafkaStreamsProperties = properties.kafkaStreams
 
     this.addStateStore(
         Stores.timestampedKeyValueStoreBuilder(
             Stores.persistentKeyValueStore(kafkaStreamsProperties.opplysningerStore),
             Serdes.String(),
-            buildOpplysningerOmArbeidssoekerAvroSerde()
+            buildOpplysningerOmArbeidssoekerAvroSerde(kafkaProperties.schemaRegistry)
         )
     )
 }
@@ -76,8 +77,11 @@ fun StreamsBuilder.addOpplysningerKStream(meterRegistry: MeterRegistry) {
 
 context(ApplicationContext)
 private fun buildPunctuation(meterRegistry: MeterRegistry): Punctuation<Long, OpplysningerOmArbeidssoeker> {
-    logger.info("Oppretter Punctuation for opplysninger om arbeidssøker")
     val kafkaStreamsProperties = properties.kafkaStreams
+    logger.info(
+        "Oppretter Punctuation for opplysninger om arbeidssøker til å kjøre hvert {}m",
+        kafkaStreamsProperties.opplysningerPunctuatorSchedule.toMinutes()
+    )
 
     return Punctuation(
         kafkaStreamsProperties.opplysningerPunctuatorSchedule, PunctuationType.WALL_CLOCK_TIME
