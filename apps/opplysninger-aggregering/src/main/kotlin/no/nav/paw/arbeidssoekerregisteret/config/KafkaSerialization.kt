@@ -3,10 +3,14 @@ package no.nav.paw.arbeidssoekerregisteret.config
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.confluent.kafka.schemaregistry.client.SchemaRegistryClientConfig
+import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig
+import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker
 import no.nav.paw.config.env.NaisEnv
 import no.nav.paw.config.env.currentNaisEnv
+import no.nav.paw.config.kafka.KafkaSchemaRegistryConfig
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
@@ -50,11 +54,31 @@ inline fun <reified T> buildJsonSerde(): Serde<T> {
     return buildJsonSerde<T>(currentNaisEnv, buildObjectMapper)
 }
 
-inline fun <reified T : SpecificRecord> buildAvroSerde(): Serde<T> {
-    return SpecificAvroSerde()
+inline fun <reified T : SpecificRecord> buildAvroSerde(config: KafkaSchemaRegistryConfig?): Serde<T> {
+    val serdeConfig = buildAvroSerdeConfig(config)
+    val serde = SpecificAvroSerde<T>()
+    serde.configure(serdeConfig, false)
+    return serde
 }
 
-fun buildOpplysningerOmArbeidssoekerAvroSerde(): Serde<OpplysningerOmArbeidssoeker> {
-    return buildAvroSerde()
+fun buildOpplysningerOmArbeidssoekerAvroSerde(config: KafkaSchemaRegistryConfig?): Serde<OpplysningerOmArbeidssoeker> {
+    return buildAvroSerde(config)
+}
+
+fun buildAvroSerdeConfig(config: KafkaSchemaRegistryConfig?): Map<String, Any> {
+    return if (config == null) {
+        emptyMap()
+    } else {
+        mapOf(
+            KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to config.url,
+            KafkaAvroSerializerConfig.AUTO_REGISTER_SCHEMAS to config.autoRegisterSchema,
+            KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG to config.avroSpecificReaderConfig
+        ).apply {
+            config.username?.let {
+                SchemaRegistryClientConfig.BASIC_AUTH_CREDENTIALS_SOURCE to "USER_INFO"
+                SchemaRegistryClientConfig.USER_INFO_CONFIG to "${config.username}:${config.password}"
+            }
+        }
+    }
 }
 
