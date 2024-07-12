@@ -53,8 +53,14 @@ class OpplysningerKStreamTest : FreeSpec({
                 valueAndTimestamp.value().sendtInnAv.utfoertAv.id shouldBe opplysninger.sendtInnAv.utfoertAv.id
             }
 
-            "Skal slette opplysninger etter 60 minutter" {
-                testDriver.advanceWallClockTime(Duration.ofMinutes(65)) // 60 min++
+            "Skal ikke slette opplysninger etter 50 minutter" {
+                testDriver.advanceWallClockTime(Duration.ofMinutes(50))
+
+                stateStore.size() shouldBe 1
+            }
+
+            "Skal slette opplysninger etter 61 minutter" {
+                testDriver.advanceWallClockTime(Duration.ofMinutes(11))
 
                 stateStore.size() shouldBe 0
             }
