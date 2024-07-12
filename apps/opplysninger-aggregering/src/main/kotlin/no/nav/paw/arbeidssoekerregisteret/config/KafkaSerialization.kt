@@ -69,14 +69,13 @@ fun buildAvroSerdeConfig(config: KafkaSchemaRegistryConfig?): Map<String, Any> {
     return if (config == null) {
         emptyMap()
     } else {
-        mapOf(
-            KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to config.url,
-            KafkaAvroSerializerConfig.AUTO_REGISTER_SCHEMAS to config.autoRegisterSchema,
-            KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG to config.avroSpecificReaderConfig
-        ).apply {
-            config.username?.let {
-                SchemaRegistryClientConfig.BASIC_AUTH_CREDENTIALS_SOURCE to "USER_INFO"
-                SchemaRegistryClientConfig.USER_INFO_CONFIG to "${config.username}:${config.password}"
+        buildMap {
+            put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, config.url)
+            put(KafkaAvroSerializerConfig.AUTO_REGISTER_SCHEMAS, config.autoRegisterSchema)
+            put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, config.avroSpecificReaderConfig)
+            if (config.username != null) {
+                put(SchemaRegistryClientConfig.BASIC_AUTH_CREDENTIALS_SOURCE, "USER_INFO")
+                put(SchemaRegistryClientConfig.USER_INFO_CONFIG, "${config.username}:${config.password}")
             }
         }
     }
