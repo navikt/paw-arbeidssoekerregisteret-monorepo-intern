@@ -30,7 +30,7 @@ fun buildOpplysningerTopology(
 
 context(ApplicationContext)
 private fun StreamsBuilder.addOpplysningerStateStore() {
-    logger.info("Oppretter state store for opplysninger om arbeidssøker")
+    logger.info("Oppretter State Store for opplysninger om arbeidssøker")
     val kafkaProperties = properties.kafka
     val kafkaStreamsProperties = properties.kafkaStreams
 
@@ -123,17 +123,21 @@ private fun buildPunctuation(meterRegistry: MeterRegistry): Punctuation<Long, Op
                     )
                 }
 
-                val antall = histogram[opplysninger.periodeId]
-                if (antall != null) {
-                    antall.incrementAndGet()
-                    histogram[opplysninger.periodeId] = antall
-                } else {
-                    histogram[opplysninger.periodeId] = AtomicLong(1)
-                }
+                histogram.tellAntall(opplysninger.periodeId)
             }
 
             histogram.forEach { (_, antall) -> meterRegistry.antallLagredeOpplysningerSumPerPeriode(timestamp, antall) }
             meterRegistry.antallLagredeOpplysningerTotal(antallTotalt)
         }
+    }
+}
+
+private fun MutableMap<UUID, AtomicLong>.tellAntall(key: UUID) {
+    val antall = get(key)
+    if (antall != null) {
+        antall.incrementAndGet()
+        put(key, antall)
+    } else {
+        put(key, AtomicLong(1))
     }
 }
