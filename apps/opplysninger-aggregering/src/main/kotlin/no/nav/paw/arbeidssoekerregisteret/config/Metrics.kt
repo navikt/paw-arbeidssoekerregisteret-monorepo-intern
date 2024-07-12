@@ -7,18 +7,21 @@ import java.time.Instant
 import java.time.ZoneId
 import java.util.concurrent.atomic.AtomicLong
 
-private const val METRIC_PREFIX = "paw_arbeidssoeker_opplysninger_aggregering"
-
 fun MeterRegistry.tellMottatteOpplysninger() {
     counter(
-        "${METRIC_PREFIX}_antall_mottatte_opplysninger_total",
+        "paw_antall_mottatte_events_total",
+        Tags.of(
+            Tag.of("event", "opplysninger-om-arbeidssoeker")
+        )
     ).increment()
 }
 
 fun MeterRegistry.antallLagredeOpplysningerTotal(antallReference: AtomicLong) {
     gauge(
-        "${METRIC_PREFIX}_antall_lagrede_opplysninger_total",
-        Tags.empty(),
+        "paw_antall_lagrede_events",
+        Tags.of(
+            Tag.of("event", "opplysninger-om-arbeidssoeker")
+        ),
         antallReference
     ) {
         antallReference.get().toDouble()
@@ -28,8 +31,9 @@ fun MeterRegistry.antallLagredeOpplysningerTotal(antallReference: AtomicLong) {
 fun MeterRegistry.antallLagredeOpplysningerSumPerPeriode(timestamp: Instant, antallReference: AtomicLong) {
     val zonedDateTime = timestamp.atZone(ZoneId.systemDefault())
     gauge(
-        "${METRIC_PREFIX}_antall_lagrede_opplysninger_sum_per_periode",
+        "paw_antall_lagrede_events_sum_per_tidsperiode",
         Tags.of(
+            Tag.of("event", "opplysninger-om-arbeidssoeker"),
             Tag.of("minute", "${zonedDateTime.minute}")
         ),
         antallReference

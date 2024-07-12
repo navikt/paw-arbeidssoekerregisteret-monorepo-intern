@@ -10,7 +10,7 @@ spec:
   port: 8080
   env:
     - name: KAFKA_OPPLYSNINGER_OM_ARBEIDSSOEKER_STREAM_ID_SUFFIX
-      value: "opplysninger-stream-v1"
+      value: "opplysninger-stream-v2"
     - name: KAFKA_PAW_OPPLYSNINGER_OM_ARBEIDSSOEKER_TOPIC
       value: "paw.opplysninger-om-arbeidssoeker-v1"
     - name: OPPLYSNINGER_PUNCTUATOR_SCHEDULE
