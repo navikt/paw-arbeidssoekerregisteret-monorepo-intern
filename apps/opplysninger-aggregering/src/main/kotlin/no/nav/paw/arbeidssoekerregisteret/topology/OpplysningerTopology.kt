@@ -126,8 +126,8 @@ private fun buildPunctuation(meterRegistry: MeterRegistry): Punctuation<Long, Op
                 histogram.tellAntall(opplysninger.periodeId)
             }
 
-            histogram.forEach { (_, antall) -> meterRegistry.antallLagredeOpplysningerSumPerPeriode(timestamp, antall) }
             meterRegistry.antallLagredeOpplysningerTotal(antallTotalt)
+            histogram.forEach { (_, antall) -> meterRegistry.antallLagredeOpplysningerSumPerPeriode(timestamp, antall) }
         }
     }
 }
