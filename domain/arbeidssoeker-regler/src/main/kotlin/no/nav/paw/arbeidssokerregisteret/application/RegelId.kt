@@ -37,3 +37,23 @@ data object Over18AarOgBosattEtterFregLoven : DomeneRegelId {
 data object UkjentAlder : DomeneRegelId {
     override val id: String = "UKJENT_ALDER"
 }
+
+data object NorskStatsborgerIkkeBosattINorgeIHenholdTilFolkeregisterloven : DomeneRegelId {
+    override val id: String = "NORSK_STATSBORGER_IKKE_BOSATT_I_NORGE_I_HENHOLD_TIL_FOLKEREGISTERLOVEN"
+}
+
+data object EuEoesBorgerMedDnummer: DomeneRegelId {
+    override val id: String = "EU_EOES_BORGER_MED_DNUMMER"
+}
+
+data object GBRStatsborgerMedDnummer: DomeneRegelId {
+    override val id: String = "GBR_STATSBORGER_MED_DNUMMER"
+}
+
+data object EuEoesBorgerUtenDnummer: DomeneRegelId {
+    override val id: String = "EU_EOES_BORGER_UTEN_DNUMMER"
+}
+
+data object GBRStatsborgerUtenDnummer: DomeneRegelId {
+    override val id: String = "GBR_STATSBORGER_UTEN_DNUMMER"
+}

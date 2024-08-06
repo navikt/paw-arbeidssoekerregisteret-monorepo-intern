@@ -41,6 +41,33 @@ val reglerForInngangIPrioritertRekkefolge: List<Regel> = listOf(
         id = Over18AarOgBosattEtterFregLoven,
         vedTreff = ::ok
     ),
+    "Norsk statsborger, men ikke bosatt i hendhold til Folkeregisterloven"(
+        ErNorskStatsborger,
+        id = NorskStatsborgerIkkeBosattINorgeIHenholdTilFolkeregisterloven,
+        vedTreff = ::problem
+    ),
+    "EU/EØS statsborger med d-nummer" (
+        ErEuEoesStatsborger,
+        Dnummer,
+        id = EuEoesBorgerMedDnummer,
+        vedTreff = ::ok
+    ),
+    "Statsborgerskap fra Storbritannia(GBR) med d-nummer" (
+        ErGbrStatsborger,
+        Dnummer,
+        id = GBRStatsborgerMedDnummer,
+        vedTreff = ::ok
+    ),
+    "EU/EØS statsborger uten d-nummer" (
+        ErEuEoesStatsborger,
+        id = EuEoesBorgerUtenDnummer,
+        vedTreff = ::problem
+    ),
+    "Statsborgerskap fra Storbritannia(GBR) uten d-nummer" (
+        ErGbrStatsborger,
+        id = GBRStatsborgerUtenDnummer,
+        vedTreff = ::problem
+    ),
     "Avvist fordi personen ikke er bosatt i Norge i henhold til folkeregisterloven"(
         id = IkkeBosattINorgeIHenholdTilFolkeregisterloven,
         vedTreff = ::problem
