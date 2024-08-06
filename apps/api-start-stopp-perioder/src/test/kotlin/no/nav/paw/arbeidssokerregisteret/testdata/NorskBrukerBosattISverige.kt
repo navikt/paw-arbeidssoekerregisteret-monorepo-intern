@@ -6,7 +6,6 @@ import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.AarsakTilAvvisni
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiRegelId
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feil
 import no.nav.paw.arbeidssokerregisteret.*
-import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
@@ -14,29 +13,28 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.pdl.graphql.generated.hentperson.Foedsel
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
-import no.nav.paw.pdl.graphql.generated.hentperson.Vegadresse
+import no.nav.paw.pdl.graphql.generated.hentperson.UtenlandskAdresse
 import org.apache.kafka.clients.producer.ProducerRecord
 import java.time.Instant
 import java.util.*
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Opplysning as ApiOpplysning
 
-data object AnsattRegistrererIkkeEuEoesBrukerIkkeBosattUtenForhaandgodkjenning: TestCase {
-    override val id = "12345678906"
+data object NorskBrukerBosattISverige: TestCase {
+    override val id = "12345678909"
     override val person = Person(
         foedsel = Foedsel("2000-03-04", 2000).list(),
-        statsborgerskap = "AFG".statsborgerskap(),
-        opphold = ("2018-01-01" to null).opphold(),
-        folkeregisterpersonstatus = dNummer.folkeregisterpersonstatus(),
+        statsborgerskap = "NOR".statsborgerskap(),
+        opphold = emptyList(),
+        folkeregisterpersonstatus = ikkeBosatt.folkeregisterpersonstatus(),
         bostedsadresse = bostedsadresse(
-            vegadresse = Vegadresse("1201")
+            utenlandskAdresse = UtenlandskAdresse(landkode = "SWE")
         ),
-        innflyttingTilNorge = "2018-01-02T13:23:12".innflytting(),
+        innflyttingTilNorge = emptyList(),
         utflyttingFraNorge = "2017-01-02".utflytting()
     )
-    private val ansatt = NavAnsatt(UUID.randomUUID(), UUID.randomUUID().toString())
+
     override val configure: TestCaseBuilder.() -> Unit =  {
-        authToken = mockOAuth2Server.ansattToken(ansatt)
-        autorisasjonService.setHarTilgangTilBruker(ansatt, id, true)
+        authToken = mockOAuth2Server.personToken(id)
     }
 
     override val producesHttpResponse: HttpStatusCode = HttpStatusCode.Forbidden
@@ -48,13 +46,15 @@ data object AnsattRegistrererIkkeEuEoesBrukerIkkeBosattUtenForhaandgodkjenning: 
             regel = ApiRegelId.IKKE_BOSATT_I_NORGE_I_HENHOLD_TIL_FOLKEREGISTERLOVEN,
             detaljer = listOf(
                 ApiOpplysning.ER_OVER_18_AAR,
-                ApiOpplysning.HAR_NORSK_ADRESSE,
+                ApiOpplysning.HAR_UTENLANDSK_ADRESSE,
                 ApiOpplysning.HAR_REGISTRERT_ADRESSE_I_EU_EOES,
-                ApiOpplysning.SISTE_FLYTTING_VAR_INN_TIL_NORGE,
-                ApiOpplysning.ANSATT_TILGANG,
-                ApiOpplysning.HAR_GYLDIG_OPPHOLDSTILLATELSE,
-                ApiOpplysning.DNUMMER,
-                ApiOpplysning.TOKENX_PID_IKKE_FUNNET
+                ApiOpplysning.SISTE_FLYTTING_VAR_UT_AV_NORGE,
+                ApiOpplysning.ER_NORSK_STATSBORGER,
+                ApiOpplysning.ER_EU_EOES_STATSBORGER,
+                ApiOpplysning.IKKE_ANSATT,
+                ApiOpplysning.SAMME_SOM_INNLOGGET_BRUKER,
+                ApiOpplysning.INGEN_INFORMASJON_OM_OPPHOLDSTILLATELSE,
+                ApiOpplysning.IKKE_BOSATT
             )
         )
     )
@@ -72,21 +72,23 @@ data object AnsattRegistrererIkkeEuEoesBrukerIkkeBosattUtenForhaandgodkjenning: 
                 tidspunkt = Instant.now(),
                 kilde = "paw-arbeidssokerregisteret-api-start-stopp-perioder",
                 utfoertAv = Bruker(
-                    id = ansatt.ident,
-                    type = BrukerType.VEILEDER
+                    id = id,
+                    type = BrukerType.SLUTTBRUKER
                 ),
                 aarsak = "any",
                 tidspunktFraKilde = null
             ),
             opplysninger = setOf(
                 Opplysning.ER_OVER_18_AAR,
-                Opplysning.HAR_NORSK_ADRESSE,
+                Opplysning.IKKE_BOSATT,
+                Opplysning.ER_EU_EOES_STATSBORGER,
+                Opplysning.HAR_UTENLANDSK_ADRESSE,
                 Opplysning.HAR_REGISTRERT_ADRESSE_I_EU_EOES,
-                Opplysning.SISTE_FLYTTING_VAR_INN_TIL_NORGE,
-                Opplysning.ANSATT_TILGANG,
-                Opplysning.HAR_GYLDIG_OPPHOLDSTILLATELSE,
-                Opplysning.DNUMMER,
-                Opplysning.TOKENX_PID_IKKE_FUNNET
+                Opplysning.SISTE_FLYTTING_VAR_UT_AV_NORGE,
+                Opplysning.IKKE_ANSATT,
+                Opplysning.SAMME_SOM_INNLOGGET_BRUKER,
+                Opplysning.INGEN_INFORMASJON_OM_OPPHOLDSTILLATELSE,
+                Opplysning.ER_NORSK_STATSBORGER
             )
         )
     )

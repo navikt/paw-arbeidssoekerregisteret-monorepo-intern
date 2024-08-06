@@ -87,6 +87,11 @@ sealed interface DomeneOpplysning: Opplysning {
         override val beskrivelse = "Personen start/stopp av periode utføres på har utenlandsk adresse"
     }
 
+    data object HarRegistrertAdresseIEuEoes: DomeneOpplysning, Effect.Positive {
+        override val id = "HAR_REGISTRERT_ADRESSE_I_EU_EOES"
+        override val beskrivelse = "Personen start/stopp av periode utføres på har en registrert adresse i EØS/EU"
+    }
+
     data object IngenAdresseFunnet : DomeneOpplysning, Effect.Negative {
         override val id = "INGEN_ADRESSE_FUNNET"
         override val beskrivelse = "Personen start/stopp av periode utføres på har ingen adresse i våre systemer"

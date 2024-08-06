@@ -13,6 +13,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.pdl.graphql.generated.hentperson.Foedsel
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
+import no.nav.paw.pdl.graphql.generated.hentperson.UtenlandskAdresse
 import no.nav.paw.pdl.graphql.generated.hentperson.Vegadresse
 import org.apache.kafka.clients.producer.ProducerRecord
 import java.time.Instant
@@ -23,14 +24,14 @@ data object IkkeEuEoesBrukerIkkeBosatt: TestCase {
     override val id = "12345678919"
     override val person = Person(
         foedsel = Foedsel("2000-03-04", 2000).list(),
-        statsborgerskap = "AFG".statsborgerskap(),
-        opphold = ("2018-01-01" to null).opphold(),
+        statsborgerskap = "USA".statsborgerskap(),
+        opphold = ("2018-01-01" to "2018-02-01").opphold(),
         folkeregisterpersonstatus = dNummer.folkeregisterpersonstatus(),
         bostedsadresse = bostedsadresse(
-            vegadresse = Vegadresse("1201")
+            utenlandskAdresse = UtenlandskAdresse(landkode = "USA")
         ),
-        innflyttingTilNorge = "2018-01-02T13:23:12".innflytting(),
-        utflyttingFraNorge = "2017-01-02".utflytting()
+        innflyttingTilNorge = emptyList(),
+        utflyttingFraNorge = emptyList()
     )
 
     override val configure: TestCaseBuilder.() -> Unit =  {
@@ -46,11 +47,11 @@ data object IkkeEuEoesBrukerIkkeBosatt: TestCase {
             regel = ApiRegelId.IKKE_BOSATT_I_NORGE_I_HENHOLD_TIL_FOLKEREGISTERLOVEN,
             detaljer = listOf(
                 ApiOpplysning.ER_OVER_18_AAR,
-                ApiOpplysning.HAR_NORSK_ADRESSE,
-                ApiOpplysning.SISTE_FLYTTING_VAR_INN_TIL_NORGE,
+                ApiOpplysning.HAR_UTENLANDSK_ADRESSE,
+                ApiOpplysning.INGEN_FLYTTE_INFORMASJON,
                 ApiOpplysning.IKKE_ANSATT,
                 ApiOpplysning.SAMME_SOM_INNLOGGET_BRUKER,
-                ApiOpplysning.HAR_GYLDIG_OPPHOLDSTILLATELSE,
+                ApiOpplysning.OPPHOLDSTILATELSE_UTGAATT,
                 ApiOpplysning.DNUMMER
             )
         )
@@ -77,11 +78,11 @@ data object IkkeEuEoesBrukerIkkeBosatt: TestCase {
             ),
             opplysninger = setOf(
                 Opplysning.ER_OVER_18_AAR,
-                Opplysning.HAR_NORSK_ADRESSE,
-                Opplysning.SISTE_FLYTTING_VAR_INN_TIL_NORGE,
+                Opplysning.HAR_UTENLANDSK_ADRESSE,
+                Opplysning.INGEN_FLYTTE_INFORMASJON,
                 Opplysning.IKKE_ANSATT,
                 Opplysning.SAMME_SOM_INNLOGGET_BRUKER,
-                Opplysning.HAR_GYLDIG_OPPHOLDSTILLATELSE,
+                Opplysning.OPPHOLDSTILATELSE_UTGAATT,
                 Opplysning.DNUMMER
             )
         )

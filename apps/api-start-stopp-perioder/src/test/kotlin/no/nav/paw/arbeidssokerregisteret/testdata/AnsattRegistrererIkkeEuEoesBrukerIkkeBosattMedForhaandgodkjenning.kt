@@ -66,6 +66,7 @@ data object AnsattRegistrererIkkeEuEoesBrukerIkkeBosattMedForhaandgodkjenning: T
             opplysninger = setOf(
                 Opplysning.ER_OVER_18_AAR,
                 Opplysning.HAR_NORSK_ADRESSE,
+                Opplysning.HAR_REGISTRERT_ADRESSE_I_EU_EOES,
                 Opplysning.SISTE_FLYTTING_VAR_INN_TIL_NORGE,
                 Opplysning.ANSATT_TILGANG,
                 Opplysning.HAR_GYLDIG_OPPHOLDSTILLATELSE,

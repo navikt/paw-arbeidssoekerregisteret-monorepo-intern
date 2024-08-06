@@ -61,6 +61,7 @@ data object NorskBrukerBosattINorge: TestCase {
                 Opplysning.BOSATT_ETTER_FREG_LOVEN,
                 Opplysning.ER_EU_EOES_STATSBORGER,
                 Opplysning.HAR_NORSK_ADRESSE,
+                Opplysning.HAR_REGISTRERT_ADRESSE_I_EU_EOES,
                 Opplysning.SISTE_FLYTTING_VAR_INN_TIL_NORGE,
                 Opplysning.IKKE_ANSATT,
                 Opplysning.SAMME_SOM_INNLOGGET_BRUKER,

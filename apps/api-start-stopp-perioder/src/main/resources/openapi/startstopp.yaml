@@ -224,6 +224,7 @@ components:
         - "ER_GBR_STATSBORGER"
         - "ER_EU_EOES_STATSBORGER"
         - "ER_NORSK_STATSBORGER"
+        - "HAR_REGISTRERT_ADRESSE_I_EU_EOES"
         - "UKJENT_OPPLYSNING"
     ApiRegelId:
       type: "string"
