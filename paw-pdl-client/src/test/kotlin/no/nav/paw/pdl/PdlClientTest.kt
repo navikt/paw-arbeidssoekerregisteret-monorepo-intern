@@ -67,6 +67,16 @@ class PdlClientTest {
     }
 
     @Test
+    fun `Forventer gyldig respons fra hentPersonBolk`() {
+        val respons = readResource("hentPersonBolk-response.json")
+        val pdlClient = mockPdlClient(respons)
+
+        val resultat = runBlocking { pdlClient.hentPersonBolk(listOf("2649500819544"), callId, null, navConsumerId, false, "B123") }
+        val forventet = Oppholdstillatelse.PERMANENT
+        assertEquals(forventet, resultat!!.first().person!!.opphold.first().type)
+    }
+
+    @Test
     fun `Forventer gyldig respons fra hentForenkletStatus`() {
         val respons = readResource("hentForenkletStatus-response.json")
         val pdlClient = mockPdlClient(respons)
