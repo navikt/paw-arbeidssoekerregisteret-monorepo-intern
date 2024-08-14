@@ -13,18 +13,19 @@ include(
     "lib:kafka",
     "lib:kafka-streams",
     "lib:kafka-key-generator-client",
-    "apps:api-start-stopp-perioder",
-    "apps:hendelseprosessor",
-    "apps:utgang-formidlingsgruppe",
-    "apps:hendelselogg-backup",
-    "apps:utgang-pdl",
     "domain:rapportering-interne-hendelser",
     "domain:rapporteringsansvar-schema",
     "domain:rapporteringsmelding-schema",
     "domain:main-avro-schema",
     "domain:interne-hendelser",
     "domain:arbeidssoekerregisteret-kotlin",
-    "domain:arbeidssoeker-regler"
+    "domain:arbeidssoeker-regler",
+    "apps:api-start-stopp-perioder",
+    "apps:hendelseprosessor",
+    "apps:utgang-formidlingsgruppe",
+    "apps:hendelselogg-backup",
+    "apps:utgang-pdl",
+    "apps:kafka-key-generator"
 )
 
 dependencyResolutionManagement {
@@ -44,6 +45,13 @@ dependencyResolutionManagement {
         }
         maven {
             setUrl("https://maven.pkg.github.com/navikt/paw-arbeidssokerregisteret-api")
+            credentials {
+                username = "x-access-token"
+                password = githubPassword
+            }
+        }
+        maven {
+            setUrl("https://maven.pkg.github.com/navikt/paw-kotlin-clients")
             credentials {
                 username = "x-access-token"
                 password = githubPassword
@@ -85,10 +93,12 @@ dependencyResolutionManagement {
         val micrometerVersion = "1.13.1"
         val otelTargetSdkVersion = "1.39.0"
         val otelInstrumentationVersion = "2.4.0"
+        val otelInstrumentationKtorVersion = "2.4.0-alpha"
         val coroutinesVersion = "1.8.1"
         val rapporteringsSchemaVersion = "24.05.15.2-1"
         val postgresDriverVersion = "42.7.3"
         val flywayVersion = "10.15.0"
+        val hikariVersion = "5.1.0"
 
         fun VersionCatalogBuilder.ktorLib(alias: String, artifactId: String) =
             library(alias, "io.ktor", artifactId).version("2.3.12")
@@ -97,6 +107,7 @@ dependencyResolutionManagement {
             aliases.forEach { (artifactId, alias) -> ktorLib(alias, artifactId) }
 
         infix fun String.alias(alias: String) = this to alias
+
         create("kotlinx") {
             library("coroutinesCore", "org.jetbrains.kotlinx", "kotlinx-coroutines-core").version(coroutinesVersion)
         }
@@ -113,7 +124,10 @@ dependencyResolutionManagement {
             ktorLibs(
                 "ktor-client-content-negotiation" alias "contentNegotiation",
                 "ktor-client-core" alias "core",
-                "ktor-client-cio" alias "cio"
+                "ktor-client-cio" alias "cio",
+                "ktor-client-mock" alias "mock",
+                "ktor-client-logging" alias "logging",
+                "ktor-client-okhttp" alias "okhttp"
             )
         }
         create("ktorServer") {
@@ -151,7 +165,7 @@ dependencyResolutionManagement {
         create("otel") {
             library("api", "io.opentelemetry", "opentelemetry-api").version(otelTargetSdkVersion)
             library("ktor", "io.opentelemetry.instrumentation", "opentelemetry-ktor-2.0").version(
-                otelInstrumentationVersion
+                otelInstrumentationKtorVersion
             )
             library(
                 "annotations",
@@ -240,6 +254,9 @@ dependencyResolutionManagement {
         create("flyway") {
             library("core", "org.flywaydb", "flyway-core").version(flywayVersion)
             library("postgres", "org.flywaydb", "flyway-database-postgresql").version(flywayVersion)
+        }
+        create("hikari") {
+            library("connectionPool", "com.zaxxer", "HikariCP").version(hikariVersion)
         }
         create("poao") {
             library("tilgangClient", "no.nav.poao-tilgang", "client").version("2024.04.29_13.59-a0ddddd36ac9")

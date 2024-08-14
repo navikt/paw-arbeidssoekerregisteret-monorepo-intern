@@ -1,8 +1,8 @@
 package no.nav.paw.kafkakeygenerator.ktor
 
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.kafkakeygenerator.Applikasjon
 import no.nav.paw.kafkakeygenerator.config.Autentiseringskonfigurasjon
 

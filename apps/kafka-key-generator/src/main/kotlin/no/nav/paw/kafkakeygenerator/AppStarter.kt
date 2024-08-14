@@ -1,15 +1,15 @@
 package no.nav.paw.kafkakeygenerator
 
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.kafkakeygenerator.config.Autentiseringskonfigurasjon
 import no.nav.paw.kafkakeygenerator.config.DatabaseKonfigurasjon
 import no.nav.paw.kafkakeygenerator.config.dataSource
 import no.nav.paw.kafkakeygenerator.config.lastKonfigurasjon
 import no.nav.paw.kafkakeygenerator.database.flywayMigrate
+import no.nav.paw.kafkakeygenerator.ktor.initKtorServer
 import no.nav.paw.kafkakeygenerator.pdl.PdlIdentitesTjeneste
 import no.nav.paw.kafkakeygenerator.pdl.opprettPdlKlient
-import no.nav.paw.kafkakeygenerator.ktor.initKtorServer
 import no.nav.paw.pdl.PdlClient
 import org.jetbrains.exposed.sql.Database
 import javax.sql.DataSource
@@ -33,6 +33,7 @@ fun main() {
         pdlKlient
     )
 }
+
 fun startApplikasjon(
     autentiseringKonfig: Autentiseringskonfigurasjon,
     dataSource: DataSource,
@@ -47,5 +48,6 @@ fun startApplikasjon(
         Applikasjon(
             KafkaKeys(database),
             PdlIdentitesTjeneste(pdlKlient)
-        )).start(wait = true)
+        )
+    ).start(wait = true)
 }

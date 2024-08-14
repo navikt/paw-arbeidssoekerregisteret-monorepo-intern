@@ -1,23 +1,25 @@
 package no.nav.paw.kafkakeygenerator.ktor
 
 import com.fasterxml.jackson.databind.DatabindException
-import io.ktor.http.*
-import io.ktor.serialization.jackson.*
-import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.metrics.micrometer.*
-import io.ktor.server.plugins.callloging.*
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.plugins.statuspages.*
-import io.ktor.server.plugins.swagger.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.serialization.jackson.jackson
+import io.ktor.server.application.Application
+import io.ktor.server.application.install
+import io.ktor.server.auth.authentication
+import io.ktor.server.metrics.micrometer.MicrometerMetrics
+import io.ktor.server.plugins.callloging.CallLogging
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.statuspages.StatusPages
+import io.ktor.server.plugins.swagger.swaggerUI
+import io.ktor.server.request.path
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.routing
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.kafkakeygenerator.Applikasjon
 import no.nav.paw.kafkakeygenerator.api.v2.konfigurerApiV2
 import no.nav.paw.kafkakeygenerator.config.Autentiseringskonfigurasjon
@@ -111,6 +113,7 @@ fun Application.statusPages() {
                         HttpStatusCode.BadRequest
                     )
                 }
+
                 else -> {
                     feilLogger.error(
                         "Kall {}, feilet, grunnet: {}",
@@ -131,6 +134,6 @@ fun Application.statusPages() {
 fun Application.configureLogging() {
     install(CallLogging) {
         disableDefaultColors()
-        filter { !it.request.path().startsWith("/internal") && it.response.status() != HttpStatusCode.OK}
+        filter { !it.request.path().startsWith("/internal") && it.response.status() != HttpStatusCode.OK }
     }
 }
