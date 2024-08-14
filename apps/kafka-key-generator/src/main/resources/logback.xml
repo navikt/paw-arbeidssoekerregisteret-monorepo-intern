@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %5p %c{1}:%L - %m%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="STDOUT_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+    </appender>
+
+    <if condition='isDefined("NAIS_CLUSTER_NAME")'>
+        <then>
+            <root level="INFO">
+                <appender-ref ref="STDOUT_JSON"/>
+            </root>
+        </then>
+        <else>
+            <root level="INFO">
+                <appender-ref ref="CONSOLE"/>
+            </root>
+        </else>
+    </if>
+
+    <logger name="org.apache.kafka" level="INFO" />
+    <logger name="io.confluent" level="INFO" />
+    <logger name="no.nav" level="INFO" />
+    <logger name="no.nav.paw.pdl.PdlClient" level="WARN"/>
+</configuration>

@@ -1,0 +1,5 @@
+url = "https://pdl-api.dev-fss-pub.nais.io/graphql"
+tema = "OPP"
+pdlCluster = "dev-fss"
+namespace = "pdl"
+appName = "pdl-api"
