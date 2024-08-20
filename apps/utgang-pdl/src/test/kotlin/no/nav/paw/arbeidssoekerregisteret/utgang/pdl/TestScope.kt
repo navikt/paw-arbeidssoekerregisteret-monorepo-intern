@@ -12,7 +12,7 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
-import no.nav.paw.pdl.graphql.generated.hentforenkletstatusbolk.HentPersonBolkResult
+import no.nav.paw.pdl.graphql.generated.hentforenkletstatusbolk.HentPersonBolkResult as HentForenkletStatusBolkResult
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
@@ -35,7 +35,7 @@ data class TestScope(
     val topologyTestDriver: TopologyTestDriver
 )
 
-fun testScope(pdlMockResponse: List<HentPersonBolkResult>): TestScope {
+fun testScope(pdlMockResponse: List<HentForenkletStatusBolkResult>): TestScope {
     val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfiguration>(
         APPLICATION_CONFIG_FILE
     )
@@ -61,6 +61,9 @@ fun testScope(pdlMockResponse: List<HentPersonBolkResult>): TestScope {
             hendelseLoggTopic = applicationConfig.hendelseloggTopic,
             pdlHentForenkletStatus = { _, _, _ ->
                 pdlMockResponse
+            },
+            pdlHentPerson = { _, _, _ ->
+                null
             },
             prometheusRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
         ),

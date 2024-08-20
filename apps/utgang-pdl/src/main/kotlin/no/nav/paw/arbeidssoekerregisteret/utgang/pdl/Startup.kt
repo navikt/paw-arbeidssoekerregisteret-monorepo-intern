@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.binder.kafka.KafkaStreamsMetrics
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentForenkletStatus
+import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentPerson
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.health.Health
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.health.initKtor
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.appTopology
@@ -51,6 +52,7 @@ fun main() {
         applicationConfiguration.hendelseloggTopic,
         applicationConfiguration.hendelseStateStoreName,
         pdlHentForenkletStatus = PdlHentForenkletStatus.create(),
+        pdlHentPerson = PdlHentPerson.create(),
     )
     val kafkaStreams = KafkaStreams(
         topology,
@@ -69,4 +71,3 @@ fun main() {
     ).start(wait = true)
     logger.info("Avsluttet")
 }
-

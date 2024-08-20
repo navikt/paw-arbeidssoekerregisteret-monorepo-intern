@@ -1,11 +1,24 @@
 package no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka
 
+import arrow.core.Either
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.ApplicationInfo
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentForenkletStatus
+import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentForenkletStatus.Companion.logger
+import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentPerson
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseState
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.metrics.tellPdlAvsluttetHendelser
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.metrics.tellStatusFraPdlHentPersonBolk
+import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.genererPersonFakta
+import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.negativeOpplysninger
+import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.statusToOpplysningMap
+import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.toAarsak
+import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.toPerson
+import no.nav.paw.arbeidssokerregisteret.application.OK
+import no.nav.paw.arbeidssokerregisteret.application.Problem
+import no.nav.paw.arbeidssokerregisteret.application.evaluer
+import no.nav.paw.arbeidssokerregisteret.application.hendelseOpplysningTilDomeneOpplysninger
+import no.nav.paw.arbeidssokerregisteret.application.reglerForInngangIPrioritertRekkefolge
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
@@ -13,7 +26,8 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
 import no.nav.paw.pdl.graphql.generated.hentforenkletstatusbolk.Folkeregisterpersonstatus
-import no.nav.paw.pdl.graphql.generated.hentforenkletstatusbolk.HentPersonBolkResult
+import no.nav.paw.pdl.graphql.generated.hentforenkletstatusbolk.HentPersonBolkResult as ForenkletStatusBolkResult
+import no.nav.paw.pdl.graphql.generated.hentpersonbolk.HentPersonBolkResult
 import org.apache.kafka.streams.processor.Cancellable
 import org.apache.kafka.streams.processor.PunctuationType
 import org.apache.kafka.streams.processor.api.ProcessorContext
@@ -31,6 +45,7 @@ fun scheduleAvsluttPerioder(
     hendelseStateStore: KeyValueStore<UUID, HendelseState>,
     interval: Duration = Duration.ofDays(1),
     pdlHentForenkletStatus: PdlHentForenkletStatus,
+    pdlHentPersonBolk: PdlHentPerson,
     prometheusMeterRegistry: PrometheusMeterRegistry,
 ): Cancellable = ctx.schedule(interval, PunctuationType.WALL_CLOCK_TIME) {
 
@@ -44,6 +59,18 @@ fun scheduleAvsluttPerioder(
             .chunked(1000) { chunk ->
                 val identitetsnummere = chunk.map { it.value.identitetsnummer }
 
+                // Versjon 2
+                val pdlHentPersonResults = hentPersonBolk(identitetsnummere, pdlHentPersonBolk)
+                if (pdlHentPersonResults == null) {
+                    logger.warn("PDL hentPersonBolk returnerte null")
+                } else {
+                    pdlHentPersonResults.processResultsV2(
+                        chunk,
+                        logger
+                    )
+                }
+
+                // Versjon 1
                 val pdlResults = hentForenkletStatus(identitetsnummere, pdlHentForenkletStatus)
                 if (pdlResults == null) {
                     logger.error("PDL hentForenkletStatus returnerte null")
@@ -61,7 +88,8 @@ fun scheduleAvsluttPerioder(
     }
 }
 
-private fun List<HentPersonBolkResult>.processResults(
+
+private fun List<ForenkletStatusBolkResult>.processResults(
     chunk: List<KeyValue<UUID, HendelseState>>,
     hendelseStateStore: KeyValueStore<UUID, HendelseState>,
     ctx: ProcessorContext<Long, Hendelse>,
@@ -87,8 +115,13 @@ private fun List<HentPersonBolkResult>.processResults(
 
     val aarsak = folkeregisterpersonstatus
         .filterAvsluttPeriodeGrunnlag(hendelseState.opplysninger)
-        .ifEmpty { return@forEachIndexed }
+        .ifEmpty {
+            logger.info("Versjon 1: OK, matchende opplysning fra startet hendelse og forhåndsgodkjent av ansatt")
+            return@forEachIndexed
+        }
         .toAarsak()
+
+    logger.info("Versjon 2: PROBLEM, negative opplysninger fra pdl: ${folkeregisterpersonstatus.filterAvsluttPeriodeGrunnlag(hendelseState.opplysninger)}, generert aarsak: $aarsak")
 
     val avsluttetHendelse = genererAvsluttetHendelseRecord(hendelseState, aarsak)
 
@@ -101,8 +134,73 @@ private fun List<HentPersonBolkResult>.processResults(
         }
 }
 
+private fun List<HentPersonBolkResult>.processResultsV2(
+    chunk: List<KeyValue<UUID, HendelseState>>,
+    logger: Logger
+) = this.forEach { result ->
+    if (result.code in pdlErrorResponses) {
+        logger.error("Versjon 2: Feil ved henting av Person fra PDL: ${result.code}")
+        return@forEach
+    }
+
+    val person = result.person ?: throw IllegalStateException("Versjon 2: Person mangler")
+    val hendelseOpplysninger = chunk.find { it.value.identitetsnummer == result.ident }
+        ?.value?.opplysninger ?: throw IllegalStateException("Versjon 2: HendelseState mangler")
+
+    val domeneOpplysninger = hendelseOpplysninger
+        .filterNot { it == Opplysning.FORHAANDSGODKJENT_AV_ANSATT }
+        .map { hendelseOpplysningTilDomeneOpplysninger(it) as no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning }
+        .toSet()
+
+    val opplysningerEvaluering = reglerForInngangIPrioritertRekkefolge.evaluer(domeneOpplysninger)
+    val pdlEvaluering = reglerForInngangIPrioritertRekkefolge.evaluer(genererPersonFakta(person.toPerson()))
+
+    val erForhaandsgodkjent = hendelseOpplysninger.contains(Opplysning.FORHAANDSGODKJENT_AV_ANSATT)
+
+    when {
+        pdlEvaluering.isLeft() -> handleLeftEvaluation(
+            pdlEvaluering, opplysningerEvaluering, erForhaandsgodkjent, logger
+        )
+        pdlEvaluering.isRight() -> handleRightEvaluation(
+            opplysningerEvaluering, erForhaandsgodkjent, logger
+        )
+    }
+}
+
+private fun handleLeftEvaluation(
+    pdlEvaluering: Either<Problem, OK>,
+    opplysningerEvaluering: Either<Problem, OK>,
+    erForhaandsgodkjent: Boolean,
+    logger: Logger
+) {
+    val pdlEvalueringResultat = pdlEvaluering.leftOrNull()?.opplysning?.toSet()
+        ?: throw IllegalStateException("Versjon 2: PDL evaluering mangler opplysning")
+    val opplysningerEvalueringResultat = opplysningerEvaluering.leftOrNull()?.opplysning?.toSet()
+        ?: throw IllegalStateException("Versjon 2: Opplysninger evaluering mangler opplysning")
+
+    if (pdlEvalueringResultat == opplysningerEvalueringResultat && erForhaandsgodkjent) {
+        logger.info("Versjon 2: OK, matchende opplysning fra startet hendelse og forhåndsgodkjent av ansatt: $pdlEvalueringResultat")
+    } else {
+        val aarsak = pdlEvalueringResultat.filterNot { it in opplysningerEvalueringResultat }.toAarsak()
+        logger.info("Versjon 2: PROBLEM, negative opplysninger fra pdl: $pdlEvalueringResultat, generert aarsak: $aarsak")
+    }
+}
+
+private fun handleRightEvaluation(
+    opplysningerEvaluering: Either<Problem, OK>,
+    erForhaandsgodkjent: Boolean,
+    logger: Logger
+) {
+    if (opplysningerEvaluering.isLeft() && erForhaandsgodkjent) {
+        logger.info("Versjon 2: OK, ingen negative opplysninger fra pdl, negative opplysninger fra startet hendelse og forhåndsgodkjent av ansatt funnet")
+    } else {
+        logger.info("Versjon 2: OK, ingen negative opplysninger fra pdl")
+    }
+}
+
+
 private fun hentPersonStatusOgHendelseState(
-    result: HentPersonBolkResult,
+    result: ForenkletStatusBolkResult,
     chunk: List<KeyValue<UUID, HendelseState>>
 ): Pair<List<Folkeregisterpersonstatus>, HendelseState>? {
     val person = result.person ?: return null
@@ -123,14 +221,28 @@ private fun oppdaterHendelseStateOpplysninger(
                 .toSet()
         )
         hendelseStateStore.put(hendelseState.periodeId, oppdatertHendelseState)
+        logger.info("Versjon 1: OK, ingen negative opplysninger fra pdl, negative opplysninger fra startet hendelse og forhåndsgodkjent av ansatt funnet")
+    } else {
+        logger.info("Versjon 1: OK, ingen negative opplysninger fra pdl")
     }
 }
 
 private fun hentForenkletStatus(
     identitetsnummere: List<String>,
     pdlHentForenkletStatus: PdlHentForenkletStatus,
-): List<HentPersonBolkResult>? {
+): List<ForenkletStatusBolkResult>? {
     return pdlHentForenkletStatus.hentForenkletStatus(
+        identitetsnummere,
+        UUID.randomUUID().toString(),
+        "paw-arbeidssoekerregisteret-utgang-pdl",
+    )
+}
+
+private fun hentPersonBolk(
+    identitetsnummere: List<String>,
+    pdlHentPersonBolk: PdlHentPerson,
+): List<HentPersonBolkResult>? {
+    return pdlHentPersonBolk.hentPerson(
         identitetsnummere,
         UUID.randomUUID().toString(),
         "paw-arbeidssoekerregisteret-utgang-pdl",
@@ -156,31 +268,7 @@ fun List<Folkeregisterpersonstatus>.filterAvsluttPeriodeGrunnlag(
         .toSet()
 }
 
-private fun Set<Opplysning>.toAarsak(): String =
-    this.joinToString(separator = ", ") {
-        when (it) {
-            Opplysning.DOED -> "Personen er doed"
-            Opplysning.SAVNET -> "Personen er savnet"
-            Opplysning.IKKE_BOSATT -> "Personen er ikke bosatt etter folkeregisterloven"
-            Opplysning.OPPHOERT_IDENTITET -> "Personen har opphoert identitet"
-            else -> it.name
-        }
-    }
 
-private val negativeOpplysninger = setOf(
-    Opplysning.IKKE_BOSATT,
-    Opplysning.SAVNET,
-    Opplysning.DOED,
-    Opplysning.OPPHOERT_IDENTITET,
-)
-
-private val statusToOpplysningMap = mapOf(
-    "ikkeBosatt" to Opplysning.IKKE_BOSATT,
-    "forsvunnet" to Opplysning.SAVNET,
-    "doedIFolkeregisteret" to Opplysning.DOED,
-    "opphoert" to Opplysning.OPPHOERT_IDENTITET,
-    "dNummer" to Opplysning.DNUMMER
-)
 
 private val List<Folkeregisterpersonstatus>.erBosattEtterFolkeregisterloven
     get(): Boolean =
