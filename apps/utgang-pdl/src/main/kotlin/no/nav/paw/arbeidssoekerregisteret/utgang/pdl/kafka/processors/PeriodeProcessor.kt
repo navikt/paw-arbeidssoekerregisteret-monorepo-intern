@@ -2,6 +2,7 @@ package no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.processors
 
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentForenkletStatus
+import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentPerson
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.scheduleAvsluttPerioder
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseState
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
@@ -18,13 +19,15 @@ import java.util.UUID
 fun KStream<Long, Periode>.oppdaterHendelseState(
     hendelseStateStoreName: String,
     prometheusMeterRegistry: PrometheusMeterRegistry,
-    pdlHentForenkletStatus: PdlHentForenkletStatus
+    pdlHentForenkletStatus: PdlHentForenkletStatus,
+    pdlHentPerson: PdlHentPerson
 ): KStream<Long, Hendelse> {
     val processor = {
         PeriodeProcessor(
             hendelseStateStoreName,
             prometheusMeterRegistry,
-            pdlHentForenkletStatus
+            pdlHentForenkletStatus,
+            pdlHentPerson
         )
     }
     return process(processor, Named.`as`("periodeProsessor"), hendelseStateStoreName)
@@ -33,7 +36,8 @@ fun KStream<Long, Periode>.oppdaterHendelseState(
 class PeriodeProcessor(
     private val hendelseStateStoreName: String,
     private val prometheusMeterRegistry: PrometheusMeterRegistry,
-    private val pdlHentForenkletStatus: PdlHentForenkletStatus
+    private val pdlHentForenkletStatus: PdlHentForenkletStatus,
+    private val pdlHentPersonBolk: PdlHentPerson,
 ) : Processor<Long, Periode, Long, Hendelse> {
     private var hendelseStateStore: KeyValueStore<UUID, HendelseState>? = null
     private var context: ProcessorContext<Long, Hendelse>? = null
@@ -47,6 +51,7 @@ class PeriodeProcessor(
             requireNotNull(hendelseStateStore),
             Duration.ofDays(1),
             pdlHentForenkletStatus,
+            pdlHentPersonBolk,
             prometheusMeterRegistry
         )
     }

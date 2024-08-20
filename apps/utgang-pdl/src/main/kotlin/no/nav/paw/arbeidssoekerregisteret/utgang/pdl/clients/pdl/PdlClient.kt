@@ -10,14 +10,38 @@ import no.nav.paw.kafkakeygenerator.auth.azureAdM2MTokenClient
 import no.nav.paw.kafkakeygenerator.auth.currentNaisEnv
 import no.nav.paw.pdl.PdlClient
 import no.nav.paw.pdl.PdlException
-import no.nav.paw.pdl.graphql.generated.hentforenkletstatusbolk.HentPersonBolkResult
+import no.nav.paw.pdl.graphql.generated.hentforenkletstatusbolk.HentPersonBolkResult as ForenkletStatusBolkResult
+import no.nav.paw.pdl.graphql.generated.hentpersonbolk.HentPersonBolkResult
 import no.nav.paw.pdl.hentForenkletStatusBolk
+import no.nav.paw.pdl.hentPersonBolk
 import org.slf4j.LoggerFactory
 
 const val BEHANDLINGSNUMMER = "B452"
 
+fun interface PdlHentPerson {
+    fun hentPerson(ident: List<String>, callId: String, navConsumerId: String): List<HentPersonBolkResult>?
+
+    companion object {
+        val logger = LoggerFactory.getLogger("pdlClient")
+
+        fun create(): PdlHentPerson {
+            val pdlClient = createPdlClient()
+            return PdlHentPerson { ident, callId, navConsumerId ->
+                runBlocking {
+                    try {
+                        pdlClient.hentPersonBolk(ident = ident, callId = callId, navConsumerId = navConsumerId, behandlingsnummer = BEHANDLINGSNUMMER)
+                    } catch (e: PdlException) {
+                        logger.error("PDL hentPerson feiler med: $e", e)
+                        null
+                    }
+                }
+            }
+        }
+    }
+}
+
 fun interface PdlHentForenkletStatus {
-    fun hentForenkletStatus(ident: List<String>, callId: String, navConsumerId: String): List<HentPersonBolkResult>?
+    fun hentForenkletStatus(ident: List<String>, callId: String, navConsumerId: String): List<ForenkletStatusBolkResult>?
 
     companion object {
         val logger = LoggerFactory.getLogger("pdlClient")

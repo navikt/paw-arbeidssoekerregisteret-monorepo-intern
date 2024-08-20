@@ -18,11 +18,14 @@ dependencies {
     implementation(project(":domain:main-avro-schema"))
     implementation(project(":domain:interne-hendelser"))
     implementation(project(":domain:arbeidssoekerregisteret-kotlin"))
+    implementation(project(":domain:arbeidssoeker-regler"))
 
     implementation(project(":lib:kafka-key-generator-client"))
     implementation(project(":lib:kafka"))
     implementation(project(":lib:kafka-streams"))
     implementation(project(":lib:hoplite-config"))
+
+    api(arrow.core)
 
     implementation(orgApacheKafka.kafkaStreams)
 

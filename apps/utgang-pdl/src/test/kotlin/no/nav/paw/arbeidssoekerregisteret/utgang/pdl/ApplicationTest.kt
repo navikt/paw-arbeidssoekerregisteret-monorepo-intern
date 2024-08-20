@@ -465,3 +465,53 @@ fun generatePdlMockResponse(ident: String, forenkletStatus: List<String>, status
         code = status,
     )
 )
+
+/*
+fun generatePdlHentPersonMockResponse(ident: String, forenkletStatus: List<String>): List<PersonBolkResult> =
+    listOf(
+        PersonBolkResult(
+            ident,
+                PersonBolk(
+                    foedsel = listOf(
+                        FoedselBolk(
+                            foedselsdato = "1990-01-01",
+                            foedselsaar = 1990
+                        )
+                    ),
+                    statsborgerskap = listOf(
+                        StatsborgerskapBolk(
+                            land = "NOR",
+                            metadata = MetadataBolk(
+                                endringer = emptyList()
+                            )
+                        )
+                    ),
+                    opphold = listOf(
+                        OppholdBolk(
+                            oppholdFra = "2020-01-01",
+                            oppholdTil = "2021-01-01",
+                            type = Oppholdstillatelse.PERMANENT,
+                            metadata = MetadataBolk(
+                                endringer = emptyList()
+                            )
+                        )
+                    ),
+                    folkeregisterpersonstatus = forenkletStatus.map {
+                        FolkeregisterpersonstatusBolk(
+                            forenkletStatus = it,
+                            metadata = MetadataBolk(
+                                endringer = emptyList()
+                            )
+                        )
+                    },
+                    bostedsadresse = listOf(
+                        BostedsadresseBolk(
+                            angittFlyttedato = null,
+                        )
+                    ),
+                    innflyttingTilNorge = emptyList(),
+                    utflyttingFraNorge = emptyList(),
+                ),
+            "ok"
+        )
+    )*/
