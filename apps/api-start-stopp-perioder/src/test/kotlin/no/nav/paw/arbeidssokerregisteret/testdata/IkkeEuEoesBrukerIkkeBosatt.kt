@@ -6,6 +6,7 @@ import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.AarsakTilAvvisni
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiRegelId
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feil
 import no.nav.paw.arbeidssokerregisteret.*
+import no.nav.paw.arbeidssokerregisteret.application.IkkeBosattINorgeIHenholdTilFolkeregisterloven
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
@@ -40,10 +41,10 @@ data object IkkeEuEoesBrukerIkkeBosatt: TestCase {
 
     override val producesHttpResponse: HttpStatusCode = HttpStatusCode.Forbidden
     override val producesError: Feil = Feil(
-        melding = "any",
+        melding = IkkeBosattINorgeIHenholdTilFolkeregisterloven.beskrivelse,
         feilKode = Feil.FeilKode.AVVIST,
         aarsakTilAvvisning = AarsakTilAvvisning(
-            beskrivelse = "any",
+            beskrivelse = IkkeBosattINorgeIHenholdTilFolkeregisterloven.beskrivelse,
             regel = ApiRegelId.IKKE_BOSATT_I_NORGE_I_HENHOLD_TIL_FOLKEREGISTERLOVEN,
             detaljer = listOf(
                 ApiOpplysning.ER_OVER_18_AAR,

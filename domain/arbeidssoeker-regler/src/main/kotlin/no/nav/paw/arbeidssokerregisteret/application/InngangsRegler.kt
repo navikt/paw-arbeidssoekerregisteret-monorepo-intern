@@ -3,46 +3,38 @@ package no.nav.paw.arbeidssokerregisteret.application
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning.*
 
 val reglerForInngangIPrioritertRekkefolge: List<Regel> = listOf(
-    "Person ikke funnet"(
+    IkkeFunnet(
         PersonIkkeFunnet,
-        id = IkkeFunnet,
         vedTreff = ::problem
     ),
-    "Er registrert som død"(
+    Doed(
         ErDoed,
-        id = Doed,
         vedTreff = ::problem
     ),
-    "Er forhåndsgodkjent av ansatt"(
+    ForhaandsgodkjentAvAnsatt(
         ErForhaandsgodkjent,
-        id = ForhaandsgodkjentAvAnsatt,
         vedTreff = ::ok
     ),
-    "Er bosatt i Norge i henhold Folkeregisterloven, men er under 18 år"(
+    Under18Aar(
         ErUnder18Aar,
         BosattEtterFregLoven,
-        id = Under18Aar,
         vedTreff = ::problem
     ),
-    "Kunne ikke fastslå alder"(
+    UkjentAlder(
         UkjentFoedselsaar,
         UkjentFoedselsdato,
-        id = UkjentAlder,
         vedTreff = ::problem
     ),
-    "Er registrert som savnet"(
+    Savnet(
         ErSavnet,
-        id = Savnet,
         vedTreff = ::problem
     ),
-    "Er over 18 år, er bosatt i Norge i henhold Folkeregisterloven"(
+    Over18AarOgBosattEtterFregLoven(
         ErOver18Aar,
         BosattEtterFregLoven,
-        id = Over18AarOgBosattEtterFregLoven,
         vedTreff = ::ok
     ),
-    "Avvist fordi personen ikke er bosatt i Norge i henhold til folkeregisterloven"(
-        id = IkkeBosattINorgeIHenholdTilFolkeregisterloven,
+    IkkeBosattINorgeIHenholdTilFolkeregisterloven(
         vedTreff = ::problem
     )
 )

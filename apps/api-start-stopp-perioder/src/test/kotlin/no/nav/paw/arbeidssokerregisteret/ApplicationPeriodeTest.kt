@@ -36,7 +36,6 @@ class ApplicationPeriodeTest : FunSpec({
                 } returns Problem(
                     regel = Regel(
                         id = Under18Aar,
-                        beskrivelse = "under 18 år",
                         opplysninger = listOf(DomeneOpplysning.ErUnder18Aar),
                         vedTreff = ::problem
                     ),
@@ -66,8 +65,8 @@ class ApplicationPeriodeTest : FunSpec({
             response.status shouldBe HttpStatusCode.Forbidden
             val feil: Feil = response.body()
             feil shouldBe Feil(
-                "under 18 år", Feil.FeilKode.AVVIST, AarsakTilAvvisning(
-                    beskrivelse = "under 18 år",
+                Under18Aar.beskrivelse, Feil.FeilKode.AVVIST, AarsakTilAvvisning(
+                    beskrivelse = Under18Aar.beskrivelse,
                     regel = ApiRegelId.UNDER_18_AAR,
                     detaljer = listOf(Opplysning.ER_UNDER_18_AAR, Opplysning.BOSATT_ETTER_FREG_LOVEN)
                 )

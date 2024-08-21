@@ -49,7 +49,6 @@ class InngagnSomVeilederTest : FreeSpec({
             } returns OK(
                 regel = Regel(
                     id = AnsattHarTilgangTilBruker,
-                    beskrivelse = "",
                     opplysninger = emptyList(),
                     vedTreff = ::ok
                 ),

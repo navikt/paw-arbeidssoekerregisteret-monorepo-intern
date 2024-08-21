@@ -89,10 +89,12 @@ class TestCaseRunner : FreeSpec({
                         testCase.producesError?.also { expectedErrorResponse ->
                             val body = status.body<Feil>()
                             body.feilKode shouldBe expectedErrorResponse.feilKode
+                            body.melding shouldBe expectedErrorResponse.melding
                             body.aarsakTilAvvisning?.regel shouldBe expectedErrorResponse.aarsakTilAvvisning?.regel
                             expectedErrorResponse.aarsakTilAvvisning?.detaljer?.also { expectedDetails ->
                                 body.aarsakTilAvvisning?.detaljer.shouldNotBeNull()
                                 body.aarsakTilAvvisning?.detaljer?.shouldContainExactlyInAnyOrder(expectedDetails)
+                                body.aarsakTilAvvisning?.beskrivelse shouldBe expectedErrorResponse.aarsakTilAvvisning?.beskrivelse
                             }
                         }
                         val expectedRecord = testCase.producesRecord(kafkaKeys)

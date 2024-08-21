@@ -47,7 +47,6 @@ class InngangSomBrukerTest : FreeSpec({
             } returns OK(
                 regel = Regel(
                     id = Over18AarOgBosattEtterFregLoven,
-                    beskrivelse = "",
                     opplysninger = emptyList(),
                     vedTreff = ::ok
                 ),
@@ -109,7 +108,6 @@ class InngangSomBrukerTest : FreeSpec({
             } returns Problem(
                 regel = Regel(
                     id = IkkeAnsattOgForhaandsgodkjentAvAnsatt,
-                    beskrivelse = "",
                     opplysninger = emptyList(),
                     vedTreff = ::problem
                 ),

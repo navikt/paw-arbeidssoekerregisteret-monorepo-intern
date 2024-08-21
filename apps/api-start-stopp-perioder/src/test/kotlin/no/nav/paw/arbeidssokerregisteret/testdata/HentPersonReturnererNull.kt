@@ -6,6 +6,7 @@ import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.AarsakTilAvvisni
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiRegelId
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feil
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Opplysning
+import no.nav.paw.arbeidssokerregisteret.application.IkkeFunnet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
@@ -26,10 +27,10 @@ data object HentPersonReturnererNull: TestCase {
 
     override val producesHttpResponse: HttpStatusCode = HttpStatusCode.Forbidden
     override val producesError: Feil = Feil(
-        melding = "any",
+        melding = IkkeFunnet.beskrivelse,
         feilKode = Feil.FeilKode.AVVIST,
         aarsakTilAvvisning = AarsakTilAvvisning(
-            beskrivelse = "any",
+            beskrivelse = IkkeFunnet.beskrivelse,
             regel = ApiRegelId.IKKE_FUNNET,
             detaljer = listOf(
                 Opplysning.PERSON_IKKE_FUNNET,

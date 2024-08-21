@@ -25,11 +25,11 @@ suspend fun respondWith(resultat: Either<Problem, OK>) =
 suspend fun PipelineContext<Unit, ApplicationCall>.respondWithError(problem: Problem){
     call.respond(
         problem.httpCode(), Feil(
-            melding = problem.regel.beskrivelse,
+            melding = problem.regel.id.beskrivelse,
             feilKode = problem.feilKode(),
             aarsakTilAvvisning = if (problem.regel.id is DomeneRegelId) {
                 AarsakTilAvvisning(
-                    beskrivelse = problem.regel.beskrivelse,
+                    beskrivelse = problem.regel.id.beskrivelse,
                     regel = problem.regel.id.apiRegelId(),
                     detaljer = problem.opplysning.map(::opplysningTilApiOpplysning)
                 )

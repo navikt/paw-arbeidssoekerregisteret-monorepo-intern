@@ -6,13 +6,11 @@ import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning as HendelseOpplysning
 
 
-operator fun String.invoke(
+operator fun RegelId.invoke(
     vararg opplysninger: Opplysning,
-    id: RegelId,
     vedTreff: (Regel, Iterable<Opplysning>) -> Either<Problem, OK>
 ) = Regel(
-    id = id,
-    beskrivelse = this,
+    id = this,
     vedTreff = vedTreff,
     opplysninger = opplysninger.toList()
 )

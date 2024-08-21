@@ -26,7 +26,7 @@ fun stoppResultatSomHendelse(id: Long, identitetsnummer: Identitetsnummer, resul
             id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
-            metadata = hendelseMetadata(resultat.value.regel.beskrivelse),
+            metadata = hendelseMetadata(resultat.value.regel.id.beskrivelse),
             opplysninger = resultat.value.opplysning.map(::mapToHendelseOpplysning).toSet()
         )
 
@@ -53,7 +53,7 @@ fun somHendelse(id: Long, identitetsnummer: Identitetsnummer, resultat: Either<P
             id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
-            metadata = hendelseMetadata(resultat.value.regel.beskrivelse),
+            metadata = hendelseMetadata(resultat.value.regel.id.beskrivelse),
             opplysninger = resultat.value.opplysning.map(::mapToHendelseOpplysning).toSet(),
             handling = path
         )
@@ -62,7 +62,7 @@ fun somHendelse(id: Long, identitetsnummer: Identitetsnummer, resultat: Either<P
             id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
-            metadata = hendelseMetadata(resultat.value.regel.beskrivelse),
+            metadata = hendelseMetadata(resultat.value.regel.id.beskrivelse),
             opplysninger = resultat.value.opplysning.map(::mapToHendelseOpplysning).toSet()
         )
     }

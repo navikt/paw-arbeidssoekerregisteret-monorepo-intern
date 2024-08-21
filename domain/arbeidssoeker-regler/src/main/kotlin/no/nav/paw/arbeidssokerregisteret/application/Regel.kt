@@ -6,10 +6,6 @@ import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
 data class Regel(
     val id: RegelId,
     /**
-     * Beskrivelse av regelen
-     */
-    val beskrivelse: String,
-    /**
      * Opplysninger som må være tilstede for at regelen skal være sann
      */
     val opplysninger: List<Opplysning>,

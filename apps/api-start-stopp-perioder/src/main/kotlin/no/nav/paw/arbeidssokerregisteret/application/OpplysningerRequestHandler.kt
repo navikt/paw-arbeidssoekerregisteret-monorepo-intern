@@ -29,7 +29,7 @@ class OpplysningerRequestHandler(
             requestValidator.validerTilgang(identitetsnummer)
                 .mapLeft { problem ->
                     Feil(
-                        melding = problem.regel.beskrivelse,
+                        melding = problem.regel.id.beskrivelse,
                         feilKode = Feil.FeilKode.IKKE_TILGANG
                     )
                 }.bind()

@@ -4,6 +4,7 @@ import io.kotest.common.runBlocking
 import io.ktor.http.*
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feil
 import no.nav.paw.arbeidssokerregisteret.*
+import no.nav.paw.arbeidssokerregisteret.application.regler.AnsattIkkeTilgangTilBruker
 import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
@@ -38,7 +39,7 @@ data object AnsattRegistrererUtenTilgangTilBruker: TestCase {
 
     override val producesHttpResponse: HttpStatusCode = HttpStatusCode.Forbidden
     override val producesError: Feil = Feil(
-        melding = "any",
+        melding = AnsattIkkeTilgangTilBruker.beskrivelse,
         feilKode = Feil.FeilKode.IKKE_TILGANG,
         aarsakTilAvvisning = null
     )

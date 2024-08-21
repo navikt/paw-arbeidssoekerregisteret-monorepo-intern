@@ -1,39 +1,39 @@
 package no.nav.paw.arbeidssokerregisteret.application
 
 interface RegelId {
-    val id: String
+    val beskrivelse: String
 }
 
 sealed interface DomeneRegelId : RegelId
 
 data object IkkeFunnet : DomeneRegelId {
-    override val id: String = "IKKE_FUNNET"
+    override val beskrivelse: String = "Person ikke funnet"
 }
 
 data object Savnet : DomeneRegelId {
-    override val id: String = "SAVNET"
+    override val beskrivelse: String = "Er registrert som savnet"
 }
 
 data object Doed : DomeneRegelId {
-    override val id: String = "DOED"
+    override val beskrivelse: String = "Er registrert som død"
 }
 
 data object Under18Aar : DomeneRegelId {
-    override val id: String = "UNDER_18_AAR"
+    override val beskrivelse: String = "Er bosatt i Norge i henhold Folkeregisterloven, men er under 18 år"
 }
 
 data object IkkeBosattINorgeIHenholdTilFolkeregisterloven : DomeneRegelId {
-    override val id: String = "IKKE_BOSATT_I_NORGE_I_HENHOLD_TIL_FOLKEREGISTERLOVEN"
+    override val beskrivelse: String = "Avvist fordi personen ikke er bosatt i Norge i henhold til folkeregisterloven"
 }
 
 data object ForhaandsgodkjentAvAnsatt : DomeneRegelId {
-    override val id: String = "FORHAANDSGODKJENT_AV_ANSATT"
+    override val beskrivelse: String = "Er forhåndsgodkjent av ansatt"
 }
 
 data object Over18AarOgBosattEtterFregLoven : DomeneRegelId {
-    override val id: String = "OVER_18_AAR_OG_BOSATT_ETTER_FREG_LOVEN"
+    override val beskrivelse: String = "Er over 18 år, er bosatt i Norge i henhold Folkeregisterloven"
 }
 
 data object UkjentAlder : DomeneRegelId {
-    override val id: String = "UKJENT_ALDER"
+    override val beskrivelse: String = "Kunne ikke fastslå alder"
 }
