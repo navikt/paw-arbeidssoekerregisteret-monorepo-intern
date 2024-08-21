@@ -26,10 +26,11 @@ val tilgangsReglerIPrioritertRekkefolge: List<Regel> = listOf(
     AnsattIkkeTilgangTilBruker(
         AuthOpplysning.AnsattIkkeTilgang,
         vedTreff = ::skalAvises
-    ),
-    IkkeTilgang(
-        vedTreff = ::muligGrunnlagForAvvisning
     )
+)
+
+val standardTilgangsregel = IkkeTilgang(
+    vedTreff = ::skalAvises
 )
 
 sealed interface AuthRegelId: RegelId

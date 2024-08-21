@@ -17,10 +17,17 @@ operator fun RegelId.invoke(
 
 fun Regel.evaluer(samletOpplysning: Iterable<Opplysning>): Boolean = opplysninger.all { samletOpplysning.contains(it) }
 
-fun List<Regel>.evaluer(opplysninger: Iterable<Opplysning>): Either<Problem, GrunnlagForGodkjenning> =
+/**
+ * Evaluerer en liste med regler mot en liste med opplysninger. Returnerer første regel som evalueres til sann,
+ * eller defaultRegel om ingen regler evalueres til sann.
+ */
+fun List<Regel>.evaluer(
+    defaultRegel: Regel,
+    opplysninger: Iterable<Opplysning>
+): Either<Problem, GrunnlagForGodkjenning> =
     filter { regel -> regel.evaluer(opplysninger) }
         .map { regel -> regel.vedTreff(opplysninger) }
-        .first()
+        .firstOrNull() ?: defaultRegel.vedTreff(opplysninger)
 
 fun domeneOpplysningTilHendelseOpplysning(opplysning: DomeneOpplysning): HendelseOpplysning =
     when (opplysning) {

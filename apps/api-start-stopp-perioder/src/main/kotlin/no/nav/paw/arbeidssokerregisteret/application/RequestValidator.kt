@@ -7,6 +7,7 @@ import no.nav.paw.arbeidssokerregisteret.RequestScope
 import no.nav.paw.arbeidssokerregisteret.application.authfaktka.navAnsattTilgangFakta
 import no.nav.paw.arbeidssokerregisteret.application.authfaktka.tokenXPidFakta
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.*
+import no.nav.paw.arbeidssokerregisteret.application.regler.standardTilgangsregel
 import no.nav.paw.arbeidssokerregisteret.application.regler.tilgangsReglerIPrioritertRekkefolge
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
@@ -31,7 +32,7 @@ class RequestValidator(
                 } else {
                     emptySet()
                 }
-        return tilgangsReglerIPrioritertRekkefolge.evaluer(autentiseringsFakta)
+        return tilgangsReglerIPrioritertRekkefolge.evaluer(defaultRegel = standardTilgangsregel, autentiseringsFakta)
     }
 
     context(RequestScope)
@@ -44,9 +45,11 @@ class RequestValidator(
             .flatMap { tilgangsResultat ->
                 val person = personInfoService.hentPersonInfo(identitetsnummer.verdi)
                 val opplysning = person?.let { genererPersonFakta(it) } ?: setOf(DomeneOpplysning.PersonIkkeFunnet)
-                reglerForInngangIPrioritertRekkefolge.evaluer(opplysning + tilgangsResultat.opplysning)
+                reglerForInngangIPrioritertRekkefolge.evaluer(
+                    defaultRegel = standardInngangsregel,
+                    opplysning + tilgangsResultat.opplysning
+                )
             }
-
 
     fun genererPersonFakta(person: Person): Set<Opplysning> {
         require(person.foedsel.size <= 1) { "Personen har flere fødselsdatoer enn forventet" }

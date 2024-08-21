@@ -14,11 +14,7 @@ import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.negativeOpplysninger
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.statusToOpplysningMap
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.toAarsak
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.toPerson
-import no.nav.paw.arbeidssokerregisteret.application.GrunnlagForGodkjenning
-import no.nav.paw.arbeidssokerregisteret.application.Problem
-import no.nav.paw.arbeidssokerregisteret.application.evaluer
-import no.nav.paw.arbeidssokerregisteret.application.hendelseOpplysningTilDomeneOpplysninger
-import no.nav.paw.arbeidssokerregisteret.application.reglerForInngangIPrioritertRekkefolge
+import no.nav.paw.arbeidssokerregisteret.application.*
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
@@ -152,8 +148,14 @@ private fun List<HentPersonBolkResult>.processResultsV2(
         .map { hendelseOpplysningTilDomeneOpplysninger(it) as no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning }
         .toSet()
 
-    val opplysningerEvaluering = reglerForInngangIPrioritertRekkefolge.evaluer(domeneOpplysninger)
-    val pdlEvaluering = reglerForInngangIPrioritertRekkefolge.evaluer(genererPersonFakta(person.toPerson()))
+    val opplysningerEvaluering = reglerForInngangIPrioritertRekkefolge.evaluer(
+        defaultRegel = standardInngangsregel,
+        domeneOpplysninger
+    )
+    val pdlEvaluering = reglerForInngangIPrioritertRekkefolge.evaluer(
+        defaultRegel = standardInngangsregel,
+        genererPersonFakta(person.toPerson())
+    )
 
     val erForhaandsgodkjent = hendelseOpplysninger.contains(Opplysning.FORHAANDSGODKJENT_AV_ANSATT)
 

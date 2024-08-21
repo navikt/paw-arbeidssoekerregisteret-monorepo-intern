@@ -11,12 +11,14 @@ import no.nav.paw.arbeidssokerregisteret.application.authfaktka.AuthOpplysning.I
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
 import no.nav.paw.arbeidssokerregisteret.application.regler.AnsattHarTilgangTilBruker
 import no.nav.paw.arbeidssokerregisteret.application.regler.IkkeAnsattOgForhaandsgodkjentAvAnsatt
+import no.nav.paw.arbeidssokerregisteret.application.regler.standardTilgangsregel
 import no.nav.paw.arbeidssokerregisteret.application.regler.tilgangsReglerIPrioritertRekkefolge
 
 class TilgansReglerTest : FreeSpec({
     "eval av tilgang skal gi" - {
         "ugydlig request ved IKKE_ANSATT kombinert med GODKJENT_AV_ANSATT" {
             val resultat = tilgangsReglerIPrioritertRekkefolge.evaluer(
+                standardTilgangsregel,
                 setOf(
                     IkkeAnsatt,
                     DomeneOpplysning.ErForhaandsgodkjent
@@ -27,6 +29,7 @@ class TilgansReglerTest : FreeSpec({
         }
         "lovlig kombinasjon av ANSATT og FORHANDSGODKJENT_AV_ANSATT" {
             val resultat = tilgangsReglerIPrioritertRekkefolge.evaluer(
+                standardTilgangsregel,
                 setOf(
                     AnsattTilgang,
                     DomeneOpplysning.ErForhaandsgodkjent

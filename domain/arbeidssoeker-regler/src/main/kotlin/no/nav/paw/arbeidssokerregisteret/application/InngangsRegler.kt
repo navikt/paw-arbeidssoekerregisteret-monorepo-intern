@@ -33,8 +33,9 @@ val reglerForInngangIPrioritertRekkefolge: List<Regel> = listOf(
         ErOver18Aar,
         BosattEtterFregLoven,
         vedTreff = ::grunnlagForGodkjenning
-    ),
-    IkkeBosattINorgeIHenholdTilFolkeregisterloven(
-        vedTreff = ::muligGrunnlagForAvvisning
     )
+)
+
+val standardInngangsregel = IkkeBosattINorgeIHenholdTilFolkeregisterloven(
+    vedTreff = ::muligGrunnlagForAvvisning
 )
