@@ -50,14 +50,14 @@ class RequestValidatorTest : FreeSpec({
                 "Når forhandsgodkjent av veileder er false" {
                     val tilgangskontrollresultat = with(requestScope) {
                         requestValidator.validerTilgang(identitsnummer)
-                    }.shouldBeInstanceOf<Either.Right<OK>>()
+                    }.shouldBeInstanceOf<Either.Right<GrunnlagForGodkjenning>>()
                     tilgangskontrollresultat.value.opplysning shouldContain AnsattTilgang
                     tilgangskontrollresultat.value.opplysning shouldNotContain DomeneOpplysning.ErForhaandsgodkjent
                 }
                 "Når forhandsgodkjent av ansatt er true" {
                     val tilgangskontrollresultat = with(requestScope) {
                         requestValidator.validerTilgang(identitsnummer, true)
-                    }.shouldBeInstanceOf<Either.Right<OK>>()
+                    }.shouldBeInstanceOf<Either.Right<GrunnlagForGodkjenning>>()
                     tilgangskontrollresultat.value.opplysning shouldContain AnsattTilgang
                     tilgangskontrollresultat.value.opplysning shouldContain DomeneOpplysning.ErForhaandsgodkjent
                 }
@@ -89,7 +89,7 @@ class RequestValidatorTest : FreeSpec({
             "standardbruker" {
                 val tilgangskontrollresultat = with(requestScope) {
                     requestValidator.validerTilgang(identitsnummer)
-                }.shouldBeInstanceOf<Either.Right<OK>>()
+                }.shouldBeInstanceOf<Either.Right<GrunnlagForGodkjenning>>()
                 tilgangskontrollresultat.value.opplysning shouldContain IkkeAnsatt
                 tilgangskontrollresultat.value.opplysning shouldNotContain DomeneOpplysning.ErForhaandsgodkjent
             }
@@ -150,7 +150,7 @@ class RequestValidatorTest : FreeSpec({
                     "godkjent av veileder er false" {
                         val resultat = with(requestScope) {
                             requestValidator.validerStartAvPeriodeOenske(identitsnummer)
-                        }.shouldBeInstanceOf<Either.Right<OK>>()
+                        }.shouldBeInstanceOf<Either.Right<GrunnlagForGodkjenning>>()
                         resultat.value.opplysning shouldContain IkkeAnsatt
                         resultat.value.opplysning shouldNotContain DomeneOpplysning.ErForhaandsgodkjent
                     }

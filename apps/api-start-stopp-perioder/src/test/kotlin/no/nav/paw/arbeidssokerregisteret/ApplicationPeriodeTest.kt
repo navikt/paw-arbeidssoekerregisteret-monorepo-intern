@@ -1,6 +1,5 @@
 package no.nav.paw.arbeidssokerregisteret
 
-import arrow.core.left
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FunSpec
@@ -33,14 +32,14 @@ class ApplicationPeriodeTest : FunSpec({
                     with(any<RequestScope>()) {
                         startStoppRequestHandler.startArbeidssokerperiode(any(), any())
                     }
-                } returns Problem(
+                } returns muligGrunnlagForAvvisning(
                     regel = Regel(
                         id = Under18Aar,
                         opplysninger = listOf(DomeneOpplysning.ErUnder18Aar),
-                        vedTreff = ::problem
+                        vedTreff = ::skalAvises
                     ),
-                    opplysning = listOf(DomeneOpplysning.ErUnder18Aar, DomeneOpplysning.BosattEtterFregLoven)
-                ).left()
+                    opplysninger = listOf(DomeneOpplysning.ErUnder18Aar, DomeneOpplysning.BosattEtterFregLoven)
+                )
                 arbeidssokerRoutes(startStoppRequestHandler, mockk())
             }
             val client = createClient {

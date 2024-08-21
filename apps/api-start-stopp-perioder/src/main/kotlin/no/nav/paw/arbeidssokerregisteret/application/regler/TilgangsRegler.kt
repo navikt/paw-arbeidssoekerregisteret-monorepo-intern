@@ -7,28 +7,28 @@ import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysni
 val tilgangsReglerIPrioritertRekkefolge: List<Regel> = listOf(
     AnsattHarTilgangTilBruker(
         AuthOpplysning.AnsattTilgang,
-        vedTreff = ::ok
+        vedTreff = ::grunnlagForGodkjenning
     ),
     IkkeAnsattOgForhaandsgodkjentAvAnsatt(
         DomeneOpplysning.ErForhaandsgodkjent,
         AuthOpplysning.IkkeAnsatt,
-        vedTreff = ::problem
+        vedTreff = ::skalAvises
     ),
     EndreEgenBruker(
         AuthOpplysning.SammeSomInnloggetBruker,
         AuthOpplysning.IkkeAnsatt,
-        vedTreff = ::ok
+        vedTreff = ::grunnlagForGodkjenning
     ),
     EndreForAnnenBruker(
         AuthOpplysning.IkkeSammeSomInnloggerBruker,
-        vedTreff = ::problem
+        vedTreff = ::skalAvises
     ),
     AnsattIkkeTilgangTilBruker(
         AuthOpplysning.AnsattIkkeTilgang,
-        vedTreff = ::problem
+        vedTreff = ::skalAvises
     ),
     IkkeTilgang(
-        vedTreff = ::problem
+        vedTreff = ::muligGrunnlagForAvvisning
     )
 )
 
@@ -57,5 +57,3 @@ data object IkkeAnsattOgForhaandsgodkjentAvAnsatt : AuthRegelId {
 data object AnsattHarTilgangTilBruker : AuthRegelId {
     override val beskrivelse: String = "Ansatt har tilgang til bruker"
 }
-
-

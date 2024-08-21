@@ -14,7 +14,7 @@ import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.negativeOpplysninger
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.statusToOpplysningMap
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.toAarsak
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.toPerson
-import no.nav.paw.arbeidssokerregisteret.application.OK
+import no.nav.paw.arbeidssokerregisteret.application.GrunnlagForGodkjenning
 import no.nav.paw.arbeidssokerregisteret.application.Problem
 import no.nav.paw.arbeidssokerregisteret.application.evaluer
 import no.nav.paw.arbeidssokerregisteret.application.hendelseOpplysningTilDomeneOpplysninger
@@ -168,8 +168,8 @@ private fun List<HentPersonBolkResult>.processResultsV2(
 }
 
 private fun handleLeftEvaluation(
-    pdlEvaluering: Either<Problem, OK>,
-    opplysningerEvaluering: Either<Problem, OK>,
+    pdlEvaluering: Either<Problem, GrunnlagForGodkjenning>,
+    opplysningerEvaluering: Either<Problem, GrunnlagForGodkjenning>,
     erForhaandsgodkjent: Boolean,
     logger: Logger
 ) {
@@ -187,7 +187,7 @@ private fun handleLeftEvaluation(
 }
 
 private fun handleRightEvaluation(
-    opplysningerEvaluering: Either<Problem, OK>,
+    opplysningerEvaluering: Either<Problem, GrunnlagForGodkjenning>,
     erForhaandsgodkjent: Boolean,
     logger: Logger
 ) {

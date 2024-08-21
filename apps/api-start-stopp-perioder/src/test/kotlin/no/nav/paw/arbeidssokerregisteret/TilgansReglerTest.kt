@@ -31,7 +31,7 @@ class TilgansReglerTest : FreeSpec({
                     AnsattTilgang,
                     DomeneOpplysning.ErForhaandsgodkjent
                 )
-            ).shouldBeInstanceOf<Either.Right<OK>>()
+            ).shouldBeInstanceOf<Either.Right<GrunnlagForGodkjenning>>()
             resultat.value.regel.id shouldBe AnsattHarTilgangTilBruker
             resultat.value.opplysning shouldContainAll listOf(AnsattTilgang, DomeneOpplysning.ErForhaandsgodkjent)
         }

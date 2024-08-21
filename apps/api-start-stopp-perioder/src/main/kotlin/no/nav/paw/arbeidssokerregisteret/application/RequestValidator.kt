@@ -23,7 +23,7 @@ class RequestValidator(
     fun validerTilgang(
         identitetsnummer: Identitetsnummer,
         erForhaandsGodkjentAvVeileder: Boolean = false
-    ): Either<Problem, OK> {
+    ): Either<Problem, GrunnlagForGodkjenning> {
         val autentiseringsFakta = tokenXPidFakta(identitetsnummer) +
                 autorisasjonService.navAnsattTilgangFakta(identitetsnummer) +
                 if (erForhaandsGodkjentAvVeileder) {
@@ -39,7 +39,7 @@ class RequestValidator(
     suspend fun validerStartAvPeriodeOenske(
         identitetsnummer: Identitetsnummer,
         erForhaandsGodkjentAvVeileder: Boolean = false
-    ): Either<Problem, OK> =
+    ): Either<Problem, GrunnlagForGodkjenning> =
         validerTilgang(identitetsnummer, erForhaandsGodkjentAvVeileder)
             .flatMap { tilgangsResultat ->
                 val person = personInfoService.hentPersonInfo(identitetsnummer.verdi)

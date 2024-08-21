@@ -16,10 +16,10 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV1ArbeidssokerPeriodePutRequest
-import no.nav.paw.arbeidssokerregisteret.application.OK
+import no.nav.paw.arbeidssokerregisteret.application.GrunnlagForGodkjenning
 import no.nav.paw.arbeidssokerregisteret.application.Regel
 import no.nav.paw.arbeidssokerregisteret.application.StartStoppRequestHandler
-import no.nav.paw.arbeidssokerregisteret.application.ok
+import no.nav.paw.arbeidssokerregisteret.application.grunnlagForGodkjenning
 import no.nav.paw.arbeidssokerregisteret.application.regler.AnsattHarTilgangTilBruker
 import no.nav.paw.arbeidssokerregisteret.auth.configureAuthentication
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
@@ -46,11 +46,11 @@ class InngagnSomVeilederTest : FreeSpec({
                 with(any<RequestScope>()) {
                     startStoppRequestHandler.startArbeidssokerperiode(any(), any())
                 }
-            } returns OK(
+            } returns GrunnlagForGodkjenning(
                 regel = Regel(
                     id = AnsattHarTilgangTilBruker,
                     opplysninger = emptyList(),
-                    vedTreff = ::ok
+                    vedTreff = ::grunnlagForGodkjenning
                 ),
                 opplysning = emptySet()
             ).right()

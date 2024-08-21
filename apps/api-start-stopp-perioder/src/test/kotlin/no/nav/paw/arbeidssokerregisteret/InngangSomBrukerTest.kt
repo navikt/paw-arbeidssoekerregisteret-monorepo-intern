@@ -44,11 +44,11 @@ class InngangSomBrukerTest : FreeSpec({
                 with(any<RequestScope>()) {
                     startStoppRequestHandler.startArbeidssokerperiode(any(), any())
                 }
-            } returns OK(
+            } returns GrunnlagForGodkjenning(
                 regel = Regel(
                     id = Over18AarOgBosattEtterFregLoven,
                     opplysninger = emptyList(),
-                    vedTreff = ::ok
+                    vedTreff = ::grunnlagForGodkjenning
                 ),
                 opplysning = emptySet()
             ).right()
@@ -105,14 +105,14 @@ class InngangSomBrukerTest : FreeSpec({
                 with(any<RequestScope>()) {
                     startStoppRequestHandler.startArbeidssokerperiode(any(), any())
                 }
-            } returns Problem(
+            } returns skalAvises(
                 regel = Regel(
                     id = IkkeAnsattOgForhaandsgodkjentAvAnsatt,
                     opplysninger = emptyList(),
-                    vedTreff = ::problem
+                    vedTreff = ::skalAvises
                 ),
-                opplysning = emptySet()
-            ).left()
+                opplysninger = emptySet()
+            )
             testApplication {
                 application {
                     configureHTTP()

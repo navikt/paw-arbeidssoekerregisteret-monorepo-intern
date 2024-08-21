@@ -8,7 +8,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning as HendelseOppl
 
 operator fun RegelId.invoke(
     vararg opplysninger: Opplysning,
-    vedTreff: (Regel, Iterable<Opplysning>) -> Either<Problem, OK>
+    vedTreff: (Regel, Iterable<Opplysning>) -> Either<Problem, GrunnlagForGodkjenning>
 ) = Regel(
     id = this,
     vedTreff = vedTreff,
@@ -17,7 +17,7 @@ operator fun RegelId.invoke(
 
 fun Regel.evaluer(samletOpplysning: Iterable<Opplysning>): Boolean = opplysninger.all { samletOpplysning.contains(it) }
 
-fun List<Regel>.evaluer(opplysninger: Iterable<Opplysning>): Either<Problem, OK> =
+fun List<Regel>.evaluer(opplysninger: Iterable<Opplysning>): Either<Problem, GrunnlagForGodkjenning> =
     filter { regel -> regel.evaluer(opplysninger) }
         .map { regel -> regel.vedTreff(opplysninger) }
         .first()

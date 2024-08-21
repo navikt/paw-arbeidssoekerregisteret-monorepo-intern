@@ -23,7 +23,7 @@ class StartStoppRequestHandler(
 
     context(RequestScope)
     @WithSpan
-    suspend fun startArbeidssokerperiode(identitetsnummer: Identitetsnummer, erForhaandsGodkjentAvVeileder: Boolean): Either<Problem, OK> =
+    suspend fun startArbeidssokerperiode(identitetsnummer: Identitetsnummer, erForhaandsGodkjentAvVeileder: Boolean): Either<Problem, GrunnlagForGodkjenning> =
         coroutineScope {
             val kafkaKeysResponse = async { kafkaKeysClient.getIdAndKey(identitetsnummer.verdi) }
             val resultat = requestValidator.validerStartAvPeriodeOenske(identitetsnummer, erForhaandsGodkjentAvVeileder)
@@ -40,7 +40,7 @@ class StartStoppRequestHandler(
 
     context(RequestScope)
     @WithSpan
-    suspend fun avsluttArbeidssokerperiode(identitetsnummer: Identitetsnummer): Either<Problem, OK> {
+    suspend fun avsluttArbeidssokerperiode(identitetsnummer: Identitetsnummer): Either<Problem, GrunnlagForGodkjenning> {
         val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
         val tilgangskontrollResultat = requestValidator.validerTilgang(identitetsnummer)
         val hendelse = stoppResultatSomHendelse(id, identitetsnummer, tilgangskontrollResultat)
@@ -55,7 +55,7 @@ class StartStoppRequestHandler(
     }
 
     context(RequestScope)
-    suspend fun kanRegistreresSomArbeidssoker(identitetsnummer: Identitetsnummer): Either<Problem, OK> {
+    suspend fun kanRegistreresSomArbeidssoker(identitetsnummer: Identitetsnummer): Either<Problem, GrunnlagForGodkjenning> {
         val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
         val resultat = requestValidator.validerStartAvPeriodeOenske(identitetsnummer)
         if (resultat.isLeft()) {

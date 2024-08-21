@@ -20,7 +20,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning as HendelseOppl
 
 
 context(RequestScope)
-fun stoppResultatSomHendelse(id: Long, identitetsnummer: Identitetsnummer, resultat: Either<Problem, OK>): Hendelse =
+fun stoppResultatSomHendelse(id: Long, identitetsnummer: Identitetsnummer, resultat: Either<Problem, GrunnlagForGodkjenning>): Hendelse =
     when (resultat) {
         is Either.Left -> AvvistStoppAvPeriode(
             id = id,
@@ -47,7 +47,7 @@ fun mapToHendelseOpplysning(opplysning: Opplysning): HendelseOpplysning =
     }
 
 context(RequestScope)
-fun somHendelse(id: Long, identitetsnummer: Identitetsnummer, resultat: Either<Problem, OK>): Hendelse =
+fun somHendelse(id: Long, identitetsnummer: Identitetsnummer, resultat: Either<Problem, GrunnlagForGodkjenning>): Hendelse =
     when (resultat) {
         is Either.Left -> Avvist(
             id = id,

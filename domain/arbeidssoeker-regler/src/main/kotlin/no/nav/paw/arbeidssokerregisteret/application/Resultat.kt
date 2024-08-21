@@ -5,15 +5,31 @@ import arrow.core.left
 import arrow.core.right
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
 
-data class Problem(
+interface Problem {
+    val opplysning: Iterable<Opplysning>
+    val regel: Regel
+}
+
+data class SkalAvvises(
+    override val opplysning: Iterable<Opplysning>,
+    override val regel: Regel
+): Problem
+
+data class MuligGrunnlagForAvvisning(
+    override val opplysning: Iterable<Opplysning>,
+    override val regel: Regel
+): Problem
+
+data class GrunnlagForGodkjenning(
     val opplysning: Iterable<Opplysning>,
     val regel: Regel
 )
 
-data class OK(
-    val opplysning: Iterable<Opplysning>,
-    val regel: Regel
-)
+fun grunnlagForGodkjenning(regel: Regel, opplysninger: Iterable<Opplysning>): Either<Problem, GrunnlagForGodkjenning> =
+    GrunnlagForGodkjenning(opplysninger, regel).right()
 
-fun ok(regel: Regel, opplysning: Iterable<Opplysning>): Either<Problem, OK> = OK(opplysning, regel).right()
-fun problem(regel: Regel, opplysning: Iterable<Opplysning>): Either<Problem, OK> = Problem(opplysning, regel).left()
+fun skalAvises(regel: Regel, opplysninger: Iterable<Opplysning>): Either<Problem, GrunnlagForGodkjenning> =
+    SkalAvvises(opplysninger, regel).left()
+
+fun muligGrunnlagForAvvisning(regel: Regel, opplysninger: Iterable<Opplysning>): Either<Problem, GrunnlagForGodkjenning> =
+    MuligGrunnlagForAvvisning(opplysninger, regel).left()

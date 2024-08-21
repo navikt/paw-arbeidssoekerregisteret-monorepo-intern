@@ -5,36 +5,36 @@ import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysni
 val reglerForInngangIPrioritertRekkefolge: List<Regel> = listOf(
     IkkeFunnet(
         PersonIkkeFunnet,
-        vedTreff = ::problem
+        vedTreff = ::skalAvises
     ),
     Doed(
         ErDoed,
-        vedTreff = ::problem
+        vedTreff = ::skalAvises
+    ),
+    Savnet(
+        ErSavnet,
+        vedTreff = ::skalAvises
     ),
     ForhaandsgodkjentAvAnsatt(
         ErForhaandsgodkjent,
-        vedTreff = ::ok
+        vedTreff = ::grunnlagForGodkjenning
     ),
     Under18Aar(
         ErUnder18Aar,
         BosattEtterFregLoven,
-        vedTreff = ::problem
+        vedTreff = ::muligGrunnlagForAvvisning
     ),
     UkjentAlder(
         UkjentFoedselsaar,
         UkjentFoedselsdato,
-        vedTreff = ::problem
-    ),
-    Savnet(
-        ErSavnet,
-        vedTreff = ::problem
+        vedTreff = ::muligGrunnlagForAvvisning
     ),
     Over18AarOgBosattEtterFregLoven(
         ErOver18Aar,
         BosattEtterFregLoven,
-        vedTreff = ::ok
+        vedTreff = ::grunnlagForGodkjenning
     ),
     IkkeBosattINorgeIHenholdTilFolkeregisterloven(
-        vedTreff = ::problem
+        vedTreff = ::muligGrunnlagForAvvisning
     )
 )

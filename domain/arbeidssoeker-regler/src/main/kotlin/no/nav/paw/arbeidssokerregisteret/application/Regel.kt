@@ -10,7 +10,7 @@ data class Regel(
      */
     val opplysninger: List<Opplysning>,
 
-    private val vedTreff: (Regel, Iterable<Opplysning>) -> Either<Problem, OK>
+    private val vedTreff: (Regel, Iterable<Opplysning>) -> Either<Problem, GrunnlagForGodkjenning>
 ) {
-    fun vedTreff(opplysning: Iterable<Opplysning>): Either<Problem, OK> = vedTreff(this, opplysning)
+    fun vedTreff(opplysning: Iterable<Opplysning>): Either<Problem, GrunnlagForGodkjenning> = vedTreff(this, opplysning)
 }
