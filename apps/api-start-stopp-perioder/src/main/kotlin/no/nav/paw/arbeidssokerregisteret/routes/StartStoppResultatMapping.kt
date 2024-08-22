@@ -1,13 +1,12 @@
 package no.nav.paw.arbeidssokerregisteret.routes
 
 import arrow.core.Either
+import arrow.core.NonEmptyList
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.util.pipeline.*
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.AarsakTilAvvisning
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiRegelId
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feil
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.*
 import no.nav.paw.arbeidssokerregisteret.application.*
 import no.nav.paw.arbeidssokerregisteret.application.authfaktka.*
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.*
@@ -22,7 +21,7 @@ suspend fun respondWith(resultat: Either<Problem, GrunnlagForGodkjenning>) =
         is Either.Right -> call.respond(HttpStatusCode.NoContent)
     }
 
-suspend fun PipelineContext<Unit, ApplicationCall>.respondWithError(problem: Problem){
+suspend fun PipelineContext<Unit, ApplicationCall>.respondWithError(problem: Problem) {
     call.respond(
         problem.httpCode(), Feil(
             melding = problem.regel.id.beskrivelse,
@@ -32,6 +31,39 @@ suspend fun PipelineContext<Unit, ApplicationCall>.respondWithError(problem: Pro
                     beskrivelse = problem.regel.id.beskrivelse,
                     regel = problem.regel.id.apiRegelId(),
                     detaljer = problem.opplysning.map(::opplysningTilApiOpplysning)
+                )
+            } else null
+        )
+    )
+}
+
+context(PipelineContext<Unit, ApplicationCall>)
+suspend fun respondWithV2(resultat: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>) =
+    when (resultat) {
+        is Either.Left -> respondWithErrorV2(resultat.value)
+        is Either.Right -> call.respond(HttpStatusCode.NoContent)
+    }
+
+suspend fun PipelineContext<Unit, ApplicationCall>.respondWithErrorV2(problemer: NonEmptyList<Problem>) {
+    val (httpCode, feilkode) = problemer
+        .firstOrNull { it.regel.id is AuthRegelId }
+        ?.let { it.httpCode() to FeilV2.FeilKode.IKKE_TILGANG }
+        ?: problemer.firstOrNull { it.regel.id is DomeneRegelId }
+            ?.let { it.httpCode() to FeilV2.FeilKode.AVVIST }
+        ?: (HttpStatusCode.InternalServerError to FeilV2.FeilKode.UKJENT_FEIL)
+    val melding = problemer.map { it.regel.id.beskrivelse }
+        .distinct()
+        .joinToString(". ")
+        .replace("..", ".")
+    call.respond(
+        httpCode, FeilV2(
+            melding = melding,
+            feilKode = feilkode,
+            aarsakTilAvvisning = if (feilkode == FeilV2.FeilKode.AVVIST) {
+                AarsakTilAvvisningV2(
+                    beskrivelse = melding,
+                    regel = problemer.map { it.regel.id.apiRegelId() },
+                    detaljer = problemer.first().opplysning.map(::opplysningTilApiOpplysning)
                 )
             } else null
         )
@@ -72,6 +104,7 @@ fun opplysningTilApiOpplysning(opplysning: Opplysning): ApiOpplysning =
             DomeneOpplysning.ErNorskStatsborger -> ApiOpplysning.ER_NORSK_STATSBORGER
             DomeneOpplysning.HarRegistrertAdresseIEuEoes -> ApiOpplysning.HAR_REGISTRERT_ADRESSE_I_EU_EOES
         }
+
         is AuthOpplysning -> when (opplysning) {
             AuthOpplysning.IkkeSammeSomInnloggerBruker -> ApiOpplysning.IKKE_SAMME_SOM_INNLOGGER_BRUKER
             AuthOpplysning.SammeSomInnloggetBruker -> ApiOpplysning.SAMME_SOM_INNLOGGET_BRUKER
@@ -80,12 +113,13 @@ fun opplysningTilApiOpplysning(opplysning: Opplysning): ApiOpplysning =
             AuthOpplysning.AnsattTilgang -> ApiOpplysning.ANSATT_TILGANG
             AuthOpplysning.IkkeAnsatt -> ApiOpplysning.IKKE_ANSATT
         }
+
         else -> ApiOpplysning.UKJENT_OPPLYSNING
     }
 
 fun RegelId.apiRegelId(): ApiRegelId = when (this) {
     is AuthRegelId -> ApiRegelId.IKKE_TILGANG
-    is DomeneRegelId -> when(this) {
+    is DomeneRegelId -> when (this) {
         ForhaandsgodkjentAvAnsatt -> ApiRegelId.UKJENT_REGEL
         Over18AarOgBosattEtterFregLoven -> ApiRegelId.UKJENT_REGEL
         Doed -> ApiRegelId.DOED
@@ -95,6 +129,7 @@ fun RegelId.apiRegelId(): ApiRegelId = when (this) {
         UkjentAlder -> ApiRegelId.UKJENT_ALDER
         Under18Aar -> ApiRegelId.UNDER_18_AAR
     }
+
     else -> ApiRegelId.UKJENT_REGEL
 }
 

@@ -148,6 +148,145 @@ paths:
             application/json:
               schema:
                 type: "object"
+  /api/v2/arbeidssoker/kanStartePeriode:
+    put:
+      description: "Sjekker om bruker kan registreres som arbeidssøker"
+      parameters:
+        - name: "traceparent"
+          in: "header"
+          required: false
+          description: "https://www.w3.org/TR/trace-context/#traceparent-header-field-values"
+          schema:
+            type: "string"
+            format: "traceparent"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                identitetsnummer:
+                  $ref: "#/components/schemas/identitetsnummer"
+              required:
+                - "identitetsnummer"
+        required: true
+      responses:
+        "400":
+          description: "Bad Request"
+          headers:
+            x-trace-id:
+              description: "Trace id"
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeilV2"
+        "424":
+          description: "Failed Dependency"
+          headers:
+            x-trace-id:
+              description: "Trace id"
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeilV2"
+        "500":
+          description: "Internal Server Error"
+          headers:
+            x-trace-id:
+              description: "Trace id"
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeilV2"
+        "403":
+          description: "Forbidden"
+          headers:
+            x-trace-id:
+              description: "Trace id"
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeilV2"
+        "204":
+          description: "No Content"
+          headers:
+            x-trace-id:
+              description: "Trace id"
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                type: "object"
+  /api/v2/arbeidssoker/periode:
+    put:
+      description: "Registrerer bruker som arbeidssøker"
+      parameters:
+        - name: "traceparent"
+          in: "header"
+          required: false
+          description: "https://www.w3.org/TR/trace-context/#traceparent-header-field-values"
+          schema:
+            type: "string"
+            format: "traceparent"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                identitetsnummer:
+                  $ref: "#/components/schemas/identitetsnummer"
+                registreringForhaandsGodkjentAvAnsatt:
+                  type: "boolean"
+                periodeTilstand:
+                  type: "string"
+                  enum:
+                    - "STARTET"
+                    - "STOPPET"
+              required:
+                - "identitetsnummer"
+                - "periodeTilstand"
+        required: true
+      responses:
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeilV2"
+        "424":
+          description: "Failed Dependency"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeilV2"
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeilV2"
+        "403":
+          description: "Forbidden"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeilV2"
+        "204":
+          description: "No Content"
+          content:
+            application/json:
+              schema:
+                type: "object"
 components:
   schemas:
     identitetsnummer:
@@ -179,6 +318,41 @@ components:
           type: "string"
         regel:
           $ref: "#/components/schemas/ApiRegelId"
+        detaljer:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Opplysning"
+      required:
+        - "beskrivelse"
+        - "regel"
+        - "detaljer"
+    FeilV2:
+      type: "object"
+      properties:
+        melding:
+          type: "string"
+        feilKode:
+          type: "string"
+          enum:
+            - "UKJENT_FEIL"
+            - "UVENTET_FEIL_MOT_EKSTERN_TJENESTE"
+            - "FEIL_VED_LESING_AV_FORESPORSEL"
+            - "AVVIST"
+            - "IKKE_TILGANG"
+        aarsakTilAvvisning:
+          $ref: "#/components/schemas/AarsakTilAvvisningV2"
+      required:
+        - "melding"
+        - "feilKode"
+    AarsakTilAvvisningV2:
+      type: "object"
+      properties:
+        beskrivelse:
+          type: "string"
+        regel:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/ApiRegelId"
         detaljer:
           type: "array"
           items:
