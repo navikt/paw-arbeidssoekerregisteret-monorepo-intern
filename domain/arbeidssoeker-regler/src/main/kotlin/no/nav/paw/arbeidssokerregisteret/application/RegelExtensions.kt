@@ -21,13 +21,12 @@ fun Regel.evaluer(samletOpplysning: Iterable<Opplysning>): Boolean = opplysninge
  * Evaluerer en liste med regler mot en liste med opplysninger. Returnerer første regel som evalueres til sann,
  * eller defaultRegel om ingen regler evalueres til sann.
  */
-fun List<Regel>.evaluer(
-    defaultRegel: Regel,
+fun Regler.evaluer(
     opplysninger: Iterable<Opplysning>
 ): Either<Problem, GrunnlagForGodkjenning> =
-    filter { regel -> regel.evaluer(opplysninger) }
+    regler.filter { regel -> regel.evaluer(opplysninger) }
         .map { regel -> regel.vedTreff(opplysninger) }
-        .firstOrNull() ?: defaultRegel.vedTreff(opplysninger)
+        .firstOrNull() ?: standardRegel.vedTreff(opplysninger)
 
 fun domeneOpplysningTilHendelseOpplysning(opplysning: DomeneOpplysning): HendelseOpplysning =
     when (opplysning) {

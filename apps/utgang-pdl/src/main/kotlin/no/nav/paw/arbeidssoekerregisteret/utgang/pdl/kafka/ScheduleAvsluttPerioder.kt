@@ -148,13 +148,8 @@ private fun List<HentPersonBolkResult>.processResultsV2(
         .map { hendelseOpplysningTilDomeneOpplysninger(it) as no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning }
         .toSet()
 
-    val opplysningerEvaluering = reglerForInngangIPrioritertRekkefolge.evaluer(
-        defaultRegel = standardInngangsregel,
-        domeneOpplysninger
-    )
-    val pdlEvaluering = reglerForInngangIPrioritertRekkefolge.evaluer(
-        defaultRegel = standardInngangsregel,
-        genererPersonFakta(person.toPerson())
+    val opplysningerEvaluering = InngangsRegler.evaluer(domeneOpplysninger)
+    val pdlEvaluering = InngangsRegler.evaluer(genererPersonFakta(person.toPerson())
     )
 
     val erForhaandsgodkjent = hendelseOpplysninger.contains(Opplysning.FORHAANDSGODKJENT_AV_ANSATT)

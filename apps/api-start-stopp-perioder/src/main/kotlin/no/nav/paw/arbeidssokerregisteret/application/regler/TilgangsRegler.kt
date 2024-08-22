@@ -4,34 +4,37 @@ import no.nav.paw.arbeidssokerregisteret.application.*
 import no.nav.paw.arbeidssokerregisteret.application.authfaktka.*
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
 
-val tilgangsReglerIPrioritertRekkefolge: List<Regel> = listOf(
-    AnsattHarTilgangTilBruker(
-        AuthOpplysning.AnsattTilgang,
-        vedTreff = ::grunnlagForGodkjenning
-    ),
-    IkkeAnsattOgForhaandsgodkjentAvAnsatt(
-        DomeneOpplysning.ErForhaandsgodkjent,
-        AuthOpplysning.IkkeAnsatt,
-        vedTreff = ::skalAvises
-    ),
-    EndreEgenBruker(
-        AuthOpplysning.SammeSomInnloggetBruker,
-        AuthOpplysning.IkkeAnsatt,
-        vedTreff = ::grunnlagForGodkjenning
-    ),
-    EndreForAnnenBruker(
-        AuthOpplysning.IkkeSammeSomInnloggerBruker,
-        vedTreff = ::skalAvises
-    ),
-    AnsattIkkeTilgangTilBruker(
-        AuthOpplysning.AnsattIkkeTilgang,
+object TilgangsRegler: Regler {
+    override val regler: List<Regel> = listOf(
+        AnsattHarTilgangTilBruker(
+            AuthOpplysning.AnsattTilgang,
+            vedTreff = ::grunnlagForGodkjenning
+        ),
+        IkkeAnsattOgForhaandsgodkjentAvAnsatt(
+            DomeneOpplysning.ErForhaandsgodkjent,
+            AuthOpplysning.IkkeAnsatt,
+            vedTreff = ::skalAvises
+        ),
+        EndreEgenBruker(
+            AuthOpplysning.SammeSomInnloggetBruker,
+            AuthOpplysning.IkkeAnsatt,
+            vedTreff = ::grunnlagForGodkjenning
+        ),
+        EndreForAnnenBruker(
+            AuthOpplysning.IkkeSammeSomInnloggerBruker,
+            vedTreff = ::skalAvises
+        ),
+        AnsattIkkeTilgangTilBruker(
+            AuthOpplysning.AnsattIkkeTilgang,
+            vedTreff = ::skalAvises
+        )
+    )
+
+    override val standardRegel: Regel = IkkeTilgang(
         vedTreff = ::skalAvises
     )
-)
 
-val standardTilgangsregel = IkkeTilgang(
-    vedTreff = ::skalAvises
-)
+}
 
 sealed interface AuthRegelId: RegelId
 

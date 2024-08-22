@@ -7,8 +7,7 @@ import no.nav.paw.arbeidssokerregisteret.RequestScope
 import no.nav.paw.arbeidssokerregisteret.application.authfaktka.navAnsattTilgangFakta
 import no.nav.paw.arbeidssokerregisteret.application.authfaktka.tokenXPidFakta
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.*
-import no.nav.paw.arbeidssokerregisteret.application.regler.standardTilgangsregel
-import no.nav.paw.arbeidssokerregisteret.application.regler.tilgangsReglerIPrioritertRekkefolge
+import no.nav.paw.arbeidssokerregisteret.application.regler.TilgangsRegler
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.arbeidssokerregisteret.services.PersonInfoService
@@ -32,7 +31,7 @@ class RequestValidator(
                 } else {
                     emptySet()
                 }
-        return tilgangsReglerIPrioritertRekkefolge.evaluer(defaultRegel = standardTilgangsregel, autentiseringsFakta)
+        return TilgangsRegler.evaluer(autentiseringsFakta)
     }
 
     context(RequestScope)
@@ -45,8 +44,7 @@ class RequestValidator(
             .flatMap { tilgangsResultat ->
                 val person = personInfoService.hentPersonInfo(identitetsnummer.verdi)
                 val opplysning = person?.let { genererPersonFakta(it) } ?: setOf(DomeneOpplysning.PersonIkkeFunnet)
-                reglerForInngangIPrioritertRekkefolge.evaluer(
-                    defaultRegel = standardInngangsregel,
+                InngangsRegler.evaluer(
                     opplysning + tilgangsResultat.opplysning
                 )
             }

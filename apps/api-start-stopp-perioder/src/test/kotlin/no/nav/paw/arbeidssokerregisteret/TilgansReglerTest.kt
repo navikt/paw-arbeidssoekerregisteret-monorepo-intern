@@ -9,16 +9,12 @@ import no.nav.paw.arbeidssokerregisteret.application.*
 import no.nav.paw.arbeidssokerregisteret.application.authfaktka.AuthOpplysning.AnsattTilgang
 import no.nav.paw.arbeidssokerregisteret.application.authfaktka.AuthOpplysning.IkkeAnsatt
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
-import no.nav.paw.arbeidssokerregisteret.application.regler.AnsattHarTilgangTilBruker
-import no.nav.paw.arbeidssokerregisteret.application.regler.IkkeAnsattOgForhaandsgodkjentAvAnsatt
-import no.nav.paw.arbeidssokerregisteret.application.regler.standardTilgangsregel
-import no.nav.paw.arbeidssokerregisteret.application.regler.tilgangsReglerIPrioritertRekkefolge
+import no.nav.paw.arbeidssokerregisteret.application.regler.*
 
 class TilgansReglerTest : FreeSpec({
     "eval av tilgang skal gi" - {
         "ugydlig request ved IKKE_ANSATT kombinert med GODKJENT_AV_ANSATT" {
-            val resultat = tilgangsReglerIPrioritertRekkefolge.evaluer(
-                standardTilgangsregel,
+            val resultat = TilgangsRegler.evaluer(
                 setOf(
                     IkkeAnsatt,
                     DomeneOpplysning.ErForhaandsgodkjent
@@ -28,8 +24,7 @@ class TilgansReglerTest : FreeSpec({
             resultat.value.opplysning shouldContainAll listOf(IkkeAnsatt, DomeneOpplysning.ErForhaandsgodkjent)
         }
         "lovlig kombinasjon av ANSATT og FORHANDSGODKJENT_AV_ANSATT" {
-            val resultat = tilgangsReglerIPrioritertRekkefolge.evaluer(
-                standardTilgangsregel,
+            val resultat = TilgangsRegler.evaluer(
                 setOf(
                     AnsattTilgang,
                     DomeneOpplysning.ErForhaandsgodkjent
