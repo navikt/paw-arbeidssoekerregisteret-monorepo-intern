@@ -122,12 +122,14 @@ fun RegelId.apiRegelId(): ApiRegelId = when (this) {
     is DomeneRegelId -> when (this) {
         ForhaandsgodkjentAvAnsatt -> ApiRegelId.UKJENT_REGEL
         Over18AarOgBosattEtterFregLoven -> ApiRegelId.UKJENT_REGEL
+        EuEoesStatsborgerOver18Aar -> ApiRegelId.UKJENT_REGEL
         Doed -> ApiRegelId.DOED
         IkkeBosattINorgeIHenholdTilFolkeregisterloven -> ApiRegelId.IKKE_BOSATT_I_NORGE_I_HENHOLD_TIL_FOLKEREGISTERLOVEN
         IkkeFunnet -> ApiRegelId.IKKE_FUNNET
         Savnet -> ApiRegelId.SAVNET
         UkjentAlder -> ApiRegelId.UKJENT_ALDER
         Under18Aar -> ApiRegelId.UNDER_18_AAR
+        EuEoesStatsborgerMenHarStatusIkkeBosatt -> ApiRegelId.ER_EU_EOES_STATSBORGER_MED_STATUS_IKKE_BOSATT
     }
 
     else -> ApiRegelId.UKJENT_REGEL
@@ -157,10 +159,12 @@ fun AuthRegelId.httpCode(): HttpStatusCode = when (this) {
 fun DomeneRegelId.httpCode(): HttpStatusCode = when (this) {
     ForhaandsgodkjentAvAnsatt -> HttpStatusCode.Accepted
     Over18AarOgBosattEtterFregLoven -> HttpStatusCode.Accepted
+    EuEoesStatsborgerOver18Aar -> HttpStatusCode.Accepted
     Doed -> HttpStatusCode.Forbidden
     IkkeBosattINorgeIHenholdTilFolkeregisterloven -> HttpStatusCode.Forbidden
     IkkeFunnet -> HttpStatusCode.Forbidden
     Savnet -> HttpStatusCode.Forbidden
     UkjentAlder -> HttpStatusCode.Forbidden
     Under18Aar -> HttpStatusCode.Forbidden
+    EuEoesStatsborgerMenHarStatusIkkeBosatt -> HttpStatusCode.Forbidden
 }
