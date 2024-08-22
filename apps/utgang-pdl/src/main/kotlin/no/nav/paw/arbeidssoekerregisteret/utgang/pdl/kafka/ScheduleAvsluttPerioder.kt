@@ -15,6 +15,7 @@ import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.statusToOpplysningMap
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.toAarsak
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.toPerson
 import no.nav.paw.arbeidssokerregisteret.application.*
+import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
@@ -142,23 +143,27 @@ private fun List<HentPersonBolkResult>.processResultsV2(
     val hendelseState = chunk.find { it.value.identitetsnummer == result.ident }
         ?.value
 
-    val person = if (result.person !== null) result.person else {
+    val person = if (result.person == null) {
         logger.error("Versjon 2: Person er null: ${hendelseState?.periodeId}")
         return@forEach
+    } else {
+        result.person
     }
 
-    val hendelseOpplysninger = hendelseState?.opplysninger
+    val hendelseOpplysninger = hendelseState?.opplysninger ?: throw IllegalStateException("Versjon 2: Opplysninger fra hendelse er null")
 
     val domeneOpplysninger = hendelseOpplysninger
-        ?.filterNot { it == Opplysning.FORHAANDSGODKJENT_AV_ANSATT }
-        ?.map { hendelseOpplysningTilDomeneOpplysninger(it) as no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning }
-        ?.toSet()
+        .filterNot { it == Opplysning.FORHAANDSGODKJENT_AV_ANSATT }
+        .map { hendelseOpplysningTilDomeneOpplysninger(it) as no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning }
+        .toSet()
 
     val opplysningerEvaluering = InngangsRegler.evaluer(domeneOpplysninger)
-    val pdlEvaluering = InngangsRegler.evaluer(genererPersonFakta(person.toPerson())
+    val pdlEvaluering = InngangsRegler.evaluer(
+        person?.let { genererPersonFakta(it.toPerson()) }
+            ?: setOf(DomeneOpplysning.PersonIkkeFunnet)
     )
 
-    val erForhaandsgodkjent = hendelseOpplysninger?.contains(Opplysning.FORHAANDSGODKJENT_AV_ANSATT) ?: false
+    val erForhaandsgodkjent = hendelseOpplysninger.contains(Opplysning.FORHAANDSGODKJENT_AV_ANSATT)
 
     when {
         pdlEvaluering.isLeft() -> handleLeftEvaluation(
