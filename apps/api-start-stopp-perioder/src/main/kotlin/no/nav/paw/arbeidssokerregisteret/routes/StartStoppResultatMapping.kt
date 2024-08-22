@@ -51,18 +51,16 @@ suspend fun PipelineContext<Unit, ApplicationCall>.respondWithErrorV2(problemer:
         ?: problemer.firstOrNull { it.regel.id is DomeneRegelId }
             ?.let { it.httpCode() to FeilV2.FeilKode.AVVIST }
         ?: (HttpStatusCode.InternalServerError to FeilV2.FeilKode.UKJENT_FEIL)
-    val melding = problemer.map { it.regel.id.beskrivelse }
-        .distinct()
-        .joinToString(". ")
-        .replace("..", ".")
+    val melding = if (FeilV2.FeilKode.AVVIST == feilkode) {
+        "Avvist, se 'aarsakTilAvvisning' for detaljer"
+    } else problemer.first().regel.id.beskrivelse
     call.respond(
         httpCode, FeilV2(
             melding = melding,
             feilKode = feilkode,
             aarsakTilAvvisning = if (feilkode == FeilV2.FeilKode.AVVIST) {
                 AarsakTilAvvisningV2(
-                    beskrivelse = melding,
-                    regel = problemer.map { it.regel.id.apiRegelId() },
+                    regler = problemer.map { ApiRegel(id = it.regel.id.apiRegelId(), beskrivelse = it.regel.id.beskrivelse) },
                     detaljer = problemer.first().opplysning.map(::opplysningTilApiOpplysning)
                 )
             } else null

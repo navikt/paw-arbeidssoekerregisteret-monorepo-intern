@@ -347,12 +347,10 @@ components:
     AarsakTilAvvisningV2:
       type: "object"
       properties:
-        beskrivelse:
-          type: "string"
-        regel:
+        regler:
           type: "array"
           items:
-            $ref: "#/components/schemas/ApiRegelId"
+            $ref: "#/components/schemas/ApiRegel"
         detaljer:
           type: "array"
           items:
@@ -361,6 +359,13 @@ components:
         - "beskrivelse"
         - "regel"
         - "detaljer"
+    ApiRegel:
+      type: "object"
+      properties:
+        id:
+          $ref: "#/components/schemas/ApiRegelId"
+        beskrivelse:
+          type: "string"
     Opplysning:
       type: "string"
       enum:
