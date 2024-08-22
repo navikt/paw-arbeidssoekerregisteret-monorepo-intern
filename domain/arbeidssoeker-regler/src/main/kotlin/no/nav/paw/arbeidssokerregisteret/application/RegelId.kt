@@ -37,3 +37,15 @@ data object Over18AarOgBosattEtterFregLoven : DomeneRegelId {
 data object UkjentAlder : DomeneRegelId {
     override val beskrivelse: String = "Kunne ikke fastslå alder"
 }
+
+data object EuEoesStatsborgerOver18Aar : DomeneRegelId {
+    override val beskrivelse: String = "Er EU/EØS statsborger"
+}
+
+/**
+ * Egentlig ikke nødvendig å ha en egen regel for dette, men pga. Arena så trenger vi denne.
+ * Arena sjekker om personen er EU/EØS statsborger og er utflyttet (som gir status 'ikke bosatt').
+ */
+data object EuEoesStatsborgerMenHarStatusIkkeBosatt : DomeneRegelId {
+    override val beskrivelse: String = "Er EU/EØS statsborger, men har status 'ikke bosatt'"
+}
