@@ -15,7 +15,13 @@ operator fun RegelId.invoke(
     opplysninger = opplysninger.toList()
 )
 
-fun Regel.evaluer(samletOpplysning: Iterable<Opplysning>): Boolean = opplysninger.all { samletOpplysning.contains(it) }
+fun Regel.evaluer(samletOpplysning: Iterable<Opplysning>): Boolean =
+    opplysninger
+        .filter { it !is Not<*> }
+        .all { samletOpplysning.contains(it) } &&
+    opplysninger
+        .filterIsInstance<Not<*>>()
+        .none { samletOpplysning.contains(it.value) }
 
 /**
  * Evaluerer en liste med regler mot en liste med opplysninger. Returnerer første regel som evalueres til sann,
