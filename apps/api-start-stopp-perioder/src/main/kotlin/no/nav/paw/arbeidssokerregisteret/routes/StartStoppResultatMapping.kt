@@ -15,9 +15,9 @@ import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Opplysning as Ap
 
 
 context(PipelineContext<Unit, ApplicationCall>)
-suspend fun respondWith(resultat: Either<Problem, GrunnlagForGodkjenning>) =
+suspend fun respondWith(resultat: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>) =
     when (resultat) {
-        is Either.Left -> respondWithError(resultat.value)
+        is Either.Left -> respondWithError(resultat.value.head)
         is Either.Right -> call.respond(HttpStatusCode.NoContent)
     }
 

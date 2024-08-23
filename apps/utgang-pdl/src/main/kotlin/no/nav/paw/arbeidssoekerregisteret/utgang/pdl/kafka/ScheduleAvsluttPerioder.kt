@@ -165,14 +165,14 @@ private fun List<HentPersonBolkResult>.processResultsV2(
 
     val erForhaandsgodkjent = hendelseOpplysninger.contains(Opplysning.FORHAANDSGODKJENT_AV_ANSATT)
 
-    when {
+    /**when {
         pdlEvaluering.isLeft() -> handleLeftEvaluation(
             pdlEvaluering, opplysningerEvaluering, erForhaandsgodkjent, logger
         )
         pdlEvaluering.isRight() -> handleRightEvaluation(
             opplysningerEvaluering, erForhaandsgodkjent, logger
         )
-    }
+    }**/
 }
 
 private fun handleLeftEvaluation(

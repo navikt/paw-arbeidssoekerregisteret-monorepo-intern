@@ -5,7 +5,7 @@ import arrow.core.left
 import arrow.core.right
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
 
-interface Problem {
+sealed interface Problem {
     val opplysning: Iterable<Opplysning>
     val regel: Regel
 }

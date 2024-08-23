@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret
 
 import arrow.core.left
+import arrow.core.nonEmptyListOf
 import arrow.core.right
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -112,7 +113,7 @@ class InngangSomBrukerTest : FreeSpec({
                     vedTreff = ::skalAvises
                 ),
                 opplysninger = emptySet()
-            )
+            ).mapLeft { nonEmptyListOf(it) }
             testApplication {
                 application {
                     configureHTTP()

@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret
 
+import arrow.core.nonEmptyListOf
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FunSpec
@@ -39,7 +40,7 @@ class ApplicationPeriodeTest : FunSpec({
                         vedTreff = ::skalAvises
                     ),
                     opplysninger = listOf(DomeneOpplysning.ErUnder18Aar, DomeneOpplysning.BosattEtterFregLoven)
-                )
+                ).mapLeft { nonEmptyListOf(it) }
                 arbeidssokerRoutes(startStoppRequestHandler, mockk())
             }
             val client = createClient {
