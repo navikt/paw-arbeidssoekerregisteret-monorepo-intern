@@ -3,6 +3,7 @@ package no.nav.paw.arbeidssokerregisteret
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.nimbusds.jwt.SignedJWT
+import io.kotest.assertions.fail
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -52,9 +53,12 @@ fun MockOAuth2Server.ansattToken(navAnsatt: NavAnsatt): SignedJWT = issueToken(
 
 
 fun verify(
-    actual: ProducerRecord<Long, Hendelse>,
+    actual: ProducerRecord<Long, Hendelse>?,
     expected: ProducerRecord<Long, out Hendelse>
 ) {
+    if (actual == null) {
+        fail("Forventet at melding skulle bli produsert, men ingen melding ble funnet")
+    }
     actual.key() shouldBe expected.key()
     val actualValue = actual.value()
     val expectedValue = expected.value()
@@ -150,6 +154,23 @@ fun PersonInfoService.setPersonInfo(identitetsnummer: String, person: Person?) {
 
 suspend fun HttpClient.startPeriode(identitetsnummer: String, token: SignedJWT?, godkjent: Boolean = false): HttpResponse =
     put("/api/v1/arbeidssoker/periode") {
+        token?.also {
+            bearerAuth(token.serialize())
+        }
+        headers {
+            append(HttpHeaders.ContentType, ContentType.Application.Json)
+        }
+        setBody(
+            ApiV1ArbeidssokerPeriodePutRequest(
+                identitetsnummer = identitetsnummer,
+                periodeTilstand = ApiV1ArbeidssokerPeriodePutRequest.PeriodeTilstand.STARTET,
+                registreringForhaandsGodkjentAvAnsatt = godkjent
+            )
+        )
+    }
+
+suspend fun HttpClient.startPeriodeV2(identitetsnummer: String, token: SignedJWT?, godkjent: Boolean = false): HttpResponse =
+    put("/api/v2/arbeidssoker/periode") {
         token?.also {
             bearerAuth(token.serialize())
         }

@@ -1,6 +1,5 @@
 package no.nav.paw.arbeidssokerregisteret
 
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import org.apache.kafka.clients.consumer.ConsumerGroupMetadata
 import org.apache.kafka.clients.consumer.OffsetAndMetadata
 import org.apache.kafka.clients.producer.Callback
@@ -13,10 +12,11 @@ import java.time.Instant
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
 
 class ProducerMock<K, V> : Producer<K, V> {
     private val queue = LinkedBlockingQueue<ProducerRecord<K, V>>(100)
-    fun next(): ProducerRecord<K, V> = queue.take()
+    fun next(): ProducerRecord<K, V>? = queue.poll(100, TimeUnit.MILLISECONDS)
 
     override fun close() {}
 
