@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.application
 
-import arrow.core.Either
+import arrow.core.*
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning as HendelseOpplysning
@@ -19,9 +19,9 @@ fun Regel.evaluer(samletOpplysning: Iterable<Opplysning>): Boolean =
     opplysninger
         .filter { it !is Not<*> }
         .all { samletOpplysning.contains(it) } &&
-    opplysninger
-        .filterIsInstance<Not<*>>()
-        .none { samletOpplysning.contains(it.value) }
+            opplysninger
+                .filterIsInstance<Not<*>>()
+                .none { samletOpplysning.contains(it.value) }
 
 /**
  * Evaluerer en liste med regler mot en liste med opplysninger. Returnerer første regel som evalueres til sann,
@@ -29,10 +29,28 @@ fun Regel.evaluer(samletOpplysning: Iterable<Opplysning>): Boolean =
  */
 fun Regler.evaluer(
     opplysninger: Iterable<Opplysning>
-): Either<Problem, GrunnlagForGodkjenning> =
-    regler.filter { regel -> regel.evaluer(opplysninger) }
-        .map { regel -> regel.vedTreff(opplysninger) }
-        .firstOrNull() ?: standardRegel.vedTreff(opplysninger)
+): Either<NonEmptyList<Problem>, GrunnlagForGodkjenning> =
+    regler
+        .filter { regel -> regel.evaluer(opplysninger) }
+        .map { it.vedTreff(opplysninger) }
+        .let { results ->
+            val (skalAvvises, alleProblemer) = results
+                .filterIsInstance<Either.Left<Problem>>()
+                .map { it.value }
+                .let {
+                    it.filterIsInstance<SkalAvvises>() to it
+                }
+            val grunnlagForGodkjenning = results
+                .filterIsInstance<Either.Right<GrunnlagForGodkjenning>>()
+                .map { it.value }
+            when {
+                skalAvvises.isNotEmpty() -> nonEmptyListOf(skalAvvises.first(), *skalAvvises.tail().toTypedArray()).left()
+                grunnlagForGodkjenning.isNotEmpty() -> grunnlagForGodkjenning.first().right()
+                alleProblemer.isNotEmpty() -> nonEmptyListOf(alleProblemer.first(), *alleProblemer.tail().toTypedArray()).left()
+                else -> standardRegel.vedTreff(opplysninger).mapLeft { nonEmptyListOf(it) }
+            }
+        }
+
 
 fun domeneOpplysningTilHendelseOpplysning(opplysning: DomeneOpplysning): HendelseOpplysning =
     when (opplysning) {

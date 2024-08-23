@@ -27,9 +27,9 @@ class OpplysningerRequestHandler(
         either {
             val identitetsnummer = opplysningerRequest.getId()
             requestValidator.validerTilgang(identitetsnummer)
-                .mapLeft { problem ->
+                .mapLeft { problemer ->
                     Feil(
-                        melding = problem.regel.id.beskrivelse,
+                        melding = problemer.first().regel.id.beskrivelse,
                         feilKode = Feil.FeilKode.IKKE_TILGANG
                     )
                 }.bind()

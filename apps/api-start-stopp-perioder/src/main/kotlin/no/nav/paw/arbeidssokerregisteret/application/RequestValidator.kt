@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.application
 
 import arrow.core.Either
+import arrow.core.NonEmptyList
 import arrow.core.flatMap
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssokerregisteret.RequestScope
@@ -23,7 +24,7 @@ class RequestValidator(
     fun validerTilgang(
         identitetsnummer: Identitetsnummer,
         erForhaandsGodkjentAvVeileder: Boolean = false
-    ): Either<Problem, GrunnlagForGodkjenning> {
+    ): Either<NonEmptyList<Problem>, GrunnlagForGodkjenning> {
         val autentiseringsFakta = tokenXPidFakta(identitetsnummer) +
                 autorisasjonService.navAnsattTilgangFakta(identitetsnummer) +
                 if (erForhaandsGodkjentAvVeileder) {
@@ -39,13 +40,13 @@ class RequestValidator(
     suspend fun validerStartAvPeriodeOenske(
         identitetsnummer: Identitetsnummer,
         erForhaandsGodkjentAvVeileder: Boolean = false
-    ): Either<Problem, GrunnlagForGodkjenning> =
+    ): Either<NonEmptyList<Problem>, GrunnlagForGodkjenning> =
         validerTilgang(identitetsnummer, erForhaandsGodkjentAvVeileder)
-            .flatMap { tilgangsResultat ->
+            .flatMap { grunnlagForGodkjentAuth ->
                 val person = personInfoService.hentPersonInfo(identitetsnummer.verdi)
                 val opplysning = person?.let { genererPersonFakta(it) } ?: setOf(DomeneOpplysning.PersonIkkeFunnet)
                 InngangsRegler.evaluer(
-                    opplysning + tilgangsResultat.opplysning
+                    opplysning + grunnlagForGodkjentAuth.opplysning
                 )
             }
 

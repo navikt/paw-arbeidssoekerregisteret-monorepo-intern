@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.application
 
 import arrow.core.Either
+import arrow.core.NonEmptyList
 import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.OpplysningerRequest
 import no.nav.paw.arbeidssokerregisteret.ApplicationInfo
 import no.nav.paw.arbeidssokerregisteret.RequestScope
@@ -20,14 +21,14 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning as HendelseOppl
 
 
 context(RequestScope)
-fun stoppResultatSomHendelse(id: Long, identitetsnummer: Identitetsnummer, resultat: Either<Problem, GrunnlagForGodkjenning>): Hendelse =
+fun stoppResultatSomHendelse(id: Long, identitetsnummer: Identitetsnummer, resultat: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>): Hendelse =
     when (resultat) {
         is Either.Left -> AvvistStoppAvPeriode(
             id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
-            metadata = hendelseMetadata(resultat.value.regel.id.beskrivelse),
-            opplysninger = resultat.value.opplysning.map(::mapToHendelseOpplysning).toSet()
+            metadata = hendelseMetadata(resultat.value.map { it.regel.id.beskrivelse }.joinToString(". ")),
+            opplysninger = resultat.value.head.opplysning.map(::mapToHendelseOpplysning).toSet()
         )
 
         is Either.Right -> Avsluttet(
@@ -47,14 +48,14 @@ fun mapToHendelseOpplysning(opplysning: Opplysning): HendelseOpplysning =
     }
 
 context(RequestScope)
-fun somHendelse(id: Long, identitetsnummer: Identitetsnummer, resultat: Either<Problem, GrunnlagForGodkjenning>): Hendelse =
+fun somHendelse(id: Long, identitetsnummer: Identitetsnummer, resultat: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>): Hendelse =
     when (resultat) {
         is Either.Left -> Avvist(
             id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
-            metadata = hendelseMetadata(resultat.value.regel.id.beskrivelse),
-            opplysninger = resultat.value.opplysning.map(::mapToHendelseOpplysning).toSet(),
+            metadata = hendelseMetadata(resultat.value.map { it.regel.id.beskrivelse }.joinToString(". ")),
+            opplysninger = resultat.value.head.opplysning.map(::mapToHendelseOpplysning).toSet(),
             handling = path
         )
 

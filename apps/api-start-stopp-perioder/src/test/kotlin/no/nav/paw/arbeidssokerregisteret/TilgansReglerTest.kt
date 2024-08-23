@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret
 
 import arrow.core.Either
+import arrow.core.NonEmptyList
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
@@ -19,9 +20,9 @@ class TilgansReglerTest : FreeSpec({
                     IkkeAnsatt,
                     DomeneOpplysning.ErForhaandsgodkjent
                 )
-            ).shouldBeInstanceOf<Either.Left<Problem>>()
-            resultat.value.regel.id shouldBe IkkeAnsattOgForhaandsgodkjentAvAnsatt
-            resultat.value.opplysning shouldContainAll listOf(IkkeAnsatt, DomeneOpplysning.ErForhaandsgodkjent)
+            ).shouldBeInstanceOf<Either.Left<NonEmptyList<Problem>>>()
+            resultat.value.head.regel.id shouldBe IkkeAnsattOgForhaandsgodkjentAvAnsatt
+            resultat.value.head.opplysning shouldContainAll listOf(IkkeAnsatt, DomeneOpplysning.ErForhaandsgodkjent)
         }
         "lovlig kombinasjon av ANSATT og FORHANDSGODKJENT_AV_ANSATT" {
             val resultat = TilgangsRegler.evaluer(
