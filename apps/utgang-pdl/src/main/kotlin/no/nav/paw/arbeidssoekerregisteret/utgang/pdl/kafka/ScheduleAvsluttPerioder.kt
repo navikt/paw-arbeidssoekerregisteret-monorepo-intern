@@ -107,11 +107,8 @@ private fun List<ForenkletStatusBolkResult>.processResults(
         hentFolkeregisterpersonstatusOgHendelseState(result, chunk)
     }.map { (folkeregisterpersonstatus, hendelseState) ->
 
-        val slettForhaandsGodkjenning =
-            Opplysning.FORHAANDSGODKJENT_AV_ANSATT in hendelseState.opplysninger
-                && hendelseState.opplysninger.any { it in negativeOpplysninger }
-
         val avsluttPeriode = !folkeregisterpersonstatus.erBosattEtterFolkeregisterloven
+        val slettForhaandsGodkjenning = slettForhaandsGodkjenning(hendelseState, avsluttPeriode)
 
         EvalueringResultat(
             Pair(folkeregisterpersonstatus, hendelseState),
@@ -152,25 +149,34 @@ private fun List<HentPersonBolkResult>.processResultsV2(
         val opplysningerEvaluering = InngangsRegler.evaluer(domeneOpplysninger)
         val pdlEvaluering = InngangsRegler.evaluer(genererPersonFakta(person.toPerson()))
 
-        val erForhaandsgodkjent = hendelseOpplysninger.contains(Opplysning.FORHAANDSGODKJENT_AV_ANSATT)
+        val erForhaandsgodkjent = Opplysning.FORHAANDSGODKJENT_AV_ANSATT in hendelseOpplysninger
 
-        val skalAvsluttePeriode = pdlEvaluering.fold(
-            { left -> skalAvsluttePeriode(left, opplysningerEvaluering, erForhaandsgodkjent) },
+        val avsluttPeriode = pdlEvaluering.fold(
+            { left -> avsluttPeriode(left, opplysningerEvaluering, erForhaandsgodkjent) },
             { false }
         )
 
+        val slettForhaandsGodkjenning = slettForhaandsGodkjenning(hendelseState, avsluttPeriode)
+
         EvalueringResultat(
             grunnlag = Pair(null, hendelseState),
-            skalAvsluttePeriode,
-            erForhaandsgodkjent
+            avsluttPeriode,
+            slettForhaandsGodkjenning
         )
     }
 
-private fun skalAvsluttePeriode(
+private fun avsluttPeriode(
     pdlEvaluering: Problem,
     opplysningerEvaluering: Either<Problem, GrunnlagForGodkjenning>,
     erForhaandsgodkjent: Boolean,
 ) = !(opplysningerEvaluering.isLeft() && erForhaandsgodkjent && pdlEvaluering == opplysningerEvaluering.left())
+
+private fun slettForhaandsGodkjenning(
+    hendelseState: HendelseState,
+    avsluttPeriode: Boolean
+) =
+    Opplysning.FORHAANDSGODKJENT_AV_ANSATT in hendelseState.opplysninger
+            && hendelseState.opplysninger.any { it in negativeOpplysninger } && !avsluttPeriode
 
 fun List<EvalueringResultat>.sendAvsluttetHendelse(
     hendelseStateStore: KeyValueStore<UUID, HendelseState>,
