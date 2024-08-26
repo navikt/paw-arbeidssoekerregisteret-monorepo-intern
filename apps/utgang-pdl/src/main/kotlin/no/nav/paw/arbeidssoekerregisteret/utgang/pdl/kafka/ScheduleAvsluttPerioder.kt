@@ -87,7 +87,17 @@ fun scheduleAvsluttPerioder(
                 }
 
                 resultaterV1.compareResults(resultaterV2, logger)
-                resultaterV1.sendAvsluttetHendelse(hendelseStateStore, ctx, prometheusMeterRegistry)
+                resultaterV1.onEach { resultat ->
+                    val (folkeregisterpersonstatus, hendelseState) = resultat.grunnlag
+                    if (resultat.avsluttPeriode && folkeregisterpersonstatus != null) {
+                        sendAvsluttetHendelse(folkeregisterpersonstatus, hendelseState, hendelseStateStore, ctx, prometheusMeterRegistry)
+                    }
+                }.forEach { resultat ->
+                    val hendelseState = resultat.grunnlag.second
+                    if (resultat.slettForhaandsGodkjenning) {
+                        slettForhaandsGodkjenning(hendelseState, hendelseStateStore)
+                    }
+                }
             }
     }
 }
@@ -108,12 +118,12 @@ private fun List<ForenkletStatusBolkResult>.processResults(
     }.map { (folkeregisterpersonstatus, hendelseState) ->
 
         val avsluttPeriode = !folkeregisterpersonstatus.erBosattEtterFolkeregisterloven
-        val slettForhaandsGodkjenning = slettForhaandsGodkjenning(hendelseState, avsluttPeriode)
+        val skalSletteForhaandsGodkjenning = skalSletteForhaandsGodkjenning(hendelseState, avsluttPeriode)
 
         EvalueringResultat(
             Pair(folkeregisterpersonstatus, hendelseState),
             avsluttPeriode,
-            slettForhaandsGodkjenning
+            skalSletteForhaandsGodkjenning
         )
     }
 
@@ -156,7 +166,7 @@ private fun List<HentPersonBolkResult>.processResultsV2(
             { false }
         )
 
-        val slettForhaandsGodkjenning = slettForhaandsGodkjenning(hendelseState, avsluttPeriode)
+        val slettForhaandsGodkjenning = pdlEvaluering.isRight() && erForhaandsgodkjent
 
         EvalueringResultat(
             grunnlag = Pair(null, hendelseState),
@@ -171,44 +181,42 @@ private fun avsluttPeriode(
     erForhaandsgodkjent: Boolean,
 ) = !(opplysningerEvaluering.isLeft() && erForhaandsgodkjent && pdlEvaluering == opplysningerEvaluering.left())
 
-private fun slettForhaandsGodkjenning(
+private fun skalSletteForhaandsGodkjenning(
     hendelseState: HendelseState,
     avsluttPeriode: Boolean
 ) =
     Opplysning.FORHAANDSGODKJENT_AV_ANSATT in hendelseState.opplysninger
             && hendelseState.opplysninger.any { it in negativeOpplysninger } && !avsluttPeriode
 
-fun List<EvalueringResultat>.sendAvsluttetHendelse(
+private fun sendAvsluttetHendelse(
+    folkeregisterpersonstatus: List<Folkeregisterpersonstatus>,
+    hendelseState: HendelseState,
     hendelseStateStore: KeyValueStore<UUID, HendelseState>,
     ctx: ProcessorContext<Long, Hendelse>,
     prometheusMeterRegistry: PrometheusMeterRegistry,
-) = this.forEach { evalueringResultat ->
-    val (folkeregisterpersonstatus, hendelseState) = evalueringResultat.grunnlag
+) {
+    val aarsak = folkeregisterpersonstatus
+        .filterAvsluttPeriodeGrunnlag(hendelseState.opplysninger)
+        .ifEmpty {
+            return
+        }
+        .toAarsak()
 
-    if (evalueringResultat.avsluttPeriode && folkeregisterpersonstatus != null) {
-        val aarsak = folkeregisterpersonstatus
-            .filterAvsluttPeriodeGrunnlag(hendelseState.opplysninger)
-            .ifEmpty {
-                return@forEach
-            }
-            .toAarsak()
+    val avsluttetHendelse = genererAvsluttetHendelseRecord(hendelseState, aarsak)
+    ctx.forward(avsluttetHendelse)
+        .also {
+            prometheusMeterRegistry.tellPdlAvsluttetHendelser(aarsak)
+            hendelseStateStore.delete(hendelseState.periodeId)
+        }
+}
 
-        val avsluttetHendelse = genererAvsluttetHendelseRecord(hendelseState, aarsak)
-
-        ctx.forward(avsluttetHendelse)
-            .also {
-                prometheusMeterRegistry.tellPdlAvsluttetHendelser(aarsak)
-                hendelseStateStore.delete(hendelseState.periodeId)
-            }
-    }
-    if (evalueringResultat.slettForhaandsGodkjenning) {
-        val oppdatertHendelseState = hendelseState.copy(
-            opplysninger = hendelseState.opplysninger
-                .filterNot { it == Opplysning.FORHAANDSGODKJENT_AV_ANSATT || it in negativeOpplysninger }
-                .toSet()
-        )
-        hendelseStateStore.put(hendelseState.periodeId, oppdatertHendelseState)
-    }
+private fun slettForhaandsGodkjenning(hendelseState: HendelseState, hendelseStateStore: KeyValueStore<UUID, HendelseState>) {
+    val oppdatertHendelseState = hendelseState.copy(
+        opplysninger = hendelseState.opplysninger
+            .filterNot { it == Opplysning.FORHAANDSGODKJENT_AV_ANSATT || it in negativeOpplysninger }
+            .toSet()
+    )
+    hendelseStateStore.put(hendelseState.periodeId, oppdatertHendelseState)
 }
 
 private fun List<EvalueringResultat>.compareResults(

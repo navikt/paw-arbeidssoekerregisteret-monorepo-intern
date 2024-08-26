@@ -15,7 +15,7 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 import ch.qos.logback.classic.Logger as LogbackLogger
-
+// TODO: Skriv tester for funksjonene brukt i processResultsV2
 class ApplicationTestV2 : FreeSpec({
     val periodeId = UUID.randomUUID()
 
