@@ -155,7 +155,7 @@ private fun List<HentPersonBolkResult>.processResultsV2(
         val erForhaandsgodkjent = hendelseOpplysninger.contains(Opplysning.FORHAANDSGODKJENT_AV_ANSATT)
 
         val skalAvsluttePeriode = pdlEvaluering.fold(
-            { left -> handleLeftPdlEvaluation(left, opplysningerEvaluering, erForhaandsgodkjent) },
+            { left -> skalAvsluttePeriode(left, opplysningerEvaluering, erForhaandsgodkjent) },
             { false }
         )
 
@@ -166,11 +166,11 @@ private fun List<HentPersonBolkResult>.processResultsV2(
         )
     }
 
-private fun handleLeftPdlEvaluation(
+private fun skalAvsluttePeriode(
     pdlEvaluering: Problem,
     opplysningerEvaluering: Either<Problem, GrunnlagForGodkjenning>,
     erForhaandsgodkjent: Boolean,
-) = opplysningerEvaluering.isLeft() && erForhaandsgodkjent && pdlEvaluering == opplysningerEvaluering.left()
+) = !(opplysningerEvaluering.isLeft() && erForhaandsgodkjent && pdlEvaluering == opplysningerEvaluering.left())
 
 fun List<EvalueringResultat>.sendAvsluttetHendelse(
     hendelseStateStore: KeyValueStore<UUID, HendelseState>,
