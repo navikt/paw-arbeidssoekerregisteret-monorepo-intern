@@ -2,9 +2,7 @@ package no.nav.paw.arbeidssokerregisteret.testdata
 
 import io.kotest.common.runBlocking
 import io.ktor.http.*
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.AarsakTilAvvisning
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiRegelId
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feil
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.*
 import no.nav.paw.arbeidssokerregisteret.*
 import no.nav.paw.arbeidssokerregisteret.application.IkkeBosattINorgeIHenholdTilFolkeregisterloven
 import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
@@ -12,6 +10,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
+import no.nav.paw.arbeidssokerregisteret.routes.apiRegelId
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.pdl.graphql.generated.hentperson.Foedsel
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
@@ -21,7 +20,7 @@ import java.time.Instant
 import java.util.*
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Opplysning as ApiOpplysning
 
-data object AnsattRegistrererIkkeEuEoesBrukerIkkeBosattUtenForhaandgodkjenning: TestCase {
+data object AnsattRegistrererIkkeEuEoesBrukerIkkeBosattUtenForhaandgodkjenning : TestCase {
     override val id = "12345678906"
     override val person = Person(
         foedsel = Foedsel("2000-03-04", 2000).list(),
@@ -35,18 +34,22 @@ data object AnsattRegistrererIkkeEuEoesBrukerIkkeBosattUtenForhaandgodkjenning: 
         utflyttingFraNorge = "2017-01-02".utflytting()
     )
     private val ansatt = NavAnsatt(UUID.randomUUID(), UUID.randomUUID().toString())
-    override val configure: TestCaseBuilder.() -> Unit =  {
+    override val configure: TestCaseBuilder.() -> Unit = {
         authToken = mockOAuth2Server.ansattToken(ansatt)
         autorisasjonService.setHarTilgangTilBruker(ansatt, id, true)
     }
 
     override val producesHttpResponse: HttpStatusCode = HttpStatusCode.Forbidden
-    override val producesError: Feil = Feil(
+    override val producesError: FeilV2 = FeilV2(
         melding = IkkeBosattINorgeIHenholdTilFolkeregisterloven.beskrivelse,
-        feilKode = Feil.FeilKode.AVVIST,
-        aarsakTilAvvisning = AarsakTilAvvisning(
-            beskrivelse = IkkeBosattINorgeIHenholdTilFolkeregisterloven.beskrivelse,
-            regel = ApiRegelId.IKKE_BOSATT_I_NORGE_I_HENHOLD_TIL_FOLKEREGISTERLOVEN,
+        feilKode = FeilV2.FeilKode.AVVIST,
+        aarsakTilAvvisning = AarsakTilAvvisningV2(
+            regler = listOf(
+                ApiRegel(
+                    id = IkkeBosattINorgeIHenholdTilFolkeregisterloven.apiRegelId(),
+                    beskrivelse = IkkeBosattINorgeIHenholdTilFolkeregisterloven.beskrivelse
+                )
+            ),
             detaljer = listOf(
                 ApiOpplysning.ER_OVER_18_AAR,
                 ApiOpplysning.HAR_NORSK_ADRESSE,

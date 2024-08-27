@@ -1,9 +1,9 @@
 package no.nav.paw.arbeidssokerregisteret.routes
 
 import io.ktor.server.routing.*
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV1ArbeidssokerKanStartePeriodePutRequest
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV1ArbeidssokerPeriodePutRequest
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV1ArbeidssokerPeriodePutRequest.PeriodeTilstand
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV2ArbeidssokerKanStartePeriodePutRequest
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV2ArbeidssokerPeriodePutRequest
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV2ArbeidssokerPeriodePutRequest.PeriodeTilstand
 import no.nav.paw.arbeidssokerregisteret.api.extensions.getId
 import no.nav.paw.arbeidssokerregisteret.application.StartStoppRequestHandler
 import no.nav.paw.arbeidssokerregisteret.requestScope
@@ -19,7 +19,7 @@ fun Route.arbeidssokerRoutesV2(
     route(startStopApiV2) {
         route(kanStarteV2) {
             // Sjekker om bruker kan registreres som arbeidssøker
-            put<ApiV1ArbeidssokerKanStartePeriodePutRequest> { request ->
+            put<ApiV2ArbeidssokerKanStartePeriodePutRequest> { request ->
                 val resultat = with(requestScope()) {
                     startStoppRequestHandler.kanRegistreresSomArbeidssoker(request.getId())
                 }
@@ -30,7 +30,7 @@ fun Route.arbeidssokerRoutesV2(
 
         route(periodeV2) {
             // Registrerer bruker som arbeidssøker
-            put<ApiV1ArbeidssokerPeriodePutRequest> { startStoppRequest ->
+            put<ApiV2ArbeidssokerPeriodePutRequest> { startStoppRequest ->
                 val resultat = with(requestScope()) {
                     when (startStoppRequest.periodeTilstand) {
                         PeriodeTilstand.STARTET ->

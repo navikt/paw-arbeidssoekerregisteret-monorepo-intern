@@ -14,28 +14,7 @@ import no.nav.paw.arbeidssokerregisteret.application.regler.*
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Opplysning as ApiOpplysning
 
 
-context(PipelineContext<Unit, ApplicationCall>)
-suspend fun respondWith(resultat: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>) =
-    when (resultat) {
-        is Either.Left -> respondWithError(resultat.value.head)
-        is Either.Right -> call.respond(HttpStatusCode.NoContent)
-    }
-
-suspend fun PipelineContext<Unit, ApplicationCall>.respondWithError(problem: Problem) {
-    call.respond(
-        problem.httpCode(), Feil(
-            melding = problem.regel.id.beskrivelse,
-            feilKode = problem.feilKode(),
-            aarsakTilAvvisning = if (problem.regel.id is DomeneRegelId) {
-                AarsakTilAvvisning(
-                    beskrivelse = problem.regel.id.beskrivelse,
-                    regel = problem.regel.id.apiRegelId(),
-                    detaljer = problem.opplysning.map(::opplysningTilApiOpplysning)
-                )
-            } else null
-        )
-    )
-}
+const val feilmeldingVedAvvist = "Avvist, se 'aarsakTilAvvisning' for detaljer"
 
 context(PipelineContext<Unit, ApplicationCall>)
 suspend fun respondWithV2(resultat: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>) =
@@ -52,7 +31,7 @@ suspend fun PipelineContext<Unit, ApplicationCall>.respondWithErrorV2(problemer:
             ?.let { it.httpCode() to FeilV2.FeilKode.AVVIST }
         ?: (HttpStatusCode.InternalServerError to FeilV2.FeilKode.UKJENT_FEIL)
     val melding = if (FeilV2.FeilKode.AVVIST == feilkode) {
-        "Avvist, se 'aarsakTilAvvisning' for detaljer"
+        feilmeldingVedAvvist
     } else problemer.first().regel.id.beskrivelse
     call.respond(
         httpCode, FeilV2(
@@ -133,11 +112,7 @@ fun RegelId.apiRegelId(): ApiRegelId = when (this) {
     else -> ApiRegelId.UKJENT_REGEL
 }
 
-fun Problem.feilKode(): Feil.FeilKode = when (regel.id) {
-    is AuthRegelId -> Feil.FeilKode.IKKE_TILGANG
-    is DomeneRegelId -> Feil.FeilKode.AVVIST
-    else -> Feil.FeilKode.UKJENT_FEIL
-}
+fun RegelId.apiRegel(): ApiRegel = ApiRegel(id = apiRegelId(), beskrivelse = beskrivelse)
 
 fun Problem.httpCode(): HttpStatusCode = when (val regelId = this.regel.id) {
     is AuthRegelId -> regelId.httpCode()

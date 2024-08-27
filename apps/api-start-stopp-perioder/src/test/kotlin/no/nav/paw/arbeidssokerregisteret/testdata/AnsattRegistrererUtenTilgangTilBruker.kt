@@ -2,7 +2,7 @@ package no.nav.paw.arbeidssokerregisteret.testdata
 
 import io.kotest.common.runBlocking
 import io.ktor.http.*
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feil
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
 import no.nav.paw.arbeidssokerregisteret.*
 import no.nav.paw.arbeidssokerregisteret.application.regler.AnsattIkkeTilgangTilBruker
 import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
@@ -38,9 +38,9 @@ data object AnsattRegistrererUtenTilgangTilBruker: TestCase {
     }
 
     override val producesHttpResponse: HttpStatusCode = HttpStatusCode.Forbidden
-    override val producesError: Feil = Feil(
+    override val producesError: FeilV2 = FeilV2(
         melding = AnsattIkkeTilgangTilBruker.beskrivelse,
-        feilKode = Feil.FeilKode.IKKE_TILGANG,
+        feilKode = FeilV2.FeilKode.IKKE_TILGANG,
         aarsakTilAvvisning = null
     )
 

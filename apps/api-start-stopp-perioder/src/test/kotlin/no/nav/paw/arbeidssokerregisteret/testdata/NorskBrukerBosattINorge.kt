@@ -2,7 +2,7 @@ package no.nav.paw.arbeidssokerregisteret.testdata
 
 import io.kotest.common.runBlocking
 import io.ktor.http.*
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feil
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
 import no.nav.paw.arbeidssokerregisteret.*
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
@@ -35,7 +35,7 @@ data object NorskBrukerBosattINorge: TestCase {
     }
 
     override val producesHttpResponse: HttpStatusCode = HttpStatusCode.NoContent
-    override val producesError: Feil? = null
+    override val producesError: FeilV2? = null
 
     override fun producesRecord(
         kafkaKeysClient: KafkaKeysClient

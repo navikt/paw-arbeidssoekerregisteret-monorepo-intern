@@ -2,15 +2,15 @@ package no.nav.paw.arbeidssokerregisteret.testdata
 
 import io.kotest.common.runBlocking
 import io.ktor.http.*
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.AarsakTilAvvisning
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiRegelId
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feil
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.AarsakTilAvvisningV2
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
 import no.nav.paw.arbeidssokerregisteret.*
 import no.nav.paw.arbeidssokerregisteret.application.Under18Aar
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
+import no.nav.paw.arbeidssokerregisteret.routes.apiRegel
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.pdl.graphql.generated.hentperson.Foedsel
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
@@ -46,12 +46,11 @@ data object NorskBrukerBosattINorgeUnder18aar: TestCase {
     }
 
     override val producesHttpResponse: HttpStatusCode = HttpStatusCode.Forbidden
-    override val producesError: Feil = Feil(
+    override val producesError: FeilV2 = FeilV2(
         melding = Under18Aar.beskrivelse,
-        feilKode = Feil.FeilKode.AVVIST,
-        aarsakTilAvvisning = AarsakTilAvvisning(
-            beskrivelse = Under18Aar.beskrivelse,
-            regel = ApiRegelId.UNDER_18_AAR,
+        feilKode = FeilV2.FeilKode.AVVIST,
+        aarsakTilAvvisning = AarsakTilAvvisningV2(
+            regler = listOf(Under18Aar.apiRegel()),
             detaljer = listOf(
                 no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Opplysning.ER_UNDER_18_AAR,
                 no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Opplysning.HAR_NORSK_ADRESSE,

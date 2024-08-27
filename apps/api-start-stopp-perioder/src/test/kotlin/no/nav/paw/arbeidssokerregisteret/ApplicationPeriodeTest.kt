@@ -18,7 +18,10 @@ import no.nav.paw.arbeidssokerregisteret.application.*
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
 import no.nav.paw.arbeidssokerregisteret.plugins.configureHTTP
 import no.nav.paw.arbeidssokerregisteret.plugins.configureSerialization
+import no.nav.paw.arbeidssokerregisteret.routes.apiRegel
 import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutes
+import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutesV2
+import no.nav.paw.arbeidssokerregisteret.routes.feilmeldingVedAvvist
 
 class ApplicationPeriodeTest : FunSpec({
     test("Verifiser at vi returnerer 'Feil' objekt når vi avviser en periode") {
@@ -41,7 +44,7 @@ class ApplicationPeriodeTest : FunSpec({
                     ),
                     opplysninger = listOf(DomeneOpplysning.ErUnder18Aar, DomeneOpplysning.BosattEtterFregLoven)
                 ).mapLeft { nonEmptyListOf(it) }
-                arbeidssokerRoutes(startStoppRequestHandler, mockk())
+                arbeidssokerRoutesV2(startStoppRequestHandler)
             }
             val client = createClient {
                 install(ContentNegotiation) {
@@ -51,28 +54,27 @@ class ApplicationPeriodeTest : FunSpec({
                     }
                 }
             }
-            val response = client.put("/api/v1/arbeidssoker/periode") {
+            val response = client.put("/api/v2/arbeidssoker/periode") {
                 headers {
                     append(HttpHeaders.ContentType, ContentType.Application.Json)
                 }
                 setBody(
-                    ApiV1ArbeidssokerPeriodePutRequest(
+                    ApiV2ArbeidssokerPeriodePutRequest(
                         identitetsnummer = "12345678911",
-                        periodeTilstand = ApiV1ArbeidssokerPeriodePutRequest.PeriodeTilstand.STARTET
+                        periodeTilstand = ApiV2ArbeidssokerPeriodePutRequest.PeriodeTilstand.STARTET
                     )
                 )
             }
             response.status shouldBe HttpStatusCode.Forbidden
-            val feil: Feil = response.body()
-            feil shouldBe Feil(
-                Under18Aar.beskrivelse, Feil.FeilKode.AVVIST, AarsakTilAvvisning(
-                    beskrivelse = Under18Aar.beskrivelse,
-                    regel = ApiRegelId.UNDER_18_AAR,
+            val feil: FeilV2 = response.body()
+            feil shouldBe FeilV2(
+                melding = feilmeldingVedAvvist,
+                feilKode = FeilV2.FeilKode.AVVIST,
+                aarsakTilAvvisning = AarsakTilAvvisningV2(
+                    regler = listOf(Under18Aar.apiRegel()),
                     detaljer = listOf(Opplysning.ER_UNDER_18_AAR, Opplysning.BOSATT_ETTER_FREG_LOVEN)
                 )
             )
         }
     }
 })
-
-

@@ -11,7 +11,6 @@ import io.ktor.client.call.*
 import io.ktor.server.auth.*
 import io.ktor.server.testing.*
 import io.mockk.mockk
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feil
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
 import no.nav.paw.arbeidssokerregisteret.auth.configureAuthentication
 import no.nav.paw.arbeidssokerregisteret.plugins.configureHTTP
@@ -62,7 +61,6 @@ class ApiV2TestCaseRunner : FreeSpec({
                                     }
                                     routing {
                                         authenticate("tokenx", "azure") {
-                                            arbeidssokerRoutes(startStoppRequestHandler, mockk())
                                             arbeidssokerRoutesV2(startStoppRequestHandler)
                                         }
                                     }
@@ -84,12 +82,16 @@ class ApiV2TestCaseRunner : FreeSpec({
                                         val body = statusV2.body<FeilV2>()
                                         body.feilKode.name shouldBe expectedErrorResponse.feilKode.name
                                         val forventetMelding: String =
-                                            if (expectedErrorResponse.feilKode == Feil.FeilKode.IKKE_TILGANG) expectedErrorResponse.melding else "Avvist, se 'aarsakTilAvvisning' for detaljer"
+                                            if (expectedErrorResponse.feilKode == FeilV2.FeilKode.IKKE_TILGANG) expectedErrorResponse.melding else "Avvist, se 'aarsakTilAvvisning' for detaljer"
                                         body.melding shouldBe forventetMelding
-                                        expectedErrorResponse.aarsakTilAvvisning?.regel?.should { aarsak ->
-                                            body.aarsakTilAvvisning?.regler?.map { it.id?.name } shouldBe listOf(
-                                                aarsak.name
-                                            )
+                                        expectedErrorResponse.aarsakTilAvvisning should { aarsak ->
+                                            val fakitskAarsak = body.aarsakTilAvvisning
+                                            if (aarsak == null) {
+                                                fakitskAarsak.shouldBeNull()
+                                            } else {
+                                                aarsak.detaljer shouldContainExactlyInAnyOrder fakitskAarsak?.detaljer
+                                                aarsak.regler shouldContainExactlyInAnyOrder fakitskAarsak?.regler
+                                            }
                                         }
                                         expectedErrorResponse.aarsakTilAvvisning?.detaljer?.also { expectedDetails ->
                                             body.aarsakTilAvvisning?.detaljer.shouldNotBeNull()

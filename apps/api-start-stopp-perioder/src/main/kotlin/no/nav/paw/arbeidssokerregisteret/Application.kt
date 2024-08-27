@@ -69,7 +69,7 @@ fun Application.module(
         healthRoutes(registry)
         swaggerRoutes()
         authenticate("tokenx", "azure") {
-            arbeidssokerRoutes(startStoppRequestHandler, opplysningerRequestHandler)
+            arbeidssokerRoutes(opplysningerRequestHandler)
             arbeidssokerRoutesV2(startStoppRequestHandler)
         }
     }

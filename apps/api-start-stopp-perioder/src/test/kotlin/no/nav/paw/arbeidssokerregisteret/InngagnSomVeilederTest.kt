@@ -15,7 +15,7 @@ import io.ktor.server.testing.*
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV1ArbeidssokerPeriodePutRequest
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV2ArbeidssokerPeriodePutRequest
 import no.nav.paw.arbeidssokerregisteret.application.GrunnlagForGodkjenning
 import no.nav.paw.arbeidssokerregisteret.application.Regel
 import no.nav.paw.arbeidssokerregisteret.application.StartStoppRequestHandler
@@ -26,6 +26,7 @@ import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.plugins.configureHTTP
 import no.nav.paw.arbeidssokerregisteret.plugins.configureSerialization
 import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutes
+import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutesV2
 import no.nav.security.mock.oauth2.MockOAuth2Server
 
 class InngagnSomVeilederTest : FreeSpec({
@@ -61,7 +62,7 @@ class InngagnSomVeilederTest : FreeSpec({
                     configureAuthentication(oauth)
                     routing {
                         authenticate("tokenx", "azure") {
-                            arbeidssokerRoutes(startStoppRequestHandler, mockk())
+                            arbeidssokerRoutesV2(startStoppRequestHandler)
                         }
                     }
                 }
@@ -80,15 +81,15 @@ class InngagnSomVeilederTest : FreeSpec({
                         }
                     }
                 }
-                val response = client.put("/api/v1/arbeidssoker/periode") {
+                val response = client.put("/api/v2/arbeidssoker/periode") {
                     bearerAuth(token.serialize())
                     headers {
                         append(HttpHeaders.ContentType, ContentType.Application.Json)
                     }
-                    setBody(ApiV1ArbeidssokerPeriodePutRequest(
+                    setBody(ApiV2ArbeidssokerPeriodePutRequest(
                         identitetsnummer = "12345678909",
                         registreringForhaandsGodkjentAvAnsatt = true,
-                        periodeTilstand = ApiV1ArbeidssokerPeriodePutRequest.PeriodeTilstand.STARTET
+                        periodeTilstand = ApiV2ArbeidssokerPeriodePutRequest.PeriodeTilstand.STARTET
                     ))
                 }
                 response.status shouldBe HttpStatusCode.NoContent
@@ -100,15 +101,15 @@ class InngagnSomVeilederTest : FreeSpec({
 
 
 
-                val response2 = client.put("/api/v1/arbeidssoker/periode") {
+                val response2 = client.put("/api/v2/arbeidssoker/periode") {
                     bearerAuth(token.serialize())
                     headers {
                         append(HttpHeaders.ContentType, ContentType.Application.Json)
                     }
-                    setBody(ApiV1ArbeidssokerPeriodePutRequest(
+                    setBody(ApiV2ArbeidssokerPeriodePutRequest(
                         identitetsnummer = "12345678909",
                         registreringForhaandsGodkjentAvAnsatt = false,
-                        periodeTilstand = ApiV1ArbeidssokerPeriodePutRequest.PeriodeTilstand.STARTET
+                        periodeTilstand = ApiV2ArbeidssokerPeriodePutRequest.PeriodeTilstand.STARTET
                     ))
                 }
                 response2.status shouldBe HttpStatusCode.NoContent

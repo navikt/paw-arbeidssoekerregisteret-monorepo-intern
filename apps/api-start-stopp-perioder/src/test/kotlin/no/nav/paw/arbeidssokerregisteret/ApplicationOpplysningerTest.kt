@@ -32,13 +32,12 @@ class ApplicationOpplysningerTest : FunSpec({
             }
             val opplysningerRequestHandler = mockk<OpplysningerRequestHandler>()
             routing {
-                val startStopppRequestHandler = mockk<StartStoppRequestHandler>()
                 coEvery {
                     with(any<RequestScope>()) {
                         opplysningerRequestHandler.opprettBrukeropplysninger(any())
                     }
                 } returns Unit.right()
-                arbeidssokerRoutes(startStopppRequestHandler, opplysningerRequestHandler)
+                arbeidssokerRoutes(opplysningerRequestHandler)
             }
             val client = createClient {
                 install(ContentNegotiation) {

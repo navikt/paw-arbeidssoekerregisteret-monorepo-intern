@@ -14,7 +14,7 @@ import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.mockk.coEvery
 import io.mockk.every
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV1ArbeidssokerPeriodePutRequest
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV2ArbeidssokerPeriodePutRequest
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HarOpplysninger
@@ -161,9 +161,9 @@ suspend fun HttpClient.startPeriode(identitetsnummer: String, token: SignedJWT?,
             append(HttpHeaders.ContentType, ContentType.Application.Json)
         }
         setBody(
-            ApiV1ArbeidssokerPeriodePutRequest(
+            ApiV2ArbeidssokerPeriodePutRequest(
                 identitetsnummer = identitetsnummer,
-                periodeTilstand = ApiV1ArbeidssokerPeriodePutRequest.PeriodeTilstand.STARTET,
+                periodeTilstand = ApiV2ArbeidssokerPeriodePutRequest.PeriodeTilstand.STARTET,
                 registreringForhaandsGodkjentAvAnsatt = godkjent
             )
         )
@@ -178,9 +178,9 @@ suspend fun HttpClient.startPeriodeV2(identitetsnummer: String, token: SignedJWT
             append(HttpHeaders.ContentType, ContentType.Application.Json)
         }
         setBody(
-            ApiV1ArbeidssokerPeriodePutRequest(
+            ApiV2ArbeidssokerPeriodePutRequest(
                 identitetsnummer = identitetsnummer,
-                periodeTilstand = ApiV1ArbeidssokerPeriodePutRequest.PeriodeTilstand.STARTET,
+                periodeTilstand = ApiV2ArbeidssokerPeriodePutRequest.PeriodeTilstand.STARTET,
                 registreringForhaandsGodkjentAvAnsatt = godkjent
             )
         )

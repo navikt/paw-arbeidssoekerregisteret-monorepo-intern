@@ -2,9 +2,8 @@ package no.nav.paw.arbeidssokerregisteret.testdata
 
 import io.kotest.common.runBlocking
 import io.ktor.http.*
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.AarsakTilAvvisning
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiRegelId
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feil
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
 import no.nav.paw.arbeidssokerregisteret.*
 import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
@@ -19,7 +18,6 @@ import no.nav.paw.pdl.graphql.generated.hentperson.Vegadresse
 import org.apache.kafka.clients.producer.ProducerRecord
 import java.time.Instant
 import java.util.*
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Opplysning as ApiOpplysning
 
 data object AnsattRegistrererIkkeEuEoesBrukerIkkeBosattMedForhaandgodkjenning: TestCase {
     override val id = "12345678906"
@@ -42,7 +40,7 @@ data object AnsattRegistrererIkkeEuEoesBrukerIkkeBosattMedForhaandgodkjenning: T
     }
 
     override val producesHttpResponse: HttpStatusCode = HttpStatusCode.NoContent
-    override val producesError: Feil? = null
+    override val producesError: FeilV2? = null
 
     override fun producesRecord(
         kafkaKeysClient: KafkaKeysClient

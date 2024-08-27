@@ -11,19 +11,16 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feil
-import no.nav.paw.arbeidssokerregisteret.routes.kanStarte
-import no.nav.paw.arbeidssokerregisteret.routes.opplysninger
-import no.nav.paw.arbeidssokerregisteret.routes.periode
-import no.nav.paw.arbeidssokerregisteret.routes.startStopApi
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
+import no.nav.paw.arbeidssokerregisteret.routes.*
 import no.nav.paw.arbeidssokerregisteret.services.RemoteServiceException
 import no.nav.paw.arbeidssokerregisteret.utils.logger
 import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.Feil as OpplysningerFeil
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feil as StartStoppFeil
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2 as StartStoppFeil
 
-fun ApplicationCall.isStartStopRequest(): Boolean = request.path().startsWith("$startStopApi$periode")
-fun ApplicationCall.isKanStarteRequest(): Boolean = request.path().startsWith("$startStopApi$kanStarte")
-fun ApplicationCall.isOpplysningerMottattRequest(): Boolean = request.path().startsWith("$startStopApi$opplysninger")
+fun ApplicationCall.isStartStopRequest(): Boolean = request.path().startsWith("$startStopApiV2$periodeV2")
+fun ApplicationCall.isKanStarteRequest(): Boolean = request.path().startsWith("$startStopApiV2$kanStarteV2")
+fun ApplicationCall.isOpplysningerMottattRequest(): Boolean = request.path().startsWith("$opplysningerAPI$opplysninger")
 
 fun Application.configureHTTP() {
     install(IgnoreTrailingSlash)
@@ -127,7 +124,7 @@ fun Application.configureHTTP() {
                             HttpStatusCode.InternalServerError,
                             StartStoppFeil(
                                 melding = cause.message ?: "Unknown error",
-                                feilKode = Feil.FeilKode.UKJENT_FEIL
+                                feilKode = FeilV2.FeilKode.UKJENT_FEIL
                             )
                         )
 

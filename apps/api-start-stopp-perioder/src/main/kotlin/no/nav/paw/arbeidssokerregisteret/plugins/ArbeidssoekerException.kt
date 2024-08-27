@@ -22,8 +22,8 @@ fun InternFeilkode.opplysningerFeilkode(): Feil.FeilKode {
     }
 }
 
-fun InternFeilkode.startStoppFeilkode(): no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feil.FeilKode {
+fun InternFeilkode.startStoppFeilkode(): no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2.FeilKode {
     when (this) {
-        InternFeilkode.UVENTET_FEIL_MOT_EKSTERN_TJENESTE -> return no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feil.FeilKode.UVENTET_FEIL_MOT_EKSTERN_TJENESTE
+        InternFeilkode.UVENTET_FEIL_MOT_EKSTERN_TJENESTE -> return no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2.FeilKode.UVENTET_FEIL_MOT_EKSTERN_TJENESTE
     }
 }
