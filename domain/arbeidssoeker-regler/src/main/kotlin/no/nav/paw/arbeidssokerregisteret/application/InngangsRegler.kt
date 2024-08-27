@@ -22,7 +22,6 @@ object InngangsRegler: Regler {
         ),
         Under18Aar(
             ErUnder18Aar,
-            BosattEtterFregLoven,
             vedTreff = ::muligGrunnlagForAvvisning
         ),
         UkjentAlder(
@@ -34,6 +33,10 @@ object InngangsRegler: Regler {
             ErOver18Aar,
             BosattEtterFregLoven,
             vedTreff = ::grunnlagForGodkjenning
+        ),
+        IkkeBosattINorgeIHenholdTilFolkeregisterloven(
+            !BosattEtterFregLoven,
+            vedTreff = ::muligGrunnlagForAvvisning
         )
     )
 

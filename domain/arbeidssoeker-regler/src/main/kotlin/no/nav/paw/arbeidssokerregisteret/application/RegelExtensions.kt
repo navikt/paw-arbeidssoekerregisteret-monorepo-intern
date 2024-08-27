@@ -17,10 +17,10 @@ operator fun RegelId.invoke(
 
 fun Regel.evaluer(samletOpplysning: Iterable<Opplysning>): Boolean =
     opplysninger
-        .filter { it !is Not<*> }
+        .filterNot { it is Not<*> }
         .all { samletOpplysning.contains(it) } &&
             opplysninger
-                .filterIsInstance<Not<*>>()
+                .filterIsInstance<Not<Opplysning>>()
                 .none { samletOpplysning.contains(it.value) }
 
 /**
@@ -38,13 +38,15 @@ fun Regler.evaluer(
                 .filterIsInstance<Either.Left<Problem>>()
                 .map { it.value }
                 .let {
-                    it.filterIsInstance<SkalAvvises>() to it
+                    it.filterIsInstance<SkalAvvises>()
+                        .firstOrNull() to it
                 }
             val grunnlagForGodkjenning = results
                 .filterIsInstance<Either.Right<GrunnlagForGodkjenning>>()
                 .map { it.value }
             when {
-                skalAvvises.isNotEmpty() -> nonEmptyListOf(skalAvvises.first(), *skalAvvises.tail().toTypedArray()).left()
+                skalAvvises?.regel?.id == IkkeFunnet -> nonEmptyListOf(skalAvvises).left()
+                skalAvvises != null -> nonEmptyListOf(skalAvvises, *(alleProblemer - skalAvvises).toTypedArray()).left()
                 grunnlagForGodkjenning.isNotEmpty() -> grunnlagForGodkjenning.first().right()
                 alleProblemer.isNotEmpty() -> nonEmptyListOf(alleProblemer.first(), *alleProblemer.tail().toTypedArray()).left()
                 else -> standardRegel.vedTreff(opplysninger).mapLeft { nonEmptyListOf(it) }

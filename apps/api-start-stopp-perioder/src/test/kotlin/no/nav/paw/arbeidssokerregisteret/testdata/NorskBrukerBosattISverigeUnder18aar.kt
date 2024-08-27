@@ -7,6 +7,7 @@ import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiRegelId
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
 import no.nav.paw.arbeidssokerregisteret.*
 import no.nav.paw.arbeidssokerregisteret.application.IkkeBosattINorgeIHenholdTilFolkeregisterloven
+import no.nav.paw.arbeidssokerregisteret.application.Under18Aar
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
@@ -55,7 +56,10 @@ data object NorskBrukerBosattISverigeUnder18aar : TestCase {
         melding = IkkeBosattINorgeIHenholdTilFolkeregisterloven.beskrivelse,
         feilKode = FeilV2.FeilKode.AVVIST,
         aarsakTilAvvisning = AarsakTilAvvisningV2(
-            regler = listOf(IkkeBosattINorgeIHenholdTilFolkeregisterloven.apiRegel()),
+            regler = listOf(
+                Under18Aar.apiRegel(),
+                IkkeBosattINorgeIHenholdTilFolkeregisterloven.apiRegel()
+            ),
             detaljer = listOf(
                 ApiOpplysning.ER_UNDER_18_AAR,
                 ApiOpplysning.HAR_UTENLANDSK_ADRESSE,

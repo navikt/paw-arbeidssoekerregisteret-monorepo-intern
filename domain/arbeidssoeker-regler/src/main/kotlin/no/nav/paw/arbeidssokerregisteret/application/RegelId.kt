@@ -19,7 +19,7 @@ data object Doed : DomeneRegelId {
 }
 
 data object Under18Aar : DomeneRegelId {
-    override val beskrivelse: String = "Er bosatt i Norge i henhold Folkeregisterloven, men er under 18 år"
+    override val beskrivelse: String = "Er under 18 år"
 }
 
 data object IkkeBosattINorgeIHenholdTilFolkeregisterloven : DomeneRegelId {

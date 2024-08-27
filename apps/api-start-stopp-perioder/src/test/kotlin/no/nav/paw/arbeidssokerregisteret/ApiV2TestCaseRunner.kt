@@ -89,8 +89,8 @@ class ApiV2TestCaseRunner : FreeSpec({
                                             if (aarsak == null) {
                                                 fakitskAarsak.shouldBeNull()
                                             } else {
-                                                aarsak.detaljer shouldContainExactlyInAnyOrder fakitskAarsak?.detaljer
-                                                aarsak.regler shouldContainExactlyInAnyOrder fakitskAarsak?.regler
+                                                fakitskAarsak?.detaljer shouldContainExactlyInAnyOrder aarsak.detaljer
+                                                fakitskAarsak?.regler shouldContainExactlyInAnyOrder aarsak.regler
                                             }
                                         }
                                         expectedErrorResponse.aarsakTilAvvisning?.detaljer?.also { expectedDetails ->
