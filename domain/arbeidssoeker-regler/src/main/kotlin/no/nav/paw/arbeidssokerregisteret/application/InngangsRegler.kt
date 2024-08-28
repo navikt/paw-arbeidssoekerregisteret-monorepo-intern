@@ -34,6 +34,19 @@ object InngangsRegler: Regler {
             BosattEtterFregLoven,
             vedTreff = ::grunnlagForGodkjenning
         ),
+        EuEoesStatsborgerOver18Aar(
+            ErOver18Aar,
+            ErEuEoesStatsborger,
+            !ErNorskStatsborger,
+            !IkkeBosatt,
+            vedTreff = ::grunnlagForGodkjenning
+        ),
+        EuEoesStatsborgerMenHarStatusIkkeBosatt(
+            ErEuEoesStatsborger,
+            !ErNorskStatsborger,
+            IkkeBosatt,
+            vedTreff = ::muligGrunnlagForAvvisning
+        ),
         IkkeBosattINorgeIHenholdTilFolkeregisterloven(
             !BosattEtterFregLoven,
             vedTreff = ::muligGrunnlagForAvvisning

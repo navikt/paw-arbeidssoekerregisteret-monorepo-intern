@@ -116,6 +116,21 @@ class RegelEvalTest : FreeSpec({
                         )
                     }
                 }
+                "EU/EØS borger (ikke Norsk) som har 'ikke bosatt'" {
+                    InngangsRegler.evaluer(
+                        listOf(
+                            DomeneOpplysning.ErOver18Aar,
+                            DomeneOpplysning.ErEuEoesStatsborger,
+                            DomeneOpplysning.IkkeBosatt
+                        )
+                    ) should { result ->
+                        result.shouldBeInstanceOf<Avvist>()
+                        result.value.map { it.regel.id } shouldContainExactlyInAnyOrder listOf(
+                            EuEoesStatsborgerMenHarStatusIkkeBosatt,
+                            IkkeBosattINorgeIHenholdTilFolkeregisterloven
+                        )
+                    }
+                }
             }
             "skal godkjennes når" - {
                 "bosatt" {
@@ -134,6 +149,16 @@ class RegelEvalTest : FreeSpec({
                             DomeneOpplysning.ErForhaandsgodkjent
                         )
                     ).shouldBeInstanceOf<Godkjent>()
+                }
+                "EU/EØS borger (ikke Norsk) som ikke har 'ikke bosatt'" {
+                    InngangsRegler.evaluer(
+                        listOf(
+                            DomeneOpplysning.ErOver18Aar,
+                            DomeneOpplysning.ErEuEoesStatsborger
+                        )
+                    ) should { result ->
+                        result.shouldBeInstanceOf<Godkjent>()
+                    }
                 }
             }
         }
