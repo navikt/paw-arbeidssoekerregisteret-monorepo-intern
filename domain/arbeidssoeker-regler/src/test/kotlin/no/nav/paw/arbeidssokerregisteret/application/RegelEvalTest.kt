@@ -14,21 +14,52 @@ typealias Godkjent = Either.Right<GrunnlagForGodkjenning>
 class RegelEvalTest : FreeSpec({
     "Verifiser regel evaluering" - {
         "Person under 18 år" - {
-            "og forhåndsgodkjent" - {
+            "ikke forhåndsgodkjent av veileder" - {
+                "avvises selv om alt annet er ok" {
+                    InngangsRegler.evaluer(
+                        listOf(
+                            DomeneOpplysning.ErUnder18Aar,
+                            DomeneOpplysning.BosattEtterFregLoven,
+                            DomeneOpplysning.HarNorskAdresse,
+                            DomeneOpplysning.ErNorskStatsborger
+                        )
+                    ) should { result ->
+                        result.shouldBeInstanceOf<Avvist>()
+                        result.value.map { problem -> problem.regel.id } shouldContainExactlyInAnyOrder listOf(
+                            Under18Aar
+                        )
+                    }
+                }
+                "avvises med 'under 18 år' og 'ikke bosatt' når ikke bosatt etter f.reg. loven" {
+                    InngangsRegler.evaluer(
+                        listOf(
+                            DomeneOpplysning.ErUnder18Aar,
+                            DomeneOpplysning.IkkeBosatt
+                        )
+                    ) should { result ->
+                        result.shouldBeInstanceOf<Avvist>()
+                        result.value.map { problem -> problem.regel.id } shouldContainExactlyInAnyOrder listOf(
+                            Under18Aar,
+                            IkkeBosattINorgeIHenholdTilFolkeregisterloven
+                        )
+                    }
+                }
+            }
+            "og er forhåndsgodkjent av veileder" - {
                 "skal avvises når" - {
                     "er doed" {
                         InngangsRegler.evaluer(
                             listOf(
                                 DomeneOpplysning.ErDoed,
                                 DomeneOpplysning.ErForhaandsgodkjent,
-                                DomeneOpplysning.ErUnder18Aar
+                                DomeneOpplysning.ErUnder18Aar,
+                                DomeneOpplysning.BosattEtterFregLoven
                             )
                         ) should { result ->
                             result.shouldBeInstanceOf<Avvist>()
                             result.value.map { problem -> problem.regel.id } shouldContainExactlyInAnyOrder listOf(
                                 Doed,
-                                Under18Aar,
-                                IkkeBosattINorgeIHenholdTilFolkeregisterloven
+                                Under18Aar
                             )
                         }
                     }
