@@ -9,6 +9,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.*
 import no.nav.paw.arbeidssokerregisteret.personToken
+import no.nav.paw.arbeidssokerregisteret.routes.apiRegel
 import no.nav.paw.arbeidssokerregisteret.routes.apiRegelId
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -28,12 +29,7 @@ data object HentPersonReturnererNull : TestCase {
         melding = IkkeFunnet.beskrivelse,
         feilKode = FeilV2.FeilKode.AVVIST,
         aarsakTilAvvisning = AarsakTilAvvisningV2(
-            regler = listOf(
-                ApiRegel(
-                    id = IkkeFunnet.apiRegelId(),
-                    beskrivelse = IkkeFunnet.beskrivelse
-                )
-            ),
+            regler = listOf(IkkeFunnet.apiRegel()),
             detaljer = listOf(
                 Opplysning.PERSON_IKKE_FUNNET,
                 Opplysning.SAMME_SOM_INNLOGGET_BRUKER,

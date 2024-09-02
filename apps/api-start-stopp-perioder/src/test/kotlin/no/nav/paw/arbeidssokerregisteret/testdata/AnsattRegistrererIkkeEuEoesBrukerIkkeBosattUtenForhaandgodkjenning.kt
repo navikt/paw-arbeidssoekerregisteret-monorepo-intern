@@ -10,6 +10,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
+import no.nav.paw.arbeidssokerregisteret.routes.apiRegel
 import no.nav.paw.arbeidssokerregisteret.routes.apiRegelId
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.pdl.graphql.generated.hentperson.Foedsel
@@ -44,12 +45,7 @@ data object AnsattRegistrererIkkeEuEoesBrukerIkkeBosattUtenForhaandgodkjenning :
         melding = IkkeBosattINorgeIHenholdTilFolkeregisterloven.beskrivelse,
         feilKode = FeilV2.FeilKode.AVVIST,
         aarsakTilAvvisning = AarsakTilAvvisningV2(
-            regler = listOf(
-                ApiRegel(
-                    id = IkkeBosattINorgeIHenholdTilFolkeregisterloven.apiRegelId(),
-                    beskrivelse = IkkeBosattINorgeIHenholdTilFolkeregisterloven.beskrivelse
-                )
-            ),
+            regler = listOf(IkkeBosattINorgeIHenholdTilFolkeregisterloven.apiRegel()),
             detaljer = listOf(
                 ApiOpplysning.ER_OVER_18_AAR,
                 ApiOpplysning.HAR_NORSK_ADRESSE,
