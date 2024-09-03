@@ -49,7 +49,7 @@ class PeriodeProcessor(
         scheduleAvsluttPerioder(
             requireNotNull(context),
             requireNotNull(hendelseStateStore),
-            Duration.ofDays(1),
+            Duration.ofHours(1), // TODO: sett tilbake til ofDays(1) etter å ha sammenlignet resultater
             pdlHentForenkletStatus,
             pdlHentPersonBolk,
             prometheusMeterRegistry

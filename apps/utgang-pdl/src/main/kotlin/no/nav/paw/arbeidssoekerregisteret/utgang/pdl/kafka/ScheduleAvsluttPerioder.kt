@@ -1,10 +1,10 @@
 package no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka
 
 import arrow.core.Either
+import arrow.core.NonEmptyList
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.ApplicationInfo
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentForenkletStatus
-import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentForenkletStatus.Companion.logger
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentPerson
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseState
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.metrics.tellPdlAvsluttetHendelser
@@ -15,7 +15,6 @@ import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.statusToOpplysningMap
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.toAarsak
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.toPerson
 import no.nav.paw.arbeidssokerregisteret.application.*
-import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
@@ -25,6 +24,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
 import no.nav.paw.pdl.graphql.generated.hentforenkletstatusbolk.Folkeregisterpersonstatus
 import no.nav.paw.pdl.graphql.generated.hentforenkletstatusbolk.HentPersonBolkResult as ForenkletStatusBolkResult
 import no.nav.paw.pdl.graphql.generated.hentpersonbolk.HentPersonBolkResult
+import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Person
 import org.apache.kafka.streams.processor.Cancellable
 import org.apache.kafka.streams.processor.PunctuationType
 import org.apache.kafka.streams.processor.api.ProcessorContext
@@ -36,6 +36,12 @@ import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Instant
 import java.util.*
+
+data class EvalueringResultat(
+    val grunnlag: Pair<List<Folkeregisterpersonstatus>?, HendelseState>,
+    val avsluttPeriode: Boolean,
+    val slettForhaandsGodkjenning: Boolean
+)
 
 fun scheduleAvsluttPerioder(
     ctx: ProcessorContext<Long, Hendelse>,
@@ -58,72 +64,168 @@ fun scheduleAvsluttPerioder(
 
                 // Versjon 2
                 val pdlHentPersonResults = hentPersonBolk(identitetsnummere, pdlHentPersonBolk)
-                if (pdlHentPersonResults == null) {
+                val resultaterV2: List<EvalueringResultat> = if (pdlHentPersonResults == null) {
                     logger.warn("PDL hentPersonBolk returnerte null")
+                    emptyList()
                 } else {
-                    pdlHentPersonResults.processResultsV2(
+                    pdlHentPersonResults.processPdlResultsV2(
                         chunk,
                         logger
                     )
                 }
 
                 // Versjon 1
-                val pdlResults = hentForenkletStatus(identitetsnummere, pdlHentForenkletStatus)
-                if (pdlResults == null) {
-                    logger.error("PDL hentForenkletStatus returnerte null")
-                    return@chunked
+                val pdlHentForenkletStatusResults = hentForenkletStatus(identitetsnummere, pdlHentForenkletStatus)
+                val resultaterV1: List<EvalueringResultat> = if (pdlHentForenkletStatusResults == null) {
+                    logger.warn("PDL hentForenkletStatus returnerte null")
+                    emptyList()
+                } else {
+                    pdlHentForenkletStatusResults.processResults(
+                        chunk,
+                        prometheusMeterRegistry,
+                        logger
+                    )
                 }
 
-                pdlResults.processResults(
-                    chunk,
-                    hendelseStateStore,
-                    ctx,
-                    prometheusMeterRegistry,
-                    logger
-                )
+                resultaterV1.compareResults(resultaterV2, logger)
+                resultaterV1.onEach { resultat ->
+                    val (folkeregisterpersonstatus, hendelseState) = resultat.grunnlag
+                    if (resultat.avsluttPeriode && folkeregisterpersonstatus != null) {
+                        sendAvsluttetHendelse(folkeregisterpersonstatus, hendelseState, hendelseStateStore, ctx, prometheusMeterRegistry)
+                    }
+                }.forEach { resultat ->
+                    val hendelseState = resultat.grunnlag.second
+                    if (resultat.slettForhaandsGodkjenning) {
+                        slettForhaandsGodkjenning(hendelseState, hendelseStateStore)
+                    }
+                }
             }
     }
 }
 
-
 private fun List<ForenkletStatusBolkResult>.processResults(
     chunk: List<KeyValue<UUID, HendelseState>>,
+    prometheusMeterRegistry: PrometheusMeterRegistry,
+    logger: Logger
+): List<EvalueringResultat> =
+    this.filter { result ->
+        prometheusMeterRegistry.tellStatusFraPdlHentPersonBolk(result.code)
+        if (result.code in pdlErrorResponses) {
+            logger.error("Feil ved henting av forenklet status fra PDL: ${result.code}")
+            false
+        } else true
+    }.mapNotNull { result ->
+        hentFolkeregisterpersonstatusOgHendelseState(result, chunk)
+    }.map { (folkeregisterpersonstatus, hendelseState) ->
+
+        val avsluttPeriode = !folkeregisterpersonstatus.erBosattEtterFolkeregisterloven
+        val skalSletteForhaandsGodkjenning = skalSletteForhaandsGodkjenning(hendelseState, avsluttPeriode)
+
+        EvalueringResultat(
+            Pair(folkeregisterpersonstatus, hendelseState),
+            avsluttPeriode,
+            skalSletteForhaandsGodkjenning
+        )
+    }
+
+fun isPdlResultOK(code: String, logger: Logger): Boolean =
+    if(code in pdlErrorResponses){
+        logger.error("Feil ved henting av Person fra PDL: $code")
+        false
+    } else true
+
+fun getHendelseStateAndPerson(
+    result: HentPersonBolkResult,
+    chunk: List<KeyValue<UUID, HendelseState>>,
+    logger: Logger
+): Pair<Person, HendelseState>? {
+    val person = result.person
+    if(person == null){
+        logger.error("Person er null for periodeId: ${chunk.find { it.value.identitetsnummer == result.ident }?.key}")
+        return null
+    }
+    val hendelseState = chunk.find { it.value.identitetsnummer == result.ident }
+        ?.value ?: return null
+
+    return Pair(person, hendelseState)
+}
+
+fun Set<Opplysning>.toDomeneOpplysninger() = this
+    .filterNot { it == Opplysning.FORHAANDSGODKJENT_AV_ANSATT }
+    .map { hendelseOpplysningTilDomeneOpplysninger(it) as no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning }
+    .toSet()
+
+fun Set<Opplysning>.erForhaandsGodkkjent() = Opplysning.FORHAANDSGODKJENT_AV_ANSATT in this
+
+fun skalAvsluttePeriode(
+    pdlEvaluering: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>,
+    opplysningerEvaluering: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>,
+    erForhaandsgodkjent: Boolean
+) = pdlEvaluering.fold(
+    { pdlEvalueringLeft ->
+        when(opplysningerEvaluering) {
+            is Either.Left -> {
+                !(erForhaandsgodkjent && opplysningerEvaluering.value.containsAnyOf(pdlEvalueringLeft))
+            }
+            is Either.Right -> {
+                true
+            }
+        }
+    },
+    { false }
+)
+
+fun NonEmptyList<Problem>.containsAnyOf(other: NonEmptyList<Problem>): Boolean =
+    this.any { problem -> other.any { it.regel == problem.regel } }
+
+fun List<HentPersonBolkResult>.processPdlResultsV2(
+    chunk: List<KeyValue<UUID, HendelseState>>,
+    logger: Logger
+): List<EvalueringResultat> =
+    this.filter { result -> isPdlResultOK(result.code, logger) }
+    .mapNotNull { result -> getHendelseStateAndPerson(result, chunk, logger) }
+    .map { (person, hendelseState) ->
+        val hendelseOpplysninger = hendelseState.opplysninger
+
+        val domeneOpplysninger = hendelseOpplysninger.toDomeneOpplysninger()
+
+        val opplysningerEvaluering = InngangsRegler.evaluer(domeneOpplysninger)
+        val pdlEvaluering = InngangsRegler.evaluer(genererPersonFakta(person.toPerson()))
+
+        val erForhaandsgodkjent = hendelseOpplysninger.erForhaandsGodkkjent()
+
+        val skalAvsluttePeriode = skalAvsluttePeriode(pdlEvaluering, opplysningerEvaluering, erForhaandsgodkjent)
+
+        val slettForhaandsGodkjenning = pdlEvaluering.isRight() && opplysningerEvaluering.isLeft() && erForhaandsgodkjent
+
+        EvalueringResultat(
+            grunnlag = Pair(null, hendelseState),
+            skalAvsluttePeriode,
+            slettForhaandsGodkjenning
+        )
+    }
+
+fun skalSletteForhaandsGodkjenning(
+    hendelseState: HendelseState,
+    avsluttPeriode: Boolean
+) = Opplysning.FORHAANDSGODKJENT_AV_ANSATT in hendelseState.opplysninger
+            && hendelseState.opplysninger.any { it in negativeOpplysninger } && !avsluttPeriode
+
+fun sendAvsluttetHendelse(
+    folkeregisterpersonstatus: List<Folkeregisterpersonstatus>,
+    hendelseState: HendelseState,
     hendelseStateStore: KeyValueStore<UUID, HendelseState>,
     ctx: ProcessorContext<Long, Hendelse>,
     prometheusMeterRegistry: PrometheusMeterRegistry,
-    logger: Logger
-) = this.forEachIndexed { _, result ->
-    prometheusMeterRegistry.tellStatusFraPdlHentPersonBolk(result.code)
-
-    if (result.code in pdlErrorResponses) {
-        logger.error("Feil ved henting av forenklet status fra PDL: ${result.code}")
-        return@forEachIndexed
-    }
-
-    val (folkeregisterpersonstatus, hendelseState) = hentPersonStatusOgHendelseState(result, chunk)
-        ?: return@forEachIndexed
-
-    if (folkeregisterpersonstatus.erBosattEtterFolkeregisterloven) {
-        oppdaterHendelseStateOpplysninger(hendelseState, hendelseStateStore)
-        return@forEachIndexed
-    }
-
-    logger.info("Vurderer grunnlag for utmelding av person med folkeregisterstatus: $folkeregisterpersonstatus og opplysninger fra hendelse: ${hendelseState.opplysninger}")
-
+) {
     val aarsak = folkeregisterpersonstatus
         .filterAvsluttPeriodeGrunnlag(hendelseState.opplysninger)
         .ifEmpty {
-            logger.info("Versjon 1: OK, matchende opplysning fra startet hendelse og forhåndsgodkjent av ansatt")
-            return@forEachIndexed
+            return
         }
         .toAarsak()
 
-    logger.info("Versjon 1: PROBLEM, negative opplysninger fra pdl: ${folkeregisterpersonstatus.filterAvsluttPeriodeGrunnlag(hendelseState.opplysninger)}, generert aarsak: $aarsak")
-
     val avsluttetHendelse = genererAvsluttetHendelseRecord(hendelseState, aarsak)
-
-    logger.info("Sender avsluttet hendelse med aarsak: $aarsak")
-
     ctx.forward(avsluttetHendelse)
         .also {
             prometheusMeterRegistry.tellPdlAvsluttetHendelser(aarsak)
@@ -131,83 +233,50 @@ private fun List<ForenkletStatusBolkResult>.processResults(
         }
 }
 
-private fun List<HentPersonBolkResult>.processResultsV2(
-    chunk: List<KeyValue<UUID, HendelseState>>,
-    logger: Logger
-) = this.forEach { result ->
-    if (result.code in pdlErrorResponses) {
-        logger.error("Versjon 2: Feil ved henting av Person fra PDL: ${result.code}")
-        return@forEach
-    }
-
-    val hendelseState = chunk.find { it.value.identitetsnummer == result.ident }
-        ?.value
-
-    val person = if (result.person == null) {
-        logger.error("Versjon 2: Person er null: ${hendelseState?.periodeId}")
-        return@forEach
-    } else {
-        result.person
-    }
-
-    val hendelseOpplysninger = hendelseState?.opplysninger ?: throw IllegalStateException("Versjon 2: Opplysninger fra hendelse er null")
-
-    val domeneOpplysninger = hendelseOpplysninger
-        .filterNot { it == Opplysning.FORHAANDSGODKJENT_AV_ANSATT }
-        .map { hendelseOpplysningTilDomeneOpplysninger(it) as no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning }
-        .toSet()
-
-    val opplysningerEvaluering = InngangsRegler.evaluer(domeneOpplysninger)
-    val pdlEvaluering = InngangsRegler.evaluer(
-        person?.let { genererPersonFakta(it.toPerson()) }
-            ?: setOf(DomeneOpplysning.PersonIkkeFunnet)
+fun slettForhaandsGodkjenning(hendelseState: HendelseState, hendelseStateStore: KeyValueStore<UUID, HendelseState>) {
+    val oppdatertHendelseState = hendelseState.copy(
+        opplysninger = hendelseState.opplysninger
+            .filterNot { it == Opplysning.FORHAANDSGODKJENT_AV_ANSATT || it in negativeOpplysninger }
+            .toSet()
     )
-
-    val erForhaandsgodkjent = hendelseOpplysninger.contains(Opplysning.FORHAANDSGODKJENT_AV_ANSATT)
-
-    /**when {
-        pdlEvaluering.isLeft() -> handleLeftEvaluation(
-            pdlEvaluering, opplysningerEvaluering, erForhaandsgodkjent, logger
-        )
-        pdlEvaluering.isRight() -> handleRightEvaluation(
-            opplysningerEvaluering, erForhaandsgodkjent, logger
-        )
-    }**/
+    hendelseStateStore.put(hendelseState.periodeId, oppdatertHendelseState)
 }
 
-private fun handleLeftEvaluation(
-    pdlEvaluering: Either<Problem, GrunnlagForGodkjenning>,
-    opplysningerEvaluering: Either<Problem, GrunnlagForGodkjenning>,
-    erForhaandsgodkjent: Boolean,
+fun List<EvalueringResultat>.compareResults(
+    other: List<EvalueringResultat>,
     logger: Logger
 ) {
-    val pdlEvalueringResultat = pdlEvaluering.leftOrNull()?.opplysning?.toSet()
-        ?: throw IllegalStateException("Versjon 2: PDL evaluering mangler opplysning")
-    val opplysningerEvalueringResultat = opplysningerEvaluering.leftOrNull()?.opplysning?.toSet()
-        ?: throw IllegalStateException("Versjon 2: Opplysninger evaluering mangler opplysning")
+    val (_, hendelseState ) = this.first().grunnlag
+    val periodeIdMap = this.associateBy { hendelseState.periodeId }
+    val otherPeriodeIdMap = other.associateBy { hendelseState.periodeId }
 
-    if (pdlEvalueringResultat == opplysningerEvalueringResultat && erForhaandsgodkjent) {
-        logger.info("Versjon 2: OK, matchende opplysning fra startet hendelse og forhåndsgodkjent av ansatt: $pdlEvalueringResultat")
-    } else {
-        val aarsak = pdlEvalueringResultat.filterNot { it in opplysningerEvalueringResultat }.toAarsak()
-        logger.info("Versjon 2: PROBLEM, negative opplysninger fra pdl: $pdlEvalueringResultat, generert aarsak: $aarsak")
+    val periodeIder = periodeIdMap.keys + otherPeriodeIdMap.keys
+
+    periodeIder.forEach { periodeId ->
+        val result = periodeIdMap[periodeId]
+        val otherResult = otherPeriodeIdMap[periodeId]
+
+        if (result == null) {
+            logger.error("Versjon 1: result is null for periodeId: $periodeId")
+            return@forEach
+        }
+
+        if (otherResult == null) {
+            logger.error("Versjon 2: result is null for periodeId: $periodeId")
+            return@forEach
+        }
+
+        if (result.avsluttPeriode != otherResult.avsluttPeriode) {
+            logger.error("AvsluttPeriode mismatch for periodeId: $periodeId")
+        }
+
+        if (result.slettForhaandsGodkjenning != otherResult.slettForhaandsGodkjenning) {
+            logger.error("SlettForhaandsGodkjenning mismatch for periodeId: $periodeId")
+        }
     }
 }
 
-private fun handleRightEvaluation(
-    opplysningerEvaluering: Either<Problem, GrunnlagForGodkjenning>,
-    erForhaandsgodkjent: Boolean,
-    logger: Logger
-) {
-    if (opplysningerEvaluering.isLeft() && erForhaandsgodkjent) {
-        logger.info("Versjon 2: OK, ingen negative opplysninger fra pdl, negative opplysninger fra startet hendelse og forhåndsgodkjent av ansatt funnet")
-    } else {
-        logger.info("Versjon 2: OK, ingen negative opplysninger fra pdl")
-    }
-}
-
-
-private fun hentPersonStatusOgHendelseState(
+fun hentFolkeregisterpersonstatusOgHendelseState(
     result: ForenkletStatusBolkResult,
     chunk: List<KeyValue<UUID, HendelseState>>
 ): Pair<List<Folkeregisterpersonstatus>, HendelseState>? {
@@ -218,24 +287,7 @@ private fun hentPersonStatusOgHendelseState(
     return Pair(person.folkeregisterpersonstatus, hendelseState)
 }
 
-private fun oppdaterHendelseStateOpplysninger(
-    hendelseState: HendelseState,
-    hendelseStateStore: KeyValueStore<UUID, HendelseState>
-) {
-    if (Opplysning.FORHAANDSGODKJENT_AV_ANSATT in hendelseState.opplysninger && hendelseState.opplysninger.any { it in negativeOpplysninger }) {
-        val oppdatertHendelseState = hendelseState.copy(
-            opplysninger = hendelseState.opplysninger
-                .filterNot { it == Opplysning.FORHAANDSGODKJENT_AV_ANSATT || it in negativeOpplysninger }
-                .toSet()
-        )
-        hendelseStateStore.put(hendelseState.periodeId, oppdatertHendelseState)
-        logger.info("Versjon 1: OK, ingen negative opplysninger fra pdl, negative opplysninger fra startet hendelse og forhåndsgodkjent av ansatt funnet")
-    } else {
-        logger.info("Versjon 1: OK, ingen negative opplysninger fra pdl")
-    }
-}
-
-private fun hentForenkletStatus(
+fun hentForenkletStatus(
     identitetsnummere: List<String>,
     pdlHentForenkletStatus: PdlHentForenkletStatus,
 ): List<ForenkletStatusBolkResult>? {
@@ -246,7 +298,7 @@ private fun hentForenkletStatus(
     )
 }
 
-private fun hentPersonBolk(
+fun hentPersonBolk(
     identitetsnummere: List<String>,
     pdlHentPersonBolk: PdlHentPerson,
 ): List<HentPersonBolkResult>? {
@@ -257,7 +309,7 @@ private fun hentPersonBolk(
     )
 }
 
-private fun List<KeyValue<UUID, HendelseState>>.filterValidHendelseStates(): List<KeyValue<UUID, HendelseState>> =
+fun List<KeyValue<UUID, HendelseState>>.filterValidHendelseStates(): List<KeyValue<UUID, HendelseState>> =
     this.filter { entry ->
         val hendelseState = entry.value
         hendelseState.harTilhoerendePeriode && hendelseState.brukerId != null
@@ -277,17 +329,16 @@ fun List<Folkeregisterpersonstatus>.filterAvsluttPeriodeGrunnlag(
 }
 
 
-
-private val List<Folkeregisterpersonstatus>.erBosattEtterFolkeregisterloven
+val List<Folkeregisterpersonstatus>.erBosattEtterFolkeregisterloven
     get(): Boolean =
         this.any { it.forenkletStatus == "bosattEtterFolkeregisterloven" }
 
-private val pdlErrorResponses = setOf(
+val pdlErrorResponses = setOf(
     "bad_request",
     "not_found"
 )
 
-private fun genererAvsluttetHendelseRecord(
+fun genererAvsluttetHendelseRecord(
     hendelseState: HendelseState,
     aarsak: String,
 ): Record<Long, Avsluttet> = Record(

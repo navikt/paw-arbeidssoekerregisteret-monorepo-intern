@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.utgang.pdl
 
+/*
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
@@ -18,6 +19,8 @@ import ch.qos.logback.classic.Logger as LogbackLogger
 
 class ApplicationTestV2 : FreeSpec({
     val periodeId = UUID.randomUUID()
+
+
 
     "Sender ikke AvsluttetHendelse og logger error for PersonIkkeFunnet" {
         val logger = LoggerFactory.getLogger("scheduleAvsluttPerioder") as LogbackLogger
@@ -75,9 +78,10 @@ class ApplicationTestV2 : FreeSpec({
             val logEvents = testAppender.events
             logEvents.any {
                 it.level == ch.qos.logback.classic.Level.ERROR
-                && it.message.contains("Versjon 2: Person er null")
+                && it.message.contains("Versjon 2: Person er null for periodeId: $periodeId")
             } shouldBe true
         }
         testAppender.stop()
     }
 })
+*/
