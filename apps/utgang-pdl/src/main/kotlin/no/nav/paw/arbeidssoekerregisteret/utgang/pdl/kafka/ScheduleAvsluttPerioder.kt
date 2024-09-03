@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka
 
 import arrow.core.Either
+import arrow.core.NonEmptyList
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.ApplicationInfo
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentForenkletStatus
@@ -157,14 +158,14 @@ fun Set<Opplysning>.toDomeneOpplysninger() = this
 fun Set<Opplysning>.erForhaandsGodkkjent() = Opplysning.FORHAANDSGODKJENT_AV_ANSATT in this
 
 fun skalAvsluttePeriode(
-    pdlEvaluering: Either<Problem, GrunnlagForGodkjenning>,
-    opplysningerEvaluering: Either<Problem, GrunnlagForGodkjenning>,
+    pdlEvaluering: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>,
+    opplysningerEvaluering: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>,
     erForhaandsgodkjent: Boolean
 ) = pdlEvaluering.fold(
-    {
+    { pdlEvalueringLeft ->
         when(opplysningerEvaluering) {
             is Either.Left -> {
-                !(erForhaandsgodkjent && opplysningerEvaluering.value.regel == it.regel)
+                !(erForhaandsgodkjent && opplysningerEvaluering.value.containsAnyOf(pdlEvalueringLeft))
             }
             is Either.Right -> {
                 true
@@ -173,6 +174,9 @@ fun skalAvsluttePeriode(
     },
     { false }
 )
+
+fun NonEmptyList<Problem>.containsAnyOf(other: NonEmptyList<Problem>): Boolean =
+    this.any { problem -> other.any { it.regel == problem.regel } }
 
 fun List<HentPersonBolkResult>.processPdlResultsV2(
     chunk: List<KeyValue<UUID, HendelseState>>,
