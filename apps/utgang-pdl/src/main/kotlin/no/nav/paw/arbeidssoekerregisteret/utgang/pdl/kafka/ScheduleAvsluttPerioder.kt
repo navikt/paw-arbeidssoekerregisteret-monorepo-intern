@@ -152,7 +152,7 @@ fun getHendelseStateAndPerson(
 
 fun Set<Opplysning>.toDomeneOpplysninger() = this
     .filterNot { it == Opplysning.FORHAANDSGODKJENT_AV_ANSATT }
-    .map { hendelseOpplysningTilDomeneOpplysninger(it) as no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning }
+    .mapNotNull { hendelseOpplysningTilDomeneOpplysninger(it) }
     .toSet()
 
 fun Set<Opplysning>.erForhaandsGodkkjent() = Opplysning.FORHAANDSGODKJENT_AV_ANSATT in this
