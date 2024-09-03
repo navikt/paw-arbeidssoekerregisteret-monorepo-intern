@@ -25,7 +25,6 @@ import no.nav.paw.arbeidssokerregisteret.auth.configureAuthentication
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.plugins.configureHTTP
 import no.nav.paw.arbeidssokerregisteret.plugins.configureSerialization
-import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutes
 import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutesV2
 import no.nav.security.mock.oauth2.MockOAuth2Server
 
@@ -50,7 +49,7 @@ class InngagnSomVeilederTest : FreeSpec({
             } returns GrunnlagForGodkjenning(
                 regel = Regel(
                     id = AnsattHarTilgangTilBruker,
-                    opplysninger = emptyList(),
+                    kritierier = emptyList(),
                     vedTreff = ::grunnlagForGodkjenning
                 ),
                 opplysning = emptySet()

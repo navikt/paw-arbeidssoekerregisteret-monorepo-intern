@@ -19,7 +19,6 @@ import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysni
 import no.nav.paw.arbeidssokerregisteret.plugins.configureHTTP
 import no.nav.paw.arbeidssokerregisteret.plugins.configureSerialization
 import no.nav.paw.arbeidssokerregisteret.routes.apiRegel
-import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutes
 import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutesV2
 import no.nav.paw.arbeidssokerregisteret.routes.feilmeldingVedAvvist
 
@@ -39,7 +38,7 @@ class ApplicationPeriodeTest : FunSpec({
                 } returns muligGrunnlagForAvvisning(
                     regel = Regel(
                         id = Under18Aar,
-                        opplysninger = listOf(DomeneOpplysning.ErUnder18Aar),
+                        kritierier = listOf(DomeneOpplysning.ErUnder18Aar),
                         vedTreff = ::skalAvises
                     ),
                     opplysninger = listOf(DomeneOpplysning.ErUnder18Aar, DomeneOpplysning.BosattEtterFregLoven)

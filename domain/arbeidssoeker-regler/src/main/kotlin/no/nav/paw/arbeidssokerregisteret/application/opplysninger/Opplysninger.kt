@@ -1,10 +1,12 @@
 package no.nav.paw.arbeidssokerregisteret.application.opplysninger
 
-interface Opplysning {
+import no.nav.paw.arbeidssokerregisteret.application.Condition
+
+interface Opplysning: Condition {
     val id: String
     val beskrivelse: String
+    override fun eval(opplysninger: Iterable<Opplysning>): Boolean = this in opplysninger
 }
-
 
 infix operator fun Opplysning.plus(opplysning: Opplysning): Set<Opplysning> = setOf(this, opplysning)
 sealed interface DomeneOpplysning: Opplysning {

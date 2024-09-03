@@ -7,6 +7,7 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.should
 import io.kotest.matchers.types.shouldBeInstanceOf
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
 
 typealias Avvist = Either.Left<NonEmptyList<Problem>>
 typealias Godkjent = Either.Right<GrunnlagForGodkjenning>
@@ -43,6 +44,59 @@ class RegelEvalTest : FreeSpec({
                             IkkeBosattINorgeIHenholdTilFolkeregisterloven
                         )
                     }
+                }
+                "eu/eoes(men ikke Norsk statsborger) avvises med 'under 18 år' og 'ikke bosatt' når ikke bosatt etter f.reg. loven" {
+                    InngangsRegler.evaluer(
+                        listOf(
+                            DomeneOpplysning.ErUnder18Aar,
+                            DomeneOpplysning.IkkeBosatt,
+                            DomeneOpplysning.ErEuEoesStatsborger
+                        )
+                    ) should { result ->
+                        result.shouldBeInstanceOf<Avvist>()
+                        result.value.map { problem -> problem.regel.id } shouldContainExactlyInAnyOrder listOf(
+                            Under18Aar,
+                            EuEoesStatsborgerMenHarStatusIkkeBosatt
+                        )
+                    }
+                }
+            }
+            "er ikke norsk EU/EØS statsborger under 18 år med dnummer og ikke utflyttet" {
+                InngangsRegler.evaluer(
+                    listOf(
+                        DomeneOpplysning.ErUnder18Aar,
+                        DomeneOpplysning.ErEuEoesStatsborger,
+                        DomeneOpplysning.HarUtenlandskAdresse,
+                        DomeneOpplysning.HarRegistrertAdresseIEuEoes,
+                        DomeneOpplysning.IngenInformasjonOmOppholdstillatelse,
+                        DomeneOpplysning.Dnummer,
+                        DomeneOpplysning.IngenFlytteInformasjon
+                    )
+                ) should { result ->
+                    result.shouldBeInstanceOf<Avvist>()
+                    result.value.map { problem -> problem.regel.id } shouldContainExactlyInAnyOrder listOf(
+                        Under18Aar
+                    )
+                }
+            }
+            "er ikke norsl EU/EØS statsborger under 18 år med dnummer og utflyttet" {
+                InngangsRegler.evaluer(
+                    listOf(
+                        DomeneOpplysning.ErUnder18Aar,
+                        DomeneOpplysning.ErEuEoesStatsborger,
+                        DomeneOpplysning.HarUtenlandskAdresse,
+                        DomeneOpplysning.HarRegistrertAdresseIEuEoes,
+                        DomeneOpplysning.IngenInformasjonOmOppholdstillatelse,
+                        DomeneOpplysning.Dnummer,
+                        DomeneOpplysning.IngenFlytteInformasjon,
+                        DomeneOpplysning.IkkeBosatt
+                    )
+                ) should { result ->
+                    result.shouldBeInstanceOf<Avvist>()
+                    result.value.map { problem -> problem.regel.id } shouldContainExactlyInAnyOrder listOf(
+                        Under18Aar,
+                        EuEoesStatsborgerMenHarStatusIkkeBosatt
+                    )
                 }
             }
             "og er forhåndsgodkjent av veileder" - {
@@ -157,8 +211,7 @@ class RegelEvalTest : FreeSpec({
                     ) should { result ->
                         result.shouldBeInstanceOf<Avvist>()
                         result.value.map { it.regel.id } shouldContainExactlyInAnyOrder listOf(
-                            EuEoesStatsborgerMenHarStatusIkkeBosatt,
-                            IkkeBosattINorgeIHenholdTilFolkeregisterloven
+                            EuEoesStatsborgerMenHarStatusIkkeBosatt
                         )
                     }
                 }

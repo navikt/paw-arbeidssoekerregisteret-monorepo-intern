@@ -7,21 +7,18 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning as HendelseOppl
 
 
 operator fun RegelId.invoke(
-    vararg opplysninger: Opplysning,
+    vararg kriterier: Condition,
     vedTreff: (Regel, Iterable<Opplysning>) -> Either<Problem, GrunnlagForGodkjenning>
 ) = Regel(
     id = this,
     vedTreff = vedTreff,
-    opplysninger = opplysninger.toList()
+    kritierier = kriterier.toList()
 )
 
 fun Regel.evaluer(samletOpplysning: Iterable<Opplysning>): Boolean =
-    opplysninger
-        .filterNot { it is Not<*> }
-        .all { samletOpplysning.contains(it) } &&
-            opplysninger
-                .filterIsInstance<Not<Opplysning>>()
-                .none { samletOpplysning.contains(it.value) }
+    kritierier.all {
+        it.eval(samletOpplysning)
+    }
 
 /**
  * Evaluerer en liste med regler mot en liste med opplysninger. Returnerer første regel som evalueres til sann,

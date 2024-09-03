@@ -6,9 +6,9 @@ import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
 data class Regel(
     val id: RegelId,
     /**
-     * Opplysninger som må være tilstede for at regelen skal være sann
+     * Kritieries som må være oppfylt for at regelen skal være sann
      */
-    val opplysninger: List<Opplysning>,
+    val kritierier: List<Condition>,
 
     private val vedTreff: (Regel, Iterable<Opplysning>) -> Either<Problem, GrunnlagForGodkjenning>
 ) {

@@ -1,6 +1,5 @@
 package no.nav.paw.arbeidssokerregisteret
 
-import arrow.core.left
 import arrow.core.nonEmptyListOf
 import arrow.core.right
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -24,7 +23,6 @@ import no.nav.paw.arbeidssokerregisteret.auth.configureAuthentication
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.plugins.configureHTTP
 import no.nav.paw.arbeidssokerregisteret.plugins.configureSerialization
-import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutes
 import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutesV2
 import no.nav.security.mock.oauth2.MockOAuth2Server
 
@@ -49,7 +47,7 @@ class InngangSomBrukerTest : FreeSpec({
             } returns GrunnlagForGodkjenning(
                 regel = Regel(
                     id = Over18AarOgBosattEtterFregLoven,
-                    opplysninger = emptyList(),
+                    kritierier = emptyList(),
                     vedTreff = ::grunnlagForGodkjenning
                 ),
                 opplysning = emptySet()
@@ -110,7 +108,7 @@ class InngangSomBrukerTest : FreeSpec({
             } returns skalAvises(
                 regel = Regel(
                     id = IkkeAnsattOgForhaandsgodkjentAvAnsatt,
-                    opplysninger = emptyList(),
+                    kritierier = emptyList(),
                     vedTreff = ::skalAvises
                 ),
                 opplysninger = emptySet()

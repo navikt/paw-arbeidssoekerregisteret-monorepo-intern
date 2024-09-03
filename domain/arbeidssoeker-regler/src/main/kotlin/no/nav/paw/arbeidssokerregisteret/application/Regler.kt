@@ -8,11 +8,12 @@ interface Regler {
     operator fun Opplysning.not(): Opplysning = HarIkke(this)
 }
 
-interface Not<A> {
-    val value: A
-}
-
-data class HarIkke(override val value: Opplysning) : Not<Opplysning>, Opplysning {
+data class HarIkke( val value: Opplysning) : Opplysning {
     override val id: String get() = "IKKE_${value.id}"
     override val beskrivelse: String get() = "IKKE_${value.beskrivelse}"
+    override fun eval(opplysninger: Iterable<Opplysning>): Boolean = value !in opplysninger
+}
+
+interface Condition {
+    fun eval(opplysninger: Iterable<Opplysning>): Boolean
 }

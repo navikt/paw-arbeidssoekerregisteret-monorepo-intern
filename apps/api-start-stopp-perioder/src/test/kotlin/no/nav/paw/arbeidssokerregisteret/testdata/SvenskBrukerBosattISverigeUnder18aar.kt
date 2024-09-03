@@ -100,7 +100,6 @@ data object SvenskBrukerBosattISverigeUnder18aar : TestCase {
                 Opplysning.IKKE_ANSATT,
                 Opplysning.SAMME_SOM_INNLOGGET_BRUKER,
                 Opplysning.INGEN_INFORMASJON_OM_OPPHOLDSTILLATELSE,
-                Opplysning.ER_NORSK_STATSBORGER,
                 Opplysning.DNUMMER,
                 Opplysning.INGEN_FLYTTE_INFORMASJON
             )
