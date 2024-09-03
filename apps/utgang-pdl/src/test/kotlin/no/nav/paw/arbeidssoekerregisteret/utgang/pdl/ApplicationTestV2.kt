@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssoekerregisteret.utgang.pdl
 
-/*import io.kotest.core.spec.style.FreeSpec
+/*
+import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
@@ -15,9 +16,11 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 import ch.qos.logback.classic.Logger as LogbackLogger
-// TODO: Skriv tester for funksjonene brukt i processResultsV2
+
 class ApplicationTestV2 : FreeSpec({
     val periodeId = UUID.randomUUID()
+
+
 
     "Sender ikke AvsluttetHendelse og logger error for PersonIkkeFunnet" {
         val logger = LoggerFactory.getLogger("scheduleAvsluttPerioder") as LogbackLogger
@@ -80,4 +83,5 @@ class ApplicationTestV2 : FreeSpec({
         }
         testAppender.stop()
     }
-})*/
+})
+*/
