@@ -212,7 +212,10 @@ fun List<HentPersonBolkResult>.processPdlResultsV2(
 
 fun Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>.toAarsak() =
     this.fold(
-        { it.first().regel.opplysninger.joinToString(", ") { opplysning -> opplysning.beskrivelse } },
+        { problems ->
+            problems.map { problem -> problem.regel.opplysninger }
+                .flatten()
+                .joinToString(", ") { opplysning -> opplysning.beskrivelse } },
         { "Ingen årsak" }
     )
 
@@ -260,28 +263,30 @@ fun List<EvalueringResultat>.compareResults(
     val hendelseStates = this.associateBy { it.hendelseState.periodeId }
     val otherHendelseStates = other.associateBy { it.hendelseState.periodeId }
 
-    val periodeIder = hendelseStates.keys + otherHendelseStates.keys
+    val matchingPeriodeIder = hendelseStates.keys.intersect(otherHendelseStates.keys)
 
-    periodeIder.forEach { periodeId ->
+    matchingPeriodeIder.forEach { periodeId ->
         val result = hendelseStates[periodeId]
         val otherResult = otherHendelseStates[periodeId]
 
-        if (result == null) {
-            logger.error("v1: result is null for periodeId: $periodeId")
-            return@forEach
-        }
+        if (result != null && otherResult != null) {
+            if (result.avsluttPeriode != otherResult.avsluttPeriode) {
+                logger.error(
+                    "AvsluttPeriode mismatch for periodeId: $periodeId, " +
+                            "v1: ${result.avsluttPeriode} " +
+                            "aarsak: ${result.grunnlagV1?.filterAvsluttPeriodeGrunnlag(result.hendelseState.opplysninger)?.toAarsak()}, " +
+                            "v2: ${otherResult.avsluttPeriode} " +
+                            "aarsak: ${otherResult.grunnlagV2?.toAarsak()}"
+                )
+            }
 
-        if (otherResult == null) {
-            logger.error("v2: result is null for periodeId: $periodeId")
-            return@forEach
-        }
-
-        if (result.avsluttPeriode != otherResult.avsluttPeriode) {
-            logger.error("AvsluttPeriode mismatch for periodeId: $periodeId, aarsak v1: ${result.grunnlagV1?.filterAvsluttPeriodeGrunnlag(result.hendelseState.opplysninger)?.toAarsak()}, aarsak v2: ${otherResult.grunnlagV2?.toAarsak()}")
-        }
-
-        if (result.slettForhaandsGodkjenning != otherResult.slettForhaandsGodkjenning) {
-            logger.error("SlettForhaandsGodkjenning mismatch for periodeId: $periodeId")
+            if (result.slettForhaandsGodkjenning != otherResult.slettForhaandsGodkjenning) {
+                logger.error(
+                    "SlettForhaandsGodkjenning mismatch for periodeId: $periodeId, " +
+                            "v1: ${result.slettForhaandsGodkjenning}, " +
+                            "v2: ${otherResult.slettForhaandsGodkjenning}"
+                )
+            }
         }
     }
 }
