@@ -38,7 +38,9 @@ import java.time.Instant
 import java.util.*
 
 data class EvalueringResultat(
-    val grunnlag: Pair<List<Folkeregisterpersonstatus>?, HendelseState>,
+    val grunnlagV1: List<Folkeregisterpersonstatus>? = null,
+    val grunnlagV2: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>? = null,
+    val hendelseState: HendelseState,
     val avsluttPeriode: Boolean,
     val slettForhaandsGodkjenning: Boolean
 )
@@ -89,12 +91,13 @@ fun scheduleAvsluttPerioder(
 
                 resultaterV1.compareResults(resultaterV2, logger)
                 resultaterV1.onEach { resultat ->
-                    val (folkeregisterpersonstatus, hendelseState) = resultat.grunnlag
+                    val folkeregisterpersonstatus = resultat.grunnlagV1
+                    val hendelseState = resultat.hendelseState
                     if (resultat.avsluttPeriode && folkeregisterpersonstatus != null) {
                         sendAvsluttetHendelse(folkeregisterpersonstatus, hendelseState, hendelseStateStore, ctx, prometheusMeterRegistry)
                     }
                 }.forEach { resultat ->
-                    val hendelseState = resultat.grunnlag.second
+                    val hendelseState = resultat.hendelseState
                     if (resultat.slettForhaandsGodkjenning) {
                         slettForhaandsGodkjenning(hendelseState, hendelseStateStore)
                     }
@@ -122,9 +125,10 @@ private fun List<ForenkletStatusBolkResult>.processResults(
         val skalSletteForhaandsGodkjenning = skalSletteForhaandsGodkjenning(hendelseState, avsluttPeriode)
 
         EvalueringResultat(
-            Pair(folkeregisterpersonstatus, hendelseState),
-            avsluttPeriode,
-            skalSletteForhaandsGodkjenning
+            grunnlagV1 = folkeregisterpersonstatus,
+            hendelseState = hendelseState,
+            avsluttPeriode = avsluttPeriode,
+            slettForhaandsGodkjenning = skalSletteForhaandsGodkjenning
         )
     }
 
@@ -199,11 +203,18 @@ fun List<HentPersonBolkResult>.processPdlResultsV2(
         val slettForhaandsGodkjenning = pdlEvaluering.isRight() && opplysningerEvaluering.isLeft() && erForhaandsgodkjent
 
         EvalueringResultat(
-            grunnlag = Pair(null, hendelseState),
-            skalAvsluttePeriode,
-            slettForhaandsGodkjenning
+            grunnlagV2 = pdlEvaluering,
+            hendelseState = hendelseState,
+            avsluttPeriode = skalAvsluttePeriode,
+            slettForhaandsGodkjenning = slettForhaandsGodkjenning
         )
     }
+
+fun Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>.toAarsak() =
+    this.fold(
+        { it.first().regel.opplysninger.joinToString(", ") { opplysning -> opplysning.beskrivelse } },
+        { "Ingen årsak" }
+    )
 
 fun skalSletteForhaandsGodkjenning(
     hendelseState: HendelseState,
@@ -246,28 +257,27 @@ fun List<EvalueringResultat>.compareResults(
     other: List<EvalueringResultat>,
     logger: Logger
 ) {
-    val (_, hendelseState ) = this.first().grunnlag
-    val periodeIdMap = this.associateBy { hendelseState.periodeId }
-    val otherPeriodeIdMap = other.associateBy { hendelseState.periodeId }
+    val hendelseStates = this.associateBy { it.hendelseState.periodeId }
+    val otherHendelseStates = other.associateBy { it.hendelseState.periodeId }
 
-    val periodeIder = periodeIdMap.keys + otherPeriodeIdMap.keys
+    val periodeIder = hendelseStates.keys + otherHendelseStates.keys
 
     periodeIder.forEach { periodeId ->
-        val result = periodeIdMap[periodeId]
-        val otherResult = otherPeriodeIdMap[periodeId]
+        val result = hendelseStates[periodeId]
+        val otherResult = otherHendelseStates[periodeId]
 
         if (result == null) {
-            logger.error("Versjon 1: result is null for periodeId: $periodeId")
+            logger.error("v1: result is null for periodeId: $periodeId")
             return@forEach
         }
 
         if (otherResult == null) {
-            logger.error("Versjon 2: result is null for periodeId: $periodeId")
+            logger.error("v2: result is null for periodeId: $periodeId")
             return@forEach
         }
 
         if (result.avsluttPeriode != otherResult.avsluttPeriode) {
-            logger.error("AvsluttPeriode mismatch for periodeId: $periodeId")
+            logger.error("AvsluttPeriode mismatch for periodeId: $periodeId, aarsak v1: ${result.grunnlagV1?.filterAvsluttPeriodeGrunnlag(result.hendelseState.opplysninger)?.toAarsak()}, aarsak v2: ${otherResult.grunnlagV2?.toAarsak()}")
         }
 
         if (result.slettForhaandsGodkjenning != otherResult.slettForhaandsGodkjenning) {

@@ -55,7 +55,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
             output.shouldHaveSize(1)
             val evalueringResultat = output.first()
 
-            evalueringResultat.grunnlag.second shouldBe hendelseState
+            evalueringResultat.hendelseState shouldBe hendelseState
             evalueringResultat.avsluttPeriode shouldBe true
             evalueringResultat.slettForhaandsGodkjenning shouldBe false
         }
@@ -89,7 +89,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
             output.shouldHaveSize(1)
             val evalueringResultat = output.first()
 
-            evalueringResultat.grunnlag.second shouldBe hendelseState
+            evalueringResultat.hendelseState shouldBe hendelseState
             evalueringResultat.avsluttPeriode shouldBe true
             evalueringResultat.slettForhaandsGodkjenning shouldBe false
         }
@@ -123,7 +123,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
             output.shouldHaveSize(1)
             val evalueringResultat = output.first()
 
-            evalueringResultat.grunnlag.second shouldBe hendelseState
+            evalueringResultat.hendelseState shouldBe hendelseState
             evalueringResultat.avsluttPeriode shouldBe true
             evalueringResultat.slettForhaandsGodkjenning shouldBe false
         }
@@ -159,7 +159,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
             output.shouldHaveSize(1)
             val evalueringResultat = output.first()
 
-            evalueringResultat.grunnlag.second shouldBe hendelseState
+            evalueringResultat.hendelseState shouldBe hendelseState
             evalueringResultat.avsluttPeriode shouldBe false
             evalueringResultat.slettForhaandsGodkjenning shouldBe false
         }
@@ -193,7 +193,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
             output.shouldHaveSize(1)
             val evalueringResultat = output.first()
 
-            evalueringResultat.grunnlag.second shouldBe hendelseState
+            evalueringResultat.hendelseState shouldBe hendelseState
             evalueringResultat.avsluttPeriode shouldBe false
             evalueringResultat.slettForhaandsGodkjenning shouldBe false
         }
@@ -230,7 +230,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
             output.shouldHaveSize(1)
             val evalueringResultat = output.first()
 
-            evalueringResultat.grunnlag.second shouldBe hendelseState
+            evalueringResultat.hendelseState shouldBe hendelseState
             evalueringResultat.avsluttPeriode shouldBe false
             evalueringResultat.slettForhaandsGodkjenning shouldBe true
         }
