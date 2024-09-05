@@ -5,12 +5,10 @@ import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
 interface Regler {
     val regler: List<Regel>
     val standardRegel: Regel
-    operator fun Opplysning.not(): Opplysning = HarIkke(this)
+    operator fun Opplysning.not(): Condition = HarIkke(this)
 }
 
-data class HarIkke( val value: Opplysning) : Opplysning {
-    override val id: String get() = "IKKE_${value.id}"
-    override val beskrivelse: String get() = "IKKE_${value.beskrivelse}"
+data class HarIkke( val value: Opplysning) : Condition {
     override fun eval(opplysninger: Iterable<Opplysning>): Boolean = value !in opplysninger
 }
 
