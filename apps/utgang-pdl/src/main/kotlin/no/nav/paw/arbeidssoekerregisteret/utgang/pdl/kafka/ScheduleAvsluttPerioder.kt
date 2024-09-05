@@ -160,7 +160,7 @@ fun Set<Opplysning>.toDomeneOpplysninger() = this
     .mapNotNull { hendelseOpplysningTilDomeneOpplysninger(it) }
     .toSet()
 
-fun Set<Opplysning>.erForhaandsGodkkjent() = Opplysning.FORHAANDSGODKJENT_AV_ANSATT in this
+fun Set<Opplysning>.erForhaandsGodkjent() = Opplysning.FORHAANDSGODKJENT_AV_ANSATT in this
 
 fun skalAvsluttePeriode(
     pdlEvaluering: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>,
@@ -170,7 +170,7 @@ fun skalAvsluttePeriode(
     { pdlEvalueringLeft ->
         when(opplysningerEvaluering) {
             is Either.Left -> {
-                !(erForhaandsgodkjent && opplysningerEvaluering.value.containsAnyOf(pdlEvalueringLeft))
+                !(erForhaandsgodkjent && pdlEvalueringLeft.containsAnyOf(opplysningerEvaluering.value))
             }
             is Either.Right -> {
                 true
@@ -197,7 +197,7 @@ fun List<HentPersonBolkResult>.processPdlResultsV2(
         val opplysningerEvaluering = InngangsRegler.evaluer(domeneOpplysninger)
         val pdlEvaluering = InngangsRegler.evaluer(genererPersonFakta(person.toPerson()))
 
-        val erForhaandsgodkjent = hendelseOpplysninger.erForhaandsGodkkjent()
+        val erForhaandsgodkjent = hendelseOpplysninger.erForhaandsGodkjent()
 
         val skalAvsluttePeriode = skalAvsluttePeriode(pdlEvaluering, opplysningerEvaluering, erForhaandsgodkjent)
 
@@ -211,12 +211,12 @@ fun List<HentPersonBolkResult>.processPdlResultsV2(
         )
     }
 
-fun Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>.toAarsak() =
+fun Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>.toAarsak(): String =
     this.fold(
         { problems ->
             problems.map { problem -> problem.regel.opplysninger }
                 .flatten()
-                .joinToString(", ") { opplysning -> opplysning.beskrivelse } },
+                .joinToString(", ") { opplysning -> opplysning.id } },
         { "Ingen årsak" }
     )
 
@@ -275,9 +275,9 @@ fun List<EvalueringResultat>.compareResults(
                 logger.warn(
                     "AvsluttPeriode mismatch for periodeId: $periodeId, " +
                             "v1: ${result.avsluttPeriode} " +
-                            "aarsak: ${result.grunnlagV1?.filterAvsluttPeriodeGrunnlag(result.hendelseState.opplysninger)?.toAarsak()}, " +
+                            "aarsak: ${result.grunnlagV1?.filterAvsluttPeriodeGrunnlag(result.hendelseState.opplysninger)?.toAarsak() ?: "mangler grunnlag"}, " +
                             "v2: ${otherResult.avsluttPeriode} " +
-                            "aarsak: ${otherResult.grunnlagV2?.toAarsak()}"
+                            "aarsak: ${otherResult.grunnlagV2?.toAarsak() ?: "mangler grunnlag"}"
                 )
             }
 

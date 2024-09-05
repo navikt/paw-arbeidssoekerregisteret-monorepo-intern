@@ -18,10 +18,10 @@ import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Vegadresse
 fun Person.toPerson(): no.nav.paw.pdl.graphql.generated.hentperson.Person =
     no.nav.paw.pdl.graphql.generated.hentperson.Person(
         foedsel = this.foedsel.toFoedsel(),
-        bostedsadresse = this.bostedsadresse.toBostedsadresseBolk(),
-        opphold = this.opphold.toOpphold(),
         statsborgerskap = this.statsborgerskap.toStatsborgerskap(),
+        opphold = this.opphold.toOpphold(),
         folkeregisterpersonstatus = this.folkeregisterpersonstatus.toFolkeregisterpersonstatus(),
+        bostedsadresse = this.bostedsadresse.toBostedsadresseBolk(),
         innflyttingTilNorge = this.innflyttingTilNorge.toInnflyttingTilNorge(),
         utflyttingFraNorge = this.utflyttingFraNorge.toUtflyttingFraNorge(),
     )
