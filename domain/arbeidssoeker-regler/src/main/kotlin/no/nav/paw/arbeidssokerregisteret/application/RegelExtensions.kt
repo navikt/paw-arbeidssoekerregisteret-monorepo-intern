@@ -15,9 +15,9 @@ operator fun RegelId.invoke(
     kritierier = kriterier.toList()
 )
 
-fun Regel.evaluer(samletOpplysning: Iterable<Opplysning>): Boolean =
+fun Regel.evaluer(opplysninger: Iterable<Opplysning>): Boolean =
     kritierier.all {
-        it.eval(samletOpplysning)
+        it.eval(opplysninger)
     }
 
 /**
