@@ -180,8 +180,10 @@ fun skalAvsluttePeriode(
     { false }
 )
 
-fun NonEmptyList<Problem>.containsAnyOf(other: NonEmptyList<Problem>): Boolean =
-    this.any { problem -> other.any { it.regel == problem.regel } }
+fun NonEmptyList<Problem>.containsAnyOf(other: NonEmptyList<Problem>): Boolean {
+    val otherRegler = other.map { it.regel.id }.toSet()
+    return this.any { problem -> problem.regel.id in otherRegler }
+}
 
 fun List<HentPersonBolkResult>.processPdlResultsV2(
     chunk: List<KeyValue<UUID, HendelseState>>,
@@ -214,9 +216,8 @@ fun List<HentPersonBolkResult>.processPdlResultsV2(
 fun Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>.toAarsak(): String =
     this.fold(
         { problems ->
-            problems.map { problem -> problem.regel.opplysninger }
-                .flatten()
-                .joinToString(", ") { opplysning -> opplysning.id } },
+            problems.joinToString(", ") { problem -> problem.regel.id.beskrivelse }
+        },
         { "Ingen årsak" }
     )
 
@@ -261,35 +262,37 @@ fun List<EvalueringResultat>.compareResults(
     other: List<EvalueringResultat>,
     logger: Logger
 ) {
-    val evalueringResultaterV1 = this.groupBy { it.hendelseState.periodeId }
-    val evalueringResultaterV2 = other.groupBy { it.hendelseState.periodeId }
+    val evalueringResultaterV1 = this.associateBy { it.hendelseState.periodeId }
+    val evalueringResultaterV2 = other.associateBy { it.hendelseState.periodeId }
 
     val matchingPeriodeIder = evalueringResultaterV1.keys.intersect(evalueringResultaterV2.keys)
 
     matchingPeriodeIder.forEach { periodeId ->
-        val resultaterV1 = evalueringResultaterV1[periodeId] ?: emptyList()
-        val resultaterV2 = evalueringResultaterV2[periodeId] ?: emptyList()
+        val resultatV1 = evalueringResultaterV1[periodeId]
+        val resultatV2 = evalueringResultaterV2[periodeId]
 
-        resultaterV1.zip(resultaterV2).forEach { (resultatV1, resultatV2) ->
-            if (resultatV1.avsluttPeriode != resultatV2.avsluttPeriode) {
-                logger.warn(
-                    "AvsluttPeriode mismatch for periodeId: $periodeId, " +
-                            "v1: ${resultatV1.avsluttPeriode}, aarsak: ${if (resultatV1.grunnlagV1 != null) resultatV1.grunnlagV1.filterAvsluttPeriodeGrunnlag(resultatV1.hendelseState.opplysninger).toAarsak() else "mangler aarsak"}" +
-                            "v2: ${resultatV2.avsluttPeriode}, aarsak: ${if (resultatV2.grunnlagV2 != null) resultatV2.grunnlagV2.toAarsak() else "mangler aarsak"}"
-                )
-            }
+        if (resultatV1 == null || resultatV2 == null) {
+            logger.error("Missing result for periodeId: $periodeId in either v1 or v2")
+            return@forEach
+        }
 
-            if (resultatV1.slettForhaandsGodkjenning != resultatV2.slettForhaandsGodkjenning) {
-                logger.warn(
-                    "SlettForhaandsGodkjenning mismatch for periodeId: $periodeId, " +
-                            "v1: ${resultatV1.slettForhaandsGodkjenning}, " +
-                            "v2: ${resultatV2.slettForhaandsGodkjenning}"
-                )
-            }
+        if (resultatV1.avsluttPeriode != resultatV2.avsluttPeriode) {
+            logger.warn(
+                "AvsluttPeriode mismatch for periodeId: $periodeId, " +
+                        "v1: ${resultatV1.avsluttPeriode}, aarsak: ${resultatV1.grunnlagV1?.filterAvsluttPeriodeGrunnlag(resultatV1.hendelseState.opplysninger)?.toAarsak()}, " +
+                        "v2: ${resultatV2.avsluttPeriode}, aarsak: ${resultatV2.grunnlagV2?.toAarsak()}"
+            )
+        }
+
+        if (resultatV1.slettForhaandsGodkjenning != resultatV2.slettForhaandsGodkjenning) {
+            logger.warn(
+                "SlettForhaandsGodkjenning mismatch for periodeId: $periodeId, " +
+                        "v1: ${resultatV1.slettForhaandsGodkjenning}, " +
+                        "v2: ${resultatV2.slettForhaandsGodkjenning}"
+            )
         }
     }
 }
-
 
 fun hentFolkeregisterpersonstatusOgHendelseState(
     result: ForenkletStatusBolkResult,
