@@ -22,7 +22,7 @@ class TilgansReglerTest : FreeSpec({
                 )
             ).shouldBeInstanceOf<Either.Left<NonEmptyList<Problem>>>()
             resultat.value.head.regel.id shouldBe IkkeAnsattOgForhaandsgodkjentAvAnsatt
-            resultat.value.head.opplysning shouldContainAll listOf(IkkeAnsatt, DomeneOpplysning.ErForhaandsgodkjent)
+            resultat.value.head.opplysninger shouldContainAll listOf(IkkeAnsatt, DomeneOpplysning.ErForhaandsgodkjent)
         }
         "lovlig kombinasjon av ANSATT og FORHANDSGODKJENT_AV_ANSATT" {
             val resultat = TilgangsRegler.evaluer(

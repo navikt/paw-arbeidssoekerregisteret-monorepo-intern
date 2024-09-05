@@ -73,7 +73,7 @@ class RequestValidatorTest : FreeSpec({
                 val tilgangskontrollresultat = with(requestScope) {
                     requestValidator.validerTilgang(identitsnummer)
                 }.shouldBeInstanceOf<Either.Left<NonEmptyList<Problem>>>()
-                tilgangskontrollresultat.value.head.opplysning shouldContain AnsattIkkeTilgang
+                tilgangskontrollresultat.value.head.opplysninger shouldContain AnsattIkkeTilgang
             }
         }
         "Når bruker er logget inn" - {
@@ -98,8 +98,8 @@ class RequestValidatorTest : FreeSpec({
                 val tilgangskontrollresultat = with(requestScope) {
                     requestValidator.validerTilgang(identitsnummer, true)
                 }.shouldBeInstanceOf<Either.Left<NonEmptyList<Problem>>>()
-                tilgangskontrollresultat.value.head.opplysning shouldContain IkkeAnsatt
-                tilgangskontrollresultat.value.head.opplysning shouldContain DomeneOpplysning.ErForhaandsgodkjent
+                tilgangskontrollresultat.value.head.opplysninger shouldContain IkkeAnsatt
+                tilgangskontrollresultat.value.head.opplysninger shouldContain DomeneOpplysning.ErForhaandsgodkjent
                 tilgangskontrollresultat.value.head.regel.id.shouldBe(IkkeAnsattOgForhaandsgodkjentAvAnsatt)
             }
         }
@@ -144,8 +144,8 @@ class RequestValidatorTest : FreeSpec({
                         val resultat = with(requestScope) {
                             requestValidator.validerStartAvPeriodeOenske(identitsnummer, true)
                         }.shouldBeInstanceOf<Either.Left<NonEmptyList<Problem>>>()
-                        resultat.value.head.opplysning shouldContain IkkeAnsatt
-                        resultat.value.head.opplysning shouldContain DomeneOpplysning.ErForhaandsgodkjent
+                        resultat.value.head.opplysninger shouldContain IkkeAnsatt
+                        resultat.value.head.opplysninger shouldContain DomeneOpplysning.ErForhaandsgodkjent
                     }
 
                     "godkjent av veileder er false" {
@@ -189,7 +189,7 @@ class RequestValidatorTest : FreeSpec({
                     val resultat = with(requestScope) {
                         requestValidator.validerStartAvPeriodeOenske(identitsnummer)
                     }.shouldBeInstanceOf<Either.Left<NonEmptyList<Problem>>>()
-                    resultat.value.head.opplysning shouldContain DomeneOpplysning.IkkeBosatt
+                    resultat.value.head.opplysninger shouldContain DomeneOpplysning.IkkeBosatt
                     resultat.value.head.regel.id shouldBe IkkeBosattINorgeIHenholdTilFolkeregisterloven
                 }
                 "Bruker har dNummer" {
@@ -230,8 +230,8 @@ class RequestValidatorTest : FreeSpec({
                     val resultat = with(requestScope) {
                         requestValidator.validerStartAvPeriodeOenske(identitsnummer)
                     }.shouldBeInstanceOf<Either.Left<NonEmptyList<Problem>>>()
-                    resultat.value.head.opplysning shouldContain DomeneOpplysning.IkkeBosatt
-                    resultat.value.head.opplysning shouldContain DomeneOpplysning.Dnummer
+                    resultat.value.head.opplysninger shouldContain DomeneOpplysning.IkkeBosatt
+                    resultat.value.head.opplysninger shouldContain DomeneOpplysning.Dnummer
                     resultat.value.head.regel.id shouldBe IkkeBosattINorgeIHenholdTilFolkeregisterloven
                 }
                 "Person ikke funnet" {
@@ -251,7 +251,7 @@ class RequestValidatorTest : FreeSpec({
                     val resultat = with(requestScope) {
                         requestValidator.validerStartAvPeriodeOenske(identitsnummer)
                     }.shouldBeInstanceOf<Either.Left<NonEmptyList<Problem>>>()
-                    resultat.value.head.opplysning shouldContain DomeneOpplysning.PersonIkkeFunnet
+                    resultat.value.head.opplysninger shouldContain DomeneOpplysning.PersonIkkeFunnet
                     resultat.value.head.regel.id shouldBe IkkeFunnet
                 }
                 "Ukjent alder" {
@@ -279,7 +279,7 @@ class RequestValidatorTest : FreeSpec({
                     val resultat = with(requestScope) {
                         requestValidator.validerStartAvPeriodeOenske(identitsnummer)
                     }.shouldBeInstanceOf<Either.Left<NonEmptyList<Problem>>>()
-                    resultat.value.head.opplysning shouldContain DomeneOpplysning.UkjentFoedselsdato
+                    resultat.value.head.opplysninger shouldContain DomeneOpplysning.UkjentFoedselsdato
                 }
                 "Registrert som død" {
                     val requestScope = RequestScope(
@@ -313,7 +313,7 @@ class RequestValidatorTest : FreeSpec({
                     val resultat = with(requestScope) {
                         requestValidator.validerStartAvPeriodeOenske(identitsnummer)
                     }.shouldBeInstanceOf<Either.Left<NonEmptyList<Problem>>>()
-                    resultat.value.head.opplysning shouldContain DomeneOpplysning.ErDoed
+                    resultat.value.head.opplysninger shouldContain DomeneOpplysning.ErDoed
                 }
                 "Registrert som savnet" {
                     val requestScope = RequestScope(
@@ -353,7 +353,7 @@ class RequestValidatorTest : FreeSpec({
                     val resultat = with(requestScope) {
                         requestValidator.validerStartAvPeriodeOenske(identitsnummer)
                     }.shouldBeInstanceOf<Either.Left<NonEmptyList<Problem>>>()
-                    resultat.value.head.opplysning shouldContain DomeneOpplysning.ErSavnet
+                    resultat.value.head.opplysninger shouldContain DomeneOpplysning.ErSavnet
                 }
 
             }

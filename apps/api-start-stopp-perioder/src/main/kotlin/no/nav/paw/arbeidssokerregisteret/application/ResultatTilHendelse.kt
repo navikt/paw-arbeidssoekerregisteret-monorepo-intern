@@ -28,7 +28,7 @@ fun stoppResultatSomHendelse(id: Long, identitetsnummer: Identitetsnummer, resul
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
             metadata = hendelseMetadata(resultat.value.map { it.regel.id.beskrivelse }.joinToString(". ")),
-            opplysninger = resultat.value.head.opplysning.map(::mapToHendelseOpplysning).toSet()
+            opplysninger = resultat.value.head.opplysninger.map(::mapToHendelseOpplysning).toSet()
         )
 
         is Either.Right -> Avsluttet(
@@ -55,7 +55,7 @@ fun somHendelse(id: Long, identitetsnummer: Identitetsnummer, resultat: Either<N
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
             metadata = hendelseMetadata(resultat.value.map { it.regel.id.beskrivelse }.joinToString(". ")),
-            opplysninger = resultat.value.head.opplysning.map(::mapToHendelseOpplysning).toSet(),
+            opplysninger = resultat.value.head.opplysninger.map(::mapToHendelseOpplysning).toSet(),
             handling = path
         )
 

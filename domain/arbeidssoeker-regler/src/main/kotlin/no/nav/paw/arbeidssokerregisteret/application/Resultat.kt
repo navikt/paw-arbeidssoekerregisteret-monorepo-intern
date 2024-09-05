@@ -6,17 +6,17 @@ import arrow.core.right
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
 
 sealed interface Problem {
-    val opplysning: Iterable<Opplysning>
+    val opplysninger: Iterable<Opplysning>
     val regel: Regel
 }
 
 data class SkalAvvises(
-    override val opplysning: Iterable<Opplysning>,
+    override val opplysninger: Iterable<Opplysning>,
     override val regel: Regel
 ): Problem
 
 data class MuligGrunnlagForAvvisning(
-    override val opplysning: Iterable<Opplysning>,
+    override val opplysninger: Iterable<Opplysning>,
     override val regel: Regel
 ): Problem
 

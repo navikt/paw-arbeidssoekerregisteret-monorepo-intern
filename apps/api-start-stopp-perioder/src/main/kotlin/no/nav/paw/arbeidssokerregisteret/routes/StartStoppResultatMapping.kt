@@ -40,7 +40,7 @@ suspend fun PipelineContext<Unit, ApplicationCall>.respondWithErrorV2(problemer:
             aarsakTilAvvisning = if (feilkode == FeilV2.FeilKode.AVVIST) {
                 AarsakTilAvvisningV2(
                     regler = problemer.map { ApiRegel(id = it.regel.id.apiRegelId(), beskrivelse = it.regel.id.beskrivelse) },
-                    detaljer = problemer.first().opplysning.map(::opplysningTilApiOpplysning)
+                    detaljer = problemer.first().opplysninger.map(::opplysningTilApiOpplysning)
                 )
             } else null
         )
