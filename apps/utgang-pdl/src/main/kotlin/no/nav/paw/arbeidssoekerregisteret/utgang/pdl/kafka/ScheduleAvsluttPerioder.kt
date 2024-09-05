@@ -121,7 +121,8 @@ private fun List<ForenkletStatusBolkResult>.processResults(
         hentFolkeregisterpersonstatusOgHendelseState(result, chunk)
     }.map { (folkeregisterpersonstatus, hendelseState) ->
 
-        val avsluttPeriode = !folkeregisterpersonstatus.erBosattEtterFolkeregisterloven
+        val avsluttPeriode = !folkeregisterpersonstatus.erBosattEtterFolkeregisterloven &&
+                folkeregisterpersonstatus.filterAvsluttPeriodeGrunnlag(hendelseState.opplysninger).isNotEmpty()
         val skalSletteForhaandsGodkjenning = skalSletteForhaandsGodkjenning(hendelseState, avsluttPeriode)
 
         EvalueringResultat(
@@ -271,7 +272,7 @@ fun List<EvalueringResultat>.compareResults(
 
         if (result != null && otherResult != null) {
             if (result.avsluttPeriode != otherResult.avsluttPeriode) {
-                logger.error(
+                logger.warn(
                     "AvsluttPeriode mismatch for periodeId: $periodeId, " +
                             "v1: ${result.avsluttPeriode} " +
                             "aarsak: ${result.grunnlagV1?.filterAvsluttPeriodeGrunnlag(result.hendelseState.opplysninger)?.toAarsak()}, " +
@@ -281,7 +282,7 @@ fun List<EvalueringResultat>.compareResults(
             }
 
             if (result.slettForhaandsGodkjenning != otherResult.slettForhaandsGodkjenning) {
-                logger.error(
+                logger.warn(
                     "SlettForhaandsGodkjenning mismatch for periodeId: $periodeId, " +
                             "v1: ${result.slettForhaandsGodkjenning}, " +
                             "v2: ${otherResult.slettForhaandsGodkjenning}"
