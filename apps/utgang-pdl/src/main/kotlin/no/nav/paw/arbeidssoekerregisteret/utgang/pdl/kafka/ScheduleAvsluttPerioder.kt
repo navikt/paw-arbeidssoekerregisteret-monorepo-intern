@@ -261,36 +261,35 @@ fun List<EvalueringResultat>.compareResults(
     other: List<EvalueringResultat>,
     logger: Logger
 ) {
-    val hendelseStates = this.associateBy { it.hendelseState.periodeId }
-    val otherHendelseStates = other.associateBy { it.hendelseState.periodeId }
+    val evalueringResultaterV1 = this.groupBy { it.hendelseState.periodeId }
+    val evalueringResultaterV2 = other.groupBy { it.hendelseState.periodeId }
 
-    val matchingPeriodeIder = hendelseStates.keys.intersect(otherHendelseStates.keys)
+    val matchingPeriodeIder = evalueringResultaterV1.keys.intersect(evalueringResultaterV2.keys)
 
     matchingPeriodeIder.forEach { periodeId ->
-        val result = hendelseStates[periodeId]
-        val otherResult = otherHendelseStates[periodeId]
+        val resultaterV1 = evalueringResultaterV1[periodeId] ?: emptyList()
+        val resultaterV2 = evalueringResultaterV2[periodeId] ?: emptyList()
 
-        if (result != null && otherResult != null) {
-            if (result.avsluttPeriode != otherResult.avsluttPeriode) {
+        resultaterV1.zip(resultaterV2).forEach { (resultatV1, resultatV2) ->
+            if (resultatV1.avsluttPeriode != resultatV2.avsluttPeriode) {
                 logger.warn(
                     "AvsluttPeriode mismatch for periodeId: $periodeId, " +
-                            "v1: ${result.avsluttPeriode} " +
-                            "aarsak: ${result.grunnlagV1?.filterAvsluttPeriodeGrunnlag(result.hendelseState.opplysninger)?.toAarsak() ?: "mangler grunnlag"}, " +
-                            "v2: ${otherResult.avsluttPeriode} " +
-                            "aarsak: ${otherResult.grunnlagV2?.toAarsak() ?: "mangler grunnlag"}"
+                            "v1: ${resultatV1.avsluttPeriode}, aarsak: ${if (resultatV1.grunnlagV1 != null) resultatV1.grunnlagV1.filterAvsluttPeriodeGrunnlag(resultatV1.hendelseState.opplysninger).toAarsak() else "mangler aarsak"}" +
+                            "v2: ${resultatV2.avsluttPeriode}, aarsak: ${if (resultatV2.grunnlagV2 != null) resultatV2.grunnlagV2.toAarsak() else "mangler aarsak"}"
                 )
             }
 
-            if (result.slettForhaandsGodkjenning != otherResult.slettForhaandsGodkjenning) {
+            if (resultatV1.slettForhaandsGodkjenning != resultatV2.slettForhaandsGodkjenning) {
                 logger.warn(
                     "SlettForhaandsGodkjenning mismatch for periodeId: $periodeId, " +
-                            "v1: ${result.slettForhaandsGodkjenning}, " +
-                            "v2: ${otherResult.slettForhaandsGodkjenning}"
+                            "v1: ${resultatV1.slettForhaandsGodkjenning}, " +
+                            "v2: ${resultatV2.slettForhaandsGodkjenning}"
                 )
             }
         }
     }
 }
+
 
 fun hentFolkeregisterpersonstatusOgHendelseState(
     result: ForenkletStatusBolkResult,
