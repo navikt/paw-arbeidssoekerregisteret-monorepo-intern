@@ -106,7 +106,7 @@ fun scheduleAvsluttPerioder(
     }
 }
 
-private fun List<ForenkletStatusBolkResult>.processResults(
+fun List<ForenkletStatusBolkResult>.processResults(
     chunk: List<KeyValue<UUID, HendelseState>>,
     prometheusMeterRegistry: PrometheusMeterRegistry,
     logger: Logger
@@ -170,7 +170,7 @@ fun skalAvsluttePeriode(
     { pdlEvalueringLeft ->
         when(opplysningerEvaluering) {
             is Either.Left -> {
-                !(erForhaandsgodkjent && pdlEvalueringLeft.containsAnyOf(opplysningerEvaluering.value))
+                !(erForhaandsgodkjent && opplysningerEvaluering.value.map { it.regel.id }.containsAll(pdlEvalueringLeft.map { it.regel.id }))
             }
             is Either.Right -> {
                 true
@@ -179,11 +179,6 @@ fun skalAvsluttePeriode(
     },
     { false }
 )
-
-fun NonEmptyList<Problem>.containsAnyOf(other: NonEmptyList<Problem>): Boolean {
-    val otherRegler = other.map { it.regel.id }.toSet()
-    return this.any { problem -> problem.regel.id in otherRegler }
-}
 
 fun List<HentPersonBolkResult>.processPdlResultsV2(
     chunk: List<KeyValue<UUID, HendelseState>>,
