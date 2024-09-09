@@ -89,7 +89,7 @@ fun scheduleAvsluttPerioder(
                     )
                 }
 
-                resultaterV1.sortedBy { it.hendelseState.startetTidspunkt }.compareResults(resultaterV2, logger)
+                resultaterV1.sortedByDescending { it.hendelseState.startetTidspunkt }.compareResults(resultaterV2.sortedByDescending { it.hendelseState.startetTidspunkt }, logger)
                 resultaterV1.onEach { resultat ->
                     val folkeregisterpersonstatus = resultat.grunnlagV1
                     val hendelseState = resultat.hendelseState
@@ -273,7 +273,7 @@ fun List<EvalueringResultat>.compareResults(
 
         if (resultatV1.avsluttPeriode != resultatV2.avsluttPeriode) {
             logger.warn(
-                "AvsluttPeriode mismatch for periodeId: $periodeId, " +
+                "AvsluttPeriode mismatch for periodeId: $periodeId, med startet tidspunkt: ${resultatV1.hendelseState.startetTidspunkt}" +
                         "v1: ${resultatV1.avsluttPeriode}, aarsak: ${resultatV1.grunnlagV1?.filterAvsluttPeriodeGrunnlag(resultatV1.hendelseState.opplysninger)?.toAarsak()}, " +
                         "v2: ${resultatV2.avsluttPeriode}, aarsak: ${resultatV2.grunnlagV2?.toAarsak()}"
             )
