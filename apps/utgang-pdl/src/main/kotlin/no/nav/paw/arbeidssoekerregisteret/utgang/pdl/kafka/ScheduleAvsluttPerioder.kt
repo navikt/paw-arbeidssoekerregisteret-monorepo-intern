@@ -89,7 +89,7 @@ fun scheduleAvsluttPerioder(
                     )
                 }
 
-                resultaterV1.compareResults(resultaterV2, logger)
+                resultaterV1.sortedBy { it.hendelseState.startetTidspunkt }.compareResults(resultaterV2, logger)
                 resultaterV1.onEach { resultat ->
                     val folkeregisterpersonstatus = resultat.grunnlagV1
                     val hendelseState = resultat.hendelseState
