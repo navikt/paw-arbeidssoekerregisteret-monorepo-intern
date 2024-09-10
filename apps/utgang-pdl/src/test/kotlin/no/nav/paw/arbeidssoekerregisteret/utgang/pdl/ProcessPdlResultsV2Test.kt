@@ -77,7 +77,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
         val chunk = listOf(KeyValue(hendelseState.periodeId, hendelseState))
 
         val outputV1 = resultV1.processResults(chunk, prometheusMeterRegistry, logger)
-        val outputV2 = listOf(resultV2).processPdlResultsV2(chunk, logger)
+        val outputV2 = listOf(resultV2).processPdlResultsV2(OppholdsReglerV1, chunk, logger)
 
         outputV1.shouldHaveSize(1)
         outputV2.shouldHaveSize(1)
@@ -120,7 +120,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
 
         val logger = mockk<Logger>(relaxed = true)
 
-        val output = listOf(result).processPdlResultsV2(chunk, logger)
+        val output = listOf(result).processPdlResultsV2(OppholdsReglerV1, chunk, logger)
 
         output.shouldHaveSize(1)
         output[0].avsluttPeriode shouldBe true
