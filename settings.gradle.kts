@@ -25,7 +25,8 @@ include(
     "apps:utgang-formidlingsgruppe",
     "apps:hendelselogg-backup",
     "apps:utgang-pdl",
-    "apps:kafka-key-generator"
+    "apps:kafka-key-generator",
+    "apps:bekreftelse-tjeneste"
 )
 
 dependencyResolutionManagement {
