@@ -6,6 +6,7 @@ import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentPerson
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.scheduleAvsluttPerioder
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseState
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
+import no.nav.paw.arbeidssokerregisteret.application.OppholdsReglerV1
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.Named
@@ -52,7 +53,8 @@ class PeriodeProcessor(
             Duration.ofDays(1),
             pdlHentForenkletStatus,
             pdlHentPersonBolk,
-            prometheusMeterRegistry
+            prometheusMeterRegistry,
+            regler = OppholdsReglerV1
         )
     }
 

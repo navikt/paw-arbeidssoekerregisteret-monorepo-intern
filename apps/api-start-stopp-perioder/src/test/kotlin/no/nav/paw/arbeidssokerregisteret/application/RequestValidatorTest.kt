@@ -47,7 +47,7 @@ class RequestValidatorTest : FreeSpec({
                 coEvery {
                     autorisasjonService.verifiserVeilederTilgangTilBruker(any(), any())
                 } returns true
-                val requestValidator = RequestValidator(autorisasjonService, personInfoService)
+                val requestValidator = RequestValidator(autorisasjonService, personInfoService, InngangsReglerV2)
                 "Når forhandsgodkjent av veileder er false" {
                     val tilgangskontrollresultat = with(requestScope) {
                         requestValidator.validerTilgang(identitsnummer)
@@ -68,7 +68,7 @@ class RequestValidatorTest : FreeSpec({
                 coEvery {
                     autorisasjonService.verifiserVeilederTilgangTilBruker(any(), any())
                 } returns false
-                val requestValidator = RequestValidator(autorisasjonService, personInfoService)
+                val requestValidator = RequestValidator(autorisasjonService, personInfoService, InngangsReglerV2)
 
                 val tilgangskontrollresultat = with(requestScope) {
                     requestValidator.validerTilgang(identitsnummer)
@@ -86,7 +86,7 @@ class RequestValidatorTest : FreeSpec({
                 path = "test"
             )
             val autorisasjonService: AutorisasjonService = mockk()
-            val requestValidator = RequestValidator(autorisasjonService, personInfoService)
+            val requestValidator = RequestValidator(autorisasjonService, personInfoService, InngangsReglerV2)
             "standardbruker" {
                 val tilgangskontrollresultat = with(requestScope) {
                     requestValidator.validerTilgang(identitsnummer)
@@ -110,7 +110,7 @@ class RequestValidatorTest : FreeSpec({
             "Når bruker er innlogget" - {
 
                 val autorisasjonService: AutorisasjonService = mockk()
-                val requestValidator = RequestValidator(autorisasjonService, personInfoService)
+                val requestValidator = RequestValidator(autorisasjonService, personInfoService, InngangsReglerV2)
                 "over 18 år og bosatt etter folketrygdloven" - {
                     val requestScope = RequestScope(
                         claims = ResolvedClaims()

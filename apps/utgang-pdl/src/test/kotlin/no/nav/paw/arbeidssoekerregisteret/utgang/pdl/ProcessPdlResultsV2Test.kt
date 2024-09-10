@@ -16,6 +16,7 @@ import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.isPdlResultOK
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.processPdlResultsV2
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.processResults
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseState
+import no.nav.paw.arbeidssokerregisteret.application.OppholdsReglerV1
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.toAarsak
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.toAarsak
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
@@ -152,7 +153,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
             )
             val chunk = listOf(KeyValue(hendelseState.periodeId, hendelseState))
 
-            val output = listOf(result).processPdlResultsV2(chunk, logger)
+            val output = listOf(result).processPdlResultsV2(OppholdsReglerV1, chunk, logger)
 
             output.shouldHaveSize(1)
             val evalueringResultat = output.first()
@@ -186,7 +187,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
             )
             val chunk = listOf(KeyValue(hendelseState.periodeId, hendelseState))
 
-            val output = listOf(result).processPdlResultsV2(chunk, logger)
+            val output = listOf(result).processPdlResultsV2(OppholdsReglerV1, chunk, logger)
 
             output.shouldHaveSize(1)
             val evalueringResultat = output.first()
@@ -220,7 +221,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
             )
             val chunk = listOf(KeyValue(hendelseState.periodeId, hendelseState))
 
-            val output = listOf(result).processPdlResultsV2(chunk, logger)
+            val output = listOf(result).processPdlResultsV2(OppholdsReglerV1, chunk, logger)
 
             output.shouldHaveSize(1)
             val evalueringResultat = output.first()
@@ -256,7 +257,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
             )
             val chunk = listOf(KeyValue(hendelseState.periodeId, hendelseState))
 
-            val output = listOf(result).processPdlResultsV2(chunk, logger)
+            val output = listOf(result).processPdlResultsV2(OppholdsReglerV1, chunk, logger)
 
             output.shouldHaveSize(1)
             val evalueringResultat = output.first()
@@ -290,7 +291,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
             )
             val chunk = listOf(KeyValue(hendelseState.periodeId, hendelseState))
 
-            val output = listOf(result).processPdlResultsV2(chunk, logger)
+            val output = listOf(result).processPdlResultsV2(OppholdsReglerV1, chunk, logger)
 
             output.shouldHaveSize(1)
             val evalueringResultat = output.first()
@@ -327,7 +328,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
             )
             val chunk = listOf(KeyValue(hendelseState.periodeId, hendelseState))
 
-            val output = listOf(result).processPdlResultsV2(chunk, logger)
+            val output = listOf(result).processPdlResultsV2(OppholdsReglerV1, chunk, logger)
 
             output.shouldHaveSize(1)
             val evalueringResultat = output.first()
@@ -350,7 +351,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
 
             val chunk = listOf<KeyValue<UUID, HendelseState>>()
 
-            val output = results.processPdlResultsV2(chunk, logger)
+            val output = results.processPdlResultsV2(OppholdsReglerV1, chunk, logger)
 
             output.shouldBeEmpty()
             verify(exactly = 2) { logger.error(any()) }
@@ -376,7 +377,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
                 )
             )
 
-            val output = listOf(result).processPdlResultsV2(chunk, logger)
+            val output = listOf(result).processPdlResultsV2(OppholdsReglerV1, chunk, logger)
 
             output.shouldBeEmpty()
             verify { logger.error("Person er null for periodeId: $periodeId") }

@@ -8,6 +8,7 @@ import io.ktor.server.routing.*
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.opentelemetry.api.trace.Span
+import no.nav.paw.arbeidssokerregisteret.application.InngangsReglerV1
 import no.nav.paw.arbeidssokerregisteret.application.OpplysningerRequestHandler
 import no.nav.paw.arbeidssokerregisteret.application.StartStoppRequestHandler
 import no.nav.paw.arbeidssokerregisteret.config.AuthProviders
@@ -29,7 +30,11 @@ fun main() {
     logger.info("Starter ${ApplicationInfo.id}")
     val applicationConfig = loadNaisOrLocalConfiguration<Config>(CONFIG_FILE_NAME)
     val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
-    val (startStoppRequestHandler, opplysningerRequestHandler) = requestHandlers(applicationConfig, KafkaFactory(kafkaConfig))
+    val (startStoppRequestHandler, opplysningerRequestHandler) = requestHandlers(
+        config = applicationConfig,
+        kafkaFactory = KafkaFactory(kafkaConfig),
+        regler = InngangsReglerV1
+    )
     val server = embeddedServer(
         factory = Netty,
         port = 8080,

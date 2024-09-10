@@ -52,6 +52,7 @@ fun scheduleAvsluttPerioder(
     pdlHentForenkletStatus: PdlHentForenkletStatus,
     pdlHentPersonBolk: PdlHentPerson,
     prometheusMeterRegistry: PrometheusMeterRegistry,
+    regler: Regler
 ): Cancellable = ctx.schedule(interval, PunctuationType.WALL_CLOCK_TIME) {
 
     val logger = LoggerFactory.getLogger("scheduleAvsluttPerioder")
@@ -71,8 +72,9 @@ fun scheduleAvsluttPerioder(
                     emptyList()
                 } else {
                     pdlHentPersonResults.processPdlResultsV2(
-                        chunk,
-                        logger
+                        regler = regler,
+                        chunk = chunk,
+                        logger = logger
                     )
                 }
 
@@ -181,6 +183,7 @@ fun skalAvsluttePeriode(
 )
 
 fun List<HentPersonBolkResult>.processPdlResultsV2(
+    regler: Regler,
     chunk: List<KeyValue<UUID, HendelseState>>,
     logger: Logger
 ): List<EvalueringResultat> =
@@ -191,8 +194,8 @@ fun List<HentPersonBolkResult>.processPdlResultsV2(
 
         val domeneOpplysninger = hendelseOpplysninger.toDomeneOpplysninger()
 
-        val opplysningerEvaluering = InngangsRegler.evaluer(domeneOpplysninger)
-        val pdlEvaluering = InngangsRegler.evaluer(genererPersonFakta(person.toPerson()))
+        val opplysningerEvaluering = regler.evaluer(domeneOpplysninger)
+        val pdlEvaluering = regler.evaluer(genererPersonFakta(person.toPerson()))
 
         val erForhaandsgodkjent = hendelseOpplysninger.erForhaandsGodkjent()
 

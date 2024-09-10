@@ -17,6 +17,7 @@ import no.nav.paw.pdl.graphql.generated.hentperson.Person
 class RequestValidator(
     private val autorisasjonService: AutorisasjonService,
     private val personInfoService: PersonInfoService,
+    private val regler: Regler
 ) {
 
     context(RequestScope)
@@ -45,7 +46,7 @@ class RequestValidator(
             .flatMap { grunnlagForGodkjentAuth ->
                 val person = personInfoService.hentPersonInfo(identitetsnummer.verdi)
                 val opplysning = person?.let { genererPersonFakta(it) } ?: setOf(DomeneOpplysning.PersonIkkeFunnet)
-                InngangsRegler.evaluer(
+                regler.evaluer(
                     opplysning + grunnlagForGodkjentAuth.opplysning
                 )
             }

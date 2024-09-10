@@ -7,7 +7,6 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.should
 import io.kotest.matchers.types.shouldBeInstanceOf
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
 
 typealias Avvist = Either.Left<NonEmptyList<Problem>>
 typealias Godkjent = Either.Right<GrunnlagForGodkjenning>
@@ -17,7 +16,7 @@ class RegelEvalTest : FreeSpec({
         "Person under 18 år" - {
             "ikke forhåndsgodkjent av veileder" - {
                 "avvises selv om alt annet er ok" {
-                    InngangsRegler.evaluer(
+                    InngangsReglerV2.evaluer(
                         listOf(
                             DomeneOpplysning.ErUnder18Aar,
                             DomeneOpplysning.BosattEtterFregLoven,
@@ -31,8 +30,8 @@ class RegelEvalTest : FreeSpec({
                         )
                     }
                 }
-                "avvises med 'under 18 år' og 'ikke bosatt' når ikke bosatt etter f.reg. loven" {
-                    InngangsRegler.evaluer(
+                "avvises med 'under 18 år' og 'ikke bosatt' når ikke bosatt etter f.reg. loven og ingen statsborgerskap info" {
+                    InngangsReglerV2.evaluer(
                         listOf(
                             DomeneOpplysning.ErUnder18Aar,
                             DomeneOpplysning.IkkeBosatt
@@ -45,8 +44,23 @@ class RegelEvalTest : FreeSpec({
                         )
                     }
                 }
+                "Norsk statsborger avvises med 'under 18 år' og 'ikke bosatt' når ikke bosatt etter f.reg. loven" {
+                    InngangsReglerV2.evaluer(
+                        listOf(
+                            DomeneOpplysning.ErUnder18Aar,
+                            DomeneOpplysning.IkkeBosatt,
+                            DomeneOpplysning.ErNorskStatsborger
+                        )
+                    ) should { result ->
+                        result.shouldBeInstanceOf<Avvist>()
+                        result.value.map { problem -> problem.regel.id } shouldContainExactlyInAnyOrder listOf(
+                            Under18Aar,
+                            IkkeBosattINorgeIHenholdTilFolkeregisterloven
+                        )
+                    }
+                }
                 "eu/eoes(men ikke Norsk statsborger) avvises med 'under 18 år' og 'ikke bosatt' når ikke bosatt etter f.reg. loven" {
-                    InngangsRegler.evaluer(
+                    InngangsReglerV2.evaluer(
                         listOf(
                             DomeneOpplysning.ErUnder18Aar,
                             DomeneOpplysning.IkkeBosatt,
@@ -62,7 +76,7 @@ class RegelEvalTest : FreeSpec({
                 }
             }
             "er ikke norsk EU/EØS statsborger under 18 år med dnummer og ikke utflyttet" {
-                InngangsRegler.evaluer(
+                InngangsReglerV2.evaluer(
                     listOf(
                         DomeneOpplysning.ErUnder18Aar,
                         DomeneOpplysning.ErEuEoesStatsborger,
@@ -79,8 +93,8 @@ class RegelEvalTest : FreeSpec({
                     )
                 }
             }
-            "er ikke norsl EU/EØS statsborger under 18 år med dnummer og utflyttet" {
-                InngangsRegler.evaluer(
+            "er ikke norsk EU/EØS statsborger under 18 år med dnummer og utflyttet" {
+                InngangsReglerV2.evaluer(
                     listOf(
                         DomeneOpplysning.ErUnder18Aar,
                         DomeneOpplysning.ErEuEoesStatsborger,
@@ -102,7 +116,7 @@ class RegelEvalTest : FreeSpec({
             "og er forhåndsgodkjent av veileder" - {
                 "skal avvises når" - {
                     "er doed" {
-                        InngangsRegler.evaluer(
+                        InngangsReglerV2.evaluer(
                             listOf(
                                 DomeneOpplysning.ErDoed,
                                 DomeneOpplysning.ErForhaandsgodkjent,
@@ -118,7 +132,7 @@ class RegelEvalTest : FreeSpec({
                         }
                     }
                     "er savnet" {
-                        InngangsRegler.evaluer(
+                        InngangsReglerV2.evaluer(
                             listOf(
                                 DomeneOpplysning.ErSavnet,
                                 DomeneOpplysning.ErForhaandsgodkjent,
@@ -134,7 +148,7 @@ class RegelEvalTest : FreeSpec({
                         }
                     }
                     "ikke funnet i PDL" {
-                        InngangsRegler.evaluer(
+                        InngangsReglerV2.evaluer(
                             listOf(
                                 DomeneOpplysning.PersonIkkeFunnet
                             )
@@ -148,7 +162,7 @@ class RegelEvalTest : FreeSpec({
                 }
                 "skal godkjennes når" - {
                     "ikke bosatt" {
-                        InngangsRegler.evaluer(
+                        InngangsReglerV2.evaluer(
                             listOf(
                                 DomeneOpplysning.IkkeBosatt,
                                 DomeneOpplysning.ErUnder18Aar,
@@ -159,7 +173,7 @@ class RegelEvalTest : FreeSpec({
                         }
                     }
                     "ingen informasjon om bosatt" {
-                        InngangsRegler.evaluer(
+                        InngangsReglerV2.evaluer(
                             listOf(
                                 DomeneOpplysning.ErUnder18Aar,
                                 DomeneOpplysning.ErForhaandsgodkjent
@@ -174,7 +188,7 @@ class RegelEvalTest : FreeSpec({
         "Person over 18 år" - {
             "skal avvises når" - {
                 "Norsk statsborger, ikke bosatt" {
-                    InngangsRegler.evaluer(
+                    InngangsReglerV2.evaluer(
                         listOf(
                             DomeneOpplysning.ErNorskStatsborger,
                             DomeneOpplysning.ErEuEoesStatsborger,
@@ -189,7 +203,7 @@ class RegelEvalTest : FreeSpec({
                     }
                 }
                 "3. lands borger, ikke bosatt" {
-                    InngangsRegler.evaluer(
+                    InngangsReglerV2.evaluer(
                         listOf(
                             DomeneOpplysning.ErOver18Aar,
                             DomeneOpplysning.IkkeBosatt
@@ -202,7 +216,7 @@ class RegelEvalTest : FreeSpec({
                     }
                 }
                 "EU/EØS borger (ikke Norsk) som har 'ikke bosatt'" {
-                    InngangsRegler.evaluer(
+                    InngangsReglerV2.evaluer(
                         listOf(
                             DomeneOpplysning.ErOver18Aar,
                             DomeneOpplysning.ErEuEoesStatsborger,
@@ -218,7 +232,7 @@ class RegelEvalTest : FreeSpec({
             }
             "skal godkjennes når" - {
                 "bosatt" {
-                    InngangsRegler.evaluer(
+                    InngangsReglerV2.evaluer(
                         listOf(
                             DomeneOpplysning.ErOver18Aar,
                             DomeneOpplysning.BosattEtterFregLoven
@@ -226,7 +240,7 @@ class RegelEvalTest : FreeSpec({
                     ).shouldBeInstanceOf<Godkjent>()
                 }
                 "forhåndsgodkjent" {
-                    InngangsRegler.evaluer(
+                    InngangsReglerV2.evaluer(
                         listOf(
                             DomeneOpplysning.ErOver18Aar,
                             DomeneOpplysning.IkkeBosatt,
@@ -235,7 +249,7 @@ class RegelEvalTest : FreeSpec({
                     ).shouldBeInstanceOf<Godkjent>()
                 }
                 "EU/EØS borger (ikke Norsk) som ikke har 'ikke bosatt'" {
-                    InngangsRegler.evaluer(
+                    InngangsReglerV2.evaluer(
                         listOf(
                             DomeneOpplysning.ErOver18Aar,
                             DomeneOpplysning.ErEuEoesStatsborger

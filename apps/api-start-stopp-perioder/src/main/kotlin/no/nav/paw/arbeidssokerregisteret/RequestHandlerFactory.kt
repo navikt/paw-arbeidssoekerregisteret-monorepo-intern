@@ -3,6 +3,7 @@ package no.nav.paw.arbeidssokerregisteret
 import io.ktor.client.*
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient
 import no.nav.paw.arbeidssokerregisteret.application.OpplysningerRequestHandler
+import no.nav.paw.arbeidssokerregisteret.application.Regler
 import no.nav.paw.arbeidssokerregisteret.application.StartStoppRequestHandler
 import no.nav.paw.arbeidssokerregisteret.application.RequestValidator
 import no.nav.paw.arbeidssokerregisteret.config.Config
@@ -17,7 +18,11 @@ import no.nav.poao_tilgang.client.PoaoTilgangHttpClient
 import org.apache.kafka.common.serialization.LongSerializer
 
 
-fun requestHandlers(config: Config, kafkaFactory: KafkaFactory): Pair<StartStoppRequestHandler, OpplysningerRequestHandler> {
+fun requestHandlers(
+    config: Config,
+    kafkaFactory: KafkaFactory,
+    regler: Regler
+): Pair<StartStoppRequestHandler, OpplysningerRequestHandler> {
     val clients = with(azureAdM2MTokenClient(config.naisEnv, config.authProviders.azure)) {
         clientsFactory(config)
     }
@@ -29,7 +34,8 @@ fun requestHandlers(config: Config, kafkaFactory: KafkaFactory): Pair<StartStopp
     )
     val requestValidator = RequestValidator(
         autorisasjonService = AutorisasjonService(clients.poaoTilgangClient),
-        personInfoService = PersonInfoService(clients.pdlClient)
+        personInfoService = PersonInfoService(clients.pdlClient),
+        regler = regler
     )
     val startStoppRequestHandler = StartStoppRequestHandler(
         hendelseTopic = config.eventLogTopic,

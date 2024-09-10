@@ -1,9 +1,8 @@
 package no.nav.paw.arbeidssokerregisteret.application
 
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning.*
-import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
 
-object InngangsRegler: Regler {
+object InngangsReglerV1: Regler {
     override val regler: List<Regel> = listOf(
         IkkeFunnet(
             PersonIkkeFunnet,
@@ -23,6 +22,7 @@ object InngangsRegler: Regler {
         ),
         Under18Aar(
             ErUnder18Aar,
+            BosattEtterFregLoven,
             vedTreff = ::muligGrunnlagForAvvisning
         ),
         UkjentAlder(
@@ -34,24 +34,6 @@ object InngangsRegler: Regler {
             ErOver18Aar,
             BosattEtterFregLoven,
             vedTreff = ::grunnlagForGodkjenning
-        ),
-        EuEoesStatsborgerOver18Aar(
-            ErOver18Aar,
-            ErEuEoesStatsborger,
-            !ErNorskStatsborger,
-            !IkkeBosatt,
-            vedTreff = ::grunnlagForGodkjenning
-        ),
-        EuEoesStatsborgerMenHarStatusIkkeBosatt(
-            ErEuEoesStatsborger,
-            !ErNorskStatsborger,
-            IkkeBosatt,
-            vedTreff = ::muligGrunnlagForAvvisning
-        ),
-        IkkeBosattINorgeIHenholdTilFolkeregisterloven(
-            !BosattEtterFregLoven,
-            ErNorskEllerTredjelandsborger,
-            vedTreff = ::muligGrunnlagForAvvisning
         )
     )
 
@@ -59,9 +41,3 @@ object InngangsRegler: Regler {
         vedTreff = ::muligGrunnlagForAvvisning
     )
 }
-
-data object ErNorskEllerTredjelandsborger: Condition {
-    override fun eval(opplysninger: Iterable<Opplysning>): Boolean =
-        ErNorskStatsborger in opplysninger || ErEuEoesStatsborger !in opplysninger
-}
-

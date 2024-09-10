@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret
 
 import io.mockk.mockk
+import no.nav.paw.arbeidssokerregisteret.application.Regler
 import no.nav.paw.arbeidssokerregisteret.application.RequestValidator
 import no.nav.paw.arbeidssokerregisteret.application.StartStoppRequestHandler
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
@@ -23,7 +24,7 @@ data class TestCaseContext(
     val startStoppRequestHandler: StartStoppRequestHandler
 )
 
-fun initTestCaseContext(): TestCaseContext {
+fun initTestCaseContext(regler: Regler): TestCaseContext {
     val autorisasjonService = mockk<AutorisasjonService>()
     val personInfoService = mockk<PersonInfoService>()
     val producer: ProducerMock<Long, Hendelse> = ProducerMock()
@@ -32,7 +33,8 @@ fun initTestCaseContext(): TestCaseContext {
         hendelseTopic = "any",
         requestValidator = RequestValidator(
             autorisasjonService = autorisasjonService,
-            personInfoService = personInfoService
+            personInfoService = personInfoService,
+            regler = regler
         ),
         producer = producer,
         kafkaKeysClient = kafkaKeys

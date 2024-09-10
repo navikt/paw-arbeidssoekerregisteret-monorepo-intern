@@ -12,6 +12,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.testing.*
 import io.mockk.mockk
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
+import no.nav.paw.arbeidssokerregisteret.application.InngangsReglerV2
 import no.nav.paw.arbeidssokerregisteret.auth.configureAuthentication
 import no.nav.paw.arbeidssokerregisteret.plugins.configureHTTP
 import no.nav.paw.arbeidssokerregisteret.plugins.configureSerialization
@@ -51,7 +52,7 @@ class ApiV2TestCaseRunner : FreeSpec({
                 val logger = LoggerFactory.getLogger(testCase::class.java)
                 "Test  API V2 ${testCase::class.simpleName?.readable()}" - {
                     "Verifiser API V2" - {
-                        with(initTestCaseContext()) {
+                        with(initTestCaseContext(InngangsReglerV2)) {
                             "Verifiser API response" {
                                 testApplication {
                                     application {
