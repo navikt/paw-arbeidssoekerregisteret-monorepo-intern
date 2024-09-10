@@ -26,7 +26,8 @@ include(
     "apps:hendelselogg-backup",
     "apps:utgang-pdl",
     "apps:kafka-key-generator",
-    "apps:bekreftelse-tjeneste"
+    "apps:bekreftelse-tjeneste",
+    "apps:bekreftelse-api",
 )
 
 dependencyResolutionManagement {

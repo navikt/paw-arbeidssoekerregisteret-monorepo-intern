@@ -1,0 +1,30 @@
+applicationIdSuffix = "v1"
+producerId = "paw-rapportering-api-v1"
+rapporteringTopic = "paw.rapportering-v1"
+rapporteringHendelseLoggTopic = "paw.rapportering-hendelse-logg-v1"
+rapporteringStateStoreName = "RapporteringStateStore"
+hostname = "${HOSTNAME}"
+
+[[authProviders]]
+name = "tokenx"
+discoveryUrl = "http://localhost:8081/default/.well-known/openid-configuration"
+tokenEndpointUrl = "http://localhost:8081/default/token"
+clientId = "paw-rapportering-api"
+
+[authProviders.claims]
+map = [ "acr=Level4", "acr=idporten-loa-high" ]
+combineWithOr = true
+
+[[authProviders]]
+name = "azure"
+discoveryUrl = "http://localhost:8081/default/.well-known/openid-configuration"
+tokenEndpointUrl = "http://localhost:8081/default/token"
+clientId = "paw-rapportering-api"
+
+[authProviders.claims]
+map = [ "NAVident" ]
+combineWithOr = false
+
+[poaoClientConfig]
+url = "http://localhost:8090/poao-tilgang/"
+scope = "api://test.test.poao-tilgang/.default"
