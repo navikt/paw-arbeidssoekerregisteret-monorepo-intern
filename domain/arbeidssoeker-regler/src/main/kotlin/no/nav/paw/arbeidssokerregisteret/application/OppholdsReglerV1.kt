@@ -20,22 +20,16 @@ object OppholdsReglerV1: Regler {
             ErForhaandsgodkjent,
             vedTreff = ::grunnlagForGodkjenning
         ),
-        Under18Aar(
-            ErUnder18Aar,
-            vedTreff = ::muligGrunnlagForAvvisning
-        ),
         UkjentAlder(
             UkjentFoedselsaar,
             UkjentFoedselsdato,
             vedTreff = ::muligGrunnlagForAvvisning
         ),
         Over18AarOgBosattEtterFregLoven(
-            ErOver18Aar,
             BosattEtterFregLoven,
             vedTreff = ::grunnlagForGodkjenning
         ),
         EuEoesStatsborgerOver18Aar(
-            ErOver18Aar,
             ErEuEoesStatsborger,
             !ErNorskStatsborger,
             vedTreff = ::grunnlagForGodkjenning
