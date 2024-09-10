@@ -290,6 +290,7 @@ fun List<EvalueringResultat>.compareResults(
             )
         }
     }
+    logger.info("Finished comparing results")
 }
 
 fun hentFolkeregisterpersonstatusOgHendelseState(
