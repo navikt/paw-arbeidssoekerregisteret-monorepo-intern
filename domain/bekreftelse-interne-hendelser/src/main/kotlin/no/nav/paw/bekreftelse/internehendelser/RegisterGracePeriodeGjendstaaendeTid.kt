@@ -8,7 +8,6 @@ const val registerGracePeriodeGjenstaandeTid = "bekreftelse.register_grace_perio
 data class RegisterGracePeriodeGjendstaaendeTid(
     override val hendelseId: UUID,
     override val periodeId: UUID,
-    override val identitetsnummer: String,
     override val arbeidssoekerId: Long,
     val bekreftelseId: UUID,
     val gjenstaandeTid: Duration

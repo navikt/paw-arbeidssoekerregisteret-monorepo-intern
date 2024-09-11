@@ -42,7 +42,6 @@ fun StreamsBuilder.processPeriodeTopic() {
                             PeriodeAvsluttet(
                                 UUID.randomUUID(),
                                 action.periode.id,
-                                action.periode.identitetsnummer,
                                 action.arbeidsoekerId
                             ) as BekreftelseHendelse
                         )

@@ -7,7 +7,6 @@ const val meldingMottattHendelseType = "bekreftelse.melding_mottatt"
 data class BekreftelseMeldingMottatt(
     override val hendelseId: UUID,
     override val periodeId: UUID,
-    override val identitetsnummer: String,
     override val arbeidssoekerId: Long,
     val bekreftelseId: UUID
 ) : BekreftelseHendelse {

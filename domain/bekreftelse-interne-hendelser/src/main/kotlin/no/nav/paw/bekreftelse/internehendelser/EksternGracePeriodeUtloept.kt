@@ -7,7 +7,6 @@ const val eksternGracePeriodeUtloeptHendelseType = "bekreftelse.ekstern_grace_pe
 data class EksternGracePeriodeUtloept(
     override val hendelseId: UUID,
     override val periodeId: UUID,
-    override val identitetsnummer: String,
     override val arbeidssoekerId: Long,
     val ansvarligNamespace: String,
     val ansvarligId: String

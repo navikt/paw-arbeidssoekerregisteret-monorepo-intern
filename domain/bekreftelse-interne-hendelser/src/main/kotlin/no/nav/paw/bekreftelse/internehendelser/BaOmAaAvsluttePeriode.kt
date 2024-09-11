@@ -7,7 +7,6 @@ const val beOmAaAvsluttePeriodeHendelsesType = "bekreftelse.be_om_aa_avslutte_pe
 class BaOmAaAvsluttePeriode(
     override val hendelseId: UUID,
     override val periodeId: UUID,
-    override val identitetsnummer: String,
     override val arbeidssoekerId: Long,
 ) : BekreftelseHendelse {
     override val hendelseType: String = beOmAaAvsluttePeriodeHendelsesType

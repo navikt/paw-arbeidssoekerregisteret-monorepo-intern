@@ -31,7 +31,6 @@ class IngenAndreTarAnsvarTest: FreeSpec({
                     kv.key shouldBe kafkaKeyResponse.key
                     with(kv.value.shouldBeInstanceOf<BekreftelseTilgjengelig>()) {
                         periodeId shouldBe periode.id
-                        identitetsnummer shouldBe periode.identitetsnummer
                         arbeidssoekerId shouldBe kafkaKeyResponse.id
                         gjelderFra shouldBe periode.startet.tidspunkt
                     }
@@ -43,7 +42,6 @@ class IngenAndreTarAnsvarTest: FreeSpec({
                     kv.key shouldBe kafkaKeyResponse.key
                     with(kv.value.shouldBeInstanceOf<LeveringsfristUtloept>()) {
                         periodeId shouldBe periode.id
-                        identitetsnummer shouldBe periode.identitetsnummer
                         arbeidssoekerId shouldBe kafkaKeyResponse.id
                     }
                 }
