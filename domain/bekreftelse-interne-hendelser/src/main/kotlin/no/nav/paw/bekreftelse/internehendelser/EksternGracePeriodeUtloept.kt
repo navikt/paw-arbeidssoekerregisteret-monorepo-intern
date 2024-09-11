@@ -1,8 +1,8 @@
-package no.nav.paw.rapportering.internehendelser
+package no.nav.paw.bekreftelse.internehendelser
 
 import java.util.*
 
-const val eksternGracePeriodeUtloeptHendelseType = "rapportering.ekstern_grace_periode_utloept"
+const val eksternGracePeriodeUtloeptHendelseType = "bekreftelse.ekstern_grace_periode_utloept"
 
 data class EksternGracePeriodeUtloept(
     override val hendelseId: UUID,
@@ -11,6 +11,6 @@ data class EksternGracePeriodeUtloept(
     override val arbeidssoekerId: Long,
     val ansvarligNamespace: String,
     val ansvarligId: String
-) : RapporteringsHendelse {
+) : BekreftelseHendelse {
     override val hendelseType: String = eksternGracePeriodeUtloeptHendelseType
 }

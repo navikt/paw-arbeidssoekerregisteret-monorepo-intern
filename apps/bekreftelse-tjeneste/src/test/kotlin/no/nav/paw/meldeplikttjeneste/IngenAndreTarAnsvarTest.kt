@@ -8,9 +8,8 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Bruker
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
-import no.nav.paw.rapportering.internehendelser.LeveringsfristUtloept
-import no.nav.paw.rapportering.internehendelser.RapporteringTilgjengelig
-import no.nav.paw.rapportering.melding.v1.Melding
+import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -30,7 +29,7 @@ class IngenAndreTarAnsvarTest: FreeSpec({
                     hendelseLoggTopic.isEmpty shouldBe false
                     val kv = hendelseLoggTopic.readKeyValue()
                     kv.key shouldBe kafkaKeyResponse.key
-                    with(kv.value.shouldBeInstanceOf<RapporteringTilgjengelig>()) {
+                    with(kv.value.shouldBeInstanceOf<BekreftelseTilgjengelig>()) {
                         periodeId shouldBe periode.id
                         identitetsnummer shouldBe periode.identitetsnummer
                         arbeidssoekerId shouldBe kafkaKeyResponse.id

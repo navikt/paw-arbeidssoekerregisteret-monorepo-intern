@@ -1,15 +1,15 @@
-package no.nav.paw.rapportering.internehendelser
+package no.nav.paw.bekreftelse.internehendelser
 
 import java.util.*
 
-const val meldingMottattHendelseType = "rapportering.melding_mottatt"
+const val meldingMottattHendelseType = "bekreftelse.melding_mottatt"
 
-data class RapporteringsMeldingMottatt(
+data class BekreftelseMeldingMottatt(
     override val hendelseId: UUID,
     override val periodeId: UUID,
     override val identitetsnummer: String,
     override val arbeidssoekerId: Long,
-    val rapporteringsId: UUID
-) : RapporteringsHendelse {
+    val bekreftelseId: UUID
+) : BekreftelseHendelse {
     override val hendelseType: String = meldingMottattHendelseType
 }

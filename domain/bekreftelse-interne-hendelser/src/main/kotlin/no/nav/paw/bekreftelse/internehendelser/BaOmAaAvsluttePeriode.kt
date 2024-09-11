@@ -1,14 +1,14 @@
-package no.nav.paw.rapportering.internehendelser
+package no.nav.paw.bekreftelse.internehendelser
 
 import java.util.*
 
-const val beOmAaAvsluttePeriodeHendelsesType = "rapportering.be_om_aa_avslutte_periode"
+const val beOmAaAvsluttePeriodeHendelsesType = "bekreftelse.be_om_aa_avslutte_periode"
 
 class BaOmAaAvsluttePeriode(
     override val hendelseId: UUID,
     override val periodeId: UUID,
     override val identitetsnummer: String,
     override val arbeidssoekerId: Long,
-) : RapporteringsHendelse {
+) : BekreftelseHendelse {
     override val hendelseType: String = beOmAaAvsluttePeriodeHendelsesType
 }

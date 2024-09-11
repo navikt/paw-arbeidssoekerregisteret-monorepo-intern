@@ -1,8 +1,7 @@
 package no.nav.paw.meldeplikttjeneste.tilstand
 
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
-import no.nav.paw.rapportering.internehendelser.RapporteringsHendelse
-import java.time.Duration
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import java.time.Instant
 import java.util.UUID
 import kotlin.reflect.KClass
@@ -15,7 +14,7 @@ data class InternTilstand(
 
 @JvmRecord
 data class Rapportering(
-    val sisteHandling: KClass<RapporteringsHendelse>,
+    val sisteHandling: KClass<BekreftelseHendelse>,
     val rapporteringsId: UUID,
     val gjelderFra: Instant,
     val gjelderTil: Instant

@@ -7,8 +7,8 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
 import no.nav.paw.meldeplikttjeneste.tilstand.InternTilstandSerde
 import no.nav.paw.rapportering.ansvar.v1.AnsvarEndret
-import no.nav.paw.rapportering.internehendelser.RapporteringsHendelse
-import no.nav.paw.rapportering.internehendelser.RapporteringsHendelseSerde
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.rapportering.melding.v1.Melding
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serde
@@ -16,9 +16,7 @@ import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.utils.Time
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
-import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.TopologyTestDriver
-import org.apache.kafka.streams.state.Stores
 import org.apache.kafka.streams.state.internals.InMemoryKeyValueBytesStoreSupplier
 import org.apache.kafka.streams.state.internals.KeyValueStoreBuilder
 import java.time.Duration
@@ -30,7 +28,7 @@ class ApplicationTestContext {
     val ansvarsTopicSerde: Serde<AnsvarEndret> = opprettSerde()
     val rapporteringMeldingSerde: Serde<Melding> = opprettSerde()
     val periodeTopicSerde: Serde<Periode> = opprettSerde()
-    val hendelseLoggSerde: Serde<RapporteringsHendelse> = RapporteringsHendelseSerde()
+    val hendelseLoggSerde: Serde<BekreftelseHendelse> = BekreftelseHendelseSerde()
     val applicationConfiguration = ApplicationConfiguration(
         periodeTopic = "periodeTopic",
         ansvarsTopic = "ansvarsTopic",
@@ -41,7 +39,7 @@ class ApplicationTestContext {
     )
     val applicationContext = ApplicationContext(
         internTilstandSerde = InternTilstandSerde(),
-        rapporteringsHendelseSerde = RapporteringsHendelseSerde()
+        bekreftelseHendelseSerde = BekreftelseHendelseSerde()
     )
 
     val kafkaKeysService = kafkaKeyInstance

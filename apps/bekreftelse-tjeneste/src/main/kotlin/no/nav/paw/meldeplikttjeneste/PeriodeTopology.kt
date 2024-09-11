@@ -5,10 +5,9 @@ import no.nav.paw.config.kafka.streams.genericProcess
 import no.nav.paw.config.kafka.streams.mapWithContext
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
 import no.nav.paw.meldeplikttjeneste.tilstand.InternTilstand
-import no.nav.paw.meldeplikttjeneste.tilstand.InternTilstandSerde
 import no.nav.paw.meldeplikttjeneste.tilstand.initTilstand
-import no.nav.paw.rapportering.internehendelser.PeriodeAvsluttet
-import no.nav.paw.rapportering.internehendelser.RapporteringsHendelse
+import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.Produced
@@ -31,7 +30,7 @@ fun StreamsBuilder.processPeriodeTopic(kafkaKeyFunction: (String) -> KafkaKeysRe
                 else -> Action.DoNothing
             }
         }
-        .genericProcess<Long, Action, Long, RapporteringsHendelse>(
+        .genericProcess<Long, Action, Long, BekreftelseHendelse>(
             name = "executeAction",
             punctuation = null,
             stateStoreNames = arrayOf(statStoreName)
@@ -47,7 +46,7 @@ fun StreamsBuilder.processPeriodeTopic(kafkaKeyFunction: (String) -> KafkaKeysRe
                                 action.periode.id,
                                 action.periode.identitetsnummer,
                                 action.arbeidsoekerId
-                            ) as RapporteringsHendelse
+                            ) as BekreftelseHendelse
                         )
                     )
                 }
@@ -55,7 +54,7 @@ fun StreamsBuilder.processPeriodeTopic(kafkaKeyFunction: (String) -> KafkaKeysRe
                 Action.DoNothing -> {}
                 is Action.UpdateState -> keyValueStore.put(action.state.periode.periodeId, action.state)
             }
-        }.to(rapporteringsHendelsesloggTopic, Produced.with(Serdes.Long(), rapporteringsHendelseSerde))
+        }.to(rapporteringsHendelsesloggTopic, Produced.with(Serdes.Long(), bekreftelseHendelseSerde))
 }
 
 fun Periode.avsluttet(): Boolean = avsluttet != null

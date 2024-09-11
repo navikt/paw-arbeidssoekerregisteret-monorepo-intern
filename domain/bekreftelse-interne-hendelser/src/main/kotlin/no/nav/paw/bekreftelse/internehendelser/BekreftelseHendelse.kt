@@ -1,8 +1,8 @@
-package no.nav.paw.rapportering.internehendelser
+package no.nav.paw.bekreftelse.internehendelser
 
 import java.util.*
 
-interface RapporteringsHendelse {
+interface BekreftelseHendelse {
     val hendelseType: String
     val hendelseId: UUID
     val periodeId: UUID
