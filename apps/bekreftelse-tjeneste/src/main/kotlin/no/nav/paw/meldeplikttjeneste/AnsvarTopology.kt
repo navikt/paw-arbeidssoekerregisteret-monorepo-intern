@@ -8,7 +8,7 @@ import org.apache.kafka.streams.StreamsBuilder
 context(ApplicationConfiguration, ApplicationContext)
 fun StreamsBuilder.processAnsvarTopic() {
     stream<Long, AnsvarEndret>(ansvarsTopic)
-        .genericProcess<Long, AnsvarEndret, Long, BekreftelseHendelse>("ansvarEndret", statStoreName) { record ->
+        .genericProcess<Long, AnsvarEndret, Long, BekreftelseHendelse>("ansvarEndret", stateStoreName) { record ->
 
         }
 }

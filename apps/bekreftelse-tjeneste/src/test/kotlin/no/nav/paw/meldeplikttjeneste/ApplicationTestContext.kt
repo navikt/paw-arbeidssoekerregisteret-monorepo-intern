@@ -3,8 +3,10 @@ package no.nav.paw.meldeplikttjeneste
 import io.confluent.kafka.schemaregistry.testutil.MockSchemaRegistry
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+import io.kotest.common.runBlocking
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
+import no.nav.paw.kafkakeygenerator.client.inMemoryKafkaKeysMock
 import no.nav.paw.meldeplikttjeneste.tilstand.InternTilstandSerde
 import no.nav.paw.rapportering.ansvar.v1.AnsvarEndret
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
@@ -32,17 +34,16 @@ class ApplicationTestContext {
     val applicationConfiguration = ApplicationConfiguration(
         periodeTopic = "periodeTopic",
         ansvarsTopic = "ansvarsTopic",
-        rapporteringsTopic = "rapporteringsTopic",
-        rapporteringsHendelsesloggTopic = "rapporteringsHendelsesloggTopic",
-        statStoreName = "statStoreName",
+        bekreftelseTopic = "rapporteringsTopic",
+        bekreftelseHendelseloggTopic = "rapporteringsHendelsesloggTopic",
+        stateStoreName = "statStoreName",
         punctuateInterval = Duration.ofSeconds(1)
     )
     val applicationContext = ApplicationContext(
         internTilstandSerde = InternTilstandSerde(),
-        bekreftelseHendelseSerde = BekreftelseHendelseSerde()
+        bekreftelseHendelseSerde = BekreftelseHendelseSerde(),
+        kafkaKeysClient = inMemoryKafkaKeysMock()
     )
-
-    val kafkaKeysService = kafkaKeyInstance
 
     val testDriver: TopologyTestDriver =
         with(applicationContext) {
@@ -50,12 +51,12 @@ class ApplicationTestContext {
                 StreamsBuilder()
                     .addStateStore(
                         KeyValueStoreBuilder(
-                            InMemoryKeyValueBytesStoreSupplier(applicationConfiguration.statStoreName),
+                            InMemoryKeyValueBytesStoreSupplier(applicationConfiguration.stateStoreName),
                             Serdes.UUID(),
                             applicationContext.internTilstandSerde,
                             Time.SYSTEM
                         )
-                    ).appTopology(kafkaKeysService)
+                    ).appTopology()
             }
         }.let { TopologyTestDriver(it, kafkaStreamProperties) }
 
@@ -72,29 +73,19 @@ class ApplicationTestContext {
     )
 
     val rapporteringsTopic = testDriver.createInputTopic(
-        applicationConfiguration.rapporteringsTopic,
+        applicationConfiguration.bekreftelseTopic,
         Serdes.Long().serializer(),
         rapporteringMeldingSerde.serializer()
     )
 
     val hendelseLoggTopic = testDriver.createOutputTopic(
-        applicationConfiguration.rapporteringsHendelsesloggTopic,
+        applicationConfiguration.bekreftelseHendelseloggTopic,
         Serdes.Long().deserializer(),
         hendelseLoggSerde.deserializer()
     )
-}
 
-val kafkaKeyInstance: (String) -> KafkaKeysResponse
-    get() {
-        val map = ConcurrentHashMap<String, KafkaKeysResponse>()
-        val sequence = AtomicLong(0)
-        return { key ->
-            map.computeIfAbsent(key) {
-                val id = sequence.getAndIncrement()
-                KafkaKeysResponse(sequence.getAndIncrement(), id % 2)
-            }
-        }
-    }
+    fun kafkaKeyFunction(id: String): KafkaKeysResponse = applicationContext.kafkaKeyFunction(id)
+}
 
 const val SCHEMA_REGISTRY_SCOPE = "juni-registry"
 

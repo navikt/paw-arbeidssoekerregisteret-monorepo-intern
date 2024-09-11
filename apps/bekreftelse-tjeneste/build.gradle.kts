@@ -18,6 +18,8 @@ dependencies {
     implementation(jackson.kotlin)
     implementation(apacheAvro.kafkaStreamsAvroSerde)
 
+    implementation(ktorServer.bundles.withNettyAndMicrometer)
+
     testImplementation(orgApacheKafka.streamsTest)
     testImplementation(testLibs.runnerJunit5)
     testImplementation(testLibs.assertionsCore)

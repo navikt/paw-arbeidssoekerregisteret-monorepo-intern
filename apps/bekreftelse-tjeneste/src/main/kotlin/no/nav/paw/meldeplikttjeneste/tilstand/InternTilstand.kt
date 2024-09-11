@@ -9,26 +9,42 @@ import kotlin.reflect.KClass
 @JvmRecord
 data class InternTilstand(
     val periode: PeriodeInfo,
-    val utestaaende: List<Rapportering>
+    val bekreftelser: List<Bekreftelse>
 )
 
 @JvmRecord
-data class Rapportering(
-    val sisteHandling: KClass<BekreftelseHendelse>,
+data class Bekreftelse(
+    val tilstand: Set<BekreftelseTilstand>,
     val rapporteringsId: UUID,
     val gjelderFra: Instant,
     val gjelderTil: Instant
 )
+
+@JvmRecord
+data class BekreftelseTilstand(
+    val tidspunkt: Instant,
+    val tilstand: Tilstand
+)
+
+sealed interface Tilstand{
+    data object IkkeKlarForUtfylling: Tilstand
+    data object KlarForUtfylling: Tilstand
+    data object VenterSvar: Tilstand
+}
 
 
 @JvmRecord
 data class PeriodeInfo(
     val periodeId: UUID,
     val identitetsnummer: String,
-    val kafkaKeysId: Long,
+    val arbeidsoekerId: Long,
     val recordKey: Long,
-    val avsluttet: Boolean
-)
+    val startet: Instant,
+    val avsluttet: Instant?
+) {
+    val erAvsluttet: Boolean
+        get() = avsluttet != null
+}
 
 fun initTilstand(
     id: Long,
@@ -39,9 +55,10 @@ fun initTilstand(
         periode = PeriodeInfo(
             periodeId = periode.id,
             identitetsnummer = periode.identitetsnummer,
-            kafkaKeysId = id,
+            arbeidsoekerId = id,
             recordKey = key,
-            avsluttet = periode.avsluttet != null
+            startet = periode.startet.tidspunkt,
+            avsluttet = periode.avsluttet.tidspunkt
         ),
-        utestaaende = emptyList()
+        bekreftelser = emptyList()
     )

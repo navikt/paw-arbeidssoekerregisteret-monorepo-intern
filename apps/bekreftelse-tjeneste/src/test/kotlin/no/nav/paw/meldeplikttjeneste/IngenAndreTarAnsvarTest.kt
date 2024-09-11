@@ -74,5 +74,5 @@ fun periode(
         "tester",
         null)
     }
-) to kafkaKeysService(identitetsnummer)
+) to (kafkaKeyFunction(identitetsnummer))
 

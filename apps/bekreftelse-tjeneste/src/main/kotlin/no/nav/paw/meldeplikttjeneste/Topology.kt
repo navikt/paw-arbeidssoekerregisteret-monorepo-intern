@@ -11,10 +11,8 @@ import java.util.*
 typealias StateStore = KeyValueStore<UUID, InternTilstand>
 
 context(ApplicationConfiguration, ApplicationContext)
-fun StreamsBuilder.appTopology(
-    kafkaKeyFunction: (String) -> KafkaKeysResponse
-): Topology {
-    processPeriodeTopic(kafkaKeyFunction)
+fun StreamsBuilder.appTopology(): Topology {
+    processPeriodeTopic()
     processAnsvarTopic()
     processRapporteringsMeldingTopic()
 

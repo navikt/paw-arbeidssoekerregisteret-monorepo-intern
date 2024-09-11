@@ -9,12 +9,12 @@ import org.slf4j.LoggerFactory
 
 context(ApplicationConfiguration, ApplicationContext)
 fun StreamsBuilder.processRapporteringsMeldingTopic() {
-    stream<Long, Melding>(rapporteringsTopic)
+    stream<Long, Melding>(bekreftelseTopic)
         .genericProcess<Long, Melding, Long, BekreftelseHendelse>(
             name = "meldingMottatt",
-            statStoreName
+            stateStoreName
         ) { record ->
-            val gjeldeneTilstand: InternTilstand? = getStateStore<StateStore>(statStoreName)[record.value().periodeId]
+            val gjeldeneTilstand: InternTilstand? = getStateStore<StateStore>(stateStoreName)[record.value().periodeId]
             if (gjeldeneTilstand == null) {
                 meldingsLogger.warn("Melding mottatt for periode som ikke er aktiv/eksisterer")
             } else {
