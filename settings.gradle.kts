@@ -65,6 +65,8 @@ dependencyResolutionManagement {
         val pawPdlClientVersion = "24.08.08.40-1"
         val pawAaregClientVersion = "24.07.04.18-1"
         val arbeidssokerregisteretVersion = "1.9348086045.48-1"
+        val rapporteringsSchemaVersion = "24.09.11.8-1"
+
 
         //Arrow
         val arrowVersion = "1.2.4"
@@ -97,7 +99,6 @@ dependencyResolutionManagement {
         val otelInstrumentationVersion = "2.4.0"
         val otelInstrumentationKtorVersion = "2.4.0-alpha"
         val coroutinesVersion = "1.8.1"
-        val rapporteringsSchemaVersion = "24.05.15.2-1"
         val postgresDriverVersion = "42.7.3"
         val flywayVersion = "10.15.0"
         val hikariVersion = "5.1.0"

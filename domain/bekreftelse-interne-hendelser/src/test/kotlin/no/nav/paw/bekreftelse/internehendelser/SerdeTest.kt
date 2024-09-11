@@ -10,7 +10,6 @@ class SerdeTest : FreeSpec({
             val hendelse = LeveringsfristUtloept(
                 hendelseId = UUID.randomUUID(),
                 periodeId = UUID.randomUUID(),
-                identitetsnummer = "12345678901",
                 bekreftelseId = UUID.randomUUID(),
                 arbeidssoekerId = 1234567890L
             )

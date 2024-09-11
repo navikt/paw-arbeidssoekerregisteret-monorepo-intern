@@ -1,7 +1,6 @@
 package no.nav.paw.bekretelsetjeneste.tilstand
 
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
-import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import java.time.Instant
 import java.util.UUID
 
@@ -13,22 +12,18 @@ data class InternTilstand(
 
 @JvmRecord
 data class Bekreftelse(
-    val tilstand: Set<BekreftelseTilstand>,
-    val rapporteringsId: UUID,
+    val tilstand: Tilstand,
+    val sistePurring: Instant?,
+    val bekreftelseId: UUID,
     val gjelderFra: Instant,
     val gjelderTil: Instant
-)
-
-@JvmRecord
-data class BekreftelseTilstand(
-    val tidspunkt: Instant,
-    val tilstand: Tilstand
 )
 
 sealed interface Tilstand{
     data object IkkeKlarForUtfylling: Tilstand
     data object KlarForUtfylling: Tilstand
     data object VenterSvar: Tilstand
+    data object Levert : Tilstand
 }
 
 

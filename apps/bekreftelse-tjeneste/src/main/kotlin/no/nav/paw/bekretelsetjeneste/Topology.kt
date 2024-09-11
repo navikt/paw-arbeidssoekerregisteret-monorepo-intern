@@ -12,7 +12,7 @@ context(ApplicationConfiguration, ApplicationContext)
 fun StreamsBuilder.appTopology(): Topology {
     processPeriodeTopic()
     processAnsvarTopic()
-    processRapporteringsMeldingTopic()
+    processBekreftelseMeldingTopic()
 
     return build()
 }

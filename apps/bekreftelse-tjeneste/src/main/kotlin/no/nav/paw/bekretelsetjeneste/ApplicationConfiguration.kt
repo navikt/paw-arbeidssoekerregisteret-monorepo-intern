@@ -9,4 +9,6 @@ data class ApplicationConfiguration(
     val bekreftelseHendelseloggTopic: String,
     val stateStoreName: String,
     val punctuateInterval: Duration
-)
+) {
+    val pawNamespace = "paw"
+}
