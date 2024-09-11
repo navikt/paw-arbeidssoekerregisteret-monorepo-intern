@@ -50,7 +50,7 @@ class PeriodeProcessor(
         scheduleAvsluttPerioder(
             requireNotNull(context),
             requireNotNull(hendelseStateStore),
-            Duration.ofHours(1),
+            Duration.ofDays(1),
             pdlHentForenkletStatus,
             pdlHentPersonBolk,
             prometheusMeterRegistry,
