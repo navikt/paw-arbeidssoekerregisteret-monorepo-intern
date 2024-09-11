@@ -1,4 +1,4 @@
-package no.nav.paw.meldeplikttjeneste.tilstand
+package no.nav.paw.bekretelsetjeneste.tilstand
 
 import java.time.DayOfWeek
 import java.time.Duration

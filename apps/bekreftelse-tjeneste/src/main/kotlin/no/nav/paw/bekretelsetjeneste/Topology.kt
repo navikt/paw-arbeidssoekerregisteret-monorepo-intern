@@ -1,8 +1,6 @@
-package no.nav.paw.meldeplikttjeneste
+package no.nav.paw.bekretelsetjeneste
 
-import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
-import no.nav.paw.meldeplikttjeneste.tilstand.InternTilstand
-import no.nav.paw.rapportering.ansvar.v1.AnsvarEndret
+import no.nav.paw.bekretelsetjeneste.tilstand.InternTilstand
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.state.KeyValueStore

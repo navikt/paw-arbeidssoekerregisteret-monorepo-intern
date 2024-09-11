@@ -1,13 +1,12 @@
-package no.nav.paw.meldeplikttjeneste
+package no.nav.paw.bekretelsetjeneste
 
 import io.confluent.kafka.schemaregistry.testutil.MockSchemaRegistry
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
-import io.kotest.common.runBlocking
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
 import no.nav.paw.kafkakeygenerator.client.inMemoryKafkaKeysMock
-import no.nav.paw.meldeplikttjeneste.tilstand.InternTilstandSerde
+import no.nav.paw.bekretelsetjeneste.tilstand.InternTilstandSerde
 import no.nav.paw.rapportering.ansvar.v1.AnsvarEndret
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
@@ -23,8 +22,6 @@ import org.apache.kafka.streams.state.internals.InMemoryKeyValueBytesStoreSuppli
 import org.apache.kafka.streams.state.internals.KeyValueStoreBuilder
 import java.time.Duration
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicLong
 
 class ApplicationTestContext {
     val ansvarsTopicSerde: Serde<AnsvarEndret> = opprettSerde()

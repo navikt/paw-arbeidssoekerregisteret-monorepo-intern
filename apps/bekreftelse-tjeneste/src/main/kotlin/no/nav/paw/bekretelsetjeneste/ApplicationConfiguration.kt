@@ -1,4 +1,4 @@
-package no.nav.paw.meldeplikttjeneste
+package no.nav.paw.bekretelsetjeneste
 
 import java.time.Duration
 

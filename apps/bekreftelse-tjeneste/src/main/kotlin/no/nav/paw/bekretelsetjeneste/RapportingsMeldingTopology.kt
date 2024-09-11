@@ -1,7 +1,7 @@
-package no.nav.paw.meldeplikttjeneste
+package no.nav.paw.bekretelsetjeneste
 
 import no.nav.paw.config.kafka.streams.genericProcess
-import no.nav.paw.meldeplikttjeneste.tilstand.InternTilstand
+import no.nav.paw.bekretelsetjeneste.tilstand.InternTilstand
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.rapportering.melding.v1.Melding
 import org.apache.kafka.streams.StreamsBuilder

@@ -1,10 +1,9 @@
-package no.nav.paw.meldeplikttjeneste.tilstand
+package no.nav.paw.bekretelsetjeneste.tilstand
 
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import java.time.Instant
 import java.util.UUID
-import kotlin.reflect.KClass
 
 @JvmRecord
 data class InternTilstand(

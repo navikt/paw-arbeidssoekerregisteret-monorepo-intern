@@ -1,13 +1,10 @@
-package no.nav.paw.meldeplikttjeneste
+package no.nav.paw.bekretelsetjeneste
 
 import no.nav.paw.config.kafka.streams.Punctuation
-import no.nav.paw.meldeplikttjeneste.tilstand.InternTilstand
-import no.nav.paw.meldeplikttjeneste.tilstand.RapporteringsKonfigurasjon
+import no.nav.paw.bekretelsetjeneste.tilstand.InternTilstand
+import no.nav.paw.bekretelsetjeneste.tilstand.RapporteringsKonfigurasjon
 import org.apache.kafka.streams.KeyValue
-import org.apache.kafka.streams.processor.PunctuationType
-import org.apache.kafka.streams.state.KeyValueStore
 import java.time.Instant
-import java.util.*
 
 
 context(ApplicationConfiguration, RapporteringsKonfigurasjon)

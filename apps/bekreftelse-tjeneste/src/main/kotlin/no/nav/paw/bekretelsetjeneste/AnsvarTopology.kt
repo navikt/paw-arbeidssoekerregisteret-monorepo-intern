@@ -1,4 +1,4 @@
-package no.nav.paw.meldeplikttjeneste
+package no.nav.paw.bekretelsetjeneste
 
 import no.nav.paw.config.kafka.streams.genericProcess
 import no.nav.paw.rapportering.ansvar.v1.AnsvarEndret

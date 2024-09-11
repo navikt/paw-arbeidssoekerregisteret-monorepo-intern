@@ -1,11 +1,10 @@
-package no.nav.paw.meldeplikttjeneste
+package no.nav.paw.bekretelsetjeneste
 
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.config.kafka.streams.genericProcess
 import no.nav.paw.config.kafka.streams.mapWithContext
-import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
-import no.nav.paw.meldeplikttjeneste.tilstand.InternTilstand
-import no.nav.paw.meldeplikttjeneste.tilstand.initTilstand
+import no.nav.paw.bekretelsetjeneste.tilstand.InternTilstand
+import no.nav.paw.bekretelsetjeneste.tilstand.initTilstand
 import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import org.apache.kafka.common.serialization.Serdes

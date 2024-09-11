@@ -1,4 +1,4 @@
-package no.nav.paw.meldeplikttjeneste
+package no.nav.paw.bekretelsetjeneste
 
 import io.kotest.core.annotation.Ignored
 import io.kotest.core.spec.style.FreeSpec
