@@ -4,11 +4,10 @@ import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.jackson.*
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient
+import no.nav.paw.config.env.currentNaisEnv
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.kafkakeygenerator.auth.AzureM2MConfig
 import no.nav.paw.kafkakeygenerator.auth.azureAdM2MTokenClient
-import no.nav.paw.kafkakeygenerator.auth.currentNaisEnv
-
 
 fun createKafkaKeyGeneratorClient(m2mTokenClient: AzureAdMachineToMachineTokenClient? = null): KafkaKeysClient {
     val kafkaKeyConfig = loadNaisOrLocalConfiguration<KafkaKeyConfig>("kafka_key_generator_client_config.toml")

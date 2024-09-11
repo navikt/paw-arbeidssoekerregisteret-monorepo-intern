@@ -1,8 +1,8 @@
 applicationIdSuffix = "v1"
-producerId = "paw-rapportering-api-v1"
-rapporteringTopic = "paw.rapportering-v1"
-rapporteringHendelseLoggTopic = "paw.rapportering-hendelse-logg-v1"
-rapporteringStateStoreName = "RapporteringStateStore"
+producerId = "paw-bekreftelse-api"
+bekreftelseTopic = "paw.bekreftelse-v1"
+bekreftelseHendelseLoggTopic = "paw.bekreftelse-hendelse-logg-v1"
+bekreftelseStateStoreName = "bekreftelseStateStore"
 hostname = "${HOSTNAME}"
 
 [[authProviders]]

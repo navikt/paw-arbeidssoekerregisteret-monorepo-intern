@@ -11,7 +11,7 @@ import no.nav.paw.arbeidssoekerregisteret.app.vo.ArenaFormidlingsruppe
 import no.nav.paw.arbeidssoekerregisteret.app.vo.AvsluttetSerde
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
-import no.nav.paw.kafkakeygenerator.auth.NaisEnv
+import no.nav.paw.config.env.NaisEnv
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
 import no.nav.paw.kafkakeygenerator.client.inMemoryKafkaKeysMock
 import org.apache.avro.specific.SpecificRecord
