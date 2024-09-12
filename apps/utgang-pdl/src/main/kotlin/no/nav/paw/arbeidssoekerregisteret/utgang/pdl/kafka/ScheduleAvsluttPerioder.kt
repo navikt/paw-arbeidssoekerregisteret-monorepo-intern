@@ -2,6 +2,7 @@ package no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka
 
 import arrow.core.Either
 import arrow.core.NonEmptyList
+import arrow.core.nonEmptyListOf
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.ApplicationInfo
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentForenkletStatus
@@ -48,7 +49,7 @@ data class EvalueringResultat(
 fun scheduleAvsluttPerioder(
     ctx: ProcessorContext<Long, Hendelse>,
     hendelseStateStore: KeyValueStore<UUID, HendelseState>,
-    interval: Duration = Duration.ofDays(1),
+    interval: Duration = Duration.ofMinutes(30),
     pdlHentForenkletStatus: PdlHentForenkletStatus,
     pdlHentPersonBolk: PdlHentPerson,
     prometheusMeterRegistry: PrometheusMeterRegistry,
@@ -194,10 +195,18 @@ fun List<HentPersonBolkResult>.processPdlResultsV2(
 
         val domeneOpplysninger = hendelseOpplysninger.toDomeneOpplysninger()
 
-        val opplysningerEvaluering = regler.evaluer(domeneOpplysninger)
+        // Om arbeidssøker er migrert fra veilarbregistrering sier vi at alle er forhåndsgodkjent for under 18 år pga. manglende opplysninger
+        val opplysningerEvaluering = if (domeneOpplysninger.isNotEmpty()) {
+            regler.evaluer(domeneOpplysninger)
+        } else {
+            muligGrunnlagForAvvisning(
+                regel = InngangsReglerV2.regler.find { it.id == Under18Aar }!!,
+                opplysninger = emptyList()
+            ).mapLeft { nonEmptyListOf(it) }
+        }
         val pdlEvaluering = regler.evaluer(genererPersonFakta(person.toPerson()))
 
-        val erForhaandsgodkjent = hendelseOpplysninger.erForhaandsGodkjent()
+        val erForhaandsgodkjent = hendelseOpplysninger.erForhaandsGodkjent() || domeneOpplysninger.isEmpty()
 
         val skalAvsluttePeriode = skalAvsluttePeriode(pdlEvaluering, opplysningerEvaluering, erForhaandsgodkjent)
 
