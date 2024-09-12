@@ -206,9 +206,9 @@ fun List<HentPersonBolkResult>.processPdlResultsV2(
         }
         val pdlEvaluering = regler.evaluer(genererPersonFakta(person.toPerson()))
 
-        val erForhaandsgodkjent = hendelseOpplysninger.erForhaandsGodkjent() || domeneOpplysninger.isEmpty()
+        val erForhaandsgodkjent = hendelseOpplysninger.erForhaandsGodkjent()
 
-        val skalAvsluttePeriode = skalAvsluttePeriode(pdlEvaluering, opplysningerEvaluering, erForhaandsgodkjent)
+        val skalAvsluttePeriode = skalAvsluttePeriode(pdlEvaluering, opplysningerEvaluering, erForhaandsgodkjent || domeneOpplysninger.isEmpty())
 
         val slettForhaandsGodkjenning = pdlEvaluering.isRight() && opplysningerEvaluering.isLeft() && erForhaandsgodkjent
 
