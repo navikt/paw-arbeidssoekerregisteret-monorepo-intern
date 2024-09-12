@@ -7,14 +7,16 @@ import io.ktor.server.response.respondText
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import no.nav.paw.health.model.HealthStatus
-import no.nav.paw.health.service.HealthIndicatorService
+import no.nav.paw.health.model.getAggregatedStatus
+import no.nav.paw.health.repository.HealthIndicatorRepository
 
 fun Route.healthRoutes(
-    healthIndicatorService: HealthIndicatorService,
+    healthIndicatorRepository: HealthIndicatorRepository,
 ) {
 
     get("/internal/isAlive") {
-        when (val status = healthIndicatorService.getLivenessStatus()) {
+        val livenessIndicators = healthIndicatorRepository.getLivenessIndicators()
+        when (val status = livenessIndicators.getAggregatedStatus()) {
             HealthStatus.HEALTHY -> call.respondText(
                 ContentType.Text.Plain,
                 HttpStatusCode.OK
@@ -28,7 +30,8 @@ fun Route.healthRoutes(
     }
 
     get("/internal/isReady") {
-        when (val status = healthIndicatorService.getReadinessStatus()) {
+        val readinessIndicators = healthIndicatorRepository.getReadinessIndicators()
+        when (val status = readinessIndicators.getAggregatedStatus()) {
             HealthStatus.HEALTHY -> call.respondText(
                 ContentType.Text.Plain,
                 HttpStatusCode.OK
