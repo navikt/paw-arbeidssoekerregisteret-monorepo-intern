@@ -49,7 +49,7 @@ data class EvalueringResultat(
 fun scheduleAvsluttPerioder(
     ctx: ProcessorContext<Long, Hendelse>,
     hendelseStateStore: KeyValueStore<UUID, HendelseState>,
-    interval: Duration = Duration.ofMinutes(30),
+    interval: Duration,
     pdlHentForenkletStatus: PdlHentForenkletStatus,
     pdlHentPersonBolk: PdlHentPerson,
     prometheusMeterRegistry: PrometheusMeterRegistry,
