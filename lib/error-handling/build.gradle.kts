@@ -3,10 +3,9 @@ plugins {
 }
 
 dependencies {
-    api(project(":lib:kafka"))
-    implementation(orgApacheKafka.kafkaClients)
-    implementation(orgApacheKafka.kafkaStreams)
-    implementation(apacheAvro.kafkaStreamsAvroSerde)
+    compileOnly(ktorServer.core)
+    compileOnly(orgApacheKafka.kafkaStreams)
+    compileOnly(loggingLibs.logbackClassic)
 
     // Test
     testImplementation(testLibs.bundles.withUnitTesting)

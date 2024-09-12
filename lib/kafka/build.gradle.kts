@@ -5,12 +5,11 @@ plugins {
 
 dependencies {
     compileOnly(kotlinx.coroutinesCore)
-    implementation(orgApacheKafka.kafkaClients)
     compileOnly(apacheAvro.kafkaSerializer)
+    implementation(orgApacheKafka.kafkaClients)
 
     // Test
-    testImplementation(testLibs.runnerJunit5)
-    testImplementation(testLibs.assertionsCore)
+    testImplementation(testLibs.bundles.withUnitTesting)
 }
 
 

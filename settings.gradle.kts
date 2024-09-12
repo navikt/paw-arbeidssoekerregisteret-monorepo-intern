@@ -10,6 +10,7 @@ rootProject.name = "paw-arbeidssoekerregisteret-monorepo-intern"
 
 include(
     "lib:hoplite-config",
+    "lib:error-handling",
     "lib:kafka",
     "lib:kafka-streams",
     "lib:kafka-key-generator-client",
