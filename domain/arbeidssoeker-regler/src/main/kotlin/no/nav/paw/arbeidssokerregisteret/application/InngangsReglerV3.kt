@@ -2,7 +2,7 @@ package no.nav.paw.arbeidssokerregisteret.application
 
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning.*
 
-object OppholdsReglerV1: Regler {
+object InngangsReglerV3: Regler {
     override val regler: List<Regel> = listOf(
         IkkeFunnet(
             PersonIkkeFunnet,
@@ -20,16 +20,22 @@ object OppholdsReglerV1: Regler {
             ErForhaandsgodkjent,
             vedTreff = ::grunnlagForGodkjenning
         ),
+        Under18Aar(
+            ErUnder18Aar,
+            vedTreff = ::muligGrunnlagForAvvisning
+        ),
         UkjentAlder(
             UkjentFoedselsaar,
             UkjentFoedselsdato,
             vedTreff = ::muligGrunnlagForAvvisning
         ),
         Over18AarOgBosattEtterFregLoven(
+            ErOver18Aar,
             BosattEtterFregLoven,
             vedTreff = ::grunnlagForGodkjenning
         ),
         EuEoesStatsborgerOver18Aar(
+            ErOver18Aar,
             ErEuEoesStatsborger,
             !ErNorskStatsborger,
             vedTreff = ::grunnlagForGodkjenning
