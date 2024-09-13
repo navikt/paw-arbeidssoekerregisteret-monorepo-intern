@@ -1,7 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.processors
 
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentForenkletStatus
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentPerson
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.scheduleAvsluttPerioder
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseState
@@ -20,14 +19,12 @@ import java.util.UUID
 fun KStream<Long, Periode>.oppdaterHendelseState(
     hendelseStateStoreName: String,
     prometheusMeterRegistry: PrometheusMeterRegistry,
-    pdlHentForenkletStatus: PdlHentForenkletStatus,
     pdlHentPerson: PdlHentPerson
 ): KStream<Long, Hendelse> {
     val processor = {
         PeriodeProcessor(
             hendelseStateStoreName,
             prometheusMeterRegistry,
-            pdlHentForenkletStatus,
             pdlHentPerson
         )
     }
@@ -37,7 +34,6 @@ fun KStream<Long, Periode>.oppdaterHendelseState(
 class PeriodeProcessor(
     private val hendelseStateStoreName: String,
     private val prometheusMeterRegistry: PrometheusMeterRegistry,
-    private val pdlHentForenkletStatus: PdlHentForenkletStatus,
     private val pdlHentPersonBolk: PdlHentPerson,
 ) : Processor<Long, Periode, Long, Hendelse> {
     private var hendelseStateStore: KeyValueStore<UUID, HendelseState>? = null
@@ -48,12 +44,11 @@ class PeriodeProcessor(
         this.context = context
         hendelseStateStore = context?.getStateStore(hendelseStateStoreName)
         scheduleAvsluttPerioder(
-            requireNotNull(context),
-            requireNotNull(hendelseStateStore),
-            Duration.ofMinutes(10),
-            pdlHentForenkletStatus,
-            pdlHentPersonBolk,
-            prometheusMeterRegistry,
+            ctx = requireNotNull(context),
+            hendelseStateStore = requireNotNull(hendelseStateStore),
+            interval = Duration.ofMinutes(10),
+            pdlHentPersonBolk = pdlHentPersonBolk,
+            prometheusMeterRegistry = prometheusMeterRegistry,
             regler = InngangsReglerV3
         )
     }

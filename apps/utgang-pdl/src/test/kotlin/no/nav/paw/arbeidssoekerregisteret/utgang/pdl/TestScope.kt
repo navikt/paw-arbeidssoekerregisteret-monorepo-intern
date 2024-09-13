@@ -12,7 +12,6 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
-import no.nav.paw.pdl.graphql.generated.hentforenkletstatusbolk.HentPersonBolkResult as HentForenkletStatusBolkResult
 import no.nav.paw.pdl.graphql.generated.hentpersonbolk.HentPersonBolkResult
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serde
@@ -36,7 +35,7 @@ data class TestScope(
     val topologyTestDriver: TopologyTestDriver
 )
 
-fun testScopeV2(pdlMockResponse: List<HentPersonBolkResult>?): TestScope {
+fun testScope(pdlMockResponse: List<HentPersonBolkResult>?): TestScope {
     val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfiguration>(
         APPLICATION_CONFIG_FILE
     )
@@ -60,69 +59,8 @@ fun testScopeV2(pdlMockResponse: List<HentPersonBolkResult>?): TestScope {
             hendelseStateStoreName = hendelseStateStoreName,
             periodeTopic = applicationConfig.periodeTopic,
             hendelseLoggTopic = applicationConfig.hendelseloggTopic,
-            pdlHentForenkletStatus = { _, _, _ ->
-                null
-            },
             pdlHentPerson = { _, _, _ ->
                 pdlMockResponse
-            },
-            prometheusRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-        ),
-        kafkaStreamProperties
-    )
-    val periodeInputTopic = testDriver.createInputTopic(
-        applicationConfig.periodeTopic,
-        Serdes.Long().serializer(),
-        periodeSerde.serializer()
-    )
-    val hendelseInputTopic = testDriver.createInputTopic(
-        applicationConfig.hendelseloggTopic,
-        Serdes.Long().serializer(),
-        HendelseSerde().serializer()
-    )
-    val hendelseOutputTopic = testDriver.createOutputTopic(
-        applicationConfig.hendelseloggTopic,
-        Serdes.Long().deserializer(),
-        HendelseSerde().deserializer()
-    )
-    return TestScope(
-        periodeTopic = periodeInputTopic,
-        hendelseloggInputTopic = hendelseInputTopic,
-        hendelseloggOutputTopic = hendelseOutputTopic,
-        hendelseKeyValueStore = testDriver.getKeyValueStore(hendelseStateStoreName),
-        topologyTestDriver = testDriver
-    )
-}
-
-fun testScope(pdlMockResponse: List<HentForenkletStatusBolkResult>): TestScope {
-    val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfiguration>(
-        APPLICATION_CONFIG_FILE
-    )
-
-    val periodeSerde = createAvroSerde<Periode>()
-
-    val hendelseStateStoreName = applicationConfig.hendelseStateStoreName
-
-    val streamBuilder = StreamsBuilder()
-        .addStateStore(
-            KeyValueStoreBuilder(
-                InMemoryKeyValueBytesStoreSupplier(hendelseStateStoreName),
-                Serdes.UUID(),
-                HendelseStateSerde(),
-                Time.SYSTEM
-            )
-        )
-
-    val testDriver = TopologyTestDriver(
-        streamBuilder.appTopology(
-            hendelseStateStoreName = hendelseStateStoreName,
-            periodeTopic = applicationConfig.periodeTopic,
-            hendelseLoggTopic = applicationConfig.hendelseloggTopic,
-            pdlHentForenkletStatus = { _, _, _ ->
-                pdlMockResponse
-            },
-            pdlHentPerson = { _, _, _ ->
-                null
             },
             prometheusRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
         ),

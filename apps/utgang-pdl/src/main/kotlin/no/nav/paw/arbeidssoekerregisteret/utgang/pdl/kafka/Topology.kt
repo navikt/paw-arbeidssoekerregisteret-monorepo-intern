@@ -1,7 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka
 
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentForenkletStatus
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentPerson
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.processors.oppdaterHendelseState
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
@@ -18,7 +17,6 @@ fun StreamsBuilder.appTopology(
     periodeTopic: String,
     hendelseLoggTopic: String,
     hendelseStateStoreName: String,
-    pdlHentForenkletStatus: PdlHentForenkletStatus,
     pdlHentPerson: PdlHentPerson
 ): Topology {
     stream(hendelseLoggTopic, Consumed.with(Serdes.Long(), HendelseSerde()))
@@ -30,7 +28,6 @@ fun StreamsBuilder.appTopology(
         .oppdaterHendelseState(
             hendelseStateStoreName = hendelseStateStoreName,
             prometheusMeterRegistry = prometheusRegistry,
-            pdlHentForenkletStatus = pdlHentForenkletStatus,
             pdlHentPerson = pdlHentPerson
         )
         .to(hendelseLoggTopic, Produced.with(Serdes.Long(), HendelseSerde()))

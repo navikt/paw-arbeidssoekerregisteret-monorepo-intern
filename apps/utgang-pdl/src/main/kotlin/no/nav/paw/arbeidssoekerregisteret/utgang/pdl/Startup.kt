@@ -4,7 +4,6 @@ import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import io.micrometer.core.instrument.binder.kafka.KafkaStreamsMetrics
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentForenkletStatus
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentPerson
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.health.Health
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.health.initKtor
@@ -51,7 +50,6 @@ fun main() {
         applicationConfiguration.periodeTopic,
         applicationConfiguration.hendelseloggTopic,
         applicationConfiguration.hendelseStateStoreName,
-        pdlHentForenkletStatus = PdlHentForenkletStatus.create(),
         pdlHentPerson = PdlHentPerson.create(),
     )
     val kafkaStreams = KafkaStreams(

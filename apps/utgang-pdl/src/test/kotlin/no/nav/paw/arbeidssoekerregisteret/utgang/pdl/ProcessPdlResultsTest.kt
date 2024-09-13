@@ -6,19 +6,13 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.mockk.mockk
 import io.mockk.verify
-import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.filterAvsluttPeriodeGrunnlag
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.filterValidHendelseStates
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.getHendelseStateAndPerson
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.isPdlResultOK
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.processPdlResultsV2
-import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.processResults
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseState
-import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.toAarsak
-import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.toAarsak
-import no.nav.paw.arbeidssokerregisteret.application.IkkeBosattINorgeIHenholdTilFolkeregisterloven
 import no.nav.paw.arbeidssokerregisteret.application.InngangsReglerV3
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
 import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Foedsel
@@ -29,73 +23,14 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 
-class ProcessPdlResultsV2Test : FreeSpec({
+class ProcessPdlResultsTest : FreeSpec({
 
-    "processResults v1 and v2 should yield same results" {
-        val logger = mockk<Logger>(relaxed = true)
-        val prometheusMeterRegistry = mockk<PrometheusMeterRegistry>(relaxed = true)
-
-        val ikkeBosattPerson = getPerson(
-            foedsel = Foedsel("2000-01-01"),
-            statsborgerskap = getStatsborgerskap("BRA"),
-            opphold = null,
-            folkeregisterpersonstatus = getFolkeregisterpersonstatus("ikkeBosatt"),
-            bostedsadresse = null,
-            innflyttingTilNorge = emptyList(),
-            utflyttingFraNorge = emptyList()
-        )
-
-        val resultV1 = generatePdlMockResponse(
-            "12345678911",
-            listOf("ikkeBosatt"),
-            "ok"
-        )
-
-        val resultV2 = HentPersonBolkResult(
-            "12345678911",
-            ikkeBosattPerson,
-            "ok"
-        )
-
-        val hendelseState = HendelseState(
-            brukerId = 1L,
-            periodeId = UUID.randomUUID(),
-            recordKey = 1L,
-            identitetsnummer = "12345678911",
-            opplysninger = setOf(
-                Opplysning.SAMME_SOM_INNLOGGET_BRUKER,
-                Opplysning.ER_OVER_18_AAR,
-                Opplysning.IKKE_ANSATT,
-                Opplysning.INGEN_INFORMASJON_OM_OPPHOLDSTILLATELSE,
-                Opplysning.INGEN_FLYTTE_INFORMASJON,
-                Opplysning.INGEN_ADRESSE_FUNNET,
-                Opplysning.DNUMMER
-            ),
-            startetTidspunkt = Instant.now().minus(Duration.ofDays(30)),
-            harTilhoerendePeriode = true
-        )
-
-        val chunk = listOf(KeyValue(hendelseState.periodeId, hendelseState))
-
-        val outputV1 = resultV1.processResults(chunk, prometheusMeterRegistry, logger)
-        val outputV2 = listOf(resultV2).processPdlResultsV2(InngangsReglerV3, chunk, logger)
-
-        outputV1.shouldHaveSize(1)
-        outputV2.shouldHaveSize(1)
-
-        outputV1[0].avsluttPeriode shouldBe outputV2[0].avsluttPeriode
-        outputV1[0].slettForhaandsGodkjenning shouldBe outputV2[0].slettForhaandsGodkjenning
-        outputV1[0].hendelseState shouldBe outputV2[0].hendelseState
-        outputV1[0].grunnlagV1?.filterAvsluttPeriodeGrunnlag(hendelseState.opplysninger)?.toAarsak() shouldBe "Personen er ikke bosatt etter folkeregisterloven"
-        outputV2[0].grunnlagV2 shouldBe setOf(IkkeBosattINorgeIHenholdTilFolkeregisterloven)
-    }
-
-    "processPdlResultsV2 should correctly set avsluttPeriode to true if multiple problems in pdlEvaluering" {
+    "processPdlResults should correctly set avsluttPeriode to true if multiple problems in pdlEvaluering" {
         val person = getPerson(
             foedsel = Foedsel("2014-01-01"),
             statsborgerskap = getStatsborgerskap("NOR"),
             opphold = null,
-            folkeregisterpersonstatus = getFolkeregisterpersonstatus("ikkeBosatt"),
+            folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("ikkeBosatt"),
             bostedsadresse = null,
             innflyttingTilNorge = emptyList(),
             utflyttingFraNorge = emptyList()
@@ -128,7 +63,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
 
     }
 
-    "processPdlResultsV2 should correctly set avsluttPeriode to true" - {
+    "processPdlResults should correctly set avsluttPeriode to true" - {
 
         "if Folkeregisterpersonstatus 'ikkeBosatt'" {
             val logger = mockk<Logger>(relaxed = true)
@@ -137,7 +72,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
                 foedsel = Foedsel("2000-01-01"),
                 statsborgerskap = getStatsborgerskap("BRA"),
                 opphold = null,
-                folkeregisterpersonstatus = getFolkeregisterpersonstatus("ikkeBosatt"),
+                folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("ikkeBosatt"),
                 bostedsadresse = null,
                 innflyttingTilNorge = emptyList(),
                 utflyttingFraNorge = emptyList()
@@ -171,7 +106,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
                 foedsel = Foedsel("2006-01-01"),
                 statsborgerskap = getStatsborgerskap("NOR"),
                 opphold = null,
-                folkeregisterpersonstatus = getFolkeregisterpersonstatus("doedIFolkeregisteret"),
+                folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("doedIFolkeregisteret"),
                 bostedsadresse = null,
                 innflyttingTilNorge = emptyList(),
                 utflyttingFraNorge = emptyList()
@@ -205,7 +140,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
                 foedsel = Foedsel("2006-01-01"),
                 statsborgerskap = getStatsborgerskap("NOR"),
                 opphold = null,
-                folkeregisterpersonstatus = getFolkeregisterpersonstatus("forsvunnet"),
+                folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("forsvunnet"),
                 bostedsadresse = null,
                 innflyttingTilNorge = emptyList(),
                 utflyttingFraNorge = emptyList()
@@ -233,7 +168,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
         }
     }
 
-    "processPdlResultsV2 should correctly set avsluttPeriode to false and slettForhaandsGodkjenning to false" - {
+    "processPdlResults should correctly set avsluttPeriode to false and slettForhaandsGodkjenning to false" - {
 
         "if Folkeregisterpersonstatus is 'bosattEtterFolkeregisterloven'" {
             val logger = mockk<Logger>(relaxed = true)
@@ -241,7 +176,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
                 foedsel = Foedsel("2000-01-01"),
                 statsborgerskap = getStatsborgerskap("NOR"),
                 opphold = getOppholdstillatelse(),
-                folkeregisterpersonstatus = getFolkeregisterpersonstatus("bosattEtterFolkeregisterloven"),
+                folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("bosattEtterFolkeregisterloven"),
                 bostedsadresse = getBostedsadresse(),
                 innflyttingTilNorge = emptyList(),
                 utflyttingFraNorge = emptyList()
@@ -274,7 +209,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
                 foedsel = Foedsel("2000-01-01"),
                 statsborgerskap = getStatsborgerskap("NOR"),
                 opphold = getOppholdstillatelse(),
-                folkeregisterpersonstatus = getFolkeregisterpersonstatus("forsvunnet"),
+                folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("forsvunnet"),
                 bostedsadresse = getBostedsadresse(),
                 innflyttingTilNorge = emptyList(),
                 utflyttingFraNorge = emptyList()
@@ -303,7 +238,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
         }
     }
 
-    "processPdlResultsV2 should correctly set slettForhaandsGodkjenning to true" - {
+    "processPdlResults should correctly set slettForhaandsGodkjenning to true" - {
 
         "if has negative opplysning and is forhaandsgodkjent and PDL gives positive results" {
             val logger = mockk<Logger>(relaxed = true)
@@ -312,7 +247,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
                 foedsel = Foedsel("2000-01-01"),
                 statsborgerskap = getStatsborgerskap("NOR"),
                 opphold = getOppholdstillatelse(),
-                folkeregisterpersonstatus = getFolkeregisterpersonstatus("bosattEtterFolkeregisterloven"),
+                folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("bosattEtterFolkeregisterloven"),
                 bostedsadresse = getBostedsadresse(),
                 innflyttingTilNorge = emptyList(),
                 utflyttingFraNorge = emptyList()
@@ -340,7 +275,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
         }
     }
 
-    "processPdlResultsV2 should correctly evaluate negative pdl results" - {
+    "processPdlResults should correctly evaluate negative pdl results" - {
 
         "should return an empty list when all results have error codes" {
             val logger = mockk<Logger>(relaxed = true)
@@ -433,7 +368,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
             foedsel = Foedsel("2000-01-01"),
             statsborgerskap = getStatsborgerskap("NOR"),
             opphold = getOppholdstillatelse(),
-            folkeregisterpersonstatus = getFolkeregisterpersonstatus("bosatt"),
+            folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("bosatt"),
             bostedsadresse = getBostedsadresse(),
             innflyttingTilNorge = emptyList(),
             utflyttingFraNorge = emptyList()

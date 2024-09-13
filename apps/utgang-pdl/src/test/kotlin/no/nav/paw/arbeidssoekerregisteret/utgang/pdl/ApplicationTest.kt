@@ -4,16 +4,12 @@ import io.kotest.assertions.fail
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.filterAvsluttPeriodeGrunnlag
 import no.nav.paw.arbeidssokerregisteret.api.v1.Bruker
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
-import no.nav.paw.pdl.graphql.generated.hentforenkletstatusbolk.Folkeregisterpersonstatus
-import no.nav.paw.pdl.graphql.generated.hentforenkletstatusbolk.HentPersonBolkResult
-import no.nav.paw.pdl.graphql.generated.hentforenkletstatusbolk.Person
 import org.apache.kafka.streams.TestOutputTopic
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata as MetadataIntern
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker as BrukerIntern
@@ -24,20 +20,31 @@ import java.util.*
 
 class ApplicationTest : FreeSpec({
     val periodeId = UUID.randomUUID()
+    val identitetsnummer = "12345678901"
 
     "Sender Avsluttet hendelse for person med forenkletStatus 'doedIFolkeregisteret' i PDL og ingen opplysninger fra hendelser" {
-        with(testScope(generatePdlMockResponse("12345678901", listOf("doedIFolkeregisteret")))) {
+        with(
+            testScope(
+                generatePdlMockResponse(
+                    identitetsnummer,
+                    getPerson(
+                        folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("doedIFolkeregisteret")
+                    ),
+                    "ok",
+                )
+            )
+        ) {
             verifyEmptyTopic(hendelseloggOutputTopic)
             hendelseloggInputTopic.pipeInput(1234L,
                 Startet(
                     periodeId,
                     1234L,
-                    "12345678901",
+                    identitetsnummer,
                     MetadataIntern(
                         Instant.now(),
                         BrukerIntern(
                             BrukerTypeIntern.SLUTTBRUKER,
-                            "12345678901"
+                            identitetsnummer
                         ),
                         "",
                         ""
@@ -49,12 +56,12 @@ class ApplicationTest : FreeSpec({
                 1234L,
                 Periode(
                     periodeId,
-                    "12345678901",
+                    identitetsnummer,
                     Metadata(
                         Instant.now(),
                         Bruker(
                             BrukerType.SLUTTBRUKER,
-                            "12345678901"
+                            identitetsnummer
                         ),
                         "",
                         "",
@@ -70,19 +77,29 @@ class ApplicationTest : FreeSpec({
     }
 
     "Sender ikke Avsluttet hendelse for person med forenkletStatus 'bosattEtterFolkeregisterloven' i PDL og ingen opplysninger fra hendelser" {
-        with(testScope(generatePdlMockResponse("12345678902", listOf("bosattEtterFolkeregisterloven")))) {
+        with(
+            testScope(
+                generatePdlMockResponse(
+                    identitetsnummer,
+                    getPerson(
+                        folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("bosattEtterFolkeregisterloven")
+                    ),
+                    "ok",
+                )
+            )
+        ) {
             verifyEmptyTopic(hendelseloggOutputTopic)
             hendelseloggInputTopic.pipeInput(
                 1234L,
                 Startet(
                     periodeId,
                     1234,
-                    "12345678902",
+                    identitetsnummer,
                     MetadataIntern(
                         Instant.now(),
                         BrukerIntern(
                             BrukerTypeIntern.SLUTTBRUKER,
-                            "12345678902"
+                            identitetsnummer
                         ),
                         "",
                         ""
@@ -94,12 +111,12 @@ class ApplicationTest : FreeSpec({
                 1234L,
                 Periode(
                     periodeId,
-                    "12345678902",
+                    identitetsnummer,
                     Metadata(
                         Instant.now(),
                         Bruker(
                             BrukerType.SLUTTBRUKER,
-                            "12345678902"
+                            identitetsnummer
                         ),
                         "",
                         "",
@@ -114,18 +131,28 @@ class ApplicationTest : FreeSpec({
     }
 
     "Sender ikke Avsluttet hendelse om hentPersonBolk status er 'bad_request' eller 'not_found' i PDL" {
-        with(testScope(generatePdlMockResponse("12345678903", listOf("doedIFolkeregisteret", "dNummer"), "not_found"))) {
+        with(
+            testScope(
+                generatePdlMockResponse(
+                    identitetsnummer,
+                    getPerson(
+                        folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("doedIFolkeregisteret", "dNummer")
+                    ),
+                    "not_found",
+                )
+            )
+        ) {
             verifyEmptyTopic(hendelseloggOutputTopic)
             periodeTopic.pipeInput(
                 1234L,
                 Periode(
                     periodeId,
-                    "12345678903",
+                    identitetsnummer,
                     Metadata(
                         Instant.now(),
                         Bruker(
                             BrukerType.SLUTTBRUKER,
-                            "12345678903"
+                            identitetsnummer
                         ),
                         "",
                         "",
@@ -138,12 +165,12 @@ class ApplicationTest : FreeSpec({
                 1234L,
                 Periode(
                     periodeId,
-                    "12345678903",
+                    identitetsnummer,
                     Metadata(
                         Instant.now(),
                         Bruker(
                             BrukerType.SLUTTBRUKER,
-                            "12345678903"
+                            identitetsnummer
                         ),
                         "",
                         "",
@@ -158,14 +185,24 @@ class ApplicationTest : FreeSpec({
     }
 
     "Sender ikke Avsluttet hendelse for person med forenkletStatus 'ikkeBosatt' i PDL og opplysninger FORHAANDSGODKJENT_AV_ANSATT og IKKE_BOSATT fra hendelser" {
-        with(testScope(generatePdlMockResponse("12345678904", listOf("ikkeBosatt", "dNummer")))) {
+        with(
+            testScope(
+                generatePdlMockResponse(
+                    identitetsnummer,
+                    getPerson(
+                        folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("ikkeBosatt", "dNummer")
+                    ),
+                    "ok",
+                )
+            )
+        ) {
             verifyEmptyTopic(hendelseloggOutputTopic)
             hendelseloggInputTopic.pipeInput(
                 1234L,
                 Startet(
                     periodeId,
                     1L,
-                    "12345678904",
+                    identitetsnummer,
                     MetadataIntern(
                         Instant.now(),
                         BrukerIntern(
@@ -186,12 +223,12 @@ class ApplicationTest : FreeSpec({
                 1234L,
                 Periode(
                     periodeId,
-                    "12345678904",
+                    identitetsnummer,
                     Metadata(
                         Instant.now(),
                         Bruker(
                             BrukerType.SLUTTBRUKER,
-                            "12345678904"
+                            identitetsnummer
                         ),
                         "",
                         "",
@@ -205,27 +242,38 @@ class ApplicationTest : FreeSpec({
         }
     }
 
-    "Sender Avsluttet hendelse for person med forenkletStatus 'ikkeBosatt' i PDL og opplysninger FORHAANDSGODKJENT_AV_ANSATT og ER_UNDER_18_AAR fra hendelser" {
-        with(testScope(generatePdlMockResponse("12345678904", listOf("ikkeBosatt")))) {
+    "Sender Avsluttet hendelse for person med forenkletStatus 'ikkeBosatt' i PDL og opplysninger FORHAANDSGODKJENT_AV_ANSATT, ER_UNDER_18_AAR og BOSATT_ETTER_FREG_LOVEN fra hendelser" {
+        with(
+            testScope(
+                generatePdlMockResponse(
+                    identitetsnummer,
+                    getPerson(
+                        folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("ikkeBosatt")
+                    ),
+                    "ok",
+                )
+            )
+        ) {
             verifyEmptyTopic(hendelseloggOutputTopic)
             hendelseloggInputTopic.pipeInput(
                 1234L,
                 Startet(
                     periodeId,
-                    12344568904,
-                    "12345678904",
+                    1234L,
+                    identitetsnummer,
                     MetadataIntern(
                         Instant.now(),
                         BrukerIntern(
                             BrukerTypeIntern.SLUTTBRUKER,
-                            "12345678904"
+                            identitetsnummer
                         ),
                         "",
                         ""
                     ),
                     setOf(
                         Opplysning.FORHAANDSGODKJENT_AV_ANSATT,
-                        Opplysning.ER_UNDER_18_AAR
+                        Opplysning.ER_UNDER_18_AAR,
+                        Opplysning.BOSATT_ETTER_FREG_LOVEN
                     )
                 )
             )
@@ -233,12 +281,12 @@ class ApplicationTest : FreeSpec({
                 1234L,
                 Periode(
                     periodeId,
-                    "12345678904",
+                    identitetsnummer,
                     Metadata(
                         Instant.now(),
                         Bruker(
                             BrukerType.SLUTTBRUKER,
-                            "12345678904"
+                            identitetsnummer
                         ),
                         "",
                         "",
@@ -254,26 +302,36 @@ class ApplicationTest : FreeSpec({
     }
 
     "Sender Avsluttet hendelse for person om forenkletStatus er 'opphoert' i PDL og opplysninger er 'FORHAANDSGODKJENT_AV_ANSATT' og 'DNUMMER'" {
-        with(testScope(generatePdlMockResponse("12345678905", listOf("opphoert"), "ok"))) {
+        with(
+            testScope(
+                generatePdlMockResponse(
+                    identitetsnummer,
+                    getPerson(
+                        folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("opphoert")
+                    ),
+                    "ok",
+                )
+            )
+        ) {
             verifyEmptyTopic(hendelseloggOutputTopic)
             hendelseloggInputTopic.pipeInput(
                 1234L,
                 Startet(
                     periodeId,
                     1234L,
-                    "12345678905",
+                    identitetsnummer,
                     MetadataIntern(
                         Instant.now(),
                         BrukerIntern(
                             BrukerTypeIntern.SLUTTBRUKER,
-                            "12345678905"
+                            identitetsnummer
                         ),
                         "",
                         ""
                     ),
                     setOf(
                         Opplysning.DNUMMER,
-                        Opplysning.FORHAANDSGODKJENT_AV_ANSATT
+                        Opplysning.FORHAANDSGODKJENT_AV_ANSATT,
                     )
                 )
             )
@@ -281,12 +339,12 @@ class ApplicationTest : FreeSpec({
                 1234L,
                 Periode(
                     periodeId,
-                    "12345678905",
+                    identitetsnummer,
                     Metadata(
                         Instant.now(),
                         Bruker(
                             BrukerType.SLUTTBRUKER,
-                            "12345678905"
+                            identitetsnummer
                         ),
                         "",
                         "",
@@ -302,19 +360,29 @@ class ApplicationTest : FreeSpec({
     }
 
     "Fjerner hendelse fra hendelse state store hvis ingen tilhørende periode har kommet innen 30 dager" {
-        with(testScope(generatePdlMockResponse("12345678906", listOf("opphoert"), "ok"))) {
+        with(
+            testScope(
+                generatePdlMockResponse(
+                    identitetsnummer,
+                    getPerson(
+                        folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("opphoert")
+                    ),
+                    "ok",
+                )
+            )
+        ) {
             verifyEmptyTopic(hendelseloggOutputTopic)
             hendelseloggInputTopic.pipeInput(
                 1234L,
                 Startet(
                     periodeId,
                     1234L,
-                    "12345678906",
+                    identitetsnummer,
                     MetadataIntern(
                         Instant.now(),
                         BrukerIntern(
                             BrukerTypeIntern.SLUTTBRUKER,
-                            "12345678906"
+                            identitetsnummer
                         ),
                         "",
                         ""
@@ -331,19 +399,29 @@ class ApplicationTest : FreeSpec({
     }
 
     "Fjerner ikke hendelse fra hendelse state store hvis ingen tilhørende periode har kommet innen 29 dager" {
-        with(testScope(generatePdlMockResponse("12345678906", listOf("opphoert"), "ok"))) {
+        with(
+            testScope(
+                generatePdlMockResponse(
+                    identitetsnummer,
+                    getPerson(
+                        folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("opphoert")
+                    ),
+                    "ok",
+                )
+            )
+        ) {
             verifyEmptyTopic(hendelseloggOutputTopic)
             hendelseloggInputTopic.pipeInput(
                 1234L,
                 Startet(
                     periodeId,
                     1234L,
-                    "12345678906",
+                    identitetsnummer,
                     MetadataIntern(
                         Instant.now(),
                         BrukerIntern(
                             BrukerTypeIntern.SLUTTBRUKER,
-                            "12345678906"
+                            identitetsnummer
                         ),
                         "",
                         ""
@@ -360,19 +438,29 @@ class ApplicationTest : FreeSpec({
     }
 
     "Fjerner ikke hendelse fra hendelse state store hvis tilhørende periode har kommet innen 30 dager" {
-        with(testScope(generatePdlMockResponse("12345678906", listOf("bosattEtterFolkeregisterloven"), "ok"))) {
+        with(
+            testScope(
+                generatePdlMockResponse(
+                    identitetsnummer,
+                    getPerson(
+                        folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("bosattEtterFolkeregisterloven")
+                    ),
+                    "ok",
+                )
+            )
+        ) {
             verifyEmptyTopic(hendelseloggOutputTopic)
             hendelseloggInputTopic.pipeInput(
                 1234L,
                 Startet(
                     periodeId,
                     1234L,
-                    "12345678906",
+                    identitetsnummer,
                     MetadataIntern(
                         Instant.now(),
                         BrukerIntern(
                             BrukerTypeIntern.SLUTTBRUKER,
-                            "12345678906"
+                            identitetsnummer
                         ),
                         "",
                         ""
@@ -385,12 +473,12 @@ class ApplicationTest : FreeSpec({
                 1234L,
                 Periode(
                     periodeId,
-                    "12345678906",
+                    identitetsnummer,
                     Metadata(
                         Instant.now(),
                         Bruker(
                             BrukerType.SLUTTBRUKER,
-                            "12345678906"
+                            identitetsnummer
                         ),
                         "",
                         "",
@@ -402,43 +490,6 @@ class ApplicationTest : FreeSpec({
             topologyTestDriver.advanceWallClockTime(Duration.ofDays(21))
             hendelseKeyValueStore.get(periodeId) shouldNotBe null
         }
-    }
-
-    "filterAvsluttPeriodeGrunnlag() skal returnere en liste med opplysning DOED om forenkletStatus er 'doedIFolkeregisteret'" {
-        val folkeregisterpersonstatus =
-            listOf(
-                Folkeregisterpersonstatus("doedIFolkeregisteret"),
-                Folkeregisterpersonstatus("dNummer")
-            )
-
-        val opplysningerFraHendelseState = emptySet<Opplysning>()
-        folkeregisterpersonstatus.filterAvsluttPeriodeGrunnlag(opplysningerFraHendelseState) shouldBe listOf(Opplysning.DOED)
-    }
-
-    "filterAvsluttPeriodeGrunnlag() skal returnere en tom liste med grunnlag for avsluttet periode om forenkletStatus er 'ikkeBosatt' og opplysninger FORHAANDSGODKJENT_AV_ANSATT og IKKE_BOSATT fra hendelser" {
-        val folkeregisterpersonstatus =
-            listOf(
-                Folkeregisterpersonstatus("ikkeBosatt"),
-            )
-
-        val opplysningerFraHendelseState = setOf(
-            Opplysning.FORHAANDSGODKJENT_AV_ANSATT,
-            Opplysning.IKKE_BOSATT
-        )
-        folkeregisterpersonstatus.filterAvsluttPeriodeGrunnlag(opplysningerFraHendelseState) shouldBe emptySet()
-    }
-
-    "filterAvsluttPeriodeGrunnlag() skal retunere en liste med opplysning opphoert om forenkletStatus er 'opphoert' og opplysninger FORHAANDSGODKJENT_AV_ANSATT og DNUMMER fra hendelser" {
-        val folkeregisterpersonstatus =
-            listOf(
-                Folkeregisterpersonstatus("opphoert"),
-            )
-
-        val opplysningerFraHendelseState = setOf(
-            Opplysning.DNUMMER,
-            Opplysning.FORHAANDSGODKJENT_AV_ANSATT
-        )
-        folkeregisterpersonstatus.filterAvsluttPeriodeGrunnlag(opplysningerFraHendelseState) shouldBe listOf(Opplysning.OPPHOERT_IDENTITET)
     }
 })
 
@@ -452,18 +503,3 @@ fun verifyEmptyTopic(hendelseloggOutputTopic: TestOutputTopic<out Any, out Any>)
         }"
     )
 }
-
-fun generatePdlMockResponse(ident: String, forenkletStatus: List<String>, status: String = "ok") = listOf(
-    HentPersonBolkResult(
-        ident,
-        person = Person(
-            forenkletStatus.map {
-                Folkeregisterpersonstatus(
-                    it,
-                )
-            },
-        ),
-        code = status,
-    )
-)
-
