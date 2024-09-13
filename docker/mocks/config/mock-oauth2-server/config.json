@@ -1,0 +1,35 @@
+{
+  "interactiveLogin": true,
+  "httpServer": "NettyWrapper",
+  "tokenCallbacks": [
+    {
+      "issuerId": "default",
+      "tokenExpiry": 3600,
+      "requestMappings": [
+        {
+          "requestParam": "client_id",
+          "match": "paw-microfrontend-toggler",
+          "claims": {
+            "sub": "admin@paw-microfrontend-toggler",
+            "aud": [
+              "paw-microfrontend-toggler"
+            ],
+            "acr": "idporten-loa-high"
+          }
+        },
+        {
+          "requestParam": "client_id",
+          "match": "paw-arbeidssoeker-bekreftelse-api",
+          "claims": {
+            "sub": "admin@paw-arbeidssoeker-bekreftelse-api",
+            "aud": [
+              "paw-arbeidssoeker-bekreftelse-api"
+            ],
+            "pid": "17830348441",
+            "acr": "idporten-loa-high"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -14,6 +14,7 @@ val image: String? by project
 dependencies {
     // Project
     implementation(project(":lib:hoplite-config"))
+    implementation(project(":lib:error-handling"))
     implementation(project(":lib:kafka-streams"))
     implementation(project(":lib:kafka-key-generator-client"))
     implementation(project(":domain:bekreftelse-interne-hendelser"))

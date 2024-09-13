@@ -1,0 +1,16 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/kafka-keys"
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "id": 1,
+      "key": 1
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

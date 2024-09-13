@@ -1,4 +1,4 @@
-package no.nav.paw.bekreftelse.api.domain
+package no.nav.paw.bekreftelse.api.model
 
 import java.util.*
 

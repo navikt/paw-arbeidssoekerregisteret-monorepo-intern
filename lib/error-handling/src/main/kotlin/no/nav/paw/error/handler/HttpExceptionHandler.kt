@@ -15,7 +15,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 private const val ERROR_TYPE_PREFIX = "PAW_"
-private val logger: Logger = LoggerFactory.getLogger("paw.application.error.http")
+private val logger: Logger = LoggerFactory.getLogger("no.nav.paw.logger.error.http")
 
 suspend fun <T : Throwable> ApplicationCall.handleException(throwable: T) {
     when (throwable) {

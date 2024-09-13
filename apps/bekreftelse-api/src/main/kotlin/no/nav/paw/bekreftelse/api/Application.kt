@@ -5,48 +5,41 @@ import io.ktor.server.engine.addShutdownHook
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.routing.routing
-import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
-import no.nav.paw.config.kafka.KAFKA_CONFIG_WITH_SCHEME_REG
-import no.nav.paw.config.kafka.KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG
-import no.nav.paw.config.kafka.KafkaConfig
-import no.nav.paw.kafkakeygenerator.auth.AzureM2MConfig
-import no.nav.paw.kafkakeygenerator.client.KafkaKeyConfig
 import no.nav.paw.bekreftelse.api.config.APPLICATION_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
+import no.nav.paw.bekreftelse.api.config.SERVER_CONFIG_FILE_NAME
+import no.nav.paw.bekreftelse.api.config.ServerConfig
 import no.nav.paw.bekreftelse.api.plugins.configureAuthentication
 import no.nav.paw.bekreftelse.api.plugins.configureHTTP
+import no.nav.paw.bekreftelse.api.plugins.configureKafka
 import no.nav.paw.bekreftelse.api.plugins.configureLogging
 import no.nav.paw.bekreftelse.api.plugins.configureMetrics
-import no.nav.paw.bekreftelse.api.plugins.configureOtel
 import no.nav.paw.bekreftelse.api.plugins.configureSerialization
-import no.nav.paw.bekreftelse.api.routes.healthRoutes
+import no.nav.paw.bekreftelse.api.plugins.configureTracing
 import no.nav.paw.bekreftelse.api.routes.bekreftelseRoutes
+import no.nav.paw.bekreftelse.api.routes.metricsRoutes
 import no.nav.paw.bekreftelse.api.routes.swaggerRoutes
+import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
+import no.nav.paw.health.route.healthRoutes
 import org.slf4j.LoggerFactory
 
 fun main() {
-    val logger = LoggerFactory.getLogger("rapportering-api")
-    logger.info("Starter: ${ApplicationInfo.id}")
+    val logger = LoggerFactory.getLogger("no.nav.paw.logger.application")
 
     val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG_FILE_NAME)
-    val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG_WITH_SCHEME_REG)
-    val kafkaStreamsConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG)
-    val azureM2MConfig = loadNaisOrLocalConfiguration<AzureM2MConfig>("azure_m2m_key_config.toml")
-    val kafkaKeyConfig = loadNaisOrLocalConfiguration<KafkaKeyConfig>("kafka_key_generator_client_config.toml")
+    val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG_FILE_NAME)
 
-    val dependencies = createDependencies(
-        applicationConfig,
-        kafkaConfig,
-        kafkaStreamsConfig,
-        azureM2MConfig,
-        kafkaKeyConfig
-    )
+    logger.info("Starter: ${applicationConfig.appId}")
 
-    embeddedServer(Netty, port = 8080) {
-        module(applicationConfig, dependencies)
-    }.apply {
-        addShutdownHook { stop(300, 300) }
-        start(wait = true)
+    val dependencies = createDependencies(applicationConfig)
+
+    with(serverConfig) {
+        embeddedServer(Netty, port = port) {
+            module(applicationConfig, dependencies)
+        }.apply {
+            addShutdownHook { stop(gracePeriodMillis, timeoutMillis) }
+            start(wait = true)
+        }
     }
 }
 
@@ -59,19 +52,19 @@ fun Application.module(
     configureAuthentication(applicationConfig.authProviders)
     configureLogging()
     configureSerialization()
-    configureOtel()
+    configureTracing()
+    if (!applicationConfig.brukMock) { // TODO Bruker mock for utvikling
+        configureKafka(applicationConfig, listOf(dependencies.bekreftelseKafkaStreams))
+    }
 
     routing {
-        healthRoutes(dependencies.prometheusMeterRegistry, dependencies.health)
+        healthRoutes(dependencies.healthIndicatorRepository)
+        metricsRoutes(dependencies.prometheusMeterRegistry)
         swaggerRoutes()
         bekreftelseRoutes(
-            kafkaKeyClient = dependencies.kafkaKeysClient,
-            bekreftelseStateStore = dependencies.bekreftelseStateStore,
-            stateStoreName = applicationConfig.bekreftelseStateStoreName,
-            kafkaStreams = dependencies.kafkaStreams,
-            httpClient = dependencies.httpClient,
-            bekreftelseProducer = dependencies.bekreftelseProducer,
-            autorisasjonService = dependencies.autorisasjonService
+            dependencies.kafkaKeysClient,
+            dependencies.bekreftelseService,
+            dependencies.autorisasjonService
         )
     }
 }

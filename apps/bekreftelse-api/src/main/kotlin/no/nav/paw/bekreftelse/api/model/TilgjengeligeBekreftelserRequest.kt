@@ -1,4 +1,4 @@
-package no.nav.paw.bekreftelse.api.domain
+package no.nav.paw.bekreftelse.api.model
 
 data class TilgjengeligeBekreftelserRequest(
     val identitetsnummer: String?
