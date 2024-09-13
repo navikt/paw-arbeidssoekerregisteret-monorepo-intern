@@ -2,7 +2,6 @@ package no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka
 
 import arrow.core.Either
 import arrow.core.NonEmptyList
-import arrow.core.nonEmptyListOf
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.ApplicationInfo
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentForenkletStatus
@@ -10,11 +9,7 @@ import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentPerson
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseState
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.metrics.tellPdlAvsluttetHendelser
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.metrics.tellStatusFraPdlHentPersonBolk
-import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.genererPersonFakta
-import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.negativeOpplysninger
-import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.statusToOpplysningMap
-import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.toAarsak
-import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.toPerson
+import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.*
 import no.nav.paw.arbeidssokerregisteret.application.*
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
@@ -23,24 +18,24 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
 import no.nav.paw.pdl.graphql.generated.hentforenkletstatusbolk.Folkeregisterpersonstatus
-import no.nav.paw.pdl.graphql.generated.hentforenkletstatusbolk.HentPersonBolkResult as ForenkletStatusBolkResult
 import no.nav.paw.pdl.graphql.generated.hentpersonbolk.HentPersonBolkResult
 import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Person
+import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.processor.Cancellable
 import org.apache.kafka.streams.processor.PunctuationType
 import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
 import org.apache.kafka.streams.state.KeyValueStore
-import org.apache.kafka.streams.KeyValue
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Instant
 import java.util.*
+import no.nav.paw.pdl.graphql.generated.hentforenkletstatusbolk.HentPersonBolkResult as ForenkletStatusBolkResult
 
 data class EvalueringResultat(
     val grunnlagV1: List<Folkeregisterpersonstatus>? = null,
-    val grunnlagV2: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>? = null,
+    val grunnlagV2: Set<RegelId>? = null,
     val hendelseState: HendelseState,
     val avsluttPeriode: Boolean,
     val slettForhaandsGodkjenning: Boolean
@@ -92,12 +87,19 @@ fun scheduleAvsluttPerioder(
                     )
                 }
 
-                resultaterV1.sortedByDescending { it.hendelseState.startetTidspunkt }.compareResults(resultaterV2.sortedByDescending { it.hendelseState.startetTidspunkt }, logger)
+                resultaterV1.sortedByDescending { it.hendelseState.startetTidspunkt }
+                    .compareResults(resultaterV2.sortedByDescending { it.hendelseState.startetTidspunkt }, logger)
                 resultaterV1.onEach { resultat ->
                     val folkeregisterpersonstatus = resultat.grunnlagV1
                     val hendelseState = resultat.hendelseState
                     if (resultat.avsluttPeriode && folkeregisterpersonstatus != null) {
-                        sendAvsluttetHendelse(folkeregisterpersonstatus, hendelseState, hendelseStateStore, ctx, prometheusMeterRegistry)
+                        sendAvsluttetHendelse(
+                            folkeregisterpersonstatus,
+                            hendelseState,
+                            hendelseStateStore,
+                            ctx,
+                            prometheusMeterRegistry
+                        )
                     }
                 }.forEach { resultat ->
                     val hendelseState = resultat.hendelseState
@@ -137,7 +139,7 @@ fun List<ForenkletStatusBolkResult>.processResults(
     }
 
 fun isPdlResultOK(code: String, logger: Logger): Boolean =
-    if(code in pdlErrorResponses){
+    if (code in pdlErrorResponses) {
         logger.error("Feil ved henting av Person fra PDL: $code")
         false
     } else true
@@ -148,7 +150,7 @@ fun getHendelseStateAndPerson(
     logger: Logger
 ): Pair<Person, HendelseState>? {
     val person = result.person
-    if(person == null){
+    if (person == null) {
         logger.error("Person er null for periodeId: ${chunk.find { it.value.identitetsnummer == result.ident }?.key}")
         return null
     }
@@ -159,7 +161,6 @@ fun getHendelseStateAndPerson(
 }
 
 fun Set<Opplysning>.toDomeneOpplysninger() = this
-    .filterNot { it == Opplysning.FORHAANDSGODKJENT_AV_ANSATT }
     .mapNotNull { hendelseOpplysningTilDomeneOpplysninger(it) }
     .toSet()
 
@@ -171,10 +172,12 @@ fun skalAvsluttePeriode(
     erForhaandsgodkjent: Boolean
 ) = pdlEvaluering.fold(
     { pdlEvalueringLeft ->
-        when(opplysningerEvaluering) {
+        when (opplysningerEvaluering) {
             is Either.Left -> {
-                !(erForhaandsgodkjent && opplysningerEvaluering.value.map { it.regel.id }.containsAll(pdlEvalueringLeft.map { it.regel.id }))
+                !(erForhaandsgodkjent && opplysningerEvaluering.value.map { it.regel.id }
+                    .containsAll(pdlEvalueringLeft.map { it.regel.id }))
             }
+
             is Either.Right -> {
                 true
             }
@@ -189,36 +192,23 @@ fun List<HentPersonBolkResult>.processPdlResultsV2(
     logger: Logger
 ): List<EvalueringResultat> =
     this.filter { result -> isPdlResultOK(result.code, logger) }
-    .mapNotNull { result -> getHendelseStateAndPerson(result, chunk, logger) }
-    .map { (person, hendelseState) ->
-        val hendelseOpplysninger = hendelseState.opplysninger
+        .mapNotNull { result -> getHendelseStateAndPerson(result, chunk, logger) }
+        .map { (person, hendelseState) ->
+            val registreringsOpplysninger = hendelseState.opplysninger.toDomeneOpplysninger()
+            val gjeldeneOpplysninger = genererPersonFakta(person.toPerson())
 
-        val domeneOpplysninger = hendelseOpplysninger.toDomeneOpplysninger()
-
-        // Om arbeidssøker er migrert fra veilarbregistrering sier vi at alle er forhåndsgodkjent for under 18 år pga. manglende opplysninger
-        val opplysningerEvaluering = if (domeneOpplysninger.isNotEmpty()) {
-            regler.evaluer(domeneOpplysninger)
-        } else {
-            muligGrunnlagForAvvisning(
-                regel = InngangsReglerV2.regler.find { it.id == Under18Aar }!!,
-                opplysninger = emptyList()
-            ).mapLeft { nonEmptyListOf(it) }
+            val resultat = prosesser(
+                regler = regler,
+                inngangsOpplysninger = registreringsOpplysninger,
+                gjeldeneOpplysninger = gjeldeneOpplysninger
+            )
+            EvalueringResultat(
+                grunnlagV2 = resultat.grunnlag,
+                hendelseState = hendelseState,
+                avsluttPeriode = resultat.periodeSkalAvsluttes,
+                slettForhaandsGodkjenning = resultat.forhaandsgodkjenningSkalSlettes
+            )
         }
-        val pdlEvaluering = regler.evaluer(genererPersonFakta(person.toPerson()))
-
-        val erForhaandsgodkjent = hendelseOpplysninger.erForhaandsGodkjent()
-
-        val skalAvsluttePeriode = skalAvsluttePeriode(pdlEvaluering, opplysningerEvaluering, erForhaandsgodkjent || domeneOpplysninger.isEmpty())
-
-        val slettForhaandsGodkjenning = pdlEvaluering.isRight() && opplysningerEvaluering.isLeft() && erForhaandsgodkjent
-
-        EvalueringResultat(
-            grunnlagV2 = pdlEvaluering,
-            hendelseState = hendelseState,
-            avsluttPeriode = skalAvsluttePeriode,
-            slettForhaandsGodkjenning = slettForhaandsGodkjenning
-        )
-    }
 
 fun Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>.toAarsak(): String =
     this.fold(
@@ -232,7 +222,7 @@ fun skalSletteForhaandsGodkjenning(
     hendelseState: HendelseState,
     avsluttPeriode: Boolean
 ) = Opplysning.FORHAANDSGODKJENT_AV_ANSATT in hendelseState.opplysninger
-            && hendelseState.opplysninger.any { it in negativeOpplysninger } && !avsluttPeriode
+        && hendelseState.opplysninger.any { it in negativeOpplysninger } && !avsluttPeriode
 
 fun sendAvsluttetHendelse(
     folkeregisterpersonstatus: List<Folkeregisterpersonstatus>,
@@ -286,8 +276,12 @@ fun List<EvalueringResultat>.compareResults(
         if (resultatV1.avsluttPeriode != resultatV2.avsluttPeriode) {
             logger.warn(
                 "AvsluttPeriode mismatch for periodeId: $periodeId, med startet tidspunkt: ${resultatV1.hendelseState.startetTidspunkt}" +
-                        "v1: ${resultatV1.avsluttPeriode}, aarsak: ${resultatV1.grunnlagV1?.filterAvsluttPeriodeGrunnlag(resultatV1.hendelseState.opplysninger)?.toAarsak()}, " +
-                        "v2: ${resultatV2.avsluttPeriode}, aarsak: ${resultatV2.grunnlagV2?.toAarsak()}"
+                        "v1: ${resultatV1.avsluttPeriode}, aarsak: ${
+                            resultatV1.grunnlagV1?.filterAvsluttPeriodeGrunnlag(
+                                resultatV1.hendelseState.opplysninger
+                            )?.toAarsak()
+                        }, " +
+                        "v2: ${resultatV2.avsluttPeriode}, aarsak: ${resultatV2.grunnlagV2}"
             )
         }
 

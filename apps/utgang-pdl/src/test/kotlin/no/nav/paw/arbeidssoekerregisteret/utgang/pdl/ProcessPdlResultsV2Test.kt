@@ -18,6 +18,7 @@ import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.processResults
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseState
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.toAarsak
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.toAarsak
+import no.nav.paw.arbeidssokerregisteret.application.IkkeBosattINorgeIHenholdTilFolkeregisterloven
 import no.nav.paw.arbeidssokerregisteret.application.InngangsReglerV3
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
 import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Foedsel
@@ -86,7 +87,7 @@ class ProcessPdlResultsV2Test : FreeSpec({
         outputV1[0].slettForhaandsGodkjenning shouldBe outputV2[0].slettForhaandsGodkjenning
         outputV1[0].hendelseState shouldBe outputV2[0].hendelseState
         outputV1[0].grunnlagV1?.filterAvsluttPeriodeGrunnlag(hendelseState.opplysninger)?.toAarsak() shouldBe "Personen er ikke bosatt etter folkeregisterloven"
-        outputV2[0].grunnlagV2?.toAarsak() shouldBe "Avvist fordi personen ikke er bosatt i Norge i henhold til folkeregisterloven"
+        outputV2[0].grunnlagV2 shouldBe setOf(IkkeBosattINorgeIHenholdTilFolkeregisterloven)
     }
 
     "processPdlResultsV2 should correctly set avsluttPeriode to true if multiple problems in pdlEvaluering" {
