@@ -11,6 +11,7 @@ import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.metrics.tellPdlAvsluttetHen
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.metrics.tellStatusFraPdlHentPersonBolk
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.*
 import no.nav.paw.arbeidssokerregisteret.application.*
+import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
@@ -38,7 +39,8 @@ data class EvalueringResultat(
     val grunnlagV2: Set<RegelId>? = null,
     val hendelseState: HendelseState,
     val avsluttPeriode: Boolean,
-    val slettForhaandsGodkjenning: Boolean
+    val slettForhaandsGodkjenning: Boolean,
+    val detaljer: Set<no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning> = emptySet()
 )
 
 fun scheduleAvsluttPerioder(
@@ -206,7 +208,8 @@ fun List<HentPersonBolkResult>.processPdlResultsV2(
                 grunnlagV2 = resultat.grunnlag,
                 hendelseState = hendelseState,
                 avsluttPeriode = resultat.periodeSkalAvsluttes,
-                slettForhaandsGodkjenning = resultat.forhaandsgodkjenningSkalSlettes
+                slettForhaandsGodkjenning = resultat.forhaandsgodkjenningSkalSlettes,
+                detaljer = gjeldeneOpplysninger.toSet()
             )
         }
 
@@ -281,7 +284,7 @@ fun List<EvalueringResultat>.compareResults(
                                 resultatV1.hendelseState.opplysninger
                             )?.toAarsak()
                         }, " +
-                        "v2: ${resultatV2.avsluttPeriode}, aarsak: ${resultatV2.grunnlagV2}"
+                        "v2: ${resultatV2.avsluttPeriode}, aarsak: ${resultatV2.grunnlagV2}, detaljer: ${resultatV2.detaljer}"
             )
         }
 
