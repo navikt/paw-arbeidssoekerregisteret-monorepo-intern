@@ -2,10 +2,7 @@ package no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import no.nav.paw.arbeidssokerregisteret.application.ForhaandsgodkjentAvAnsatt
-import no.nav.paw.arbeidssokerregisteret.application.IkkeBosattINorgeIHenholdTilFolkeregisterloven
-import no.nav.paw.arbeidssokerregisteret.application.InngangsReglerV3
-import no.nav.paw.arbeidssokerregisteret.application.Over18AarOgBosattEtterFregLoven
+import no.nav.paw.arbeidssokerregisteret.application.*
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
 
 class UtgangProsessorV2KtTest : FreeSpec({
@@ -106,6 +103,25 @@ class UtgangProsessorV2KtTest : FreeSpec({
             )
         ) shouldBe ProsesseringsResultat(
             grunnlag = setOf(Over18AarOgBosattEtterFregLoven),
+            periodeSkalAvsluttes = false,
+            forhaandsgodkjenningSkalSlettes = true
+        )
+    }
+
+    "Forhaandsgodkejent eøs borgere tremger ikke lenger forhåndsgodkjenning" {
+        prosesser(
+            InngangsReglerV3,
+            inngangsOpplysninger = listOf(
+                DomeneOpplysning.ErOver18Aar,
+                DomeneOpplysning.ErForhaandsgodkjent
+            ),
+            gjeldeneOpplysninger = listOf(
+                DomeneOpplysning.ErOver18Aar,
+                DomeneOpplysning.IkkeBosatt,
+                DomeneOpplysning.ErEuEoesStatsborger
+            )
+        ) shouldBe ProsesseringsResultat(
+            grunnlag = setOf(EuEoesStatsborgerOver18Aar),
             periodeSkalAvsluttes = false,
             forhaandsgodkjenningSkalSlettes = true
         )

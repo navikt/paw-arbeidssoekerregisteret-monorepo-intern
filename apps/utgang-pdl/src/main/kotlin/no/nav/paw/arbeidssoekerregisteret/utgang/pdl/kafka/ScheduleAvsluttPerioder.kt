@@ -289,7 +289,8 @@ fun List<EvalueringResultat>.compareResults(
             logger.warn(
                 "SlettForhaandsGodkjenning mismatch for periodeId: $periodeId, " +
                         "v1: ${resultatV1.slettForhaandsGodkjenning}, " +
-                        "v2: ${resultatV2.slettForhaandsGodkjenning}"
+                        "v2: ${resultatV2.slettForhaandsGodkjenning}, "  +
+                        "v2 grunnlag: ${resultatV2.grunnlagV2}"
             )
         }
     }
