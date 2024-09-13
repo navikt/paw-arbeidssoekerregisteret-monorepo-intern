@@ -21,13 +21,15 @@ class UtgangProsessorV2KtTest : FreeSpec({
         )
     }
 
-    "Under 18 år registert via veilarb, flyttet ut, Norsk statsborger skal trigge avslutning" {
+    "Norsk statsborger under 18 år registert via veilarb, flyttet ut i følge PDL,  skal trigge avslutning" {
         prosesser(
             InngangsReglerV3,
             inngangsOpplysninger = emptyList(),
             gjeldeneOpplysninger = listOf(
                 DomeneOpplysning.ErUnder18Aar,
-                DomeneOpplysning.IkkeBosatt
+                DomeneOpplysning.IkkeBosatt,
+                DomeneOpplysning.ErEuEoesStatsborger,
+                DomeneOpplysning.ErNorskStatsborger
             )
         ) shouldBe ProsesseringsResultat(
             grunnlag = setOf(IkkeBosattINorgeIHenholdTilFolkeregisterloven),
@@ -36,7 +38,7 @@ class UtgangProsessorV2KtTest : FreeSpec({
         )
     }
 
-    "Under 18 år, EØS borger registrert via veilarb, ikke bosatt skal ikke trigge avslutning" {
+    "Under 18 år, EØS borger registrert via veilarb, ikke bosatt, skal ikke trigge avslutning" {
         prosesser(
             InngangsReglerV3,
             inngangsOpplysninger = emptyList(),
