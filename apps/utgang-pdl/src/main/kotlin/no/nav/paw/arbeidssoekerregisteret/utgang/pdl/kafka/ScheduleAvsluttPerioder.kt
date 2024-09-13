@@ -285,7 +285,9 @@ fun List<EvalueringResultat>.compareResults(
             )
         }
 
-        if (resultatV1.slettForhaandsGodkjenning != resultatV2.slettForhaandsGodkjenning) {
+        if (resultatV1.slettForhaandsGodkjenning != resultatV2.slettForhaandsGodkjenning &&
+            resultatV2.grunnlagV2 != setOf(EuEoesStatsborgerOver18Aar)
+        ) {
             logger.warn(
                 "SlettForhaandsGodkjenning mismatch for periodeId: $periodeId, " +
                         "v1: ${resultatV1.slettForhaandsGodkjenning}, " +
