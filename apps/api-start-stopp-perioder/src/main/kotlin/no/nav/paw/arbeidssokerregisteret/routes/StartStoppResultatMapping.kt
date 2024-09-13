@@ -100,6 +100,7 @@ fun RegelId.apiRegelId(): ApiRegelId = when (this) {
         ForhaandsgodkjentAvAnsatt -> ApiRegelId.UKJENT_REGEL
         Over18AarOgBosattEtterFregLoven -> ApiRegelId.UKJENT_REGEL
         EuEoesStatsborgerOver18Aar -> ApiRegelId.UKJENT_REGEL
+        ErStatsborgerILandMedAvtale -> ApiRegelId.UKJENT_REGEL
         Doed -> ApiRegelId.DOED
         IkkeBosattINorgeIHenholdTilFolkeregisterloven -> ApiRegelId.IKKE_BOSATT_I_NORGE_I_HENHOLD_TIL_FOLKEREGISTERLOVEN
         IkkeFunnet -> ApiRegelId.IKKE_FUNNET
@@ -133,6 +134,7 @@ fun DomeneRegelId.httpCode(): HttpStatusCode = when (this) {
     ForhaandsgodkjentAvAnsatt -> HttpStatusCode.Accepted
     Over18AarOgBosattEtterFregLoven -> HttpStatusCode.Accepted
     EuEoesStatsborgerOver18Aar -> HttpStatusCode.Accepted
+    ErStatsborgerILandMedAvtale -> HttpStatusCode.Accepted
     Doed -> HttpStatusCode.Forbidden
     IkkeBosattINorgeIHenholdTilFolkeregisterloven -> HttpStatusCode.Forbidden
     IkkeFunnet -> HttpStatusCode.Forbidden
