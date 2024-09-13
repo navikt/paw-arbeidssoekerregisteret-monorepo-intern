@@ -42,6 +42,10 @@ data object EuEoesStatsborgerOver18Aar : DomeneRegelId {
     override val beskrivelse: String = "Er EU/EØS statsborger"
 }
 
+data object ErStatsborgerILandMedAvtale : DomeneRegelId {
+    override val beskrivelse: String = "Er statsborger i land med avtale"
+}
+
 /**
  * Egentlig ikke nødvendig å ha en egen regel for dette, men pga. Arena så trenger vi denne.
  * Arena sjekker om personen er EU/EØS statsborger og er utflyttet (som gir status 'ikke bosatt').

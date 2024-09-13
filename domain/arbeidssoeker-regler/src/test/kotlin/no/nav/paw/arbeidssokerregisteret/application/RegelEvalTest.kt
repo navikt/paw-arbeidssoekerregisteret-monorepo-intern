@@ -2,10 +2,15 @@ package no.nav.paw.arbeidssokerregisteret.application
 
 import arrow.core.Either
 import arrow.core.NonEmptyList
+import arrow.core.left
+import arrow.core.nonEmptyListOf
+import arrow.core.raise.result
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import io.kotest.matchers.types.shouldNotBeInstanceOf
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
 
 typealias Avvist = Either.Left<NonEmptyList<Problem>>
@@ -257,6 +262,47 @@ class RegelEvalTest : FreeSpec({
                     ) should { result ->
                         result.shouldBeInstanceOf<Godkjent>()
                     }
+                }
+            }
+        }
+        "Statsborgere i land med og uten avtaler" - {
+            "Gbr statsborger over 18 år skal godkjennes" {
+                InngangsReglerV2.evaluer(
+                    listOf(
+                        DomeneOpplysning.ErOver18Aar,
+                        DomeneOpplysning.ErGbrStatsborger
+                    )
+                ) should { result ->
+                    result.shouldBeInstanceOf<Godkjent>()
+                }
+            }
+            "Gbr statsborger under 18 år skal avvises" {
+                InngangsReglerV2.evaluer(
+                    listOf(
+                        DomeneOpplysning.ErUnder18Aar,
+                        DomeneOpplysning.ErGbrStatsborger
+                    )
+                ) should { result ->
+                    result.shouldBeInstanceOf<Avvist>()
+                    result.value.map { it.regel.id } shouldBe nonEmptyListOf(Under18Aar)
+                }
+            }
+            "3. lands statsborger under 18 år skal avvises" {
+                InngangsReglerV2.evaluer(
+                    listOf(
+                        DomeneOpplysning.ErUnder18Aar
+                    )
+                ) should { result ->
+                    result.shouldBeInstanceOf<Avvist>()
+                    result.value.map { it.regel.id } shouldContainExactlyInAnyOrder nonEmptyListOf(Under18Aar, IkkeBosattINorgeIHenholdTilFolkeregisterloven)
+                }
+            }
+            "3. lands statsborger over 18 år skal avvises" {
+                InngangsReglerV2.evaluer(
+                    listOf()
+                ) should { result ->
+                    result.shouldBeInstanceOf<Avvist>()
+                    result.value.map { it.regel.id } shouldContainExactlyInAnyOrder nonEmptyListOf(IkkeBosattINorgeIHenholdTilFolkeregisterloven)
                 }
             }
         }

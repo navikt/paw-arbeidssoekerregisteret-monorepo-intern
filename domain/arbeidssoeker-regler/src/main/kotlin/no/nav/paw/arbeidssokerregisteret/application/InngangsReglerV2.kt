@@ -3,7 +3,7 @@ package no.nav.paw.arbeidssokerregisteret.application
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning.*
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
 
-object InngangsReglerV2: Regler {
+object InngangsReglerV2 : Regler {
     override val regler: List<Regel> = listOf(
         IkkeFunnet(
             PersonIkkeFunnet,
@@ -42,6 +42,11 @@ object InngangsReglerV2: Regler {
             !IkkeBosatt,
             vedTreff = ::grunnlagForGodkjenning
         ),
+        ErStatsborgerILandMedAvtale(
+            ErGbrStatsborger,
+            ErOver18Aar,
+            vedTreff = ::grunnlagForGodkjenning
+        ),
         EuEoesStatsborgerMenHarStatusIkkeBosatt(
             ErEuEoesStatsborger,
             !ErNorskStatsborger,
@@ -60,8 +65,8 @@ object InngangsReglerV2: Regler {
     )
 }
 
-data object ErNorskEllerTredjelandsborger: Condition {
+data object ErNorskEllerTredjelandsborger : Condition {
     override fun eval(opplysninger: Iterable<Opplysning>): Boolean =
-        ErNorskStatsborger in opplysninger || ErEuEoesStatsborger !in opplysninger
+        ErNorskStatsborger in opplysninger || (ErEuEoesStatsborger !in opplysninger && ErGbrStatsborger !in opplysninger)
 }
 
