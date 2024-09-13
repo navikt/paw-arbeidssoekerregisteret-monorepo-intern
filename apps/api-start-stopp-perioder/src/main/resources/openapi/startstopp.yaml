@@ -240,6 +240,7 @@ components:
         - "IKKE_FUNNET"
         - "SAVNET"
         - "DOED"
+        - "OPPHOERT_IDENTITET"
         - "ENDRE_FOR_ANNEN_BRUKER"
         - "ANSATT_IKKE_TILGANG_TIL_BRUKER"
         - "IKKE_TILGANG"

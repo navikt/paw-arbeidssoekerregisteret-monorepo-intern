@@ -17,6 +17,10 @@ object InngangsReglerV2 : Regler {
             ErSavnet,
             vedTreff = ::skalAvises
         ),
+        Opphoert(
+            OpphoertIdentitet,
+            vedTreff = ::skalAvises
+        ),
         ForhaandsgodkjentAvAnsatt(
             ErForhaandsgodkjent,
             vedTreff = ::grunnlagForGodkjenning

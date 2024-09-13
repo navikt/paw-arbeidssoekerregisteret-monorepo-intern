@@ -18,6 +18,10 @@ data object Doed : DomeneRegelId {
     override val beskrivelse: String = "Er registrert som død"
 }
 
+data object Opphoert : DomeneRegelId {
+    override val beskrivelse: String = "Har ugyldig/annullert identitet"
+}
+
 data object Under18Aar : DomeneRegelId {
     override val beskrivelse: String = "Er under 18 år"
 }
