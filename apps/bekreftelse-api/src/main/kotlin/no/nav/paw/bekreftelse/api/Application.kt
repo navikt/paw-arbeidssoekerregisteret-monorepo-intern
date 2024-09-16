@@ -49,7 +49,7 @@ fun Application.module(
 ) {
     configureMetrics(dependencies.prometheusMeterRegistry)
     configureHTTP()
-    configureAuthentication(applicationConfig.authProviders)
+    configureAuthentication(applicationConfig)
     configureLogging()
     configureSerialization()
     configureTracing()

@@ -33,7 +33,9 @@
             <logger name="org.apache.kafka.clients.consumer.ConsumerConfig" level="WARN"/>
             <logger name="org.apache.kafka.clients.producer.ProducerConfig" level="WARN"/>
             <logger name="io.confluent.kafka.serializers.KafkaAvroSerializerConfig" level="WARN"/>
-            <logger name="no.nav.paw" level="DEBUG"/>
+            <logger name="no.nav" level="DEBUG"/>
+            <logger name="io.ktor.auth" level="DEBUG"/>
+            <logger name="io.ktor.server.auth" level="DEBUG"/>
         </then>
         <else>
             <logger name="tjenestekall" level="DEBUG" additivity="false">

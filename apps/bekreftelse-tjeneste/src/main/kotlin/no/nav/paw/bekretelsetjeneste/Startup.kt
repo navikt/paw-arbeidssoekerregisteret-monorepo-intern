@@ -19,9 +19,9 @@ const val APPLICATION_ID_SUFFIX = "beta"
 fun main() {
     val applicationConfiguration = ApplicationConfiguration(
         periodeTopic = "paw.arbeidssokerperioder-v1",
-        ansvarsTopic = "paw.bekreftelse-ansvar-v1",
-        bekreftelseTopic = "paw.bekreftelse-svar-v1",
-        bekreftelseHendelseloggTopic = "paw.bekreftelse-hendelselogg-v1",
+        ansvarsTopic = "paw.arbeidssoker-bekreftelse-ansvar-beta-v1",
+        bekreftelseTopic = "paw.arbeidssoker-bekreftelse-beta-v1",
+        bekreftelseHendelseloggTopic = "paw.arbeidssoker-bekreftelse-hendelseslogg-beta-v1",
         stateStoreName = "bekreftelse",
         punctuateInterval = Duration.ofMinutes(5)
     )

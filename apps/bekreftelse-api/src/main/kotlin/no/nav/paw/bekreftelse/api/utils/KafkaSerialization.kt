@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import no.nav.paw.bekreftelse.api.model.InternState
+import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.config.env.NaisEnv
 import no.nav.paw.config.env.currentNaisEnv
-import no.nav.paw.rapportering.melding.v1.Melding
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
@@ -52,4 +52,4 @@ inline fun <reified T> buildJsonSerde(): Serde<T> {
 
 fun buildInternStateSerde() = buildJsonSerde<InternState>()
 
-fun buildMeldingSerde() = SpecificAvroSerde<Melding>()
+fun buildBekreftelseSerde() = SpecificAvroSerde<Bekreftelse>()
