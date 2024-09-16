@@ -8,7 +8,7 @@ import io.ktor.server.routing.*
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.opentelemetry.api.trace.Span
-import no.nav.paw.arbeidssokerregisteret.application.InngangsReglerV1
+import no.nav.paw.arbeidssokerregisteret.application.InngangsReglerV2
 import no.nav.paw.arbeidssokerregisteret.application.OpplysningerRequestHandler
 import no.nav.paw.arbeidssokerregisteret.application.StartStoppRequestHandler
 import no.nav.paw.arbeidssokerregisteret.config.AuthProviders
@@ -34,7 +34,7 @@ fun main() {
     val (startStoppRequestHandler, opplysningerRequestHandler) = requestHandlers(
         config = applicationConfig,
         kafkaFactory = KafkaFactory(kafkaConfig),
-        regler = InngangsReglerV1,
+        regler = InngangsReglerV2,
         registry = registry
     )
     val server = embeddedServer(
