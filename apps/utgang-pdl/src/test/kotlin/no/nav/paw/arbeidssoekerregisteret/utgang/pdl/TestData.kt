@@ -11,7 +11,6 @@ import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Person
 import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Statsborgerskap
 import no.nav.paw.pdl.graphql.generated.hentpersonbolk.UtflyttingFraNorge
 
-
 fun generatePdlMockResponse(ident: String, person: Person?, status: String): List<HentPersonBolkResult> =
     listOf(
         HentPersonBolkResult(

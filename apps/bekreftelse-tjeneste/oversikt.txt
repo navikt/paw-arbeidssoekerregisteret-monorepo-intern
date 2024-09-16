@@ -1,3 +1,4 @@
+
 Periode starter -> - oppretter intern state med start tidspunkt fra periode
                    - opprette bekreftelse i tilstand "ikke klar"
 Schedule task:
