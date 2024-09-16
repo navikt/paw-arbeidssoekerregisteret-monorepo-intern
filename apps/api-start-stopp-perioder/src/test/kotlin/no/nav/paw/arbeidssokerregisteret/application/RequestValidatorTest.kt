@@ -7,6 +7,8 @@ import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.paw.arbeidssokerregisteret.RequestScope
@@ -28,7 +30,7 @@ import java.util.*
 
 class RequestValidatorTest : FreeSpec({
     "Tester requestvalidator" - {
-
+        val registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
         val identitsnummer = Identitetsnummer("12345678909")
         val personInfoService: PersonInfoService = mockk()
         "Når veileder er logget inn" - {
@@ -47,7 +49,7 @@ class RequestValidatorTest : FreeSpec({
                 coEvery {
                     autorisasjonService.verifiserVeilederTilgangTilBruker(any(), any())
                 } returns true
-                val requestValidator = RequestValidator(autorisasjonService, personInfoService, InngangsReglerV2)
+                val requestValidator = RequestValidator(autorisasjonService, personInfoService, InngangsReglerV2, registry)
                 "Når forhandsgodkjent av veileder er false" {
                     val tilgangskontrollresultat = with(requestScope) {
                         requestValidator.validerTilgang(identitsnummer)
@@ -68,7 +70,7 @@ class RequestValidatorTest : FreeSpec({
                 coEvery {
                     autorisasjonService.verifiserVeilederTilgangTilBruker(any(), any())
                 } returns false
-                val requestValidator = RequestValidator(autorisasjonService, personInfoService, InngangsReglerV2)
+                val requestValidator = RequestValidator(autorisasjonService, personInfoService, InngangsReglerV2, registry)
 
                 val tilgangskontrollresultat = with(requestScope) {
                     requestValidator.validerTilgang(identitsnummer)
@@ -86,7 +88,7 @@ class RequestValidatorTest : FreeSpec({
                 path = "test"
             )
             val autorisasjonService: AutorisasjonService = mockk()
-            val requestValidator = RequestValidator(autorisasjonService, personInfoService, InngangsReglerV2)
+            val requestValidator = RequestValidator(autorisasjonService, personInfoService, InngangsReglerV2, registry)
             "standardbruker" {
                 val tilgangskontrollresultat = with(requestScope) {
                     requestValidator.validerTilgang(identitsnummer)
@@ -110,7 +112,7 @@ class RequestValidatorTest : FreeSpec({
             "Når bruker er innlogget" - {
 
                 val autorisasjonService: AutorisasjonService = mockk()
-                val requestValidator = RequestValidator(autorisasjonService, personInfoService, InngangsReglerV2)
+                val requestValidator = RequestValidator(autorisasjonService, personInfoService, InngangsReglerV2, registry)
                 "over 18 år og bosatt etter folketrygdloven" - {
                     val requestScope = RequestScope(
                         claims = ResolvedClaims()

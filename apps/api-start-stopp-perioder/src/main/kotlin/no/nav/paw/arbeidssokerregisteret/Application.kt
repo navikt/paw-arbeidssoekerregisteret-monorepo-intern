@@ -30,10 +30,12 @@ fun main() {
     logger.info("Starter ${ApplicationInfo.id}")
     val applicationConfig = loadNaisOrLocalConfiguration<Config>(CONFIG_FILE_NAME)
     val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
+    val registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val (startStoppRequestHandler, opplysningerRequestHandler) = requestHandlers(
         config = applicationConfig,
         kafkaFactory = KafkaFactory(kafkaConfig),
-        regler = InngangsReglerV1
+        regler = InngangsReglerV1,
+        registry = registry
     )
     val server = embeddedServer(
         factory = Netty,
@@ -45,7 +47,7 @@ fun main() {
         }
     ) {
         module(
-            registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+            registry = registry,
             authProviders = applicationConfig.authProviders,
             startStoppRequestHandler = startStoppRequestHandler,
             opplysningerRequestHandler = opplysningerRequestHandler

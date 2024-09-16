@@ -2,6 +2,7 @@ package no.nav.paw.arbeidssokerregisteret.application
 
 import arrow.core.Either
 import arrow.core.NonEmptyList
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope

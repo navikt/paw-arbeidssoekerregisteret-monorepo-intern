@@ -3,6 +3,7 @@ package no.nav.paw.arbeidssokerregisteret.application
 import arrow.core.Either
 import arrow.core.NonEmptyList
 import arrow.core.flatMap
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssokerregisteret.RequestScope
 import no.nav.paw.arbeidssokerregisteret.application.authfaktka.navAnsattTilgangFakta
@@ -12,12 +13,15 @@ import no.nav.paw.arbeidssokerregisteret.application.regler.TilgangsRegler
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.arbeidssokerregisteret.services.PersonInfoService
+import no.nav.paw.arbeidssokerregisteret.services.personInfoStats
+import no.nav.paw.arbeidssokerregisteret.utils.logger
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 
 class RequestValidator(
     private val autorisasjonService: AutorisasjonService,
     private val personInfoService: PersonInfoService,
-    private val regler: Regler
+    private val regler: Regler,
+    private val registry: PrometheusMeterRegistry
 ) {
 
     context(RequestScope)
@@ -46,6 +50,11 @@ class RequestValidator(
             .flatMap { grunnlagForGodkjentAuth ->
                 val person = personInfoService.hentPersonInfo(identitetsnummer.verdi)
                 val opplysning = person?.let { genererPersonFakta(it) } ?: setOf(DomeneOpplysning.PersonIkkeFunnet)
+                try {
+                    person?.let { p -> registry.personInfoStats(p, opplysning) }
+                } catch (ex: Exception) {
+                    logger.warn("Feil under stats generering", ex)
+                }
                 regler.evaluer(
                     opplysning + grunnlagForGodkjentAuth.opplysning
                 )

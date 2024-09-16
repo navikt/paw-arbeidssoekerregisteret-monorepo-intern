@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret
 
 import io.ktor.client.*
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient
 import no.nav.paw.arbeidssokerregisteret.application.OpplysningerRequestHandler
 import no.nav.paw.arbeidssokerregisteret.application.Regler
@@ -21,7 +22,8 @@ import org.apache.kafka.common.serialization.LongSerializer
 fun requestHandlers(
     config: Config,
     kafkaFactory: KafkaFactory,
-    regler: Regler
+    regler: Regler,
+    registry: PrometheusMeterRegistry
 ): Pair<StartStoppRequestHandler, OpplysningerRequestHandler> {
     val clients = with(azureAdM2MTokenClient(config.naisEnv, config.authProviders.azure)) {
         clientsFactory(config)
@@ -35,7 +37,8 @@ fun requestHandlers(
     val requestValidator = RequestValidator(
         autorisasjonService = AutorisasjonService(clients.poaoTilgangClient),
         personInfoService = PersonInfoService(clients.pdlClient),
-        regler = regler
+        regler = regler,
+        registry = registry
     )
     val startStoppRequestHandler = StartStoppRequestHandler(
         hendelseTopic = config.eventLogTopic,

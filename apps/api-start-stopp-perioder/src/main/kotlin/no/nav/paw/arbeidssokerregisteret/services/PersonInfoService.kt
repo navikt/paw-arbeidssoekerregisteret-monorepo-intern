@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.services
 
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import no.nav.paw.arbeidssokerregisteret.RequestScope
 import no.nav.paw.arbeidssokerregisteret.plugins.InternFeilkode

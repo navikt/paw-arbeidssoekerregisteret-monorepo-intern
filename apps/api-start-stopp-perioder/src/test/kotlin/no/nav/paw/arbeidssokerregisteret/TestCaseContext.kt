@@ -1,5 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret
 
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.mockk.mockk
 import no.nav.paw.arbeidssokerregisteret.application.Regler
 import no.nav.paw.arbeidssokerregisteret.application.RequestValidator
@@ -34,7 +36,8 @@ fun initTestCaseContext(regler: Regler): TestCaseContext {
         requestValidator = RequestValidator(
             autorisasjonService = autorisasjonService,
             personInfoService = personInfoService,
-            regler = regler
+            regler = regler,
+            registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
         ),
         producer = producer,
         kafkaKeysClient = kafkaKeys
