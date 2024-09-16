@@ -74,7 +74,7 @@ java {
 }
 
 application {
-    mainClass.set("no.nav.paw.rapportering.api.ApplicationKt")
+    mainClass.set("no.nav.paw.bekreftelse.api.ApplicationKt")
 }
 
 tasks.withType<Test>().configureEach {
