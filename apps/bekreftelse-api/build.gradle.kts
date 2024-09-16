@@ -18,7 +18,7 @@ dependencies {
     implementation(project(":lib:kafka-streams"))
     implementation(project(":lib:kafka-key-generator-client"))
     implementation(project(":domain:bekreftelse-interne-hendelser"))
-    implementation(project(":domain:bekreftelsesmelding-schema"))
+    implementation(project(":domain:bekreftelsesmelding-avro-schema"))
 
     // Server
     implementation(ktorServer.bundles.withNettyAndMicrometer)
