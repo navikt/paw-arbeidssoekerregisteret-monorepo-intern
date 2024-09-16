@@ -20,7 +20,7 @@ fun auditLogMelding(
     melding: String,
 ): String =
     CefMessage.builder()
-        .applicationName("paw-rapportering-api") // TODO: fra config
+        .applicationName("paw-arbeidssoeker-bekreftelse-api") // TODO: fra config
         .event(if (tilgangType == TilgangType.LESE) CefMessageEvent.ACCESS else CefMessageEvent.UPDATE)
         .name("Sporingslogg")
         .severity(CefMessageSeverity.INFO)

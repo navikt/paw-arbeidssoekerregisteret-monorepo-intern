@@ -6,7 +6,7 @@ import io.ktor.server.application.install
 import io.opentelemetry.api.trace.Span
 
 
-fun Application.configureOtel() {
+fun Application.configureTracing() {
     install(
         createApplicationPlugin("OtelTraceIdPlugin") {
             onCallRespond { call, _ ->

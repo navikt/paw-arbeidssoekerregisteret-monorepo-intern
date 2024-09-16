@@ -1,4 +1,0 @@
-brokers = "localhost:9092"
-applicationIdPrefix = "paw-rapportering-v1"
-[schemaRegistry]
-url = "http://localhost:8082"

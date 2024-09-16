@@ -1,16 +1,16 @@
 apiVersion: nais.io/v1alpha1
 kind: Application
 metadata:
-  name: paw-rapportering-api
+  name: paw-arbeidssoeker-bekreftelse-api
   namespace: paw
   labels:
     team: paw
 spec:
   image: {{ image }}
   port: 8080
-  env:
-    - name: KAFKA_KEY_SCOPE
-      value: "api://dev-gcp.paw.paw-kafka-key-generator/.default"
+  replicas:
+    min: 1
+    max: 1
   resources:
     limits:
       memory: 1024Mi
@@ -26,9 +26,6 @@ spec:
       claims:
         extra:
           - NAVident
-  replicas:
-    min: 1
-    max: 1
   liveness:
     path: /internal/isAlive
     initialDelay: 10
@@ -43,4 +40,18 @@ spec:
       enabled: true
       runtime: java
   kafka:
-    pool: nav-dev
+    pool: {{ kafka }}
+    streams: true
+  accessPolicy:
+    inbound:
+      rules:
+        - application: tokenx-token-generator
+          namespace: aura
+        - application: azure-token-generator
+          namespace: aura
+    outbound:
+      rules:
+        - application: paw-kafka-key-generator
+          namespace: paw
+        - application: poao-tilgang
+          namespace: poao

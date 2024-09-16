@@ -1,5 +1,6 @@
 package no.nav.paw.bekreftelse.api.kafka
 
+import no.nav.paw.bekreftelse.api.model.InternState
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig

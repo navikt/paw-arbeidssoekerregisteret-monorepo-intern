@@ -2,7 +2,6 @@ package no.nav.paw.health.listener
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import io.mockk.mockkClass
 import no.nav.paw.health.model.HealthStatus
 import no.nav.paw.health.model.LivenessHealthIndicator
 import no.nav.paw.health.model.ReadinessHealthIndicator
@@ -13,13 +12,12 @@ import org.apache.kafka.streams.KafkaStreams
 class KafkaStreamsStatusListenerTest : FreeSpec({
 
     "Kafka Streams Status Listener skal returnere korrekt helsesjekk-status" {
-        val kafkaStreams = mockkClass(KafkaStreams::class)
         val healthIndicatorRepository = HealthIndicatorRepository()
 
         val liveness = healthIndicatorRepository.addLivenessIndicator(LivenessHealthIndicator())
         val readiness = healthIndicatorRepository.addReadinessIndicator(ReadinessHealthIndicator())
 
-        val listener = kafkaStreams.withHealthIndicatorStateListener(liveness, readiness)
+        val listener = createHealthIndicatorStateListener(liveness, readiness)
 
         healthIndicatorRepository.getReadinessIndicators().getAggregatedStatus() shouldBe HealthStatus.UNKNOWN
         healthIndicatorRepository.getLivenessIndicators().getAggregatedStatus() shouldBe HealthStatus.HEALTHY

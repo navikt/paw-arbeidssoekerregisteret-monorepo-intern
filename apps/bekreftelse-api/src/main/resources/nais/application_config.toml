@@ -1,9 +1,9 @@
+[kafkaTopology]
 applicationIdSuffix = "v1"
-producerId = "paw-bekreftelse-api"
-bekreftelseTopic = "paw.bekreftelse-v1"
-bekreftelseHendelseLoggTopic = "paw.bekreftelse-hendelse-logg-v1"
-bekreftelseStateStoreName = "bekreftelseStateStore"
-hostname = "${HOSTNAME}"
+producerId = "paw-arbeidssoeker-bekreftelse-api"
+bekreftelseTopic = "paw.arbeidssoker-bekreftelse-beta-v1"
+bekreftelseHendelsesloggTopic = "paw.arbeidssoker-bekreftelse-hendelseslogg-beta-v1"
+internStateStoreName = "internStateStore"
 
 [[authProviders]]
 name = "tokenx"
@@ -23,11 +23,30 @@ clientId = "${AZURE_APP_CLIENT_ID}"
 
 [authProviders.claims]
 map = ["NAVident"]
+combineWithOr = true
 
-[kafkaKeyGeneratorClient]
-url = "http://paw-kafka-key-generator/api/v2/hentEllerOpprett"
-scope = "${KAFKA_KEYS_SCOPE}"
+[azureM2M]
+tokenEndpointUrl = "${AZURE_OPENID_CONFIG_TOKEN_ENDPOINT}"
+clientId = "${AZURE_APP_CLIENT_ID}"
 
 [poaoClientConfig]
 url = "http://poao-tilgang.poao.svc.cluster.local"
 scope = "api://${NAIS_CLUSTER_NAME}.poao.poao-tilgang/.default"
+
+[kafkaKeysClient]
+url = "http://paw-kafka-key-generator/api/v2/hentEllerOpprett"
+scope = "api://${NAIS_CLUSTER_NAME}.paw.paw-kafka-key-generator/.default"
+
+[kafkaClients]
+brokers = "${KAFKA_BROKERS}"
+applicationIdPrefix = "${KAFKA_STREAMS_APPLICATION_ID}"
+
+[kafkaClients.authentication]
+keystorePath = "${KAFKA_KEYSTORE_PATH}"
+truststorePath = "${KAFKA_TRUSTSTORE_PATH}"
+credstorePassword = "${KAFKA_CREDSTORE_PASSWORD}"
+
+[kafkaClients.schemaRegistry]
+url = "${KAFKA_SCHEMA_REGISTRY}"
+username = "${KAFKA_SCHEMA_REGISTRY_USER}"
+password = "${KAFKA_SCHEMA_REGISTRY_PASSWORD}"

@@ -9,7 +9,6 @@ import no.nav.paw.bekretelsetjeneste.tilstand.Tilstand
 import no.nav.paw.bekretelsetjeneste.tilstand.Tilstand.KlarForUtfylling
 import no.nav.paw.bekretelsetjeneste.tilstand.Tilstand.VenterSvar
 import no.nav.paw.config.kafka.streams.genericProcess
-import no.nav.paw.rapportering.melding.v1.Melding
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.processor.api.Record
 import org.slf4j.LoggerFactory
@@ -17,8 +16,8 @@ import java.util.*
 
 context(ApplicationConfiguration, ApplicationContext)
 fun StreamsBuilder.processBekreftelseMeldingTopic() {
-    stream<Long, Melding>(bekreftelseTopic)
-        .genericProcess<Long, Melding, Long, BekreftelseHendelse>(
+    stream<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>(bekreftelseTopic)
+        .genericProcess<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse, Long, BekreftelseHendelse>(
             name = "meldingMottatt",
             stateStoreName
         ) { record ->
@@ -52,7 +51,7 @@ fun StreamsBuilder.processBekreftelseMeldingTopic() {
         }
 }
 
-fun behandleGyldigSvar(arbeidssoekerId: Long, record: Record<Long, Melding>, bekreftelse: Bekreftelse): Pair<List<BekreftelseHendelse>, Bekreftelse> {
+fun behandleGyldigSvar(arbeidssoekerId: Long, record: Record<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>, bekreftelse: Bekreftelse): Pair<List<BekreftelseHendelse>, Bekreftelse> {
     val oppdatertBekreftelse = bekreftelse.copy(tilstand = Tilstand.Levert)
     val baOmAaAvslutte = if (!record.value().svar.vilFortsetteSomArbeidssoeker) {
         BaOmAaAvsluttePeriode(

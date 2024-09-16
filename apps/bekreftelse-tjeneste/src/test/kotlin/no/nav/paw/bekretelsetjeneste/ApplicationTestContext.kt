@@ -4,13 +4,13 @@ import io.confluent.kafka.schemaregistry.testutil.MockSchemaRegistry
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
-import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
-import no.nav.paw.kafkakeygenerator.client.inMemoryKafkaKeysMock
-import no.nav.paw.bekretelsetjeneste.tilstand.InternTilstandSerde
-import no.nav.paw.rapportering.ansvar.v1.AnsvarEndret
+import no.nav.paw.bekreftelse.ansvar.v1.AnsvarEndret
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
-import no.nav.paw.rapportering.melding.v1.Melding
+import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
+import no.nav.paw.bekretelsetjeneste.tilstand.InternTilstandSerde
+import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
+import no.nav.paw.kafkakeygenerator.client.inMemoryKafkaKeysMock
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
@@ -25,7 +25,7 @@ import java.util.*
 
 class ApplicationTestContext {
     val ansvarsTopicSerde: Serde<AnsvarEndret> = opprettSerde()
-    val rapporteringMeldingSerde: Serde<Melding> = opprettSerde()
+    val bekreftelseSerde: Serde<Bekreftelse> = opprettSerde()
     val periodeTopicSerde: Serde<Periode> = opprettSerde()
     val hendelseLoggSerde: Serde<BekreftelseHendelse> = BekreftelseHendelseSerde()
     val applicationConfiguration = ApplicationConfiguration(
@@ -72,7 +72,7 @@ class ApplicationTestContext {
     val rapporteringsTopic = testDriver.createInputTopic(
         applicationConfiguration.bekreftelseTopic,
         Serdes.Long().serializer(),
-        rapporteringMeldingSerde.serializer()
+        bekreftelseSerde.serializer()
     )
 
     val hendelseLoggTopic = testDriver.createOutputTopic(

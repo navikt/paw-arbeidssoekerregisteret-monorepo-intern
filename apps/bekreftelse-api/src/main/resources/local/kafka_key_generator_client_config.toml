@@ -1,2 +1,0 @@
-url = "MOCK"
-scope = "api://<cluster>.<namespace>.<outbound-app-name>/.default"

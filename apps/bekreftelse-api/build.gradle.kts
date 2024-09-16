@@ -14,10 +14,11 @@ val image: String? by project
 dependencies {
     // Project
     implementation(project(":lib:hoplite-config"))
+    implementation(project(":lib:error-handling"))
     implementation(project(":lib:kafka-streams"))
     implementation(project(":lib:kafka-key-generator-client"))
     implementation(project(":domain:bekreftelse-interne-hendelser"))
-    implementation(project(":domain:bekreftelsesmelding-schema"))
+    implementation(project(":domain:bekreftelsesmelding-avro-schema"))
 
     // Server
     implementation(ktorServer.bundles.withNettyAndMicrometer)
@@ -73,7 +74,7 @@ java {
 }
 
 application {
-    mainClass.set("no.nav.paw.rapportering.api.ApplicationKt")
+    mainClass.set("no.nav.paw.bekreftelse.api.ApplicationKt")
 }
 
 tasks.withType<Test>().configureEach {

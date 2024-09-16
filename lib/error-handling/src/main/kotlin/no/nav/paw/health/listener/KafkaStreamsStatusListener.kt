@@ -5,9 +5,16 @@ import no.nav.paw.health.model.ReadinessHealthIndicator
 import org.apache.kafka.streams.KafkaStreams
 import org.slf4j.LoggerFactory
 
-private val logger = LoggerFactory.getLogger("paw.application.health.kafka")
+private val logger = LoggerFactory.getLogger("no.nav.paw.logger.health.kafka")
 
 fun KafkaStreams.withHealthIndicatorStateListener(
+    livenessIndicator: LivenessHealthIndicator,
+    readinessIndicator: ReadinessHealthIndicator
+) {
+    this.setStateListener(createHealthIndicatorStateListener(livenessIndicator, readinessIndicator))
+}
+
+fun createHealthIndicatorStateListener(
     livenessIndicator: LivenessHealthIndicator,
     readinessIndicator: ReadinessHealthIndicator
 ) = KafkaStreams.StateListener { newState, previousState ->

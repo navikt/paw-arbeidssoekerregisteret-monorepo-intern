@@ -10,8 +10,8 @@ val schema by configurations.creating {
 }
 
 dependencies {
-    schema(rapportering.rapporteringsansvarSchema)
-    implementation(rapportering.rapporteringsansvarSchema)
+    schema(bekreftelse.bekreftelsesansvarSchema)
+    implementation(bekreftelse.bekreftelsesansvarSchema)
     api(apacheAvro.avro)
 }
 

@@ -15,8 +15,8 @@ include(
     "lib:kafka-streams",
     "lib:kafka-key-generator-client",
     "domain:bekreftelse-interne-hendelser",
-    "domain:bekreftelsesansvar-schema",
-    "domain:bekreftelsesmelding-schema",
+    "domain:bekreftelsesansvar-avro-schema",
+    "domain:bekreftelsesmelding-avro-schema",
     "domain:main-avro-schema",
     "domain:interne-hendelser",
     "domain:arbeidssoekerregisteret-kotlin",
@@ -66,7 +66,7 @@ dependencyResolutionManagement {
         val pawPdlClientVersion = "24.08.08.40-1"
         val pawAaregClientVersion = "24.07.04.18-1"
         val arbeidssokerregisteretVersion = "1.9348086045.48-1"
-        val rapporteringsSchemaVersion = "24.09.11.8-1"
+        val bekreftelseSchemaVersion = "24.09.16.1-1"
 
 
         //Arrow
@@ -265,17 +265,17 @@ dependencyResolutionManagement {
         create("poao") {
             library("tilgangClient", "no.nav.poao-tilgang", "client").version("2024.04.29_13.59-a0ddddd36ac9")
         }
-        create("rapportering") {
+        create("bekreftelse") {
             library(
-                "rapporteringsansvarSchema",
+                "bekreftelsesansvarSchema",
                 "no.nav.paw.arbeidssokerregisteret.api",
-                "rapporteringsansvar-schema"
-            ).version(rapporteringsSchemaVersion)
+                "bekreftelsesansvar-schema"
+            ).version(bekreftelseSchemaVersion)
             library(
-                "rapporteringsmeldingSchema",
+                "bekreftelsesmeldingSchema",
                 "no.nav.paw.arbeidssokerregisteret.api",
-                "rapporteringsmelding-schema"
-            ).version(rapporteringsSchemaVersion)
+                "bekreftelsesmelding-schema"
+            ).version(bekreftelseSchemaVersion)
         }
     }
 }

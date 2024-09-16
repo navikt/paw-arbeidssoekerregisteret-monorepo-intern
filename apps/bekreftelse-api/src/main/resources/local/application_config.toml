@@ -1,30 +1,45 @@
+[kafkaTopology]
 applicationIdSuffix = "v1"
-producerId = "paw-bekreftelse-api"
-bekreftelseTopic = "paw.bekreftelse-v1"
-bekreftelseHendelseLoggTopic = "paw.bekreftelse-hendelse-logg-v1"
-bekreftelseStateStoreName = "bekreftelseStateStore"
-hostname = "${HOSTNAME}"
+producerId = "paw-arbeidssoeker-bekreftelse-api"
+bekreftelseTopic = "paw.arbeidssoker-bekreftelse-v1"
+bekreftelseHendelsesloggTopic = "paw.arbeidssoker-bekreftelse-hendelseslogg-v1"
+internStateStoreName = "internStateStore"
 
 [[authProviders]]
 name = "tokenx"
 discoveryUrl = "http://localhost:8081/default/.well-known/openid-configuration"
 tokenEndpointUrl = "http://localhost:8081/default/token"
-clientId = "paw-bekreftelse-api"
+clientId = "paw-arbeidssoeker-bekreftelse-api"
 
 [authProviders.claims]
-map = [ "acr=Level4", "acr=idporten-loa-high" ]
+map = ["acr=Level4", "acr=idporten-loa-high"]
 combineWithOr = true
 
 [[authProviders]]
 name = "azure"
 discoveryUrl = "http://localhost:8081/default/.well-known/openid-configuration"
 tokenEndpointUrl = "http://localhost:8081/default/token"
-clientId = "paw-rapportering-api"
+clientId = "paw-arbeidssoeker-bekreftelse-api"
 
 [authProviders.claims]
-map = [ "NAVident" ]
+map = ["NAVident"]
 combineWithOr = false
+
+[azureM2M]
+tokenEndpointUrl = "http://localhost:8081/default/token"
+clientId = "paw-arbeidssoeker-bekreftelse-api"
 
 [poaoClientConfig]
 url = "http://localhost:8090/poao-tilgang/"
 scope = "api://test.test.poao-tilgang/.default"
+
+[kafkaKeysClient]
+url = "http://localhost:8090/kafka-keys"
+scope = "api://test.test.kafka-keys/.default"
+
+[kafkaClients]
+brokers = "localhost:9092"
+applicationIdPrefix = "paw-arbeidssoeker-bekreftelse-api"
+
+[kafkaClients.schemaRegistry]
+url = "http://localhost:8082"

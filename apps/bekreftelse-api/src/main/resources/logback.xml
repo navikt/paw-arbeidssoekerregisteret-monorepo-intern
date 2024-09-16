@@ -10,7 +10,6 @@
         </encoder>
     </appender>
 
-
     <appender name="secureLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>/secure-logs/secure.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
@@ -26,9 +25,17 @@
 
     <if condition='"${NAIS_CLUSTER_NAME}" == "NAIS_CLUSTER_NAME_IS_UNDEFINED"'>
         <then>
-            <root level="DEBUG">
+            <root level="INFO">
                 <appender-ref ref="CONSOLE"/>
             </root>
+            <logger name="org.apache.kafka.streams.StreamsConfig" level="WARN"/>
+            <logger name="org.apache.kafka.clients.admin.AdminClientConfig" level="WARN"/>
+            <logger name="org.apache.kafka.clients.consumer.ConsumerConfig" level="WARN"/>
+            <logger name="org.apache.kafka.clients.producer.ProducerConfig" level="WARN"/>
+            <logger name="io.confluent.kafka.serializers.KafkaAvroSerializerConfig" level="WARN"/>
+            <logger name="no.nav" level="DEBUG"/>
+            <logger name="io.ktor.auth" level="DEBUG"/>
+            <logger name="io.ktor.server.auth" level="DEBUG"/>
         </then>
         <else>
             <logger name="tjenestekall" level="DEBUG" additivity="false">
@@ -39,6 +46,5 @@
             </root>
         </else>
     </if>
-    <logger name="org.apache.kafka" level="info"/>
     <include resource="no/nav/common/audit_log/logback-naudit.xml"/>
 </configuration>
