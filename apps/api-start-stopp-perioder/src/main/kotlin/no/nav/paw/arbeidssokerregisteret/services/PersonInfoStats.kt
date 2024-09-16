@@ -27,7 +27,7 @@ fun PrometheusMeterRegistry.personInfoStats(person: Person, opplysninger: Collec
             "avtale_land", (opplysninger.contains(DomeneOpplysning.ErEuEoesStatsborger) || opplysninger.contains(DomeneOpplysning.ErGbrStatsborger)).toString()
         )
     )
-    counter("paw_arbeidssoeker_inngang_opplysninger", tags)
+    counter("paw_arbeidssoeker_inngang_opplysninger", tags).increment()
 }
 
 fun daysBetweenNow(then: LocalDate): Long {
