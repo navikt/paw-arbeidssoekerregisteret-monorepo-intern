@@ -46,7 +46,7 @@ class PeriodeProcessor(
         scheduleAvsluttPerioder(
             ctx = requireNotNull(context),
             hendelseStateStore = requireNotNull(hendelseStateStore),
-            interval = Duration.ofMinutes(10),
+            interval = Duration.ofDays(1),
             pdlHentPersonBolk = pdlHentPersonBolk,
             prometheusMeterRegistry = prometheusMeterRegistry,
             regler = InngangsReglerV3
