@@ -1,4 +1,4 @@
-package no.nav.paw.bekretelsetjeneste.tilstand
+package no.nav.paw.bekreftelsetjeneste.tilstand
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule

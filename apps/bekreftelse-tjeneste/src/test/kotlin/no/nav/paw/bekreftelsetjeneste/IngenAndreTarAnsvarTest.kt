@@ -1,4 +1,4 @@
-package no.nav.paw.bekretelsetjeneste
+package no.nav.paw.bekreftelsetjeneste
 
 import io.kotest.core.annotation.Ignored
 import io.kotest.core.spec.style.FreeSpec

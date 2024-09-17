@@ -1,4 +1,4 @@
-package no.nav.paw.bekretelsetjeneste
+package no.nav.paw.bekreftelsetjeneste
 
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
@@ -7,7 +7,7 @@ import no.nav.paw.config.kafka.KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG
 import no.nav.paw.config.kafka.KafkaConfig
 import no.nav.paw.config.kafka.streams.KafkaStreamsFactory
 import no.nav.paw.kafkakeygenerator.client.createKafkaKeyGeneratorClient
-import no.nav.paw.bekretelsetjeneste.tilstand.InternTilstandSerde
+import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstandSerde
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder

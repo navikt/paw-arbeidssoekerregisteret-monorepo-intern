@@ -2,13 +2,15 @@
 Periode starter -> - oppretter intern state med start tidspunkt fra periode
                    - opprette bekreftelse i tilstand "ikke klar"
 Schedule task:
-   for hver bekreftelse i "ikke klar", sett til til "klar for utfylling" x tid før gjelderTil og send hendelse BekreftelseTilgjenelig
+   for hver bekreftelse i "ikke klar", sett til "klar for utfylling" x tid før gjelderTil og send hendelse BekreftelseTilgjengelig
 
-   for hver bekreftelse i "klar for utfylling" og gjelderTil passert, sett til til "venter på svar" og send hendelse LeveringsFristUtloept
+   for hver bekreftelse i "klar for utfylling" og gjelderTil passert, sett til "venter på svar" og send hendelse LeveringsFristUtloept
 
    for hver bekreftelse i "venter på svar" og ingen purring sendt og x tid passert siden frist, send RegisterGracePeriodeGjenstaaendeTid og sett purring sendt timestamp til now()
 
    for hver bekreftelse i "venter på svar" og grace periode utløpt, send RegisterGracePeriodeUtloept
+
+   for hver periode hvis det er mindre enn x dager til den siste bekreftelse perioden utgår lag ny bekreftelse periode
 
 Melding med svar fra bruker mottatt -> - finn matchene berkreftelse i status "venter på svar" || "klar for utfylling" og set til "levert", ta vare på x siste bekreftelser.
                                        - Send ut BekreftelseMeldingMottatt

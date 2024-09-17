@@ -1,6 +1,6 @@
-package no.nav.paw.bekretelsetjeneste
+package no.nav.paw.bekreftelsetjeneste
 
-import no.nav.paw.bekretelsetjeneste.tilstand.InternTilstand
+import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstand
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.state.KeyValueStore

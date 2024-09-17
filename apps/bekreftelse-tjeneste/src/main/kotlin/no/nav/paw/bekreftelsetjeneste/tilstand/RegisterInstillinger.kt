@@ -1,4 +1,4 @@
-package no.nav.paw.bekretelsetjeneste.tilstand
+package no.nav.paw.bekreftelsetjeneste.tilstand
 
 import java.time.DayOfWeek
 import java.time.Duration
@@ -8,12 +8,16 @@ import java.time.ZoneId
 import java.time.temporal.TemporalAdjuster
 import java.time.temporal.TemporalAdjusters
 
-data class RapporteringsKonfigurasjon(
-    val rapporteringTilgjengligOffset: Duration,
-    val varselFoerUtloepAvGracePeriode: Duration
-)
+// Felles verdier for bekreftelse.
+data object BekreftelseConfig {
+    val bekreftelseInterval:Duration = Duration.ofDays(14)
+    val gracePeriode: Duration = Duration.ofDays(7)
+    val bekreftelseTilgjengeligOffset: Duration = Duration.ofDays(3)
+    val varselFoerGracePeriodeUtloept: Duration = gracePeriode.dividedBy(2)
+}
 
-fun fristForNesteRapportering(forrige: Instant, interval: Duration): Instant {
+fun fristForNesteBekreftelse(forrige: Instant, interval: Duration): Instant {
+    // TODO: Finn regler for magic monday og gjør nødvendig justeringer
     val magicMondayAdjuster = MagicMondayAdjuster()
     val zoneId = ZoneId.of("Europe/Oslo")
     return forrige
@@ -22,6 +26,17 @@ fun fristForNesteRapportering(forrige: Instant, interval: Duration): Instant {
         .with(magicMondayAdjuster)
         .plus(Duration.ofDays(1))
         .atStartOfDay(zoneId).toInstant()
+}
+
+fun gjenstaendeGracePeriode(timestamp: Instant, gjelderTil: Instant): Duration {
+    val gracePeriode = BekreftelseConfig.gracePeriode
+    val utvidetGjelderTil = gjelderTil.plus(gracePeriode)
+
+    return if (utvidetGjelderTil.isBefore(timestamp)) {
+        Duration.ZERO
+    } else {
+        Duration.between(timestamp, utvidetGjelderTil)
+    }
 }
 
 class MagicMondayAdjuster: TemporalAdjuster {

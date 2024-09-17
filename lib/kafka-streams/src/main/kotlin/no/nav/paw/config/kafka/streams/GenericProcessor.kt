@@ -74,30 +74,31 @@ fun <K_IN, V_IN, K_OUT, V_OUT> KStream<K_IN, V_IN>.genericProcess(
     function: ProcessorContext<K_OUT, V_OUT>.(Record<K_IN, V_IN>) -> Unit
 ): KStream<K_OUT, V_OUT> {
     val processor = {
-        GenericProcessor(function = function, punctuation = punctuation)
+        GenericProcessor(function = function, punctuation = punctuation, stateStoreNames = stateStoreNames)
     }
     return process(processor, Named.`as`(name), *stateStoreNames)
 }
 
 class GenericProcessor<K_IN, V_IN, K_OUT, V_OUT>(
     private val punctuation: Punctuation<K_OUT, V_OUT>? = null,
-    private val function: ProcessorContext<K_OUT, V_OUT>.(Record<K_IN, V_IN>) -> Unit
+    private vararg val stateStoreNames: String,
+    private val function: ProcessorContext<K_OUT, V_OUT>.(Record<K_IN, V_IN>) -> Unit,
 ) : Processor<K_IN, V_IN, K_OUT, V_OUT> {
-    private var context: ProcessorContext<K_OUT, V_OUT>? = null
+    private lateinit var context: ProcessorContext<K_OUT, V_OUT>
 
     override fun init(context: ProcessorContext<K_OUT, V_OUT>?) {
         super.init(context)
-        this.context = context
+        this.context = requireNotNull(context) { "ProcessorContext must not be null during init" }
         if (punctuation != null) {
-            context?.schedule(punctuation.interval, punctuation.type) { time ->
-                punctuation.function(Instant.ofEpochMilli(time), context)
+            context.schedule(punctuation.interval, punctuation.type) { timestamp ->
+                punctuation.function(Instant.ofEpochMilli(timestamp), this.context, stateStoreNames)
             }
         }
     }
 
     override fun process(record: Record<K_IN, V_IN>?) {
         if (record == null) return
-        val ctx = requireNotNull(context) { "Context is not initialized" }
+        val ctx = requireNotNull(context) { "ProcessorContext is not initialized before processing records" }
         with(ctx) { function(record) }
     }
 }
@@ -105,5 +106,5 @@ class GenericProcessor<K_IN, V_IN, K_OUT, V_OUT>(
 data class Punctuation<K, V>(
     val interval: Duration,
     val type: PunctuationType,
-    val function: (Instant, ProcessorContext<K, V>) -> Unit
+    val function: (Instant, ProcessorContext<K, V>, Array<out String>) -> Unit
 )

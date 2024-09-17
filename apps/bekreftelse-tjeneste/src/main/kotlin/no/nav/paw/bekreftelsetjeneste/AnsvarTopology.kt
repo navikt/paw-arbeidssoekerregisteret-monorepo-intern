@@ -1,4 +1,4 @@
-package no.nav.paw.bekretelsetjeneste
+package no.nav.paw.bekreftelsetjeneste
 
 import no.nav.paw.config.kafka.streams.genericProcess
 import no.nav.paw.bekreftelse.ansvar.v1.AnsvarEndret

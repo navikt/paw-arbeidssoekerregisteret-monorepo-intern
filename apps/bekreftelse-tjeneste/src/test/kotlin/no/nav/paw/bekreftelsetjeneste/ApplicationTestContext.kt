@@ -1,4 +1,4 @@
-package no.nav.paw.bekretelsetjeneste
+package no.nav.paw.bekreftelsetjeneste
 
 import io.confluent.kafka.schemaregistry.testutil.MockSchemaRegistry
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
@@ -8,7 +8,7 @@ import no.nav.paw.bekreftelse.ansvar.v1.AnsvarEndret
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
-import no.nav.paw.bekretelsetjeneste.tilstand.InternTilstandSerde
+import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstandSerde
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
 import no.nav.paw.kafkakeygenerator.client.inMemoryKafkaKeysMock
 import org.apache.avro.specific.SpecificRecord
@@ -69,7 +69,7 @@ class ApplicationTestContext {
         ansvarsTopicSerde.serializer()
     )
 
-    val rapporteringsTopic = testDriver.createInputTopic(
+    val bekreftelseTopic = testDriver.createInputTopic(
         applicationConfiguration.bekreftelseTopic,
         Serdes.Long().serializer(),
         bekreftelseSerde.serializer()

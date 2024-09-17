@@ -1,12 +1,13 @@
-package no.nav.paw.bekretelsetjeneste
+package no.nav.paw.bekreftelsetjeneste
 
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
+import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
+import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseConfig
+import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstand
+import no.nav.paw.bekreftelsetjeneste.tilstand.initTilstand
 import no.nav.paw.config.kafka.streams.genericProcess
 import no.nav.paw.config.kafka.streams.mapWithContext
-import no.nav.paw.bekretelsetjeneste.tilstand.InternTilstand
-import no.nav.paw.bekretelsetjeneste.tilstand.initTilstand
-import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
-import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.Produced
@@ -25,7 +26,7 @@ fun StreamsBuilder.processPeriodeTopic() {
             when {
                 currentState == null && periode.avsluttet() -> Action.DoNothing
                 periode.avsluttet() -> Action.DeleteStateAndEmit(arbeidsoekerId, periode)
-                currentState == null -> Action.UpdateState(initTilstand(id = arbeidsoekerId, key = kafkaKey, periode = periode))
+                currentState == null -> Action.UpdateState(initTilstand(id = arbeidsoekerId, key = kafkaKey, periode = periode, BekreftelseConfig))
                 else -> Action.DoNothing
             }
         }

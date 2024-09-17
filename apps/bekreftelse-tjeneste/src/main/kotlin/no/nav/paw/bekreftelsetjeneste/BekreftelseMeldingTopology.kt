@@ -1,15 +1,17 @@
-package no.nav.paw.bekretelsetjeneste
+package no.nav.paw.bekreftelsetjeneste
 
 import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
-import no.nav.paw.bekretelsetjeneste.tilstand.Bekreftelse
-import no.nav.paw.bekretelsetjeneste.tilstand.InternTilstand
-import no.nav.paw.bekretelsetjeneste.tilstand.Tilstand
-import no.nav.paw.bekretelsetjeneste.tilstand.Tilstand.KlarForUtfylling
-import no.nav.paw.bekretelsetjeneste.tilstand.Tilstand.VenterSvar
+import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
+import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstand
+import no.nav.paw.bekreftelsetjeneste.tilstand.Tilstand
+import no.nav.paw.bekreftelsetjeneste.tilstand.Tilstand.KlarForUtfylling
+import no.nav.paw.bekreftelsetjeneste.tilstand.Tilstand.VenterSvar
+import no.nav.paw.config.kafka.streams.Punctuation
 import no.nav.paw.config.kafka.streams.genericProcess
 import org.apache.kafka.streams.StreamsBuilder
+import org.apache.kafka.streams.processor.PunctuationType
 import org.apache.kafka.streams.processor.api.Record
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -19,7 +21,8 @@ fun StreamsBuilder.processBekreftelseMeldingTopic() {
     stream<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>(bekreftelseTopic)
         .genericProcess<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse, Long, BekreftelseHendelse>(
             name = "meldingMottatt",
-            stateStoreName
+            stateStoreName,
+            punctuation = Punctuation(punctuateInterval, PunctuationType.WALL_CLOCK_TIME, ::scheduleUpdateTilstand)
         ) { record ->
             val stateStore = getStateStore<StateStore>(stateStoreName)
             val gjeldeneTilstand: InternTilstand? = stateStore[record.value().periodeId]

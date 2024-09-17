@@ -1,4 +1,4 @@
-package no.nav.paw.bekretelsetjeneste
+package no.nav.paw.bekreftelsetjeneste
 
 import java.time.Duration
 
