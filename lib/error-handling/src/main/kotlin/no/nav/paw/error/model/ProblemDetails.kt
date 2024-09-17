@@ -1,6 +1,10 @@
 package no.nav.paw.error.model
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import io.ktor.http.HttpStatusCode
+import no.nav.paw.error.serialize.HttpStatusCodeDeserializer
+import no.nav.paw.error.serialize.HttpStatusCodeSerializer
 
 /**
  * Object som inneholder detaljer om en oppstått feilsituasjon, basert på RFC 7807.
@@ -9,13 +13,13 @@ import io.ktor.http.HttpStatusCode
 data class ProblemDetails(
     val type: String,
     val title: String,
-    val status: HttpStatusCode,
+    @JsonSerialize(using = HttpStatusCodeSerializer::class) @JsonDeserialize(using = HttpStatusCodeDeserializer::class) val status: HttpStatusCode,
     val detail: String,
     val instance: String
 ) {
     constructor(
         title: String,
-        status: HttpStatusCode,
+        @JsonSerialize(using = HttpStatusCodeSerializer::class) @JsonDeserialize(using = HttpStatusCodeDeserializer::class) status: HttpStatusCode,
         detail: String,
         instance: String
     ) : this("about:blank", title, status, detail, instance)

@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     compileOnly(ktorServer.core)
+    compileOnly(ktor.serializationJackson)
     compileOnly(orgApacheKafka.kafkaStreams)
     compileOnly(loggingLibs.logbackClassic)
 
