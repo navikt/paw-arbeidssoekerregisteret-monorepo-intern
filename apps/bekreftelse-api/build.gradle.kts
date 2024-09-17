@@ -45,6 +45,7 @@ dependencies {
     implementation(poao.tilgangClient)
 
     // Documentation
+    implementation(ktorServer.openapi)
     implementation(ktorServer.swagger)
 
     // Logging

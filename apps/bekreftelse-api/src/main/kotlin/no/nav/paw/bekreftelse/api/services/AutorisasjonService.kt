@@ -1,6 +1,7 @@
 package no.nav.paw.bekreftelse.api.services
 
-import no.nav.paw.bekreftelse.api.utils.auditLogMelding
+import no.nav.paw.bekreftelse.api.authz.VeilerHarIkkeTilgangException
+import no.nav.paw.bekreftelse.api.utils.audit
 import no.nav.paw.bekreftelse.api.utils.auditLogger
 import no.nav.paw.bekreftelse.api.utils.logger
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput
@@ -15,22 +16,26 @@ class AutorisasjonService(
         navAnsatt: NavAnsatt,
         identitetsnummer: String,
         tilgangType: TilgangType
-    ): Boolean {
-        val harNavAnsattTilgang =
-            poaoTilgangHttpClient.evaluatePolicy(
-                NavAnsattTilgangTilEksternBrukerPolicyInput(
-                    navAnsattAzureId = navAnsatt.azureId,
-                    tilgangType = tilgangType,
-                    norskIdent = identitetsnummer
-                )
-            ).getOrThrow().isPermit
+    ) {
+        val navAnsattTilgang = poaoTilgangHttpClient.evaluatePolicy(
+            NavAnsattTilgangTilEksternBrukerPolicyInput(
+                navAnsattAzureId = navAnsatt.azureId,
+                tilgangType = tilgangType,
+                norskIdent = identitetsnummer
+            )
+        )
+        val tilgang = navAnsattTilgang.getOrDefault { throw VeilerHarIkkeTilgangException("") }
 
-        if (!harNavAnsattTilgang) {
+        if (tilgang.isDeny) {
             logger.info("NAV-ansatt har ikke $tilgangType til bruker")
         } else {
-            auditLogger.info(auditLogMelding(identitetsnummer, navAnsatt, tilgangType, "NAV ansatt har benyttet $tilgangType tilgang til informasjon om bruker"))
+            auditLogger.audit(
+                identitetsnummer,
+                navAnsatt,
+                tilgangType,
+                "NAV ansatt har benyttet $tilgangType tilgang til informasjon om bruker"
+            )
         }
-        return harNavAnsattTilgang
     }
 }
 

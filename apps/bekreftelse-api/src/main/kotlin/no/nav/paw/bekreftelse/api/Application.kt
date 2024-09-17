@@ -63,8 +63,8 @@ fun Application.module(
         swaggerRoutes()
         bekreftelseRoutes(
             dependencies.kafkaKeysClient,
-            dependencies.bekreftelseService,
-            dependencies.autorisasjonService
+            dependencies.autorisasjonService,
+            dependencies.bekreftelseService
         )
     }
 }

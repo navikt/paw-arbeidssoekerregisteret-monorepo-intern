@@ -7,6 +7,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
+import no.nav.paw.bekreftelse.api.authz.requestScope
 import no.nav.paw.bekreftelse.api.model.BekreftelseRequest
 import no.nav.paw.bekreftelse.api.model.TilgjengeligeBekreftelserRequest
 import no.nav.paw.bekreftelse.api.services.AutorisasjonService
@@ -16,19 +17,13 @@ import no.nav.poao_tilgang.client.TilgangType
 
 fun Route.bekreftelseRoutes(
     kafkaKeyClient: KafkaKeysClient,
-    bekreftelseService: BekreftelseService,
-    autorisasjonService: AutorisasjonService
+    autorisasjonService: AutorisasjonService,
+    bekreftelseService: BekreftelseService
 ) {
     route("/api/v1") {
         authenticate("tokenx", "azure") {
             post<TilgjengeligeBekreftelserRequest>("/tilgjengelige-bekreftelser") { request ->
-                with(requestScope(request.identitetsnummer, autorisasjonService, kafkaKeyClient, TilgangType.LESE)) {
-                    val arbeidssoekerId = this
-
-                    val bearerToken = requireNotNull(call.request.headers["Authorization"]) {
-                        "Authorization header is missing"
-                    }
-
+                with(requestScope(request.identitetsnummer, kafkaKeyClient, autorisasjonService, TilgangType.LESE)) {
                     val tilgjengeligeBekreftelser = bekreftelseService
                         .finnTilgjengeligBekreftelser(bearerToken, arbeidssoekerId, request)
 
@@ -39,13 +34,7 @@ fun Route.bekreftelseRoutes(
 
             }
             post<BekreftelseRequest>("/bekreftelse") { request ->
-                with(requestScope(request.identitetsnummer, autorisasjonService, kafkaKeyClient, TilgangType.SKRIVE)) {
-                    val arbeidssoekerId = this
-
-                    val bearerToken = requireNotNull(call.request.headers["Authorization"]) {
-                        "Authorization header is missing"
-                    }
-
+                with(requestScope(request.identitetsnummer, kafkaKeyClient, autorisasjonService, TilgangType.SKRIVE)) {
                     bekreftelseService.mottaBekreftelse(bearerToken, arbeidssoekerId, request)
 
                     call.respond(HttpStatusCode.OK)

@@ -1,0 +1,202 @@
+openapi: "3.0.3"
+info:
+  title: "paw_arbeidssoeker_bekreftelse API"
+  description: "paw_arbeidssoeker_bekreftelse API"
+  version: "1.0.0"
+servers:
+  - url: "https://bekreftelse-arbeidssoekerregisteret.intern.nav.no"
+    description: "Production"
+  - url: "https://bekreftelse-arbeidssoekerregisteret.intern.dev.nav.no"
+    description: "Development"
+paths:
+  /api/v1/tilgjengelige-bekreftelser:
+    post:
+      description: "Endepunkt for å hende tilgjengelige bekreftelser for en arbeidssøker"
+      parameters:
+        - name: "traceparent"
+          in: "header"
+          required: false
+          description: "https://www.w3.org/TR/trace-context/#traceparent-header-field-values"
+          schema:
+            type: "string"
+            format: "traceparent"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TilgjengeligeBekreftelserRequest"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TilgjengeligBekreftelserResponse"
+        "403":
+          description: "Forbidden"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/v1/bekreftelse:
+    post:
+      description: "Endepunkt for å registrere en bekreftelse for en arbeidssøker"
+      parameters:
+        - name: "traceparent"
+          in: "header"
+          required: false
+          description: "https://www.w3.org/TR/trace-context/#traceparent-header-field-values"
+          schema:
+            type: "string"
+            format: "traceparent"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BekreftelseRequest"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+        "403":
+          description: "Forbidden"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /internal/isAlive:
+    get:
+      description: "Service is alive probe"
+      responses:
+        "503":
+          description: "Service Unavailable"
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+        "200":
+          description: "OK"
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /internal/isReady:
+    get:
+      description: "Service is ready probe"
+      responses:
+        "503":
+          description: "Service Unavailable"
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+        "200":
+          description: "OK"
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /internal/metrics:
+    get:
+      description: "Prometheus metrics"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "string"
+components:
+  schemas:
+    TilgjengeligeBekreftelserRequest:
+      type: "object"
+      properties:
+        identitetsnummer:
+          type: "string"
+      required:
+        - "identitetsnummer"
+      example:
+        identitetsnummer: "01017012345"
+    TilgjengeligBekreftelserResponse:
+      type: "array"
+      items:
+        $ref: "#/components/schemas/TilgjengeligBekreftelse"
+    TilgjengeligBekreftelse:
+      type: "object"
+      properties:
+        periodeId:
+          type: "string"
+          format: "uuid"
+        bekreftelseId:
+          type: "string"
+          format: "uuid"
+        gjelderFra:
+          type: "string"
+          format: "date-time"
+        gjelderTil:
+          type: "string"
+          format: "date-time"
+      required:
+        - "periodeId"
+        - "bekreftelseId"
+        - "gjelderFra"
+        - "gjelderTil"
+      example:
+        periodeId: "84201f96-363b-4aab-a589-89fa4b9b1feb"
+        bekreftelseId: "ec6b5a10-b67c-42c1-b6e7-a642c36bd78e"
+        gjelderFra: "2020-01-01T11:22:33.444Z"
+        gjelderTil: "2020-02-02T11:22:33.444Z"
+    BekreftelseRequest:
+      type: "object"
+      properties:
+        identitetsnummer:
+          type: "string"
+        bekreftelseId:
+          type: "string"
+          format: "uuid"
+        harJobbetIDennePerioden:
+          type: "boolean"
+        vilFortsetteSomArbeidssoeker:
+          type: "boolean"
+      required:
+        - "identitetsnummer"
+        - "bekreftelseId"
+        - "harJobbetIDennePerioden"
+        - "vilFortsetteSomArbeidssoeker"
+      example:
+        identitetsnummer: "01017012345"
+        bekreftelseId: "ec6b5a10-b67c-42c1-b6e7-a642c36bd78e"
+        harJobbetIDennePerioden: false
+        vilFortsetteSomArbeidssoeker: true
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type: "string"
+        title:
+          type: "string"
+        status:
+          type: "number"
+        detail:
+          type: "string"
+        instance:
+          type: "string"
+      required:
+        - type
+        - title
+        - status
+        - detail
+        - instance
+      example:
+        type: "about:blank"
+        title: "Forbidden"
+        status: 403
+        detail: "Access denied"
+        instance: "/api/endpoint"
+    HealthStatus:
+      type: "string"
+      enum:
+        - "UNKNOWN"
+        - "HEALTHY"
+        - "UNHEALTHY"
