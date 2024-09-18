@@ -66,7 +66,7 @@ fun bekreftelsePunctuator(stateStoreName: String, timestamp: Instant, ctx: Proce
                         ctx.forward(record)
                     }
 
-                    bekreftelse.tilstand == Tilstand.VenterSvar && bekreftelse.skalPurres(timestamp) -> {
+                    bekreftelse.tilstand == Tilstand.VenterSvar && bekreftelse.erSisteVarselOmGjenstaaendeGraceTid(timestamp) -> {
                         val updatedBekreftelse = bekreftelse.copy(sisteVarselOmGjenstaaendeGraceTid = timestamp)
                         val updatedInternTilstand =
                             value.copy(bekreftelser = value.bekreftelser - bekreftelse + updatedBekreftelse)
@@ -90,9 +90,9 @@ fun bekreftelsePunctuator(stateStoreName: String, timestamp: Instant, ctx: Proce
 
                     bekreftelse.tilstand == Tilstand.VenterSvar && bekreftelse.harGracePeriodeUtloept(timestamp) -> {
 
-                        // TODO: oppdater til graceutloept
+                        val updatedBekreftelse = bekreftelse.copy(tilstand = Tilstand.GracePeriodeUtlopt)
                         val updatedInternTilstand = value.copy(
-                            bekreftelser = value.bekreftelser - bekreftelse
+                            bekreftelser = value.bekreftelser - bekreftelse + updatedBekreftelse
                         )
 
                         stateStore.put(key, updatedInternTilstand)
@@ -110,36 +110,35 @@ fun bekreftelsePunctuator(stateStoreName: String, timestamp: Instant, ctx: Proce
 
                         ctx.forward(record)
                     }
+                }
+                if (skalLageNyBekreftelseTilgjengelig(timestamp, value.bekreftelser)) {
+                    val newBekreftelse = bekreftelse.copy(
+                        tilstand = Tilstand.KlarForUtfylling,
+                        sisteVarselOmGjenstaaendeGraceTid = null,
+                        bekreftelseId = UUID.randomUUID(),
+                        gjelderFra = bekreftelse.gjelderTil,
+                        gjelderTil = fristForNesteBekreftelse(bekreftelse.gjelderTil, BekreftelseConfig.bekreftelseInterval)
 
-                    bekreftelse.skalLageNyBekreftelseTilgjengelig(timestamp, value.bekreftelser) -> {
-                        val newBekreftelse = bekreftelse.copy(
-                            tilstand = Tilstand.KlarForUtfylling,
-                            sisteVarselOmGjenstaaendeGraceTid = null,
-                            bekreftelseId = UUID.randomUUID(),
-                            gjelderFra = bekreftelse.gjelderTil,
-                            gjelderTil = fristForNesteBekreftelse(bekreftelse.gjelderTil, BekreftelseConfig.bekreftelseInterval)
+                    )
+                    val updatedInternTilstand = value.copy(
+                        bekreftelser = value.bekreftelser + newBekreftelse
+                    )
+                    stateStore.put(key, updatedInternTilstand)
 
-                        )
-                        val updatedInternTilstand = value.copy(
-                            bekreftelser = value.bekreftelser + newBekreftelse
-                        )
-                        stateStore.put(key, updatedInternTilstand)
+                    val record = Record<Long, BekreftelseHendelse>(
+                        value.periode.recordKey,
+                        BekreftelseTilgjengelig(
+                            hendelseId = UUID.randomUUID(),
+                            periodeId = value.periode.periodeId,
+                            arbeidssoekerId = value.periode.arbeidsoekerId,
+                            bekreftelseId = newBekreftelse.bekreftelseId,
+                            gjelderFra = newBekreftelse.gjelderFra,
+                            gjelderTil = newBekreftelse.gjelderTil
+                        ),
+                        Instant.now().toEpochMilli()
+                    )
 
-                        val record = Record<Long, BekreftelseHendelse>(
-                            value.periode.recordKey,
-                            BekreftelseTilgjengelig(
-                                hendelseId = UUID.randomUUID(),
-                                periodeId = value.periode.periodeId,
-                                arbeidssoekerId = value.periode.arbeidsoekerId,
-                                bekreftelseId = newBekreftelse.bekreftelseId,
-                                gjelderFra = newBekreftelse.gjelderFra,
-                                gjelderTil = newBekreftelse.gjelderTil
-                            ),
-                            Instant.now().toEpochMilli()
-                        )
-
-                        ctx.forward(record)
-                    }
+                    ctx.forward(record)
                 }
             }
         }
