@@ -1,5 +1,7 @@
 package no.nav.paw.bekreftelse.api.plugins
 
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.install
@@ -33,14 +35,16 @@ fun Application.configureHTTP(applicationConfig: ApplicationConfig) {
             NaisEnv.Local -> anyHost()
         }
 
-        allowMethod(io.ktor.http.HttpMethod.Options)
-        allowMethod(io.ktor.http.HttpMethod.Head)
-        allowMethod(io.ktor.http.HttpMethod.Get)
-        allowMethod(io.ktor.http.HttpMethod.Post)
+        allowMethod(HttpMethod.Options)
+        allowMethod(HttpMethod.Head)
+        allowMethod(HttpMethod.Get)
+        allowMethod(HttpMethod.Post)
 
-        allowHeader(io.ktor.http.HttpHeaders.Authorization)
-        allowHeader(io.ktor.http.HttpHeaders.ContentType)
-        allowHeader(io.ktor.http.HttpHeaders.AccessControlAllowOrigin)
+        allowHeader(HttpHeaders.Authorization)
+        allowHeader(HttpHeaders.ContentType)
+        allowHeader(HttpHeaders.AccessControlAllowOrigin)
+
+        allowCredentials = true
 
         allowHeadersPrefixed("nav-")
     }
