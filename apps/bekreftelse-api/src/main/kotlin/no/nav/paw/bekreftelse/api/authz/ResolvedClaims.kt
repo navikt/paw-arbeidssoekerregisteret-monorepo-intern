@@ -14,13 +14,20 @@ class ResolvedClaims private constructor(
 
     @Suppress("UNCHECKED_CAST")
     operator fun <T : Any> get(claim: Claim<T>): T? = map[claim] as T?
-    fun isResolved(claim: Claim<*>): Boolean = map.containsKey(claim)
 
     fun <T : Any> add(claim: Claim<T>, rawValue: String): ResolvedClaims {
         val parsed = claim.fromString(rawValue)
         val pair: Pair<Claim<T>, Any> = claim to parsed
         return ResolvedClaims(map + pair)
     }
+
+    fun isTokenX() = map.isNotEmpty() && map.keys.filter { it.issuer == TokenX }.size == map.size
+
+    fun isAzure() = map.isNotEmpty() && map.keys.filter { it.issuer == Azure }.size == map.size
+
+    fun isResolved(claim: Claim<*>): Boolean = map.containsKey(claim)
+
+    fun isEmpty() = map.isEmpty()
 }
 
 fun TokenValidationContext?.resolveClaims(vararg claims: Claim<*>): ResolvedClaims =
@@ -31,7 +38,7 @@ fun TokenValidationContext?.resolveClaims(vararg claims: Claim<*>): ResolvedClai
         }
 
 fun TokenValidationContext?.resolve(claim: Claim<*>): String? =
-    this?.getClaimOrNull(claim.issuer)
+    this?.getClaimOrNull(claim.issuer.name)
         ?.getStringClaim(claim.claimName)
 
 fun TokenValidationContext.getClaimOrNull(issuer: String) =

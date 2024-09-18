@@ -1,5 +1,6 @@
 package no.nav.paw.bekreftelse.api.kafka
 
+import io.micrometer.core.instrument.MeterRegistry
 import no.nav.paw.bekreftelse.api.model.InternState
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
@@ -13,16 +14,18 @@ import org.apache.kafka.streams.processor.api.Record
 import org.apache.kafka.streams.state.KeyValueStore
 
 fun KStream<Long, BekreftelseHendelse>.oppdaterBekreftelseHendelseState(
-    stateStoreName: String
+    stateStoreName: String,
+    meterRegistry: MeterRegistry
 ): KStream<Long, BekreftelseHendelse> {
     val processor = {
-        BekreftelseHendelseProcessor(stateStoreName)
+        BekreftelseHendelseProcessor(stateStoreName, meterRegistry)
     }
     return process(processor, Named.`as`("bekreftelseHendelseProcessor"), stateStoreName)
 }
 
 class BekreftelseHendelseProcessor(
     private val stateStoreName: String,
+    meterRegistry: MeterRegistry
 ) : Processor<Long, BekreftelseHendelse, Long, BekreftelseHendelse> {
     private var stateStore: KeyValueStore<Long, InternState>? = null
     private var context: ProcessorContext<Long, BekreftelseHendelse>? = null
@@ -33,9 +36,10 @@ class BekreftelseHendelseProcessor(
         stateStore = context?.getStateStore(stateStoreName)
     }
 
+    // TODO Legg til metrics
     override fun process(record: Record<Long, BekreftelseHendelse>?) {
         val value = record?.value() ?: return
-        val hendelseStore = requireNotNull(stateStore) { "State store is not initialized" }
+        val hendelseStore = requireNotNull(stateStore) { "Intern state store er ikke initiert" }
         when (value) {
             is BekreftelseTilgjengelig -> {
                 hendelseStore.get(value.arbeidssoekerId)?.let {

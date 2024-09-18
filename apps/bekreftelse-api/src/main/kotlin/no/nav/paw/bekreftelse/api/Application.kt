@@ -53,9 +53,7 @@ fun Application.module(
     configureLogging()
     configureSerialization()
     configureTracing()
-    if (!applicationConfig.brukMock) { // TODO Bruker mock for utvikling
-        configureKafka(applicationConfig, listOf(dependencies.bekreftelseKafkaStreams))
-    }
+    configureKafka(applicationConfig, listOf(dependencies.bekreftelseKafkaStreams))
 
     routing {
         healthRoutes(dependencies.healthIndicatorRepository)

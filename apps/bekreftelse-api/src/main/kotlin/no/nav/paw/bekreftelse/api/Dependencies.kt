@@ -11,8 +11,6 @@ import no.nav.paw.bekreftelse.api.kafka.buildBekreftelseTopology
 import no.nav.paw.bekreftelse.api.plugins.buildKafkaStreams
 import no.nav.paw.bekreftelse.api.services.AutorisasjonService
 import no.nav.paw.bekreftelse.api.services.BekreftelseService
-import no.nav.paw.bekreftelse.api.services.BekreftelseServiceImpl
-import no.nav.paw.bekreftelse.api.services.BekreftelseServiceMock
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.auth.azureAdM2MTokenClient
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
@@ -50,22 +48,14 @@ fun createDependencies(applicationConfig: ApplicationConfig): Dependencies {
     val bekreftelseTopology = buildBekreftelseTopology(applicationConfig, prometheusMeterRegistry)
     val bekreftelseKafkaStreams = buildKafkaStreams(applicationConfig, healthIndicatorRepository, bekreftelseTopology)
 
-    // TODO Bruker mock for utvikling
-    val bekreftelseService: BekreftelseService = if (applicationConfig.brukMock) {
-        healthIndicatorRepository.getLivenessIndicators().forEach { it.setHealthy() }
-        healthIndicatorRepository.getReadinessIndicators().forEach { it.setHealthy() }
+    val bekreftelseProducer = BekreftelseProducer(applicationConfig)
 
-        BekreftelseServiceMock()
-    } else {
-        val bekreftelseProducer = BekreftelseProducer(applicationConfig)
-
-        BekreftelseServiceImpl(
-            applicationConfig,
-            httpClient,
-            bekreftelseKafkaStreams,
-            bekreftelseProducer
-        )
-    }
+    val bekreftelseService = BekreftelseService(
+        applicationConfig,
+        httpClient,
+        bekreftelseKafkaStreams,
+        bekreftelseProducer
+    )
 
     return Dependencies(
         kafkaKeysClient,

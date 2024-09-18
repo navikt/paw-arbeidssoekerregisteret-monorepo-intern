@@ -5,6 +5,7 @@ import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import no.nav.paw.bekreftelse.api.authz.requestScope
@@ -22,10 +23,25 @@ fun Route.bekreftelseRoutes(
 ) {
     route("/api/v1") {
         authenticate("tokenx", "azure") {
+            get("/tilgjengelige-bekreftelser") {
+                with(requestScope(null, kafkaKeyClient, autorisasjonService, TilgangType.LESE)) {
+                    val tilgjengeligeBekreftelser = bekreftelseService
+                        .finnTilgjengeligBekreftelser(
+                            sluttbruker,
+                            innloggetBruker,
+                            TilgjengeligeBekreftelserRequest(sluttbruker.identitetsnummer),
+                            useMockData
+                        )
+
+                    call.respond(HttpStatusCode.OK, tilgjengeligeBekreftelser)
+
+                    // TODO Exception handling
+                }
+            }
             post<TilgjengeligeBekreftelserRequest>("/tilgjengelige-bekreftelser") { request ->
                 with(requestScope(request.identitetsnummer, kafkaKeyClient, autorisasjonService, TilgangType.LESE)) {
                     val tilgjengeligeBekreftelser = bekreftelseService
-                        .finnTilgjengeligBekreftelser(bearerToken, arbeidssoekerId, request)
+                        .finnTilgjengeligBekreftelser(sluttbruker, innloggetBruker, request, useMockData)
 
                     call.respond(HttpStatusCode.OK, tilgjengeligeBekreftelser)
 
@@ -35,7 +51,7 @@ fun Route.bekreftelseRoutes(
             }
             post<BekreftelseRequest>("/bekreftelse") { request ->
                 with(requestScope(request.identitetsnummer, kafkaKeyClient, autorisasjonService, TilgangType.SKRIVE)) {
-                    bekreftelseService.mottaBekreftelse(bearerToken, arbeidssoekerId, request)
+                    bekreftelseService.mottaBekreftelse(sluttbruker, innloggetBruker, request, useMockData)
 
                     call.respond(HttpStatusCode.OK)
 

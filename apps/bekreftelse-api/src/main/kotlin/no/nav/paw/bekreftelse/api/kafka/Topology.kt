@@ -15,7 +15,7 @@ fun buildBekreftelseTopology(
     meterRegistry: MeterRegistry
 ): Topology = StreamsBuilder().apply {
     addInternStateStore(applicationConfig)
-    addBekreftelseKStream(applicationConfig)
+    addBekreftelseKStream(applicationConfig, meterRegistry)
 }.build()
 
 private fun StreamsBuilder.addInternStateStore(applicationConfig: ApplicationConfig) {
@@ -28,10 +28,13 @@ private fun StreamsBuilder.addInternStateStore(applicationConfig: ApplicationCon
     )
 }
 
-private fun StreamsBuilder.addBekreftelseKStream(applicationConfig: ApplicationConfig) {
+private fun StreamsBuilder.addBekreftelseKStream(
+    applicationConfig: ApplicationConfig,
+    meterRegistry: MeterRegistry
+) {
     stream(
         applicationConfig.kafkaTopology.bekreftelseHendelsesloggTopic,
         Consumed.with(Serdes.Long(), BekreftelseHendelseSerde())
     )
-        .oppdaterBekreftelseHendelseState(applicationConfig.kafkaTopology.internStateStoreName)
+        .oppdaterBekreftelseHendelseState(applicationConfig.kafkaTopology.internStateStoreName, meterRegistry)
 }

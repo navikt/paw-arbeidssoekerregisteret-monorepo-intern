@@ -1,6 +1,6 @@
 package no.nav.paw.bekreftelse.api.services
 
-import no.nav.paw.bekreftelse.api.authz.VeilerHarIkkeTilgangException
+import no.nav.paw.bekreftelse.api.exception.VeilerHarIkkeTilgangException
 import no.nav.paw.bekreftelse.api.utils.audit
 import no.nav.paw.bekreftelse.api.utils.auditLogger
 import no.nav.paw.bekreftelse.api.utils.logger

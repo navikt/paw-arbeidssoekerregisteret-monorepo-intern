@@ -16,7 +16,6 @@ import no.nav.paw.error.model.buildError
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-private const val ERROR_TYPE_PREFIX = "PAW_"
 private val logger: Logger = LoggerFactory.getLogger("no.nav.paw.logger.error.http")
 
 suspend fun ApplicationCall.handleException(throwable: Throwable) {
@@ -29,23 +28,23 @@ fun resolveProblemDetails(request: ApplicationRequest, throwable: Throwable): Pr
     when (throwable) {
         is BadRequestException -> {
             return build400Error(
-                "${ERROR_TYPE_PREFIX}KUNNE_IKKE_TOLKE_FORESPOERSEL",
-                "Kunne ikke tolke innhold i forespørsel",
+                "PAW_KUNNE_IKKE_TOLKE_FORESPOERSEL",
+                "Kunne ikke tolke forespørsel",
                 request.uri
             )
         }
 
         is ContentTransformationException -> {
             return build400Error(
-                "${ERROR_TYPE_PREFIX}KUNNE_IKKE_TOLKE_INNHOLD",
-                "Kunne ikke tolke innhold i kall",
+                "PAW_KUNNE_IKKE_TOLKE_INNHOLD",
+                "Kunne ikke tolke innhold i forespørsel",
                 request.uri
             )
         }
 
         is RequestAlreadyConsumedException -> {
             return build500Error(
-                "${ERROR_TYPE_PREFIX}FORESPOERSEL_ALLEREDE_MOTTATT",
+                "PAW_FORESPOERSEL_ALLEREDE_MOTTATT",
                 "Forespørsel er allerede mottatt. Dette er en kodefeil",
                 request.uri
             )
@@ -53,7 +52,7 @@ fun resolveProblemDetails(request: ApplicationRequest, throwable: Throwable): Pr
 
         is ServerResponseException -> {
             return buildError(
-                "${ERROR_TYPE_PREFIX}${throwable.code}",
+                throwable.code,
                 throwable.message,
                 throwable.status,
                 request.uri
@@ -62,7 +61,7 @@ fun resolveProblemDetails(request: ApplicationRequest, throwable: Throwable): Pr
 
         is ClientResponseException -> {
             return buildError(
-                "${ERROR_TYPE_PREFIX}${throwable.code}",
+                throwable.code,
                 throwable.message,
                 throwable.status,
                 request.uri
@@ -71,7 +70,7 @@ fun resolveProblemDetails(request: ApplicationRequest, throwable: Throwable): Pr
 
         else -> {
             return build500Error(
-                "${ERROR_TYPE_PREFIX}UKJENT_FEIL",
+                "PAW_UKJENT_FEIL",
                 "Forespørsel feilet med ukjent feil",
                 request.uri
             )

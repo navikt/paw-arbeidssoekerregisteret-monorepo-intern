@@ -22,9 +22,7 @@ data class ApplicationConfig(
     val naisEnv: NaisEnv = currentNaisEnv,
     val appId: String = currentAppId ?: "UNSPECIFIED",
     val appName: String = currentAppName ?: "UNSPECIFIED",
-    val hostname: String = InetAddress.getLocalHost().hostName,
-
-    val brukMock: Boolean = true
+    val hostname: String = InetAddress.getLocalHost().hostName
 )
 
 data class KafkaTopologyConfig(

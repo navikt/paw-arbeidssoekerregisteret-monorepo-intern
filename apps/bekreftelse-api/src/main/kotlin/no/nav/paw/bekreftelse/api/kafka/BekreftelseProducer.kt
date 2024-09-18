@@ -1,10 +1,8 @@
 package no.nav.paw.bekreftelse.api.kafka
 
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
-import no.nav.paw.bekreftelse.api.model.BekreftelseRequest
 import no.nav.paw.bekreftelse.api.utils.buildBekreftelseSerde
 import no.nav.paw.bekreftelse.api.utils.logger
-import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.config.kafka.KafkaFactory
 import no.nav.paw.config.kafka.sendDeferred
@@ -43,20 +41,3 @@ class BekreftelseProducer(
         producer.close()
     }
 }
-
-fun createMelding(state: BekreftelseTilgjengelig, bekreftelse: BekreftelseRequest): Bekreftelse = TODO()
-//Melding.newBuilder()
-//    .setId(ApplicationInfo.id)
-//    .setNamespace("paw")
-//    .setPeriodeId(state.periodeId)
-//    .setSvar(Svar(
-//        Metadata(
-//            Instant.now(),
-//            Bruker
-//        )
-//    ))
-//    .setGjelderFra(state.gjelderFra)
-//    .setGjelderTil(state.gjelderTil)
-//    .setVilFortsetteSomArbeidssoeker(bekreftelse.vilFortsetteSomArbeidssoeker)
-//    .setHarJobbetIDennePerioden(bekreftelse.harJobbetIDennePerioden)
-//    .build()
