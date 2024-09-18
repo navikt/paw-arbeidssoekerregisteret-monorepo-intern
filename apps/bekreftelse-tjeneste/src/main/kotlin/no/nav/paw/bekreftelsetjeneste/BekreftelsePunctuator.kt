@@ -20,6 +20,35 @@ fun bekreftelsePunctuator(stateStoreName: String, timestamp: Instant, ctx: Proce
 
     stateStore.all().use { states ->
         states.forEach { (key, value) ->
+            if (skalLageNyBekreftelseTilgjengelig(timestamp, value.bekreftelser)) {
+                val newBekreftelse = value.bekreftelser.last().copy(
+                    tilstand = Tilstand.KlarForUtfylling,
+                    sisteVarselOmGjenstaaendeGraceTid = null,
+                    bekreftelseId = UUID.randomUUID(),
+                    gjelderFra = value.bekreftelser.last().gjelderTil,
+                    gjelderTil = fristForNesteBekreftelse(value.bekreftelser.last().gjelderTil, BekreftelseConfig.bekreftelseInterval)
+
+                )
+                val updatedInternTilstand = value.copy(
+                    bekreftelser = value.bekreftelser + newBekreftelse
+                )
+                stateStore.put(key, updatedInternTilstand)
+
+                val record = Record<Long, BekreftelseHendelse>(
+                    value.periode.recordKey,
+                    BekreftelseTilgjengelig(
+                        hendelseId = UUID.randomUUID(),
+                        periodeId = value.periode.periodeId,
+                        arbeidssoekerId = value.periode.arbeidsoekerId,
+                        bekreftelseId = newBekreftelse.bekreftelseId,
+                        gjelderFra = newBekreftelse.gjelderFra,
+                        gjelderTil = newBekreftelse.gjelderTil
+                    ),
+                    Instant.now().toEpochMilli()
+                )
+
+                ctx.forward(record)
+            }
             value.bekreftelser.forEach { bekreftelse ->
                 when {
                     bekreftelse.tilstand == Tilstand.IkkeKlarForUtfylling
@@ -110,35 +139,6 @@ fun bekreftelsePunctuator(stateStoreName: String, timestamp: Instant, ctx: Proce
 
                         ctx.forward(record)
                     }
-                }
-                if (skalLageNyBekreftelseTilgjengelig(timestamp, value.bekreftelser)) {
-                    val newBekreftelse = bekreftelse.copy(
-                        tilstand = Tilstand.KlarForUtfylling,
-                        sisteVarselOmGjenstaaendeGraceTid = null,
-                        bekreftelseId = UUID.randomUUID(),
-                        gjelderFra = bekreftelse.gjelderTil,
-                        gjelderTil = fristForNesteBekreftelse(bekreftelse.gjelderTil, BekreftelseConfig.bekreftelseInterval)
-
-                    )
-                    val updatedInternTilstand = value.copy(
-                        bekreftelser = value.bekreftelser + newBekreftelse
-                    )
-                    stateStore.put(key, updatedInternTilstand)
-
-                    val record = Record<Long, BekreftelseHendelse>(
-                        value.periode.recordKey,
-                        BekreftelseTilgjengelig(
-                            hendelseId = UUID.randomUUID(),
-                            periodeId = value.periode.periodeId,
-                            arbeidssoekerId = value.periode.arbeidsoekerId,
-                            bekreftelseId = newBekreftelse.bekreftelseId,
-                            gjelderFra = newBekreftelse.gjelderFra,
-                            gjelderTil = newBekreftelse.gjelderTil
-                        ),
-                        Instant.now().toEpochMilli()
-                    )
-
-                    ctx.forward(record)
                 }
             }
         }
