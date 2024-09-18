@@ -15,6 +15,8 @@ spec:
       value: "paw.arbeidssoker-bekreftelse-beta-v1"
     - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_HENDELSESLOGG_TOPIC
       value: "paw.arbeidssoker-bekreftelse-hendelseslogg-beta-v1"
+    - name: CORS_ALLOW_ORIGINS
+      value: "www.intern.dev.nav.no"
   ingresses:
     - https://bekreftelse-arbeidssoekerregisteret.intern.dev.nav.no
   replicas:

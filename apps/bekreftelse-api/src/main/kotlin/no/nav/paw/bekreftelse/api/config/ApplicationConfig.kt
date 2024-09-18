@@ -12,6 +12,7 @@ import java.net.InetAddress
 const val APPLICATION_CONFIG_FILE_NAME = "application_config.toml"
 
 data class ApplicationConfig(
+    val autorisasjon: AutorisasjonConfig,
     val kafkaTopology: KafkaTopologyConfig,
     val authProviders: AuthProviders,
     val azureM2M: AzureM2MConfig,
@@ -23,6 +24,10 @@ data class ApplicationConfig(
     val appId: String = currentAppId ?: "UNSPECIFIED",
     val appName: String = currentAppName ?: "UNSPECIFIED",
     val hostname: String = InetAddress.getLocalHost().hostName
+)
+
+data class AutorisasjonConfig(
+    val corsAllowOrigins: String? = null
 )
 
 data class KafkaTopologyConfig(

@@ -1,3 +1,6 @@
+[autorisasjon]
+corsAllowOrigins = "localhost"
+
 [kafkaTopology]
 applicationIdSuffix = "v1"
 producerId = "paw-arbeidssoeker-bekreftelse-api"

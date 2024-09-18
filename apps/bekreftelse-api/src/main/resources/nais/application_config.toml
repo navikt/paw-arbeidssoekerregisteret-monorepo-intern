@@ -1,3 +1,6 @@
+[autorisasjon]
+corsAllowOrigins = "${CORS_ALLOW_ORIGINS}"
+
 [kafkaTopology]
 applicationIdSuffix = "${KAFKA_STREAMS_ID_SUFFIX}"
 producerId = "paw-arbeidssoeker-bekreftelse-api"

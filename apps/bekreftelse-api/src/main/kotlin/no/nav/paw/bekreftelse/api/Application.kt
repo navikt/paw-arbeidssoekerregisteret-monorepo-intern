@@ -48,7 +48,7 @@ fun Application.module(
     dependencies: Dependencies
 ) {
     configureMetrics(dependencies.prometheusMeterRegistry)
-    configureHTTP()
+    configureHTTP(applicationConfig)
     configureAuthentication(applicationConfig)
     configureLogging()
     configureSerialization()
