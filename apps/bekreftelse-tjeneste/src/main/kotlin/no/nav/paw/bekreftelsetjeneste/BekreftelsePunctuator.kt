@@ -15,8 +15,8 @@ import org.apache.kafka.streams.processor.api.Record
 import java.time.Instant
 import java.util.*
 
-fun scheduleUpdateTilstand(timestamp: Instant, ctx: ProcessorContext<Long, BekreftelseHendelse>, stateStoreNames: Array<out String>) {
-    val stateStore: StateStore = ctx.getStateStore(stateStoreNames[0])
+fun bekreftelsePunctuator(stateStoreName: String, timestamp: Instant, ctx: ProcessorContext<Long, BekreftelseHendelse> ) {
+    val stateStore: StateStore = ctx.getStateStore(stateStoreName)
 
     stateStore.all().use { states ->
         states.forEach { (key, value) ->
@@ -67,9 +67,10 @@ fun scheduleUpdateTilstand(timestamp: Instant, ctx: ProcessorContext<Long, Bekre
                     }
 
                     bekreftelse.tilstand == Tilstand.VenterSvar && bekreftelse.skalPurres(timestamp) -> {
-                        val updatedBekreftelse = bekreftelse.copy(sistePurring = timestamp)
+                        val updatedBekreftelse = bekreftelse.copy(sisteVarselOmGjenstaaendeGraceTid = timestamp)
                         val updatedInternTilstand =
                             value.copy(bekreftelser = value.bekreftelser - bekreftelse + updatedBekreftelse)
+
 
                         stateStore.put(key, updatedInternTilstand)
 
@@ -89,7 +90,7 @@ fun scheduleUpdateTilstand(timestamp: Instant, ctx: ProcessorContext<Long, Bekre
 
                     bekreftelse.tilstand == Tilstand.VenterSvar && bekreftelse.harGracePeriodeUtloept(timestamp) -> {
 
-                        // TODO: Mangler vi tilstand.utloept eller er det riktig at den skal fjernes her?
+                        // TODO: oppdater til graceutloept
                         val updatedInternTilstand = value.copy(
                             bekreftelser = value.bekreftelser - bekreftelse
                         )
@@ -113,7 +114,7 @@ fun scheduleUpdateTilstand(timestamp: Instant, ctx: ProcessorContext<Long, Bekre
                     bekreftelse.skalLageNyBekreftelseTilgjengelig(timestamp, value.bekreftelser) -> {
                         val newBekreftelse = bekreftelse.copy(
                             tilstand = Tilstand.KlarForUtfylling,
-                            sistePurring = null,
+                            sisteVarselOmGjenstaaendeGraceTid = null,
                             bekreftelseId = UUID.randomUUID(),
                             gjelderFra = bekreftelse.gjelderTil,
                             gjelderTil = fristForNesteBekreftelse(bekreftelse.gjelderTil, BekreftelseConfig.bekreftelseInterval)

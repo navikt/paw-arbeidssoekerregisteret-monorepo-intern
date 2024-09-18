@@ -1,5 +1,6 @@
 package no.nav.paw.bekreftelsetjeneste
 
+import arrow.core.partially1
 import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
@@ -22,7 +23,7 @@ fun StreamsBuilder.processBekreftelseMeldingTopic() {
         .genericProcess<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse, Long, BekreftelseHendelse>(
             name = "meldingMottatt",
             stateStoreName,
-            punctuation = Punctuation(punctuateInterval, PunctuationType.WALL_CLOCK_TIME, ::scheduleUpdateTilstand)
+            punctuation = Punctuation(punctuateInterval, PunctuationType.WALL_CLOCK_TIME, ::bekreftelsePunctuator.partially1(stateStoreName)),
         ) { record ->
             val stateStore = getStateStore<StateStore>(stateStoreName)
             val gjeldeneTilstand: InternTilstand? = stateStore[record.value().periodeId]

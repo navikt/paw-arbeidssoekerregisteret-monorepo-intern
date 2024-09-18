@@ -48,4 +48,5 @@ fun main() {
         .withDefaultKeySerde(Serdes.Long()::class)
         .withDefaultValueSerde(SpecificAvroSerde::class)
     val streams = KafkaStreams(topology, streamsFactory.properties)
+    // TODO: start streams
 }

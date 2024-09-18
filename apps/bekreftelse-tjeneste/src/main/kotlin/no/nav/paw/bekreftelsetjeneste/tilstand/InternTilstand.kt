@@ -13,7 +13,7 @@ data class InternTilstand(
 @JvmRecord
 data class Bekreftelse(
     val tilstand: Tilstand,
-    val sistePurring: Instant?,
+    val sisteVarselOmGjenstaaendeGraceTid: Instant?,
     val bekreftelseId: UUID,
     val gjelderFra: Instant,
     val gjelderTil: Instant
@@ -23,6 +23,7 @@ sealed interface Tilstand{
     data object IkkeKlarForUtfylling: Tilstand
     data object KlarForUtfylling: Tilstand
     data object VenterSvar: Tilstand
+    data object GracePeriodeUtlopt: Tilstand
     data object Levert : Tilstand
 }
 
@@ -57,7 +58,7 @@ fun initTilstand(
         bekreftelser = listOf(
             Bekreftelse(
                 tilstand = Tilstand.IkkeKlarForUtfylling,
-                sistePurring = null,
+                sisteVarselOmGjenstaaendeGraceTid = null,
                 bekreftelseId = UUID.randomUUID(),
                 gjelderFra = periode.startet.tidspunkt,
                 gjelderTil = fristForNesteBekreftelse(periode.startet.tidspunkt, bekreftelseConfig.bekreftelseInterval)

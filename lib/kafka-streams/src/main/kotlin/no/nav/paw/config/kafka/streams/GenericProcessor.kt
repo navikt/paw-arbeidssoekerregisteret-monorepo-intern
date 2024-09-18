@@ -74,14 +74,13 @@ fun <K_IN, V_IN, K_OUT, V_OUT> KStream<K_IN, V_IN>.genericProcess(
     function: ProcessorContext<K_OUT, V_OUT>.(Record<K_IN, V_IN>) -> Unit
 ): KStream<K_OUT, V_OUT> {
     val processor = {
-        GenericProcessor(function = function, punctuation = punctuation, stateStoreNames = stateStoreNames)
+        GenericProcessor(function = function, punctuation = punctuation)
     }
     return process(processor, Named.`as`(name), *stateStoreNames)
 }
 
 class GenericProcessor<K_IN, V_IN, K_OUT, V_OUT>(
     private val punctuation: Punctuation<K_OUT, V_OUT>? = null,
-    private vararg val stateStoreNames: String,
     private val function: ProcessorContext<K_OUT, V_OUT>.(Record<K_IN, V_IN>) -> Unit,
 ) : Processor<K_IN, V_IN, K_OUT, V_OUT> {
     private lateinit var context: ProcessorContext<K_OUT, V_OUT>
@@ -91,7 +90,7 @@ class GenericProcessor<K_IN, V_IN, K_OUT, V_OUT>(
         this.context = requireNotNull(context) { "ProcessorContext must not be null during init" }
         if (punctuation != null) {
             context.schedule(punctuation.interval, punctuation.type) { timestamp ->
-                punctuation.function(Instant.ofEpochMilli(timestamp), this.context, stateStoreNames)
+                punctuation.function(Instant.ofEpochMilli(timestamp), this.context)
             }
         }
     }
@@ -106,5 +105,5 @@ class GenericProcessor<K_IN, V_IN, K_OUT, V_OUT>(
 data class Punctuation<K, V>(
     val interval: Duration,
     val type: PunctuationType,
-    val function: (Instant, ProcessorContext<K, V>, Array<out String>) -> Unit
+    val function: (Instant, ProcessorContext<K, V>) -> Unit
 )

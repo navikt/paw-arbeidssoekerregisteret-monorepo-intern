@@ -11,7 +11,7 @@ fun Bekreftelse.harFristUtloept(now: Instant): Boolean =
     gjelderTil.isBefore(now)
 
 fun Bekreftelse.skalPurres(now: Instant): Boolean =
-    sistePurring == null && gjelderTil.plus(
+    sisteVarselOmGjenstaaendeGraceTid == null && gjelderTil.plus(
         BekreftelseConfig.varselFoerGracePeriodeUtloept
     ).isAfter(now)
 
@@ -20,7 +20,8 @@ fun Bekreftelse.harGracePeriodeUtloept(now: Instant): Boolean =
         .isAfter(now)
 
 fun Bekreftelse.skalLageNyBekreftelseTilgjengelig(now: Instant, bekreftelser: List<Bekreftelse>): Boolean =
+    // Bruk nyeste dato til å sjekke om det skal lages ny bekreftelse
     gjelderTil.plus(BekreftelseConfig.bekreftelseInterval)
-        .minus(BekreftelseConfig.bekreftelseTilgjengeligOffset).isAfter(now) && bekreftelser.size < 2
+        .minus(BekreftelseConfig.bekreftelseTilgjengeligOffset).isAfter(now)
 
 

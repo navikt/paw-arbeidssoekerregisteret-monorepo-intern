@@ -17,6 +17,7 @@ dependencies {
     implementation(jackson.datatypeJsr310)
     implementation(jackson.kotlin)
     implementation(apacheAvro.kafkaStreamsAvroSerde)
+    implementation(arrow.core)
 
     implementation(ktorServer.bundles.withNettyAndMicrometer)
 
