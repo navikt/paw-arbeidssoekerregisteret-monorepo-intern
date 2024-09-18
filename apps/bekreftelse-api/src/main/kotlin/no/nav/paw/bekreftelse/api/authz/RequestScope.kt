@@ -9,12 +9,14 @@ import io.ktor.server.request.path
 import io.ktor.util.pipeline.PipelineContext
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.api.exception.BearerTokenManglerException
+import no.nav.paw.bekreftelse.api.exception.BrukerHarIkkeTilgangException
 import no.nav.paw.bekreftelse.api.exception.UfullstendigBearerTokenException
+import no.nav.paw.bekreftelse.api.exception.UkjentBearerTokenException
 import no.nav.paw.bekreftelse.api.model.BrukerType
 import no.nav.paw.bekreftelse.api.model.InnloggetBruker
 import no.nav.paw.bekreftelse.api.model.Sluttbruker
 import no.nav.paw.bekreftelse.api.services.AutorisasjonService
-import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
+import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.security.token.support.v2.TokenValidationContextPrincipal
 
@@ -39,7 +41,7 @@ object NavHttpHeaders {
 @WithSpan
 suspend fun PipelineContext<Unit, ApplicationCall>.requestScope(
     identitetsnummer: String?,
-    kafkaKeyClient: KafkaKeysClient,
+    hentKafkaKey: suspend (ident: String) -> KafkaKeysResponse,
     autorisasjonService: AutorisasjonService, // TODO Legg til autorisasjon
     tilgangType: TilgangType
 ): RequestScope {
@@ -61,27 +63,38 @@ suspend fun PipelineContext<Unit, ApplicationCall>.requestScope(
         throw UfullstendigBearerTokenException("Bearer Token mangler påkrevd innhold")
     }
 
-    // TODO Håndtere at fnr kommer i body
-    val resolvedIdentitetsnummer = if (resolvedClaims.isTokenX()) {
-        resolvedClaims[TokenXPID]?.verdi
-            ?: throw UfullstendigBearerTokenException("Bearer Token mangler påkrevd innhold")
-    } else if (resolvedClaims.isAzure()) {
-        identitetsnummer ?: throw BadRequestException("Request mangler identitetsnummer")
-    } else {
-        throw UfullstendigBearerTokenException("Bearer Token er utstedt av ukjent issuer")
+    if (!resolvedClaims.isTokenX() && !resolvedClaims.isAzure()) {
+        throw UkjentBearerTokenException("Bearer Token er utstedt av ukjent issuer")
     }
 
-    val kafkaKeysResponse = kafkaKeyClient.getIdAndKey(resolvedIdentitetsnummer)
+    val sluttbrukerIdentitetsnummer = if (resolvedClaims.isTokenX()) {
+        val pid = resolvedClaims[TokenXPID]?.verdi
+            ?: throw UfullstendigBearerTokenException("Bearer Token mangler påkrevd innhold")
+        if (identitetsnummer != null && identitetsnummer != pid) {
+            // TODO Håndtere verge
+            throw BrukerHarIkkeTilgangException("Bruker har ikke tilgang til sluttbrukers informasjon")
+        }
+        identitetsnummer ?: pid
+    } else {
+        // TODO Gjøre sjekk mot POAO Tilgang at veileder kan behandle sluttbruker
+        // Veiledere skal alltid sende inn identitetsnummer for sluttbruker
+        identitetsnummer ?: throw BadRequestException("Request mangler identitetsnummer")
+    }
+
+    val kafkaKeysResponse = hentKafkaKey(sluttbrukerIdentitetsnummer)
+
     val sluttbruker = Sluttbruker(
-        identitetsnummer = resolvedIdentitetsnummer,
+        identitetsnummer = sluttbrukerIdentitetsnummer,
         arbeidssoekerId = kafkaKeysResponse.id,
         kafkaKey = kafkaKeysResponse.key
     )
 
     val innloggetBruker = if (resolvedClaims.isTokenX()) {
+        val ident = resolvedClaims[TokenXPID]?.verdi
+            ?: throw UfullstendigBearerTokenException("Bearer Token mangler påkrevd innhold")
         InnloggetBruker(
             type = BrukerType.SLUTTBRUKER,
-            ident = resolvedIdentitetsnummer,
+            ident = ident,
             bearerToken = bearerToken
         )
     } else {

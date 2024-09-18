@@ -60,7 +60,7 @@ fun Application.module(
         metricsRoutes(dependencies.prometheusMeterRegistry)
         swaggerRoutes()
         bekreftelseRoutes(
-            dependencies.kafkaKeysClient,
+            dependencies.kafkaKeysClient::getIdAndKey,
             dependencies.autorisasjonService,
             dependencies.bekreftelseService
         )

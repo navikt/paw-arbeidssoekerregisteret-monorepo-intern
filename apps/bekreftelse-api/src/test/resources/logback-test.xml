@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %5p %c{1}:%L - %m%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+    <logger name="org.apache.kafka.streams.StreamsConfig" level="WARN"/>
+    <logger name="org.apache.kafka.clients.admin.AdminClientConfig" level="WARN"/>
+    <logger name="org.apache.kafka.clients.consumer.ConsumerConfig" level="WARN"/>
+    <logger name="org.apache.kafka.clients.producer.ProducerConfig" level="WARN"/>
+    <logger name="io.confluent.kafka.serializers.KafkaAvroSerializerConfig" level="WARN"/>
+    <logger name="no.nav" level="DEBUG"/>
+    <logger name="io.ktor.auth" level="DEBUG"/>
+    <logger name="io.ktor.server.auth" level="DEBUG"/>
+
+    <include resource="no/nav/common/audit_log/logback-naudit.xml"/>
+</configuration>

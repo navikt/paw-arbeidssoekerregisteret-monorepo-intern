@@ -8,6 +8,13 @@ metadata:
 spec:
   image: {{ image }}
   port: 8080
+  env:
+    - name: KAFKA_STREAMS_ID_SUFFIX
+      value: "v1"
+    - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_TOPIC
+      value: "paw.arbeidssoker-bekreftelse-v1"
+    - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_HENDELSESLOGG_TOPIC
+      value: "paw.arbeidssoker-bekreftelse-hendelseslogg-v1"
   replicas:
     min: 1
     max: 1
@@ -40,7 +47,7 @@ spec:
       enabled: true
       runtime: java
   kafka:
-    pool: {{ kafka }}
+    pool: nav-prod
     streams: true
   accessPolicy:
     inbound:

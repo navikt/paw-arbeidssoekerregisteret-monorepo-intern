@@ -78,7 +78,7 @@ jobs:
         env:
           CLUSTER: dev-gcp
           RESOURCE: ./apps/${{ env.MODULE }}/nais/nais-dev.yaml
-          VAR: image=${{ needs.build.outputs.image }},kafka=nav-dev
+          VAR: image=${{ needs.build.outputs.image }}
 
 #  deploy-prod:
 #    if: github.ref == 'refs/heads/main'
@@ -99,4 +99,4 @@ jobs:
 #          TEAM: paw
 #          CLUSTER: prod-gcp
 #          RESOURCE: ./apps/${{ env.MODULE }}/nais/nais-prod.yaml
-#          VAR: image=${{ needs.build.outputs.image }},kafka=nav-prod
+#          VAR: image=${{ needs.build.outputs.image }}

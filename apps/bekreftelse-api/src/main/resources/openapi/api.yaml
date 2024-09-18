@@ -10,6 +10,29 @@ servers:
     description: "Development"
 paths:
   /api/v1/tilgjengelige-bekreftelser:
+    get:
+      description: "Endepunkt for å hende tilgjengelige bekreftelser for innlogget sluttbruker"
+      parameters:
+        - name: "traceparent"
+          in: "header"
+          required: false
+          description: "https://www.w3.org/TR/trace-context/#traceparent-header-field-values"
+          schema:
+            type: "string"
+            format: "traceparent"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TilgjengeligBekreftelserResponse"
+        "403":
+          description: "Forbidden"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
     post:
       description: "Endepunkt for å hende tilgjengelige bekreftelser for en arbeidssøker"
       parameters:

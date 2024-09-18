@@ -8,6 +8,13 @@ metadata:
 spec:
   image: {{ image }}
   port: 8080
+  env:
+    - name: KAFKA_STREAMS_ID_SUFFIX
+      value: "v1"
+    - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_TOPIC
+      value: "paw.arbeidssoker-bekreftelse-beta-v1"
+    - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_HENDELSESLOGG_TOPIC
+      value: "paw.arbeidssoker-bekreftelse-hendelseslogg-beta-v1"
   ingresses:
     - https://bekreftelse-arbeidssoekerregisteret.intern.dev.nav.no
   replicas:
@@ -42,7 +49,7 @@ spec:
       enabled: true
       runtime: java
   kafka:
-    pool: {{ kafka }}
+    pool: nav-dev
     streams: true
   accessPolicy:
     inbound:
@@ -51,6 +58,8 @@ spec:
           namespace: aura
         - application: azure-token-generator
           namespace: aura
+        - application: arbeidssokerregistrering-for-veileder
+          namespace: paw
     outbound:
       rules:
         - application: paw-kafka-key-generator
