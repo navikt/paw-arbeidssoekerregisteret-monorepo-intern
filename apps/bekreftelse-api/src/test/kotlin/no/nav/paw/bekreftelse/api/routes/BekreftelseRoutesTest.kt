@@ -66,7 +66,7 @@ class BekreftelseRoutesTest : FreeSpec({
 })
 
 private fun Application.configureTestApplication() {
-    configureHTTP()
+    configureHTTP(applicationConfig)
     configureAuthentication(applicationConfig.copy(authProviders = mockOAuth2Server.createAuthProviders()))
     configureLogging()
     configureSerialization()
