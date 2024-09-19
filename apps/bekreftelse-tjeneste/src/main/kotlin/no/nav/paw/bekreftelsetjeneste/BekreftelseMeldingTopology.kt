@@ -11,7 +11,9 @@ import no.nav.paw.bekreftelsetjeneste.tilstand.Tilstand.KlarForUtfylling
 import no.nav.paw.bekreftelsetjeneste.tilstand.Tilstand.VenterSvar
 import no.nav.paw.config.kafka.streams.Punctuation
 import no.nav.paw.config.kafka.streams.genericProcess
+import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
+import org.apache.kafka.streams.kstream.Produced
 import org.apache.kafka.streams.processor.PunctuationType
 import org.apache.kafka.streams.processor.api.Record
 import org.slf4j.LoggerFactory
@@ -37,7 +39,7 @@ fun StreamsBuilder.processBekreftelseMeldingTopic() {
                     bekreftelse == null -> {
                         meldingsLogger.warn("Melding {} har ingen matchene bekreftelse", record.value().id)
                     }
-                    bekreftelse.tilstand is VenterSvar || bekreftelse.tilstand is KlarForUtfylling -> {
+                    bekreftelse.tilstand == VenterSvar || bekreftelse.tilstand == KlarForUtfylling -> {
                         val (hendelser, oppdatertBekreftelse) = behandleGyldigSvar(gjeldeneTilstand.periode.arbeidsoekerId, record, bekreftelse)
                         val oppdatertBekreftelser = gjeldeneTilstand.bekreftelser
                             .filterNot { t -> t.bekreftelseId == oppdatertBekreftelse.bekreftelseId } + oppdatertBekreftelse
@@ -52,7 +54,7 @@ fun StreamsBuilder.processBekreftelseMeldingTopic() {
                     }
                 }
             }
-        }
+        }.to(bekreftelseHendelseloggTopic, Produced.with(Serdes.Long(), bekreftelseHendelseSerde))
 }
 
 fun behandleGyldigSvar(arbeidssoekerId: Long, record: Record<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>, bekreftelse: Bekreftelse): Pair<List<BekreftelseHendelse>, Bekreftelse> {

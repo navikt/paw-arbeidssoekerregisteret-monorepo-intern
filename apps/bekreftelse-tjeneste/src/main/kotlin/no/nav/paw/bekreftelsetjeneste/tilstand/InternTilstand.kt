@@ -19,12 +19,12 @@ data class Bekreftelse(
     val gjelderTil: Instant
 )
 
-sealed interface Tilstand{
-    data object IkkeKlarForUtfylling: Tilstand
-    data object KlarForUtfylling: Tilstand
-    data object VenterSvar: Tilstand
-    data object GracePeriodeUtlopt: Tilstand
-    data object Levert : Tilstand
+enum class Tilstand {
+    IkkeKlarForUtfylling,
+    KlarForUtfylling,
+    VenterSvar,
+    GracePeriodeUtlopt,
+    Levert
 }
 
 @JvmRecord
@@ -44,7 +44,6 @@ fun initTilstand(
     id: Long,
     key: Long,
     periode: Periode,
-    bekreftelseConfig: BekreftelseConfig
 ): InternTilstand =
     InternTilstand(
         periode = PeriodeInfo(
@@ -53,15 +52,7 @@ fun initTilstand(
             arbeidsoekerId = id,
             recordKey = key,
             startet = periode.startet.tidspunkt,
-            avsluttet = periode.avsluttet.tidspunkt
+            avsluttet = periode.avsluttet?.tidspunkt
         ),
-        bekreftelser = listOf(
-            Bekreftelse(
-                tilstand = Tilstand.IkkeKlarForUtfylling,
-                sisteVarselOmGjenstaaendeGraceTid = null,
-                bekreftelseId = UUID.randomUUID(),
-                gjelderFra = periode.startet.tidspunkt,
-                gjelderTil = fristForNesteBekreftelse(periode.startet.tidspunkt, bekreftelseConfig.bekreftelseInterval)
-            )
-        )
+        bekreftelser = emptyList()
     )

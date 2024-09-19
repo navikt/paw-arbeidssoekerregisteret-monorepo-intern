@@ -23,8 +23,8 @@ fun fristForNesteBekreftelse(forrige: Instant, interval: Duration): Instant {
     return forrige
         .plus(interval)
         .let { LocalDate.ofInstant(it, ZoneId.systemDefault()) }
-        .with(magicMondayAdjuster)
-        .plus(Duration.ofDays(1))
+        //.with(magicMondayAdjuster)
+        .plusDays(1)
         .atStartOfDay(zoneId).toInstant()
 }
 
@@ -32,7 +32,7 @@ fun gjenstaendeGracePeriode(timestamp: Instant, gjelderTil: Instant): Duration {
     val gracePeriode = BekreftelseConfig.gracePeriode
     val utvidetGjelderTil = gjelderTil.plus(gracePeriode)
 
-    return if (utvidetGjelderTil.isBefore(timestamp)) {
+    return if (timestamp.isAfter(utvidetGjelderTil)) {
         Duration.ZERO
     } else {
         Duration.between(timestamp, utvidetGjelderTil)
@@ -50,7 +50,7 @@ class MagicMondayAdjuster: TemporalAdjuster {
         return internalTemporal
             .with(internalAdjuster)
             .skipForwardIfNotMagicMonday()
-            .plus(Duration.ofDays(1))
+            .plusDays(1)
             .atStartOfDay(ZoneId.systemDefault())
             .toInstant()
     }

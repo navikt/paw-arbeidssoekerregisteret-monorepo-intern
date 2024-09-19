@@ -3,7 +3,6 @@ package no.nav.paw.bekreftelsetjeneste
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
-import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseConfig
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.initTilstand
 import no.nav.paw.config.kafka.streams.genericProcess
@@ -18,7 +17,7 @@ import java.util.*
 context(ApplicationConfiguration, ApplicationContext)
 fun StreamsBuilder.processPeriodeTopic() {
     stream<Long, Periode>(periodeTopic)
-        .mapWithContext("lagreEllerSlettPeriode", stateStoreName) { periode ->
+        .mapWithContext<Long, Periode, Action>("lagreEllerSlettPeriode", stateStoreName) { periode ->
             val keyValueStore: KeyValueStore<UUID, InternTilstand> = getStateStore(stateStoreName)
             val currentState = keyValueStore[periode.id]
             val (arbeidsoekerId, kafkaKey) = currentState?.let { it.periode.arbeidsoekerId to it.periode.recordKey } ?:
@@ -26,7 +25,7 @@ fun StreamsBuilder.processPeriodeTopic() {
             when {
                 currentState == null && periode.avsluttet() -> Action.DoNothing
                 periode.avsluttet() -> Action.DeleteStateAndEmit(arbeidsoekerId, periode)
-                currentState == null -> Action.UpdateState(initTilstand(id = arbeidsoekerId, key = kafkaKey, periode = periode, BekreftelseConfig))
+                currentState == null -> Action.UpdateState(initTilstand(id = arbeidsoekerId, key = kafkaKey, periode = periode))
                 else -> Action.DoNothing
             }
         }

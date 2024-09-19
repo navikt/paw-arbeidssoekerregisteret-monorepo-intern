@@ -1,27 +1,27 @@
 package no.nav.paw.bekreftelsetjeneste
 
+import arrow.core.NonEmptyList
 import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseConfig
 import java.time.Instant
 
 fun Bekreftelse.erKlarForUtfylling(now: Instant): Boolean =
-    gjelderTil.minus(BekreftelseConfig.bekreftelseTilgjengeligOffset).isAfter(now)
+    now.isAfter(gjelderTil.minus(BekreftelseConfig.bekreftelseTilgjengeligOffset))
 
 fun Bekreftelse.harFristUtloept(now: Instant): Boolean =
-    gjelderTil.isBefore(now)
+    now.isAfter(gjelderTil)
 
 fun Bekreftelse.erSisteVarselOmGjenstaaendeGraceTid(now: Instant): Boolean =
-    sisteVarselOmGjenstaaendeGraceTid == null && gjelderTil.plus(
+    sisteVarselOmGjenstaaendeGraceTid == null && now.isAfter(gjelderTil.plus(
         BekreftelseConfig.varselFoerGracePeriodeUtloept
-    ).isAfter(now)
+    ))
 
 fun Bekreftelse.harGracePeriodeUtloept(now: Instant): Boolean =
-    gjelderTil.plus(BekreftelseConfig.gracePeriode)
-        .isAfter(now)
+    now.isAfter(gjelderTil.plus(BekreftelseConfig.gracePeriode))
 
-fun skalLageNyBekreftelseTilgjengelig(now: Instant, bekreftelser: List<Bekreftelse>): Boolean =
-    bekreftelser.maxOf { it.gjelderTil }
-        .minus(BekreftelseConfig.bekreftelseTilgjengeligOffset)
-        .isAfter(now)
+fun skalLageNyBekreftelseTilgjengelig(now: Instant, bekreftelser: NonEmptyList<Bekreftelse>): Boolean =
+    now.isAfter(
+        bekreftelser.maxOf { it.gjelderTil }.minus(BekreftelseConfig.bekreftelseTilgjengeligOffset)
+    )
 
 

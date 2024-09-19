@@ -1,10 +1,13 @@
 package no.nav.paw.bekreftelsetjeneste
 
+import arrow.core.nonEmptyListOf
+import arrow.core.tail
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjendstaaendeTid
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
+import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseConfig
 import no.nav.paw.bekreftelsetjeneste.tilstand.Tilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.fristForNesteBekreftelse
@@ -20,7 +23,20 @@ fun bekreftelsePunctuator(stateStoreName: String, timestamp: Instant, ctx: Proce
 
     stateStore.all().use { states ->
         states.forEach { (key, value) ->
-            if (skalLageNyBekreftelseTilgjengelig(timestamp, value.bekreftelser)) {
+            val existingBekreftelse = value.bekreftelser.firstOrNull()
+            if (existingBekreftelse == null){
+                val newBekreftelse = Bekreftelse(
+                    tilstand = Tilstand.IkkeKlarForUtfylling,
+                    sisteVarselOmGjenstaaendeGraceTid = null,
+                    bekreftelseId = UUID.randomUUID(),
+                    gjelderFra = value.periode.startet,
+                    gjelderTil = fristForNesteBekreftelse(value.periode.startet, BekreftelseConfig.bekreftelseInterval)
+                )
+                val updatedInternTilstand = value.copy(
+                    bekreftelser = value.bekreftelser + newBekreftelse
+                )
+                stateStore.put(key, updatedInternTilstand)
+            } else if (skalLageNyBekreftelseTilgjengelig(timestamp, nonEmptyListOf(existingBekreftelse, *value.bekreftelser.tail().toTypedArray()))) {
                 val newBekreftelse = value.bekreftelser.last().copy(
                     tilstand = Tilstand.KlarForUtfylling,
                     sisteVarselOmGjenstaaendeGraceTid = null,

@@ -20,6 +20,7 @@ import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.TopologyTestDriver
 import org.apache.kafka.streams.state.internals.InMemoryKeyValueBytesStoreSupplier
 import org.apache.kafka.streams.state.internals.KeyValueStoreBuilder
+import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.*
 
@@ -31,9 +32,9 @@ class ApplicationTestContext {
     val applicationConfiguration = ApplicationConfiguration(
         periodeTopic = "periodeTopic",
         ansvarsTopic = "ansvarsTopic",
-        bekreftelseTopic = "rapporteringsTopic",
-        bekreftelseHendelseloggTopic = "rapporteringsHendelsesloggTopic",
-        stateStoreName = "statStoreName",
+        bekreftelseTopic = "bekreftelseTopic",
+        bekreftelseHendelseloggTopic = "bekreftelseHendelsesloggTopic",
+        stateStoreName = "stateStoreName",
         punctuateInterval = Duration.ofSeconds(1)
     )
     val applicationContext = ApplicationContext(
@@ -41,6 +42,8 @@ class ApplicationTestContext {
         bekreftelseHendelseSerde = BekreftelseHendelseSerde(),
         kafkaKeysClient = inMemoryKafkaKeysMock()
     )
+
+    val logger = LoggerFactory.getLogger(ApplicationTestContext::class.java)
 
     val testDriver: TopologyTestDriver =
         with(applicationContext) {
