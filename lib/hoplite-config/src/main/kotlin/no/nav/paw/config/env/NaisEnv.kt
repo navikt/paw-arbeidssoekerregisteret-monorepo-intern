@@ -2,19 +2,19 @@ package no.nav.paw.config.env
 
 enum class NaisEnv(
     val clusterName: String,
-    val namespace: String,
-    val appName: String
+    val namespace: String?,
+    val appName: String?
 ) {
     Local("local", "local-namespace", "local-app"),
     DevGCP(
         clusterName = "dev-gcp",
-        namespace = requireNotNull(currentNamespace) { "NAIS_NAMESPACE is not set" },
-        appName = requireNotNull(currentAppName) { "NAIS_APP_NAME is not set" }
+        namespace = currentNamespace,
+        appName = currentAppName
     ),
     ProdGCP(
         clusterName = "prod-gcp",
-        namespace = requireNotNull(currentNamespace) { "NAIS_NAMESPACE is not set" },
-        appName = requireNotNull(currentAppName) { "NAIS_APP_NAME is not set" }
+        namespace = currentNamespace,
+        appName = currentAppName
     )
 }
 
