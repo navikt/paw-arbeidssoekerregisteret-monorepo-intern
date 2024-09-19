@@ -66,6 +66,8 @@ class BekreftelseHendelseProcessor(
                     hendelseStore.delete(value.arbeidssoekerId)
                 }
             }
+
+            else -> {}
         }
     }
 }

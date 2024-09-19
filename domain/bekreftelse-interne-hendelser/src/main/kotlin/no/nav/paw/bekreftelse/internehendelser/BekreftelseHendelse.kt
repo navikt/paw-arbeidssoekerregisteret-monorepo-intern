@@ -2,7 +2,7 @@ package no.nav.paw.bekreftelse.internehendelser
 
 import java.util.*
 
-interface BekreftelseHendelse {
+sealed interface BekreftelseHendelse {
     val hendelseType: String
     val hendelseId: UUID
     val periodeId: UUID
