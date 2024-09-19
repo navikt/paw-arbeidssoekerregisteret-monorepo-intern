@@ -26,7 +26,6 @@ clientId = "${AZURE_APP_CLIENT_ID}"
 
 [authProviders.claims]
 map = ["NAVident"]
-combineWithOr = true
 
 [azureM2M]
 tokenEndpointUrl = "${AZURE_OPENID_CONFIG_TOKEN_ENDPOINT}"

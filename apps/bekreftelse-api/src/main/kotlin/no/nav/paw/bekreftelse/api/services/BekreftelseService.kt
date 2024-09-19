@@ -25,14 +25,13 @@ import org.apache.kafka.streams.StoreQueryParameters
 import org.apache.kafka.streams.state.QueryableStoreTypes
 import org.apache.kafka.streams.state.ReadOnlyKeyValueStore
 
-private val mockData = MockData()
-
 class BekreftelseService(
     private val applicationConfig: ApplicationConfig,
     private val httpClient: HttpClient,
     private val kafkaStreams: KafkaStreams,
     private val bekreftelseProducer: BekreftelseProducer
 ) {
+    private val mockDataService = MockDataService()
     private var internStateStore: ReadOnlyKeyValueStore<Long, InternState>? = null
 
     private fun getInternStateStore(): ReadOnlyKeyValueStore<Long, InternState> {
@@ -59,7 +58,7 @@ class BekreftelseService(
     ): TilgjengeligBekreftelserResponse {
         // TODO Fjern når vi har ferdig Kafka-logikk
         if (useMockData) {
-            return mockData.finnTilgjengeligBekreftelser(sluttbruker.identitetsnummer)
+            return mockDataService.finnTilgjengeligBekreftelser(sluttbruker.identitetsnummer)
         }
 
         val internState = getInternStateStore().get(sluttbruker.arbeidssoekerId)
@@ -81,7 +80,7 @@ class BekreftelseService(
     ) {
         // TODO Fjern når vi har ferdig Kafka-logikk
         if (useMockData) {
-            return mockData.mottaBekreftelse(sluttbruker.identitetsnummer, request.bekreftelseId)
+            return mockDataService.mottaBekreftelse(sluttbruker.identitetsnummer, request.bekreftelseId)
         }
 
         val internState = getInternStateStore().get(sluttbruker.arbeidssoekerId)

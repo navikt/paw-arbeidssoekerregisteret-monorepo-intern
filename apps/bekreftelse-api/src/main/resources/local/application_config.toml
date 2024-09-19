@@ -26,7 +26,6 @@ clientId = "paw-arbeidssoeker-bekreftelse-api"
 
 [authProviders.claims]
 map = ["NAVident"]
-combineWithOr = false
 
 [azureM2M]
 tokenEndpointUrl = "http://localhost:8081/default/token"
