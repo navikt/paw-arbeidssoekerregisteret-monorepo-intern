@@ -1,4 +1,4 @@
-package no.nav.paw.config.kafka.streams
+package no.nav.paw.kafka.streams.record
 
 import org.apache.kafka.streams.processor.api.Record
 
