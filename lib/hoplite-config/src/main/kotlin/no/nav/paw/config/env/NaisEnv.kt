@@ -1,9 +1,21 @@
 package no.nav.paw.config.env
 
-enum class NaisEnv(val clusterName: String) {
-    Local("local"),
-    DevGCP("dev-gcp"),
-    ProdGCP("prod-gcp")
+enum class NaisEnv(
+    val clusterName: String,
+    val namespace: String,
+    val appName: String
+) {
+    Local("local", "local-namespace", "local-app"),
+    DevGCP(
+        clusterName = "dev-gcp",
+        namespace = requireNotNull(currentNamespace) { "NAIS_NAMESPACE is not set" },
+        appName = requireNotNull(currentAppName) { "NAIS_APP_NAME is not set" }
+    ),
+    ProdGCP(
+        clusterName = "prod-gcp",
+        namespace = requireNotNull(currentNamespace) { "NAIS_NAMESPACE is not set" },
+        appName = requireNotNull(currentAppName) { "NAIS_APP_NAME is not set" }
+    )
 }
 
 val currentNaisEnv: NaisEnv
@@ -17,3 +29,5 @@ val currentNaisEnv: NaisEnv
 val currentAppId: String? get() = System.getenv("NAIS_APP_IMAGE") // F.eks. europe-north1-docker.pkg.dev/nais-management-233d/paw/paw-microfrontend-toggler:24.06.27.57-1
 
 val currentAppName: String? get() = System.getenv("NAIS_APP_NAME") // F.eks. paw-microfrontend-toggler
+
+val currentNamespace: String? get() = System.getenv("NAIS_NAMESPACE")
