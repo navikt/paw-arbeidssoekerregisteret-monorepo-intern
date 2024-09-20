@@ -17,7 +17,12 @@ data object BekreftelseConfig {
 }
 
 fun fristForNesteBekreftelse(forrige: Instant, interval: Duration): Instant {
-    // TODO: Finn regler for magic monday og gjør nødvendig justeringer
+    return forrige.plus(interval)
+}
+
+// TODO: Finn regler for magic monday og gjør nødvendig justeringer
+/*fun fristForNesteBekreftelseWithMagicMonday(forrige: Instant, interval: Duration): Instant {
+
     val magicMondayAdjuster = MagicMondayAdjuster()
     val zoneId = ZoneId.of("Europe/Oslo")
     return forrige
@@ -26,7 +31,7 @@ fun fristForNesteBekreftelse(forrige: Instant, interval: Duration): Instant {
         //.with(magicMondayAdjuster)
         .plusDays(1)
         .atStartOfDay(zoneId).toInstant()
-}
+}*/
 
 fun gjenstaendeGracePeriode(timestamp: Instant, gjelderTil: Instant): Duration {
     val gracePeriode = BekreftelseConfig.gracePeriode

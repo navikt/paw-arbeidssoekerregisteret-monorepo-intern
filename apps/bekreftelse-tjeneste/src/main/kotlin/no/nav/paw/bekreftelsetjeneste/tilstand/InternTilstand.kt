@@ -56,3 +56,25 @@ fun initTilstand(
         ),
         bekreftelser = emptyList()
     )
+
+fun initBekreftelsePeriode(
+    periode: PeriodeInfo
+): Bekreftelse =
+    Bekreftelse(
+        tilstand = Tilstand.IkkeKlarForUtfylling,
+        sisteVarselOmGjenstaaendeGraceTid = null,
+        bekreftelseId = UUID.randomUUID(),
+        gjelderFra = periode.startet,
+        gjelderTil = fristForNesteBekreftelse(periode.startet, BekreftelseConfig.bekreftelseInterval)
+    )
+
+fun initNyBekreftelsePeriode(
+    bekreftelser: List<Bekreftelse>,
+): Bekreftelse =
+    bekreftelser.maxBy { it.gjelderTil }.copy(
+        tilstand = Tilstand.KlarForUtfylling,
+        sisteVarselOmGjenstaaendeGraceTid = null,
+        bekreftelseId = UUID.randomUUID(),
+        gjelderFra = bekreftelser.maxBy { it.gjelderTil }.gjelderTil,
+        gjelderTil = fristForNesteBekreftelse(bekreftelser.maxBy { it.gjelderTil }.gjelderTil, BekreftelseConfig.bekreftelseInterval)
+    )
