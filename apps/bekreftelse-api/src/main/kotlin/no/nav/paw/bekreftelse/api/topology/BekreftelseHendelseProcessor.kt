@@ -1,4 +1,4 @@
-package no.nav.paw.bekreftelse.api.kafka
+package no.nav.paw.bekreftelse.api.topology
 
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.paw.bekreftelse.api.model.InternState

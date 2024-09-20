@@ -39,6 +39,7 @@ fun BekreftelseRequest.toHendelse(
                             .build()
                     )
                     .setKilde(currentRuntimeEnvironment.appImageOrDefaultForLocal())
+                    .setAarsak("Mottatt bekreftelse") // TODO Hva skal dette være
                     .setTidspunkt(Instant.now())
                     .build()
             )

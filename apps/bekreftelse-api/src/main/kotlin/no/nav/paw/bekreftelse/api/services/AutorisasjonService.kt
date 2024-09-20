@@ -1,6 +1,6 @@
 package no.nav.paw.bekreftelse.api.services
 
-import no.nav.paw.bekreftelse.api.exception.VeilerHarIkkeTilgangException
+import no.nav.paw.bekreftelse.api.exception.BrukerHarIkkeTilgangException
 import no.nav.paw.bekreftelse.api.utils.audit
 import no.nav.paw.bekreftelse.api.utils.auditLogger
 import no.nav.paw.bekreftelse.api.utils.logger
@@ -24,7 +24,9 @@ class AutorisasjonService(
                 norskIdent = identitetsnummer
             )
         )
-        val tilgang = navAnsattTilgang.getOrDefault { throw VeilerHarIkkeTilgangException("") }
+        val tilgang = navAnsattTilgang.getOrDefault {
+            throw BrukerHarIkkeTilgangException("Kunne ikke finne tilgang for ansatt")
+        }
 
         if (tilgang.isDeny) {
             logger.info("NAV-ansatt har ikke $tilgangType til bruker")

@@ -65,6 +65,7 @@ dependencies {
 
     // Test
     testImplementation(ktorServer.testJvm)
+    testImplementation(ktorClient.mock)
     testImplementation(testLibs.bundles.withUnitTesting)
     testImplementation(testLibs.mockOauth2Server)
 }

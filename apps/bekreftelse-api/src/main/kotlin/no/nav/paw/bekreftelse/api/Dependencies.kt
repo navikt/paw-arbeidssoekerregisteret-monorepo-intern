@@ -6,11 +6,13 @@ import io.ktor.serialization.jackson.jackson
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
-import no.nav.paw.bekreftelse.api.kafka.BekreftelseProducer
-import no.nav.paw.bekreftelse.api.kafka.buildBekreftelseTopology
+import no.nav.paw.bekreftelse.api.consumer.BekreftelseHttpConsumer
 import no.nav.paw.bekreftelse.api.plugins.buildKafkaStreams
+import no.nav.paw.bekreftelse.api.producer.BekreftelseKafkaProducer
 import no.nav.paw.bekreftelse.api.services.AutorisasjonService
 import no.nav.paw.bekreftelse.api.services.BekreftelseService
+import no.nav.paw.bekreftelse.api.topology.buildBekreftelseTopology
+import no.nav.paw.bekreftelse.api.utils.configureJackson
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.auth.azureAdM2MTokenClient
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
@@ -32,7 +34,9 @@ fun createDependencies(applicationConfig: ApplicationConfig): Dependencies {
 
     val httpClient = HttpClient {
         install(ContentNegotiation) {
-            jackson()
+            jackson {
+                configureJackson()
+            }
         }
     }
 
@@ -48,13 +52,15 @@ fun createDependencies(applicationConfig: ApplicationConfig): Dependencies {
     val bekreftelseTopology = buildBekreftelseTopology(applicationConfig, prometheusMeterRegistry)
     val bekreftelseKafkaStreams = buildKafkaStreams(applicationConfig, healthIndicatorRepository, bekreftelseTopology)
 
-    val bekreftelseProducer = BekreftelseProducer(applicationConfig)
+    val bekreftelseKafkaProducer = BekreftelseKafkaProducer(applicationConfig)
+
+    val bekreftelseHttpConsumer = BekreftelseHttpConsumer(httpClient)
 
     val bekreftelseService = BekreftelseService(
         applicationConfig,
-        httpClient,
+        bekreftelseHttpConsumer,
         bekreftelseKafkaStreams,
-        bekreftelseProducer
+        bekreftelseKafkaProducer
     )
 
     return Dependencies(

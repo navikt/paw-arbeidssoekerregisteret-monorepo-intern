@@ -1,13 +1,8 @@
 package no.nav.paw.bekreftelse.api.services
 
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.request.bearerAuth
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
-import no.nav.paw.bekreftelse.api.kafka.BekreftelseProducer
+import no.nav.paw.bekreftelse.api.consumer.BekreftelseHttpConsumer
 import no.nav.paw.bekreftelse.api.model.BekreftelseRequest
 import no.nav.paw.bekreftelse.api.model.InnloggetBruker
 import no.nav.paw.bekreftelse.api.model.InternState
@@ -17,6 +12,7 @@ import no.nav.paw.bekreftelse.api.model.TilgjengeligeBekreftelserRequest
 import no.nav.paw.bekreftelse.api.model.toApi
 import no.nav.paw.bekreftelse.api.model.toHendelse
 import no.nav.paw.bekreftelse.api.model.toResponse
+import no.nav.paw.bekreftelse.api.producer.BekreftelseKafkaProducer
 import no.nav.paw.bekreftelse.api.utils.logger
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
@@ -27,9 +23,9 @@ import org.apache.kafka.streams.state.ReadOnlyKeyValueStore
 
 class BekreftelseService(
     private val applicationConfig: ApplicationConfig,
-    private val httpClient: HttpClient,
+    private val bekreftelseHttpConsumer: BekreftelseHttpConsumer,
     private val kafkaStreams: KafkaStreams,
-    private val bekreftelseProducer: BekreftelseProducer
+    private val bekreftelseKafkaProducer: BekreftelseKafkaProducer
 ) {
     private val mockDataService = MockDataService()
     private var internStateStore: ReadOnlyKeyValueStore<Long, InternState>? = null
@@ -97,7 +93,7 @@ class BekreftelseService(
                     innloggetBruker.ident,
                     innloggetBruker.type.toApi()
                 )
-                bekreftelseProducer.produceMessage(sluttbruker.kafkaKey, bekreftelse)
+                bekreftelseKafkaProducer.produceMessage(sluttbruker.kafkaKey, bekreftelse)
             } else {
                 // TODO Rekreftelse ikke funnet. Hva gjør vi?
             }
@@ -121,13 +117,11 @@ class BekreftelseService(
             logger.info("Fant ikke metadata for arbeidsoeker, $metadata")
             return emptyList()
         } else {
-            val nodeUrl = "http://${metadata.activeHost().host()}/api/v1/tilgjengelige-rapporteringer"
-            val response = httpClient.post(nodeUrl) {
-                bearerAuth(innloggetBruker.bearerToken)
-                setBody(request)
-            }
-            // TODO Error handling
-            return response.body()
+            return bekreftelseHttpConsumer.finnTilgjengeligBekreftelser(
+                metadata.activeHost().host(),
+                innloggetBruker,
+                request
+            )
         }
     }
 
@@ -146,12 +140,7 @@ class BekreftelseService(
             logger.info("Fant ikke metadata for arbeidsoeker, $metadata")
             // TODO Not found exception
         } else {
-            val nodeUrl = "http://${metadata.activeHost().host()}/api/v1/rapportering"
-            val response = httpClient.post(nodeUrl) {
-                bearerAuth(innloggetBruker.bearerToken)
-                setBody(request)
-            }
-            // TODO Error handling
+            bekreftelseHttpConsumer.mottaBekreftelse(metadata.activeHost().host(), innloggetBruker, request)
         }
     }
 }

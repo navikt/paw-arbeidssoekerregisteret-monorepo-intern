@@ -1,4 +1,4 @@
-package no.nav.paw.bekreftelse.api.kafka
+package no.nav.paw.bekreftelse.api.producer
 
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.utils.buildBekreftelseSerde
@@ -10,7 +10,7 @@ import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.LongSerializer
 
-class BekreftelseProducer(
+class BekreftelseKafkaProducer(
     private val applicationConfig: ApplicationConfig,
 ) {
     private lateinit var producer: Producer<Long, Bekreftelse>

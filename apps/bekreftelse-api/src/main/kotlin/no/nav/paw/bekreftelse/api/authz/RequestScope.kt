@@ -4,7 +4,6 @@ import io.ktor.http.HttpHeaders
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
 import io.ktor.server.auth.principal
-import io.ktor.server.plugins.BadRequestException
 import io.ktor.server.request.path
 import io.ktor.util.pipeline.PipelineContext
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -41,7 +40,7 @@ object NavHttpHeaders {
 @WithSpan
 suspend fun PipelineContext<Unit, ApplicationCall>.requestScope(
     identitetsnummer: String?,
-    hentKafkaKey: suspend (ident: String) -> KafkaKeysResponse,
+    kafkaKeysFunctions: suspend (ident: String) -> KafkaKeysResponse,
     autorisasjonService: AutorisasjonService, // TODO Legg til autorisasjon
     tilgangType: TilgangType
 ): RequestScope {
@@ -78,10 +77,11 @@ suspend fun PipelineContext<Unit, ApplicationCall>.requestScope(
     } else {
         // TODO Gjøre sjekk mot POAO Tilgang at veileder kan behandle sluttbruker
         // Veiledere skal alltid sende inn identitetsnummer for sluttbruker
-        identitetsnummer ?: throw BadRequestException("Request mangler identitetsnummer")
+        identitetsnummer
+            ?: throw BrukerHarIkkeTilgangException("Veileder må sende med identitetsnummer for sluttbruker")
     }
 
-    val kafkaKeysResponse = hentKafkaKey(sluttbrukerIdentitetsnummer)
+    val kafkaKeysResponse = kafkaKeysFunctions(sluttbrukerIdentitetsnummer)
 
     val sluttbruker = Sluttbruker(
         identitetsnummer = sluttbrukerIdentitetsnummer,
