@@ -27,160 +27,121 @@ fun bekreftelsePunctuator(
 
     stateStore.all().use { states ->
         states.forEach { (key, value) ->
-            processBekreftelser(stateStore, key, value, timestamp, ctx)
+            val (updatedState, bekreftelseHendelse) = processBekreftelser(value, timestamp)
+
+            bekreftelseHendelse.forEach {
+                ctx.forward(Record(value.periode.recordKey, it, Instant.now().toEpochMilli()))
+            }
+            stateStore.put(key, updatedState)
         }
     }
 }
 
 private fun processBekreftelser(
-    stateStore: StateStore,
-    key: UUID,
-    value: InternTilstand,
+    currentState: InternTilstand,
     timestamp: Instant,
-    ctx: ProcessorContext<Long, BekreftelseHendelse>
-) {
-    var updatedState: InternTilstand
-    val existingBekreftelse = value.bekreftelser.firstOrNull()
+): Pair<InternTilstand, List<BekreftelseHendelse>> {
+    val existingBekreftelse = currentState.bekreftelser.firstOrNull()
 
-    if (existingBekreftelse == null) {
-        updatedState = handleNoExistingBekreftelse(value)
+    val (tilstand, hendelse) = if (existingBekreftelse == null) {
+        currentState.handleNoExistingBekreftelse() to null
     } else {
-        updatedState = handleExistingBekreftelser(value, timestamp, ctx)
+        currentState.handleExistingBekreftelser(timestamp)
     }
 
-    updatedState = handleUpdateBekreftelser(updatedState, timestamp, ctx)
+    val (updatedTilstand, additionalHendelser) = tilstand.handleUpdateBekreftelser(timestamp)
 
-    stateStore.put(key, updatedState)
+    return updatedTilstand to (listOfNotNull(hendelse) + additionalHendelser)
 }
 
-private fun handleNoExistingBekreftelse(value: InternTilstand): InternTilstand {
-    val newBekreftelse = initBekreftelsePeriode(value.periode)
-    val updatedInternTilstand = value.copy(bekreftelser = listOf(newBekreftelse))
-    return updatedInternTilstand
-}
+private fun InternTilstand.handleNoExistingBekreftelse(): InternTilstand =
+    copy(bekreftelser = listOf(initBekreftelsePeriode(periode)))
 
-private fun handleExistingBekreftelser(
-    internTilstand: InternTilstand,
-    timestamp: Instant,
-    ctx: ProcessorContext<Long, BekreftelseHendelse>
-):InternTilstand {
-    internTilstand.bekreftelser.toNonEmptyListOrNull()?.let { nonEmptyBekreftelser ->
-        if (nonEmptyBekreftelser.skalLageNyBekreftelseTilgjengelig(timestamp)) {
-            return createAndForwardNewBekreftelse(internTilstand, ctx)
-        }
+
+private fun InternTilstand.handleExistingBekreftelser(
+    timestamp: Instant
+): Pair<InternTilstand, BekreftelseHendelse?> {
+    val nonEmptyBekreftelser = bekreftelser.toNonEmptyListOrNull() ?: return this to null
+
+    return if (nonEmptyBekreftelser.skalLageNyBekreftelseTilgjengelig(timestamp)) {
+        val newBekreftelse = bekreftelser.initNyBekreftelsePeriode()
+        copy(bekreftelser = nonEmptyBekreftelser + newBekreftelse) to createNewBekreftelseTilgjengelig(newBekreftelse)
+    } else {
+        this to null
     }
-    return internTilstand
 }
 
-private fun handleUpdateBekreftelser(
-    internTilstand: InternTilstand,
+private fun InternTilstand.handleUpdateBekreftelser(
     timestamp: Instant,
-    ctx: ProcessorContext<Long, BekreftelseHendelse>
-): InternTilstand {
-    internTilstand.bekreftelser.forEach { bekreftelse ->
+): Pair<InternTilstand, List<BekreftelseHendelse>> =
+    bekreftelser.map { bekreftelse ->
         when {
-            bekreftelse.tilstand == Tilstand.IkkeKlarForUtfylling && bekreftelse.erKlarForUtfylling(timestamp) ->
-                return updateAndForwardBekreftelse(
-                    internTilstand,
-                    bekreftelse.copy(tilstand = Tilstand.KlarForUtfylling),
-                    BekreftelseTilgjengelig(
-                        hendelseId = UUID.randomUUID(),
-                        periodeId = internTilstand.periode.periodeId,
-                        arbeidssoekerId = internTilstand.periode.arbeidsoekerId,
-                        bekreftelseId = bekreftelse.bekreftelseId,
-                        gjelderFra = bekreftelse.gjelderFra,
-                        gjelderTil = bekreftelse.gjelderTil
-                    ),
-                    ctx
+            bekreftelse.tilstand == Tilstand.IkkeKlarForUtfylling && bekreftelse.erKlarForUtfylling(timestamp) -> {
+                val updatedBekreftelse = bekreftelse.copy(tilstand = Tilstand.KlarForUtfylling)
+                val hendelse = BekreftelseTilgjengelig(
+                    hendelseId = UUID.randomUUID(),
+                    periodeId = periode.periodeId,
+                    arbeidssoekerId = periode.arbeidsoekerId,
+                    bekreftelseId = bekreftelse.bekreftelseId,
+                    gjelderFra = bekreftelse.gjelderFra,
+                    gjelderTil = bekreftelse.gjelderTil
                 )
+                updatedBekreftelse to hendelse
+            }
 
-            bekreftelse.tilstand == Tilstand.KlarForUtfylling && bekreftelse.harFristUtloept(timestamp) ->
-                return updateAndForwardBekreftelse(
-                    internTilstand,
-                    bekreftelse.copy(tilstand = Tilstand.VenterSvar),
-                    LeveringsfristUtloept(
-                        hendelseId = UUID.randomUUID(),
-                        periodeId = internTilstand.periode.periodeId,
-                        arbeidssoekerId = internTilstand.periode.arbeidsoekerId,
-                        bekreftelseId = bekreftelse.bekreftelseId
-                    ),
-                    ctx
+            bekreftelse.tilstand == Tilstand.KlarForUtfylling && bekreftelse.harFristUtloept(timestamp) -> {
+                val updatedBekreftelse = bekreftelse.copy(tilstand = Tilstand.VenterSvar)
+                val hendelse = LeveringsfristUtloept(
+                    hendelseId = UUID.randomUUID(),
+                    periodeId = periode.periodeId,
+                    arbeidssoekerId = periode.arbeidsoekerId,
+                    bekreftelseId = bekreftelse.bekreftelseId
                 )
+                updatedBekreftelse to hendelse
+            }
 
-            bekreftelse.tilstand == Tilstand.VenterSvar && bekreftelse.erSisteVarselOmGjenstaaendeGraceTid(timestamp) ->
-                return updateAndForwardBekreftelse(
-                    internTilstand,
-                    bekreftelse.copy(sisteVarselOmGjenstaaendeGraceTid = timestamp),
-                    RegisterGracePeriodeGjendstaaendeTid(
-                        hendelseId = UUID.randomUUID(),
-                        periodeId = internTilstand.periode.periodeId,
-                        arbeidssoekerId = internTilstand.periode.arbeidsoekerId,
-                        bekreftelseId = bekreftelse.bekreftelseId,
-                        gjenstaandeTid = gjenstaendeGracePeriode(timestamp, bekreftelse.gjelderTil)
-                    ),
-                    ctx
+            bekreftelse.tilstand == Tilstand.VenterSvar && bekreftelse.erSisteVarselOmGjenstaaendeGraceTid(timestamp) -> {
+                val updatedBekreftelse = bekreftelse.copy(sisteVarselOmGjenstaaendeGraceTid = timestamp)
+                val hendelse = RegisterGracePeriodeGjendstaaendeTid(
+                    hendelseId = UUID.randomUUID(),
+                    periodeId = periode.periodeId,
+                    arbeidssoekerId = periode.arbeidsoekerId,
+                    bekreftelseId = bekreftelse.bekreftelseId,
+                    gjenstaandeTid = gjenstaendeGracePeriode(timestamp, bekreftelse.gjelderTil)
                 )
+                updatedBekreftelse to hendelse
+            }
 
-            bekreftelse.tilstand == Tilstand.VenterSvar && bekreftelse.harGracePeriodeUtloept(timestamp) ->
-                return updateAndForwardBekreftelse(
-                    internTilstand,
-                    bekreftelse.copy(tilstand = Tilstand.GracePeriodeUtlopt),
-                    RegisterGracePeriodeUtloept(
-                        hendelseId = UUID.randomUUID(),
-                        periodeId = internTilstand.periode.periodeId,
-                        arbeidssoekerId = internTilstand.periode.arbeidsoekerId,
-                        bekreftelseId = bekreftelse.bekreftelseId
-                    ),
-                    ctx
+            bekreftelse.tilstand == Tilstand.VenterSvar && bekreftelse.harGracePeriodeUtloept(timestamp) -> {
+                val updatedBekreftelse = bekreftelse.copy(tilstand = Tilstand.GracePeriodeUtlopt)
+                val hendelse = RegisterGracePeriodeUtloept(
+                    hendelseId = UUID.randomUUID(),
+                    periodeId = periode.periodeId,
+                    arbeidssoekerId = periode.arbeidsoekerId,
+                    bekreftelseId = bekreftelse.bekreftelseId
                 )
+                updatedBekreftelse to hendelse
+            }
+
+            else -> {
+                bekreftelse to null
+            }
         }
+    }.let {
+        val updatedBekreftelser = it.map { it.first }
+        val hendelser = it.mapNotNull { it.second }
+        copy(bekreftelser = updatedBekreftelser) to hendelser
     }
-    return internTilstand
-}
 
-private fun createAndForwardNewBekreftelse(
-    internTilstand: InternTilstand,
-    ctx: ProcessorContext<Long, BekreftelseHendelse>
-):InternTilstand {
-    val newBekreftelse = initNyBekreftelsePeriode(internTilstand.bekreftelser)
-    val updatedInternTilstand = internTilstand.copy(bekreftelser = internTilstand.bekreftelser + newBekreftelse)
-
-    val record = Record(
-        internTilstand.periode.recordKey,
-        BekreftelseTilgjengelig(
-            hendelseId = UUID.randomUUID(),
-            periodeId = internTilstand.periode.periodeId,
-            arbeidssoekerId = internTilstand.periode.arbeidsoekerId,
-            bekreftelseId = newBekreftelse.bekreftelseId,
-            gjelderFra = newBekreftelse.gjelderFra,
-            gjelderTil = newBekreftelse.gjelderTil
-        ),
-        Instant.now().toEpochMilli()
+private fun InternTilstand.createNewBekreftelseTilgjengelig(newBekreftelse: Bekreftelse) =
+    BekreftelseTilgjengelig(
+        hendelseId = UUID.randomUUID(),
+        periodeId = periode.periodeId,
+        arbeidssoekerId = periode.arbeidsoekerId,
+        bekreftelseId = newBekreftelse.bekreftelseId,
+        gjelderFra = newBekreftelse.gjelderFra,
+        gjelderTil = newBekreftelse.gjelderTil
     )
-    ctx.forward(record)
-    return updatedInternTilstand
-}
-
-private fun updateAndForwardBekreftelse(
-    internTilstand: InternTilstand,
-    updatedBekreftelse: Bekreftelse,
-    hendelse: BekreftelseHendelse,
-    ctx: ProcessorContext<Long, BekreftelseHendelse>
-):InternTilstand {
-    val updatedInternTilstand =
-        internTilstand.copy(bekreftelser = updatedBekreftelser(internTilstand.bekreftelser, updatedBekreftelse))
-
-    val record = Record(
-        internTilstand.periode.recordKey,
-        hendelse,
-        Instant.now().toEpochMilli()
-    )
-    ctx.forward(record)
-    return updatedInternTilstand
-}
-
-private fun updatedBekreftelser(bekreftelser: List<Bekreftelse>, updatedBekreftelse: Bekreftelse) =
-    bekreftelser.map { if (it.bekreftelseId == updatedBekreftelse.bekreftelseId) updatedBekreftelse else it }
 
 private operator fun <K, V> KeyValue<K, V>.component1(): K = key
 private operator fun <K, V> KeyValue<K, V>.component2(): V = value

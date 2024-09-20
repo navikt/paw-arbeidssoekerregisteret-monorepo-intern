@@ -11,7 +11,7 @@ import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseConfig
 import java.time.Duration
 
 class BekreftelsePunctuatorTest : FreeSpec({
-
+    // TODO: Lag individuelle tester for hver hendelse, for BekreftelseMeldingMottatt og BaOmAaAvsluttePeriode
     "BekreftelsePunctuator sender riktig hendelser" - {
         with(ApplicationTestContext()){
             val (periode, kafkaKeyResponse) = periode(identitetsnummer = "12345678901")

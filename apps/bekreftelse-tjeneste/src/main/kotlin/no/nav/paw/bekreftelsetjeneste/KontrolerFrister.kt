@@ -20,10 +20,10 @@ fun Bekreftelse.harGracePeriodeUtloept(now: Instant): Boolean =
     now.isAfter(gjelderTil.plus(BekreftelseConfig.gracePeriode))
 
 fun NonEmptyList<Bekreftelse>.skalLageNyBekreftelseTilgjengelig(now: Instant): Boolean =
-    this.maxByOrNull { it.gjelderTil }
-        ?.let {
+    maxBy { it.gjelderTil }
+        .let {
             now.isAfter(it.gjelderTil.plus(BekreftelseConfig.bekreftelseInterval.minus(BekreftelseConfig.bekreftelseTilgjengeligOffset)))
-        } ?: false
+        }
 
 
 
