@@ -5,14 +5,15 @@ import com.nimbusds.jose.jwk.RSAKey
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder
 import no.nav.common.token_client.cache.CaffeineTokenCache
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient
-import no.nav.paw.config.env.NaisEnv
+import no.nav.paw.config.env.Local
+import no.nav.paw.config.env.RuntimeEnvironment
 import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
 
-fun azureAdM2MTokenClient(naisEnv: NaisEnv, azureProviderConfig: AzureM2MConfig): AzureAdMachineToMachineTokenClient =
-    when (naisEnv) {
-        NaisEnv.Local -> AzureAdTokenClientBuilder.builder()
+fun azureAdM2MTokenClient(runtimeEnvironment: RuntimeEnvironment, azureProviderConfig: AzureM2MConfig): AzureAdMachineToMachineTokenClient =
+    when (runtimeEnvironment) {
+        is Local -> AzureAdTokenClientBuilder.builder()
             .withClientId(azureProviderConfig.clientId)
             .withPrivateJwk(createMockRSAKey("azure"))
             .withTokenEndpointUrl(azureProviderConfig.tokenEndpointUrl)

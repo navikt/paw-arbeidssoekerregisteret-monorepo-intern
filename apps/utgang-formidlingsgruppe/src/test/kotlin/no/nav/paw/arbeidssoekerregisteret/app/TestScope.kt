@@ -11,7 +11,7 @@ import no.nav.paw.arbeidssoekerregisteret.app.vo.ArenaFormidlingsruppe
 import no.nav.paw.arbeidssoekerregisteret.app.vo.AvsluttetSerde
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
-import no.nav.paw.config.env.NaisEnv
+import no.nav.paw.config.env.Local
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
 import no.nav.paw.kafkakeygenerator.client.inMemoryKafkaKeysMock
 import org.apache.avro.specific.SpecificRecord
@@ -61,7 +61,7 @@ fun testScope(): TestScope {
             stateStoreName = stateStoreName,
             hendelseloggTopic = appCfg.hendelseloggTopic,
             periodeTopic = periodeTopic,
-            formidlingsgrupperTopic = formidlingsGruppeTopic(NaisEnv.Local),
+            formidlingsgrupperTopic = formidlingsGruppeTopic(Local),
             idAndRecordKeyFunction = idAndRecordKeyFunction,
             prometheusRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
         ),
@@ -74,7 +74,7 @@ fun testScope(): TestScope {
         periodeSerde.serializer()
     )
     val formidlingsgruppeInputTopic = testDriver.createInputTopic(
-        formidlingsGruppeTopic(NaisEnv.Local),
+        formidlingsGruppeTopic(Local),
         Serdes.String().serializer(),
         formidlingsgruppeSerde.serializer(),
     )

@@ -23,8 +23,8 @@ import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Feil
 import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.BrukerstoetteService
 import no.nav.paw.arbeidssoekerregisteret.backup.health.configureHealthRoutes
 import no.nav.paw.arbeidssoekerregisteret.backup.health.installMetrics
-import no.nav.paw.config.env.NaisEnv
-import no.nav.paw.config.env.currentNaisEnv
+import no.nav.paw.config.env.ProdGcp
+import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.security.token.support.v2.IssuerConfig
 import no.nav.security.token.support.v2.TokenSupportConfig
 import no.nav.security.token.support.v2.TokenValidationContextPrincipal
@@ -50,7 +50,7 @@ fun initKtor(
         routing {
             swaggerUI(path = "docs/brukerstoette", swaggerFile = "openapi/Brukerstoette.yaml")
             configureHealthRoutes(prometheusMeterRegistry)
-            if (currentNaisEnv == NaisEnv.ProdGCP) {
+            if (currentRuntimeEnvironment is ProdGcp) {
                 authenticate("azure") {
                     configureBrukerstoetteRoutes(brukerstoetteService)
                 }

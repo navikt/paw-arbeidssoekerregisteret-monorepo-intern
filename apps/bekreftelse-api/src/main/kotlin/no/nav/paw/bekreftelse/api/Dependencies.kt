@@ -20,7 +20,7 @@ import no.nav.poao_tilgang.client.PoaoTilgangHttpClient
 import org.apache.kafka.streams.KafkaStreams
 
 fun createDependencies(applicationConfig: ApplicationConfig): Dependencies {
-    val azureM2MTokenClient = azureAdM2MTokenClient(applicationConfig.naisEnv, applicationConfig.azureM2M)
+    val azureM2MTokenClient = azureAdM2MTokenClient(applicationConfig.runtimeEnvironment, applicationConfig.azureM2M)
 
     val kafkaKeysClient = kafkaKeysClient(applicationConfig.kafkaKeysClient) {
         azureM2MTokenClient.createMachineToMachineToken(applicationConfig.kafkaKeysClient.scope)

@@ -10,7 +10,8 @@ import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.routing.IgnoreTrailingSlash
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.config.AutorisasjonConfig
-import no.nav.paw.config.env.NaisEnv
+import no.nav.paw.config.env.Local
+import no.nav.paw.config.env.Nais
 import no.nav.paw.error.handler.handleException
 
 fun Application.configureHTTP(applicationConfig: ApplicationConfig) {
@@ -23,16 +24,12 @@ fun Application.configureHTTP(applicationConfig: ApplicationConfig) {
     install(CORS) {
         val origins = applicationConfig.autorisasjon.getCorsAllowOrigins()
 
-        when (applicationConfig.naisEnv) {
-            NaisEnv.ProdGCP -> {
+        when (applicationConfig.runtimeEnvironment) {
+            is Nais -> {
                 origins.forEach { allowHost(it) }
             }
 
-            NaisEnv.DevGCP -> {
-                origins.forEach { allowHost(it) }
-            }
-
-            NaisEnv.Local -> anyHost()
+            is Local -> anyHost()
         }
 
         allowMethod(HttpMethod.Options)

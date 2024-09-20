@@ -6,7 +6,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.jackson.jackson
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient
-import no.nav.paw.config.env.currentNaisEnv
+import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.kafkakeygenerator.auth.AzureM2MConfig
 import no.nav.paw.kafkakeygenerator.auth.azureAdM2MTokenClient
@@ -14,7 +14,7 @@ import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.kafkakeygenerator.client.createKafkaKeyGeneratorClient
 
 fun initClients(azureConfig: AzureM2MConfig): Pair<KafkaKeysClient, OppslagApiClient> {
-    val azureTokenClient = azureAdM2MTokenClient(currentNaisEnv, azureConfig)
+    val azureTokenClient = azureAdM2MTokenClient(currentRuntimeEnvironment, azureConfig)
     val kafkaKeysClient = createKafkaKeyGeneratorClient(azureTokenClient)
     val oppslagApiClient = oppslagsApiClient(azureTokenClient)
     return kafkaKeysClient to oppslagApiClient

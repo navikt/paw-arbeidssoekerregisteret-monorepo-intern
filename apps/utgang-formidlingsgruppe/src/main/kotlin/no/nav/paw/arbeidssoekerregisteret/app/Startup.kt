@@ -7,8 +7,9 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import kotlinx.coroutines.runBlocking
 import no.nav.paw.arbeidssokerregisteret.app.helse.Helse
 import no.nav.paw.arbeidssokerregisteret.app.helse.initKtor
-import no.nav.paw.config.env.NaisEnv
-import no.nav.paw.config.env.currentNaisEnv
+import no.nav.paw.config.env.ProdGcp
+import no.nav.paw.config.env.RuntimeEnvironment
+import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.config.kafka.KafkaConfig
 import no.nav.paw.config.kafka.streams.KafkaStreamsFactory
@@ -31,8 +32,8 @@ val applicationConfiguration: ApplicationConfiguration get() =
 
 typealias kafkaKeyFunction = (String) -> KafkaKeysResponse?
 
-fun formidlingsGruppeTopic(env: NaisEnv) =
-    "teamarenanais.aapen-arena-formidlingsgruppeendret-v1-${if (env == NaisEnv.ProdGCP) "p" else "q"}"
+fun formidlingsGruppeTopic(env: RuntimeEnvironment) =
+    "teamarenanais.aapen-arena-formidlingsgruppeendret-v1-${if (env is ProdGcp) "p" else "q"}"
 
 fun main() {
     val logger = LoggerFactory.getLogger("app")
@@ -64,7 +65,7 @@ fun main() {
         "aktivePerioder",
         idAndRecordKeyFunction,
         periodeTopic,
-        formidlingsGruppeTopic(currentNaisEnv),
+        formidlingsGruppeTopic(currentRuntimeEnvironment),
         appCfg.hendelseloggTopic
     )
     val kafkaStreams = KafkaStreams(

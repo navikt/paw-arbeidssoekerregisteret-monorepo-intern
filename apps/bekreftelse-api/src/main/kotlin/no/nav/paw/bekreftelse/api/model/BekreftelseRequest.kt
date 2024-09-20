@@ -5,7 +5,9 @@ import no.nav.paw.bekreftelse.melding.v1.vo.Bruker
 import no.nav.paw.bekreftelse.melding.v1.vo.BrukerType
 import no.nav.paw.bekreftelse.melding.v1.vo.Metadata
 import no.nav.paw.bekreftelse.melding.v1.vo.Svar
-import no.nav.paw.config.env.currentAppName
+import no.nav.paw.config.env.appImageOrDefaultForLocal
+import no.nav.paw.config.env.currentRuntimeEnvironment
+import no.nav.paw.config.env.namespaceOrDefaultForLocal
 import java.time.Instant
 import java.util.*
 
@@ -23,7 +25,7 @@ fun BekreftelseRequest.toHendelse(
     brukerId: String,
     brukerType: BrukerType
 ) = Bekreftelse.newBuilder()
-    .setNamespace("paw") // TODO Hente fra config?
+    .setNamespace(currentRuntimeEnvironment.namespaceOrDefaultForLocal())
     .setId(bekreftelseId)
     .setPeriodeId(periodeId)
     .setSvar(
@@ -36,7 +38,7 @@ fun BekreftelseRequest.toHendelse(
                             .setType(brukerType)
                             .build()
                     )
-                    .setKilde(currentAppName)
+                    .setKilde(currentRuntimeEnvironment.appImageOrDefaultForLocal())
                     .setTidspunkt(Instant.now())
                     .build()
             )

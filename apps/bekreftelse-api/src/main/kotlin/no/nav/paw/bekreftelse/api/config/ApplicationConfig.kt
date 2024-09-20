@@ -1,9 +1,7 @@
 package no.nav.paw.bekreftelse.api.config
 
-import no.nav.paw.config.env.NaisEnv
-import no.nav.paw.config.env.currentAppId
-import no.nav.paw.config.env.currentAppName
-import no.nav.paw.config.env.currentNaisEnv
+import no.nav.paw.config.env.RuntimeEnvironment
+import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.config.kafka.KafkaConfig
 import no.nav.paw.kafkakeygenerator.auth.AzureM2MConfig
 import no.nav.paw.kafkakeygenerator.client.KafkaKeyConfig
@@ -20,9 +18,7 @@ data class ApplicationConfig(
     val kafkaKeysClient: KafkaKeyConfig,
     val kafkaClients: KafkaConfig,
     // Env
-    val naisEnv: NaisEnv = currentNaisEnv,
-    val appId: String = currentAppId ?: "UNSPECIFIED",
-    val appName: String = currentAppName ?: "UNSPECIFIED",
+    val runtimeEnvironment: RuntimeEnvironment = currentRuntimeEnvironment,
     val hostname: String = InetAddress.getLocalHost().hostName
 )
 
