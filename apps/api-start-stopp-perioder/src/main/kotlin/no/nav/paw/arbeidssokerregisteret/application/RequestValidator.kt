@@ -13,7 +13,6 @@ import no.nav.paw.arbeidssokerregisteret.application.regler.TilgangsRegler
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.arbeidssokerregisteret.services.PersonInfoService
-import no.nav.paw.arbeidssokerregisteret.services.personInfoStats
 import no.nav.paw.arbeidssokerregisteret.utils.logger
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 
@@ -50,10 +49,19 @@ class RequestValidator(
             .flatMap { grunnlagForGodkjentAuth ->
                 val person = personInfoService.hentPersonInfo(identitetsnummer.verdi)
                 val opplysning = person?.let { genererPersonFakta(it) } ?: setOf(DomeneOpplysning.PersonIkkeFunnet)
-                try {
-                    person?.let { p -> registry.personInfoStats(p, opplysning) }
-                } catch (ex: Exception) {
-                    logger.warn("Feil under stats generering", ex)
+                if (person != null) {
+                    try {
+                        val oppholdIndfo = person.opphold.firstOrNull()?.let { opphold ->
+                            statsOppholdstilatelse(
+                                fra = opphold.oppholdFra,
+                                til = opphold.oppholdTil,
+                                type = opphold.type.name
+                            )
+                        }
+                        registry.oppholdstillatelseStats(oppholdIndfo, opplysning)
+                    } catch (ex: Exception) {
+                        logger.warn("Feil under stats generering", ex)
+                    }
                 }
                 regler.evaluer(
                     opplysning + grunnlagForGodkjentAuth.opplysning

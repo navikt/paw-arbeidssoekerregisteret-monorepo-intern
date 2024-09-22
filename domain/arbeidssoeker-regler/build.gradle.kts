@@ -13,6 +13,7 @@ val jvmMajorVersion: String by project
 dependencies {
     implementation(pawClients.pawPdlClient)
     implementation(project(":domain:interne-hendelser"))
+    api(micrometer.registryPrometheus)
     api(arrow.core)
     testImplementation(ktorServer.testJvm)
     testImplementation(testLibs.runnerJunit5)
