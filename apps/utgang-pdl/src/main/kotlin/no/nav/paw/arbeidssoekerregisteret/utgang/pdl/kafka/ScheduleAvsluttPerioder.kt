@@ -61,6 +61,7 @@ fun scheduleAvsluttPerioder(
                     emptyList()
                 } else {
                     pdlHentPersonResults.processPdlResultsV2(
+                        prometheusMeterRegistry = prometheusMeterRegistry,
                         regler = regler,
                         chunk = chunk,
                         logger = logger
@@ -114,12 +115,28 @@ fun Set<Opplysning>.toDomeneOpplysninger() = this
     .toSet()
 
 fun List<HentPersonBolkResult>.processPdlResultsV2(
+    prometheusMeterRegistry: PrometheusMeterRegistry,
     regler: Regler,
     chunk: List<KeyValue<UUID, HendelseState>>,
     logger: Logger
 ): List<EvalueringResultat> =
     this.filter { result -> isPdlResultOK(result.code, logger) }
         .mapNotNull { result -> getHendelseStateAndPerson(result, chunk, logger) }
+        .onEach { (person, _) ->
+            runCatching {
+                val oppholdsInfo = person.opphold.firstOrNull()?.let { opphold ->
+                    statsOppholdstilatelse(
+                        fra = opphold.oppholdFra,
+                        til = opphold.oppholdTil,
+                        type = opphold.type.name
+                    )
+                }
+                val personFakta = genererPersonFakta(person.toPerson())
+                prometheusMeterRegistry.oppholdstillatelseStats(oppholdsInfo, personFakta)
+            }.onFailure { ex ->
+                logger.warn("Feil under stats generering", ex)
+            }
+        }
         .map { (person, hendelseState) ->
             val registreringsOpplysninger = hendelseState.opplysninger.toDomeneOpplysninger()
             val gjeldeneOpplysninger = genererPersonFakta(person.toPerson())

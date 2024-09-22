@@ -6,6 +6,8 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.mockk.mockk
 import io.mockk.verify
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.filterValidHendelseStates
@@ -24,7 +26,7 @@ import java.time.Instant
 import java.util.*
 
 class ProcessPdlResultsTest : FreeSpec({
-
+    val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     "processPdlResults should correctly set avsluttPeriode to true if multiple problems in pdlEvaluering" {
         val person = getPerson(
             foedsel = Foedsel("2014-01-01"),
@@ -56,7 +58,7 @@ class ProcessPdlResultsTest : FreeSpec({
 
         val logger = mockk<Logger>(relaxed = true)
 
-        val output = listOf(result).processPdlResultsV2(InngangsReglerV3, chunk, logger)
+        val output = listOf(result).processPdlResultsV2(prometheusMeterRegistry, InngangsReglerV3, chunk, logger)
 
         output.shouldHaveSize(1)
         output[0].avsluttPeriode shouldBe true
@@ -89,7 +91,7 @@ class ProcessPdlResultsTest : FreeSpec({
             )
             val chunk = listOf(KeyValue(hendelseState.periodeId, hendelseState))
 
-            val output = listOf(result).processPdlResultsV2(InngangsReglerV3, chunk, logger)
+            val output = listOf(result).processPdlResultsV2(prometheusMeterRegistry, InngangsReglerV3, chunk, logger)
 
             output.shouldHaveSize(1)
             val evalueringResultat = output.first()
@@ -123,7 +125,7 @@ class ProcessPdlResultsTest : FreeSpec({
             )
             val chunk = listOf(KeyValue(hendelseState.periodeId, hendelseState))
 
-            val output = listOf(result).processPdlResultsV2(InngangsReglerV3, chunk, logger)
+            val output = listOf(result).processPdlResultsV2(prometheusMeterRegistry, InngangsReglerV3, chunk, logger)
 
             output.shouldHaveSize(1)
             val evalueringResultat = output.first()
@@ -157,7 +159,7 @@ class ProcessPdlResultsTest : FreeSpec({
             )
             val chunk = listOf(KeyValue(hendelseState.periodeId, hendelseState))
 
-            val output = listOf(result).processPdlResultsV2(InngangsReglerV3, chunk, logger)
+            val output = listOf(result).processPdlResultsV2(prometheusMeterRegistry, InngangsReglerV3, chunk, logger)
 
             output.shouldHaveSize(1)
             val evalueringResultat = output.first()
@@ -193,7 +195,7 @@ class ProcessPdlResultsTest : FreeSpec({
             )
             val chunk = listOf(KeyValue(hendelseState.periodeId, hendelseState))
 
-            val output = listOf(result).processPdlResultsV2(InngangsReglerV3, chunk, logger)
+            val output = listOf(result).processPdlResultsV2(prometheusMeterRegistry, InngangsReglerV3, chunk, logger)
 
             output.shouldHaveSize(1)
             val evalueringResultat = output.first()
@@ -227,7 +229,7 @@ class ProcessPdlResultsTest : FreeSpec({
             )
             val chunk = listOf(KeyValue(hendelseState.periodeId, hendelseState))
 
-            val output = listOf(result).processPdlResultsV2(InngangsReglerV3, chunk, logger)
+            val output = listOf(result).processPdlResultsV2(prometheusMeterRegistry, InngangsReglerV3, chunk, logger)
 
             output.shouldHaveSize(1)
             val evalueringResultat = output.first()
@@ -264,7 +266,7 @@ class ProcessPdlResultsTest : FreeSpec({
             )
             val chunk = listOf(KeyValue(hendelseState.periodeId, hendelseState))
 
-            val output = listOf(result).processPdlResultsV2(InngangsReglerV3, chunk, logger)
+            val output = listOf(result).processPdlResultsV2(prometheusMeterRegistry, InngangsReglerV3, chunk, logger)
 
             output.shouldHaveSize(1)
             val evalueringResultat = output.first()
@@ -287,7 +289,7 @@ class ProcessPdlResultsTest : FreeSpec({
 
             val chunk = listOf<KeyValue<UUID, HendelseState>>()
 
-            val output = results.processPdlResultsV2(InngangsReglerV3, chunk, logger)
+            val output = results.processPdlResultsV2(prometheusMeterRegistry, InngangsReglerV3, chunk, logger)
 
             output.shouldBeEmpty()
             verify(exactly = 2) { logger.error(any()) }
@@ -313,7 +315,7 @@ class ProcessPdlResultsTest : FreeSpec({
                 )
             )
 
-            val output = listOf(result).processPdlResultsV2(InngangsReglerV3, chunk, logger)
+            val output = listOf(result).processPdlResultsV2(prometheusMeterRegistry, InngangsReglerV3, chunk, logger)
 
             output.shouldBeEmpty()
             verify { logger.error("Person er null for periodeId: $periodeId") }
