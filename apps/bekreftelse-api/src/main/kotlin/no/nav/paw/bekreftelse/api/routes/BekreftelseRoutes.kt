@@ -22,7 +22,7 @@ fun Route.bekreftelseRoutes(
     bekreftelseService: BekreftelseService
 ) {
     route("/api/v1") {
-        authenticate("tokenx", "azure") {
+        authenticate("idporten", "tokenx", "azure") {
             get("/tilgjengelige-bekreftelser") {
                 with(requestScope(null, kafkaKeysFunction, autorisasjonService, TilgangType.LESE)) {
                     val tilgjengeligeBekreftelser = bekreftelseService
@@ -50,7 +50,14 @@ fun Route.bekreftelseRoutes(
 
             }
             post<BekreftelseRequest>("/bekreftelse") { request ->
-                with(requestScope(request.identitetsnummer, kafkaKeysFunction, autorisasjonService, TilgangType.SKRIVE)) {
+                with(
+                    requestScope(
+                        request.identitetsnummer,
+                        kafkaKeysFunction,
+                        autorisasjonService,
+                        TilgangType.SKRIVE
+                    )
+                ) {
                     bekreftelseService.mottaBekreftelse(sluttbruker, innloggetBruker, request, useMockData)
 
                     call.respond(HttpStatusCode.OK)

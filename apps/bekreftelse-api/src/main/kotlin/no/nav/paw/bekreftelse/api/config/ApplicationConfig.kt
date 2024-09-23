@@ -42,7 +42,6 @@ data class ServiceClientConfig(
 data class AuthProvider(
     val name: String,
     val discoveryUrl: String,
-    val tokenEndpointUrl: String,
     val clientId: String,
     val claims: Claims
 )

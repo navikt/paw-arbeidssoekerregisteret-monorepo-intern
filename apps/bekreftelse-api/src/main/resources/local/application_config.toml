@@ -9,11 +9,16 @@ bekreftelseHendelsesloggTopic = "paw.arbeidssoker-bekreftelse-hendelseslogg-v1"
 internStateStoreName = "internStateStore"
 
 [[authProviders]]
+name = "idporten"
+discoveryUrl = "http://localhost:8081/default/.well-known/openid-configuration"
+clientId = "paw-arbeidssoeker-bekreftelse-api-idporten"
+[authProviders.claims]
+map = ["acr=idporten-loa-high"]
+
+[[authProviders]]
 name = "tokenx"
 discoveryUrl = "http://localhost:8081/default/.well-known/openid-configuration"
-tokenEndpointUrl = "http://localhost:8081/default/token"
-clientId = "paw-arbeidssoeker-bekreftelse-api"
-
+clientId = "paw-arbeidssoeker-bekreftelse-api-tokenx"
 [authProviders.claims]
 map = ["acr=Level4", "acr=idporten-loa-high"]
 combineWithOr = true
@@ -21,9 +26,7 @@ combineWithOr = true
 [[authProviders]]
 name = "azure"
 discoveryUrl = "http://localhost:8081/default/.well-known/openid-configuration"
-tokenEndpointUrl = "http://localhost:8081/default/token"
-clientId = "paw-arbeidssoeker-bekreftelse-api"
-
+clientId = "paw-arbeidssoeker-bekreftelse-api-azure"
 [authProviders.claims]
 map = ["NAVident"]
 
@@ -42,6 +45,5 @@ scope = "api://test.test.kafka-keys/.default"
 [kafkaClients]
 brokers = "localhost:9092"
 applicationIdPrefix = "paw-arbeidssoeker-bekreftelse-api"
-
 [kafkaClients.schemaRegistry]
 url = "http://localhost:8082"

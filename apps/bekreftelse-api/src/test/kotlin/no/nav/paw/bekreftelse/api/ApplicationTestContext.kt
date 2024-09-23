@@ -52,17 +52,23 @@ class ApplicationTestContext {
 
     fun MockOAuth2Server.createAuthProviders(): AuthProviders {
         val wellKnownUrl = wellKnownUrl("default").toString()
-        val tokenEndpointUrl = tokenEndpointUrl("default").toString()
         return listOf(
             AuthProvider(
-                "tokenx", wellKnownUrl, tokenEndpointUrl, "default", Claims(
+                "idporten", wellKnownUrl, "default", Claims(
+                    listOf(
+                        "acr=idporten-loa-high"
+                    )
+                )
+            ),
+            AuthProvider(
+                "tokenx", wellKnownUrl, "default", Claims(
                     listOf(
                         "acr=Level4", "acr=idporten-loa-high"
                     ), true
                 )
             ),
             AuthProvider(
-                "azure", wellKnownUrl, tokenEndpointUrl, "default", Claims(
+                "azure", wellKnownUrl, "default", Claims(
                     listOf(
                         "NAVident"
                     )

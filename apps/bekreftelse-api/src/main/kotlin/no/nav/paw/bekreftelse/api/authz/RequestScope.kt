@@ -22,7 +22,7 @@ import no.nav.security.token.support.v2.TokenValidationContextPrincipal
 data class RequestScope(
     val sluttbruker: Sluttbruker,
     val innloggetBruker: InnloggetBruker,
-    val claims: ResolvedClaims,
+    val token: Token,
     val path: String,
     val callId: String?,
     val traceparent: String?,
@@ -47,38 +47,36 @@ suspend fun PipelineContext<Unit, ApplicationCall>.requestScope(
     val bearerToken = call.request.headers[HttpHeaders.Authorization]
         ?: throw BearerTokenManglerException("Request mangler Bearer Token")
 
-    val tokenValidationContext = call.principal<TokenValidationContextPrincipal>()
-
-    val resolvedClaims = tokenValidationContext
+    val principal = call.principal<TokenValidationContextPrincipal>()
+    val token = principal
         ?.context
-        ?.resolveClaims(
-            AzureName,
-            AzureNavIdent,
-            AzureOID,
-            TokenXPID
-        ) ?: ResolvedClaims()
+        ?.resolveTokens()
+        ?: throw UkjentBearerTokenException("Fant ikke token med forventet issuer")
 
-    if (resolvedClaims.isEmpty()) {
+    if (token.claims.isEmpty()) {
         throw UfullstendigBearerTokenException("Bearer Token mangler påkrevd innhold")
     }
 
-    if (!resolvedClaims.isTokenX() && !resolvedClaims.isAzure()) {
+    if (!token.isValidIssuer()) {
         throw UkjentBearerTokenException("Bearer Token er utstedt av ukjent issuer")
     }
 
-    val sluttbrukerIdentitetsnummer = if (resolvedClaims.isTokenX()) {
-        val pid = resolvedClaims[TokenXPID]?.verdi
-            ?: throw UfullstendigBearerTokenException("Bearer Token mangler påkrevd innhold")
-        if (identitetsnummer != null && identitetsnummer != pid) {
-            // TODO Håndtere verge
-            throw BrukerHarIkkeTilgangException("Bruker har ikke tilgang til sluttbrukers informasjon")
+    val sluttbrukerIdentitetsnummer = when (token.issuer) {
+        is Azure -> {
+            // TODO Gjøre sjekk mot POAO Tilgang at veileder kan behandle sluttbruker
+            // Veiledere skal alltid sende inn identitetsnummer for sluttbruker
+            identitetsnummer
+                ?: throw BrukerHarIkkeTilgangException("Veileder må sende med identitetsnummer for sluttbruker")
         }
-        identitetsnummer ?: pid
-    } else {
-        // TODO Gjøre sjekk mot POAO Tilgang at veileder kan behandle sluttbruker
-        // Veiledere skal alltid sende inn identitetsnummer for sluttbruker
-        identitetsnummer
-            ?: throw BrukerHarIkkeTilgangException("Veileder må sende med identitetsnummer for sluttbruker")
+
+        else -> {
+            val pid = token[PID].verdi
+            if (identitetsnummer != null && identitetsnummer != pid) {
+                // TODO Håndtere verge
+                throw BrukerHarIkkeTilgangException("Bruker har ikke tilgang til sluttbrukers informasjon")
+            }
+            identitetsnummer ?: pid
+        }
     }
 
     val kafkaKeysResponse = kafkaKeysFunctions(sluttbrukerIdentitetsnummer)
@@ -89,28 +87,30 @@ suspend fun PipelineContext<Unit, ApplicationCall>.requestScope(
         kafkaKey = kafkaKeysResponse.key
     )
 
-    val innloggetBruker = if (resolvedClaims.isTokenX()) {
-        val ident = resolvedClaims[TokenXPID]?.verdi
-            ?: throw UfullstendigBearerTokenException("Bearer Token mangler påkrevd innhold")
-        InnloggetBruker(
-            type = BrukerType.SLUTTBRUKER,
-            ident = ident,
-            bearerToken = bearerToken
-        )
-    } else {
-        val ident = resolvedClaims[AzureNavIdent]
-            ?: throw UfullstendigBearerTokenException("Bearer Token mangler påkrevd innhold")
-        InnloggetBruker(
-            type = BrukerType.VEILEDER,
-            ident = ident,
-            bearerToken = bearerToken
-        )
+    val innloggetBruker = when (token.issuer) {
+        is Azure -> {
+            val ident = token[NavIdent]
+            InnloggetBruker(
+                type = BrukerType.VEILEDER,
+                ident = ident,
+                bearerToken = bearerToken
+            )
+        }
+
+        else -> {
+            val ident = token[PID].verdi
+            InnloggetBruker(
+                type = BrukerType.SLUTTBRUKER,
+                ident = ident,
+                bearerToken = bearerToken
+            )
+        }
     }
 
     return RequestScope(
         sluttbruker = sluttbruker,
         innloggetBruker = innloggetBruker,
-        claims = resolvedClaims,
+        token = token,
         path = call.request.path(),
         callId = call.request.headers[NavHttpHeaders.NavCallId],
         traceparent = call.request.headers[NavHttpHeaders.TraceParent],
