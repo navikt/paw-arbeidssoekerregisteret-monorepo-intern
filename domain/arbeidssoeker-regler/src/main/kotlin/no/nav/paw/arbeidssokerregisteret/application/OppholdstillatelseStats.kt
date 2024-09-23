@@ -6,6 +6,7 @@ import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysni
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import kotlin.math.absoluteValue
 
 data class StatsOppholdtilatelse(
     val fra: LocalDate?,
@@ -43,7 +44,7 @@ fun PrometheusMeterRegistry.oppholdstillatelseStats(oppholdtilatelse: StatsOppho
             opplysninger.contains(DomeneOpplysning.ErNorskStatsborger).toString()
         )
     ) + opplysningerTags(opplysninger)
-    counter("paw_bosatt_vs_oppholds_stats_v1", tags).increment()
+    counter("paw_bosatt_vs_oppholds_stats_v2", tags).increment()
 }
 
 fun opplysningerTags(opplysninger: Collection<Opplysning>): Collection<Tag> =
@@ -59,7 +60,7 @@ fun opplysningerTags(opplysninger: Collection<Opplysning>): Collection<Tag> =
 
 fun daysBetweenNow(then: LocalDate): Long {
     val now = LocalDate.now()
-    return ChronoUnit.DAYS.between(now, then)
+    return ChronoUnit.DAYS.between(now, then).absoluteValue
 }
 
 fun asBucket(number: Long): String =
