@@ -27,9 +27,9 @@ fun bekreftelsePunctuator(
 
     stateStore.all().use { states ->
         states.forEach { (key, value) ->
-            val (updatedState, bekreftelseHendelse) = processBekreftelser(value, timestamp)
+            val (updatedState, bekreftelseHendelser) = processBekreftelser(value, timestamp)
 
-            bekreftelseHendelse.forEach {
+            bekreftelseHendelser.forEach {
                 ctx.forward(Record(value.periode.recordKey, it, Instant.now().toEpochMilli()))
             }
             stateStore.put(key, updatedState)

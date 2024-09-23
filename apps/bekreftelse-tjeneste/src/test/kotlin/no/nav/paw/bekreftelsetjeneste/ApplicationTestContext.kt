@@ -22,9 +22,10 @@ import org.apache.kafka.streams.state.internals.InMemoryKeyValueBytesStoreSuppli
 import org.apache.kafka.streams.state.internals.KeyValueStoreBuilder
 import org.slf4j.LoggerFactory
 import java.time.Duration
+import java.time.Instant
 import java.util.*
 
-class ApplicationTestContext {
+class ApplicationTestContext(initialWallClockTime: Instant = Instant.now()) {
     val ansvarsTopicSerde: Serde<AnsvarEndret> = opprettSerde()
     val bekreftelseSerde: Serde<Bekreftelse> = opprettSerde()
     val periodeTopicSerde: Serde<Periode> = opprettSerde()
@@ -58,7 +59,7 @@ class ApplicationTestContext {
                         )
                     ).appTopology()
             }
-        }.let { TopologyTestDriver(it, kafkaStreamProperties) }
+        }.let { TopologyTestDriver(it, kafkaStreamProperties, initialWallClockTime) }
 
     val periodeTopic = testDriver.createInputTopic(
         applicationConfiguration.periodeTopic,

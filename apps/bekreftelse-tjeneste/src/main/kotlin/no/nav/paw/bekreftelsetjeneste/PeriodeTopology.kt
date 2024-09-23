@@ -14,7 +14,6 @@ import org.apache.kafka.streams.state.KeyValueStore
 import java.time.Instant
 import java.util.*
 
-
 context(ApplicationConfiguration, ApplicationContext)
 fun StreamsBuilder.processPeriodeTopic() {
     stream<Long, Periode>(periodeTopic)
