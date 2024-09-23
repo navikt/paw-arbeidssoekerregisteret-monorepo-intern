@@ -20,19 +20,6 @@ fun fristForNesteBekreftelse(forrige: Instant, interval: Duration): Instant {
     return forrige.plus(interval)
 }
 
-// TODO: Finn regler for magic monday og gjør nødvendig justeringer
-/*fun fristForNesteBekreftelseWithMagicMonday(forrige: Instant, interval: Duration): Instant {
-
-    val magicMondayAdjuster = MagicMondayAdjuster()
-    val zoneId = ZoneId.of("Europe/Oslo")
-    return forrige
-        .plus(interval)
-        .let { LocalDate.ofInstant(it, ZoneId.systemDefault()) }
-        //.with(magicMondayAdjuster)
-        .plusDays(1)
-        .atStartOfDay(zoneId).toInstant()
-}*/
-
 fun gjenstaendeGracePeriode(timestamp: Instant, gjelderTil: Instant): Duration {
     val gracePeriode = BekreftelseConfig.gracePeriode
     val utvidetGjelderTil = gjelderTil.plus(gracePeriode)
@@ -43,6 +30,19 @@ fun gjenstaendeGracePeriode(timestamp: Instant, gjelderTil: Instant): Duration {
         Duration.between(timestamp, utvidetGjelderTil)
     }
 }
+
+// TODO: Finn regler for magic monday og gjør nødvendig justeringer
+/*fun fristForNesteBekreftelseWithMagicMonday(forrige: Instant, interval: Duration): Instant {
+
+    val magicMondayAdjuster = MagicMondayAdjuster()
+    val zoneId = ZoneId.of("Europe/Oslo")
+    return forrige
+        .plus(interval)
+        .let { LocalDate.ofInstant(it, ZoneId.systemDefault()) }
+        .with(magicMondayAdjuster)
+        .plusDays(1)
+        .atStartOfDay(zoneId).toInstant()
+}*/
 
 class MagicMondayAdjuster: TemporalAdjuster {
     override fun adjustInto(temporal: java.time.temporal.Temporal): java.time.temporal.Temporal {

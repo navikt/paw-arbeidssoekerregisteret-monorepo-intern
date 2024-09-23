@@ -20,6 +20,7 @@ import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.TopologyTestDriver
 import org.apache.kafka.streams.state.internals.InMemoryKeyValueBytesStoreSupplier
 import org.apache.kafka.streams.state.internals.KeyValueStoreBuilder
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Instant
@@ -44,7 +45,7 @@ class ApplicationTestContext(initialWallClockTime: Instant = Instant.now()) {
         kafkaKeysClient = inMemoryKafkaKeysMock()
     )
 
-    val logger = LoggerFactory.getLogger(ApplicationTestContext::class.java)
+    val logger: Logger = LoggerFactory.getLogger(ApplicationTestContext::class.java)
 
     val testDriver: TopologyTestDriver =
         with(applicationContext) {
