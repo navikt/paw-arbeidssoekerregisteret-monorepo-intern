@@ -5,12 +5,12 @@ import no.nav.paw.bekreftelse.api.model.Identitetsnummer
 import no.nav.security.token.support.core.context.TokenValidationContext
 import java.util.*
 
-fun TokenValidationContext.resolveTokens(): Token? {
+fun TokenValidationContext.resolveTokens(): AccessToken? {
     return resolveTokens
         .firstOrNull { issuers.contains(it.issuer.name) }
         ?.let { resolveToken ->
             val claims = resolveClaims(resolveToken)
-            Token(resolveToken.issuer, claims)
+            AccessToken(resolveToken.issuer, claims)
         }
 }
 
@@ -22,18 +22,16 @@ private fun TokenValidationContext.resolveClaims(resolveToken: ResolveToken): Cl
 }
 
 @Suppress("UNCHECKED_CAST")
-data class Token(
+data class AccessToken(
     val issuer: Issuer,
     val claims: Claims
 ) {
     @Suppress("UNCHECKED_CAST")
     operator fun <T : Any> get(claim: Claim<T>): T =
-        claims[claim] as T? ?: throw UfullstendigBearerTokenException("Bearer Token mangler påkrevd innhold")
+        claims[claim] as T?
+            ?: throw UfullstendigBearerTokenException("Bearer Token mangler påkrevd claim ${claim.name}")
 
-    fun isIdPorten() = issuer == IdPorten
-    fun isTokenX() = issuer == TokenX
-    fun isAzure() = issuer == Azure
-    fun isValidIssuer() = isIdPorten() || isTokenX() || isAzure()
+    fun isValidIssuer() = validIssuers.contains(issuer)
 }
 
 typealias Claims = Map<Claim<*>, Any>
@@ -50,6 +48,8 @@ sealed class Issuer(val name: String)
 data object IdPorten : Issuer("idporten")
 data object TokenX : Issuer("tokenx")
 data object Azure : Issuer("azure")
+
+private val validIssuers: List<Issuer> = listOf(IdPorten, TokenX, Azure)
 
 sealed class Claim<A : Any>(
     val name: String,

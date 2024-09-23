@@ -7,12 +7,12 @@ import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig
-import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import no.nav.paw.bekreftelse.api.context.ApplicationContext
 import java.time.Duration
 
-fun Application.configureMetrics(prometheusMeterRegistry: PrometheusMeterRegistry) {
+fun Application.configureMetrics(applicationContext: ApplicationContext) {
     install(MicrometerMetrics) {
-        registry = prometheusMeterRegistry
+        registry = applicationContext.prometheusMeterRegistry
         meterBinders = listOf(
             JvmMemoryMetrics(),
             JvmGcMetrics(),

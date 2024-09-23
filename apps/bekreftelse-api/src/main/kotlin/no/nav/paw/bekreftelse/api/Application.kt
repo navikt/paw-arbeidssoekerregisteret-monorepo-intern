@@ -9,6 +9,7 @@ import no.nav.paw.bekreftelse.api.config.APPLICATION_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.config.SERVER_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelse.api.config.ServerConfig
+import no.nav.paw.bekreftelse.api.context.ApplicationContext
 import no.nav.paw.bekreftelse.api.plugins.configureAuthentication
 import no.nav.paw.bekreftelse.api.plugins.configureHTTP
 import no.nav.paw.bekreftelse.api.plugins.configureKafka
@@ -33,11 +34,9 @@ fun main() {
 
     logger.info("Starter: ${currentRuntimeEnvironment.appNameOrDefaultForLocal()}")
 
-    val dependencies = createDependencies(applicationConfig)
-
     with(serverConfig) {
         embeddedServer(Netty, port = port) {
-            module(applicationConfig, dependencies)
+            module(applicationConfig)
         }.apply {
             addShutdownHook { stop(gracePeriodMillis, timeoutMillis) }
             start(wait = true)
@@ -45,27 +44,22 @@ fun main() {
     }
 }
 
-fun Application.module(
-    applicationConfig: ApplicationConfig,
-    dependencies: Dependencies
-) {
-    configureMetrics(dependencies.prometheusMeterRegistry)
-    configureHTTP(applicationConfig)
-    configureAuthentication(applicationConfig)
+fun Application.module(applicationConfig: ApplicationConfig) {
+    val applicationContext = ApplicationContext.create(applicationConfig)
+
+    configureMetrics(applicationContext)
+    configureHTTP(applicationContext)
+    configureAuthentication(applicationContext)
     configureLogging()
     configureSerialization()
     configureTracing()
-    configureKafka(applicationConfig, listOf(dependencies.bekreftelseKafkaStreams))
+    configureKafka(applicationContext)
 
     routing {
-        healthRoutes(dependencies.healthIndicatorRepository)
-        metricsRoutes(dependencies.prometheusMeterRegistry)
+        healthRoutes(applicationContext.healthIndicatorRepository)
+        metricsRoutes(applicationContext)
         swaggerRoutes()
-        bekreftelseRoutes(
-            dependencies.kafkaKeysClient::getIdAndKey,
-            dependencies.autorisasjonService,
-            dependencies.bekreftelseService
-        )
+        bekreftelseRoutes(applicationContext)
     }
 }
 

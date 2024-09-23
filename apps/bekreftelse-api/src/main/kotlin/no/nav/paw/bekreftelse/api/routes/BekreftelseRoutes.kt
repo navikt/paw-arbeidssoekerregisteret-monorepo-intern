@@ -8,23 +8,20 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
-import no.nav.paw.bekreftelse.api.authz.requestScope
+import no.nav.paw.bekreftelse.api.authz.authorize
+import no.nav.paw.bekreftelse.api.context.ApplicationContext
 import no.nav.paw.bekreftelse.api.model.BekreftelseRequest
 import no.nav.paw.bekreftelse.api.model.TilgjengeligeBekreftelserRequest
-import no.nav.paw.bekreftelse.api.services.AutorisasjonService
-import no.nav.paw.bekreftelse.api.services.BekreftelseService
-import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
 import no.nav.poao_tilgang.client.TilgangType
 
-fun Route.bekreftelseRoutes(
-    kafkaKeysFunction: suspend (ident: String) -> KafkaKeysResponse,
-    autorisasjonService: AutorisasjonService,
-    bekreftelseService: BekreftelseService
-) {
+fun Route.bekreftelseRoutes(applicationContext: ApplicationContext) {
+    val authorizationService = applicationContext.authorizationService
+    val bekreftelseService = applicationContext.bekreftelseService
+
     route("/api/v1") {
         authenticate("idporten", "tokenx", "azure") {
             get("/tilgjengelige-bekreftelser") {
-                with(requestScope(null, kafkaKeysFunction, autorisasjonService, TilgangType.LESE)) {
+                with(authorize(null, authorizationService, TilgangType.LESE)) {
                     val tilgjengeligeBekreftelser = bekreftelseService
                         .finnTilgjengeligBekreftelser(
                             sluttbruker,
@@ -39,9 +36,14 @@ fun Route.bekreftelseRoutes(
                 }
             }
             post<TilgjengeligeBekreftelserRequest>("/tilgjengelige-bekreftelser") { request ->
-                with(requestScope(request.identitetsnummer, kafkaKeysFunction, autorisasjonService, TilgangType.LESE)) {
+                with(authorize(request.identitetsnummer, authorizationService, TilgangType.LESE)) {
                     val tilgjengeligeBekreftelser = bekreftelseService
-                        .finnTilgjengeligBekreftelser(sluttbruker, innloggetBruker, request, useMockData)
+                        .finnTilgjengeligBekreftelser(
+                            sluttbruker,
+                            innloggetBruker,
+                            request,
+                            useMockData
+                        )
 
                     call.respond(HttpStatusCode.OK, tilgjengeligeBekreftelser)
 
@@ -50,15 +52,13 @@ fun Route.bekreftelseRoutes(
 
             }
             post<BekreftelseRequest>("/bekreftelse") { request ->
-                with(
-                    requestScope(
-                        request.identitetsnummer,
-                        kafkaKeysFunction,
-                        autorisasjonService,
-                        TilgangType.SKRIVE
+                with(authorize(request.identitetsnummer, authorizationService, TilgangType.SKRIVE)) {
+                    bekreftelseService.mottaBekreftelse(
+                        sluttbruker,
+                        innloggetBruker,
+                        request,
+                        useMockData
                     )
-                ) {
-                    bekreftelseService.mottaBekreftelse(sluttbruker, innloggetBruker, request, useMockData)
 
                     call.respond(HttpStatusCode.OK)
 

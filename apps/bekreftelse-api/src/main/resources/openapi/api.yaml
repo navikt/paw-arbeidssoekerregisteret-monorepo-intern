@@ -197,6 +197,8 @@ components:
       properties:
         type:
           type: "string"
+        code:
+          type: "string"
         title:
           type: "string"
         status:
@@ -207,6 +209,7 @@ components:
           type: "string"
       required:
         - type
+        - code
         - title
         - status
         - detail

@@ -2,14 +2,14 @@ package no.nav.paw.bekreftelse.api.plugins
 
 import io.ktor.server.application.Application
 import io.ktor.server.auth.authentication
-import no.nav.paw.bekreftelse.api.config.ApplicationConfig
+import no.nav.paw.bekreftelse.api.context.ApplicationContext
 import no.nav.security.token.support.v2.IssuerConfig
 import no.nav.security.token.support.v2.RequiredClaims
 import no.nav.security.token.support.v2.TokenSupportConfig
 import no.nav.security.token.support.v2.tokenValidationSupport
 
-fun Application.configureAuthentication(applicationConfig: ApplicationConfig) {
-    with(applicationConfig) {
+fun Application.configureAuthentication(applicationContext: ApplicationContext) {
+    with(applicationContext.applicationConfig) {
         authentication {
             authProviders.forEach { provider ->
                 tokenValidationSupport(

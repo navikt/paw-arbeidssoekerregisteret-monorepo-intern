@@ -29,6 +29,7 @@ import no.nav.paw.bekreftelse.api.model.TilgjengeligBekreftelserResponse
 import no.nav.paw.bekreftelse.api.model.TilgjengeligeBekreftelserRequest
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.error.model.ProblemDetails
+import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
 import org.apache.kafka.common.serialization.Serializer
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StoreQueryParameters
@@ -38,21 +39,27 @@ class BekreftelseRoutesTest : FreeSpec({
 
         beforeSpec {
             clearAllMocks()
+            coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(1, 1)
             mockOAuth2Server.start()
         }
 
         afterSpec {
+            coVerify { kafkaKeysClientMock.getIdAndKey(any<String>()) }
             confirmVerified(
                 kafkaStreamsMock,
                 stateStoreMock,
+                kafkaKeysClientMock,
+                poaoTilgangClientMock,
                 bekreftelseKafkaProducerMock,
-                autorisasjonServiceMock,
                 bekreftelseHttpConsumerMock,
                 bekreftelseServiceMock
             )
             mockOAuth2Server.shutdown()
         }
 
+        /*
+         * SLUTTBRUKER TESTER
+         */
         "Test suite for sluttbruker" - {
             "Skal få 500 om Kafka Streams ikke kjører" {
                 every { kafkaStreamsMock.state() } returns KafkaStreams.State.NOT_RUNNING
@@ -75,7 +82,7 @@ class BekreftelseRoutesTest : FreeSpec({
                     response.status shouldBe HttpStatusCode.InternalServerError
                     val body = response.body<ProblemDetails>()
                     body.status shouldBe HttpStatusCode.InternalServerError
-                    body.type shouldBe "PAW_UKJENT_FEIL"
+                    body.code shouldBe "PAW_UKJENT_FEIL"
                     verify { kafkaStreamsMock.state() }
                 }
             }
@@ -102,7 +109,7 @@ class BekreftelseRoutesTest : FreeSpec({
                     response.status shouldBe HttpStatusCode.InternalServerError
                     val body = response.body<ProblemDetails>()
                     body.status shouldBe HttpStatusCode.InternalServerError
-                    body.type shouldBe "PAW_UKJENT_FEIL"
+                    body.code shouldBe "PAW_UKJENT_FEIL"
                     verify { kafkaStreamsMock.state() }
                     verify { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) }
                 }
@@ -303,155 +310,6 @@ class BekreftelseRoutesTest : FreeSpec({
                             any<BekreftelseRequest>()
                         )
                     }
-                }
-            }
-        }
-
-        "Test suite for autentisering og autorisering" - {
-            "Skal få 401 ved manglende Bearer Token" {
-                testApplication {
-                    configureTestApplication(bekreftelseServiceMock)
-                    val client = configureTestClient()
-
-                    val response = client.get("/api/v1/tilgjengelige-bekreftelser")
-
-                    response.status shouldBe HttpStatusCode.Unauthorized
-                }
-            }
-
-            "Skal få 401 ved token utstedt av ukjent issuer" {
-                testApplication {
-                    configureTestApplication(bekreftelseServiceMock)
-                    val client = configureTestClient()
-
-                    val token = mockOAuth2Server.issueToken(
-                        issuerId = "whatever",
-                        claims = mapOf(
-                            "acr" to "idporten-loa-high",
-                            "pid" to "01017012345"
-                        )
-                    )
-
-                    val response = client.get("/api/v1/tilgjengelige-bekreftelser") {
-                        bearerAuth(token.serialize())
-                    }
-
-                    response.status shouldBe HttpStatusCode.Unauthorized
-                }
-            }
-
-            "Skal få 403 ved token uten noen claims" {
-                testApplication {
-                    configureTestApplication(bekreftelseServiceMock)
-                    val client = configureTestClient()
-
-                    val token = mockOAuth2Server.issueToken()
-
-                    val response = client.get("/api/v1/tilgjengelige-bekreftelser") {
-                        bearerAuth(token.serialize())
-                    }
-
-                    response.status shouldBe HttpStatusCode.Forbidden
-                    val body = response.body<ProblemDetails>()
-                    body.status shouldBe HttpStatusCode.Forbidden
-                    body.type shouldBe "PAW_UFULLSTENDIG_BEARER_TOKEN"
-                }
-            }
-
-            "Skal få 403 ved TokenX-token uten pid claim" {
-                testApplication {
-                    configureTestApplication(bekreftelseServiceMock)
-                    val client = configureTestClient()
-
-                    val token = mockOAuth2Server.issueToken(
-                        claims = mapOf(
-                            "acr" to "idporten-loa-high"
-                        )
-                    )
-
-                    val response = client.get("/api/v1/tilgjengelige-bekreftelser") {
-                        bearerAuth(token.serialize())
-                    }
-
-                    response.status shouldBe HttpStatusCode.Forbidden
-                    val body = response.body<ProblemDetails>()
-                    body.status shouldBe HttpStatusCode.Forbidden
-                    body.type shouldBe "PAW_UFULLSTENDIG_BEARER_TOKEN"
-                }
-            }
-
-            "Skal få 403 ved TokenX-token når innsendt ident er ikke lik pid claim" {
-                testApplication {
-                    configureTestApplication(bekreftelseServiceMock)
-                    val client = configureTestClient()
-
-                    val token = mockOAuth2Server.issueToken(
-                        claims = mapOf(
-                            "acr" to "idporten-loa-high",
-                            "pid" to "01017012345"
-                        )
-                    )
-
-                    val response = client.post("/api/v1/tilgjengelige-bekreftelser") {
-                        bearerAuth(token.serialize())
-                        headers {
-                            append(HttpHeaders.ContentType, ContentType.Application.Json)
-                        }
-                        setBody(TilgjengeligeBekreftelserRequest("02017012345"))
-                    }
-
-                    response.status shouldBe HttpStatusCode.Forbidden
-                    val body = response.body<ProblemDetails>()
-                    body.status shouldBe HttpStatusCode.Forbidden
-                    body.type shouldBe "PAW_BRUKER_HAR_IKKE_TILGANG"
-                }
-            }
-
-            "Skal få 403 ved Azure-token men GET-request" {
-                testApplication {
-                    configureTestApplication(bekreftelseServiceMock)
-                    val client = configureTestClient()
-
-                    val token = mockOAuth2Server.issueToken(
-                        claims = mapOf(
-                            "NAVident" to "12345"
-                        )
-                    )
-
-                    val response = client.get("/api/v1/tilgjengelige-bekreftelser") {
-                        bearerAuth(token.serialize())
-                    }
-
-                    response.status shouldBe HttpStatusCode.Forbidden
-                    val body = response.body<ProblemDetails>()
-                    body.status shouldBe HttpStatusCode.Forbidden
-                    body.type shouldBe "PAW_BRUKER_HAR_IKKE_TILGANG"
-                }
-            }
-
-            "Skal få 403 ved Azure-token med POST-request uten ident" {
-                testApplication {
-                    configureTestApplication(bekreftelseServiceMock)
-                    val client = configureTestClient()
-
-                    val token = mockOAuth2Server.issueToken(
-                        claims = mapOf(
-                            "NAVident" to "12345"
-                        )
-                    )
-
-                    val response = client.post("/api/v1/tilgjengelige-bekreftelser") {
-                        bearerAuth(token.serialize())
-                        headers {
-                            append(HttpHeaders.ContentType, ContentType.Application.Json)
-                        }
-                        setBody(TilgjengeligeBekreftelserRequest())
-                    }
-
-                    response.status shouldBe HttpStatusCode.Forbidden
-                    val body = response.body<ProblemDetails>()
-                    body.status shouldBe HttpStatusCode.Forbidden
-                    body.type shouldBe "PAW_BRUKER_HAR_IKKE_TILGANG"
                 }
             }
         }

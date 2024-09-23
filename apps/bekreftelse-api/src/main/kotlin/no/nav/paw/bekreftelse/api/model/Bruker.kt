@@ -1,5 +1,7 @@
 package no.nav.paw.bekreftelse.api.model
 
+import java.util.*
+
 enum class BrukerType {
     SLUTTBRUKER,
     VEILEDER
@@ -19,3 +21,5 @@ fun BrukerType.toApi(): no.nav.paw.bekreftelse.melding.v1.vo.BrukerType {
         BrukerType.VEILEDER -> no.nav.paw.bekreftelse.melding.v1.vo.BrukerType.VEILEDER
     }
 }
+
+data class NavAnsatt(val azureId: UUID, val navIdent: String)

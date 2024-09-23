@@ -48,7 +48,7 @@ class HttpExceptionHandlerTest : FreeSpec({
             val responseBody404 = response400.body<ProblemDetails>()
             response400.status shouldBe HttpStatusCode.BadRequest
             responseBody404.status shouldBe HttpStatusCode.BadRequest
-            responseBody404.type shouldBe "PAW_KUNNE_IKKE_TOLKE_FORESPOERSEL"
+            responseBody404.code shouldBe "PAW_KUNNE_IKKE_TOLKE_FORESPOERSEL"
             responseBody404.title shouldBe HttpStatusCode.BadRequest.description
         }
     }

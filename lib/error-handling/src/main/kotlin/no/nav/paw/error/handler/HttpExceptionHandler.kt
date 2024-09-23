@@ -28,51 +28,51 @@ fun resolveProblemDetails(request: ApplicationRequest, throwable: Throwable): Pr
     when (throwable) {
         is BadRequestException -> {
             return build400Error(
-                "PAW_KUNNE_IKKE_TOLKE_FORESPOERSEL",
-                "Kunne ikke tolke forespørsel",
-                request.uri
+                code = "PAW_KUNNE_IKKE_TOLKE_FORESPOERSEL",
+                detail = "Kunne ikke tolke forespørsel",
+                instance = request.uri
             )
         }
 
         is ContentTransformationException -> {
             return build400Error(
-                "PAW_KUNNE_IKKE_TOLKE_INNHOLD",
-                "Kunne ikke tolke innhold i forespørsel",
-                request.uri
+                code = "PAW_KUNNE_IKKE_TOLKE_INNHOLD",
+                detail = "Kunne ikke tolke innhold i forespørsel",
+                instance = request.uri
             )
         }
 
         is RequestAlreadyConsumedException -> {
             return build500Error(
-                "PAW_FORESPOERSEL_ALLEREDE_MOTTATT",
-                "Forespørsel er allerede mottatt. Dette er en kodefeil",
-                request.uri
+                code = "PAW_FORESPOERSEL_ALLEREDE_MOTTATT",
+                detail = "Forespørsel er allerede mottatt. Dette er en kodefeil",
+                instance = request.uri
             )
         }
 
         is ServerResponseException -> {
             return buildError(
-                throwable.code,
-                throwable.message,
-                throwable.status,
-                request.uri
+                code = throwable.code,
+                detail = throwable.message,
+                status = throwable.status,
+                instance = request.uri
             )
         }
 
         is ClientResponseException -> {
             return buildError(
-                throwable.code,
-                throwable.message,
-                throwable.status,
-                request.uri
+                code = throwable.code,
+                detail = throwable.message,
+                status = throwable.status,
+                instance = request.uri
             )
         }
 
         else -> {
             return build500Error(
-                "PAW_UKJENT_FEIL",
-                "Forespørsel feilet med ukjent feil",
-                request.uri
+                code = "PAW_UKJENT_FEIL",
+                detail = "Forespørsel feilet med ukjent feil",
+                instance = request.uri
             )
         }
     }
