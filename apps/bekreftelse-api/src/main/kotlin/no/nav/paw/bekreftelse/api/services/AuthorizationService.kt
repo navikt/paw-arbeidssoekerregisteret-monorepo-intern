@@ -5,6 +5,7 @@ import no.nav.paw.bekreftelse.api.authz.Azure
 import no.nav.paw.bekreftelse.api.authz.NavIdent
 import no.nav.paw.bekreftelse.api.authz.OID
 import no.nav.paw.bekreftelse.api.authz.PID
+import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.exception.BrukerHarIkkeTilgangException
 import no.nav.paw.bekreftelse.api.model.BrukerType
 import no.nav.paw.bekreftelse.api.model.InnloggetBruker
@@ -20,6 +21,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 class AuthorizationService(
+    private val applicationConfig: ApplicationConfig,
     private val kafkaKeysClient: KafkaKeysClient,
     private val poaoTilgangClient: PoaoTilgangClient
 ) {
@@ -99,6 +101,7 @@ class AuthorizationService(
                 } else {
                     logger.debug("NAV-ansatt har benyttet {}-tilgang til informasjon om bruker", tilgangType)
                     auditLogger.audit(
+                        applicationConfig.runtimeEnvironment,
                         sluttbruker.identitetsnummer,
                         navAnsatt,
                         tilgangType,

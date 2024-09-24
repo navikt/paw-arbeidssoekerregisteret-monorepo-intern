@@ -18,7 +18,7 @@ on:
 
 env:
   MODULE: bekreftelse-api
-  IMAGE: europe-north1-docker.pkg.dev/${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}/paw/paw-arbeidssoeker-bekreftelse-api
+  IMAGE: europe-north1-docker.pkg.dev/${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}/paw/paw-arbeidssoekerregisteret-bekreftelse-api
 jobs:
   build:
     name: Build

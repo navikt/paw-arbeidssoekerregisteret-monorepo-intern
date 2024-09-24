@@ -3,7 +3,7 @@ corsAllowOrigins = "${CORS_ALLOW_ORIGINS}"
 
 [kafkaTopology]
 applicationIdSuffix = "${KAFKA_STREAMS_ID_SUFFIX}"
-producerId = "paw-arbeidssoeker-bekreftelse-api"
+producerId = "paw-arbeidssoekerregisteret-bekreftelse-api"
 bekreftelseTopic = "${KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_TOPIC}"
 bekreftelseHendelsesloggTopic = "${KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_HENDELSESLOGG_TOPIC}"
 internStateStoreName = "internStateStore"

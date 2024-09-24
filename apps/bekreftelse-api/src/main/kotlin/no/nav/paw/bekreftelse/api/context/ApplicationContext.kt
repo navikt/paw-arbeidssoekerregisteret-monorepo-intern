@@ -54,16 +54,19 @@ data class ApplicationContext(
 
             val poaoTilgangClient = PoaoTilgangCachedClient(
                 PoaoTilgangHttpClient(
-                    applicationConfig.poaoClientConfig.url,
+                    baseUrl = applicationConfig.poaoClientConfig.url,
                     { azureM2MTokenClient.createMachineToMachineToken(applicationConfig.poaoClientConfig.scope) }
                 )
             )
 
-            val authorizationService = AuthorizationService(kafkaKeysClient, poaoTilgangClient)
+            val authorizationService = AuthorizationService(applicationConfig, kafkaKeysClient, poaoTilgangClient)
 
             val bekreftelseTopology = buildBekreftelseTopology(applicationConfig, prometheusMeterRegistry)
-            val bekreftelseKafkaStreams =
-                buildKafkaStreams(applicationConfig, healthIndicatorRepository, bekreftelseTopology)
+            val bekreftelseKafkaStreams = buildKafkaStreams(
+                applicationConfig,
+                healthIndicatorRepository,
+                bekreftelseTopology
+            )
 
             val bekreftelseKafkaProducer = BekreftelseKafkaProducer(applicationConfig)
 

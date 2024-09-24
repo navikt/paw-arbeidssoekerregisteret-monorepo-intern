@@ -22,35 +22,30 @@ fun Route.bekreftelseRoutes(applicationContext: ApplicationContext) {
         authenticate("idporten", "tokenx", "azure") {
             get("/tilgjengelige-bekreftelser") {
                 with(authorize(null, authorizationService, TilgangType.LESE)) {
-                    val tilgjengeligeBekreftelser = bekreftelseService
-                        .finnTilgjengeligBekreftelser(
-                            sluttbruker,
-                            innloggetBruker,
-                            TilgjengeligeBekreftelserRequest(sluttbruker.identitetsnummer),
-                            useMockData
-                        )
+                    val response = bekreftelseService.finnTilgjengeligBekreftelser(
+                        sluttbruker,
+                        innloggetBruker,
+                        TilgjengeligeBekreftelserRequest(sluttbruker.identitetsnummer),
+                        useMockData
+                    )
 
-                    call.respond(HttpStatusCode.OK, tilgjengeligeBekreftelser)
-
-                    // TODO Exception handling
+                    call.respond(HttpStatusCode.OK, response)
                 }
             }
+
             post<TilgjengeligeBekreftelserRequest>("/tilgjengelige-bekreftelser") { request ->
                 with(authorize(request.identitetsnummer, authorizationService, TilgangType.LESE)) {
-                    val tilgjengeligeBekreftelser = bekreftelseService
-                        .finnTilgjengeligBekreftelser(
-                            sluttbruker,
-                            innloggetBruker,
-                            request,
-                            useMockData
-                        )
+                    val response = bekreftelseService.finnTilgjengeligBekreftelser(
+                        sluttbruker,
+                        innloggetBruker,
+                        request,
+                        useMockData
+                    )
 
-                    call.respond(HttpStatusCode.OK, tilgjengeligeBekreftelser)
-
-                    // TODO Exception handling
+                    call.respond(HttpStatusCode.OK, response)
                 }
-
             }
+
             post<BekreftelseRequest>("/bekreftelse") { request ->
                 with(authorize(request.identitetsnummer, authorizationService, TilgangType.SKRIVE)) {
                     bekreftelseService.mottaBekreftelse(
@@ -61,11 +56,8 @@ fun Route.bekreftelseRoutes(applicationContext: ApplicationContext) {
                     )
 
                     call.respond(HttpStatusCode.OK)
-
-                    // TODO Exception handling
                 }
             }
         }
     }
 }
-

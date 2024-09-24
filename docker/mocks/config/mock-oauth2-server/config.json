@@ -8,22 +8,11 @@
       "requestMappings": [
         {
           "requestParam": "client_id",
-          "match": "paw-microfrontend-toggler",
+          "match": "paw-arbeidssoekerregisteret-bekreftelse-api-tokenx",
           "claims": {
-            "sub": "admin@paw-microfrontend-toggler",
+            "sub": "admin@paw-arbeidssoekerregisteret-bekreftelse-api",
             "aud": [
-              "paw-microfrontend-toggler"
-            ],
-            "acr": "idporten-loa-high"
-          }
-        },
-        {
-          "requestParam": "client_id",
-          "match": "paw-arbeidssoeker-bekreftelse-api-tokenx",
-          "claims": {
-            "sub": "admin@paw-arbeidssoeker-bekreftelse-api",
-            "aud": [
-              "paw-arbeidssoeker-bekreftelse-api-tokenx"
+              "paw-arbeidssoekerregisteret-bekreftelse-api-tokenx"
             ],
             "pid": "17830348441",
             "acr": "idporten-loa-high"
@@ -31,22 +20,22 @@
         },
         {
           "requestParam": "client_id",
-          "match": "paw-arbeidssoeker-bekreftelse-api-azure",
+          "match": "paw-arbeidssoekerregisteret-bekreftelse-api-azure",
           "claims": {
-            "sub": "admin@paw-arbeidssoeker-bekreftelse-api",
+            "sub": "admin@paw-arbeidssoekerregisteret-bekreftelse-api",
             "aud": [
-              "paw-arbeidssoeker-bekreftelse-api-azure"
+              "paw-arbeidssoekerregisteret-bekreftelse-api-azure"
             ],
             "NAVident": "12345"
           }
         },
         {
           "requestParam": "client_id",
-          "match": "paw-arbeidssoeker-bekreftelse-api-idporten",
+          "match": "paw-arbeidssoekerregisteret-bekreftelse-api-idporten",
           "claims": {
-            "sub": "admin@paw-arbeidssoeker-bekreftelse-api",
+            "sub": "admin@paw-arbeidssoekerregisteret-bekreftelse-api",
             "aud": [
-              "paw-arbeidssoeker-bekreftelse-api-idporten"
+              "paw-arbeidssoekerregisteret-bekreftelse-api-idporten"
             ],
             "pid": "17830348441",
             "acr": "idporten-loa-high"

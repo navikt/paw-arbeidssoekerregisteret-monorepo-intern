@@ -216,6 +216,7 @@ components:
         - instance
       example:
         type: "about:blank"
+        code: "BRUKER_HAR_IKKE_TILGANG"
         title: "Forbidden"
         status: 403
         detail: "Access denied"

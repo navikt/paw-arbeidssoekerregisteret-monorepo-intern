@@ -62,4 +62,3 @@ fun Application.module(applicationConfig: ApplicationConfig) {
         bekreftelseRoutes(applicationContext)
     }
 }
-

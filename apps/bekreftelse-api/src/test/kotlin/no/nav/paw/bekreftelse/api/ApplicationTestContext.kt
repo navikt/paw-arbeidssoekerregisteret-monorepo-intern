@@ -52,7 +52,7 @@ class ApplicationTestContext {
     val poaoTilgangClientMock = mockk<PoaoTilgangClient>()
     val bekreftelseKafkaProducerMock = mockk<BekreftelseKafkaProducer>()
     val bekreftelseHttpConsumerMock = mockk<BekreftelseHttpConsumer>()
-    val authorizationService = AuthorizationService(kafkaKeysClientMock, poaoTilgangClientMock)
+    val authorizationService = AuthorizationService(applicationConfig, kafkaKeysClientMock, poaoTilgangClientMock)
     val bekreftelseServiceMock = mockk<BekreftelseService>()
     val bekreftelseServiceReal = BekreftelseService(
         applicationConfig,
