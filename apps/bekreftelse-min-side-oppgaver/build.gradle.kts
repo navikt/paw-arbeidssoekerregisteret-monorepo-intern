@@ -21,6 +21,7 @@ dependencies {
     implementation(apacheAvro.kafkaStreamsAvroSerde)
 
     implementation(ktorServer.bundles.withNettyAndMicrometer)
+    implementation(micrometer.registryPrometheus)
 
     implementation("no.nav.tms.varsel:kotlin-builder:1.0.0")
 

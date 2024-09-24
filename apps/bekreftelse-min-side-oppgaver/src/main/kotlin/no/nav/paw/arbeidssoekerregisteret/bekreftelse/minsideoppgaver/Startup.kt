@@ -1,6 +1,18 @@
 package no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver
 
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+import io.ktor.server.application.*
+import io.ktor.server.engine.*
+import io.ktor.server.metrics.micrometer.*
+import io.ktor.server.netty.*
+import io.ktor.server.routing.*
+import io.micrometer.core.instrument.binder.MeterBinder
+import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
+import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
+import io.micrometer.core.instrument.binder.kafka.KafkaStreamsMetrics
+import io.micrometer.core.instrument.binder.system.ProcessorMetrics
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.applicationTopology
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.varselbygger.VarselMeldingBygger
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.kafkaTopics
@@ -11,6 +23,14 @@ import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.config.kafka.KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG
 import no.nav.paw.config.kafka.KafkaConfig
 import no.nav.paw.config.kafka.streams.KafkaStreamsFactory
+import no.nav.paw.error.handler.withApplicationTerminatingExceptionHandler
+import no.nav.paw.health.listener.createHealthIndicatorStateListener
+import no.nav.paw.health.listener.withHealthIndicatorStateListener
+import no.nav.paw.health.model.HealthStatus
+import no.nav.paw.health.model.LivenessHealthIndicator
+import no.nav.paw.health.model.ReadinessHealthIndicator
+import no.nav.paw.health.repository.HealthIndicatorRepository
+import no.nav.paw.health.route.healthRoutes
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
@@ -39,5 +59,40 @@ fun main() {
     val stream = KafkaStreams(streamsBuilder.applicationTopology(
         varselMeldingBygger = VarselMeldingBygger(runtimeEvironment),
         kafkaTopics = kafkaTopics,
-        stateStoreName = STATE_STORE_NAME), streamsFactory.properties)
+        stateStoreName = STATE_STORE_NAME), streamsFactory.properties
+    )
+    stream.withApplicationTerminatingExceptionHandler()
+    stream.start()
+
+    val registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+    val healthIndicatorRepository = HealthIndicatorRepository()
+    val livenessHealthIndicator = healthIndicatorRepository.addLivenessIndicator(LivenessHealthIndicator(initialStatus = HealthStatus.UNKNOWN))
+    val readinessHealthIndicator = healthIndicatorRepository.addReadinessIndicator(ReadinessHealthIndicator(initialStatus = HealthStatus.UNKNOWN))
+    stream.withHealthIndicatorStateListener(
+        livenessIndicator = livenessHealthIndicator,
+        readinessIndicator = readinessHealthIndicator
+    )
+    embeddedServer(Netty, port = 8080) {
+        configureMetrics(
+            registry,
+            KafkaStreamsMetrics(stream)
+        )
+        routing {
+            healthRoutes(healthIndicatorRepository)
+        }
+    }.start(wait = true)
+}
+
+fun Application.configureMetrics(
+    registry: PrometheusMeterRegistry,
+    vararg additionalBinders: MeterBinder
+) {
+    install(MicrometerMetrics) {
+        this.registry = registry
+        meterBinders = listOf(
+            JvmMemoryMetrics(),
+            JvmGcMetrics(),
+            ProcessorMetrics()
+        ) + additionalBinders
+    }
 }
