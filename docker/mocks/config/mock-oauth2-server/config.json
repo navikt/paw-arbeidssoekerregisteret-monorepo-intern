@@ -8,11 +8,11 @@
       "requestMappings": [
         {
           "requestParam": "client_id",
-          "match": "paw-arbeidssoekerregisteret-bekreftelse-api-tokenx",
+          "match": "paw-arbeidssoekerregisteret-api-bekreftelse-tokenx",
           "claims": {
-            "sub": "admin@paw-arbeidssoekerregisteret-bekreftelse-api",
+            "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
             "aud": [
-              "paw-arbeidssoekerregisteret-bekreftelse-api-tokenx"
+              "paw-arbeidssoekerregisteret-api-bekreftelse-tokenx"
             ],
             "pid": "17830348441",
             "acr": "idporten-loa-high"
@@ -20,22 +20,22 @@
         },
         {
           "requestParam": "client_id",
-          "match": "paw-arbeidssoekerregisteret-bekreftelse-api-azure",
+          "match": "paw-arbeidssoekerregisteret-api-bekreftelse-azure",
           "claims": {
-            "sub": "admin@paw-arbeidssoekerregisteret-bekreftelse-api",
+            "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
             "aud": [
-              "paw-arbeidssoekerregisteret-bekreftelse-api-azure"
+              "paw-arbeidssoekerregisteret-api-bekreftelse-azure"
             ],
             "NAVident": "12345"
           }
         },
         {
           "requestParam": "client_id",
-          "match": "paw-arbeidssoekerregisteret-bekreftelse-api-idporten",
+          "match": "paw-arbeidssoekerregisteret-api-bekreftelse-idporten",
           "claims": {
-            "sub": "admin@paw-arbeidssoekerregisteret-bekreftelse-api",
+            "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
             "aud": [
-              "paw-arbeidssoekerregisteret-bekreftelse-api-idporten"
+              "paw-arbeidssoekerregisteret-api-bekreftelse-idporten"
             ],
             "pid": "17830348441",
             "acr": "idporten-loa-high"

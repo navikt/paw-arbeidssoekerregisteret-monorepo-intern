@@ -1,7 +1,7 @@
 apiVersion: nais.io/v1alpha1
 kind: Application
 metadata:
-  name: paw-arbeidssoekerregisteret-bekreftelse-api
+  name: paw-arbeidssoekerregisteret-api-bekreftelse
   namespace: paw
   labels:
     team: paw

@@ -52,4 +52,4 @@ spec:
           - application: paw-arbeidssoekerregisteret-utgang-pdl
           - application: paw-microfrontend-toggler
           - application: paw-arbeidssoekerregisteret-hendelselogg-backup
-          - application: paw-arbeidssoekerregisteret-bekreftelse-api
+          - application: paw-arbeidssoekerregisteret-api-bekreftelse
