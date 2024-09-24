@@ -27,6 +27,8 @@ dependencies {
     testImplementation(orgApacheKafka.streamsTest)
     testImplementation(testLibs.runnerJunit5)
     testImplementation(testLibs.assertionsCore)
+    testImplementation(project(":lib:kafka-key-generator-client"))
+    testImplementation(project(":test:test-data-lib"))
 }
 
 //enable context receiver

@@ -19,7 +19,7 @@ class VarselMeldingBygger(private val runtimeEnvironment: RuntimeEnvironment) {
             type = Varseltype.Oppgave
             link = "https://bakreftelse-arbreg.nav.no/?bekreftelse=${hendelse.bekreftelseId}"
             produsent = runtimeEnvironment.produsent()
-            tekster + Tekst(
+            tekst = Tekst(
                 spraakkode = "nb",
                 tekst = "Du har en ny arbeidssøkerbekreftelse som venter",
                 default = true
