@@ -6,7 +6,7 @@ applicationIdSuffix = "v1"
 producerId = "paw-arbeidssoekerregisteret-api-bekreftelse"
 bekreftelseTopic = "paw.arbeidssoker-bekreftelse-v1"
 bekreftelseHendelsesloggTopic = "paw.arbeidssoker-bekreftelse-hendelseslogg-v1"
-internStateStoreName = "internStateStore"
+internStateStoreName = "intern-state-store"
 
 [[authProviders]]
 name = "idporten"

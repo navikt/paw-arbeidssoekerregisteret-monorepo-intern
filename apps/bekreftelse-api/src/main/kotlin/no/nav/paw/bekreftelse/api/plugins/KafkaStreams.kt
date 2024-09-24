@@ -34,7 +34,6 @@ val KafkaStreamsPlugin: ApplicationPlugin<KafkaStreamsPluginConfig> =
 
         on(MonitoringEvent(ApplicationStarted)) { application ->
             application.log.info("Starter Kafka Streams")
-            kafkaStreams.forEach { stream -> stream.cleanUp() } // TODO Remove before prod
             kafkaStreams.forEach { stream -> stream.start() }
         }
 
