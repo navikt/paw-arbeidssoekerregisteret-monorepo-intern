@@ -7,7 +7,7 @@ import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
-import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjendstaaendeTid
+import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjenstaaendeTid
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
 import no.nav.paw.bekreftelse.melding.v1.vo.BrukerType
 import no.nav.paw.bekreftelse.melding.v1.vo.Metadata
@@ -104,7 +104,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                 hendelser.size shouldBe 1
                 val kv = hendelser.last()
                 kv.key shouldBe kafkaKeyResponse.key
-                kv.value.shouldBeInstanceOf<RegisterGracePeriodeGjendstaaendeTid>()
+                kv.value.shouldBeInstanceOf<RegisterGracePeriodeGjenstaaendeTid>()
             }
             "Etter 21 dager uten svar skal det ha blitt sendt en RegisterGracePeriodeUtloept hendelse" {
                 testDriver.advanceWallClockTime(BekreftelseConfig.varselFoerGracePeriodeUtloept.plusSeconds(5))
@@ -388,7 +388,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                 hendelser.size shouldBe 3
                 val kv = hendelser.last()
                 kv.key shouldBe kafkaKeyResponse.key
-                kv.value.shouldBeInstanceOf<RegisterGracePeriodeGjendstaaendeTid>()
+                kv.value.shouldBeInstanceOf<RegisterGracePeriodeGjenstaaendeTid>()
             }
         }
         "GracePeriodeUtloept og RegisterGracePeriodeUtloept" {

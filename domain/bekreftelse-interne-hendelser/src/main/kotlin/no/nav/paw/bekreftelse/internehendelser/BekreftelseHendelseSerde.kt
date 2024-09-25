@@ -38,7 +38,7 @@ object BekreftelseHendelseDeserializer: Deserializer<BekreftelseHendelse> {
             bekreftelseTilgjengeligHendelseType -> objectMapper.readValue<BekreftelseTilgjengelig>(node.traverse())
             meldingMottattHendelseType -> objectMapper.readValue<BekreftelseMeldingMottatt>(node.traverse())
             periodeAvsluttetHendelsesType -> objectMapper.readValue<PeriodeAvsluttet>(node.traverse())
-            registerGracePeriodeGjenstaaendeTid -> objectMapper.readValue<RegisterGracePeriodeGjendstaaendeTid>(node.traverse())
+            registerGracePeriodeGjenstaaendeTid -> objectMapper.readValue<RegisterGracePeriodeGjenstaaendeTid>(node.traverse())
             beOmAaAvsluttePeriodeHendelsesType -> objectMapper.readValue<BaOmAaAvsluttePeriode>(node.traverse())
             else -> throw IllegalArgumentException("Ukjent hendelseType: $hendelseType")
         }

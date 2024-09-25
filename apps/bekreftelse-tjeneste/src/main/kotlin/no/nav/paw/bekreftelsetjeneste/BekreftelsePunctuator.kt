@@ -4,7 +4,7 @@ import arrow.core.toNonEmptyListOrNull
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
-import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjendstaaendeTid
+import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjenstaaendeTid
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
 import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstand
@@ -120,7 +120,7 @@ private fun InternTilstand.getProcessedBekreftelseTilstandAndHendelse(
 
         bekreftelse.tilstand == Tilstand.VenterSvar && bekreftelse.erSisteVarselOmGjenstaaendeGraceTid(timestamp) -> {
             val updatedBekreftelse = bekreftelse.copy(sisteVarselOmGjenstaaendeGraceTid = timestamp)
-            val hendelse = RegisterGracePeriodeGjendstaaendeTid(
+            val hendelse = RegisterGracePeriodeGjenstaaendeTid(
                 hendelseId = UUID.randomUUID(),
                 periodeId = periode.periodeId,
                 arbeidssoekerId = periode.arbeidsoekerId,

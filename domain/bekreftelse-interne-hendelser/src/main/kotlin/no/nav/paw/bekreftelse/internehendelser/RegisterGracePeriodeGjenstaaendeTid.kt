@@ -6,7 +6,7 @@ import java.util.*
 
 const val registerGracePeriodeGjenstaaendeTid = "bekreftelse.register_grace_periode_gjenstaaende_tid"
 
-data class RegisterGracePeriodeGjendstaaendeTid(
+data class RegisterGracePeriodeGjenstaaendeTid(
     override val hendelseId: UUID,
     override val periodeId: UUID,
     override val arbeidssoekerId: Long,
