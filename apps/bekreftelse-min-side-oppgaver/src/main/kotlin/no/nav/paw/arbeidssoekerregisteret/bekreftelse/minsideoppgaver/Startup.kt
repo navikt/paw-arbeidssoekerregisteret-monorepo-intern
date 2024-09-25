@@ -62,7 +62,6 @@ fun main() {
         stateStoreName = STATE_STORE_NAME), streamsFactory.properties
     )
     stream.withApplicationTerminatingExceptionHandler()
-    stream.start()
 
     val registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val healthIndicatorRepository = HealthIndicatorRepository()
@@ -72,6 +71,7 @@ fun main() {
         livenessIndicator = livenessHealthIndicator,
         readinessIndicator = readinessHealthIndicator
     )
+    stream.start()
     embeddedServer(Netty, port = 8080) {
         configureMetrics(
             registry,
