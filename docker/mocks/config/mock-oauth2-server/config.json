@@ -3,42 +3,56 @@
   "httpServer": "NettyWrapper",
   "tokenCallbacks": [
     {
-      "issuerId": "default",
+      "issuerId": "idporten",
       "tokenExpiry": 3600,
       "requestMappings": [
         {
           "requestParam": "client_id",
-          "match": "paw-arbeidssoekerregisteret-api-bekreftelse-tokenx",
+          "match": "paw-arbeidssoekerregisteret-api-bekreftelse",
           "claims": {
             "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
             "aud": [
-              "paw-arbeidssoekerregisteret-api-bekreftelse-tokenx"
+              "paw-arbeidssoekerregisteret-api-bekreftelse"
             ],
             "pid": "17830348441",
             "acr": "idporten-loa-high"
           }
-        },
+        }
+      ]
+    },
+    {
+      "issuerId": "tokenx",
+      "tokenExpiry": 3600,
+      "requestMappings": [
         {
           "requestParam": "client_id",
-          "match": "paw-arbeidssoekerregisteret-api-bekreftelse-azure",
+          "match": "paw-arbeidssoekerregisteret-api-bekreftelse",
           "claims": {
             "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
             "aud": [
-              "paw-arbeidssoekerregisteret-api-bekreftelse-azure"
+              "paw-arbeidssoekerregisteret-api-bekreftelse"
             ],
+            "pid": "17830348441",
+            "acr": "idporten-loa-high"
+          }
+        }
+      ]
+    },
+    {
+      "issuerId": "azure",
+      "tokenExpiry": 3600,
+      "requestMappings": [
+        {
+          "requestParam": "client_id",
+          "match": "paw-arbeidssoekerregisteret-api-bekreftelse",
+          "claims": {
+            "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
+            "aud": [
+              "paw-arbeidssoekerregisteret-api-bekreftelse"
+            ],
+            "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
+            "name": "Nav Navesen",
             "NAVident": "12345"
-          }
-        },
-        {
-          "requestParam": "client_id",
-          "match": "paw-arbeidssoekerregisteret-api-bekreftelse-idporten",
-          "claims": {
-            "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
-            "aud": [
-              "paw-arbeidssoekerregisteret-api-bekreftelse-idporten"
-            ],
-            "pid": "17830348441",
-            "acr": "idporten-loa-high"
           }
         }
       ]

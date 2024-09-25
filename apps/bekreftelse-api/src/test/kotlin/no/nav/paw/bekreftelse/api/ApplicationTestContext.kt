@@ -6,6 +6,7 @@ import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
 import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
@@ -13,7 +14,6 @@ import io.ktor.server.routing.routing
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.mockk.mockk
-import no.nav.paw.bekreftelse.api.authz.authorize
 import no.nav.paw.bekreftelse.api.config.APPLICATION_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.config.AuthProvider
@@ -21,8 +21,12 @@ import no.nav.paw.bekreftelse.api.config.AuthProviders
 import no.nav.paw.bekreftelse.api.config.Claims
 import no.nav.paw.bekreftelse.api.consumer.BekreftelseHttpConsumer
 import no.nav.paw.bekreftelse.api.context.ApplicationContext
+import no.nav.paw.bekreftelse.api.context.resolveRequest
+import no.nav.paw.bekreftelse.api.model.Azure
+import no.nav.paw.bekreftelse.api.model.IdPorten
 import no.nav.paw.bekreftelse.api.model.InternState
 import no.nav.paw.bekreftelse.api.model.TilgjengeligeBekreftelserRequest
+import no.nav.paw.bekreftelse.api.model.TokenX
 import no.nav.paw.bekreftelse.api.plugins.configureAuthentication
 import no.nav.paw.bekreftelse.api.plugins.configureHTTP
 import no.nav.paw.bekreftelse.api.plugins.configureLogging
@@ -62,33 +66,6 @@ class ApplicationTestContext {
     )
     val mockOAuth2Server = MockOAuth2Server()
 
-    fun MockOAuth2Server.createAuthProviders(): AuthProviders {
-        val wellKnownUrl = wellKnownUrl("default").toString()
-        return listOf(
-            AuthProvider(
-                "idporten", wellKnownUrl, "default", Claims(
-                    listOf(
-                        "acr=idporten-loa-high"
-                    )
-                )
-            ),
-            AuthProvider(
-                "tokenx", wellKnownUrl, "default", Claims(
-                    listOf(
-                        "acr=Level4", "acr=idporten-loa-high"
-                    ), true
-                )
-            ),
-            AuthProvider(
-                "azure", wellKnownUrl, "default", Claims(
-                    listOf(
-                        "NAVident"
-                    )
-                )
-            )
-        )
-    }
-
     fun ApplicationTestBuilder.configureTestApplication(bekreftelseService: BekreftelseService) {
         val applicationContext = ApplicationContext(
             applicationConfig.copy(authProviders = mockOAuth2Server.createAuthProviders()),
@@ -107,21 +84,7 @@ class ApplicationTestContext {
             configureSerialization()
             routing {
                 bekreftelseRoutes(applicationContext)
-                route("/api/secured") {
-                    authenticate("idporten", "tokenx", "azure") {
-                        get("/") {
-                            with(authorize(null, authorizationService, TilgangType.LESE)) {
-                                call.respond("WHATEVER")
-                            }
-                        }
-
-                        post<TilgjengeligeBekreftelserRequest>("/") { request ->
-                            with(authorize(request.identitetsnummer, authorizationService, TilgangType.SKRIVE)) {
-                                call.respond("WHATEVER")
-                            }
-                        }
-                    }
-                }
+                testRoutes()
             }
         }
     }
@@ -134,5 +97,54 @@ class ApplicationTestContext {
                 }
             }
         }
+    }
+
+    private fun Route.testRoutes() {
+        route("/api/secured") {
+            authenticate("idporten", "tokenx", "azure") {
+                get("/") {
+                    with(resolveRequest()) {
+                        with(authorizationService.authorize(TilgangType.LESE)) {
+                            call.respond("WHATEVER")
+                        }
+                    }
+                }
+
+                post<TilgjengeligeBekreftelserRequest>("/") { request ->
+                    with(resolveRequest(request.identitetsnummer)) {
+                        with(authorizationService.authorize(TilgangType.SKRIVE)) {
+                            call.respond("WHATEVER")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun MockOAuth2Server.createAuthProviders(): AuthProviders {
+        val wellKnownUrl = wellKnownUrl("default").toString()
+        return listOf(
+            AuthProvider(
+                IdPorten.name, wellKnownUrl, "default", Claims(
+                    listOf(
+                        "acr=idporten-loa-high"
+                    )
+                )
+            ),
+            AuthProvider(
+                TokenX.name, wellKnownUrl, "default", Claims(
+                    listOf(
+                        "acr=Level4", "acr=idporten-loa-high"
+                    ), true
+                )
+            ),
+            AuthProvider(
+                Azure.name, wellKnownUrl, "default", Claims(
+                    listOf(
+                        "NAVident"
+                    )
+                )
+            )
+        )
     }
 }

@@ -28,8 +28,7 @@
             <root level="INFO">
                 <appender-ref ref="STDOUT_JSON"/>
             </root>
-            <logger name="no.nav.security" level="DEBUG"/>
+            <include resource="no/nav/common/audit_log/logback-naudit.xml"/>
         </else>
     </if>
-    <include resource="no/nav/common/audit_log/logback-naudit.xml"/>
 </configuration>

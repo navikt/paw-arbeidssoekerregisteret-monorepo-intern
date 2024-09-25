@@ -10,28 +10,28 @@ internStateStoreName = "intern-state-store"
 
 [[authProviders]]
 name = "idporten"
-discoveryUrl = "http://localhost:8081/default/.well-known/openid-configuration"
-clientId = "paw-arbeidssoekerregisteret-api-bekreftelse-idporten"
+discoveryUrl = "http://localhost:8081/idporten/.well-known/openid-configuration"
+clientId = "paw-arbeidssoekerregisteret-api-bekreftelse"
 [authProviders.claims]
 map = ["acr=idporten-loa-high"]
 
 [[authProviders]]
 name = "tokenx"
-discoveryUrl = "http://localhost:8081/default/.well-known/openid-configuration"
-clientId = "paw-arbeidssoekerregisteret-api-bekreftelse-tokenx"
+discoveryUrl = "http://localhost:8081/tokenx/.well-known/openid-configuration"
+clientId = "paw-arbeidssoekerregisteret-api-bekreftelse"
 [authProviders.claims]
 map = ["acr=Level4", "acr=idporten-loa-high"]
 combineWithOr = true
 
 [[authProviders]]
 name = "azure"
-discoveryUrl = "http://localhost:8081/default/.well-known/openid-configuration"
-clientId = "paw-arbeidssoekerregisteret-api-bekreftelse-azure"
+discoveryUrl = "http://localhost:8081/azure/.well-known/openid-configuration"
+clientId = "paw-arbeidssoekerregisteret-api-bekreftelse"
 [authProviders.claims]
 map = ["NAVident"]
 
 [azureM2M]
-tokenEndpointUrl = "http://localhost:8081/default/token"
+tokenEndpointUrl = "http://localhost:8081/azure/token"
 clientId = "paw-arbeidssoekerregisteret-api-bekreftelse"
 
 [poaoClientConfig]

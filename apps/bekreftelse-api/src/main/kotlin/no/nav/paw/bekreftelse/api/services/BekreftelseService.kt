@@ -3,10 +3,9 @@ package no.nav.paw.bekreftelse.api.services
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.consumer.BekreftelseHttpConsumer
+import no.nav.paw.bekreftelse.api.context.SecurityContext
 import no.nav.paw.bekreftelse.api.model.BekreftelseRequest
-import no.nav.paw.bekreftelse.api.model.InnloggetBruker
 import no.nav.paw.bekreftelse.api.model.InternState
-import no.nav.paw.bekreftelse.api.model.Sluttbruker
 import no.nav.paw.bekreftelse.api.model.TilgjengeligBekreftelserResponse
 import no.nav.paw.bekreftelse.api.model.TilgjengeligeBekreftelserRequest
 import no.nav.paw.bekreftelse.api.model.toApi
@@ -45,10 +44,9 @@ class BekreftelseService(
         return checkNotNull(internStateStore) { "Intern state store er ikke initiert" }
     }
 
+    context(SecurityContext)
     @WithSpan
     suspend fun finnTilgjengeligBekreftelser(
-        sluttbruker: Sluttbruker,
-        innloggetBruker: InnloggetBruker,
         request: TilgjengeligeBekreftelserRequest,
         useMockData: Boolean
     ): TilgjengeligBekreftelserResponse {
@@ -63,14 +61,13 @@ class BekreftelseService(
             logger.info("Fant ${internState.tilgjendeligeBekreftelser.size} tilgjengelige bekreftelser")
             return internState.tilgjendeligeBekreftelser.toResponse()
         } else {
-            return finnTilgjengeligBekreftelserFraAnnenNode(sluttbruker, innloggetBruker, request)
+            return finnTilgjengeligBekreftelserFraAnnenNode(request)
         }
     }
 
+    context(SecurityContext)
     @WithSpan
     suspend fun mottaBekreftelse(
-        sluttbruker: Sluttbruker,
-        innloggetBruker: InnloggetBruker,
         request: BekreftelseRequest,
         useMockData: Boolean
     ) {
@@ -98,13 +95,12 @@ class BekreftelseService(
                 // TODO Rekreftelse ikke funnet. Hva gjør vi?
             }
         } else {
-            sendBekreftelseTilAnnenNode(sluttbruker, innloggetBruker, request)
+            sendBekreftelseTilAnnenNode(request)
         }
     }
 
+    context(SecurityContext)
     private suspend fun finnTilgjengeligBekreftelserFraAnnenNode(
-        sluttbruker: Sluttbruker,
-        innloggetBruker: InnloggetBruker,
         request: TilgjengeligeBekreftelserRequest
     ): TilgjengeligBekreftelserResponse {
         val metadata = kafkaStreams.queryMetadataForKey(
@@ -125,9 +121,8 @@ class BekreftelseService(
         }
     }
 
+    context(SecurityContext)
     private suspend fun sendBekreftelseTilAnnenNode(
-        sluttbruker: Sluttbruker,
-        innloggetBruker: InnloggetBruker,
         request: BekreftelseRequest
     ) {
         val metadata = kafkaStreams.queryMetadataForKey(

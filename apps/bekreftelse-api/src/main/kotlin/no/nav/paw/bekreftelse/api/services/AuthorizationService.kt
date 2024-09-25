@@ -1,16 +1,23 @@
 package no.nav.paw.bekreftelse.api.services
 
-import no.nav.paw.bekreftelse.api.authz.AccessToken
-import no.nav.paw.bekreftelse.api.authz.Azure
-import no.nav.paw.bekreftelse.api.authz.NavIdent
-import no.nav.paw.bekreftelse.api.authz.OID
-import no.nav.paw.bekreftelse.api.authz.PID
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
+import no.nav.paw.bekreftelse.api.context.RequestContext
+import no.nav.paw.bekreftelse.api.context.SecurityContext
+import no.nav.paw.bekreftelse.api.exception.BearerTokenManglerException
 import no.nav.paw.bekreftelse.api.exception.BrukerHarIkkeTilgangException
+import no.nav.paw.bekreftelse.api.exception.UfullstendigBearerTokenException
+import no.nav.paw.bekreftelse.api.exception.UkjentBearerTokenException
+import no.nav.paw.bekreftelse.api.model.AccessToken
+import no.nav.paw.bekreftelse.api.model.Azure
 import no.nav.paw.bekreftelse.api.model.BrukerType
 import no.nav.paw.bekreftelse.api.model.InnloggetBruker
 import no.nav.paw.bekreftelse.api.model.NavAnsatt
+import no.nav.paw.bekreftelse.api.model.NavIdent
+import no.nav.paw.bekreftelse.api.model.OID
+import no.nav.paw.bekreftelse.api.model.PID
 import no.nav.paw.bekreftelse.api.model.Sluttbruker
+import no.nav.paw.bekreftelse.api.model.resolveToken
 import no.nav.paw.bekreftelse.api.utils.audit
 import no.nav.paw.bekreftelse.api.utils.auditLogger
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
@@ -27,60 +34,38 @@ class AuthorizationService(
 ) {
     private val logger: Logger = LoggerFactory.getLogger("no.nav.paw.logger.auth")
 
-    suspend fun resolveSluttbruker(accessToken: AccessToken, identitetsnummer: String?): Sluttbruker {
-        val sluttbrukerIdentitetsnummer = when (accessToken.issuer) {
-            is Azure -> {
-                // Veiledere skal alltid sende inn identitetsnummer for sluttbruker
-                identitetsnummer
-                    ?: throw BrukerHarIkkeTilgangException("Veileder må sende med identitetsnummer for sluttbruker")
-            }
+    context(RequestContext)
+    @WithSpan
+    suspend fun authorize(tilgangType: TilgangType): SecurityContext {
+        val bearerToken = bearerToken
+            ?: throw BearerTokenManglerException("Request mangler Bearer Token")
 
-            else -> {
-                val pid = accessToken[PID].verdi
-                if (identitetsnummer != null && identitetsnummer != pid) {
-                    // TODO Håndtere verge
-                    throw BrukerHarIkkeTilgangException("Bruker har ikke tilgang til sluttbrukers informasjon")
-                }
-                identitetsnummer ?: pid
-            }
+        val accessToken = principal
+            ?.context
+            ?.resolveToken()
+            ?: throw UkjentBearerTokenException("Fant ikke token med forventet issuer")
+
+        if (accessToken.claims.isEmpty()) {
+            throw UfullstendigBearerTokenException("Bearer Token mangler påkrevd innhold")
         }
 
-        val kafkaKeysResponse = kafkaKeysClient.getIdAndKey(sluttbrukerIdentitetsnummer)
+        if (!accessToken.isValidIssuer()) {
+            throw UkjentBearerTokenException("Bearer Token er utstedt av ukjent issuer")
+        }
 
-        return Sluttbruker(
-            identitetsnummer = sluttbrukerIdentitetsnummer,
-            arbeidssoekerId = kafkaKeysResponse.id,
-            kafkaKey = kafkaKeysResponse.key
+        val securityContext = SecurityContext(
+            sluttbruker = resolveSluttbruker(accessToken, identitetsnummer),
+            innloggetBruker = resolveInnloggetBruker(bearerToken, accessToken),
+            accessToken = accessToken,
+            tilgangType = tilgangType
         )
+
+        return authorize(securityContext)
     }
 
-    fun resolveInnloggetBruker(bearerToken: String, accessToken: AccessToken): InnloggetBruker {
-        return when (accessToken.issuer) {
-            is Azure -> {
-                val ident = accessToken[NavIdent]
-                InnloggetBruker(
-                    type = BrukerType.VEILEDER,
-                    ident = ident,
-                    bearerToken = bearerToken
-                )
-            }
+    private fun authorize(securityContext: SecurityContext): SecurityContext {
+        val (sluttbruker, _, accessToken, tilgangType) = securityContext
 
-            else -> {
-                val ident = accessToken[PID].verdi
-                InnloggetBruker(
-                    type = BrukerType.SLUTTBRUKER,
-                    ident = ident,
-                    bearerToken = bearerToken
-                )
-            }
-        }
-    }
-
-    fun authorize(
-        accessToken: AccessToken,
-        sluttbruker: Sluttbruker,
-        tilgangType: TilgangType
-    ) {
         when (accessToken.issuer) {
             is Azure -> {
                 val navAnsatt = accessToken.toNavAnsatt()
@@ -113,6 +98,57 @@ class AuthorizationService(
             else -> {
                 // TODO Håndtere verge
                 logger.debug("Ingen tilgangssjekk for sluttbruker")
+            }
+        }
+
+        return securityContext
+    }
+
+    private suspend fun resolveSluttbruker(accessToken: AccessToken, identitetsnummer: String?): Sluttbruker {
+        val sluttbrukerIdentitetsnummer = when (accessToken.issuer) {
+            is Azure -> {
+                // Veiledere skal alltid sende inn identitetsnummer for sluttbruker
+                identitetsnummer
+                    ?: throw BrukerHarIkkeTilgangException("Veileder må sende med identitetsnummer for sluttbruker")
+            }
+
+            else -> {
+                val pid = accessToken[PID].verdi
+                if (identitetsnummer != null && identitetsnummer != pid) {
+                    // TODO Håndtere verge
+                    throw BrukerHarIkkeTilgangException("Bruker har ikke tilgang til sluttbrukers informasjon")
+                }
+                identitetsnummer ?: pid
+            }
+        }
+
+        val kafkaKeysResponse = kafkaKeysClient.getIdAndKey(sluttbrukerIdentitetsnummer)
+
+        return Sluttbruker(
+            identitetsnummer = sluttbrukerIdentitetsnummer,
+            arbeidssoekerId = kafkaKeysResponse.id,
+            kafkaKey = kafkaKeysResponse.key
+        )
+    }
+
+    private fun resolveInnloggetBruker(bearerToken: String, accessToken: AccessToken): InnloggetBruker {
+        return when (accessToken.issuer) {
+            is Azure -> {
+                val ident = accessToken[NavIdent]
+                InnloggetBruker(
+                    type = BrukerType.VEILEDER,
+                    ident = ident,
+                    bearerToken = bearerToken
+                )
+            }
+
+            else -> {
+                val ident = accessToken[PID].verdi
+                InnloggetBruker(
+                    type = BrukerType.SLUTTBRUKER,
+                    ident = ident,
+                    bearerToken = bearerToken
+                )
             }
         }
     }
