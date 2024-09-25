@@ -35,12 +35,14 @@ import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.state.Stores
+import org.slf4j.LoggerFactory
 
 const val APP_SUFFIX = "beta"
 val STATE_STORE_NAME: StateStoreName = StateStoreName("internal_state")
 
-
+val appLogger = LoggerFactory.getLogger("main")
 fun main() {
+    appLogger.info("Starter...")
     val kafkaTopics = kafkaTopics()
     val streamsBuilder = StreamsBuilder()
         .addStateStore(
@@ -71,7 +73,9 @@ fun main() {
         livenessIndicator = livenessHealthIndicator,
         readinessIndicator = readinessHealthIndicator
     )
+    appLogger.info("Starter KafkaStreams...")
     stream.start()
+    appLogger.info("Starter Ktor...")
     embeddedServer(Netty, port = 8080) {
         configureMetrics(
             registry,
@@ -81,6 +85,7 @@ fun main() {
             healthRoutes(healthIndicatorRepository)
         }
     }.start(wait = true)
+    appLogger.info("Avslutter...")
 }
 
 fun Application.configureMetrics(
