@@ -7,6 +7,7 @@ import no.nav.paw.config.env.clusterNameOrDefaultForLocal
 import no.nav.paw.config.env.namespaceOrDefaultForLocal
 import no.nav.tms.varsel.action.*
 import no.nav.tms.varsel.builder.VarselActionBuilder
+import java.time.ZoneId
 import java.util.*
 
 class VarselMeldingBygger(private val runtimeEnvironment: RuntimeEnvironment) {
@@ -25,6 +26,7 @@ class VarselMeldingBygger(private val runtimeEnvironment: RuntimeEnvironment) {
                 default = true
             )
             eksternVarsling = EksternVarslingBestilling(
+                utsettSendingTil = hendelse.gjelderTil.atZone(ZoneId.systemDefault()),
                 prefererteKanaler = listOf(EksternKanal.SMS)
             )
         }.let { OpprettOppgave(hendelse.bekreftelseId, it) }

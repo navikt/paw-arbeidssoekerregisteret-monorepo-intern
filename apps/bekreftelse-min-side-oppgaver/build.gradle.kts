@@ -23,7 +23,7 @@ dependencies {
     implementation(ktorServer.bundles.withNettyAndMicrometer)
     implementation(micrometer.registryPrometheus)
 
-    implementation("no.nav.tms.varsel:kotlin-builder:1.0.0")
+    implementation("no.nav.tms.varsel:kotlin-builder:1.1.0")
 
     testImplementation(orgApacheKafka.streamsTest)
     testImplementation(testLibs.runnerJunit5)
