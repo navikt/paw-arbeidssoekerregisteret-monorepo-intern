@@ -9,6 +9,7 @@ import java.time.temporal.TemporalAdjuster
 import java.time.temporal.TemporalAdjusters
 
 // Felles verdier for bekreftelse.
+// TODO: Endre intervaller til dev-verdier
 data object BekreftelseConfig {
     val bekreftelseInterval:Duration = Duration.ofDays(14)
     val gracePeriode: Duration = Duration.ofDays(7)
@@ -20,9 +21,9 @@ fun fristForNesteBekreftelse(forrige: Instant, interval: Duration): Instant {
     return forrige.plus(interval)
 }
 
-fun gjenstaendeGracePeriode(timestamp: Instant, gjelderTil: Instant): Duration {
+fun Bekreftelse.gjenstaendeGracePeriode(timestamp: Instant): Duration {
     val gracePeriode = BekreftelseConfig.gracePeriode
-    val utvidetGjelderTil = gjelderTil.plus(gracePeriode)
+    val utvidetGjelderTil = fristUtloept?.plus(gracePeriode) ?: gjelderTil.plus(gracePeriode)
 
     return if (timestamp.isAfter(utvidetGjelderTil)) {
         Duration.ZERO

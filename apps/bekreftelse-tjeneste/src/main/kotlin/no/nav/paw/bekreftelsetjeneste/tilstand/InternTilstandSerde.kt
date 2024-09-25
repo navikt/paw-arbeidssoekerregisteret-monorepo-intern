@@ -32,4 +32,3 @@ object InternTilstandDeserializer : Deserializer<InternTilstand> {
 private val internTilstandObjectMapper = ObjectMapper()
     .registerKotlinModule()
     .registerModules(JavaTimeModule())
-

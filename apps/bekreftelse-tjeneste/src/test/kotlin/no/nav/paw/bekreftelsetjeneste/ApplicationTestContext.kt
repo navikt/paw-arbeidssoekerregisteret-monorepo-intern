@@ -80,7 +80,7 @@ class ApplicationTestContext(initialWallClockTime: Instant = Instant.now()) {
         bekreftelseSerde.serializer()
     )
 
-    val hendelseLoggTopic = testDriver.createOutputTopic(
+    val hendelseLoggTopicOut = testDriver.createOutputTopic(
         applicationConfiguration.bekreftelseHendelseloggTopic,
         Serdes.Long().deserializer(),
         hendelseLoggSerde.deserializer()

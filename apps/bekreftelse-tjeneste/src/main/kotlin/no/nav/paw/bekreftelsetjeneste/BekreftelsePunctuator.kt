@@ -11,7 +11,7 @@ import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.Tilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.gjenstaendeGracePeriode
 import no.nav.paw.bekreftelsetjeneste.tilstand.initBekreftelsePeriode
-import no.nav.paw.bekreftelsetjeneste.tilstand.initNyBekreftelsePeriode
+import no.nav.paw.bekreftelsetjeneste.tilstand.initNewBekreftelse
 import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
@@ -44,27 +44,26 @@ private fun processBekreftelser(
     val existingBekreftelse = currentState.bekreftelser.firstOrNull()
 
     val (tilstand, hendelse) = if (existingBekreftelse == null) {
-        currentState.handleNoExistingBekreftelse() to null
+        currentState.createInitialBekreftelse() to null
     } else {
-        currentState.handleExistingBekreftelser(timestamp)
+        currentState.checkAndCreateNewBekreftelse(timestamp)
     }
 
-    val (updatedTilstand, additionalHendelser) = tilstand.handleUpdateBekreftelser(timestamp)
+    val (updatedTilstand, additionalHendelse) = tilstand.handleUpdateBekreftelser(timestamp)
 
-    return updatedTilstand to (listOfNotNull(hendelse) + additionalHendelser)
+    return updatedTilstand to listOfNotNull(hendelse, additionalHendelse)
 }
 
-private fun InternTilstand.handleNoExistingBekreftelse(): InternTilstand =
+private fun InternTilstand.createInitialBekreftelse(): InternTilstand =
     copy(bekreftelser = listOf(initBekreftelsePeriode(periode)))
 
-
-private fun InternTilstand.handleExistingBekreftelser(
+private fun InternTilstand.checkAndCreateNewBekreftelse(
     timestamp: Instant
 ): Pair<InternTilstand, BekreftelseHendelse?> {
     val nonEmptyBekreftelser = bekreftelser.toNonEmptyListOrNull() ?: return this to null
 
-    return if (nonEmptyBekreftelser.skalLageNyBekreftelseTilgjengelig(timestamp)) {
-        val newBekreftelse = bekreftelser.initNyBekreftelsePeriode()
+    return if (nonEmptyBekreftelser.shouldCreateNewBekreftelse(timestamp)) {
+        val newBekreftelse = bekreftelser.initNewBekreftelse(tilgjengeliggjort = timestamp)
         copy(bekreftelser = nonEmptyBekreftelser + newBekreftelse) to createNewBekreftelseTilgjengelig(newBekreftelse)
     } else {
         this to null
@@ -73,70 +72,80 @@ private fun InternTilstand.handleExistingBekreftelser(
 
 private fun InternTilstand.handleUpdateBekreftelser(
     timestamp: Instant,
-): Pair<InternTilstand, List<BekreftelseHendelse>> =
-    bekreftelser.map { bekreftelse ->
-        when {
-            bekreftelse.tilstand == Tilstand.IkkeKlarForUtfylling && bekreftelse.erKlarForUtfylling(timestamp) -> {
-                val updatedBekreftelse = bekreftelse.copy(tilstand = Tilstand.KlarForUtfylling)
-                val hendelse = BekreftelseTilgjengelig(
-                    hendelseId = UUID.randomUUID(),
-                    periodeId = periode.periodeId,
-                    arbeidssoekerId = periode.arbeidsoekerId,
-                    bekreftelseId = bekreftelse.bekreftelseId,
-                    gjelderFra = bekreftelse.gjelderFra,
-                    gjelderTil = bekreftelse.gjelderTil,
-                    hendelseTidspunkt = Instant.now()
-                )
-                updatedBekreftelse to hendelse
-            }
-
-            bekreftelse.tilstand == Tilstand.KlarForUtfylling && bekreftelse.harFristUtloept(timestamp) -> {
-                val updatedBekreftelse = bekreftelse.copy(tilstand = Tilstand.VenterSvar)
-                val hendelse = LeveringsfristUtloept(
-                    hendelseId = UUID.randomUUID(),
-                    periodeId = periode.periodeId,
-                    arbeidssoekerId = periode.arbeidsoekerId,
-                    bekreftelseId = bekreftelse.bekreftelseId,
-                    hendelseTidspunkt = Instant.now(),
-                    leveringsfrist = bekreftelse.gjelderTil
-                )
-                updatedBekreftelse to hendelse
-            }
-
-            bekreftelse.tilstand == Tilstand.VenterSvar && bekreftelse.erSisteVarselOmGjenstaaendeGraceTid(timestamp) -> {
-                val updatedBekreftelse = bekreftelse.copy(sisteVarselOmGjenstaaendeGraceTid = timestamp)
-                val hendelse = RegisterGracePeriodeGjendstaaendeTid(
-                    hendelseId = UUID.randomUUID(),
-                    periodeId = periode.periodeId,
-                    arbeidssoekerId = periode.arbeidsoekerId,
-                    bekreftelseId = bekreftelse.bekreftelseId,
-                    gjenstaandeTid = gjenstaendeGracePeriode(timestamp, bekreftelse.gjelderTil),
-                    hendelseTidspunkt = Instant.now()
-                )
-                updatedBekreftelse to hendelse
-            }
-
-            bekreftelse.tilstand == Tilstand.VenterSvar && bekreftelse.harGracePeriodeUtloept(timestamp) -> {
-                val updatedBekreftelse = bekreftelse.copy(tilstand = Tilstand.GracePeriodeUtlopt)
-                val hendelse = RegisterGracePeriodeUtloept(
-                    hendelseId = UUID.randomUUID(),
-                    periodeId = periode.periodeId,
-                    arbeidssoekerId = periode.arbeidsoekerId,
-                    bekreftelseId = bekreftelse.bekreftelseId,
-                    hendelseTidspunkt = Instant.now()
-                )
-                updatedBekreftelse to hendelse
-            }
-
-            else -> {
-                bekreftelse to null
-            }
-        }
-    }.let {
-        val updatedBekreftelser = it.map { it.first }
-        val hendelser = it.mapNotNull { it.second }
-        copy(bekreftelser = updatedBekreftelser) to hendelser
+): Pair<InternTilstand, BekreftelseHendelse?> {
+    val updatedBekreftelser = bekreftelser.map { bekreftelse ->
+        generateSequence(bekreftelse to null as BekreftelseHendelse?) { (currentBekreftelse, _) ->
+            getProcessedBekreftelseTilstandAndHendelse(currentBekreftelse, timestamp).takeIf { it.second != null }
+        }.last().first
     }
+
+    val hendelse: BekreftelseHendelse? = bekreftelser.flatMap { bekreftelse ->
+        generateSequence(bekreftelse to null as BekreftelseHendelse?) { (currentBekreftelse, _) ->
+            getProcessedBekreftelseTilstandAndHendelse(currentBekreftelse, timestamp).takeIf { it.second != null }
+        }.mapNotNull { it.second }
+    }.lastOrNull()
+
+    return copy(bekreftelser = updatedBekreftelser) to hendelse
+}
+
+private fun InternTilstand.getProcessedBekreftelseTilstandAndHendelse(
+    bekreftelse: Bekreftelse,
+    timestamp: Instant
+): Pair<Bekreftelse, BekreftelseHendelse?> {
+    return when {
+        bekreftelse.tilstand is Tilstand.IkkeKlarForUtfylling && bekreftelse.erKlarForUtfylling(timestamp) -> {
+            val updatedBekreftelse = bekreftelse.copy(tilstand = Tilstand.KlarForUtfylling, tilgjengeliggjort = timestamp)
+            val hendelse = BekreftelseTilgjengelig(
+                hendelseId = UUID.randomUUID(),
+                periodeId = periode.periodeId,
+                arbeidssoekerId = periode.arbeidsoekerId,
+                bekreftelseId = bekreftelse.bekreftelseId,
+                gjelderFra = bekreftelse.gjelderFra,
+                gjelderTil = bekreftelse.gjelderTil,
+            hendelseTidspunkt = Instant.now())
+            updatedBekreftelse to hendelse
+        }
+
+        bekreftelse.tilstand is Tilstand.KlarForUtfylling && bekreftelse.harFristUtloept(timestamp) -> {
+            val updatedBekreftelse = bekreftelse.copy(tilstand = Tilstand.VenterSvar, fristUtloept = timestamp)
+            val hendelse = LeveringsfristUtloept(
+                hendelseId = UUID.randomUUID(),
+                periodeId = periode.periodeId,
+                arbeidssoekerId = periode.arbeidsoekerId,
+                bekreftelseId = bekreftelse.bekreftelseId,
+            hendelseTidspunkt = Instant.now(),
+                    leveringsfrist = bekreftelse.gjelderTil)
+            updatedBekreftelse to hendelse
+        }
+
+        bekreftelse.tilstand == Tilstand.VenterSvar && bekreftelse.erSisteVarselOmGjenstaaendeGraceTid(timestamp) -> {
+            val updatedBekreftelse = bekreftelse.copy(sisteVarselOmGjenstaaendeGraceTid = timestamp)
+            val hendelse = RegisterGracePeriodeGjendstaaendeTid(
+                hendelseId = UUID.randomUUID(),
+                periodeId = periode.periodeId,
+                arbeidssoekerId = periode.arbeidsoekerId,
+                bekreftelseId = bekreftelse.bekreftelseId,
+                gjenstaandeTid = bekreftelse.gjenstaendeGracePeriode(timestamp),
+            hendelseTidspunkt = Instant.now())
+            updatedBekreftelse to hendelse
+        }
+
+        bekreftelse.tilstand == Tilstand.VenterSvar && bekreftelse.harGracePeriodeUtloept(timestamp) -> {
+            val updatedBekreftelse = bekreftelse.copy(tilstand = Tilstand.GracePeriodeUtloept)
+            val hendelse = RegisterGracePeriodeUtloept(
+                hendelseId = UUID.randomUUID(),
+                periodeId = periode.periodeId,
+                arbeidssoekerId = periode.arbeidsoekerId,
+                bekreftelseId = bekreftelse.bekreftelseId,
+            hendelseTidspunkt = Instant.now())
+            updatedBekreftelse to hendelse
+        }
+
+        else -> {
+            bekreftelse to null
+        }
+    }
+}
 
 private fun InternTilstand.createNewBekreftelseTilgjengelig(newBekreftelse: Bekreftelse) =
     BekreftelseTilgjengelig(

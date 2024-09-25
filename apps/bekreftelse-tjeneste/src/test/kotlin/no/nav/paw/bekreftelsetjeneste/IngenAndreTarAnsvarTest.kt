@@ -22,12 +22,12 @@ class IngenAndreTarAnsvarTest: FreeSpec({
                 val (periode, kafkaKeyResponse) = periode(identitetsnummer = "12345678901")
                 periodeTopic.pipeInput(kafkaKeyResponse.key, periode)
                 "Nå perioden opprettes skal det ikke skje noe" {
-                    hendelseLoggTopic.isEmpty shouldBe true
+                    hendelseLoggTopicOut.isEmpty shouldBe true
                 }
                 "Etter 13 dager skal en rapportering være tilgjengelig" {
                     testDriver.advanceWallClockTime(Duration.ofDays(13))
-                    hendelseLoggTopic.isEmpty shouldBe false
-                    val kv = hendelseLoggTopic.readKeyValue()
+                    hendelseLoggTopicOut.isEmpty shouldBe false
+                    val kv = hendelseLoggTopicOut.readKeyValue()
                     kv.key shouldBe kafkaKeyResponse.key
                     with(kv.value.shouldBeInstanceOf<BekreftelseTilgjengelig>()) {
                         periodeId shouldBe periode.id
@@ -37,8 +37,8 @@ class IngenAndreTarAnsvarTest: FreeSpec({
                 }
                 "Når rapporteringen ikke blir besvart innen fristen sendes det ut en melding" {
                     testDriver.advanceWallClockTime(Duration.ofDays(4))
-                    hendelseLoggTopic.isEmpty shouldBe false
-                    val kv = hendelseLoggTopic.readKeyValue()
+                    hendelseLoggTopicOut.isEmpty shouldBe false
+                    val kv = hendelseLoggTopicOut.readKeyValue()
                     kv.key shouldBe kafkaKeyResponse.key
                     with(kv.value.shouldBeInstanceOf<LeveringsfristUtloept>()) {
                         periodeId shouldBe periode.id

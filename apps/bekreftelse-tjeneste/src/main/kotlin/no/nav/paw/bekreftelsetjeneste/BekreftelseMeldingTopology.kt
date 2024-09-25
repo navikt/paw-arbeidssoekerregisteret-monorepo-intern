@@ -40,7 +40,7 @@ fun StreamsBuilder.processBekreftelseMeldingTopic() {
                     bekreftelse == null -> {
                         meldingsLogger.warn("Melding {} har ingen matchene bekreftelse", record.value().id)
                     }
-                    bekreftelse.tilstand == VenterSvar || bekreftelse.tilstand == KlarForUtfylling -> {
+                    bekreftelse.tilstand is VenterSvar || bekreftelse.tilstand is KlarForUtfylling -> {
                         val (hendelser, oppdatertBekreftelse) = behandleGyldigSvar(gjeldeneTilstand.periode.arbeidsoekerId, record, bekreftelse)
                         val oppdatertBekreftelser = gjeldeneTilstand.bekreftelser
                             .filterNot { t -> t.bekreftelseId == oppdatertBekreftelse.bekreftelseId } + oppdatertBekreftelse
