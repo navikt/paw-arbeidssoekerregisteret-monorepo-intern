@@ -12,7 +12,8 @@ fun bekreftelseTilgjengelig(
     hendelseId: UUID = UUID.randomUUID(),
     arbeidssoekerId: Long = 1L,
     gjelderFra: Instant = Instant.now(),
-    gjelderTil: Instant = gjelderFra + Duration.ofDays(14)
+    gjelderTil: Instant = gjelderFra + Duration.ofDays(14),
+    hendelseTidspunkt: Instant = Instant.now()
 ) = BekreftelseTilgjengelig(
     bekreftelseId = bekreftelseId,
     periodeId = periodeId,
@@ -20,4 +21,5 @@ fun bekreftelseTilgjengelig(
     arbeidssoekerId = arbeidssoekerId,
     gjelderFra = gjelderFra,
     gjelderTil = gjelderTil,
+    hendelseTidspunkt = hendelseTidspunkt
 )

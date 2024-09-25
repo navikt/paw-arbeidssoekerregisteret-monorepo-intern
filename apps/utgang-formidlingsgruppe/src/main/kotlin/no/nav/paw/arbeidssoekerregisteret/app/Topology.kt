@@ -25,6 +25,7 @@ fun StreamsBuilder.appTopology(
 ): Topology {
     val arenaFormidlingsgruppeSerde = ArenaFormidlingsgruppeSerde()
     stream<Long, Periode>(periodeTopic)
+
         .lagreEllerSlettPeriode(
             stateStoreName = stateStoreName,
             prometheusMeterRegistry = prometheusRegistry,

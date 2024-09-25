@@ -9,6 +9,7 @@ data class BekreftelseTilgjengelig (
     override val hendelseId: UUID,
     override val periodeId: UUID,
     override val arbeidssoekerId: Long,
+    override val hendelseTidspunkt: Instant,
     val bekreftelseId: UUID,
     val gjelderFra: Instant,
     val gjelderTil: Instant

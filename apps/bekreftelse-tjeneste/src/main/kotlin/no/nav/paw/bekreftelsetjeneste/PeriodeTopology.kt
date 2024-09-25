@@ -11,6 +11,7 @@ import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.Produced
 import org.apache.kafka.streams.state.KeyValueStore
+import java.time.Instant
 import java.util.*
 
 
@@ -40,9 +41,10 @@ fun StreamsBuilder.processPeriodeTopic() {
                     forward(
                         record.withValue(
                             PeriodeAvsluttet(
-                                UUID.randomUUID(),
-                                action.periode.id,
-                                action.arbeidsoekerId
+                                hendelseId = UUID.randomUUID(),
+                                periodeId = action.periode.id,
+                                arbeidssoekerId = action.arbeidsoekerId,
+                                hendelseTidspunkt = Instant.now()
                             ) as BekreftelseHendelse
                         )
                     )

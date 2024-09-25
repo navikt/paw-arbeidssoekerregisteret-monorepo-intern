@@ -17,6 +17,7 @@ import org.apache.kafka.streams.kstream.Produced
 import org.apache.kafka.streams.processor.PunctuationType
 import org.apache.kafka.streams.processor.api.Record
 import org.slf4j.LoggerFactory
+import java.time.Instant
 import java.util.*
 
 context(ApplicationConfiguration, ApplicationContext)
@@ -63,14 +64,16 @@ fun behandleGyldigSvar(arbeidssoekerId: Long, record: Record<Long, no.nav.paw.be
         BaOmAaAvsluttePeriode(
             hendelseId = UUID.randomUUID(),
             periodeId = record.value().periodeId,
-            arbeidssoekerId = arbeidssoekerId
+            arbeidssoekerId = arbeidssoekerId,
+            hendelseTidspunkt = Instant.now()
         )
     } else null
     val meldingMottatt = BekreftelseMeldingMottatt(
         hendelseId = UUID.randomUUID(),
         periodeId = record.value().periodeId,
         arbeidssoekerId = arbeidssoekerId,
-        bekreftelseId = bekreftelse.bekreftelseId
+        bekreftelseId = bekreftelse.bekreftelseId,
+        hendelseTidspunkt = Instant.now()
     )
     return listOfNotNull(meldingMottatt, baOmAaAvslutte) to oppdatertBekreftelse
 }

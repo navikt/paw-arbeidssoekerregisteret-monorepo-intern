@@ -84,7 +84,8 @@ private fun InternTilstand.handleUpdateBekreftelser(
                     arbeidssoekerId = periode.arbeidsoekerId,
                     bekreftelseId = bekreftelse.bekreftelseId,
                     gjelderFra = bekreftelse.gjelderFra,
-                    gjelderTil = bekreftelse.gjelderTil
+                    gjelderTil = bekreftelse.gjelderTil,
+                    hendelseTidspunkt = Instant.now()
                 )
                 updatedBekreftelse to hendelse
             }
@@ -95,7 +96,9 @@ private fun InternTilstand.handleUpdateBekreftelser(
                     hendelseId = UUID.randomUUID(),
                     periodeId = periode.periodeId,
                     arbeidssoekerId = periode.arbeidsoekerId,
-                    bekreftelseId = bekreftelse.bekreftelseId
+                    bekreftelseId = bekreftelse.bekreftelseId,
+                    hendelseTidspunkt = Instant.now(),
+                    leveringsfrist = bekreftelse.gjelderTil
                 )
                 updatedBekreftelse to hendelse
             }
@@ -107,7 +110,8 @@ private fun InternTilstand.handleUpdateBekreftelser(
                     periodeId = periode.periodeId,
                     arbeidssoekerId = periode.arbeidsoekerId,
                     bekreftelseId = bekreftelse.bekreftelseId,
-                    gjenstaandeTid = gjenstaendeGracePeriode(timestamp, bekreftelse.gjelderTil)
+                    gjenstaandeTid = gjenstaendeGracePeriode(timestamp, bekreftelse.gjelderTil),
+                    hendelseTidspunkt = Instant.now()
                 )
                 updatedBekreftelse to hendelse
             }
@@ -118,7 +122,8 @@ private fun InternTilstand.handleUpdateBekreftelser(
                     hendelseId = UUID.randomUUID(),
                     periodeId = periode.periodeId,
                     arbeidssoekerId = periode.arbeidsoekerId,
-                    bekreftelseId = bekreftelse.bekreftelseId
+                    bekreftelseId = bekreftelse.bekreftelseId,
+                    hendelseTidspunkt = Instant.now()
                 )
                 updatedBekreftelse to hendelse
             }
@@ -140,7 +145,8 @@ private fun InternTilstand.createNewBekreftelseTilgjengelig(newBekreftelse: Bekr
         arbeidssoekerId = periode.arbeidsoekerId,
         bekreftelseId = newBekreftelse.bekreftelseId,
         gjelderFra = newBekreftelse.gjelderFra,
-        gjelderTil = newBekreftelse.gjelderTil
+        gjelderTil = newBekreftelse.gjelderTil,
+        hendelseTidspunkt = Instant.now()
     )
 
 private operator fun <K, V> KeyValue<K, V>.component1(): K = key

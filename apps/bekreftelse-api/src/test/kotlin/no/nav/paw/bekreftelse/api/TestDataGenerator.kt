@@ -23,8 +23,17 @@ class TestDataGenerator {
         arbeidsoekerId: Long = Random().nextLong(),
         bekreftelseId: UUID = UUID.randomUUID(),
         gjelderFra: Instant = Instant.now(),
-        gjelderTil: Instant = Instant.now()
-    ) = BekreftelseTilgjengelig(hendelseId, periodeId, arbeidsoekerId, bekreftelseId, gjelderFra, gjelderTil)
+        gjelderTil: Instant = Instant.now(),
+        hendelseTidspunkt: Instant = Instant.now()
+    ) = BekreftelseTilgjengelig(
+        hendelseId = hendelseId,
+        periodeId = periodeId,
+        arbeidssoekerId = arbeidsoekerId,
+        hendelseTidspunkt = hendelseTidspunkt,
+        bekreftelseId = bekreftelseId,
+        gjelderFra = gjelderFra,
+        gjelderTil = gjelderTil
+    )
 
     fun nyBekreftelseRequest(
         identitetsnummer: String? = null,
