@@ -20,6 +20,11 @@ dependencies {
     implementation(jackson.kotlin)
     implementation(arrow.core)
 
+    implementation(navCommon.log)
+
+    implementation(loggingLibs.logbackClassic)
+    implementation(loggingLibs.logstashLogbackEncoder)
+
     implementation(orgApacheKafka.kafkaClients)
     implementation(orgApacheKafka.kafkaStreams)
     implementation(apacheAvro.avro)
