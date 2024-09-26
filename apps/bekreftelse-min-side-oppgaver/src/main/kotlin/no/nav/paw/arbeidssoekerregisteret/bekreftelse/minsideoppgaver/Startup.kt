@@ -24,7 +24,6 @@ import no.nav.paw.config.kafka.KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG
 import no.nav.paw.config.kafka.KafkaConfig
 import no.nav.paw.config.kafka.streams.KafkaStreamsFactory
 import no.nav.paw.error.handler.withApplicationTerminatingExceptionHandler
-import no.nav.paw.health.listener.createHealthIndicatorStateListener
 import no.nav.paw.health.listener.withHealthIndicatorStateListener
 import no.nav.paw.health.model.HealthStatus
 import no.nav.paw.health.model.LivenessHealthIndicator
@@ -57,9 +56,8 @@ fun main() {
         .withDefaultKeySerde(Serdes.Long()::class)
         .withDefaultValueSerde(SpecificAvroSerde::class)
         .withExactlyOnce()
-    val runtimeEvironment = currentRuntimeEnvironment
     val stream = KafkaStreams(streamsBuilder.applicationTopology(
-        varselMeldingBygger = VarselMeldingBygger(runtimeEvironment),
+        varselMeldingBygger = VarselMeldingBygger(currentRuntimeEnvironment),
         kafkaTopics = kafkaTopics,
         stateStoreName = STATE_STORE_NAME), streamsFactory.properties
     )
