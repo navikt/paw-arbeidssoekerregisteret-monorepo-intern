@@ -4,6 +4,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.varselbygger.VarselMeldingBygger
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.minSideVarselKonfigurasjon
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.vo.InternTilstand
 import no.nav.paw.arbeidssoekerregisteret.testdata.bekreftelse.bekreftelseTilgjengelig
 import no.nav.paw.config.env.Local
@@ -12,7 +13,10 @@ import java.util.*
 
 private val oppgaveGeneratorLogger = LoggerFactory.getLogger("oppgaveGeneratorLogger")
 class GenererOppgaveMeldingKtTest : FreeSpec({
-    val varselMeldingBygger = VarselMeldingBygger(runtimeEnvironment = Local)
+    val varselMeldingBygger = VarselMeldingBygger(
+        runtimeEnvironment = Local,
+        minSideVarselKonfigurasjon = minSideVarselKonfigurasjon()
+    )
 
     "Når en ny bekreftelse blir tilgjengelig skal det genereres en oppgave " {
         val gjeldeneTilstand = InternTilstand(

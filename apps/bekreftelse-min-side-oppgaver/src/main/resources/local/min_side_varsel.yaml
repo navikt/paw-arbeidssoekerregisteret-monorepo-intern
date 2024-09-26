@@ -1,0 +1,11 @@
+standardSpraak:
+  kode: en
+link: http://localhost:8080/varsel
+tekster:
+  - spraak:
+      kode: nb
+    tekst: Det er påtide å bekrefte arbeidssøkerperioden din i NAV.
+  - spraak:
+      kode: en
+    tekst: It is time to confirm your jobseeker period in NAV.
+

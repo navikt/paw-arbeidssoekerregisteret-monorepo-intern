@@ -17,6 +17,8 @@ spec:
   env:
     - name: KAFKA_KEYS_SCOPE
       value: api://dev-gcp.paw.paw-kafka-key-generator/.default
+    - name: VARSEL_LINK
+      value: https://www.intern.dev.nav.no/minside/arbeidssoker/bekreftelse
   liveness:
     path: /internal/isAlive
     initialDelay: 10

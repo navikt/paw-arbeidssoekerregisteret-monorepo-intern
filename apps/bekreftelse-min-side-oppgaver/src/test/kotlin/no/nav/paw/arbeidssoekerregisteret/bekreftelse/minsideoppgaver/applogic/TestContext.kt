@@ -6,6 +6,7 @@ import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.STATE_STORE_NAME
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.varselbygger.VarselMeldingBygger
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.KafkaTopics
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.minSideVarselKonfigurasjon
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.jacksonSerde
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.vo.InternTilstand
 import no.nav.paw.arbeidssoekerregisteret.testdata.KafkaKeyContext
@@ -44,7 +45,10 @@ data class TestContext(
 
 fun testContext(
     runtimeEnvironment: RuntimeEnvironment = Local,
-    varselMeldingBygger: VarselMeldingBygger = VarselMeldingBygger(runtimeEnvironment),
+    varselMeldingBygger: VarselMeldingBygger = VarselMeldingBygger(
+        runtimeEnvironment = runtimeEnvironment,
+        minSideVarselKonfigurasjon = minSideVarselKonfigurasjon()
+    ),
     kafkaKeyContext: KafkaKeyContext = KafkaKeyContext(inMemoryKafkaKeysMock()),
     kafkaTopics: KafkaTopics = KafkaTopics(
         periodeTopic = "periodeTopic",

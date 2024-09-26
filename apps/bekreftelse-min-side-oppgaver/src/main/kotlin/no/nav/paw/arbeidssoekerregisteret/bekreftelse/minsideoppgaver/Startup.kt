@@ -16,6 +16,7 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.applicationTopology
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.varselbygger.VarselMeldingBygger
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.kafkaTopics
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.minSideVarselKonfigurasjon
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.vo.InternTilstand
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.vo.StateStoreName
 import no.nav.paw.config.env.currentRuntimeEnvironment
@@ -57,7 +58,10 @@ fun main() {
         .withDefaultValueSerde(SpecificAvroSerde::class)
         .withExactlyOnce()
     val stream = KafkaStreams(streamsBuilder.applicationTopology(
-        varselMeldingBygger = VarselMeldingBygger(currentRuntimeEnvironment),
+        varselMeldingBygger = VarselMeldingBygger(
+            runtimeEnvironment = currentRuntimeEnvironment,
+            minSideVarselKonfigurasjon = minSideVarselKonfigurasjon()
+        ),
         kafkaTopics = kafkaTopics,
         stateStoreName = STATE_STORE_NAME), streamsFactory.properties
     )

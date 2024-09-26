@@ -19,6 +19,7 @@ dependencies {
     implementation(jackson.datatypeJsr310)
     implementation(jackson.kotlin)
     implementation(arrow.core)
+    implementation(hoplite.hopliteYaml)
 
     implementation(navCommon.log)
 

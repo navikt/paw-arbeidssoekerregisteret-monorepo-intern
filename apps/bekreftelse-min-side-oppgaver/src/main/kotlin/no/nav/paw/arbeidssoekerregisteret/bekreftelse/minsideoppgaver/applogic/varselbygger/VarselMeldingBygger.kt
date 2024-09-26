@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.varselbygger
 
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.MinSideVarselKonfigurasjon
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.config.env.RuntimeEnvironment
 import no.nav.paw.config.env.appNameOrDefaultForLocal
@@ -10,7 +11,10 @@ import no.nav.tms.varsel.builder.VarselActionBuilder
 import java.time.ZoneId
 import java.util.*
 
-class VarselMeldingBygger(private val runtimeEnvironment: RuntimeEnvironment) {
+class VarselMeldingBygger(
+    private val minSideVarselKonfigurasjon: MinSideVarselKonfigurasjon,
+    private val runtimeEnvironment: RuntimeEnvironment
+) {
 
     fun opprettOppgave(identitetsnummer: String, hendelse: BekreftelseTilgjengelig): OpprettOppgave =
         VarselActionBuilder.opprett {
@@ -18,13 +22,15 @@ class VarselMeldingBygger(private val runtimeEnvironment: RuntimeEnvironment) {
             ident = identitetsnummer
             sensitivitet = Sensitivitet.High
             type = Varseltype.Oppgave
-            link = "https://bakreftelse-arbreg.nav.no/?bekreftelse=${hendelse.bekreftelseId}"
+            link = minSideVarselKonfigurasjon.link.toString()
             produsent = runtimeEnvironment.produsent()
-            tekst = Tekst(
-                spraakkode = "nb",
-                tekst = "Du har en ny arbeidssøkerbekreftelse som venter",
-                default = true
-            )
+            minSideVarselKonfigurasjon.tekster.map { (spraak, tekst) ->
+                Tekst(
+                    spraakkode = spraak.kode,
+                    tekst = tekst,
+                    default = spraak == minSideVarselKonfigurasjon.standardSpraak
+                )
+            }.forEach(tekster::add)
             eksternVarsling = EksternVarslingBestilling(
                 utsettSendingTil = hendelse.gjelderTil.atZone(ZoneId.systemDefault()),
                 prefererteKanaler = listOf(EksternKanal.SMS)
