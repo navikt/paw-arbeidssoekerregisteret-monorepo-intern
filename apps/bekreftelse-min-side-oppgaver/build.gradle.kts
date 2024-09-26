@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm")
     id("com.google.cloud.tools.jib")
-    id("org.cyclonedx.bom")
 }
 
 val baseImage: String by project
@@ -64,8 +63,4 @@ jib {
             "IMAGE_WITH_VERSION" to "${image ?: project.name}:${project.version}")
         jvmFlags = listOf("-XX:ActiveProcessorCount=4", "-XX:+UseZGC", "-XX:+ZGenerational")
     }
-}
-
-tasks.cyclonedxBom {
-    setIncludeConfigs(listOf("runtimeClasspath"))
 }
