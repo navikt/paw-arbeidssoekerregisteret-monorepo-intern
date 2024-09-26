@@ -53,3 +53,4 @@ spec:
           - application: paw-microfrontend-toggler
           - application: paw-arbeidssoekerregisteret-hendelselogg-backup
           - application: paw-arbeidssoekerregisteret-api-bekreftelse
+          - application: paw-arbeidssoekerregisteret-bekreftelse-min-side-varsler
