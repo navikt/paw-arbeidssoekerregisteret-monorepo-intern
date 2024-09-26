@@ -97,8 +97,7 @@ class GenericProcessor<K_IN, V_IN, K_OUT, V_OUT>(
 
     override fun process(record: Record<K_IN, V_IN>?) {
         if (record == null) return
-        val ctx = requireNotNull(context) { "ProcessorContext is not initialized before processing records" }
-        with(ctx) { function(record) }
+        with(context) { function(record) }
     }
 }
 
