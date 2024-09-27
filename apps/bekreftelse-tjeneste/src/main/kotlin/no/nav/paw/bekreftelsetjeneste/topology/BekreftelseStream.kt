@@ -1,11 +1,11 @@
-package no.nav.paw.bekreftelsetjeneste
+package no.nav.paw.bekreftelsetjeneste.topology
 
 import arrow.core.partially1
 import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
-import no.nav.paw.bekreftelsetjeneste.context.ApplicationContext
+import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
 import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.Tilstand
@@ -22,19 +22,19 @@ import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
 
-fun StreamsBuilder.processBekreftelseMeldingTopic(applicationContext: ApplicationContext) {
-    with(applicationContext.applicationConfig) {
-        stream<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>(kafkaTopology.bekreftelseTopic)
+fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) {
+    with(applicationConfig.kafkaTopology) {
+        stream<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>(bekreftelseTopic)
             .genericProcess<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse, Long, BekreftelseHendelse>(
                 name = "meldingMottatt",
-                kafkaTopology.internStateStoreName,
+                internStateStoreName,
                 punctuation = Punctuation(
-                    kafkaTopology.punctuationInterval,
+                    punctuationInterval,
                     PunctuationType.WALL_CLOCK_TIME,
-                    ::bekreftelsePunctuator.partially1(kafkaTopology.internStateStoreName)
+                    ::bekreftelsePunctuator.partially1(internStateStoreName)
                 ),
             ) { record ->
-                val stateStore = getStateStore<StateStore>(kafkaTopology.internStateStoreName)
+                val stateStore = getStateStore<StateStore>(internStateStoreName)
                 val gjeldeneTilstand: InternTilstand? = stateStore[record.value().periodeId]
                 if (gjeldeneTilstand == null) {
                     // TODO: kan vi komme inn i en situasjon hvor interntilstand ikke er satt
@@ -73,7 +73,7 @@ fun StreamsBuilder.processBekreftelseMeldingTopic(applicationContext: Applicatio
                         }
                     }
                 }
-            }.to(kafkaTopology.bekreftelseHendelsesloggTopic, Produced.with(Serdes.Long(), BekreftelseHendelseSerde()))
+            }.to(bekreftelseHendelsesloggTopic, Produced.with(Serdes.Long(), BekreftelseHendelseSerde()))
     }
 }
 

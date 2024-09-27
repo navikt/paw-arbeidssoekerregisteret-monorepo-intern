@@ -1,4 +1,4 @@
-package no.nav.paw.bekreftelsetjeneste
+package no.nav.paw.bekreftelsetjeneste.topology
 
 import arrow.core.toNonEmptyListOrNull
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
@@ -6,6 +6,11 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjenstaaendeTid
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
+import no.nav.paw.bekreftelsetjeneste.tilstand.erKlarForUtfylling
+import no.nav.paw.bekreftelsetjeneste.tilstand.erSisteVarselOmGjenstaaendeGraceTid
+import no.nav.paw.bekreftelsetjeneste.tilstand.harFristUtloept
+import no.nav.paw.bekreftelsetjeneste.tilstand.harGracePeriodeUtloept
+import no.nav.paw.bekreftelsetjeneste.tilstand.shouldCreateNewBekreftelse
 import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.Tilstand

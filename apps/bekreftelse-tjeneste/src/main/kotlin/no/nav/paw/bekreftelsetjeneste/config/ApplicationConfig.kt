@@ -30,4 +30,5 @@ data class KafkaTopologyConfig(
     val bekreftelseInterval: Duration,
     val bekreftelseGraceperiode: Duration,
     val bekreftelseTilgjengeligOffset: Duration,
+    val shutdownTimeout: Duration = Duration.ofMinutes(5),
 )

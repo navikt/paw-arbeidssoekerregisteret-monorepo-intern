@@ -1,8 +1,6 @@
-package no.nav.paw.bekreftelsetjeneste
+package no.nav.paw.bekreftelsetjeneste.tilstand
 
 import arrow.core.NonEmptyList
-import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
-import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseConfig
 import java.time.Instant
 
 fun Bekreftelse.erKlarForUtfylling(now: Instant): Boolean =

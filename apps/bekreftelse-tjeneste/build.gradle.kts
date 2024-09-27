@@ -59,7 +59,7 @@ java {
 }
 
 application {
-    mainClass.set("no.nav.paw.bekreftelse.tjeneste.StartupKt")
+    mainClass.set("no.nav.paw.bekreftelsetjeneste.ApplicationKt")
 }
 
 tasks.withType<KotlinCompile>().configureEach {

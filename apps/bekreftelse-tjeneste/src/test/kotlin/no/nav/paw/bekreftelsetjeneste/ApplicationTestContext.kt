@@ -14,6 +14,8 @@ import no.nav.paw.bekreftelsetjeneste.config.APPLICATION_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
 import no.nav.paw.bekreftelsetjeneste.context.ApplicationContext
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstandSerde
+import no.nav.paw.bekreftelsetjeneste.topology.buildBekreftelseStream
+import no.nav.paw.bekreftelsetjeneste.topology.buildPeriodeStream
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.client.inMemoryKafkaKeysMock
@@ -37,26 +39,30 @@ class ApplicationTestContext(initialWallClockTime: Instant = Instant.now()) {
     val periodeTopicSerde: Serde<Periode> = opprettSerde()
     val hendelseLoggSerde: Serde<BekreftelseHendelse> = BekreftelseHendelseSerde()
     val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG_FILE_NAME)
+    val kafkaKeysClient = inMemoryKafkaKeysMock()
     val applicationContext = ApplicationContext(
         applicationConfig = applicationConfig,
         prometheusMeterRegistry = mockk<PrometheusMeterRegistry>(),
         healthIndicatorRepository = HealthIndicatorRepository(),
-        kafkaKeysClient = inMemoryKafkaKeysMock()
+        kafkaKeysClient = kafkaKeysClient
     )
 
     val logger: Logger = LoggerFactory.getLogger(ApplicationTestContext::class.java)
 
-    val testDriver: TopologyTestDriver =
-        StreamsBuilder()
-            .addStateStore(
-                KeyValueStoreBuilder(
-                    InMemoryKeyValueBytesStoreSupplier(applicationConfig.kafkaTopology.internStateStoreName),
-                    Serdes.UUID(),
-                    InternTilstandSerde(),
-                    Time.SYSTEM
-                )
-            ).appTopology(applicationContext)
-            .let { TopologyTestDriver(it, kafkaStreamProperties, initialWallClockTime) }
+    val topology = StreamsBuilder().apply {
+        addStateStore(
+            KeyValueStoreBuilder(
+                InMemoryKeyValueBytesStoreSupplier(applicationConfig.kafkaTopology.internStateStoreName),
+                Serdes.UUID(),
+                InternTilstandSerde(),
+                Time.SYSTEM
+            )
+        )
+        buildPeriodeStream(applicationConfig, kafkaKeysClient)
+        buildBekreftelseStream(applicationConfig)
+    }.build()
+
+    val testDriver: TopologyTestDriver = TopologyTestDriver(topology, kafkaStreamProperties, initialWallClockTime)
 
     val periodeTopic = testDriver.createInputTopic(
         applicationConfig.kafkaTopology.periodeTopic,

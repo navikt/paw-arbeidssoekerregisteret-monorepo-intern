@@ -10,6 +10,7 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
+import no.nav.paw.bekreftelsetjeneste.topology.getIdAndKeyBlocking
 import java.time.Duration
 import java.time.Instant
 import java.util.*

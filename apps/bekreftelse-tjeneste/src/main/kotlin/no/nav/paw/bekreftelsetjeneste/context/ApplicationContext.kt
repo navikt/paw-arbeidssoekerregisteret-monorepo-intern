@@ -23,6 +23,7 @@ class ApplicationContext(
             val azureM2MTokenClient = azureAdM2MTokenClient(
                 applicationConfig.runtimeEnvironment, applicationConfig.azureM2M
             )
+
             val kafkaKeysClient = kafkaKeysClient(applicationConfig.kafkaKeysClient) {
                 azureM2MTokenClient.createMachineToMachineToken(applicationConfig.kafkaKeysClient.scope)
             }

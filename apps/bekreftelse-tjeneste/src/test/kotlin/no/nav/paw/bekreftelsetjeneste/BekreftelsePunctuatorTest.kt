@@ -18,6 +18,7 @@ import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.PeriodeInfo
 import no.nav.paw.bekreftelsetjeneste.tilstand.Tilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.fristForNesteBekreftelse
+import no.nav.paw.bekreftelsetjeneste.topology.StateStore
 import java.time.Duration
 import java.time.Instant
 
@@ -30,8 +31,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             val (periode, kafkaKeyResponse) = periode(identitetsnummer = identitetsnummer, startet = startTime)
             periodeTopic.pipeInput(kafkaKeyResponse.key, periode)
+
             "Når perioden opprettes skal det opprettes en intern tilstand med en bekreftelse" {
-                testDriver.advanceWallClockTime(Duration.ofSeconds(5))
                 hendelseLoggTopicOut.isEmpty shouldBe true
                 val stateStore: StateStore =
                     testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
@@ -58,8 +59,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
                         )
                     )
                 )
-
             }
+
             "Etter 11 dager skal det ha blitt sendt en BekreftelseTilgjengelig hendelse" {
                 testDriver.advanceWallClockTime(BekreftelseConfig.bekreftelseInterval.minus(BekreftelseConfig.bekreftelseTilgjengeligOffset))
                 val stateStore: StateStore =
@@ -77,6 +78,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                 kv.key shouldBe kafkaKeyResponse.key
                 kv.value.shouldBeInstanceOf<BekreftelseTilgjengelig>()
             }
+
             "Etter 14 dager skal det ha blitt sendt en LeveringsFristUtloept hendelse" {
                 testDriver.advanceWallClockTime(BekreftelseConfig.bekreftelseTilgjengeligOffset.plusSeconds(5))
                 val stateStore: StateStore =
