@@ -8,14 +8,14 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Bruker
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
-import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
+import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
 import java.time.Duration
 import java.time.Instant
 import java.util.*
 
 @Ignored("Midlertidig disablet av Thomas")
-class IngenAndreTarAnsvarTest: FreeSpec({
+class IngenAndreTarAnsvarTest : FreeSpec({
     with(ApplicationTestContext()) {
         "Applikasjons test hvor ingen andre tar ansvar" - {
             "Bruker avslutter via rapportering" - {
@@ -46,8 +46,9 @@ class IngenAndreTarAnsvarTest: FreeSpec({
                     }
                 }
             }
+        }
     }
-}})
+})
 
 context(ApplicationTestContext)
 fun periode(
@@ -65,12 +66,14 @@ fun periode(
         "tester",
         null
     ),
-    avsluttet?.let { Metadata(
-        avsluttet,
-        Bruker(BrukerType.SLUTTBRUKER, identitetsnummer),
-        "junit",
-        "tester",
-        null)
+    avsluttet?.let {
+        Metadata(
+            avsluttet,
+            Bruker(BrukerType.SLUTTBRUKER, identitetsnummer),
+            "junit",
+            "tester",
+            null
+        )
     }
-) to (kafkaKeyFunction(identitetsnummer))
+) to (applicationContext.kafkaKeysClient.getIdAndKeyBlocking(identitetsnummer))
 

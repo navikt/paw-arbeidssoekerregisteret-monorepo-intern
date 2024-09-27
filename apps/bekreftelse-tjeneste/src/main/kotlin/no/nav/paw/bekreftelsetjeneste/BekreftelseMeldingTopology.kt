@@ -3,7 +3,9 @@ package no.nav.paw.bekreftelsetjeneste
 import arrow.core.partially1
 import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
+import no.nav.paw.bekreftelsetjeneste.context.ApplicationContext
 import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.Tilstand
@@ -20,45 +22,66 @@ import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
 
-context(ApplicationConfiguration, ApplicationContext)
-fun StreamsBuilder.processBekreftelseMeldingTopic() {
-    stream<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>(bekreftelseTopic)
-        .genericProcess<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse, Long, BekreftelseHendelse>(
-            name = "meldingMottatt",
-            stateStoreName,
-            punctuation = Punctuation(punctuateInterval, PunctuationType.WALL_CLOCK_TIME, ::bekreftelsePunctuator.partially1(stateStoreName)),
-        ) { record ->
-            val stateStore = getStateStore<StateStore>(stateStoreName)
-            val gjeldeneTilstand: InternTilstand? = stateStore[record.value().periodeId]
-            if (gjeldeneTilstand == null) {
-                meldingsLogger.warn("Melding mottatt for periode som ikke er aktiv/eksisterer")
-                return@genericProcess
-            }
-            if (record.value().namespace == pawNamespace) {
-                val bekreftelse = gjeldeneTilstand.bekreftelser.find { bekreftelse -> bekreftelse.bekreftelseId == record.value().id }
-                when {
-                    bekreftelse == null -> {
-                        meldingsLogger.warn("Melding {} har ingen matchene bekreftelse", record.value().id)
-                    }
-                    bekreftelse.tilstand is VenterSvar || bekreftelse.tilstand is KlarForUtfylling -> {
-                        val (hendelser, oppdatertBekreftelse) = behandleGyldigSvar(gjeldeneTilstand.periode.arbeidsoekerId, record, bekreftelse)
-                        val oppdatertBekreftelser = gjeldeneTilstand.bekreftelser
-                            .filterNot { t -> t.bekreftelseId == oppdatertBekreftelse.bekreftelseId } + oppdatertBekreftelse
-                        val oppdatertTilstand = gjeldeneTilstand.copy(bekreftelser = oppdatertBekreftelser)
-                        stateStore.put(oppdatertTilstand.periode.periodeId, oppdatertTilstand)
-                        hendelser
-                            .map (record::withValue)
-                            .forEach (::forward)
-                    }
-                    else -> {
-                        meldingsLogger.warn("Melding {} har ikke forventet tilstand, tilstand={}", record.value().id, bekreftelse.tilstand)
+fun StreamsBuilder.processBekreftelseMeldingTopic(applicationContext: ApplicationContext) {
+    with(applicationContext.applicationConfig) {
+        stream<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>(kafkaTopology.bekreftelseTopic)
+            .genericProcess<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse, Long, BekreftelseHendelse>(
+                name = "meldingMottatt",
+                kafkaTopology.internStateStoreName,
+                punctuation = Punctuation(
+                    kafkaTopology.punctuationInterval,
+                    PunctuationType.WALL_CLOCK_TIME,
+                    ::bekreftelsePunctuator.partially1(kafkaTopology.internStateStoreName)
+                ),
+            ) { record ->
+                val stateStore = getStateStore<StateStore>(kafkaTopology.internStateStoreName)
+                val gjeldeneTilstand: InternTilstand? = stateStore[record.value().periodeId]
+                if (gjeldeneTilstand == null) {
+                    // TODO: kan vi komme inn i en situasjon hvor interntilstand ikke er satt
+                    meldingsLogger.warn("Melding mottatt for periode som ikke er aktiv/eksisterer")
+                    return@genericProcess
+                }
+                if (record.value().namespace == "paw") {
+                    val bekreftelse =
+                        gjeldeneTilstand.bekreftelser.find { bekreftelse -> bekreftelse.bekreftelseId == record.value().id }
+                    when {
+                        bekreftelse == null -> {
+                            meldingsLogger.warn("Melding {} har ingen matchene bekreftelse", record.value().id)
+                        }
+
+                        bekreftelse.tilstand is VenterSvar || bekreftelse.tilstand is KlarForUtfylling -> {
+                            val (hendelser, oppdatertBekreftelse) = behandleGyldigSvar(
+                                gjeldeneTilstand.periode.arbeidsoekerId,
+                                record,
+                                bekreftelse
+                            )
+                            val oppdatertBekreftelser = gjeldeneTilstand.bekreftelser
+                                .filterNot { t -> t.bekreftelseId == oppdatertBekreftelse.bekreftelseId } + oppdatertBekreftelse
+                            val oppdatertTilstand = gjeldeneTilstand.copy(bekreftelser = oppdatertBekreftelser)
+                            stateStore.put(oppdatertTilstand.periode.periodeId, oppdatertTilstand)
+                            hendelser
+                                .map(record::withValue)
+                                .forEach(::forward)
+                        }
+
+                        else -> {
+                            meldingsLogger.warn(
+                                "Melding {} har ikke forventet tilstand, tilstand={}",
+                                record.value().id,
+                                bekreftelse.tilstand
+                            )
+                        }
                     }
                 }
-            }
-        }.to(bekreftelseHendelseloggTopic, Produced.with(Serdes.Long(), bekreftelseHendelseSerde))
+            }.to(kafkaTopology.bekreftelseHendelsesloggTopic, Produced.with(Serdes.Long(), BekreftelseHendelseSerde()))
+    }
 }
 
-fun behandleGyldigSvar(arbeidssoekerId: Long, record: Record<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>, bekreftelse: Bekreftelse): Pair<List<BekreftelseHendelse>, Bekreftelse> {
+fun behandleGyldigSvar(
+    arbeidssoekerId: Long,
+    record: Record<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>,
+    bekreftelse: Bekreftelse
+): Pair<List<BekreftelseHendelse>, Bekreftelse> {
     val oppdatertBekreftelse = bekreftelse.copy(tilstand = Tilstand.Levert)
     val baOmAaAvslutte = if (!record.value().svar.vilFortsetteSomArbeidssoeker) {
         BaOmAaAvsluttePeriode(

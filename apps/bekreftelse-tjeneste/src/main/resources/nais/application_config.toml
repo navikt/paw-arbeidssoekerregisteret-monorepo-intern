@@ -1,0 +1,32 @@
+[kafkaTopology]
+applicationIdSuffix = "${KAFKA_STREAMS_ID_SUFFIX}"
+internStateStoreName = "intern-tilstand"
+periodeTopic = "${KAFKA_PAW_ARBEIDSSOKERPERIODER_TOPIC}"
+bekreftelseTopic = "${KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_TOPIC}"
+bekreftelseHendelsesloggTopic = "${KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_HENDELSESLOGG_TOPIC}"
+punctuationInterval = "${KAFKA_PUNCTUATOR_INTERVAL}"
+bekreftelseInterval = "${BEKREFTELSE_INTERVAL}"
+bekreftelseGraceperiode = "${BEKREFTELSE_GRACEPERIODE}"
+bekreftelseTilgjengeligOffset = "${BEKREFTELSE_TILGJENGELIG_OFFSET}"
+
+[azureM2M]
+tokenEndpointUrl = "${AZURE_OPENID_CONFIG_TOKEN_ENDPOINT}"
+clientId = "${AZURE_APP_CLIENT_ID}"
+
+[kafkaKeysClient]
+url = "http://paw-kafka-key-generator/api/v2/hentEllerOpprett"
+scope = "api://${NAIS_CLUSTER_NAME}.paw.paw-kafka-key-generator/.default"
+
+[kafkaStreams]
+brokers = "${KAFKA_BROKERS}"
+applicationIdPrefix = "${KAFKA_STREAMS_APPLICATION_ID}"
+
+[kafkaStreams.authentication]
+keystorePath = "${KAFKA_KEYSTORE_PATH}"
+truststorePath = "${KAFKA_TRUSTSTORE_PATH}"
+credstorePassword = "${KAFKA_CREDSTORE_PASSWORD}"
+
+[kafkaStreams.schemaRegistry]
+url = "${KAFKA_SCHEMA_REGISTRY}"
+username = "${KAFKA_SCHEMA_REGISTRY_USER}"
+password = "${KAFKA_SCHEMA_REGISTRY_PASSWORD}"

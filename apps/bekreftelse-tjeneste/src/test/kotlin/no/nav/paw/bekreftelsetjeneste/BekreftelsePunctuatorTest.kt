@@ -27,13 +27,14 @@ class BekreftelsePunctuatorTest : FreeSpec({
     val identitetsnummer = "12345678901"
 
     "BekreftelsePunctuator sender riktig hendelser i rekkefølge" - {
-        with(ApplicationTestContext(initialWallClockTime = startTime)){
+        with(ApplicationTestContext(initialWallClockTime = startTime)) {
             val (periode, kafkaKeyResponse) = periode(identitetsnummer = identitetsnummer, startet = startTime)
             periodeTopic.pipeInput(kafkaKeyResponse.key, periode)
             "Når perioden opprettes skal det opprettes en intern tilstand med en bekreftelse" {
                 testDriver.advanceWallClockTime(Duration.ofSeconds(5))
                 hendelseLoggTopicOut.isEmpty shouldBe true
-                val stateStore: StateStore = testDriver.getKeyValueStore(applicationConfiguration.stateStoreName)
+                val stateStore: StateStore =
+                    testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
                 val currentState = stateStore.get(periode.id)
                 currentState shouldBe InternTilstand(
                     periode = PeriodeInfo(
@@ -43,8 +44,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                         recordKey = kafkaKeyResponse.key,
                         startet = periode.startet.tidspunkt,
                         avsluttet = periode.avsluttet?.tidspunkt
-                    ),
-                    bekreftelser = listOf(
+                    ), bekreftelser = listOf(
                         Bekreftelse(
                             tilstand = Tilstand.IkkeKlarForUtfylling,
                             tilgjengeliggjort = null,
@@ -52,7 +52,9 @@ class BekreftelsePunctuatorTest : FreeSpec({
                             sisteVarselOmGjenstaaendeGraceTid = null,
                             bekreftelseId = currentState.bekreftelser.first().bekreftelseId,
                             gjelderFra = periode.startet.tidspunkt,
-                            gjelderTil = fristForNesteBekreftelse(periode.startet.tidspunkt, BekreftelseConfig.bekreftelseInterval)
+                            gjelderTil = fristForNesteBekreftelse(
+                                periode.startet.tidspunkt, BekreftelseConfig.bekreftelseInterval
+                            )
                         )
                     )
                 )
@@ -60,7 +62,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
             }
             "Etter 11 dager skal det ha blitt sendt en BekreftelseTilgjengelig hendelse" {
                 testDriver.advanceWallClockTime(BekreftelseConfig.bekreftelseInterval.minus(BekreftelseConfig.bekreftelseTilgjengeligOffset))
-                val stateStore:StateStore = testDriver.getKeyValueStore(applicationConfiguration.stateStoreName)
+                val stateStore: StateStore =
+                    testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
                 stateStore.all().use {
                     it.forEach {
                         logger.info("key: ${it.key}, value: ${it.value}")
@@ -76,7 +79,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
             }
             "Etter 14 dager skal det ha blitt sendt en LeveringsFristUtloept hendelse" {
                 testDriver.advanceWallClockTime(BekreftelseConfig.bekreftelseTilgjengeligOffset.plusSeconds(5))
-                val stateStore:StateStore = testDriver.getKeyValueStore(applicationConfiguration.stateStoreName)
+                val stateStore: StateStore =
+                    testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
                 stateStore.all().use {
                     it.forEach {
                         logger.info("key: ${it.key}, value: ${it.value}")
@@ -92,7 +96,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
             }
             "Etter 17,5 dager uten svar skal det ha blitt sendt en RegisterGracePeriodeGjenstaaendeTid hendelse" {
                 testDriver.advanceWallClockTime(BekreftelseConfig.varselFoerGracePeriodeUtloept.plusSeconds(5))
-                val stateStore:StateStore = testDriver.getKeyValueStore(applicationConfiguration.stateStoreName)
+                val stateStore: StateStore =
+                    testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
                 stateStore.all().use {
                     it.forEach {
                         logger.info("key: ${it.key}, value: ${it.value}")
@@ -108,7 +113,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
             }
             "Etter 21 dager uten svar skal det ha blitt sendt en RegisterGracePeriodeUtloept hendelse" {
                 testDriver.advanceWallClockTime(BekreftelseConfig.varselFoerGracePeriodeUtloept.plusSeconds(5))
-                val stateStore:StateStore = testDriver.getKeyValueStore(applicationConfiguration.stateStoreName)
+                val stateStore: StateStore =
+                    testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
                 stateStore.all().use {
                     it.forEach {
                         logger.info("key: ${it.key}, value: ${it.value}")
@@ -126,10 +132,12 @@ class BekreftelsePunctuatorTest : FreeSpec({
                 testDriver.advanceWallClockTime(
                     Duration.between(
                         startTime.plus(BekreftelseConfig.bekreftelseInterval).plus(BekreftelseConfig.gracePeriode),
-                        startTime.plus(BekreftelseConfig.bekreftelseInterval).plus(BekreftelseConfig.bekreftelseInterval.minus(BekreftelseConfig.bekreftelseTilgjengeligOffset))
+                        startTime.plus(BekreftelseConfig.bekreftelseInterval)
+                            .plus(BekreftelseConfig.bekreftelseInterval.minus(BekreftelseConfig.bekreftelseTilgjengeligOffset))
                     )
                 )
-                val stateStore:StateStore = testDriver.getKeyValueStore(applicationConfiguration.stateStoreName)
+                val stateStore: StateStore =
+                    testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
                 stateStore.all().use {
                     it.forEach {
                         logger.info("key: ${it.key}, value: ${it.value}")
@@ -145,28 +153,25 @@ class BekreftelsePunctuatorTest : FreeSpec({
             }
         }
     }
-    "BekreftelsePunctuator håndterer BekreftelseMeldingMotatt hendelse" {
-        with(ApplicationTestContext(initialWallClockTime = startTime)){
+    "BekreftelsePunctuator håndterer BekreftelseMeldingMottatt hendelse" {
+        with(ApplicationTestContext(initialWallClockTime = startTime)) {
             val (periode, kafkaKeyResponse) = periode(identitetsnummer = identitetsnummer, startet = startTime)
 
             periodeTopic.pipeInput(kafkaKeyResponse.key, periode)
-            testDriver.advanceWallClockTime(BekreftelseConfig.bekreftelseInterval.minus(BekreftelseConfig.bekreftelseTilgjengeligOffset).plusSeconds(5))
-            val stateStore:StateStore = testDriver.getKeyValueStore(applicationConfiguration.stateStoreName)
+            testDriver.advanceWallClockTime(
+                BekreftelseConfig.bekreftelseInterval.minus(BekreftelseConfig.bekreftelseTilgjengeligOffset)
+                    .plusSeconds(5)
+            )
+            val stateStore: StateStore =
+                testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
             val currentState = stateStore.get(periode.id)
-            bekreftelseTopic.pipeInput(kafkaKeyResponse.key,
-                no.nav.paw.bekreftelse.melding.v1.Bekreftelse(
-                    periode.id,
-                    "paw",
-                    currentState.bekreftelser.first().bekreftelseId,
-                    Svar(
+            bekreftelseTopic.pipeInput(
+                kafkaKeyResponse.key, no.nav.paw.bekreftelse.melding.v1.Bekreftelse(
+                    periode.id, "paw", currentState.bekreftelser.first().bekreftelseId, Svar(
                         Metadata(
-                            Instant.now(),
-                            no.nav.paw.bekreftelse.melding.v1.vo.Bruker(
-                                BrukerType.SLUTTBRUKER,
-                                "12345678901"
-                            ),
-                            "test",
-                            "test"
+                            Instant.now(), no.nav.paw.bekreftelse.melding.v1.vo.Bruker(
+                                BrukerType.SLUTTBRUKER, "12345678901"
+                            ), "test", "test"
                         ),
                         periode.startet.tidspunkt,
                         fristForNesteBekreftelse(periode.startet.tidspunkt, BekreftelseConfig.bekreftelseInterval),
@@ -194,24 +199,20 @@ class BekreftelsePunctuatorTest : FreeSpec({
             val (periode, kafkaKeyResponse) = periode(identitetsnummer = identitetsnummer, startet = startTime)
 
             periodeTopic.pipeInput(kafkaKeyResponse.key, periode)
-            testDriver.advanceWallClockTime(BekreftelseConfig.bekreftelseInterval.minus(BekreftelseConfig.bekreftelseTilgjengeligOffset).plusSeconds(5))
-            val stateStore: StateStore = testDriver.getKeyValueStore(applicationConfiguration.stateStoreName)
+            testDriver.advanceWallClockTime(
+                BekreftelseConfig.bekreftelseInterval.minus(BekreftelseConfig.bekreftelseTilgjengeligOffset)
+                    .plusSeconds(5)
+            )
+            val stateStore: StateStore =
+                testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
             val currentState = stateStore.get(periode.id)
             bekreftelseTopic.pipeInput(
-                kafkaKeyResponse.key,
-                no.nav.paw.bekreftelse.melding.v1.Bekreftelse(
-                    periode.id,
-                    "paw",
-                    currentState.bekreftelser.first().bekreftelseId,
-                    Svar(
+                kafkaKeyResponse.key, no.nav.paw.bekreftelse.melding.v1.Bekreftelse(
+                    periode.id, "paw", currentState.bekreftelser.first().bekreftelseId, Svar(
                         Metadata(
-                            Instant.now(),
-                            no.nav.paw.bekreftelse.melding.v1.vo.Bruker(
-                                BrukerType.SLUTTBRUKER,
-                                "12345678901"
-                            ),
-                            "test",
-                            "test"
+                            Instant.now(), no.nav.paw.bekreftelse.melding.v1.vo.Bruker(
+                                BrukerType.SLUTTBRUKER, "12345678901"
+                            ), "test", "test"
                         ),
                         periode.startet.tidspunkt,
                         fristForNesteBekreftelse(periode.startet.tidspunkt, BekreftelseConfig.bekreftelseInterval),
@@ -242,7 +243,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
                 val (periode, kafkaKeyResponse) = periode(identitetsnummer = identitetsnummer, startet = startTime)
                 periodeTopic.pipeInput(kafkaKeyResponse.key, periode)
                 testDriver.advanceWallClockTime(Duration.ofSeconds(5))
-                val stateStore: StateStore = testDriver.getKeyValueStore(applicationConfiguration.stateStoreName)
+                val stateStore: StateStore =
+                    testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
                 val currentState = stateStore.get(periode.id)
                 currentState shouldBe InternTilstand(
                     periode = PeriodeInfo(
@@ -252,8 +254,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                         recordKey = kafkaKeyResponse.key,
                         startet = periode.startet.tidspunkt,
                         avsluttet = periode.avsluttet?.tidspunkt
-                    ),
-                    bekreftelser = listOf(
+                    ), bekreftelser = listOf(
                         Bekreftelse(
                             tilstand = Tilstand.IkkeKlarForUtfylling,
                             tilgjengeliggjort = null,
@@ -261,7 +262,9 @@ class BekreftelsePunctuatorTest : FreeSpec({
                             sisteVarselOmGjenstaaendeGraceTid = null,
                             bekreftelseId = currentState.bekreftelser.first().bekreftelseId,
                             gjelderFra = periode.startet.tidspunkt,
-                            gjelderTil = fristForNesteBekreftelse(periode.startet.tidspunkt, BekreftelseConfig.bekreftelseInterval)
+                            gjelderTil = fristForNesteBekreftelse(
+                                periode.startet.tidspunkt, BekreftelseConfig.bekreftelseInterval
+                            )
                         )
                     )
                 )
@@ -272,8 +275,12 @@ class BekreftelsePunctuatorTest : FreeSpec({
             with(ApplicationTestContext(initialWallClockTime = startTime)) {
                 val (periode, kafkaKeyResponse) = periode(identitetsnummer = identitetsnummer, startet = startTime)
                 periodeTopic.pipeInput(kafkaKeyResponse.key, periode)
-                testDriver.advanceWallClockTime(BekreftelseConfig.bekreftelseInterval.minus(BekreftelseConfig.bekreftelseTilgjengeligOffset).plusSeconds(5))
-                val stateStore: StateStore = testDriver.getKeyValueStore(applicationConfiguration.stateStoreName)
+                testDriver.advanceWallClockTime(
+                    BekreftelseConfig.bekreftelseInterval.minus(BekreftelseConfig.bekreftelseTilgjengeligOffset)
+                        .plusSeconds(5)
+                )
+                val stateStore: StateStore =
+                    testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
                 val currentState = stateStore.get(periode.id)
                 currentState shouldBe InternTilstand(
                     periode = PeriodeInfo(
@@ -283,16 +290,18 @@ class BekreftelsePunctuatorTest : FreeSpec({
                         recordKey = kafkaKeyResponse.key,
                         startet = periode.startet.tidspunkt,
                         avsluttet = periode.avsluttet?.tidspunkt
-                    ),
-                    bekreftelser = listOf(
+                    ), bekreftelser = listOf(
                         Bekreftelse(
                             tilstand = Tilstand.KlarForUtfylling,
-                            tilgjengeliggjort = startTime.plus(BekreftelseConfig.bekreftelseInterval).minus(BekreftelseConfig.bekreftelseTilgjengeligOffset).plusSeconds(5),
+                            tilgjengeliggjort = startTime.plus(BekreftelseConfig.bekreftelseInterval)
+                                .minus(BekreftelseConfig.bekreftelseTilgjengeligOffset).plusSeconds(5),
                             fristUtloept = null,
                             sisteVarselOmGjenstaaendeGraceTid = null,
                             bekreftelseId = currentState.bekreftelser.first().bekreftelseId,
                             gjelderFra = periode.startet.tidspunkt,
-                            gjelderTil = fristForNesteBekreftelse(periode.startet.tidspunkt, BekreftelseConfig.bekreftelseInterval)
+                            gjelderTil = fristForNesteBekreftelse(
+                                periode.startet.tidspunkt, BekreftelseConfig.bekreftelseInterval
+                            )
                         )
                     )
                 )
@@ -309,10 +318,14 @@ class BekreftelsePunctuatorTest : FreeSpec({
                 val (periode, kafkaKeyResponse) = periode(identitetsnummer = identitetsnummer, startet = startTime)
                 periodeTopic.pipeInput(kafkaKeyResponse.key, periode)
                 // Spoler frem til BekreftelseTilgjengelig
-                testDriver.advanceWallClockTime(BekreftelseConfig.bekreftelseInterval.minus(BekreftelseConfig.bekreftelseTilgjengeligOffset).plusSeconds(5))
+                testDriver.advanceWallClockTime(
+                    BekreftelseConfig.bekreftelseInterval.minus(BekreftelseConfig.bekreftelseTilgjengeligOffset)
+                        .plusSeconds(5)
+                )
                 // Spoler frem til LeveringsfristUtloept
                 testDriver.advanceWallClockTime(BekreftelseConfig.bekreftelseTilgjengeligOffset.plusSeconds(5))
-                val stateStore: StateStore = testDriver.getKeyValueStore(applicationConfiguration.stateStoreName)
+                val stateStore: StateStore =
+                    testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
                 stateStore.all().use {
                     it.forEach {
                         logger.info("key: ${it.key}, value: ${it.value}")
@@ -327,16 +340,18 @@ class BekreftelsePunctuatorTest : FreeSpec({
                         recordKey = kafkaKeyResponse.key,
                         startet = periode.startet.tidspunkt,
                         avsluttet = periode.avsluttet?.tidspunkt
-                    ),
-                    bekreftelser = listOf(
+                    ), bekreftelser = listOf(
                         Bekreftelse(
                             tilstand = Tilstand.VenterSvar,
-                            tilgjengeliggjort = startTime.plus(BekreftelseConfig.bekreftelseInterval).minus(BekreftelseConfig.bekreftelseTilgjengeligOffset).plusSeconds(5),
+                            tilgjengeliggjort = startTime.plus(BekreftelseConfig.bekreftelseInterval)
+                                .minus(BekreftelseConfig.bekreftelseTilgjengeligOffset).plusSeconds(5),
                             fristUtloept = startTime.plus(BekreftelseConfig.bekreftelseInterval).plusSeconds(10),
                             sisteVarselOmGjenstaaendeGraceTid = null,
                             bekreftelseId = currentState.bekreftelser.first().bekreftelseId,
                             gjelderFra = periode.startet.tidspunkt,
-                            gjelderTil = fristForNesteBekreftelse(periode.startet.tidspunkt, BekreftelseConfig.bekreftelseInterval)
+                            gjelderTil = fristForNesteBekreftelse(
+                                periode.startet.tidspunkt, BekreftelseConfig.bekreftelseInterval
+                            )
                         )
                     )
                 )
@@ -354,12 +369,16 @@ class BekreftelsePunctuatorTest : FreeSpec({
                 val (periode, kafkaKeyResponse) = periode(identitetsnummer = identitetsnummer, startet = startTime)
                 periodeTopic.pipeInput(kafkaKeyResponse.key, periode)
                 // Spoler frem til BekreftelseTilgjengelig
-                testDriver.advanceWallClockTime(BekreftelseConfig.bekreftelseInterval.minus(BekreftelseConfig.bekreftelseTilgjengeligOffset).plusSeconds(5))
+                testDriver.advanceWallClockTime(
+                    BekreftelseConfig.bekreftelseInterval.minus(BekreftelseConfig.bekreftelseTilgjengeligOffset)
+                        .plusSeconds(5)
+                )
                 // Spoler frem til LeveringsfristUtloept
                 testDriver.advanceWallClockTime(BekreftelseConfig.bekreftelseTilgjengeligOffset.plusSeconds(5))
                 // Spoler frem til RegisterGracePeriodeGjenstaaende
                 testDriver.advanceWallClockTime(BekreftelseConfig.varselFoerGracePeriodeUtloept.plusSeconds(5))
-                val stateStore: StateStore = testDriver.getKeyValueStore(applicationConfiguration.stateStoreName)
+                val stateStore: StateStore =
+                    testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
                 val currentState = stateStore.get(periode.id)
                 currentState shouldBe InternTilstand(
                     periode = PeriodeInfo(
@@ -369,16 +388,19 @@ class BekreftelsePunctuatorTest : FreeSpec({
                         recordKey = kafkaKeyResponse.key,
                         startet = periode.startet.tidspunkt,
                         avsluttet = periode.avsluttet?.tidspunkt
-                    ),
-                    bekreftelser = listOf(
+                    ), bekreftelser = listOf(
                         Bekreftelse(
                             tilstand = Tilstand.VenterSvar,
-                            tilgjengeliggjort = startTime.plus(BekreftelseConfig.bekreftelseInterval).minus(BekreftelseConfig.bekreftelseTilgjengeligOffset).plusSeconds(5),
+                            tilgjengeliggjort = startTime.plus(BekreftelseConfig.bekreftelseInterval)
+                                .minus(BekreftelseConfig.bekreftelseTilgjengeligOffset).plusSeconds(5),
                             fristUtloept = startTime.plus(BekreftelseConfig.bekreftelseInterval).plusSeconds(10),
-                            sisteVarselOmGjenstaaendeGraceTid = startTime.plus(BekreftelseConfig.bekreftelseInterval).plus(BekreftelseConfig.varselFoerGracePeriodeUtloept).plusSeconds(15),
+                            sisteVarselOmGjenstaaendeGraceTid = startTime.plus(BekreftelseConfig.bekreftelseInterval)
+                                .plus(BekreftelseConfig.varselFoerGracePeriodeUtloept).plusSeconds(15),
                             bekreftelseId = currentState.bekreftelser.first().bekreftelseId,
                             gjelderFra = periode.startet.tidspunkt,
-                            gjelderTil = fristForNesteBekreftelse(periode.startet.tidspunkt, BekreftelseConfig.bekreftelseInterval)
+                            gjelderTil = fristForNesteBekreftelse(
+                                periode.startet.tidspunkt, BekreftelseConfig.bekreftelseInterval
+                            )
                         )
                     )
                 )
@@ -396,14 +418,18 @@ class BekreftelsePunctuatorTest : FreeSpec({
                 val (periode, kafkaKeyResponse) = periode(identitetsnummer = identitetsnummer, startet = startTime)
                 periodeTopic.pipeInput(kafkaKeyResponse.key, periode)
                 // Spoler frem til BekreftelseTilgjengelig
-                testDriver.advanceWallClockTime(BekreftelseConfig.bekreftelseInterval.minus(BekreftelseConfig.bekreftelseTilgjengeligOffset).plusSeconds(5))
+                testDriver.advanceWallClockTime(
+                    BekreftelseConfig.bekreftelseInterval.minus(BekreftelseConfig.bekreftelseTilgjengeligOffset)
+                        .plusSeconds(5)
+                )
                 // Spoler frem til LeveringsfristUtloept
                 testDriver.advanceWallClockTime(BekreftelseConfig.bekreftelseTilgjengeligOffset.plusSeconds(5))
                 // Spoler frem til RegisterGracePeriodeGjenstaaendeTid
                 testDriver.advanceWallClockTime(BekreftelseConfig.varselFoerGracePeriodeUtloept.plusSeconds(5))
                 // Spoler frem til RegisterGracePeriodeUtloept
                 testDriver.advanceWallClockTime(BekreftelseConfig.varselFoerGracePeriodeUtloept.plusSeconds(5))
-                val stateStore: StateStore = testDriver.getKeyValueStore(applicationConfiguration.stateStoreName)
+                val stateStore: StateStore =
+                    testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
                 val currentState = stateStore.get(periode.id)
                 currentState shouldBe InternTilstand(
                     periode = PeriodeInfo(
@@ -413,16 +439,19 @@ class BekreftelsePunctuatorTest : FreeSpec({
                         recordKey = kafkaKeyResponse.key,
                         startet = periode.startet.tidspunkt,
                         avsluttet = periode.avsluttet?.tidspunkt
-                    ),
-                    bekreftelser = listOf(
+                    ), bekreftelser = listOf(
                         Bekreftelse(
                             tilstand = Tilstand.GracePeriodeUtloept,
-                            tilgjengeliggjort = startTime.plus(BekreftelseConfig.bekreftelseInterval).minus(BekreftelseConfig.bekreftelseTilgjengeligOffset).plusSeconds(5),
+                            tilgjengeliggjort = startTime.plus(BekreftelseConfig.bekreftelseInterval)
+                                .minus(BekreftelseConfig.bekreftelseTilgjengeligOffset).plusSeconds(5),
                             fristUtloept = startTime.plus(BekreftelseConfig.bekreftelseInterval).plusSeconds(10),
-                            sisteVarselOmGjenstaaendeGraceTid = startTime.plus(BekreftelseConfig.bekreftelseInterval).plus(BekreftelseConfig.varselFoerGracePeriodeUtloept).plusSeconds(15),
+                            sisteVarselOmGjenstaaendeGraceTid = startTime.plus(BekreftelseConfig.bekreftelseInterval)
+                                .plus(BekreftelseConfig.varselFoerGracePeriodeUtloept).plusSeconds(15),
                             bekreftelseId = currentState.bekreftelser.first().bekreftelseId,
                             gjelderFra = periode.startet.tidspunkt,
-                            gjelderTil = fristForNesteBekreftelse(periode.startet.tidspunkt, BekreftelseConfig.bekreftelseInterval)
+                            gjelderTil = fristForNesteBekreftelse(
+                                periode.startet.tidspunkt, BekreftelseConfig.bekreftelseInterval
+                            )
                         )
                     )
                 )
