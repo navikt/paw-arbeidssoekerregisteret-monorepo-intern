@@ -8,6 +8,7 @@ import arrow.core.right
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.*
 import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.ArbeidssoekerperiodeResponse
 import no.nav.paw.arbeidssoekerregisteret.backup.database.readAllRecordsForId
+import no.nav.paw.arbeidssoekerregisteret.backup.database.txContext
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.StoredData
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
@@ -29,10 +30,11 @@ class BrukerstoetteService(
 ) {
     private val errorLogger = LoggerFactory.getLogger("error_logger")
     private val apiOppslagLogger = LoggerFactory.getLogger("api_oppslag_logger")
+    private val txCtx = txContext(applicationContext)
     suspend fun hentDetaljer(identitetsnummer: String): DetaljerResponse? {
         val (id, _) = kafkaKeysClient.getIdAndKey(identitetsnummer)
         val hendelser = transaction {
-            (::readAllRecordsForId)(hendelseDeserializer, applicationContext, id)
+            txCtx().readAllRecordsForId(hendelseDeserializer, id)
         }
         if (hendelser.isEmpty()) {
             return null
@@ -42,7 +44,11 @@ class BrukerstoetteService(
             val fraOppslagsApi = hentFraOppslagsApi(identitetsnummer)
                 .fold(
                     { error ->
-                        errorLogger.error("Feil ved henting av opplysninger fra oppslagsapi: {}:{}", error.httpCode, error.message)
+                        errorLogger.error(
+                            "Feil ved henting av opplysninger fra oppslagsapi: {}:{}",
+                            error.httpCode,
+                            error.message
+                        )
                         emptyList()
                     },
                     { it }
@@ -85,7 +91,8 @@ class BrukerstoetteService(
                     apiOppslagLogger.info("Hentet data fra oppslagsapi, perioder: {}, opplysninger: {}, profileringer: {}",
                         result.distinctBy { it.periodeId }.size,
                         result.distinctBy { it.opplysningsId }.size,
-                        result.distinctBy { it.profileringsId }.size)
+                        result.distinctBy { it.profileringsId }.size
+                    )
                 }
         }
     }

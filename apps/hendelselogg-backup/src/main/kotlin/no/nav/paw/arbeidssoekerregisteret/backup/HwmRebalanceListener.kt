@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssoekerregisteret.backup
 
 import no.nav.paw.arbeidssoekerregisteret.backup.database.getHwm
+import no.nav.paw.arbeidssoekerregisteret.backup.database.txContext
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
@@ -13,9 +14,11 @@ class HwmRebalanceListener(
     private val consumer: Consumer<*, *>
 ) : ConsumerRebalanceListener {
 
-    private val currentPartitions =  ConcurrentHashMap<Int, TopicPartition>(6)
+    private val currentPartitions = ConcurrentHashMap<Int, TopicPartition>(6)
 
     val currentlyAssignedPartitions: Set<Int> get() = currentPartitions.keys
+
+    private val txContext = txContext(context)
 
     override fun onPartitionsRevoked(partitions: MutableCollection<TopicPartition>?) {
         context.logger.info("Revoked: $partitions")
@@ -25,24 +28,22 @@ class HwmRebalanceListener(
     }
 
     override fun onPartitionsAssigned(partitions: MutableCollection<TopicPartition>?) {
-        with(context) {
-            partitions?.forEach { partition ->
-                currentPartitions.putIfAbsent(partition.partition(), partition)
-            }
-            val assignedPartitions = partitions ?: emptyList()
-            context.logger.info("Assigned partitions $assignedPartitions")
-            if (assignedPartitions.isNotEmpty()) {
-                val seekTo = transaction {
-                    assignedPartitions.map { partition ->
-                        val offset = requireNotNull(getHwm(partition.partition())) {
-                            "No hwm for partition ${partition.partition()}, init not called?"
-                        }
-                        partition to offset
+        partitions?.forEach { partition ->
+            currentPartitions.putIfAbsent(partition.partition(), partition)
+        }
+        val assignedPartitions = partitions ?: emptyList()
+        context.logger.info("Assigned partitions $assignedPartitions")
+        if (assignedPartitions.isNotEmpty()) {
+            val seekTo = transaction {
+                assignedPartitions.map { partition ->
+                    val offset = requireNotNull(txContext().getHwm(partition.partition())) {
+                        "No hwm for partition ${partition.partition()}, init not called?"
                     }
+                    partition to offset
                 }
-                seekTo.forEach { (partition, offset) ->
-                    consumer.seek(partition, offset + 1)
-                }
+            }
+            seekTo.forEach { (partition, offset) ->
+                consumer.seek(partition, offset + 1)
             }
         }
     }

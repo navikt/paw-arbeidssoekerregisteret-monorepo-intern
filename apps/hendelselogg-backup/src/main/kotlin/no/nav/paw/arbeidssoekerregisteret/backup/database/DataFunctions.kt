@@ -13,27 +13,25 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 
-context(HendelseSerializer, ApplicationContext)
-fun <A : Hendelse> Transaction.writeRecord(record: ConsumerRecord<Long, A>) {
+fun <A : Hendelse> TransactionContext.writeRecord(hendelseSerializer: HendelseSerializer, record: ConsumerRecord<Long, A>) {
     HendelseTable.insert {
-        it[version] = consumerVersion
+        it[version] = appContext.consumerVersion
         it[partition] = record.partition()
         it[offset] = record.offset()
         it[recordKey] = record.key()
         it[arbeidssoekerId] = record.value().id
-        it[data] = serializeToString(record.value())
+        it[data] = hendelseSerializer.serializeToString(record.value())
         it[traceparent] = record.headers().lastHeader("traceparent")?.let { h -> String(h.value()) }
     }
 }
 
-context(HendelseDeserializer, ApplicationContext)
-fun Transaction.readRecord(partition: Int, offset: Long): StoredData? =
+fun TransactionContext.readRecord(hendelseDeserializer: HendelseDeserializer, partition: Int, offset: Long): StoredData? =
     HendelseTable
         .selectAll()
         .where {
             (HendelseTable.partition eq partition) and
                     (HendelseTable.offset eq offset) and
-                    (HendelseTable.version eq consumerVersion)
+                    (HendelseTable.version eq appContext.consumerVersion)
         }.singleOrNull()
         ?.let {
             StoredData(
@@ -42,17 +40,16 @@ fun Transaction.readRecord(partition: Int, offset: Long): StoredData? =
                 recordKey = it[recordKey],
                 arbeidssoekerId = it[HendelseTable.arbeidssoekerId],
                 traceparent = it[HendelseTable.traceparent],
-                data = deserializeFromString(it[HendelseTable.data])
+                data = hendelseDeserializer.deserializeFromString(it[HendelseTable.data])
             )
         }
 
-context(HendelseDeserializer, ApplicationContext)
-fun Transaction.readAllRecordsForId(arbeidssoekerId: Long): List<StoredData> =
+fun TransactionContext.readAllRecordsForId(hendelseDeserializer: HendelseDeserializer, arbeidssoekerId: Long): List<StoredData> =
     HendelseTable
         .selectAll()
         .where {
             (HendelseTable.arbeidssoekerId eq arbeidssoekerId) and
-                    (HendelseTable.version eq consumerVersion)
+                    (HendelseTable.version eq appContext.consumerVersion)
         }
         .map {
             StoredData(
@@ -61,12 +58,11 @@ fun Transaction.readAllRecordsForId(arbeidssoekerId: Long): List<StoredData> =
                 recordKey = it[recordKey],
                 arbeidssoekerId = it[HendelseTable.arbeidssoekerId],
                 traceparent = it[HendelseTable.traceparent],
-                data = deserializeFromString(it[HendelseTable.data])
+                data = hendelseDeserializer.deserializeFromString(it[HendelseTable.data])
             )
         }
 
-context(HendelseDeserializer, ApplicationContext)
-fun Transaction.getOneRecordForId(id: String): StoredData? =
+fun Transaction.getOneRecordForId(hendelseDeserializer: HendelseDeserializer, id: String): StoredData? =
     TransactionManager.current()
         .exec(
             stmt = """select * from hendelser where data @> '{"identitetsnummer": "$id"}' limit 1;""",
@@ -79,7 +75,7 @@ fun Transaction.getOneRecordForId(id: String): StoredData? =
                                 offset = rs.getLong(HendelseTable.offset.name),
                                 recordKey = rs.getLong(HendelseTable.recordKey.name),
                                 arbeidssoekerId = rs.getLong(HendelseTable.arbeidssoekerId.name),
-                                data = deserializeFromString(rs.getString(HendelseTable.data.name)),
+                                data = hendelseDeserializer.deserializeFromString(rs.getString(HendelseTable.data.name)),
                                 traceparent = rs.getString(HendelseTable.traceparent.name)
                             )
                         )

@@ -17,6 +17,7 @@ import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.LongDeserializer
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
@@ -60,18 +61,17 @@ fun initApplication(): Pair<Consumer<Long, Hendelse>, ApplicationContext> {
         azureConfig = loadNaisOrLocalConfiguration("azure.toml")
     )
     val partitions = consumer.partitionsFor(HENDELSE_TOPIC).count()
-    with(context) {
-        val allHwms = transaction {
+    fun Transaction.txContext(): TransactionContext = TransactionContext(context, this)
+    val allHwms = transaction {
+        with(txContext()) {
             initHwm(partitions)
             getAllHwms()
         }
-        allHwms.forEach { hwm ->
-            meterRegistry.gauge(HWM_GAUGE, listOf(Tag.of("partition", hwm.partition.toString())), this) { so ->
-                transaction {
-                    with(so) {
-                        getHwm(hwm.partition)?.toDouble() ?: -1.0
-                    }
-                }
+    }
+    allHwms.forEach { hwm ->
+        context.meterRegistry.gauge(HWM_GAUGE, listOf(Tag.of("partition", hwm.partition.toString())), context) { _ ->
+            transaction {
+                txContext().getHwm(hwm.partition)?.toDouble() ?: -1.0
             }
         }
     }

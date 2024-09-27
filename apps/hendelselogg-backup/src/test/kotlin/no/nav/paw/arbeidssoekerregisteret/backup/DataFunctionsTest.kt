@@ -5,10 +5,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import no.nav.paw.arbeidssoekerregisteret.backup.database.DatabaseConfig
-import no.nav.paw.arbeidssoekerregisteret.backup.database.getOneRecordForId
-import no.nav.paw.arbeidssoekerregisteret.backup.database.readRecord
-import no.nav.paw.arbeidssoekerregisteret.backup.database.writeRecord
+import no.nav.paw.arbeidssoekerregisteret.backup.database.*
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
@@ -55,19 +52,21 @@ class DataFunctionsTest : FreeSpec({
                     Opplysning.OPPHOLDSTILATELSE_UTGAATT
                 )
             )
-        ).apply { headers().add("traceparent", "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01".toByteArray())}
+        ).apply {
+            headers().add(
+                "traceparent",
+                "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01".toByteArray()
+            )
+        }
         "we can write to the log without errors" {
             transaction {
-                with(ApplicationContext(
+                val appCtx = ApplicationContext(
                     consumerVersion = 1,
                     logger = logger,
                     meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
                     azureConfig = loadNaisOrLocalConfiguration("azure.toml")
-                )) {
-                    with(hendelseSerde.serializer()) {
-                        writeRecord(record)
-                    }
-                }
+                )
+                txContext(appCtx)().writeRecord(hendelseSerde.serializer(), record)
             }
         }
         val recordVersion2 = ConsumerRecord(
@@ -81,76 +80,61 @@ class DataFunctionsTest : FreeSpec({
         )
         "we can write a different version to the log without errors" {
             transaction {
-                with(ApplicationContext(
+                val appCtx = ApplicationContext(
                     consumerVersion = 2,
                     logger = logger,
                     meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
                     azureConfig = loadNaisOrLocalConfiguration("azure.toml")
-                )) {
-                    with(hendelseSerde.serializer()) {
-                        writeRecord(recordVersion2)
-                    }
-                }
+                )
+                txContext(appCtx)().writeRecord(hendelseSerde.serializer(), recordVersion2)
             }
         }
         "we can read a record based on id" {
-            transaction {
-                val storedData =
-                    with(ApplicationContext(
-                        consumerVersion = 1,
-                        logger = logger,
-                        meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
-                        azureConfig = loadNaisOrLocalConfiguration("azure.toml")
-                    )) {
-                        with(hendelseSerde.deserializer()) {
-                            getOneRecordForId(record.value().identitetsnummer)
-                        }.shouldNotBeNull()
-                    }
-                storedData.partition shouldBe record.partition()
-                storedData.offset shouldBe record.offset()
-                storedData.recordKey shouldBe record.key()
-                storedData.arbeidssoekerId shouldBe record.value().id
-                storedData.data shouldBe record.value()
-                storedData.traceparent shouldBe record.headers().lastHeader("traceparent")?.let { h -> String(h.value()) }
-            }
+            val storedData = transaction {
+                getOneRecordForId(hendelseSerde.deserializer(), record.value().identitetsnummer)
+            }.shouldNotBeNull()
+            storedData.partition shouldBe record.partition()
+            storedData.offset shouldBe record.offset()
+            storedData.recordKey shouldBe record.key()
+            storedData.arbeidssoekerId shouldBe record.value().id
+            storedData.data shouldBe record.value()
+            storedData.traceparent shouldBe record.headers().lastHeader("traceparent")
+                ?.let { h -> String(h.value()) }
         }
         "we can read multiple versions from the log" {
-            transaction {
-                val storedDataV1 =
-                    with(ApplicationContext(
-                        consumerVersion = 1,
-                        logger = logger,
-                        meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
-                        azureConfig = loadNaisOrLocalConfiguration("azure.toml")
-                    )) {
-                        with(hendelseSerde.deserializer()) {
-                            readRecord(record.partition(), record.offset())
-                        }.shouldNotBeNull()
-                    }
-                storedDataV1.partition shouldBe record.partition()
-                storedDataV1.offset shouldBe record.offset()
-                storedDataV1.recordKey shouldBe record.key()
-                storedDataV1.arbeidssoekerId shouldBe record.value().id
-                storedDataV1.data shouldBe record.value()
-                storedDataV1.traceparent shouldBe record.headers().lastHeader("traceparent")?.let { h -> String(h.value()) }
-                val storedDataV2 =
-                    with(ApplicationContext(
-                        consumerVersion = 2,
-                        logger = logger,
-                        meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
-                        azureConfig = loadNaisOrLocalConfiguration("azure.toml")
-                    )) {
-                        with(hendelseSerde.deserializer()) {
-                            readRecord(record.partition(), record.offset())
-                        }.shouldNotBeNull()
-                    }
-                storedDataV2.partition shouldBe record.partition()
-                storedDataV2.offset shouldBe record.offset()
-                storedDataV2.recordKey shouldBe record.key()
-                storedDataV2.arbeidssoekerId shouldBe record.value().id
-                storedDataV2.data shouldBe recordVersion2.value()
-                storedDataV2.traceparent shouldBe null
-            }
+            val storedDataV1 = ApplicationContext(
+                consumerVersion = 1,
+                logger = logger,
+                meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+                azureConfig = loadNaisOrLocalConfiguration("azure.toml")
+            ).let { appCtx ->
+                transaction {
+                    txContext(appCtx)().readRecord(hendelseSerde.deserializer(), record.partition(), record.offset())
+                }
+            }.shouldNotBeNull()
+            storedDataV1.partition shouldBe record.partition()
+            storedDataV1.offset shouldBe record.offset()
+            storedDataV1.recordKey shouldBe record.key()
+            storedDataV1.arbeidssoekerId shouldBe record.value().id
+            storedDataV1.data shouldBe record.value()
+            storedDataV1.traceparent shouldBe record.headers().lastHeader("traceparent")
+                ?.let { h -> String(h.value()) }
+            val storedDataV2 = ApplicationContext(
+                consumerVersion = 2,
+                logger = logger,
+                meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+                azureConfig = loadNaisOrLocalConfiguration("azure.toml")
+            ).let { appCtx ->
+                transaction {
+                    txContext(appCtx)().readRecord(hendelseSerde.deserializer(), record.partition(), record.offset())
+                }
+            }.shouldNotBeNull()
+            storedDataV2.partition shouldBe record.partition()
+            storedDataV2.offset shouldBe record.offset()
+            storedDataV2.recordKey shouldBe record.key()
+            storedDataV2.arbeidssoekerId shouldBe record.value().id
+            storedDataV2.data shouldBe recordVersion2.value()
+            storedDataV2.traceparent shouldBe null
         }
     }
 })
