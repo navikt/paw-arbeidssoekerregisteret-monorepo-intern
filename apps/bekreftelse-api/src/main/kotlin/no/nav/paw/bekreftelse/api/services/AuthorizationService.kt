@@ -35,10 +35,9 @@ class AuthorizationService(
     private val logger: Logger = LoggerFactory.getLogger("no.nav.paw.logger.auth")
     private val auditLogger: Logger = buildAuditLogger
 
-    context(RequestContext)
     @WithSpan
-    suspend fun authorize(tilgangType: TilgangType): SecurityContext {
-        val tokenContext = principal?.context ?: throw BearerTokenManglerException("Sesjon mangler")
+    suspend fun authorize(requestContext: RequestContext, tilgangType: TilgangType): SecurityContext {
+        val tokenContext = requestContext.principal?.context ?: throw BearerTokenManglerException("Sesjon mangler")
 
         val accessToken = tokenContext.resolveTokens().firstOrNull()
             ?: throw UgyldigBearerTokenException("Ingen gyldige Bearer Tokens funnet")
@@ -48,7 +47,7 @@ class AuthorizationService(
         }
 
         val securityContext = SecurityContext(
-            sluttbruker = resolveSluttbruker(accessToken, identitetsnummer),
+            sluttbruker = resolveSluttbruker(accessToken, requestContext.identitetsnummer),
             innloggetBruker = resolveInnloggetBruker(accessToken),
             accessToken = accessToken,
             tilgangType = tilgangType

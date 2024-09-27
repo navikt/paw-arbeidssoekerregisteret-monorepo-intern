@@ -45,39 +45,39 @@ class BekreftelseService(
         return checkNotNull(internStateStore) { "Intern state store er ikke initiert" }
     }
 
-    context(SecurityContext)
     @WithSpan
     suspend fun finnTilgjengeligBekreftelser(
+        securityContext: SecurityContext,
         request: TilgjengeligeBekreftelserRequest,
         useMockData: Boolean
     ): TilgjengeligBekreftelserResponse {
         // TODO Fjern når vi har ferdig Kafka-logikk
         if (useMockData) {
-            return mockDataService.finnTilgjengeligBekreftelser(sluttbruker.identitetsnummer)
+            return mockDataService.finnTilgjengeligBekreftelser(securityContext.sluttbruker.identitetsnummer)
         }
 
-        val internState = getInternStateStore().get(sluttbruker.arbeidssoekerId)
+        val internState = getInternStateStore().get(securityContext.sluttbruker.arbeidssoekerId)
 
         if (internState != null) {
             logger.info("Fant ${internState.tilgjendeligeBekreftelser.size} tilgjengelige bekreftelser")
             return internState.tilgjendeligeBekreftelser.toResponse()
         } else {
-            return finnTilgjengeligBekreftelserFraAnnenNode(request)
+            return finnTilgjengeligBekreftelserFraAnnenNode(securityContext, request)
         }
     }
 
-    context(SecurityContext)
     @WithSpan
     suspend fun mottaBekreftelse(
+        securityContext: SecurityContext,
         request: BekreftelseRequest,
         useMockData: Boolean
     ) {
         // TODO Fjern når vi har ferdig Kafka-logikk
         if (useMockData) {
-            return mockDataService.mottaBekreftelse(sluttbruker.identitetsnummer, request.bekreftelseId)
+            return mockDataService.mottaBekreftelse(securityContext.sluttbruker.identitetsnummer, request.bekreftelseId)
         }
 
-        val internState = getInternStateStore().get(sluttbruker.arbeidssoekerId)
+        val internState = getInternStateStore().get(securityContext.sluttbruker.arbeidssoekerId)
 
         if (internState != null) {
             val tilgjengeligBekreftelse = internState.tilgjendeligeBekreftelser
@@ -88,24 +88,24 @@ class BekreftelseService(
                     periodeId = tilgjengeligBekreftelse.periodeId,
                     gjelderFra = tilgjengeligBekreftelse.gjelderFra,
                     gjelderTil = tilgjengeligBekreftelse.gjelderTil,
-                    innloggetBruker
+                    securityContext.innloggetBruker
                 )
-                bekreftelseKafkaProducer.produceMessage(sluttbruker.kafkaKey, bekreftelse)
+                bekreftelseKafkaProducer.produceMessage(securityContext.sluttbruker.kafkaKey, bekreftelse)
             } else {
                 // TODO Rekreftelse ikke funnet. Hva gjør vi?
             }
         } else {
-            sendBekreftelseTilAnnenNode(request)
+            sendBekreftelseTilAnnenNode(securityContext, request)
         }
     }
 
-    context(SecurityContext)
     private suspend fun finnTilgjengeligBekreftelserFraAnnenNode(
+        securityContext: SecurityContext,
         request: TilgjengeligeBekreftelserRequest
     ): TilgjengeligBekreftelserResponse {
         val metadata = kafkaStreams.queryMetadataForKey(
             applicationConfig.kafkaTopology.internStateStoreName,
-            sluttbruker.arbeidssoekerId,
+            securityContext.sluttbruker.arbeidssoekerId,
             Serdes.Long().serializer()
         )
 
@@ -115,19 +115,19 @@ class BekreftelseService(
         } else {
             return bekreftelseHttpConsumer.finnTilgjengeligBekreftelser(
                 host = metadata.activeHost().host(),
-                bearerToken = accessToken.jwt,
+                bearerToken = securityContext.accessToken.jwt,
                 request = request
             )
         }
     }
 
-    context(SecurityContext)
     private suspend fun sendBekreftelseTilAnnenNode(
+        securityContext: SecurityContext,
         request: BekreftelseRequest
     ) {
         val metadata = kafkaStreams.queryMetadataForKey(
             applicationConfig.kafkaTopology.internStateStoreName,
-            sluttbruker.arbeidssoekerId,
+            securityContext.sluttbruker.arbeidssoekerId,
             Serdes.Long().serializer()
         )
 
@@ -137,7 +137,7 @@ class BekreftelseService(
         } else {
             bekreftelseHttpConsumer.sendBekreftelse(
                 host = metadata.activeHost().host(),
-                bearerToken = accessToken.jwt,
+                bearerToken = securityContext.accessToken.jwt,
                 request = request
             )
         }

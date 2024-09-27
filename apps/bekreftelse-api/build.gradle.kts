@@ -84,12 +84,6 @@ tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
 
-tasks.withType<KotlinCompile>().configureEach {
-    compilerOptions {
-        freeCompilerArgs.add("-Xcontext-receivers")
-    }
-}
-
 tasks.withType(Jar::class) {
     manifest {
         attributes["Implementation-Version"] = project.version

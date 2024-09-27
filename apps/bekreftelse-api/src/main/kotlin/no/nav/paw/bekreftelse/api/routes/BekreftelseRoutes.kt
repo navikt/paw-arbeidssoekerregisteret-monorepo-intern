@@ -21,42 +21,36 @@ fun Route.bekreftelseRoutes(applicationContext: ApplicationContext) {
     route("/api/v1") {
         authenticate("idporten", "tokenx", "azure") {
             get("/tilgjengelige-bekreftelser") {
-                with(resolveRequest()) {
-                    with(authorizationService.authorize(TilgangType.LESE)) {
-                        val response = bekreftelseService.finnTilgjengeligBekreftelser(
-                            TilgjengeligeBekreftelserRequest(sluttbruker.identitetsnummer),
-                            useMockData
-                        )
-
-                        call.respond(HttpStatusCode.OK, response)
-                    }
-                }
+                val requestContext = resolveRequest()
+                val securityContext = authorizationService.authorize(requestContext, TilgangType.LESE)
+                val response = bekreftelseService.finnTilgjengeligBekreftelser(
+                    securityContext,
+                    TilgjengeligeBekreftelserRequest(securityContext.sluttbruker.identitetsnummer),
+                    requestContext.useMockData
+                )
+                call.respond(HttpStatusCode.OK, response)
             }
 
             post<TilgjengeligeBekreftelserRequest>("/tilgjengelige-bekreftelser") { request ->
-                with(resolveRequest(request.identitetsnummer)) {
-                    with(authorizationService.authorize(TilgangType.LESE)) {
-                        val response = bekreftelseService.finnTilgjengeligBekreftelser(
-                            request,
-                            useMockData
-                        )
-
-                        call.respond(HttpStatusCode.OK, response)
-                    }
-                }
+                val requestContext = resolveRequest(request.identitetsnummer)
+                val securityContext = authorizationService.authorize(requestContext, TilgangType.LESE)
+                val response = bekreftelseService.finnTilgjengeligBekreftelser(
+                    securityContext,
+                    request,
+                    requestContext.useMockData
+                )
+                call.respond(HttpStatusCode.OK, response)
             }
 
             post<BekreftelseRequest>("/bekreftelse") { request ->
-                with(resolveRequest(request.identitetsnummer)) {
-                    with(authorizationService.authorize(TilgangType.SKRIVE)) {
-                        bekreftelseService.mottaBekreftelse(
-                            request,
-                            useMockData
-                        )
-
-                        call.respond(HttpStatusCode.OK)
-                    }
-                }
+                val requestContext = resolveRequest(request.identitetsnummer)
+                val securityContext = authorizationService.authorize(requestContext, TilgangType.SKRIVE)
+                bekreftelseService.mottaBekreftelse(
+                    securityContext,
+                    request,
+                    requestContext.useMockData
+                )
+                call.respond(HttpStatusCode.OK)
             }
         }
     }

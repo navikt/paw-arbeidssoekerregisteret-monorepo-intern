@@ -103,19 +103,16 @@ class ApplicationTestContext {
         route("/api/secured") {
             authenticate("idporten", "tokenx", "azure") {
                 get("/") {
-                    with(resolveRequest()) {
-                        with(authorizationService.authorize(TilgangType.LESE)) {
-                            call.respond("WHATEVER")
-                        }
-                    }
+                    authorizationService.authorize(resolveRequest(), TilgangType.LESE)
+                    call.respond("WHATEVER")
                 }
 
                 post<TilgjengeligeBekreftelserRequest>("/") { request ->
-                    with(resolveRequest(request.identitetsnummer)) {
-                        with(authorizationService.authorize(TilgangType.SKRIVE)) {
-                            call.respond("WHATEVER")
-                        }
-                    }
+                    authorizationService.authorize(
+                        requestContext = resolveRequest(request.identitetsnummer),
+                        tilgangType = TilgangType.SKRIVE
+                    )
+                    call.respond("WHATEVER")
                 }
             }
         }
