@@ -43,12 +43,12 @@ data class AuthProvider(
     val name: String,
     val discoveryUrl: String,
     val clientId: String,
-    val claims: Claims
+    val claims: AuthProviderClaims
 )
 
 typealias AuthProviders = List<AuthProvider>
 
-data class Claims(
+data class AuthProviderClaims(
     val map: List<String>,
     val combineWithOr: Boolean = false
 )

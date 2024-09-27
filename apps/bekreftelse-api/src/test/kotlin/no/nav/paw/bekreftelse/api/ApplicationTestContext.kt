@@ -17,8 +17,8 @@ import io.mockk.mockk
 import no.nav.paw.bekreftelse.api.config.APPLICATION_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.config.AuthProvider
+import no.nav.paw.bekreftelse.api.config.AuthProviderClaims
 import no.nav.paw.bekreftelse.api.config.AuthProviders
-import no.nav.paw.bekreftelse.api.config.Claims
 import no.nav.paw.bekreftelse.api.consumer.BekreftelseHttpConsumer
 import no.nav.paw.bekreftelse.api.context.ApplicationContext
 import no.nav.paw.bekreftelse.api.context.resolveRequest
@@ -125,21 +125,21 @@ class ApplicationTestContext {
         val wellKnownUrl = wellKnownUrl("default").toString()
         return listOf(
             AuthProvider(
-                IdPorten.name, wellKnownUrl, "default", Claims(
+                IdPorten.name, wellKnownUrl, "default", AuthProviderClaims(
                     listOf(
                         "acr=idporten-loa-high"
                     )
                 )
             ),
             AuthProvider(
-                TokenX.name, wellKnownUrl, "default", Claims(
+                TokenX.name, wellKnownUrl, "default", AuthProviderClaims(
                     listOf(
                         "acr=Level4", "acr=idporten-loa-high"
                     ), true
                 )
             ),
             AuthProvider(
-                Azure.name, wellKnownUrl, "default", Claims(
+                Azure.name, wellKnownUrl, "default", AuthProviderClaims(
                     listOf(
                         "NAVident"
                     )

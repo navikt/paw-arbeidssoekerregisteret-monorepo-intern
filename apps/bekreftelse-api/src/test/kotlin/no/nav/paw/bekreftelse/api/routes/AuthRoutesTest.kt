@@ -95,7 +95,7 @@ class AuthRoutesTest : FreeSpec({
                     response.status shouldBe HttpStatusCode.Forbidden
                     val body = response.body<ProblemDetails>()
                     body.status shouldBe HttpStatusCode.Forbidden
-                    body.code shouldBe "PAW_UFULLSTENDIG_BEARER_TOKEN"
+                    body.code shouldBe "PAW_UGYLDIG_BEARER_TOKEN"
                 }
             }
         }
@@ -123,7 +123,7 @@ class AuthRoutesTest : FreeSpec({
                     response.status shouldBe HttpStatusCode.Forbidden
                     val body = response.body<ProblemDetails>()
                     body.status shouldBe HttpStatusCode.Forbidden
-                    body.code shouldBe "PAW_UFULLSTENDIG_BEARER_TOKEN"
+                    body.code shouldBe "PAW_UGYLDIG_BEARER_TOKEN"
                 }
             }
 
@@ -241,7 +241,7 @@ class AuthRoutesTest : FreeSpec({
                 }
             }
 
-            "Skal få 403 ved Azure-token med POST-request men uten POAO tilgang".config(enabled = false) { // TODO Enable
+            "Skal få 403 ved Azure-token med POST-request men uten POAO tilgang" {
                 coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(1, 1)
                 every { poaoTilgangClientMock.evaluatePolicy(any<NavAnsattTilgangTilEksternBrukerPolicyInput>()) } returns ApiResult(
                     throwable = null,
@@ -277,7 +277,7 @@ class AuthRoutesTest : FreeSpec({
                 }
             }
 
-            "Skal få 200 ved Azure-token med POST-request og med POAO tilgang".config(enabled = false) { // TODO Enable
+            "Skal få 200 ved Azure-token med POST-request og med POAO tilgang" {
                 coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(1, 1)
                 every { poaoTilgangClientMock.evaluatePolicy(any<NavAnsattTilgangTilEksternBrukerPolicyInput>()) } returns ApiResult(
                     throwable = null,

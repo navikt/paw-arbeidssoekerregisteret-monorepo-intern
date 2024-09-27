@@ -2,7 +2,7 @@ package no.nav.paw.bekreftelse.api.producer
 
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.utils.buildBekreftelseSerde
-import no.nav.paw.bekreftelse.api.utils.logger
+import no.nav.paw.bekreftelse.api.utils.buildLogger
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.config.kafka.KafkaFactory
 import no.nav.paw.config.kafka.sendDeferred
@@ -13,8 +13,9 @@ import org.apache.kafka.common.serialization.LongSerializer
 class BekreftelseKafkaProducer(
     private val applicationConfig: ApplicationConfig,
 ) {
-    private lateinit var producer: Producer<Long, Bekreftelse>
+    private val logger = buildLogger
     private val bekreftelseSerde = buildBekreftelseSerde()
+    private lateinit var producer: Producer<Long, Bekreftelse>
 
     init {
         initializeProducer()
@@ -34,7 +35,7 @@ class BekreftelseKafkaProducer(
         val topic = applicationConfig.kafkaTopology.bekreftelseTopic
         val record = ProducerRecord(topic, key, message)
         val recordMetadata = producer.sendDeferred(record).await()
-        logger.trace("Sendte melding til kafka: offset={}", recordMetadata.offset())
+        logger.debug("Sendte melding til kafka: offset={}", recordMetadata.offset())
     }
 
     fun closeProducer() {

@@ -10,9 +10,9 @@ import no.nav.poao_tilgang.client.TilgangType
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-inline val <reified T> T.logger: Logger get() = LoggerFactory.getLogger(T::class.java)
+inline val <reified T> T.buildLogger: Logger get() = LoggerFactory.getLogger(T::class.java)
 
-inline val auditLogger: Logger get() = LoggerFactory.getLogger("AuditLogger")
+inline val buildAuditLogger: Logger get() = LoggerFactory.getLogger("AuditLogger")
 
 fun Logger.audit(
     runtimeEnvironment: RuntimeEnvironment,

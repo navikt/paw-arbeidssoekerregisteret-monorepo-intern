@@ -23,7 +23,6 @@ import io.mockk.runs
 import io.mockk.verify
 import no.nav.paw.bekreftelse.api.ApplicationTestContext
 import no.nav.paw.bekreftelse.api.model.BekreftelseRequest
-import no.nav.paw.bekreftelse.api.model.InnloggetBruker
 import no.nav.paw.bekreftelse.api.model.InternState
 import no.nav.paw.bekreftelse.api.model.TilgjengeligBekreftelserResponse
 import no.nav.paw.bekreftelse.api.model.TilgjengeligeBekreftelserRequest
@@ -36,7 +35,6 @@ import org.apache.kafka.streams.StoreQueryParameters
 
 class BekreftelseRoutesTest : FreeSpec({
     with(ApplicationTestContext()) {
-
         beforeSpec {
             clearAllMocks()
             coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(1, 1)
@@ -58,8 +56,8 @@ class BekreftelseRoutesTest : FreeSpec({
         }
 
         /*
-         * SLUTTBRUKER TESTER
-         */
+     * SLUTTBRUKER TESTER
+     */
         "Test suite for sluttbruker" - {
             "Skal få 500 om Kafka Streams ikke kjører" {
                 every { kafkaStreamsMock.state() } returns KafkaStreams.State.NOT_RUNNING
@@ -162,7 +160,7 @@ class BekreftelseRoutesTest : FreeSpec({
                 coEvery {
                     bekreftelseHttpConsumerMock.finnTilgjengeligBekreftelser(
                         any<String>(),
-                        any<InnloggetBruker>(),
+                        any<String>(),
                         any<TilgjengeligeBekreftelserRequest>()
                     )
                 } returns listOf(testData.nyTilgjengeligBekreftelse())
@@ -198,7 +196,7 @@ class BekreftelseRoutesTest : FreeSpec({
                     coVerify {
                         bekreftelseHttpConsumerMock.finnTilgjengeligBekreftelser(
                             any<String>(),
-                            any<InnloggetBruker>(),
+                            any<String>(),
                             any<TilgjengeligeBekreftelserRequest>()
                         )
                     }
@@ -266,9 +264,9 @@ class BekreftelseRoutesTest : FreeSpec({
                     )
                 } returns testData.nyKeyQueryMetadata()
                 coEvery {
-                    bekreftelseHttpConsumerMock.mottaBekreftelse(
+                    bekreftelseHttpConsumerMock.sendBekreftelse(
                         any<String>(),
-                        any<InnloggetBruker>(),
+                        any<String>(),
                         any<BekreftelseRequest>()
                     )
                 } just runs
@@ -304,9 +302,9 @@ class BekreftelseRoutesTest : FreeSpec({
                     }
                     verify { stateStoreMock.get(any<Long>()) }
                     coVerify {
-                        bekreftelseHttpConsumerMock.mottaBekreftelse(
+                        bekreftelseHttpConsumerMock.sendBekreftelse(
                             any<String>(),
-                            any<InnloggetBruker>(),
+                            any<String>(),
                             any<BekreftelseRequest>()
                         )
                     }

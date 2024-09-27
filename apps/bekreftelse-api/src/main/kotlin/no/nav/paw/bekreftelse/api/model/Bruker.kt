@@ -1,5 +1,6 @@
 package no.nav.paw.bekreftelse.api.model
 
+import no.nav.paw.bekreftelse.melding.v1.vo.Bruker
 import java.util.*
 
 enum class BrukerType {
@@ -7,7 +8,7 @@ enum class BrukerType {
     VEILEDER
 }
 
-data class InnloggetBruker(val type: BrukerType, val ident: String, val bearerToken: String)
+data class InnloggetBruker(val type: BrukerType, val ident: String)
 
 data class Sluttbruker(
     val identitetsnummer: String,
@@ -15,7 +16,14 @@ data class Sluttbruker(
     val kafkaKey: Long
 )
 
-fun BrukerType.toApi(): no.nav.paw.bekreftelse.melding.v1.vo.BrukerType {
+fun InnloggetBruker.asApi(): Bruker {
+    return Bruker.newBuilder()
+        .setId(ident)
+        .setType(type.asApi())
+        .build()
+}
+
+fun BrukerType.asApi(): no.nav.paw.bekreftelse.melding.v1.vo.BrukerType {
     return when (this) {
         BrukerType.SLUTTBRUKER -> no.nav.paw.bekreftelse.melding.v1.vo.BrukerType.SLUTTBRUKER
         BrukerType.VEILEDER -> no.nav.paw.bekreftelse.melding.v1.vo.BrukerType.VEILEDER

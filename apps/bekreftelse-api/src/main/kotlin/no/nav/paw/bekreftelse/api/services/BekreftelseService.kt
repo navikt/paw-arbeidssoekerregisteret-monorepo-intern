@@ -4,15 +4,15 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.consumer.BekreftelseHttpConsumer
 import no.nav.paw.bekreftelse.api.context.SecurityContext
+import no.nav.paw.bekreftelse.api.exception.DataIkkeFunnetException
 import no.nav.paw.bekreftelse.api.model.BekreftelseRequest
 import no.nav.paw.bekreftelse.api.model.InternState
 import no.nav.paw.bekreftelse.api.model.TilgjengeligBekreftelserResponse
 import no.nav.paw.bekreftelse.api.model.TilgjengeligeBekreftelserRequest
-import no.nav.paw.bekreftelse.api.model.toApi
-import no.nav.paw.bekreftelse.api.model.toHendelse
+import no.nav.paw.bekreftelse.api.model.asApi
 import no.nav.paw.bekreftelse.api.model.toResponse
 import no.nav.paw.bekreftelse.api.producer.BekreftelseKafkaProducer
-import no.nav.paw.bekreftelse.api.utils.logger
+import no.nav.paw.bekreftelse.api.utils.buildLogger
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.KeyQueryMetadata
@@ -26,6 +26,7 @@ class BekreftelseService(
     private val kafkaStreams: KafkaStreams,
     private val bekreftelseKafkaProducer: BekreftelseKafkaProducer
 ) {
+    private val logger = buildLogger
     private val mockDataService = MockDataService()
     private var internStateStore: ReadOnlyKeyValueStore<Long, InternState>? = null
 
@@ -83,12 +84,11 @@ class BekreftelseService(
                 .firstOrNull { it.bekreftelseId == request.bekreftelseId }
             if (tilgjengeligBekreftelse != null) {
                 logger.info("Rapportering med id ${request.bekreftelseId} funnet")
-                val bekreftelse = request.toHendelse(
+                val bekreftelse = request.asApi(
                     periodeId = tilgjengeligBekreftelse.periodeId,
                     gjelderFra = tilgjengeligBekreftelse.gjelderFra,
                     gjelderTil = tilgjengeligBekreftelse.gjelderTil,
-                    innloggetBruker.ident,
-                    innloggetBruker.type.toApi()
+                    innloggetBruker
                 )
                 bekreftelseKafkaProducer.produceMessage(sluttbruker.kafkaKey, bekreftelse)
             } else {
@@ -110,13 +110,13 @@ class BekreftelseService(
         )
 
         if (metadata == null || metadata == KeyQueryMetadata.NOT_AVAILABLE) {
-            logger.info("Fant ikke metadata for arbeidsoeker, $metadata")
-            return emptyList()
+            logger.warn("Fant ikke metadata for arbeidsoeker, $metadata")
+            throw DataIkkeFunnetException("Fant ikke data for arbeidsoeker")
         } else {
             return bekreftelseHttpConsumer.finnTilgjengeligBekreftelser(
-                metadata.activeHost().host(),
-                innloggetBruker,
-                request
+                host = metadata.activeHost().host(),
+                bearerToken = accessToken.jwt,
+                request = request
             )
         }
     }
@@ -132,10 +132,14 @@ class BekreftelseService(
         )
 
         if (metadata == null || metadata == KeyQueryMetadata.NOT_AVAILABLE) {
-            logger.info("Fant ikke metadata for arbeidsoeker, $metadata")
-            // TODO Not found exception
+            logger.warn("Fant ikke metadata for arbeidsoeker, $metadata")
+            throw DataIkkeFunnetException("Fant ikke data for arbeidsoeker")
         } else {
-            bekreftelseHttpConsumer.mottaBekreftelse(metadata.activeHost().host(), innloggetBruker, request)
+            bekreftelseHttpConsumer.sendBekreftelse(
+                host = metadata.activeHost().host(),
+                bearerToken = accessToken.jwt,
+                request = request
+            )
         }
     }
 }
