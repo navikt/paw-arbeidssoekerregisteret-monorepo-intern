@@ -23,14 +23,13 @@ class StartStoppRequestHandler(
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    context(RequestScope)
     @WithSpan
-    suspend fun startArbeidssokerperiode(identitetsnummer: Identitetsnummer, erForhaandsGodkjentAvVeileder: Boolean): Either<NonEmptyList<Problem>, GrunnlagForGodkjenning> =
+    suspend fun startArbeidssokerperiode(requestScope: RequestScope, identitetsnummer: Identitetsnummer, erForhaandsGodkjentAvVeileder: Boolean): Either<NonEmptyList<Problem>, GrunnlagForGodkjenning> =
         coroutineScope {
             val kafkaKeysResponse = async { kafkaKeysClient.getIdAndKey(identitetsnummer.verdi) }
-            val resultat = requestValidator.validerStartAvPeriodeOenske(identitetsnummer, erForhaandsGodkjentAvVeileder)
+            val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitetsnummer, erForhaandsGodkjentAvVeileder)
             val (id, key) = kafkaKeysResponse.await()
-            val hendelse = somHendelse(id, identitetsnummer, resultat)
+            val hendelse = somHendelse(requestScope, id, identitetsnummer, resultat)
             val record = ProducerRecord(
                 hendelseTopic,
                 key,
@@ -40,12 +39,11 @@ class StartStoppRequestHandler(
             resultat
         }
 
-    context(RequestScope)
     @WithSpan
-    suspend fun avsluttArbeidssokerperiode(identitetsnummer: Identitetsnummer): Either<NonEmptyList<Problem>, GrunnlagForGodkjenning> {
+    suspend fun avsluttArbeidssokerperiode(requestScope: RequestScope, identitetsnummer: Identitetsnummer): Either<NonEmptyList<Problem>, GrunnlagForGodkjenning> {
         val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
-        val tilgangskontrollResultat = requestValidator.validerTilgang(identitetsnummer)
-        val hendelse = stoppResultatSomHendelse(id, identitetsnummer, tilgangskontrollResultat)
+        val tilgangskontrollResultat = requestValidator.validerTilgang(requestScope, identitetsnummer)
+        val hendelse = stoppResultatSomHendelse(requestScope, id, identitetsnummer, tilgangskontrollResultat)
         val record = ProducerRecord(
             hendelseTopic,
             key,
@@ -56,12 +54,11 @@ class StartStoppRequestHandler(
         return tilgangskontrollResultat
     }
 
-    context(RequestScope)
-    suspend fun kanRegistreresSomArbeidssoker(identitetsnummer: Identitetsnummer): Either<NonEmptyList<Problem>, GrunnlagForGodkjenning> {
+    suspend fun kanRegistreresSomArbeidssoker(requestScope: RequestScope, identitetsnummer: Identitetsnummer): Either<NonEmptyList<Problem>, GrunnlagForGodkjenning> {
         val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
-        val resultat = requestValidator.validerStartAvPeriodeOenske(identitetsnummer)
+        val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitetsnummer)
         if (resultat.isLeft()) {
-            val hendelse = somHendelse(id, identitetsnummer, resultat)
+            val hendelse = somHendelse(requestScope, id, identitetsnummer, resultat)
             val record = ProducerRecord(
                 hendelseTopic,
                 key,

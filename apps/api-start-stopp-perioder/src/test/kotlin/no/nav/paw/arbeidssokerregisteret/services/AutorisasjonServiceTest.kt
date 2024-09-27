@@ -63,8 +63,6 @@ class AutorisasjonServiceTest : FreeSpec({
             navConsumerId = "123",
             path = "test"
         )
-        with (requestScope) {
-            autorisasjonService.navAnsattTilgangFakta(identitet) shouldBe IkkeAnsatt
-        }
+        navAnsattTilgangFakta(autorisasjonService, requestScope, identitet) shouldBe IkkeAnsatt
     }
 })

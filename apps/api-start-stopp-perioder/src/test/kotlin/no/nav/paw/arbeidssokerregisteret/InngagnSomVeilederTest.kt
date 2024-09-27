@@ -43,9 +43,7 @@ class InngagnSomVeilederTest : FreeSpec({
         "forhåndsgodkjent param skal taes med til validering" {
             val startStoppRequestHandler: StartStoppRequestHandler = mockk()
             coEvery {
-                with(any<RequestScope>()) {
-                    startStoppRequestHandler.startArbeidssokerperiode(any(), any())
-                }
+                startStoppRequestHandler.startArbeidssokerperiode(any(), any(), any())
             } returns GrunnlagForGodkjenning(
                 regel = Regel(
                     id = AnsattHarTilgangTilBruker,
@@ -85,40 +83,37 @@ class InngagnSomVeilederTest : FreeSpec({
                     headers {
                         append(HttpHeaders.ContentType, ContentType.Application.Json)
                     }
-                    setBody(ApiV2ArbeidssokerPeriodePutRequest(
-                        identitetsnummer = "12345678909",
-                        registreringForhaandsGodkjentAvAnsatt = true,
-                        periodeTilstand = ApiV2ArbeidssokerPeriodePutRequest.PeriodeTilstand.STARTET
-                    ))
+                    setBody(
+                        ApiV2ArbeidssokerPeriodePutRequest(
+                            identitetsnummer = "12345678909",
+                            registreringForhaandsGodkjentAvAnsatt = true,
+                            periodeTilstand = ApiV2ArbeidssokerPeriodePutRequest.PeriodeTilstand.STARTET
+                        )
+                    )
                 }
                 response.status shouldBe HttpStatusCode.NoContent
                 coVerify(exactly = 1) {
-                    with(any<RequestScope>()) {
-                        startStoppRequestHandler.startArbeidssokerperiode(Identitetsnummer("12345678909"), true)
-                    }
+                    startStoppRequestHandler.startArbeidssokerperiode(any(), Identitetsnummer("12345678909"), true)
                 }
-
-
 
                 val response2 = client.put("/api/v2/arbeidssoker/periode") {
                     bearerAuth(token.serialize())
                     headers {
                         append(HttpHeaders.ContentType, ContentType.Application.Json)
                     }
-                    setBody(ApiV2ArbeidssokerPeriodePutRequest(
-                        identitetsnummer = "12345678909",
-                        registreringForhaandsGodkjentAvAnsatt = false,
-                        periodeTilstand = ApiV2ArbeidssokerPeriodePutRequest.PeriodeTilstand.STARTET
-                    ))
+                    setBody(
+                        ApiV2ArbeidssokerPeriodePutRequest(
+                            identitetsnummer = "12345678909",
+                            registreringForhaandsGodkjentAvAnsatt = false,
+                            periodeTilstand = ApiV2ArbeidssokerPeriodePutRequest.PeriodeTilstand.STARTET
+                        )
+                    )
                 }
                 response2.status shouldBe HttpStatusCode.NoContent
                 coVerify(exactly = 1) {
-                    with(any<RequestScope>()) {
-                        startStoppRequestHandler.startArbeidssokerperiode(Identitetsnummer("12345678909"), false)
-                    }
-
+                        startStoppRequestHandler.startArbeidssokerperiode(any(), Identitetsnummer("12345678909"), false)
+                }
             }
         }
     }
-}
 })

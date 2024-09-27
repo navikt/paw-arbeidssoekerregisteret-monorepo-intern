@@ -7,15 +7,14 @@ import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.utils.TokenXPID
 
-context(RequestScope)
-fun tokenXPidFakta(identitetsnummer: Identitetsnummer): Opplysning {
+fun RequestScope.tokenXPidFakta(identitetsnummer: Identitetsnummer): Opplysning {
     return (claims[TokenXPID]?.let { authenticatedUser ->
         if (authenticatedUser != identitetsnummer) {
             IkkeSammeSomInnloggerBruker
         } else {
-            AuthOpplysning.SammeSomInnloggetBruker
+            SammeSomInnloggetBruker
         }
-    } ?: AuthOpplysning.TokenXPidIkkeFunnet)
+    } ?: TokenXPidIkkeFunnet)
         .also { opplysning ->
             Span.current()
                 .setAttribute("paw_tokenx_pid", opplysning.toString())

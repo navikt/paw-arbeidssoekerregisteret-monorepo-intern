@@ -22,11 +22,10 @@ class OpplysningerRequestHandler(
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    context(RequestScope)
-    suspend fun opprettBrukeropplysninger(opplysningerRequest: OpplysningerRequest): Either<Feil, Unit> =
+    suspend fun opprettBrukeropplysninger(requestScope: RequestScope, opplysningerRequest: OpplysningerRequest): Either<Feil, Unit> =
         either {
             val identitetsnummer = opplysningerRequest.getId()
-            requestValidator.validerTilgang(identitetsnummer)
+            requestValidator.validerTilgang(requestScope, identitetsnummer)
                 .mapLeft { problemer ->
                     Feil(
                         melding = problemer.first().regel.id.beskrivelse,
@@ -41,7 +40,7 @@ class OpplysningerRequestHandler(
                     )
                 }.bind()
             val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
-            val hendelse = opplysningerHendelse(id, opplysningerRequest)
+            val hendelse = opplysningerHendelse(requestScope, id, opplysningerRequest)
             val record = ProducerRecord(
                 hendelseTopic,
                 key,

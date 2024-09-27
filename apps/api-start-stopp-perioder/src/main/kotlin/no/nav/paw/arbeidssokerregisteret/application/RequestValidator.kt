@@ -3,6 +3,7 @@ package no.nav.paw.arbeidssokerregisteret.application
 import arrow.core.Either
 import arrow.core.NonEmptyList
 import arrow.core.flatMap
+import arrow.core.partially1
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssokerregisteret.RequestScope
@@ -17,20 +18,22 @@ import no.nav.paw.arbeidssokerregisteret.utils.logger
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 
 class RequestValidator(
-    private val autorisasjonService: AutorisasjonService,
+    autorisasjonService: AutorisasjonService,
     private val personInfoService: PersonInfoService,
     private val regler: Regler,
     private val registry: PrometheusMeterRegistry
 ) {
 
-    context(RequestScope)
+    private val sjekkOmNavAnsattHarTilgang = ::navAnsattTilgangFakta.partially1(autorisasjonService)
+
     @WithSpan
     fun validerTilgang(
+        requestScope: RequestScope,
         identitetsnummer: Identitetsnummer,
         erForhaandsGodkjentAvVeileder: Boolean = false
     ): Either<NonEmptyList<Problem>, GrunnlagForGodkjenning> {
-        val autentiseringsFakta = tokenXPidFakta(identitetsnummer) +
-                autorisasjonService.navAnsattTilgangFakta(identitetsnummer) +
+        val autentiseringsFakta = requestScope.tokenXPidFakta(identitetsnummer) +
+                sjekkOmNavAnsattHarTilgang(requestScope, identitetsnummer) +
                 if (erForhaandsGodkjentAvVeileder) {
                     setOf(DomeneOpplysning.ErForhaandsgodkjent)
                 } else {
@@ -39,15 +42,15 @@ class RequestValidator(
         return TilgangsRegler.evaluer(autentiseringsFakta)
     }
 
-    context(RequestScope)
     @WithSpan
     suspend fun validerStartAvPeriodeOenske(
+        requestScope: RequestScope,
         identitetsnummer: Identitetsnummer,
         erForhaandsGodkjentAvVeileder: Boolean = false
     ): Either<NonEmptyList<Problem>, GrunnlagForGodkjenning> =
-        validerTilgang(identitetsnummer, erForhaandsGodkjentAvVeileder)
+        validerTilgang(requestScope, identitetsnummer, erForhaandsGodkjentAvVeileder)
             .flatMap { grunnlagForGodkjentAuth ->
-                val person = personInfoService.hentPersonInfo(identitetsnummer.verdi)
+                val person = personInfoService.hentPersonInfo(requestScope, identitetsnummer.verdi)
                 val opplysning = person?.let { genererPersonFakta(it) } ?: setOf(DomeneOpplysning.PersonIkkeFunnet)
                 if (person != null) {
                     try {

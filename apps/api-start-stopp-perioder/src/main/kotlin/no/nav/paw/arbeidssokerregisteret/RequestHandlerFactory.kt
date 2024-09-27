@@ -57,8 +57,7 @@ fun requestHandlers(
     return startStoppRequestHandler to opplysningerRequestHandler
 }
 
-context(AzureAdMachineToMachineTokenClient)
-private fun clientsFactory(config: Config): Clients {
+private fun AzureAdMachineToMachineTokenClient.clientsFactory(config: Config): Clients {
     val pdlClient = PdlClient(
         config.pdlClientConfig.url,
         "OPP",

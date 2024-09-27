@@ -20,14 +20,16 @@ import java.util.*
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning as HendelseOpplysning
 
 
-context(RequestScope)
-fun stoppResultatSomHendelse(id: Long, identitetsnummer: Identitetsnummer, resultat: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>): Hendelse =
+fun stoppResultatSomHendelse(requestScope: RequestScope, id: Long, identitetsnummer: Identitetsnummer, resultat: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>): Hendelse =
     when (resultat) {
         is Either.Left -> AvvistStoppAvPeriode(
             id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
-            metadata = hendelseMetadata(resultat.value.map { it.regel.id.beskrivelse }.joinToString(". ")),
+            metadata = hendelseMetadata(
+                requestScope = requestScope,
+                aarsak = resultat.value.map { it.regel.id.beskrivelse }.joinToString(". ")
+            ),
             opplysninger = resultat.value.head.opplysninger.map(::mapToHendelseOpplysning).toSet()
         )
 
@@ -35,7 +37,10 @@ fun stoppResultatSomHendelse(id: Long, identitetsnummer: Identitetsnummer, resul
             id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
-            metadata = hendelseMetadata("Stopp av periode"),
+            metadata = hendelseMetadata(
+                requestScope = requestScope,
+                aarsak = "Stopp av periode"
+            ),
             opplysninger = resultat.value.opplysning.map(::mapToHendelseOpplysning).toSet(),
         )
     }
@@ -47,29 +52,36 @@ fun mapToHendelseOpplysning(opplysning: Opplysning): HendelseOpplysning =
         else -> HendelseOpplysning.UKJENT_OPPLYSNING
     }
 
-context(RequestScope)
-fun somHendelse(id: Long, identitetsnummer: Identitetsnummer, resultat: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>): Hendelse =
+fun somHendelse(
+    requestScope: RequestScope,
+    id: Long,
+    identitetsnummer: Identitetsnummer,
+    resultat: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>
+): Hendelse =
     when (resultat) {
         is Either.Left -> Avvist(
             id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
-            metadata = hendelseMetadata(resultat.value.map { it.regel.id.beskrivelse }.joinToString(". ")),
+            metadata = hendelseMetadata(requestScope, resultat.value.map { it.regel.id.beskrivelse }.joinToString(". ")),
             opplysninger = resultat.value.head.opplysninger.map(::mapToHendelseOpplysning).toSet(),
-            handling = path
+            handling = requestScope.path
         )
 
         is Either.Right -> Startet(
             id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
-            metadata = hendelseMetadata(resultat.value.regel.id.beskrivelse),
+            metadata = hendelseMetadata(requestScope, resultat.value.regel.id.beskrivelse),
             opplysninger = resultat.value.opplysning.map(::mapToHendelseOpplysning).toSet()
         )
     }
 
-context(RequestScope)
-fun opplysningerHendelse(id: Long, opplysningerRequest: OpplysningerRequest): Hendelse = OpplysningerOmArbeidssoekerMottatt(
+fun opplysningerHendelse(
+    requestScope: RequestScope,
+    id: Long,
+    opplysningerRequest: OpplysningerRequest
+): Hendelse = OpplysningerOmArbeidssoekerMottatt(
     hendelseId = UUID.randomUUID(),
     id = id,
     identitetsnummer = opplysningerRequest.identitetsnummer,
@@ -77,7 +89,7 @@ fun opplysningerHendelse(id: Long, opplysningerRequest: OpplysningerRequest): He
         id = UUID.randomUUID(),
         metadata = Metadata(
             tidspunkt = Instant.now(),
-            utfoertAv = brukerFraClaims(),
+            utfoertAv = requestScope.brukerFraClaims(),
             kilde = ApplicationInfo.id,
             aarsak = "opplysning om arbeidssøker sendt inn"
         ),
@@ -88,16 +100,14 @@ fun opplysningerHendelse(id: Long, opplysningerRequest: OpplysningerRequest): He
     )
 )
 
-context(RequestScope)
-fun hendelseMetadata(aarsak: String): Metadata = Metadata(
+fun hendelseMetadata(requestScope: RequestScope, aarsak: String): Metadata = Metadata(
     tidspunkt = Instant.now(),
-    utfoertAv = brukerFraClaims(),
+    utfoertAv = requestScope.brukerFraClaims(),
     kilde = ApplicationInfo.id,
     aarsak = aarsak
 )
 
-context(RequestScope)
-fun brukerFraClaims(): Bruker {
+fun RequestScope.brukerFraClaims(): Bruker {
     return claims[TokenXPID]?.let { foedselsnummer ->
         Bruker(
             type = BrukerType.SLUTTBRUKER,

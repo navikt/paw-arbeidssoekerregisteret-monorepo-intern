@@ -146,28 +146,9 @@ fun AutorisasjonService.setHarTilgangTilBruker(ansatt: NavAnsatt, bruker: String
 
 fun PersonInfoService.setPersonInfo(identitetsnummer: String, person: Person?) {
     coEvery {
-        with(any<RequestScope>()) {
-            hentPersonInfo(identitetsnummer)
-        }
+        hentPersonInfo(any(), identitetsnummer)
     } returns person
 }
-
-suspend fun HttpClient.startPeriode(identitetsnummer: String, token: SignedJWT?, godkjent: Boolean = false): HttpResponse =
-    put("/api/v1/arbeidssoker/periode") {
-        token?.also {
-            bearerAuth(token.serialize())
-        }
-        headers {
-            append(HttpHeaders.ContentType, ContentType.Application.Json)
-        }
-        setBody(
-            ApiV2ArbeidssokerPeriodePutRequest(
-                identitetsnummer = identitetsnummer,
-                periodeTilstand = ApiV2ArbeidssokerPeriodePutRequest.PeriodeTilstand.STARTET,
-                registreringForhaandsGodkjentAvAnsatt = godkjent
-            )
-        )
-    }
 
 suspend fun HttpClient.startPeriodeV2(identitetsnummer: String, token: SignedJWT?, godkjent: Boolean = false): HttpResponse =
     put("/api/v2/arbeidssoker/periode") {

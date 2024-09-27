@@ -32,9 +32,7 @@ class ApplicationPeriodeTest : FunSpec({
             routing {
                 val startStoppRequestHandler = mockk<StartStoppRequestHandler>()
                 coEvery {
-                    with(any<RequestScope>()) {
-                        startStoppRequestHandler.startArbeidssokerperiode(any(), any())
-                    }
+                    startStoppRequestHandler.startArbeidssokerperiode(any(), any(), any())
                 } returns muligGrunnlagForAvvisning(
                     regel = Regel(
                         id = Under18Aar,

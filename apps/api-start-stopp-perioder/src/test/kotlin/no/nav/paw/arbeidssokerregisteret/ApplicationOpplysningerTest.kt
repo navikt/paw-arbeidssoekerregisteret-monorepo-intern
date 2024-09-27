@@ -33,9 +33,7 @@ class ApplicationOpplysningerTest : FunSpec({
             val opplysningerRequestHandler = mockk<OpplysningerRequestHandler>()
             routing {
                 coEvery {
-                    with(any<RequestScope>()) {
-                        opplysningerRequestHandler.opprettBrukeropplysninger(any())
-                    }
+                    opplysningerRequestHandler.opprettBrukeropplysninger(any(), any())
                 } returns Unit.right()
                 arbeidssokerRoutes(opplysningerRequestHandler)
             }
@@ -90,34 +88,32 @@ class ApplicationOpplysningerTest : FunSpec({
             }
             response.status shouldBe HttpStatusCode.Accepted
             coVerify {
-                with(any<RequestScope>()) {
-                    val expectedRequest = OpplysningerRequest(
-                        identitetsnummer = "12345678900",
-                        opplysningerOmArbeidssoeker = OpplysningerOmArbeidssoeker(
-                            utdanning = Utdanning(nus = "1"),
-                            helse = Helse(helsetilstandHindrerArbeid = JaNeiVetIkke.JA),
-                            jobbsituasjon = Jobbsituasjon(
-                                listOf(
-                                    JobbsituasjonMedDetaljer(
-                                        beskrivelse = HAR_SAGT_OPP,
-                                        detaljer = Detaljer(
-                                            stilling = "Bilskadereparatør",
-                                            stillingStyrk08 = "7213",
-                                            gjelderFraDatoIso8601 = LocalDate.parse("2021-04-29"),
-                                            gjelderTilDatoIso8601 = LocalDate.parse("2021-05-29"),
-                                            sisteDagMedLoennIso8601 = LocalDate.parse("2021-06-29"),
-                                            sisteArbeidsdagIso8601 = LocalDate.parse("2021-07-29"),
-                                            prosent = "75"
-                                        )
-                                    ),
-                                    JobbsituasjonMedDetaljer(beskrivelse = DELTIDSJOBB_VIL_MER)
-                                )
-                            ),
-                            annet = Annet(andreForholdHindrerArbeid = JaNeiVetIkke.NEI)
-                        )
+                val expectedRequest = OpplysningerRequest(
+                    identitetsnummer = "12345678900",
+                    opplysningerOmArbeidssoeker = OpplysningerOmArbeidssoeker(
+                        utdanning = Utdanning(nus = "1"),
+                        helse = Helse(helsetilstandHindrerArbeid = JaNeiVetIkke.JA),
+                        jobbsituasjon = Jobbsituasjon(
+                            listOf(
+                                JobbsituasjonMedDetaljer(
+                                    beskrivelse = HAR_SAGT_OPP,
+                                    detaljer = Detaljer(
+                                        stilling = "Bilskadereparatør",
+                                        stillingStyrk08 = "7213",
+                                        gjelderFraDatoIso8601 = LocalDate.parse("2021-04-29"),
+                                        gjelderTilDatoIso8601 = LocalDate.parse("2021-05-29"),
+                                        sisteDagMedLoennIso8601 = LocalDate.parse("2021-06-29"),
+                                        sisteArbeidsdagIso8601 = LocalDate.parse("2021-07-29"),
+                                        prosent = "75"
+                                    )
+                                ),
+                                JobbsituasjonMedDetaljer(beskrivelse = DELTIDSJOBB_VIL_MER)
+                            )
+                        ),
+                        annet = Annet(andreForholdHindrerArbeid = JaNeiVetIkke.NEI)
                     )
-                    opplysningerRequestHandler.opprettBrukeropplysninger(expectedRequest)
-                }
+                )
+                opplysningerRequestHandler.opprettBrukeropplysninger(any(), expectedRequest)
             }
         }
     }

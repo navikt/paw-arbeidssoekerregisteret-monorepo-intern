@@ -14,14 +14,13 @@ const val BEHANDLINGSNUMMER = "B452"
 class PersonInfoService(
     private val pdlClient: PdlClient
 ) {
-    context(RequestScope)
-    suspend fun hentPersonInfo(ident: String): Person? =
+    suspend fun hentPersonInfo(requestScope: RequestScope, ident: String): Person? =
         try {
             pdlClient.hentPerson(
                 ident = ident,
-                callId = callId,
-                traceparent = traceparent,
-                navConsumerId = navConsumerId,
+                callId = requestScope.callId,
+                traceparent = requestScope.traceparent,
+                navConsumerId = requestScope.navConsumerId,
                 behandlingsnummer = BEHANDLINGSNUMMER
             )
         } catch (ex: PdlException) {

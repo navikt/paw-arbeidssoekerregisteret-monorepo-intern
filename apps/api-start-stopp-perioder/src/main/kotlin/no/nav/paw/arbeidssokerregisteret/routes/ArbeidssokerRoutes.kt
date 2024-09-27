@@ -19,10 +19,10 @@ fun Route.arbeidssokerRoutes(
             // Registrerer eller oppdaterer brukers opplysninger
             post {
                 val opplysningerRequest = call.receive<OpplysningerRequest>()
-                val resultat =
-                    with(requestScope()) {
-                        opplysningerRequestHandler.opprettBrukeropplysninger(opplysningerRequest)
-                    }
+                val resultat = opplysningerRequestHandler.opprettBrukeropplysninger(
+                    requestScope = requestScope(),
+                    opplysningerRequest = opplysningerRequest
+                )
                 logger.debug("Oppdateringsresultat: {}", resultat)
                 respondWith(resultat)
             }

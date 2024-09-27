@@ -16,8 +16,7 @@ import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Opplysning as Ap
 
 const val feilmeldingVedAvvist = "Avvist, se 'aarsakTilAvvisning' for detaljer"
 
-context(PipelineContext<Unit, ApplicationCall>)
-suspend fun respondWithV2(resultat: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>) =
+suspend fun PipelineContext<Unit, ApplicationCall>.respondWithV2(resultat: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>) =
     when (resultat) {
         is Either.Left -> respondWithErrorV2(resultat.value)
         is Either.Right -> call.respond(HttpStatusCode.NoContent)

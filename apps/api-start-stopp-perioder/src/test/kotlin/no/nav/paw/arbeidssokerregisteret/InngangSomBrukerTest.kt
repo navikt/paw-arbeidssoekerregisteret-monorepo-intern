@@ -41,9 +41,7 @@ class InngangSomBrukerTest : FreeSpec({
         "På vegne av seg selv" - {
             val startStoppRequestHandler: StartStoppRequestHandler = mockk()
             coEvery {
-                with(any<RequestScope>()) {
-                    startStoppRequestHandler.startArbeidssokerperiode(any(), any())
-                }
+                startStoppRequestHandler.startArbeidssokerperiode(any(), any(), any())
             } returns GrunnlagForGodkjenning(
                 regel = Regel(
                     id = Over18AarOgBosattEtterFregLoven,
@@ -91,9 +89,7 @@ class InngangSomBrukerTest : FreeSpec({
                 }
                 response.status shouldBe HttpStatusCode.NoContent
                 coVerify(exactly = 1) {
-                    with(any<RequestScope>()) {
-                        startStoppRequestHandler.startArbeidssokerperiode(Identitetsnummer("12345678909"), false)
-                    }
+                    startStoppRequestHandler.startArbeidssokerperiode(any(), Identitetsnummer("12345678909"), false)
                 }
             }
         }
@@ -102,9 +98,7 @@ class InngangSomBrukerTest : FreeSpec({
         "Bruker som har forhandsgodkjentflagg aktivt" {
             val startStoppRequestHandler: StartStoppRequestHandler = mockk()
             coEvery {
-                with(any<RequestScope>()) {
-                    startStoppRequestHandler.startArbeidssokerperiode(any(), any())
-                }
+                startStoppRequestHandler.startArbeidssokerperiode(any(), any(), any())
             } returns skalAvises(
                 regel = Regel(
                     id = IkkeAnsattOgForhaandsgodkjentAvAnsatt,
@@ -151,9 +145,7 @@ class InngangSomBrukerTest : FreeSpec({
                 }
                 response.status shouldBe HttpStatusCode.BadRequest
                 coVerify(exactly = 1) {
-                    with(any<RequestScope>()) {
-                        startStoppRequestHandler.startArbeidssokerperiode(Identitetsnummer("12345678909"), false)
-                    }
+                    startStoppRequestHandler.startArbeidssokerperiode(any(), Identitetsnummer("12345678909"), false)
                 }
             }
         }

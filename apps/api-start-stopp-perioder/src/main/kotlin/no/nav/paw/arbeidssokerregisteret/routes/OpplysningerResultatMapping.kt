@@ -7,8 +7,7 @@ import io.ktor.server.response.*
 import io.ktor.util.pipeline.*
 import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.Feil
 
-context(PipelineContext<Unit, ApplicationCall>)
-suspend fun respondWith(resultat: Either<Feil, Unit>) =
+suspend fun PipelineContext<Unit, ApplicationCall>.respondWith(resultat: Either<Feil, Unit>) =
     when (resultat) {
         is Either.Left -> call.respond(resultat.value.feilKode.httpStatusCode(), )
         is Either.Right -> call.respond(HttpStatusCode.Accepted)

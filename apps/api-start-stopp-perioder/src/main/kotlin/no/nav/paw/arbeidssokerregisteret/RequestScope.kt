@@ -16,9 +16,8 @@ data class RequestScope(
     val navConsumerId: String?,
 )
 
-context(PipelineContext<Unit, ApplicationCall>)
 @WithSpan
-fun requestScope(): RequestScope {
+fun PipelineContext<Unit, ApplicationCall>.requestScope(): RequestScope {
     val tokenValidationContext = call.principal<TokenValidationContextPrincipal>()
     val resolvedClaims = tokenValidationContext
         ?.context
