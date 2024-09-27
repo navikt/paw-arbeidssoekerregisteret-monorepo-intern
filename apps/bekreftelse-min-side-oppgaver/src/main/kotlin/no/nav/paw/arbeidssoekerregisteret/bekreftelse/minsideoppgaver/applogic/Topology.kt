@@ -23,8 +23,7 @@ import java.util.*
 
 typealias InternalStateStore = KeyValueStore<UUID, InternTilstand>
 
-context(ProcessorContext<*, *>)
-fun StateStoreName.getStateStore(): InternalStateStore = getStateStore(value)
+fun ProcessorContext<*, *>.getStateStore(stateStoreName: StateStoreName ): InternalStateStore = getStateStore(stateStoreName.value)
 
 private val logger = LoggerFactory.getLogger("bekreftelse.varsler.topology")
 
@@ -36,7 +35,7 @@ fun StreamsBuilder.applicationTopology(
     stream<Long, Periode>(kafkaTopics.periodeTopic)
         .filter { _, periode -> periode.avsluttet == null }
         .genericProcess<Long, Periode, Long, Unit>("lagre_periode_data", stateStoreName.value) { (_, periode) ->
-            val stateStore = stateStoreName.getStateStore()
+            val stateStore = getStateStore(stateStoreName)
             val gjeldeneTilstand = stateStore[periode.id]
             val nyTilstand = genererTilstand(gjeldeneTilstand, periode)
             if (nyTilstand != gjeldeneTilstand) {

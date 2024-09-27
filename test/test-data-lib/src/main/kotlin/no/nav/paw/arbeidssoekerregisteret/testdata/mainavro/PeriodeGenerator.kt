@@ -7,8 +7,7 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import java.util.*
 
 
-context(KafkaKeyContext)
-fun periode(
+fun KafkaKeyContext.periode(
     periodeId: UUID = UUID.randomUUID(),
     identitetsnummer: String = "12345678901",
     startetMetadata: Metadata = metadata(),

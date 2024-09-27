@@ -36,17 +36,9 @@ dependencies {
     testImplementation(project(":test:test-data-lib"))
 }
 
-//enable context receiver
-tasks.withType<KotlinCompile>().configureEach {
-    compilerOptions {
-        freeCompilerArgs.add("-Xcontext-receivers")
-    }
-}
-
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
-
 
 jib {
     from.image = "$baseImage:$jvmMajorVersion"
