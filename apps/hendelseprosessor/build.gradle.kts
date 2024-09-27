@@ -14,25 +14,25 @@ dependencies {
     implementation(project(":domain:interne-hendelser"))
     implementation(project(":domain:arbeidssoekerregisteret-kotlin"))
     implementation(project(":domain:main-avro-schema"))
-
-    implementation(otel.annotations)
-    implementation(jackson.datatypeJsr310)
-    implementation(jackson.kotlin)
     implementation(project(":lib:hoplite-config"))
-    implementation(navCommon.log)
-    implementation(orgApacheKafka.kafkaClients)
-    implementation(orgApacheKafka.kafkaStreams)
-    implementation(apacheAvro.avro)
-    implementation(apacheAvro.kafkaStreamsAvroSerde)
 
-    implementation(micrometer.registryPrometheus)
-    implementation(ktorServer.core)
-    implementation(ktorServer.micrometer)
-    implementation(ktorServer.netty)
-    implementation(ktorServer.coreJvm)
+    implementation(libs.opentelemetryAnnotations)
+    implementation(libs.jacksonDatatypeJsr310)
+    implementation(libs.jacksonKotlin)
+    implementation(libs.log)
+    implementation(libs.kafkaClients)
+    implementation(libs.kafkaStreams)
+    implementation(libs.avro)
+    implementation(libs.kafkaStreamsAvroSerde)
 
-    testImplementation(testLibs.runnerJunit5)
-    testImplementation(orgApacheKafka.streamsTest)
+    implementation(libs.micrometerRegistryPrometheus)
+    implementation(libs.ktorServerCore)
+    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.ktorServerNetty)
+    implementation(libs.ktorServerCoreJvm)
+
+    testImplementation(libs.runnerJunit5)
+    testImplementation(libs.streamsTest)
 }
 
 java {

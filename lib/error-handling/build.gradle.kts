@@ -3,21 +3,21 @@ plugins {
 }
 
 dependencies {
-    compileOnly(ktorServer.core)
-    compileOnly(ktor.serializationJackson)
-    compileOnly(orgApacheKafka.kafkaStreams)
-    compileOnly(loggingLibs.logbackClassic)
+    compileOnly(libs.ktorServerCors)
+    compileOnly(libs.ktorSerializationJackson)
+    compileOnly(libs.kafkaStreams)
+    compileOnly(libs.logbackClassic)
 
-    // Test
-    testImplementation(testLibs.bundles.withUnitTesting)
-    testImplementation(ktorServer.testJvm)
-    testImplementation(ktorServer.contentNegotiation)
-    testImplementation(ktorServer.statusPages)
-    testImplementation(ktor.serializationJackson)
-    testImplementation(ktorClient.contentNegotiation)
-    testImplementation(ktorServer.core)
-    testImplementation(orgApacheKafka.kafkaStreams)
-    testImplementation(loggingLibs.logbackClassic)
+    //Test
+    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.ktorServerTestsJvm)
+    testImplementation(libs.ktorServerContentNegotiation)
+    testImplementation(libs.ktorServerStatusPages)
+    testImplementation(libs.ktorSerializationJackson)
+    testImplementation(libs.ktorClientContentNegotiation)
+    testImplementation(libs.ktorServerCore)
+    testImplementation(libs.kafkaStreams)
+    testImplementation(libs.logbackClassic)
 }
 
 tasks.withType<Test>().configureEach {

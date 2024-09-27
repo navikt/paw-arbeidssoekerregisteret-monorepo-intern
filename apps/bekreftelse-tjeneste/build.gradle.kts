@@ -13,17 +13,15 @@ dependencies {
     implementation(project(":domain:bekreftelse-interne-hendelser"))
     implementation(project(":domain:bekreftelsesansvar-avro-schema"))
     implementation(project(":domain:bekreftelsesmelding-avro-schema"))
-    implementation(orgApacheKafka.kafkaStreams)
-    implementation(jackson.datatypeJsr310)
-    implementation(jackson.kotlin)
-    implementation(apacheAvro.kafkaStreamsAvroSerde)
-    implementation(arrow.core)
-
-    implementation(ktorServer.bundles.withNettyAndMicrometer)
-
-    testImplementation(orgApacheKafka.streamsTest)
-    testImplementation(testLibs.runnerJunit5)
-    testImplementation(testLibs.assertionsCore)
+    implementation(libs.kafkaStreams)
+    implementation(libs.jacksonDatatypeJsr310)
+    implementation(libs.jacksonKotlin)
+    implementation(libs.kafkaStreamsAvroSerde)
+    implementation(libs.arrowCore)
+    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    testImplementation(libs.streamsTest)
+    testImplementation(libs.runnerJunit5)
+    testImplementation(libs.assertionsCore)
 }
 
 //enable context receiver

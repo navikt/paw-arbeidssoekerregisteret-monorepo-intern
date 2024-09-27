@@ -25,40 +25,40 @@ dependencies {
     implementation(project(":lib:kafka-streams"))
     implementation(project(":lib:hoplite-config"))
 
-    api(arrow.core)
+    api(libs.arrowCore)
 
-    implementation(orgApacheKafka.kafkaStreams)
+    implementation(libs.kafkaStreams)
+    implementation(libs.pawPdlClient)
 
-    implementation(ktorServer.bundles.withNettyAndMicrometer)
-    implementation(micrometer.registryPrometheus)
+    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.micrometerRegistryPrometheus)
 
-    implementation(loggingLibs.logbackClassic)
-    implementation(loggingLibs.logstashLogbackEncoder)
+    implementation(libs.logbackClassic)
+    implementation(libs.logstashLogbackEncoder)
 
-    implementation(navCommon.log)
-    implementation(navCommon.tokenClient)
+    implementation(libs.log)
+    implementation(libs.tokenClient)
 
-    implementation(apacheAvro.kafkaSerializer)
-    implementation(apacheAvro.kafkaStreamsAvroSerde)
-    implementation(apacheAvro.avro)
+    implementation(libs.kafkaSerializer)
+    implementation(libs.kafkaStreamsAvroSerde)
+    implementation(libs.avro)
 
-    implementation(pawClients.pawPdlClient)
+    implementation(libs.jacksonDatatypeJsr310)
+    implementation(libs.ktorSerializationJackson)
+    implementation(libs.ktorSerializationJvm)
 
-    implementation(jackson.datatypeJsr310)
-    implementation(ktor.serializationJackson)
-    implementation(ktor.serializationJvm)
+    implementation(libs.ktorClientContentNegotiation)
+    implementation(libs.ktorClientCore)
+    implementation(libs.ktorClientCio)
 
-    implementation(ktorClient.contentNegotiation)
-    implementation(ktorClient.core)
-    implementation(ktorClient.cio)
-
-    testImplementation(ktorServer.testJvm)
-    testImplementation(testLibs.runnerJunit5)
-    testImplementation(testLibs.assertionsCore)
-    testImplementation(testLibs.testContainers)
-    testImplementation(testLibs.mockOauth2Server)
-    testImplementation(testLibs.mockk)
-    testImplementation(orgApacheKafka.streamsTest)
+    testImplementation(libs.ktorServerTestsJvm)
+    testImplementation(libs.runnerJunit5)
+    testImplementation(libs.assertionsCore)
+    testImplementation(libs.testContainers)
+    testImplementation(libs.mockOauth2Server)
+    testImplementation(libs.mockk)
+    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.streamsTest)
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

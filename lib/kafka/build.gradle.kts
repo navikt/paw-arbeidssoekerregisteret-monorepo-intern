@@ -4,15 +4,15 @@ plugins {
 
 
 dependencies {
-    compileOnly(kotlinx.coroutinesCore)
-    compileOnly(apacheAvro.kafkaSerializer)
-    implementation(orgApacheKafka.kafkaClients)
+    compileOnly(libs.coroutinesCore)
+    compileOnly(libs.kafkaSerializer)
+    implementation(libs.kafkaClients)
 
     // Test
-    testImplementation(testLibs.bundles.withUnitTesting)
+    testImplementation(libs.bundles.testLibsWithUnitTesting)
 }
 
 
-//tasks.withType<Test>().configureEach {
-//    useJUnitPlatform()
-//}
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
+}

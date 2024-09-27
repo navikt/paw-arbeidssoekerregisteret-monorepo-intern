@@ -10,9 +10,9 @@ val schema by configurations.creating {
 }
 
 dependencies {
-    schema(bekreftelse.bekreftelsesmeldingSchema)
-    implementation(bekreftelse.bekreftelsesmeldingSchema)
-    api(apacheAvro.avro)
+    schema(libs.bekreftelsesmeldingSchema)
+    implementation(libs.bekreftelsesmeldingSchema)
+    api(libs.avro)
 }
 
 tasks.named("generateAvroProtocol", GenerateAvroProtocolTask::class.java) {

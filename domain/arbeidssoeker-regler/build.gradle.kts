@@ -11,16 +11,16 @@ val baseImage: String by project
 val jvmMajorVersion: String by project
 
 dependencies {
-    implementation(pawClients.pawPdlClient)
     implementation(project(":domain:interne-hendelser"))
-    api(micrometer.registryPrometheus)
-    api(arrow.core)
-    testImplementation(ktorServer.testJvm)
-    testImplementation(testLibs.runnerJunit5)
-    testImplementation(testLibs.assertionsCore)
-    testImplementation(testLibs.testContainers)
-    testImplementation(testLibs.mockOauth2Server)
-    testImplementation(testLibs.mockk)
+    implementation(libs.pawPdlClient)
+    api(libs.micrometerRegistryPrometheus)
+    api(libs.arrowCore)
+    testImplementation(libs.ktorServerTestsJvm)
+    testImplementation(libs.runnerJunit5)
+    testImplementation(libs.assertionsCore)
+    testImplementation(libs.testContainers)
+    testImplementation(libs.mockOauth2Server)
+    testImplementation(libs.mockk)
 }
 
 java {

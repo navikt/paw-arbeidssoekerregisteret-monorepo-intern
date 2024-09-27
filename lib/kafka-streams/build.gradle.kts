@@ -4,12 +4,16 @@ plugins {
 
 dependencies {
     api(project(":lib:kafka"))
-    implementation(orgApacheKafka.kafkaClients)
-    implementation(orgApacheKafka.kafkaStreams)
-    implementation(apacheAvro.kafkaStreamsAvroSerde)
+    implementation(libs.kafkaClients)
+    implementation(libs.kafkaStreams)
+    implementation(libs.kafkaStreamsAvroSerde)
 
     // Test
-    testImplementation(testLibs.bundles.withUnitTesting)
+    testImplementation(libs.bundles.testLibsWithUnitTesting)
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }
 
 tasks.withType<Test>().configureEach {

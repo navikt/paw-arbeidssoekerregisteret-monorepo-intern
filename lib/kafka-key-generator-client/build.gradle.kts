@@ -3,16 +3,23 @@ plugins {
 }
 val jvmMajorVersion: String by project
 val jvmVersion = JavaVersion.valueOf("VERSION_$jvmMajorVersion")
+
 dependencies {
-    implementation(jackson.datatypeJsr310)
-    implementation(jackson.kotlin)
-    implementation(ktorClient.contentNegotiation)
-    implementation(ktorClient.core)
-    implementation(ktorClient.cio)
-    implementation(ktor.serializationJackson)
-    implementation(navSecurity.tokenClient)
     implementation(project(":lib:hoplite-config"))
-    api(navCommon.tokenClient)
+    implementation(libs.jacksonDatatypeJsr310)
+    implementation(libs.jacksonKotlin)
+    implementation(libs.ktorClientContentNegotiation)
+    implementation(libs.ktorClientCore)
+    implementation(libs.ktorClientCio)
+    implementation(libs.ktorSerializationJackson)
+    implementation(libs.tokenClientCore)
+    api(libs.tokenClient)
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(jvmVersion.majorVersion)
+    }
 }
 
 java {

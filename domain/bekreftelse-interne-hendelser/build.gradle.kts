@@ -4,14 +4,14 @@ plugins {
 }
 
 dependencies {
-    implementation(jackson.datatypeJsr310)
-    implementation(jackson.kotlin)
-    implementation(jackson.core)
-    compileOnly(orgApacheKafka.kafkaClients)
+    implementation(libs.jacksonDatatypeJsr310)
+    implementation(libs.jacksonKotlin)
+    implementation(libs.jacksonCore)
+    compileOnly(libs.kafkaClients)
 
-    testImplementation(testLibs.runnerJunit5)
-    testImplementation(testLibs.assertionsCore)
-    testImplementation(orgApacheKafka.kafkaClients)
+    testImplementation(libs.runnerJunit5)
+    testImplementation(libs.assertionsCore)
+    testImplementation(libs.kafkaClients)
 }
 
 val jvmMajorVersion: String by project

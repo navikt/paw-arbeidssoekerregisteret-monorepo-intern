@@ -21,32 +21,32 @@ dependencies {
     implementation(project(":domain:interne-hendelser"))
     implementation(project(":domain:arbeidssoekerregisteret-kotlin"))
 
-    implementation(ktorServer.netty)
-    implementation(ktorServer.core)
-    implementation(ktorServer.coreJvm)
-    implementation(ktorServer.micrometer)
-    implementation(micrometer.registryPrometheus)
-
-    implementation(loggingLibs.logbackClassic)
-    implementation(loggingLibs.logstashLogbackEncoder)
-    implementation(navCommon.log)
-
-    implementation(orgApacheKafka.kafkaStreams)
     implementation(project(":lib:kafka"))
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:kafka-streams"))
 
-    implementation(apacheAvro.kafkaSerializer)
-    implementation(apacheAvro.kafkaStreamsAvroSerde)
-    implementation(apacheAvro.avro)
+    implementation(libs.ktorServerNetty)
+    implementation(libs.ktorServerCore)
+    implementation(libs.ktorServerCoreJvm)
+    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.micrometerRegistryPrometheus)
 
-    implementation(jackson.kotlin)
-    implementation(jackson.datatypeJsr310)
+    implementation(libs.logbackClassic)
+    implementation(libs.logstashLogbackEncoder)
+    implementation(libs.log)
 
-    testImplementation(testLibs.runnerJunit5)
-    testImplementation(orgApacheKafka.streamsTest)
-    testImplementation(testLibs.assertionsCore)
+    implementation(libs.kafkaStreams)
 
+    implementation(libs.kafkaSerializer)
+    implementation(libs.kafkaStreamsAvroSerde)
+    implementation(libs.avro)
+
+    implementation(libs.jacksonKotlin)
+    implementation(libs.jacksonDatatypeJsr310)
+
+    testImplementation(libs.runnerJunit5)
+    testImplementation(libs.streamsTest)
+    testImplementation(libs.assertionsCore)
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

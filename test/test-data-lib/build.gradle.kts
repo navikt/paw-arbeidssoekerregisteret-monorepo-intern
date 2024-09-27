@@ -9,8 +9,8 @@ dependencies {
     implementation(project(":domain:main-avro-schema"))
     implementation(project(":lib:kafka-key-generator-client"))
 
-    implementation(kotlinx.coroutinesCore)
-    implementation(apacheAvro.avro)
+    implementation(libs.coroutinesCore)
+    implementation(libs.avro)
 }
 
 //enable context receiver

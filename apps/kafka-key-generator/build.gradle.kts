@@ -13,62 +13,62 @@ val jvmMajorVersion: String by project
 dependencies {
     // PAW
     implementation(project(":lib:hoplite-config"))
-    implementation(pawClients.pawPdlClient)
+    implementation(libs.pawPdlClient)
 
     // NAV
-    implementation(navCommon.log)
-    implementation(navCommon.tokenClient)
-    implementation(navSecurity.tokenClient)
-    implementation(navSecurity.tokenValidationKtorV2)
+    implementation(libs.log)
+    implementation(libs.tokenClient)
+    implementation(libs.tokenClientCore)
+    implementation(libs.tokenValidationKtorV2)
 
     // Ktor
-    implementation(ktor.serializationJackson)
+    implementation(libs.ktorSerializationJackson)
 
     // Ktor Server
-    implementation(ktorServer.bundles.withNettyAndMicrometer)
-    implementation(ktorServer.cors)
-    implementation(ktorServer.swagger)
-    implementation(ktorServer.callId)
-    implementation(ktorServer.statusPages)
-    implementation(ktorServer.contentNegotiation)
+    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.ktorServerCors)
+    implementation(libs.ktorServerSwagger)
+    implementation(libs.ktorServerCallId)
+    implementation(libs.ktorServerStatusPages)
+    implementation(libs.ktorServerContentNegotiation)
 
     // Ktor Client
-    implementation(ktorClient.contentNegotiation)
-    implementation(ktorClient.core)
-    implementation(ktorClient.cio)
-    implementation(ktorClient.okhttp)
-    implementation(ktorClient.logging)
+    implementation(libs.ktorClientContentNegotiation)
+    implementation(libs.ktorClientCore)
+    implementation(libs.ktorClientCio)
+    implementation(libs.ktorClientOkhttp)
+    implementation(libs.ktorClientLogging)
 
     // Micrometer & OTEL
-    implementation(micrometer.registryPrometheus)
-    implementation(otel.api)
-    implementation(otel.annotations)
-    implementation(otel.ktor)
+    implementation(libs.micrometerRegistryPrometheus)
+    implementation(libs.opentelemetryApi)
+    implementation(libs.opentelemetryAnnotations)
+    implementation(libs.opentelemetryKtor)
 
     // Database
-    implementation(exposed.core)
-    implementation(exposed.crypt)
-    implementation(exposed.dao)
-    implementation(exposed.jdbc)
-    implementation(exposed.javaTime)
-    implementation(postgres.driver)
-    implementation(flyway.core)
-    implementation(flyway.postgres)
-    implementation(hikari.connectionPool)
+    implementation(libs.exposedCore)
+    implementation(libs.exposedCrypt)
+    implementation(libs.exposedDao)
+    implementation(libs.exposedJdbc)
+    implementation(libs.exposedJavaTime)
+    implementation(libs.postgresDriver)
+    implementation(libs.flywayCore)
+    implementation(libs.flywayPostgres)
+    implementation(libs.hikariConnectionPool)
 
     // Config
-    implementation(hoplite.hopliteToml)
+    implementation(libs.hopliteToml)
 
     // Logging
-    implementation(loggingLibs.logbackClassic)
-    implementation(loggingLibs.logstashLogbackEncoder)
+    implementation(libs.logbackClassic)
+    implementation(libs.logstashLogbackEncoder)
 
     // Tester
-    testImplementation(testLibs.bundles.withUnitTesting)
-    testImplementation(testLibs.testContainers)
-    testImplementation(testLibs.postgresql)
-    testImplementation(ktorServer.testJvm)
-    testImplementation(ktorClient.mock)
+    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.testContainers)
+    testImplementation(libs.postgresql)
+    testImplementation(libs.ktorServerTestsJvm)
+    testImplementation(libs.ktorClientMock)
 }
 
 java {

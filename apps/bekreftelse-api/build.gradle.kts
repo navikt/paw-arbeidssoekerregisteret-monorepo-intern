@@ -21,53 +21,53 @@ dependencies {
     implementation(project(":domain:bekreftelsesmelding-avro-schema"))
 
     // Server
-    implementation(ktorServer.bundles.withNettyAndMicrometer)
-    implementation(ktorServer.contentNegotiation)
-    implementation(ktorServer.statusPages)
-    implementation(ktorServer.cors)
-    implementation(ktorServer.callId)
-    implementation(ktorServer.auth)
+    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.ktorServerContentNegotiation)
+    implementation(libs.ktorServerStatusPages)
+    implementation(libs.ktorServerCors)
+    implementation(libs.ktorServerCallId)
+    implementation(libs.ktorServerAuth)
 
     // Client
-    implementation(ktorClient.core)
-    implementation(ktorClient.cio)
-    implementation(ktorClient.contentNegotiation)
+    implementation(libs.ktorClientCore)
+    implementation(libs.ktorClientCio)
+    implementation(libs.ktorClientContentNegotiation)
 
     // Serialization
-    implementation(ktor.serializationJackson)
-    implementation(ktor.serializationJson)
-    implementation(jackson.datatypeJsr310)
+    implementation(libs.ktorSerializationJackson)
+    implementation(libs.ktorSerializationJson)
+    implementation(libs.jacksonDatatypeJsr310)
 
     // Authentication
-    implementation(navSecurity.tokenValidationKtorV2)
+    implementation(libs.tokenValidationKtorV2)
 
     // Authorization
-    implementation(poao.tilgangClient)
+    implementation(libs.tilgangClient)
 
     // Documentation
-    implementation(ktorServer.openapi)
-    implementation(ktorServer.swagger)
+    implementation(libs.ktorServerOpenapi)
+    implementation(libs.ktorServerSwagger)
 
     // Logging
-    implementation(loggingLibs.logbackClassic)
-    implementation(loggingLibs.logstashLogbackEncoder)
-    implementation(navCommon.log)
-    implementation(navCommon.auditLog)
+    implementation(libs.logbackClassic)
+    implementation(libs.logstashLogbackEncoder)
+    implementation(libs.log)
+    implementation(libs.auditLog)
 
     // Instrumentation
-    implementation(micrometer.registryPrometheus)
-    implementation(otel.api)
-    implementation(otel.annotations)
+    implementation(libs.micrometerRegistryPrometheus)
+    implementation(libs.opentelemetryApi)
+    implementation(libs.opentelemetryAnnotations)
 
     // Kafka
-    implementation(orgApacheKafka.kafkaStreams)
-    implementation(apacheAvro.kafkaStreamsAvroSerde)
+    implementation(libs.kafkaStreams)
+    implementation(libs.kafkaStreamsAvroSerde)
 
     // Test
-    testImplementation(ktorServer.testJvm)
-    testImplementation(ktorClient.mock)
-    testImplementation(testLibs.bundles.withUnitTesting)
-    testImplementation(testLibs.mockOauth2Server)
+    testImplementation(libs.ktorServerTestsJvm)
+    testImplementation(libs.ktorClientMock)
+    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.mockOauth2Server)
 }
 
 java {

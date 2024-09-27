@@ -10,9 +10,9 @@ val schema by configurations.creating {
 }
 
 dependencies {
-    schema(arbeidssoekerRegisteret.mainAvroSchema)
-    api(arbeidssoekerRegisteret.mainAvroSchema)
-    api(apacheAvro.avro)
+    schema(libs.mainAvroSchema)
+    api(libs.mainAvroSchema)
+    api(libs.avro)
 }
 
 tasks.named("generateAvroProtocol", GenerateAvroProtocolTask::class.java) {
