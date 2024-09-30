@@ -33,12 +33,6 @@ application {
     mainClass.set("no.nav.paw.arbeidssokerregisteret.ApplicationKt")
 }
 
-tasks.withType<KotlinCompile>().configureEach {
-    compilerOptions {
-        freeCompilerArgs.add("-Xcontext-receivers")
-    }
-}
-
 tasks.named<Test>("test") {
     useJUnitPlatform()
 }
