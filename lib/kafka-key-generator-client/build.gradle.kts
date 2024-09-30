@@ -21,9 +21,3 @@ java {
         languageVersion = JavaLanguageVersion.of(jvmVersion.majorVersion)
     }
 }
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(jvmVersion.majorVersion)
-    }
-}
