@@ -2,8 +2,7 @@ package no.nav.paw.arbeidssokerregisteret.app.metrics
 
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 
-context(PrometheusMeterRegistry)
-fun eventReceived(topic: String, messageType: String, action: String) {
+fun PrometheusMeterRegistry.eventReceived(topic: String, messageType: String, action: String) {
     counter(
         Names.MESSAGE,
         Labels.DIRECTION, Directions.IN,
@@ -13,8 +12,7 @@ fun eventReceived(topic: String, messageType: String, action: String) {
     ).increment()
 }
 
-context(PrometheusMeterRegistry)
-fun stateSent(topic: String, messageType: String, action: String) {
+fun PrometheusMeterRegistry.stateSent(topic: String, messageType: String, action: String) {
     counter(
         Names.MESSAGE,
         Labels.DIRECTION, Directions.OUT,

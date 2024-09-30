@@ -3,11 +3,10 @@ package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgApiTilstander
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandV1
 
-context(HendelseScope<Long>)
-fun TilstandV1?.ingenEndringEllerUtgaaendeMeldinger(): InternTilstandOgApiTilstander =
+fun FunctionContext<TilstandV1?, Long>.ingenEndringEllerUtgaaendeMeldinger(): InternTilstandOgApiTilstander =
     InternTilstandOgApiTilstander(
-        id = id,
-        tilstand = this,
+        id = scope.id,
+        tilstand = tilstand,
         nyPeriodeTilstand = null,
         nyOpplysningerOmArbeidssoekerTilstand = null
     )

@@ -32,11 +32,9 @@ class MeteredOutboundTopicNameExtractor(
             is OpplysningerOmArbeidssoeker -> value.sendtInnAv.tidspunkt to opplysningerTopic
             else -> throw IllegalArgumentException("Ukjent type: ${value.javaClass.name}")
         }
-        with(prometheusMeterRegistry) {
-            val atomicLong = getOrCreateLatencyHolder(topic, partition)
-            atomicLong.set(Duration.between(tidspunkt, Instant.now()).toMillis())
-            tellUtgåendeTilstand(topic, value)
-        }
+        val atomicLong = prometheusMeterRegistry.getOrCreateLatencyHolder(topic, partition)
+        atomicLong.set(Duration.between(tidspunkt, Instant.now()).toMillis())
+        prometheusMeterRegistry.tellUtgåendeTilstand(topic, value)
         return topic
     }
 

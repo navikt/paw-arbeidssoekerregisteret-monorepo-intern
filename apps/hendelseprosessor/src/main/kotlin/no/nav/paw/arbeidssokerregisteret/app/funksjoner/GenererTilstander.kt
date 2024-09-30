@@ -10,13 +10,13 @@ fun genererNyInternTilstandOgNyeApiTilstander(
     internTilstandOgHendelse: InternTilstandOgHendelse
 ): InternTilstandOgApiTilstander {
     val (scope, tilstand, hendelse) = internTilstandOgHendelse
-    with(scope) {
+    with(FunctionContext(tilstand, scope)) {
         return when (hendelse) {
-            is Startet -> tilstand.startPeriode(applicationLogicConfig.inkluderOpplysningerInnenforTidsvindu, hendelse)
-            is Avsluttet -> tilstand.avsluttPeriode(hendelse)
-            is OpplysningerOmArbeidssoekerMottatt -> tilstand.opplysningerOmArbeidssoekerMottatt(hendelse)
-            is Avvist -> tilstand.avvist(hendelse)
-            is AvvistStoppAvPeriode -> tilstand.ingenEndringEllerUtgaaendeMeldinger()
+            is Startet -> startPeriode(applicationLogicConfig.inkluderOpplysningerInnenforTidsvindu, hendelse)
+            is Avsluttet -> avsluttPeriode(hendelse)
+            is OpplysningerOmArbeidssoekerMottatt -> opplysningerOmArbeidssoekerMottatt(hendelse)
+            is Avvist -> avvist(hendelse)
+            is AvvistStoppAvPeriode -> ingenEndringEllerUtgaaendeMeldinger()
         }
     }
 }

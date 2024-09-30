@@ -45,12 +45,6 @@ application {
     mainClass.set("no.nav.paw.arbeidssokerregisteret.app.AppKt")
 }
 
-tasks.named("compileKotlin", org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask::class.java) {
-    compilerOptions {
-        freeCompilerArgs.add("-Xcontext-receivers")
-    }
-}
-
 jib {
     from.image = "ghcr.io/navikt/baseimages/temurin:${jvmVersion.majorVersion}"
     to.image = "${image ?: rootProject.name }:${project.version}"

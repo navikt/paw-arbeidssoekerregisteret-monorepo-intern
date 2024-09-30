@@ -11,5 +11,3 @@ data class HendelseScope<A>(
 interface HasRecordScope<A> {
     val hendelseScope: HendelseScope<A>?
 }
-
-fun <A> HendelseScope<A>.currentScope(): HendelseScope<A> = this

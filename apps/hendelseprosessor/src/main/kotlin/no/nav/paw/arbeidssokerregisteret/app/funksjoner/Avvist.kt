@@ -5,11 +5,11 @@ import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgApiTilstan
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandV1
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 
-context(HendelseScope<Long>)
-fun TilstandV1?.avvist(avvist: Avvist): InternTilstandOgApiTilstander =
-    when (this?.gjeldeneTilstand) {
+
+fun FunctionContext<TilstandV1?, Long>.avvist(avvist: Avvist): InternTilstandOgApiTilstander =
+    when (tilstand?.gjeldeneTilstand) {
         null -> TilstandV1(
-            hendelseScope = currentScope(),
+            hendelseScope = scope,
             gjeldeneTilstand = GjeldeneTilstand.AVVIST,
             gjeldeneIdentitetsnummer = avvist.identitetsnummer,
             alleIdentitetsnummer = setOf(avvist.identitetsnummer),
@@ -19,15 +19,15 @@ fun TilstandV1?.avvist(avvist: Avvist): InternTilstandOgApiTilstander =
             forrigeOpplysningerOmArbeidssoeker = null
         )
 
-        GjeldeneTilstand.AVVIST -> this.copy(hendelseScope = currentScope())
-        GjeldeneTilstand.STARTET -> this
-        GjeldeneTilstand.AVSLUTTET -> copy(
-            hendelseScope = currentScope(),
+        GjeldeneTilstand.AVVIST -> tilstand.copy(hendelseScope = scope)
+        GjeldeneTilstand.STARTET -> tilstand
+        GjeldeneTilstand.AVSLUTTET -> tilstand.copy(
+            hendelseScope = scope,
             gjeldeneTilstand = GjeldeneTilstand.AVVIST
         )
     }.let { nyTilstand: TilstandV1 ->
         InternTilstandOgApiTilstander(
-            id = id,
+            id = scope.id,
             tilstand = nyTilstand,
             nyPeriodeTilstand = null,
             nyOpplysningerOmArbeidssoekerTilstand = null

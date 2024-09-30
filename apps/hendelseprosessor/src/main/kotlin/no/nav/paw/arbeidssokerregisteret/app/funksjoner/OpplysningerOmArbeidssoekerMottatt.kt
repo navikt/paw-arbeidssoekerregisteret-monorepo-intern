@@ -10,39 +10,37 @@ import no.nav.paw.arbeidssokerregisteret.app.tilstand.*
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand.STARTET
 import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
 
-context(HendelseScope<Long>)
 @WithSpan(
     value = "opplysningerOmArbeidssoekerMottatt",
     kind = SpanKind.INTERNAL
 )
-fun TilstandV1?.opplysningerOmArbeidssoekerMottatt(hendelse: OpplysningerOmArbeidssoekerMottatt): InternTilstandOgApiTilstander =
+fun FunctionContext<TilstandV1?, Long>.opplysningerOmArbeidssoekerMottatt(hendelse: OpplysningerOmArbeidssoekerMottatt): InternTilstandOgApiTilstander =
     when {
-        this == null -> harIngenTilstandLagreSomSisteOpplysninger(hendelse)
-        this.gjeldenePeriode == null -> harAvsluttetPeriodeBareLagreSomSisteOpplysninger(hendelse)
-        else -> internTilstandOgApiTilstander(hendelse, gjeldenePeriode)
+        tilstand == null -> scope.harIngenTilstandLagreSomSisteOpplysninger(hendelse)
+        tilstand.gjeldenePeriode == null -> FunctionContext(tilstand, scope).harAvsluttetPeriodeBareLagreSomSisteOpplysninger(hendelse)
+        else -> FunctionContext(tilstand, scope).internTilstandOgApiTilstander(hendelse, tilstand.gjeldenePeriode)
     }.also { internTilstandOgApiTilstander ->
         Span.current().setAllAttributes(
             Attributes.of(
                 AttributeKey.stringKey("paw.arbeidssoekerregisteret.hendelse.type"), hendelse.hendelseType,
-                AttributeKey.stringKey("paw.arbeidssoekerregisteret.tilstand"), this?.gjeldeneTilstand?.name ?: "null",
+                AttributeKey.stringKey("paw.arbeidssoekerregisteret.tilstand"), tilstand?.gjeldeneTilstand?.name ?: "null",
                 AttributeKey.stringKey("paw.arbeidssoekerregisteret.opplysningerOmArbeidssoeker.skal_publiseres"), (internTilstandOgApiTilstander.nyOpplysningerOmArbeidssoekerTilstand != null).toString()
             )
         )
     }
 
 
-context(HendelseScope<Long>)
-private fun TilstandV1.internTilstandOgApiTilstander(
+private fun FunctionContext<TilstandV1, Long>.internTilstandOgApiTilstander(
     hendelse: OpplysningerOmArbeidssoekerMottatt,
     gjeldenePeriode: Periode
 ) = InternTilstandOgApiTilstander(
-    id = id,
-    tilstand = this.copy(
+    id = scope.id,
+    tilstand = tilstand.copy(
         sisteOpplysningerOmArbeidssoeker = hendelse.opplysningerOmArbeidssoeker,
-        forrigeOpplysningerOmArbeidssoeker = this.sisteOpplysningerOmArbeidssoeker,
-        hendelseScope = currentScope()
+        forrigeOpplysningerOmArbeidssoeker = tilstand.sisteOpplysningerOmArbeidssoeker,
+        hendelseScope = scope
     ),
-    nyOpplysningerOmArbeidssoekerTilstand = if (gjeldeneTilstand == STARTET) {
+    nyOpplysningerOmArbeidssoekerTilstand = if (tilstand.gjeldeneTilstand == STARTET) {
         OpplysningerOmArbeidssoeker(
             hendelse.opplysningerOmArbeidssoeker.id,
             gjeldenePeriode.id,
@@ -56,17 +54,16 @@ private fun TilstandV1.internTilstandOgApiTilstander(
     nyPeriodeTilstand = null
 )
 
-context(HendelseScope<Long>)
-private fun TilstandV1.harAvsluttetPeriodeBareLagreSomSisteOpplysninger(
+private fun FunctionContext<TilstandV1, Long>.harAvsluttetPeriodeBareLagreSomSisteOpplysninger(
     hendelse: OpplysningerOmArbeidssoekerMottatt
 ) = InternTilstandOgApiTilstander(
-    id = id,
-    tilstand = this.copy(
+    id = scope.id,
+    tilstand = tilstand.copy(
         sisteOpplysningerOmArbeidssoeker = hendelse.opplysningerOmArbeidssoeker,
-        forrigeOpplysningerOmArbeidssoeker = this.sisteOpplysningerOmArbeidssoeker,
+        forrigeOpplysningerOmArbeidssoeker = tilstand.sisteOpplysningerOmArbeidssoeker,
         gjeldeneIdentitetsnummer = hendelse.identitetsnummer,
-        alleIdentitetsnummer = this.alleIdentitetsnummer + hendelse.identitetsnummer,
-        hendelseScope = currentScope()
+        alleIdentitetsnummer = tilstand.alleIdentitetsnummer + hendelse.identitetsnummer,
+        hendelseScope = scope
     ),
     nyOpplysningerOmArbeidssoekerTilstand = null,
     nyPeriodeTilstand = null
@@ -77,7 +74,7 @@ private fun HendelseScope<Long>.harIngenTilstandLagreSomSisteOpplysninger(
 ) = InternTilstandOgApiTilstander(
     id = id,
     tilstand = TilstandV1(
-        hendelseScope = currentScope(),
+        hendelseScope = this,
         gjeldeneIdentitetsnummer = hendelse.identitetsnummer,
         alleIdentitetsnummer = setOf(hendelse.identitetsnummer),
         gjeldeneTilstand = GjeldeneTilstand.AVSLUTTET,

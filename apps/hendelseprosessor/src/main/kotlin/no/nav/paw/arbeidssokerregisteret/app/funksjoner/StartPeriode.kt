@@ -8,25 +8,25 @@ import java.time.Duration
 import java.time.Instant
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode as ApiPeriode
 
-context (HendelseScope<Long>)
-fun TilstandV1?.startPeriode(window: Duration, hendelse: Startet): InternTilstandOgApiTilstander {
-    if (this?.gjeldenePeriode != null) throw IllegalStateException("Gjeldene periode er ikke null. Kan ikke starte ny periode.")
+
+fun FunctionContext<TilstandV1?, Long>.startPeriode(window: Duration, hendelse: Startet): InternTilstandOgApiTilstander {
+    if (tilstand?.gjeldenePeriode != null) throw IllegalStateException("Gjeldene periode er ikke null. Kan ikke starte ny periode.")
     val startetPeriode = Periode(
         id = hendelse.hendelseId,
         identitetsnummer = hendelse.identitetsnummer,
         startet = hendelse.metadata,
         avsluttet = null,
-        startetVedOffset = currentScope().offset
+        startetVedOffset = scope.offset
     )
-    val tilstand: TilstandV1 = this?.copy(
-        hendelseScope = currentScope(),
+    val nyTilstand: TilstandV1 = tilstand?.copy(
+        hendelseScope = scope,
         gjeldeneTilstand = GjeldeneTilstand.STARTET,
         gjeldenePeriode = startetPeriode,
         gjeldeneIdentitetsnummer = hendelse.identitetsnummer,
-        alleIdentitetsnummer = this.alleIdentitetsnummer + hendelse.identitetsnummer
+        alleIdentitetsnummer = tilstand.alleIdentitetsnummer + hendelse.identitetsnummer
     )
         ?: TilstandV1(
-            hendelseScope = currentScope(),
+            hendelseScope = scope,
             gjeldeneIdentitetsnummer = hendelse.identitetsnummer,
             alleIdentitetsnummer = setOf(hendelse.identitetsnummer),
             gjeldeneTilstand = GjeldeneTilstand.STARTET,
@@ -36,9 +36,9 @@ fun TilstandV1?.startPeriode(window: Duration, hendelse: Startet): InternTilstan
             forrigeOpplysningerOmArbeidssoeker = null
         )
     return InternTilstandOgApiTilstander(
-        id = id,
-        tilstand = tilstand,
-        nyOpplysningerOmArbeidssoekerTilstand = this?.sisteOpplysningerOmArbeidssoeker
+        id = scope.id,
+        tilstand = nyTilstand,
+        nyOpplysningerOmArbeidssoekerTilstand = tilstand?.sisteOpplysningerOmArbeidssoeker
             ?.takeIf { window.isWithinWindow(it.metadata.tidspunkt, hendelse.metadata.tidspunkt) }
             ?.let { intern ->
                 OpplysningerOmArbeidssoeker(

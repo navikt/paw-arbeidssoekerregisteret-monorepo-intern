@@ -9,8 +9,7 @@ import no.nav.paw.arbeidssokerregisteret.app.metrics.stateSent
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import org.apache.avro.specific.SpecificRecord
 
-context(PrometheusMeterRegistry)
-fun tellHendelse(topic: String, hendelse: Hendelse) {
+fun PrometheusMeterRegistry.tellHendelse(topic: String, hendelse: Hendelse) {
     eventReceived(
         topic = topic,
         messageType = hendelse.hendelseType,
@@ -24,8 +23,7 @@ fun tellHendelse(topic: String, hendelse: Hendelse) {
     )
 }
 
-context(PrometheusMeterRegistry)
-fun tellUtgåendeTilstand(topic: String, state: SpecificRecord) {
+fun PrometheusMeterRegistry.tellUtgåendeTilstand(topic: String, state: SpecificRecord) {
     stateSent(
         topic = topic,
         action = when (state) {

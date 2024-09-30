@@ -30,9 +30,8 @@ fun topology(
     val strøm: KStream<Long, Hendelse> = builder.stream(innTopic, Consumed.with(Serdes.Long(), HendelseSerde()))
     val meteredTopicExtractor =
         MeteredOutboundTopicNameExtractor(periodeTopic, opplysningerOmArbeidssoekerTopic, prometheusMeterRegistry)
-    with(prometheusMeterRegistry) {
         strøm
-            .peek { _, hendelse -> tellHendelse(innTopic, hendelse) }
+            .peek { _, hendelse -> prometheusMeterRegistry.tellHendelse(innTopic, hendelse) }
             .lastInternTilstand(dbNavn)
             .filter(::ignorerDuplikatStartOgStopp)
             .filter(::ignorerAvsluttetForAnnenPeriode)
@@ -49,6 +48,5 @@ fun topology(
                     value.nyOpplysningerOmArbeidssoekerTilstand as SpecificRecord?
                 )
             }.to(meteredTopicExtractor)
-    }
     return builder.build()
 }
