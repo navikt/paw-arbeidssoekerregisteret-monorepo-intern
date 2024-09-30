@@ -8,22 +8,12 @@ import java.time.ZoneId
 import java.time.temporal.TemporalAdjuster
 import java.time.temporal.TemporalAdjusters
 
-// Felles verdier for bekreftelse.
-// TODO: Endre intervaller til dev-verdier
-data object BekreftelseConfig {
-    val bekreftelseInterval:Duration = Duration.ofDays(14)
-    val gracePeriode: Duration = Duration.ofDays(7)
-    val bekreftelseTilgjengeligOffset: Duration = Duration.ofDays(3)
-    val varselFoerGracePeriodeUtloept: Duration = gracePeriode.dividedBy(2)
-}
-
 fun fristForNesteBekreftelse(forrige: Instant, interval: Duration): Instant {
     return forrige.plus(interval)
 }
 
-fun Bekreftelse.gjenstaendeGracePeriode(timestamp: Instant): Duration {
-    val gracePeriode = BekreftelseConfig.gracePeriode
-    val utvidetGjelderTil = fristUtloept?.plus(gracePeriode) ?: gjelderTil.plus(gracePeriode)
+fun Bekreftelse.gjenstaendeGraceperiode(timestamp: Instant, graceperiode: Duration): Duration {
+    val utvidetGjelderTil = fristUtloept?.plus(graceperiode) ?: gjelderTil.plus(graceperiode)
 
     return if (timestamp.isAfter(utvidetGjelderTil)) {
         Duration.ZERO

@@ -3,6 +3,7 @@ package no.nav.paw.bekreftelsetjeneste.tilstand
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
+import java.time.Duration
 import java.time.Instant
 import java.util.*
 
@@ -74,7 +75,8 @@ fun initTilstand(
     )
 
 fun initBekreftelsePeriode(
-    periode: PeriodeInfo
+    periode: PeriodeInfo,
+    interval: Duration,
 ): Bekreftelse =
     Bekreftelse(
         tilstand = Tilstand.IkkeKlarForUtfylling,
@@ -83,11 +85,12 @@ fun initBekreftelsePeriode(
         sisteVarselOmGjenstaaendeGraceTid = null,
         bekreftelseId = UUID.randomUUID(),
         gjelderFra = periode.startet,
-        gjelderTil = fristForNesteBekreftelse(periode.startet, BekreftelseConfig.bekreftelseInterval)
+        gjelderTil = fristForNesteBekreftelse(periode.startet, interval)
     )
 
 fun List<Bekreftelse>.initNewBekreftelse(
     tilgjengeliggjort: Instant,
+    interval: Duration
 ): Bekreftelse =
     maxBy { it.gjelderTil }.copy(
         tilstand = Tilstand.KlarForUtfylling,
@@ -95,5 +98,5 @@ fun List<Bekreftelse>.initNewBekreftelse(
         sisteVarselOmGjenstaaendeGraceTid = null,
         bekreftelseId = UUID.randomUUID(),
         gjelderFra = maxBy { it.gjelderTil }.gjelderTil,
-        gjelderTil = fristForNesteBekreftelse(maxBy { it.gjelderTil }.gjelderTil, BekreftelseConfig.bekreftelseInterval)
+        gjelderTil = fristForNesteBekreftelse(maxBy { it.gjelderTil }.gjelderTil, interval)
     )

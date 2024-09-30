@@ -1,0 +1,102 @@
+name: Bekreftelse Tjeneste
+
+on:
+  push:
+    branches:
+      - main
+      - dev/*
+    paths:
+      - 'apps/bekreftelse-tjeneste/**'
+      - 'lib/**'
+      - 'domain/**'
+      - '.github/workflows/bekreftelse-tjeneste.yaml'
+      - 'gradle/**'
+      - 'settings.gradle.kts'
+      - 'gradle.properties'
+      - 'gradlew'
+      - 'gradlew.bat'
+
+env:
+  MODULE: bekreftelse-tjeneste
+  IMAGE: europe-north1-docker.pkg.dev/${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}/paw/paw-arbeidssoekerregisteret-bekreftelse-tjeneste
+jobs:
+  build:
+    name: Build
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: temurin
+          cache: gradle
+      - name: Set version
+        run: echo "VERSION=$(date +'%y.%m.%d').${{ github.run_number }}-${{ github.run_attempt }}" >> $GITHUB_ENV
+      - name: Login GAR
+        uses: nais/login@v0
+        with:
+          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
+          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+          team: paw
+      - name: Build and push image with Gradle
+        id: docker-build-push
+        working-directory: ./
+        env:
+          ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "image=${{ env.IMAGE }}:${{ env.VERSION }}" >> $GITHUB_OUTPUT
+          echo -Pversion=${{ env.VERSION }} -Pimage=${{ env.IMAGE }} :apps:${{ env.MODULE }}:build :apps:${{ env.MODULE }}:jib
+          ./gradlew -Pversion=${{ env.VERSION }} -Pimage=${{ env.IMAGE }} :apps:${{ env.MODULE }}:build :apps:${{ env.MODULE }}:jib
+          echo "DIGEST=$(cat ./apps/${{ env.MODULE }}/build/jib-image.digest)" >> $GITHUB_ENV
+      - name: Attest and sign image
+        uses: nais/attest-sign@v1.3.4
+        with:
+          image_ref: ${{ env.IMAGE }}@${{ env.DIGEST }}
+
+  deploy-dev:
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/dev')
+    name: Deploy to dev-gcp
+    needs:
+      - build
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Deploy to GCP
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: dev-gcp
+          RESOURCE: ./apps/${{ env.MODULE }}/nais/nais-dev.yaml
+          VAR: image=${{ needs.build.outputs.image }}
+
+#  deploy-prod:
+#    if: github.ref == 'refs/heads/main'
+#    name: Deploy to prod-gcp
+#    needs:
+#      - build
+#      - deploy-dev
+#    permissions:
+#      contents: read
+#      id-token: write
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v4
+#      - name: Deploy to GCP
+#        uses: nais/deploy/actions/deploy@v2
+#        env:
+#          TEAM: paw
+#          CLUSTER: prod-gcp
+#          RESOURCE: ./apps/${{ env.MODULE }}/nais/nais-prod.yaml
+#          VAR: image=${{ needs.build.outputs.image }}

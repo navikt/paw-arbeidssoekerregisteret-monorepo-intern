@@ -1,0 +1,58 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  name: paw-arbeidssoekerregisteret-bekreftelse-tjeneste
+  namespace: paw
+  labels:
+    team: paw
+spec:
+  image: {{ image }}
+  port: 8080
+  env:
+    - name: KAFKA_STREAMS_ID_SUFFIX
+      value: "v1"
+    - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_TOPIC
+      value: "paw.arbeidssoker-bekreftelse-beta-v1"
+    - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_HENDELSELOGG_TOPIC
+      value: "paw.arbeidssoker-bekreftelse-hendelseslogg-beta-v1"
+    - name: KAFKA_PAW_ARBEIDSSOKERPERIODER_TOPIC
+      value: "paw.arbeidssokerperioder-v1"
+    - name: KAFKA_PUNCTUATOR_INTERVAL
+      value: "PT1M"
+    - name: BEKREFTELSE_INTERVAL
+      value: "PT28M"
+    - name: BEKREFTELSE_GRACEPERIODE
+      value: "PT14M"
+    - name: BEKREFTELSE_TILGJENGELIG_OFFSET
+      value: "PT6M"
+
+  replicas:
+    min: 1
+    max: 1
+  resources:
+    limits:
+      memory: 1024Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  liveness:
+    path: /internal/isAlive
+    initialDelay: 10
+  readiness:
+    path: /internal/isReady
+    initialDelay: 10
+  prometheus:
+    enabled: true
+    path: /internal/metrics
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
+  kafka:
+    pool: nav-dev
+    streams: true
+  accessPolicy:
+    outbound:
+      rules:
+        - application: paw-kafka-key-generator
+          namespace: paw

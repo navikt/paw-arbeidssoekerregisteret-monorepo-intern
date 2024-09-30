@@ -1,4 +1,4 @@
-package no.nav.paw.bekreftelsetjeneste
+package no.nav.paw.bekreftelsetjeneste.topology
 
 import arrow.core.toNonEmptyListOrNull
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
@@ -6,20 +6,28 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjenstaaendeTid
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
+import no.nav.paw.bekreftelsetjeneste.config.BekreftelseIntervals
+import no.nav.paw.bekreftelsetjeneste.tilstand.erKlarForUtfylling
+import no.nav.paw.bekreftelsetjeneste.tilstand.erSisteVarselOmGjenstaaendeGraceTid
+import no.nav.paw.bekreftelsetjeneste.tilstand.harFristUtloept
+import no.nav.paw.bekreftelsetjeneste.tilstand.harGraceperiodeUtloept
+import no.nav.paw.bekreftelsetjeneste.tilstand.shouldCreateNewBekreftelse
 import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.Tilstand
-import no.nav.paw.bekreftelsetjeneste.tilstand.gjenstaendeGracePeriode
+import no.nav.paw.bekreftelsetjeneste.tilstand.gjenstaendeGraceperiode
 import no.nav.paw.bekreftelsetjeneste.tilstand.initBekreftelsePeriode
 import no.nav.paw.bekreftelsetjeneste.tilstand.initNewBekreftelse
 import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
+import java.time.Duration
 import java.time.Instant
 import java.util.*
 
 fun bekreftelsePunctuator(
     stateStoreName: String,
+    bekreftelseIntervals: BekreftelseIntervals,
     timestamp: Instant,
     ctx: ProcessorContext<Long, BekreftelseHendelse>
 ) {
@@ -27,7 +35,7 @@ fun bekreftelsePunctuator(
 
     stateStore.all().use { states ->
         states.forEach { (key, value) ->
-            val (updatedState, bekreftelseHendelser) = processBekreftelser(value, timestamp)
+            val (updatedState, bekreftelseHendelser) = processBekreftelser(bekreftelseIntervals, value, timestamp)
 
             bekreftelseHendelser.forEach {
                 ctx.forward(Record(value.periode.recordKey, it, Instant.now().toEpochMilli()))
@@ -38,32 +46,34 @@ fun bekreftelsePunctuator(
 }
 
 private fun processBekreftelser(
+    bekreftelseIntervals: BekreftelseIntervals,
     currentState: InternTilstand,
     timestamp: Instant,
 ): Pair<InternTilstand, List<BekreftelseHendelse>> {
     val existingBekreftelse = currentState.bekreftelser.firstOrNull()
 
     val (tilstand, hendelse) = if (existingBekreftelse == null) {
-        currentState.createInitialBekreftelse() to null
+        currentState.createInitialBekreftelse(bekreftelseIntervals.interval) to null
     } else {
-        currentState.checkAndCreateNewBekreftelse(timestamp)
+        currentState.checkAndCreateNewBekreftelse(timestamp, bekreftelseIntervals)
     }
 
-    val (updatedTilstand, additionalHendelse) = tilstand.handleUpdateBekreftelser(timestamp)
+    val (updatedTilstand, additionalHendelse) = tilstand.handleUpdateBekreftelser(timestamp, bekreftelseIntervals)
 
     return updatedTilstand to listOfNotNull(hendelse, additionalHendelse)
 }
 
-private fun InternTilstand.createInitialBekreftelse(): InternTilstand =
-    copy(bekreftelser = listOf(initBekreftelsePeriode(periode)))
+private fun InternTilstand.createInitialBekreftelse(interval: Duration): InternTilstand =
+    copy(bekreftelser = listOf(initBekreftelsePeriode(periode, interval)))
 
 private fun InternTilstand.checkAndCreateNewBekreftelse(
-    timestamp: Instant
+    timestamp: Instant,
+    bekreftelseIntervals: BekreftelseIntervals,
 ): Pair<InternTilstand, BekreftelseHendelse?> {
     val nonEmptyBekreftelser = bekreftelser.toNonEmptyListOrNull() ?: return this to null
 
-    return if (nonEmptyBekreftelser.shouldCreateNewBekreftelse(timestamp)) {
-        val newBekreftelse = bekreftelser.initNewBekreftelse(tilgjengeliggjort = timestamp)
+    return if (nonEmptyBekreftelser.shouldCreateNewBekreftelse(timestamp, bekreftelseIntervals.interval, bekreftelseIntervals.tilgjengeligOffset)) {
+        val newBekreftelse = bekreftelser.initNewBekreftelse(tilgjengeliggjort = timestamp, interval = bekreftelseIntervals.interval)
         copy(bekreftelser = nonEmptyBekreftelser + newBekreftelse) to createNewBekreftelseTilgjengelig(newBekreftelse)
     } else {
         this to null
@@ -72,16 +82,17 @@ private fun InternTilstand.checkAndCreateNewBekreftelse(
 
 private fun InternTilstand.handleUpdateBekreftelser(
     timestamp: Instant,
+    bekreftelseIntervals: BekreftelseIntervals,
 ): Pair<InternTilstand, BekreftelseHendelse?> {
     val updatedBekreftelser = bekreftelser.map { bekreftelse ->
         generateSequence(bekreftelse to null as BekreftelseHendelse?) { (currentBekreftelse, _) ->
-            getProcessedBekreftelseTilstandAndHendelse(currentBekreftelse, timestamp).takeIf { it.second != null }
+            getProcessedBekreftelseTilstandAndHendelse(currentBekreftelse, timestamp, bekreftelseIntervals).takeIf { it.second != null }
         }.last().first
     }
 
     val hendelse: BekreftelseHendelse? = bekreftelser.flatMap { bekreftelse ->
         generateSequence(bekreftelse to null as BekreftelseHendelse?) { (currentBekreftelse, _) ->
-            getProcessedBekreftelseTilstandAndHendelse(currentBekreftelse, timestamp).takeIf { it.second != null }
+            getProcessedBekreftelseTilstandAndHendelse(currentBekreftelse, timestamp, bekreftelseIntervals).takeIf { it.second != null }
         }.mapNotNull { it.second }
     }.lastOrNull()
 
@@ -90,10 +101,11 @@ private fun InternTilstand.handleUpdateBekreftelser(
 
 private fun InternTilstand.getProcessedBekreftelseTilstandAndHendelse(
     bekreftelse: Bekreftelse,
-    timestamp: Instant
+    timestamp: Instant,
+    bekreftelseIntervals: BekreftelseIntervals,
 ): Pair<Bekreftelse, BekreftelseHendelse?> {
     return when {
-        bekreftelse.tilstand is Tilstand.IkkeKlarForUtfylling && bekreftelse.erKlarForUtfylling(timestamp) -> {
+        bekreftelse.tilstand is Tilstand.IkkeKlarForUtfylling && bekreftelse.erKlarForUtfylling(timestamp, bekreftelseIntervals.tilgjengeligOffset) -> {
             val updatedBekreftelse = bekreftelse.copy(tilstand = Tilstand.KlarForUtfylling, tilgjengeliggjort = timestamp)
             val hendelse = BekreftelseTilgjengelig(
                 hendelseId = UUID.randomUUID(),
@@ -106,7 +118,7 @@ private fun InternTilstand.getProcessedBekreftelseTilstandAndHendelse(
             updatedBekreftelse to hendelse
         }
 
-        bekreftelse.tilstand is Tilstand.KlarForUtfylling && bekreftelse.harFristUtloept(timestamp) -> {
+        bekreftelse.tilstand is Tilstand.KlarForUtfylling && bekreftelse.harFristUtloept(timestamp, bekreftelseIntervals.tilgjengeligOffset) -> {
             val updatedBekreftelse = bekreftelse.copy(tilstand = Tilstand.VenterSvar, fristUtloept = timestamp)
             val hendelse = LeveringsfristUtloept(
                 hendelseId = UUID.randomUUID(),
@@ -118,19 +130,19 @@ private fun InternTilstand.getProcessedBekreftelseTilstandAndHendelse(
             updatedBekreftelse to hendelse
         }
 
-        bekreftelse.tilstand == Tilstand.VenterSvar && bekreftelse.erSisteVarselOmGjenstaaendeGraceTid(timestamp) -> {
+        bekreftelse.tilstand == Tilstand.VenterSvar && bekreftelse.erSisteVarselOmGjenstaaendeGraceTid(timestamp, bekreftelseIntervals.varselFoerGraceperiodeUtloept) -> {
             val updatedBekreftelse = bekreftelse.copy(sisteVarselOmGjenstaaendeGraceTid = timestamp)
             val hendelse = RegisterGracePeriodeGjenstaaendeTid(
                 hendelseId = UUID.randomUUID(),
                 periodeId = periode.periodeId,
                 arbeidssoekerId = periode.arbeidsoekerId,
                 bekreftelseId = bekreftelse.bekreftelseId,
-                gjenstaandeTid = bekreftelse.gjenstaendeGracePeriode(timestamp),
+                gjenstaandeTid = bekreftelse.gjenstaendeGraceperiode(timestamp, bekreftelseIntervals.graceperiode),
             hendelseTidspunkt = Instant.now())
             updatedBekreftelse to hendelse
         }
 
-        bekreftelse.tilstand == Tilstand.VenterSvar && bekreftelse.harGracePeriodeUtloept(timestamp) -> {
+        bekreftelse.tilstand == Tilstand.VenterSvar && bekreftelse.harGraceperiodeUtloept(timestamp, bekreftelseIntervals.graceperiode) -> {
             val updatedBekreftelse = bekreftelse.copy(tilstand = Tilstand.GracePeriodeUtloept)
             val hendelse = RegisterGracePeriodeUtloept(
                 hendelseId = UUID.randomUUID(),

@@ -3,13 +3,21 @@ package no.nav.paw.bekreftelsetjeneste
 import io.confluent.kafka.schemaregistry.testutil.MockSchemaRegistry
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import io.mockk.mockk
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.bekreftelse.ansvar.v1.AnsvarEndret
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
+import no.nav.paw.bekreftelsetjeneste.config.APPLICATION_CONFIG_FILE_NAME
+import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
+import no.nav.paw.bekreftelsetjeneste.context.ApplicationContext
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstandSerde
-import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
+import no.nav.paw.bekreftelsetjeneste.topology.buildBekreftelseStream
+import no.nav.paw.bekreftelsetjeneste.topology.buildPeriodeStream
+import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
+import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.client.inMemoryKafkaKeysMock
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serde
@@ -17,12 +25,13 @@ import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.utils.Time
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
+import org.apache.kafka.streams.TestInputTopic
+import org.apache.kafka.streams.TestOutputTopic
 import org.apache.kafka.streams.TopologyTestDriver
 import org.apache.kafka.streams.state.internals.InMemoryKeyValueBytesStoreSupplier
 import org.apache.kafka.streams.state.internals.KeyValueStoreBuilder
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.Duration
 import java.time.Instant
 import java.util.*
 
@@ -31,62 +40,49 @@ class ApplicationTestContext(initialWallClockTime: Instant = Instant.now()) {
     val bekreftelseSerde: Serde<Bekreftelse> = opprettSerde()
     val periodeTopicSerde: Serde<Periode> = opprettSerde()
     val hendelseLoggSerde: Serde<BekreftelseHendelse> = BekreftelseHendelseSerde()
-    val applicationConfiguration = ApplicationConfiguration(
-        periodeTopic = "periodeTopic",
-        ansvarsTopic = "ansvarsTopic",
-        bekreftelseTopic = "bekreftelseTopic",
-        bekreftelseHendelseloggTopic = "bekreftelseHendelsesloggTopic",
-        stateStoreName = "stateStoreName",
-        punctuateInterval = Duration.ofSeconds(1)
-    )
+    val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG_FILE_NAME)
+    val kafkaKeysClient = inMemoryKafkaKeysMock()
     val applicationContext = ApplicationContext(
-        internTilstandSerde = InternTilstandSerde(),
-        bekreftelseHendelseSerde = BekreftelseHendelseSerde(),
-        kafkaKeysClient = inMemoryKafkaKeysMock()
+        applicationConfig = applicationConfig,
+        prometheusMeterRegistry = mockk<PrometheusMeterRegistry>(),
+        healthIndicatorRepository = HealthIndicatorRepository(),
+        kafkaKeysClient = kafkaKeysClient
     )
 
     val logger: Logger = LoggerFactory.getLogger(ApplicationTestContext::class.java)
 
-    val testDriver: TopologyTestDriver =
-        with(applicationContext) {
-            with(applicationConfiguration) {
-                StreamsBuilder()
-                    .addStateStore(
-                        KeyValueStoreBuilder(
-                            InMemoryKeyValueBytesStoreSupplier(applicationConfiguration.stateStoreName),
-                            Serdes.UUID(),
-                            applicationContext.internTilstandSerde,
-                            Time.SYSTEM
-                        )
-                    ).appTopology()
-            }
-        }.let { TopologyTestDriver(it, kafkaStreamProperties, initialWallClockTime) }
+    val topology = StreamsBuilder().apply {
+        addStateStore(
+            KeyValueStoreBuilder(
+                InMemoryKeyValueBytesStoreSupplier(applicationConfig.kafkaTopology.internStateStoreName),
+                Serdes.UUID(),
+                InternTilstandSerde(),
+                Time.SYSTEM
+            )
+        )
+        buildPeriodeStream(applicationConfig, kafkaKeysClient)
+        buildBekreftelseStream(applicationConfig)
+    }.build()
 
-    val periodeTopic = testDriver.createInputTopic(
-        applicationConfiguration.periodeTopic,
+    val testDriver: TopologyTestDriver = TopologyTestDriver(topology, kafkaStreamProperties, initialWallClockTime)
+
+    val periodeTopic: TestInputTopic<Long, Periode> = testDriver.createInputTopic(
+        applicationConfig.kafkaTopology.periodeTopic,
         Serdes.Long().serializer(),
         periodeTopicSerde.serializer()
     )
 
-    val ansvarsTopic = testDriver.createInputTopic(
-        applicationConfiguration.ansvarsTopic,
-        Serdes.Long().serializer(),
-        ansvarsTopicSerde.serializer()
-    )
-
-    val bekreftelseTopic = testDriver.createInputTopic(
-        applicationConfiguration.bekreftelseTopic,
+    val bekreftelseTopic: TestInputTopic<Long, Bekreftelse> = testDriver.createInputTopic(
+        applicationConfig.kafkaTopology.bekreftelseTopic,
         Serdes.Long().serializer(),
         bekreftelseSerde.serializer()
     )
 
-    val hendelseLoggTopicOut = testDriver.createOutputTopic(
-        applicationConfiguration.bekreftelseHendelseloggTopic,
+    val hendelseLoggTopicOut: TestOutputTopic<Long, BekreftelseHendelse> = testDriver.createOutputTopic(
+        applicationConfig.kafkaTopology.bekreftelseHendelseloggTopic,
         Serdes.Long().deserializer(),
         hendelseLoggSerde.deserializer()
     )
-
-    fun kafkaKeyFunction(id: String): KafkaKeysResponse = applicationContext.kafkaKeyFunction(id)
 }
 
 const val SCHEMA_REGISTRY_SCOPE = "juni-registry"
