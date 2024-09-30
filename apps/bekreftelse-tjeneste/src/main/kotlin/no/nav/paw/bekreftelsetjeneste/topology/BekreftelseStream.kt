@@ -31,13 +31,13 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
                 punctuation = Punctuation(
                     punctuationInterval,
                     PunctuationType.WALL_CLOCK_TIME,
-                    ::bekreftelsePunctuator.partially1(internStateStoreName)
+                    ::bekreftelsePunctuator.partially1(internStateStoreName).partially1(applicationConfig.bekreftelseIntervals)
                 ),
             ) { record ->
                 val stateStore = getStateStore<StateStore>(internStateStoreName)
                 val gjeldeneTilstand: InternTilstand? = stateStore[record.value().periodeId]
                 if (gjeldeneTilstand == null) {
-                    // TODO: kan vi komme inn i en situasjon hvor interntilstand ikke er satt
+                    // TODO: håndtere potensiell tom tilstand når vi starter med ansvarsTopic
                     meldingsLogger.warn("Melding mottatt for periode som ikke er aktiv/eksisterer")
                     return@genericProcess
                 }
@@ -73,7 +73,7 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
                         }
                     }
                 }
-            }.to(bekreftelseHendelsesloggTopic, Produced.with(Serdes.Long(), BekreftelseHendelseSerde()))
+            }.to(bekreftelseHendelseloggTopic, Produced.with(Serdes.Long(), BekreftelseHendelseSerde()))
     }
 }
 

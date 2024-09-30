@@ -25,6 +25,8 @@ import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.utils.Time
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
+import org.apache.kafka.streams.TestInputTopic
+import org.apache.kafka.streams.TestOutputTopic
 import org.apache.kafka.streams.TopologyTestDriver
 import org.apache.kafka.streams.state.internals.InMemoryKeyValueBytesStoreSupplier
 import org.apache.kafka.streams.state.internals.KeyValueStoreBuilder
@@ -64,20 +66,20 @@ class ApplicationTestContext(initialWallClockTime: Instant = Instant.now()) {
 
     val testDriver: TopologyTestDriver = TopologyTestDriver(topology, kafkaStreamProperties, initialWallClockTime)
 
-    val periodeTopic = testDriver.createInputTopic(
+    val periodeTopic: TestInputTopic<Long, Periode> = testDriver.createInputTopic(
         applicationConfig.kafkaTopology.periodeTopic,
         Serdes.Long().serializer(),
         periodeTopicSerde.serializer()
     )
 
-    val bekreftelseTopic = testDriver.createInputTopic(
+    val bekreftelseTopic: TestInputTopic<Long, Bekreftelse> = testDriver.createInputTopic(
         applicationConfig.kafkaTopology.bekreftelseTopic,
         Serdes.Long().serializer(),
         bekreftelseSerde.serializer()
     )
 
-    val hendelseLoggTopicOut = testDriver.createOutputTopic(
-        applicationConfig.kafkaTopology.bekreftelseHendelsesloggTopic,
+    val hendelseLoggTopicOut: TestOutputTopic<Long, BekreftelseHendelse> = testDriver.createOutputTopic(
+        applicationConfig.kafkaTopology.bekreftelseHendelseloggTopic,
         Serdes.Long().deserializer(),
         hendelseLoggSerde.deserializer()
     )

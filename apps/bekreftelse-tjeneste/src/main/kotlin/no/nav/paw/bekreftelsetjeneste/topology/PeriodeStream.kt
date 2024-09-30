@@ -71,7 +71,7 @@ fun StreamsBuilder.buildPeriodeStream(
                     Action.DoNothing -> {}
                     is Action.UpdateState -> keyValueStore.put(action.state.periode.periodeId, action.state)
                 }
-            }.to(bekreftelseHendelsesloggTopic, Produced.with(Serdes.Long(), BekreftelseHendelseSerde()))
+            }.to(bekreftelseHendelseloggTopic, Produced.with(Serdes.Long(), BekreftelseHendelseSerde()))
     }
 }
 

@@ -11,6 +11,7 @@ import java.time.Duration
 const val APPLICATION_CONFIG_FILE_NAME = "application_config.toml"
 
 data class ApplicationConfig(
+    val bekreftelseIntervals: BekreftelseIntervals,
     val kafkaTopology: KafkaTopologyConfig,
     val kafkaStreams: KafkaConfig,
     val azureM2M: AzureM2MConfig,
@@ -20,15 +21,19 @@ data class ApplicationConfig(
     val hostname: String = InetAddress.getLocalHost().hostName
 )
 
+data class BekreftelseIntervals(
+    val interval: Duration,
+    val graceperiode: Duration,
+    val tilgjengeligOffset: Duration,
+    val varselFoerGraceperiodeUtloept: Duration = graceperiode.dividedBy(2)
+)
+
 data class KafkaTopologyConfig(
     val applicationIdSuffix: String,
     val internStateStoreName: String,
     val periodeTopic: String,
     val bekreftelseTopic: String,
-    val bekreftelseHendelsesloggTopic: String,
+    val bekreftelseHendelseloggTopic: String,
     val punctuationInterval: Duration,
-    val bekreftelseInterval: Duration,
-    val bekreftelseGraceperiode: Duration,
-    val bekreftelseTilgjengeligOffset: Duration,
     val shutdownTimeout: Duration = Duration.ofMinutes(5),
 )

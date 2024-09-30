@@ -1,13 +1,15 @@
+[bekreftelseIntervals]
+interval = "P14D"
+graceperiode = "P7D"
+tilgjengeligOffset = "P3D"
+
 [kafkaTopology]
 applicationIdSuffix = "v1"
 internStateStoreName = "intern-tilstand"
 periodeTopic = "paw.arbeidssokerperioder-v1"
 bekreftelseTopic = "paw.arbeidssoker-bekreftelse-v1"
-bekreftelseHendelsesloggTopic = "paw.arbeidssoker-bekreftelse-hendelseslogg-v1"
-punctuationInterval = "PT5M"
-bekreftelseInterval = "PT20M"
-bekreftelseGraceperiode = "PT5M"
-bekreftelseTilgjengeligOffset = "PT5M"
+bekreftelseHendelseloggTopic = "paw.arbeidssoker-bekreftelse-hendelseslogg-v1"
+punctuationInterval = "PT5S"
 
 [azureM2M]
 tokenEndpointUrl = "http://localhost:8081/azure/token"

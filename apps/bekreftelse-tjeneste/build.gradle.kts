@@ -50,6 +50,7 @@ dependencies {
     testImplementation(libs.ktorServerTestsJvm)
     testImplementation(libs.streamsTest)
     testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(project(":test:test-data-lib"))
 }
 
 java {
