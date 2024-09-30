@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm")
@@ -61,12 +60,6 @@ java {
 
 application {
     mainClass.set("no.nav.paw.bekreftelsetjeneste.ApplicationKt")
-}
-
-tasks.withType<KotlinCompile>().configureEach {
-    compilerOptions {
-        freeCompilerArgs.add("-Xcontext-receivers")
-    }
 }
 
 tasks.withType<Test>().configureEach {
