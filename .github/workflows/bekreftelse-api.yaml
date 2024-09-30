@@ -58,6 +58,8 @@ jobs:
           echo "DIGEST=$(cat ./apps/${{ env.MODULE }}/build/jib-image.digest)" >> $GITHUB_ENV
       - name: Attest and sign image
         uses: nais/attest-sign@v1.5.0
+        env:
+          TRIVY_JAVA_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-java-db:1"
         with:
           image_ref: ${{ env.IMAGE }}@${{ env.DIGEST }}
 

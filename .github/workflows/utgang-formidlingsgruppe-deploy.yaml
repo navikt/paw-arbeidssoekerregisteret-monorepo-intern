@@ -59,6 +59,8 @@ jobs:
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
       - name: Attest and sign image
         uses: nais/attest-sign@v1.5.0
+        env:
+          TRIVY_JAVA_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-java-db:1"
         with:
           image_ref: ${{ env.IMAGE }}@${{ env.DIGEST }}
 
