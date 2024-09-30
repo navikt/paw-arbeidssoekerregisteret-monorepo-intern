@@ -81,12 +81,6 @@ application {
     mainClass.set("no.nav.paw.kafkakeygenerator.AppStarterKt")
 }
 
-tasks.withType<KotlinCompile>().configureEach {
-    compilerOptions {
-        freeCompilerArgs.add("-Xcontext-receivers")
-    }
-}
-
 tasks.withType(Jar::class) {
     manifest {
         attributes["Implementation-Version"] = project.version
