@@ -25,7 +25,9 @@ spec:
       value: "PT14M"
     - name: BEKREFTELSE_TILGJENGELIG_OFFSET
       value: "PT6M"
-
+  azure:
+    application:
+      enabled: true
   replicas:
     min: 1
     max: 1
