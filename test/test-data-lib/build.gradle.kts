@@ -12,10 +12,3 @@ dependencies {
     implementation(libs.coroutinesCore)
     implementation(libs.avro)
 }
-
-//enable context receiver
-tasks.withType<KotlinCompile>().configureEach {
-    compilerOptions {
-        freeCompilerArgs.add("-Xcontext-receivers")
-    }
-}
