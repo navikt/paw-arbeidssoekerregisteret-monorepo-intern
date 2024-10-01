@@ -9,24 +9,28 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    kotlin:
-      patterns:
-        - "org.jetbrains.kotlin"
-    kafka:
-      patterns:
-        - "org.apache.kafka"
-        - "io.confluent"
-        - "org.apache.avro"
-    nav:
-      patterns:
-        - "no.nav"
-    logging:
-      patterns:
-        - "org.slf4j"
-        - "ch.qos.logback"
-    ktor:
-      patterns:
-        - "io.ktor"
-    jackson:
-      patterns:
-        - "com.fasterxml.jackson"
+    ignore:
+      - dependency-name: "org.apache.kafka.*"
+        versions: '>= 4'
+    groups:
+      kotlin:
+        patterns:
+          - "org.jetbrains.kotlin"
+      kafka:
+        patterns:
+          - "org.apache.kafka"
+          - "io.confluent"
+          - "org.apache.avro"
+      nav:
+        patterns:
+          - "no.nav"
+      logging:
+        patterns:
+          - "org.slf4j"
+          - "ch.qos.logback"
+      ktor:
+        patterns:
+          - "io.ktor"
+      jackson:
+        patterns:
+          - "com.fasterxml.jackson"
