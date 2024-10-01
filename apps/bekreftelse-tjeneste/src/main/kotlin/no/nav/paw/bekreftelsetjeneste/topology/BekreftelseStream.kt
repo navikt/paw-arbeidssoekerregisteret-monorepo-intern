@@ -27,61 +27,6 @@ import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
 
-/*fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) {
-    with(applicationConfig.kafkaTopology) {
-        stream<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>(bekreftelseTopic)
-            .genericProcess<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse, Long, BekreftelseHendelse>(
-                name = "meldingMottatt",
-                internStateStoreName,
-                punctuation = Punctuation(
-                    punctuationInterval,
-                    PunctuationType.WALL_CLOCK_TIME,
-                    ::bekreftelsePunctuator.partially1(internStateStoreName).partially1(applicationConfig.bekreftelseIntervals)
-                ),
-            ) { record ->
-                val stateStore = getStateStore<StateStore>(internStateStoreName)
-                val gjeldeneTilstand: InternTilstand? = stateStore[record.value().periodeId]
-                if (gjeldeneTilstand == null) {
-                    // TODO: håndtere potensiell tom tilstand når vi starter med ansvarsTopic
-                    meldingsLogger.warn("Melding mottatt for periode som ikke er aktiv/eksisterer")
-                    return@genericProcess
-                }
-                if (record.value().namespace == "paw") {
-                    val bekreftelse =
-                        gjeldeneTilstand.bekreftelser.find { bekreftelse -> bekreftelse.bekreftelseId == record.value().id }
-                    when {
-                        bekreftelse == null -> {
-                            meldingsLogger.warn("Melding {} har ingen matchene bekreftelse", record.value().id)
-                        }
-
-                        bekreftelse.tilstand is VenterSvar || bekreftelse.tilstand is KlarForUtfylling -> {
-                            val (hendelser, oppdatertBekreftelse) = behandleGyldigSvar(
-                                gjeldeneTilstand.periode.arbeidsoekerId,
-                                record,
-                                bekreftelse
-                            )
-                            val oppdatertBekreftelser = gjeldeneTilstand.bekreftelser
-                                .filterNot { t -> t.bekreftelseId == oppdatertBekreftelse.bekreftelseId } + oppdatertBekreftelse
-                            val oppdatertTilstand = gjeldeneTilstand.copy(bekreftelser = oppdatertBekreftelser)
-                            stateStore.put(oppdatertTilstand.periode.periodeId, oppdatertTilstand)
-                            hendelser
-                                .map(record::withValue)
-                                .forEach(::forward)
-                        }
-
-                        else -> {
-                            meldingsLogger.warn(
-                                "Melding {} har ikke forventet tilstand, tilstand={}",
-                                record.value().id,
-                                bekreftelse.tilstand
-                            )
-                        }
-                    }
-                }
-            }.to(bekreftelseHendelseloggTopic, Produced.with(Serdes.Long(), BekreftelseHendelseSerde()))
-    }
-}*/
-
 fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) {
     with(applicationConfig.kafkaTopology) {
         stream<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>(bekreftelseTopic)

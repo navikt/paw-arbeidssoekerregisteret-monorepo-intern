@@ -2,9 +2,11 @@ package no.nav.paw.bekreftelsetjeneste
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import no.nav.paw.arbeidssoekerregisteret.testdata.kafkaKeyContext
 import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.metadata
 import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.periode
+import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
@@ -41,6 +43,68 @@ class BekreftelseMeldingTopologyTest : FreeSpec({
             stateStore.all().asSequence().count() shouldBe 0
 
             hendelseLoggTopicOut.isEmpty shouldBe true
+        }
+    }
+
+    "Mottatt melding med tilhørende tilstand GracePeriodeUtloept skal tilstand være uendret og hendelselogg skal være tom" {
+        with(ApplicationTestContext(initialWallClockTime = startTime)) {
+            with(kafkaKeyContext()) {
+                val (interval, _, tilgjengeligOffset, varselFoerGraceperiodeUtloept) = applicationConfig.bekreftelseIntervals
+                val (id, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
+
+                periodeTopic.pipeInput(key, periode)
+                testDriver.advanceWallClockTime(
+                    interval.minus(tilgjengeligOffset).plusSeconds(5)
+                )
+                val bekreftelseId = (hendelseLoggTopicOut.readValue() as BekreftelseTilgjengelig).bekreftelseId
+                testDriver.advanceWallClockTime(tilgjengeligOffset.plusSeconds(5))
+                testDriver.advanceWallClockTime(varselFoerGraceperiodeUtloept.plusSeconds(5))
+                testDriver.advanceWallClockTime(varselFoerGraceperiodeUtloept.plusSeconds(5))
+
+                hendelseLoggTopicOut.readRecordsToList()
+                val bekreftelseMelding = bekreftelseMelding(
+                    id = bekreftelseId,
+                    periodeId = periode.id,
+                    namespace = "paw",
+                    gjelderFra = startTime,
+                    gjelderTil = startTime.plus(interval),
+                    harJobbetIDennePerioden = true,
+                    vilFortsetteSomArbeidssoeker = true
+                )
+
+                bekreftelseTopic.pipeInput(key, bekreftelseMelding)
+
+                val stateStore =
+                    testDriver.getKeyValueStore<UUID, InternTilstand>(applicationConfig.kafkaTopology.internStateStoreName)
+                val internTilstand = stateStore[periode.id]
+
+                internTilstand shouldBe InternTilstand(
+                    periode = PeriodeInfo(
+                        periodeId = periode.id,
+                        identitetsnummer = periode.identitetsnummer,
+                        arbeidsoekerId = id,
+                        recordKey = key,
+                        startet = periode.startet.tidspunkt,
+                        avsluttet = periode.avsluttet?.tidspunkt
+                    ),
+                    bekreftelser = listOf(
+                        no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse(
+                            tilstand = Tilstand.GracePeriodeUtloept,
+                            tilgjengeliggjort = startTime.plus(
+                                interval.minus(tilgjengeligOffset)
+                                    .plusSeconds(5)
+                            ),
+                            fristUtloept = startTime.plus(interval).plusSeconds(10),
+                            sisteVarselOmGjenstaaendeGraceTid = startTime.plus(interval).plus(varselFoerGraceperiodeUtloept).plusSeconds(15),
+                            bekreftelseId = bekreftelseMelding.id,
+                            gjelderFra = bekreftelseMelding.svar.gjelderFra,
+                            gjelderTil = bekreftelseMelding.svar.gjelderTil
+                        )
+                    )
+                )
+
+                hendelseLoggTopicOut.isEmpty shouldBe true
+            }
         }
     }
 
@@ -109,6 +173,69 @@ class BekreftelseMeldingTopologyTest : FreeSpec({
             }
         }
     }
+
+    "Mottatt melding med tilhørende tilstand KlarForUtfylling skal oppdatere tilstand til Levert og sende BekreftelseMeldingMottatt og BaOmAaAvsluttePeriode hendelse om svaret er at bruker ikke vil fortsette som arbeidssøker" {
+        with(ApplicationTestContext(initialWallClockTime = startTime)) {
+            with(kafkaKeyContext()) {
+                val (interval, _, tilgjengeligOffset, _) = applicationConfig.bekreftelseIntervals
+                val (id, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
+
+                periodeTopic.pipeInput(key, periode)
+                testDriver.advanceWallClockTime(
+                    interval.minus(tilgjengeligOffset).plusSeconds(5)
+                )
+
+                val bekreftelseId = (hendelseLoggTopicOut.readValue() as BekreftelseTilgjengelig).bekreftelseId
+                val bekreftelseMelding = bekreftelseMelding(
+                    id = bekreftelseId,
+                    periodeId = periode.id,
+                    namespace = "paw",
+                    gjelderFra = startTime,
+                    gjelderTil = startTime.plus(interval),
+                    harJobbetIDennePerioden = true,
+                    vilFortsetteSomArbeidssoeker = false
+                )
+                bekreftelseTopic.pipeInput(key, bekreftelseMelding)
+
+                val stateStore =
+                    testDriver.getKeyValueStore<UUID, InternTilstand>(applicationConfig.kafkaTopology.internStateStoreName)
+                val internTilstand = stateStore[periode.id]
+
+                internTilstand shouldBe InternTilstand(
+                    periode = PeriodeInfo(
+                        periodeId = periode.id,
+                        identitetsnummer = periode.identitetsnummer,
+                        arbeidsoekerId = id,
+                        recordKey = key,
+                        startet = periode.startet.tidspunkt,
+                        avsluttet = periode.avsluttet?.tidspunkt
+                    ),
+                    bekreftelser = listOf(
+                        no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse(
+                            tilstand = Tilstand.Levert,
+                            tilgjengeliggjort = startTime.plus(
+                                interval.minus(tilgjengeligOffset)
+                                    .plusSeconds(5)
+                            ),
+                            fristUtloept = null,
+                            sisteVarselOmGjenstaaendeGraceTid = null,
+                            bekreftelseId = bekreftelseMelding.id,
+                            gjelderFra = bekreftelseMelding.svar.gjelderFra,
+                            gjelderTil = bekreftelseMelding.svar.gjelderTil,
+                        )
+                    )
+                )
+
+                hendelseLoggTopicOut.isEmpty shouldBe false
+                val hendelse = hendelseLoggTopicOut.readKeyValuesToList()
+                hendelse[0].key shouldBe key
+                hendelse[0].value.shouldBeInstanceOf<BekreftelseMeldingMottatt>()
+                hendelse[1].key shouldBe key
+                hendelse[1].value.shouldBeInstanceOf<BaOmAaAvsluttePeriode>()
+            }
+        }
+    }
+
 })
 
 // TODO: flytt denne til test-data-lib
@@ -126,8 +253,7 @@ fun bekreftelseMelding(
         .setPeriodeId(periodeId)
         .setNamespace(namespace)
         .setId(id)
-        .setSvar(
-            Svar
+        .setSvar(Svar
                 .newBuilder()
                 .setSendtInn(
                     Metadata
@@ -147,7 +273,5 @@ fun bekreftelseMelding(
                 .setGjelderTil(gjelderTil)
                 .setHarJobbetIDennePerioden(harJobbetIDennePerioden)
                 .setVilFortsetteSomArbeidssoeker(vilFortsetteSomArbeidssoeker)
-                .build()
-
-        )
+                .build())
         .build()
