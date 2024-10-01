@@ -68,7 +68,7 @@ data class ApplicationContext(
                 bekreftelseTopology
             )
 
-            val bekreftelseKafkaProducer = BekreftelseKafkaProducer(applicationConfig)
+            val bekreftelseKafkaProducer = BekreftelseKafkaProducer(applicationConfig, prometheusMeterRegistry)
 
             val bekreftelseHttpConsumer = BekreftelseHttpConsumer(httpClient)
 

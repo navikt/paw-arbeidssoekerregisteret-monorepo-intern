@@ -66,6 +66,8 @@ spec:
           namespace: aura
         - application: arbeidssokerregistrering-for-veileder
           namespace: paw
+        - application: arbeidssoekerregisteret-for-personbruker
+          namespace: paw
     outbound:
       rules:
         - application: paw-kafka-key-generator

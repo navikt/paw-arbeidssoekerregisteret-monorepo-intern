@@ -55,7 +55,7 @@ class BekreftelseRoutesTest : FreeSpec({
             mockOAuth2Server.shutdown()
         }
 
-        /*
+     /*
      * SLUTTBRUKER TESTER
      */
         "Test suite for sluttbruker" - {

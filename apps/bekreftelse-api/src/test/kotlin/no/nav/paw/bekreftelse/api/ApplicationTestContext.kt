@@ -12,6 +12,7 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.ApplicationTestBuilder
+import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.mockk.mockk
 import no.nav.paw.bekreftelse.api.config.APPLICATION_CONFIG_FILE_NAME
@@ -49,7 +50,7 @@ class ApplicationTestContext {
 
     val testData = TestDataGenerator()
     val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG_FILE_NAME)
-    val prometheusMeterRegistryMock = mockk<PrometheusMeterRegistry>()
+    val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val kafkaStreamsMock = mockk<KafkaStreams>()
     val stateStoreMock = mockk<ReadOnlyKeyValueStore<Long, InternState>>()
     val kafkaKeysClientMock = mockk<KafkaKeysClient>()
@@ -70,7 +71,7 @@ class ApplicationTestContext {
         val applicationContext = ApplicationContext(
             applicationConfig.copy(authProviders = mockOAuth2Server.createAuthProviders()),
             kafkaKeysClientMock,
-            prometheusMeterRegistryMock,
+            prometheusMeterRegistry,
             HealthIndicatorRepository(),
             kafkaStreamsMock,
             authorizationService,

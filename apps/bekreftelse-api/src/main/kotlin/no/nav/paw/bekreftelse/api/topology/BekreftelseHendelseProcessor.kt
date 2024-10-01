@@ -1,7 +1,11 @@
 package no.nav.paw.bekreftelse.api.topology
 
 import io.micrometer.core.instrument.MeterRegistry
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.api.model.InternState
+import no.nav.paw.bekreftelse.api.utils.buildStreamsLogger
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
@@ -13,9 +17,10 @@ import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
 import org.apache.kafka.streams.state.KeyValueStore
 
+private val logger = buildStreamsLogger
+
 fun KStream<Long, BekreftelseHendelse>.oppdaterBekreftelseHendelseState(
-    stateStoreName: String,
-    meterRegistry: MeterRegistry
+    stateStoreName: String, meterRegistry: MeterRegistry
 ): KStream<Long, BekreftelseHendelse> {
     val processor = {
         BekreftelseHendelseProcessor(stateStoreName, meterRegistry)
@@ -24,8 +29,7 @@ fun KStream<Long, BekreftelseHendelse>.oppdaterBekreftelseHendelseState(
 }
 
 class BekreftelseHendelseProcessor(
-    private val stateStoreName: String,
-    meterRegistry: MeterRegistry
+    private val stateStoreName: String, meterRegistry: MeterRegistry
 ) : Processor<Long, BekreftelseHendelse, Long, BekreftelseHendelse> {
     private var stateStore: KeyValueStore<Long, InternState>? = null
     private var context: ProcessorContext<Long, BekreftelseHendelse>? = null
@@ -37,37 +41,100 @@ class BekreftelseHendelseProcessor(
     }
 
     // TODO Legg til metrics
+    @WithSpan
     override fun process(record: Record<Long, BekreftelseHendelse>?) {
-        val value = record?.value() ?: return
-        val hendelseStore = requireNotNull(stateStore) { "Intern state store er ikke initiert" }
-        when (value) {
+        val hendelse = record?.value() ?: return
+
+        val internStateStore = requireNotNull(stateStore) { "Intern state store er ikke initiert" }
+
+        when (hendelse) {
             is BekreftelseTilgjengelig -> {
-                hendelseStore.get(value.arbeidssoekerId)?.let {
-                    hendelseStore.put(
-                        value.arbeidssoekerId,
-                        InternState(it.tilgjendeligeBekreftelser.plus(value))
-                    )
-                } ?: hendelseStore.put(value.arbeidssoekerId, InternState(listOf(value)))
+                internStateStore.processBekreftelseTilgjengelig(hendelse)
             }
 
             is BekreftelseMeldingMottatt -> {
-                hendelseStore.get(value.arbeidssoekerId)?.let { state ->
-                    state.tilgjendeligeBekreftelser
-                        .filterNot { it.bekreftelseId == value.bekreftelseId }
-                        .let { bekreftelser ->
-                            if (bekreftelser.isEmpty()) hendelseStore.delete(value.arbeidssoekerId)
-                            else hendelseStore.put(value.arbeidssoekerId, InternState(bekreftelser))
-                        }
-                }
+                internStateStore.processBekreftelseMeldingMottatt(hendelse)
             }
 
             is PeriodeAvsluttet -> {
-                hendelseStore.get(value.arbeidssoekerId)?.let {
-                    hendelseStore.delete(value.arbeidssoekerId)
-                }
+                internStateStore.processPeriodeAvsluttet(hendelse)
             }
 
-            else -> {}
+            else -> {
+                processAnnenHendelse(hendelse)
+            }
         }
     }
+}
+
+@WithSpan(
+    value = "processBekreftelseTilgjengelig",
+    kind = SpanKind.INTERNAL
+)
+fun KeyValueStore<Long, InternState>.processBekreftelseTilgjengelig(hendelse: BekreftelseTilgjengelig) {
+    val currentSpan = Span.current()
+    currentSpan.setAttribute("paw.arbeidssoekerregisteret.hendelse.type", hendelse.hendelseType)
+    currentSpan.setAttribute("paw.arbeidssoekerregisteret.aksjon", "lagrer_bekreftelse")
+    val internState = get(hendelse.arbeidssoekerId)
+    if (internState != null) {
+        val tilgjengeligeBekreftelser = internState.tilgjendeligeBekreftelser + hendelse
+        put(hendelse.arbeidssoekerId, InternState(tilgjengeligeBekreftelser))
+    } else {
+        put(hendelse.arbeidssoekerId, InternState(listOf(hendelse)))
+    }
+}
+
+@WithSpan(
+    value = "processBekreftelseMeldingMottatt",
+    kind = SpanKind.INTERNAL
+)
+fun KeyValueStore<Long, InternState>.processBekreftelseMeldingMottatt(hendelse: BekreftelseMeldingMottatt) {
+    val currentSpan = Span.current()
+    currentSpan.setAttribute("paw.arbeidssoekerregisteret.hendelse.type", hendelse.hendelseType)
+    val internState = get(hendelse.arbeidssoekerId)
+    internState?.let { state ->
+        state.tilgjendeligeBekreftelser
+            .filterNot { it.bekreftelseId == hendelse.bekreftelseId }
+            .let { bekreftelser ->
+                if (bekreftelser.isEmpty()) {
+                    currentSpan.setAttribute("paw.arbeidssoekerregisteret.aksjon", "sletter_intern_state")
+                    delete(hendelse.arbeidssoekerId)
+                } else {
+                    currentSpan.setAttribute("paw.arbeidssoekerregisteret.aksjon", "sletter_bekreftelser")
+                    put(hendelse.arbeidssoekerId, InternState(bekreftelser))
+                }
+            }
+    }
+}
+
+@WithSpan(
+    value = "processPeriodeAvsluttet",
+    kind = SpanKind.INTERNAL
+)
+fun KeyValueStore<Long, InternState>.processPeriodeAvsluttet(hendelse: PeriodeAvsluttet) {
+    val currentSpan = Span.current()
+    currentSpan.setAttribute("paw.arbeidssoekerregisteret.hendelse.type", hendelse.hendelseType)
+    get(hendelse.arbeidssoekerId)?.let { state ->
+        state.tilgjendeligeBekreftelser.filterNot { it.periodeId == hendelse.periodeId }
+            .let { bekreftelser ->
+                if (bekreftelser.isEmpty()) {
+                    currentSpan.setAttribute("paw.arbeidssoekerregisteret.aksjon", "sletter_intern_state")
+                    delete(hendelse.arbeidssoekerId)
+                } else {
+                    currentSpan.setAttribute("paw.arbeidssoekerregisteret.aksjon", "sletter_bekreftelser")
+                    put(hendelse.arbeidssoekerId, InternState(bekreftelser))
+                }
+            }
+    }
+}
+
+@WithSpan(
+    value = "processAnnenHendelse",
+    kind = SpanKind.INTERNAL
+)
+fun processAnnenHendelse(hendelse: BekreftelseHendelse) {
+    val currentSpan = Span.current()
+    currentSpan.setAttribute("paw.arbeidssoekerregisteret.hendelse.type", hendelse.hendelseType)
+    currentSpan.setAttribute("paw.arbeidssoekerregisteret.aksjon", "ignorerer_hendelse")
+    logger.debug("Ignorerer hendelse av type {}", hendelse.hendelseType)
 }
