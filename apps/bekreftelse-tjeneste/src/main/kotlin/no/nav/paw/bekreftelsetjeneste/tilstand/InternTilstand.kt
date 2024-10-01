@@ -91,12 +91,15 @@ fun initBekreftelsePeriode(
 fun List<Bekreftelse>.initNewBekreftelse(
     tilgjengeliggjort: Instant,
     interval: Duration
-): Bekreftelse =
-    maxBy { it.gjelderTil }.copy(
+): Bekreftelse {
+    val sisteBekreftelse = maxBy { it.gjelderTil }
+
+    return sisteBekreftelse.copy(
         tilstand = Tilstand.KlarForUtfylling,
         tilgjengeliggjort = tilgjengeliggjort,
         sisteVarselOmGjenstaaendeGraceTid = null,
         bekreftelseId = UUID.randomUUID(),
-        gjelderFra = maxBy { it.gjelderTil }.gjelderTil,
-        gjelderTil = fristForNesteBekreftelse(maxBy { it.gjelderTil }.gjelderTil, interval)
+        gjelderFra = sisteBekreftelse.gjelderTil,
+        gjelderTil = fristForNesteBekreftelse(sisteBekreftelse.gjelderTil, interval)
     )
+}

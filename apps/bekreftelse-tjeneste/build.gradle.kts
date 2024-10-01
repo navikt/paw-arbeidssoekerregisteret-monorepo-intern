@@ -40,6 +40,7 @@ dependencies {
 
     // Instrumentation
     implementation(libs.micrometerRegistryPrometheus)
+    implementation(libs.opentelemetryAnnotations)
 
     // Kafka
     implementation(libs.kafkaStreams)
