@@ -105,7 +105,7 @@ class BekreftelseService(
     ): TilgjengeligBekreftelserResponse {
         val metadata = kafkaStreams.queryMetadataForKey(
             applicationConfig.kafkaTopology.internStateStoreName,
-            securityContext.sluttbruker.arbeidssoekerId,
+            securityContext.sluttbruker.kafkaKey,
             Serdes.Long().serializer()
         )
 
@@ -127,7 +127,7 @@ class BekreftelseService(
     ) {
         val metadata = kafkaStreams.queryMetadataForKey(
             applicationConfig.kafkaTopology.internStateStoreName,
-            securityContext.sluttbruker.arbeidssoekerId,
+            securityContext.sluttbruker.kafkaKey,
             Serdes.Long().serializer()
         )
 

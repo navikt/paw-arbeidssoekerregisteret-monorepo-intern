@@ -37,11 +37,11 @@ class AuthRoutesTest : FreeSpec({
         }
 
         afterSpec {
+            mockOAuth2Server.shutdown()
             confirmVerified(
                 kafkaKeysClientMock,
                 poaoTilgangClientMock
             )
-            mockOAuth2Server.shutdown()
         }
 
         /*

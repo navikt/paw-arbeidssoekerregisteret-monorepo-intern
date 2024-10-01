@@ -17,7 +17,7 @@ data object NavConsumerId : NavHeader("Nav-Consumer-Id")
 data class RequestContext(
     val path: String,
     val callId: String?,
-    val traceparent: String?,
+    val traceParent: String?,
     val navConsumerId: String?,
     val bearerToken: String?,
     val identitetsnummer: String?,
@@ -31,7 +31,7 @@ fun PipelineContext<Unit, ApplicationCall>.resolveRequest(
     return RequestContext(
         path = call.request.path(),
         callId = call.request.headers[NavCallId.name],
-        traceparent = call.request.headers[TraceParent.name],
+        traceParent = call.request.headers[TraceParent.name],
         navConsumerId = call.request.headers[NavConsumerId.name],
         bearerToken = call.request.headers[HttpHeaders.Authorization],
         identitetsnummer = identitetsnummer,

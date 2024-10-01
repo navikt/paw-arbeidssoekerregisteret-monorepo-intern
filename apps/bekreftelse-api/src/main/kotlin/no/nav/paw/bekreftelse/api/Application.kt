@@ -20,17 +20,17 @@ import no.nav.paw.bekreftelse.api.plugins.configureTracing
 import no.nav.paw.bekreftelse.api.routes.bekreftelseRoutes
 import no.nav.paw.bekreftelse.api.routes.metricsRoutes
 import no.nav.paw.bekreftelse.api.routes.swaggerRoutes
+import no.nav.paw.bekreftelse.api.utils.buildApplicationLogger
 import no.nav.paw.config.env.appNameOrDefaultForLocal
 import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.health.route.healthRoutes
-import org.slf4j.LoggerFactory
 
 fun main() {
-    val logger = LoggerFactory.getLogger("no.nav.paw.logger.application")
+    val logger = buildApplicationLogger
 
-    val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG_FILE_NAME)
     val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG_FILE_NAME)
+    val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG_FILE_NAME)
 
     logger.info("Starter: ${currentRuntimeEnvironment.appNameOrDefaultForLocal()}")
 
@@ -38,7 +38,10 @@ fun main() {
         embeddedServer(Netty, port = port) {
             module(applicationConfig)
         }.apply {
-            addShutdownHook { stop(gracePeriodMillis, timeoutMillis) }
+            addShutdownHook {
+                logger.info("Avslutter ${applicationConfig.runtimeEnvironment.appNameOrDefaultForLocal()}")
+                stop(gracePeriodMillis, timeoutMillis)
+            }
             start(wait = true)
         }
     }
