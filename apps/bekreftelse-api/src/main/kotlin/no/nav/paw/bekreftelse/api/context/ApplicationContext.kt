@@ -1,6 +1,7 @@
 package no.nav.paw.bekreftelse.api.context
 
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.jackson.jackson
 import io.micrometer.prometheusmetrics.PrometheusConfig
@@ -16,6 +17,7 @@ import no.nav.paw.bekreftelse.api.services.AuthorizationService
 import no.nav.paw.bekreftelse.api.services.BekreftelseService
 import no.nav.paw.bekreftelse.api.topology.buildBekreftelseTopology
 import no.nav.paw.bekreftelse.api.utils.configureJackson
+import no.nav.paw.bekreftelse.api.utils.handleError
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.auth.azureAdM2MTokenClient
@@ -57,6 +59,9 @@ data class ApplicationContext(
                     jackson {
                         configureJackson()
                     }
+                }
+                HttpResponseValidator {
+                    validateResponse(::handleError)
                 }
             }
 
