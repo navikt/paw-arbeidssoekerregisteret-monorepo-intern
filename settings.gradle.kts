@@ -30,7 +30,8 @@ include(
     "apps:kafka-key-generator",
     "apps:bekreftelse-tjeneste",
     "apps:bekreftelse-api",
-    "apps:bekreftelse-min-side-oppgaver"
+    "apps:bekreftelse-min-side-oppgaver",
+    "apps:bekreftelse-utgang",
 )
 
 dependencyResolutionManagement {

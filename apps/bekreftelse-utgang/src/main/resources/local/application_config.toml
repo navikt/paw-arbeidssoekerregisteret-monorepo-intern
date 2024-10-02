@@ -1,0 +1,21 @@
+[kafkaTopology]
+applicationIdSuffix = "v1"
+internStateStoreName = "intern-tilstand"
+hendelseloggTopic = "paw.arbeidssoker-hendelseslogg-v1"
+bekreftelseHendelseloggTopic = "paw.arbeidssoker-bekreftelse-hendelseslogg-v1"
+punctuationInterval = "PT5S"
+
+[azureM2M]
+tokenEndpointUrl = "http://localhost:8081/azure/token"
+clientId = "paw-arbeidssoekerregisteret-bekreftelse-utgang"
+
+[kafkaKeysClient]
+url = "http://localhost:8081/api/v2/hentEllerOpprett"
+scope = "api://local.paw.paw-kafka-key-generator/.default"
+
+[kafkaStreams]
+brokers = "localhost:9092"
+applicationIdPrefix = "paw-arbeidssoekerregisteret-bekreftelse-utgang"
+
+[kafkaStreams.schemaRegistry]
+url = "http://localhost:8082"
