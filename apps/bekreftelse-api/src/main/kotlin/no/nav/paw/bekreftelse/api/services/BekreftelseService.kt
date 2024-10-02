@@ -58,6 +58,8 @@ class BekreftelseService(
             return mockDataService.finnTilgjengeligBekreftelser(securityContext.sluttbruker.identitetsnummer)
         }
 
+        logger.info("Skal hente tilgjengelige bekreftelser")
+
         val internState = getInternStateStore().get(securityContext.sluttbruker.arbeidssoekerId)
 
         if (internState != null) {
@@ -80,6 +82,8 @@ class BekreftelseService(
         }
 
         val internState = getInternStateStore().get(securityContext.sluttbruker.arbeidssoekerId)
+
+        logger.info("Har mottatt bekreftelse")
 
         if (internState != null) {
             val tilgjengeligBekreftelse = internState.tilgjendeligeBekreftelser
@@ -120,6 +124,7 @@ class BekreftelseService(
         } else {
             val hostInfo = metadata.activeHost()
             val host = "${hostInfo.host()}:${hostInfo.port()}"
+            logger.info("Må hente tilgjengelige bekreftelser fra node $host")
             val tilgjendeligeBekreftelser = bekreftelseHttpConsumer.finnTilgjengeligBekreftelser(
                 host = host,
                 bearerToken = securityContext.accessToken.jwt,
@@ -146,7 +151,7 @@ class BekreftelseService(
         } else {
             val hostInfo = metadata.activeHost()
             val host = "${hostInfo.host()}:${hostInfo.port()}"
-            logger.info("Mottok svar for bekreftelse som er på node $host")
+            logger.info("Oversender svar for bekreftelse som er på node $host")
             bekreftelseHttpConsumer.sendBekreftelse(
                 host = "${hostInfo.host()}:${hostInfo.port()}",
                 bearerToken = securityContext.accessToken.jwt,
