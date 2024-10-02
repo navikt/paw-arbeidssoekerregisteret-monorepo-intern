@@ -23,6 +23,7 @@ data class ApplicationConfig(
 data class KafkaTopologyConfig(
     val applicationIdSuffix: String,
     val internStateStoreName: String,
+    val periodeTopic: String,
     val hendelseloggTopic: String,
     val bekreftelseHendelseloggTopic: String,
     val punctuationInterval: Duration,

@@ -11,12 +11,14 @@ spec:
   env:
     - name: KAFKA_STREAMS_ID_SUFFIX
       value: "v1"
+    - name: KAFKA_PAW_ARBEIDSSOKERPERIODER_TOPIC
+      value: "paw.arbeidssokerperioder-v1"
     - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_HENDELSELOGG_TOPIC
       value: "paw.arbeidssoker-bekreftelse-hendelseslogg-beta-v1"
     - name: KAFKA_PAW_ARBEIDSSOKER_HENDELSELOGG_TOPIC
       value: "paw.arbeidssoker-hendelseslogg-v1"
     - name: KAFKA_PUNCTUATOR_INTERVAL
-      value: "PT1M"
+      value: "PT5M"
   azure:
     application:
       enabled: true

@@ -3,7 +3,6 @@ package no.nav.paw.bekreftelse.internehendelser
 import java.time.Instant
 import java.util.*
 
-
 const val periodeAvsluttetHendelsesType = "bekreftelse.periode_avsluttet"
 
 data class PeriodeAvsluttet(
