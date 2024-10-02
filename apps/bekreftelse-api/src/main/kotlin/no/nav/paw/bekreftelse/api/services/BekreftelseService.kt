@@ -5,6 +5,8 @@ import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.consumer.BekreftelseHttpConsumer
 import no.nav.paw.bekreftelse.api.context.SecurityContext
 import no.nav.paw.bekreftelse.api.exception.DataIkkeFunnetException
+import no.nav.paw.bekreftelse.api.exception.DataTilhoererIkkeBrukerException
+import no.nav.paw.bekreftelse.api.exception.SystemfeilException
 import no.nav.paw.bekreftelse.api.model.BekreftelseRequest
 import no.nav.paw.bekreftelse.api.model.InternState
 import no.nav.paw.bekreftelse.api.model.TilgjengeligBekreftelserResponse
@@ -32,7 +34,7 @@ class BekreftelseService(
 
     private fun getInternStateStore(): ReadOnlyKeyValueStore<Long, InternState> {
         if (!kafkaStreams.state().isRunningOrRebalancing) {
-            throw IllegalStateException("Kafka Streams kjører ikke")
+            throw SystemfeilException("Kafka Streams kjører ikke")
         }
         if (internStateStore == null) {
             internStateStore = kafkaStreams.store(
@@ -42,7 +44,7 @@ class BekreftelseService(
                 )
             )
         }
-        return checkNotNull(internStateStore) { "Intern state store er ikke initiert" }
+        return internStateStore ?: throw SystemfeilException("Intern state store er ikke initiert")
     }
 
     @WithSpan
@@ -59,7 +61,7 @@ class BekreftelseService(
         val internState = getInternStateStore().get(securityContext.sluttbruker.arbeidssoekerId)
 
         if (internState != null) {
-            logger.info("Fant ${internState.tilgjendeligeBekreftelser.size} tilgjengelige bekreftelser")
+            logger.info("Fant ${internState.tilgjendeligeBekreftelser.size} tilgjengelige bekreftelser i lokal state")
             return internState.tilgjendeligeBekreftelser.toResponse()
         } else {
             return finnTilgjengeligBekreftelserFraAnnenNode(securityContext, request)
@@ -83,7 +85,10 @@ class BekreftelseService(
             val tilgjengeligBekreftelse = internState.tilgjendeligeBekreftelser
                 .firstOrNull { it.bekreftelseId == request.bekreftelseId }
             if (tilgjengeligBekreftelse != null) {
-                logger.info("Rapportering med id ${request.bekreftelseId} funnet")
+                logger.info("Mottok svar for bekreftelse som er i lokal state")
+                if (tilgjengeligBekreftelse.arbeidssoekerId != securityContext.sluttbruker.arbeidssoekerId) {
+                    throw DataTilhoererIkkeBrukerException("Bekreftelse tilhører ikke bruker")
+                }
                 val bekreftelse = request.asApi(
                     periodeId = tilgjengeligBekreftelse.periodeId,
                     gjelderFra = tilgjengeligBekreftelse.gjelderFra,
@@ -92,7 +97,7 @@ class BekreftelseService(
                 )
                 bekreftelseKafkaProducer.produceMessage(securityContext.sluttbruker.kafkaKey, bekreftelse)
             } else {
-                // TODO Rekreftelse ikke funnet. Hva gjør vi?
+                throw DataIkkeFunnetException("Fant ingen bekreftelse for gitt id")
             }
         } else {
             sendBekreftelseTilAnnenNode(securityContext, request)
@@ -105,19 +110,23 @@ class BekreftelseService(
     ): TilgjengeligBekreftelserResponse {
         val metadata = kafkaStreams.queryMetadataForKey(
             applicationConfig.kafkaTopology.internStateStoreName,
-            securityContext.sluttbruker.kafkaKey,
+            securityContext.sluttbruker.arbeidssoekerId,
             Serdes.Long().serializer()
         )
 
         if (metadata == null || metadata == KeyQueryMetadata.NOT_AVAILABLE) {
-            logger.warn("Fant ikke metadata for arbeidsoeker, $metadata")
-            throw DataIkkeFunnetException("Fant ikke data for arbeidsoeker")
+            logger.error("Fant ikke metadata for arbeidsoeker, $metadata")
+            throw SystemfeilException("Fant ikke metadata for arbeidsøker i Kafka Streams")
         } else {
-            return bekreftelseHttpConsumer.finnTilgjengeligBekreftelser(
-                host = metadata.activeHost().host(),
+            val hostInfo = metadata.activeHost()
+            val host = "${hostInfo.host()}:${hostInfo.port()}"
+            val tilgjendeligeBekreftelser = bekreftelseHttpConsumer.finnTilgjengeligBekreftelser(
+                host = host,
                 bearerToken = securityContext.accessToken.jwt,
                 request = request
             )
+            logger.info("Fant ${tilgjendeligeBekreftelser.size} tilgjengelige bekreftelser på node $host")
+            return tilgjendeligeBekreftelser
         }
     }
 
@@ -127,16 +136,19 @@ class BekreftelseService(
     ) {
         val metadata = kafkaStreams.queryMetadataForKey(
             applicationConfig.kafkaTopology.internStateStoreName,
-            securityContext.sluttbruker.kafkaKey,
+            securityContext.sluttbruker.arbeidssoekerId,
             Serdes.Long().serializer()
         )
 
         if (metadata == null || metadata == KeyQueryMetadata.NOT_AVAILABLE) {
-            logger.warn("Fant ikke metadata for arbeidsoeker, $metadata")
-            throw DataIkkeFunnetException("Fant ikke data for arbeidsoeker")
+            logger.error("Fant ikke metadata for arbeidsoeker, $metadata")
+            throw SystemfeilException("Fant ikke metadata for arbeidsøker i Kafka Streams")
         } else {
+            val hostInfo = metadata.activeHost()
+            val host = "${hostInfo.host()}:${hostInfo.port()}"
+            logger.info("Mottok svar for bekreftelse som er på node $host")
             bekreftelseHttpConsumer.sendBekreftelse(
-                host = metadata.activeHost().host(),
+                host = "${hostInfo.host()}:${hostInfo.port()}",
                 bearerToken = securityContext.accessToken.jwt,
                 request = request
             )

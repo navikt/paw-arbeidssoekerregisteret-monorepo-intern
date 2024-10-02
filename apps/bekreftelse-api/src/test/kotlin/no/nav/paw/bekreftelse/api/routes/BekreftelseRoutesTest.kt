@@ -37,7 +37,6 @@ class BekreftelseRoutesTest : FreeSpec({
     with(ApplicationTestContext()) {
         beforeSpec {
             clearAllMocks()
-            coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(1, 1)
             mockOAuth2Server.start()
         }
 
@@ -55,11 +54,15 @@ class BekreftelseRoutesTest : FreeSpec({
             mockOAuth2Server.shutdown()
         }
 
-     /*
-     * SLUTTBRUKER TESTER
-     */
+        /*
+        * SLUTTBRUKER TESTER
+        */
         "Test suite for sluttbruker" - {
             "Skal få 500 om Kafka Streams ikke kjører" {
+                coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
+                    testData.arbeidsoekerId1,
+                    testData.kafkaKey1
+                )
                 every { kafkaStreamsMock.state() } returns KafkaStreams.State.NOT_RUNNING
 
                 testApplication {
@@ -80,12 +83,16 @@ class BekreftelseRoutesTest : FreeSpec({
                     response.status shouldBe HttpStatusCode.InternalServerError
                     val body = response.body<ProblemDetails>()
                     body.status shouldBe HttpStatusCode.InternalServerError
-                    body.code shouldBe "PAW_UKJENT_FEIL"
+                    body.code shouldBe "PAW_SYSTEMFEIL"
                     verify { kafkaStreamsMock.state() }
                 }
             }
 
             "Skal få 500 om ingen state store funnet" {
+                coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
+                    testData.arbeidsoekerId1,
+                    testData.kafkaKey1
+                )
                 every { kafkaStreamsMock.state() } returns KafkaStreams.State.RUNNING
                 every { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) } returns null
 
@@ -107,13 +114,17 @@ class BekreftelseRoutesTest : FreeSpec({
                     response.status shouldBe HttpStatusCode.InternalServerError
                     val body = response.body<ProblemDetails>()
                     body.status shouldBe HttpStatusCode.InternalServerError
-                    body.code shouldBe "PAW_UKJENT_FEIL"
+                    body.code shouldBe "PAW_SYSTEMFEIL"
                     verify { kafkaStreamsMock.state() }
                     verify { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) }
                 }
             }
 
             "Skal hente tilgjengelige bekreftelser fra intern state store" {
+                coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
+                    testData.arbeidsoekerId1,
+                    testData.kafkaKey1
+                )
                 every { kafkaStreamsMock.state() } returns KafkaStreams.State.RUNNING
                 every { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) } returns stateStoreMock
                 every { stateStoreMock.get(any<Long>()) } returns InternState(
@@ -147,6 +158,10 @@ class BekreftelseRoutesTest : FreeSpec({
             }
 
             "Skal hente tilgjengelige bekreftelser fra annen node" {
+                coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
+                    testData.arbeidsoekerId1,
+                    testData.kafkaKey1
+                )
                 every { kafkaStreamsMock.state() } returns KafkaStreams.State.RUNNING
                 every { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) } returns stateStoreMock
                 every { stateStoreMock.get(any<Long>()) } returns null
@@ -204,12 +219,19 @@ class BekreftelseRoutesTest : FreeSpec({
             }
 
             "Skal motta bekreftelse via intern state store" {
-                val request = testData.nyBekreftelseRequest(identitetsnummer = "01017012345")
+                coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
+                    testData.arbeidsoekerId1,
+                    testData.kafkaKey1
+                )
+                val request = testData.nyBekreftelseRequest(identitetsnummer = testData.fnr1)
                 every { kafkaStreamsMock.state() } returns KafkaStreams.State.RUNNING
                 every { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) } returns stateStoreMock
                 every { stateStoreMock.get(any<Long>()) } returns InternState(
                     listOf(
-                        testData.nyBekreftelseTilgjengelig(bekreftelseId = request.bekreftelseId)
+                        testData.nyBekreftelseTilgjengelig(
+                            bekreftelseId = request.bekreftelseId,
+                            arbeidsoekerId = testData.arbeidsoekerId1
+                        )
                     )
                 )
                 coEvery {
@@ -226,7 +248,7 @@ class BekreftelseRoutesTest : FreeSpec({
                     val token = mockOAuth2Server.issueToken(
                         claims = mapOf(
                             "acr" to "idporten-loa-high",
-                            "pid" to "01017012345"
+                            "pid" to testData.fnr1
                         )
                     )
 
@@ -252,7 +274,11 @@ class BekreftelseRoutesTest : FreeSpec({
             }
 
             "Skal motta bekreftelse og overføre den til annen node" {
-                val request = testData.nyBekreftelseRequest(identitetsnummer = "01017012345")
+                coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
+                    testData.arbeidsoekerId2,
+                    testData.kafkaKey2
+                )
+                val request = testData.nyBekreftelseRequest(identitetsnummer = testData.fnr2)
                 every { kafkaStreamsMock.state() } returns KafkaStreams.State.RUNNING
                 every { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) } returns stateStoreMock
                 every { stateStoreMock.get(any<Long>()) } returns null
@@ -278,7 +304,7 @@ class BekreftelseRoutesTest : FreeSpec({
                     val token = mockOAuth2Server.issueToken(
                         claims = mapOf(
                             "acr" to "idporten-loa-high",
-                            "pid" to "01017012345"
+                            "pid" to testData.fnr2
                         )
                     )
 

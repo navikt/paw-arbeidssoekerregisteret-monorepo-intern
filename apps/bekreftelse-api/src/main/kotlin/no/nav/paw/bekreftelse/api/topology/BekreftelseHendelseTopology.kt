@@ -32,9 +32,8 @@ private fun StreamsBuilder.addBekreftelseKStream(
     applicationConfig: ApplicationConfig,
     meterRegistry: MeterRegistry
 ) {
-    stream(
-        applicationConfig.kafkaTopology.bekreftelseHendelsesloggTopic,
-        Consumed.with(Serdes.Long(), BekreftelseHendelseSerde())
-    )
-        .oppdaterBekreftelseHendelseState(applicationConfig.kafkaTopology.internStateStoreName, meterRegistry)
+    with(applicationConfig.kafkaTopology) {
+        stream(bekreftelseHendelsesloggTopic, Consumed.with(Serdes.Long(), BekreftelseHendelseSerde()))
+            .oppdaterBekreftelseHendelseState(internStateStoreName, meterRegistry)
+    }
 }

@@ -24,7 +24,7 @@ fun Application.configureHTTP(applicationContext: ApplicationContext) {
     install(CORS) {
         val origins = applicationContext.applicationConfig.autorisasjon.getCorsAllowOrigins()
 
-        when (applicationContext.applicationConfig.runtimeEnvironment) {
+        when (applicationContext.serverConfig.runtimeEnvironment) {
             is Nais -> {
                 origins.forEach { allowHost(it) }
             }

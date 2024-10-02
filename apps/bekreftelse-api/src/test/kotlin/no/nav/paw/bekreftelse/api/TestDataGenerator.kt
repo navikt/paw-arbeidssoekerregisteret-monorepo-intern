@@ -10,6 +10,13 @@ import java.util.*
 
 class TestDataGenerator {
 
+    val fnr1 = "01017012345"
+    val fnr2 = "02017012345"
+    val arbeidsoekerId1 = 10001L
+    val arbeidsoekerId2 = 10002L
+    val kafkaKey1 = -10001L
+    val kafkaKey2 = -10002L
+
     fun nyTilgjengeligBekreftelse(
         periodeId: UUID = UUID.randomUUID(),
         bekreftelseId: UUID = UUID.randomUUID(),
@@ -45,5 +52,5 @@ class TestDataGenerator {
     fun nyKeyQueryMetadata(
     ) = KeyQueryMetadata(nyHostInfo(), emptySet(), 1)
 
-    fun nyHostInfo() = HostInfo("localhost", 9092)
+    fun nyHostInfo() = HostInfo("localhost", 8080)
 }

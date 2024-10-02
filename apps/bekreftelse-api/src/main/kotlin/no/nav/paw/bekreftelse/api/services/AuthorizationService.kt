@@ -2,6 +2,7 @@ package no.nav.paw.bekreftelse.api.services
 
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
+import no.nav.paw.bekreftelse.api.config.ServerConfig
 import no.nav.paw.bekreftelse.api.context.RequestContext
 import no.nav.paw.bekreftelse.api.context.SecurityContext
 import no.nav.paw.bekreftelse.api.exception.BearerTokenManglerException
@@ -28,6 +29,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 class AuthorizationService(
+    private val serverConfig: ServerConfig,
     private val applicationConfig: ApplicationConfig,
     private val kafkaKeysClient: KafkaKeysClient,
     private val poaoTilgangClient: PoaoTilgangClient
@@ -79,7 +81,7 @@ class AuthorizationService(
                 } else {
                     logger.debug("NAV-ansatt har benyttet {}-tilgang til informasjon om bruker", tilgangType)
                     auditLogger.audit(
-                        applicationConfig.runtimeEnvironment,
+                        serverConfig.runtimeEnvironment,
                         sluttbruker.identitetsnummer,
                         navAnsatt,
                         tilgangType,

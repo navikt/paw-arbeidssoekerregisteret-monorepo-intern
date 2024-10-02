@@ -1,11 +1,8 @@
 package no.nav.paw.bekreftelse.api.config
 
-import no.nav.paw.config.env.RuntimeEnvironment
-import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.config.kafka.KafkaConfig
 import no.nav.paw.kafkakeygenerator.auth.AzureM2MConfig
 import no.nav.paw.kafkakeygenerator.client.KafkaKeyConfig
-import java.net.InetAddress
 
 const val APPLICATION_CONFIG_FILE_NAME = "application_config.toml"
 
@@ -16,10 +13,7 @@ data class ApplicationConfig(
     val azureM2M: AzureM2MConfig,
     val poaoClientConfig: ServiceClientConfig,
     val kafkaKeysClient: KafkaKeyConfig,
-    val kafkaClients: KafkaConfig,
-    // Env
-    val runtimeEnvironment: RuntimeEnvironment = currentRuntimeEnvironment,
-    val hostname: String = InetAddress.getLocalHost().hostName
+    val kafkaClients: KafkaConfig
 )
 
 data class AutorisasjonConfig(

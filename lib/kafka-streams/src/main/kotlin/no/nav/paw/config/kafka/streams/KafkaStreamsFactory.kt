@@ -33,9 +33,9 @@ class KafkaStreamsFactory private constructor(
             StreamsConfig.BOOTSTRAP_SERVERS_CONFIG to config.brokers,
             StreamsConfig.APPLICATION_ID_CONFIG to ("${config.applicationIdPrefix}_$applicationIdSuffix")
         ) +
-            schemaRegistry +
-            authentication +
-            additionalProperties
+                schemaRegistry +
+                authentication +
+                additionalProperties
 
     val properties: Properties
         get() =
@@ -63,6 +63,12 @@ class KafkaStreamsFactory private constructor(
             config = config,
             additionalProperties = additionalProperties + (StreamsConfig.PROCESSING_GUARANTEE_CONFIG to StreamsConfig.EXACTLY_ONCE_V2)
         )
+
+    fun withServerConfig(host: String, post: Int) = KafkaStreamsFactory(
+        applicationIdSuffix = applicationIdSuffix,
+        config = config,
+        additionalProperties = additionalProperties + (StreamsConfig.APPLICATION_SERVER_CONFIG to "$host:$post")
+    )
 
     fun <T : SpecificRecord> createSpecificAvroSerde(): SpecificAvroSerde<T> =
         SpecificAvroSerde<T>().apply {

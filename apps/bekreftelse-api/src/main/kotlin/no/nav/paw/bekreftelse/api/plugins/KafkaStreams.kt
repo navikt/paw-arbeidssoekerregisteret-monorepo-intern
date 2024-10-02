@@ -9,6 +9,7 @@ import io.ktor.server.application.hooks.MonitoringEvent
 import io.ktor.server.application.log
 import io.ktor.util.KtorDsl
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
+import no.nav.paw.bekreftelse.api.config.ServerConfig
 import no.nav.paw.config.kafka.streams.KafkaStreamsFactory
 import no.nav.paw.error.handler.withApplicationTerminatingExceptionHandler
 import no.nav.paw.health.listener.withHealthIndicatorStateListener
@@ -44,6 +45,7 @@ val KafkaStreamsPlugin: ApplicationPlugin<KafkaStreamsPluginConfig> =
     }
 
 fun buildKafkaStreams(
+    serverConfig: ServerConfig,
     applicationConfig: ApplicationConfig,
     healthIndicatorRepository: HealthIndicatorRepository,
     topology: Topology
@@ -52,12 +54,12 @@ fun buildKafkaStreams(
     val readinessIndicator = healthIndicatorRepository.addReadinessIndicator(ReadinessHealthIndicator())
 
     val streamsFactory = KafkaStreamsFactory(
-        applicationConfig.kafkaTopology.applicationIdSuffix,
-        applicationConfig.kafkaClients
+        applicationIdSuffix = applicationConfig.kafkaTopology.applicationIdSuffix,
+        config = applicationConfig.kafkaClients,
     )
         .withDefaultKeySerde(Serdes.Long()::class)
         .withDefaultValueSerde(SpecificAvroSerde::class)
-        .apply { properties["application.server"] = applicationConfig.hostname }
+        .withServerConfig(serverConfig.host, serverConfig.port)
 
     val kafkaStreams = KafkaStreams(
         topology,

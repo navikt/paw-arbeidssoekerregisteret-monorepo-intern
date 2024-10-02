@@ -1,4 +1,5 @@
 port = 8080
+host = "${HOSTNAME}"
 callGroupSize = 16
 workerGroupSize = 8
 connectionGroupSize = 8

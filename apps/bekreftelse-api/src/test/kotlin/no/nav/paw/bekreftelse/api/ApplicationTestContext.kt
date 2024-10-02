@@ -20,6 +20,8 @@ import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.config.AuthProvider
 import no.nav.paw.bekreftelse.api.config.AuthProviderClaims
 import no.nav.paw.bekreftelse.api.config.AuthProviders
+import no.nav.paw.bekreftelse.api.config.SERVER_CONFIG_FILE_NAME
+import no.nav.paw.bekreftelse.api.config.ServerConfig
 import no.nav.paw.bekreftelse.api.consumer.BekreftelseHttpConsumer
 import no.nav.paw.bekreftelse.api.context.ApplicationContext
 import no.nav.paw.bekreftelse.api.context.resolveRequest
@@ -49,6 +51,7 @@ import org.apache.kafka.streams.state.ReadOnlyKeyValueStore
 class ApplicationTestContext {
 
     val testData = TestDataGenerator()
+    val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG_FILE_NAME)
     val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG_FILE_NAME)
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val kafkaStreamsMock = mockk<KafkaStreams>()
@@ -57,7 +60,8 @@ class ApplicationTestContext {
     val poaoTilgangClientMock = mockk<PoaoTilgangClient>()
     val bekreftelseKafkaProducerMock = mockk<BekreftelseKafkaProducer>()
     val bekreftelseHttpConsumerMock = mockk<BekreftelseHttpConsumer>()
-    val authorizationService = AuthorizationService(applicationConfig, kafkaKeysClientMock, poaoTilgangClientMock)
+    val authorizationService =
+        AuthorizationService(serverConfig, applicationConfig, kafkaKeysClientMock, poaoTilgangClientMock)
     val bekreftelseServiceMock = mockk<BekreftelseService>()
     val bekreftelseServiceReal = BekreftelseService(
         applicationConfig,
@@ -69,6 +73,7 @@ class ApplicationTestContext {
 
     fun ApplicationTestBuilder.configureTestApplication(bekreftelseService: BekreftelseService) {
         val applicationContext = ApplicationContext(
+            serverConfig,
             applicationConfig.copy(authProviders = mockOAuth2Server.createAuthProviders()),
             kafkaKeysClientMock,
             prometheusMeterRegistry,
