@@ -24,7 +24,7 @@ otelInstrumentationVersion = "2.8.0"
 otelInstrumentationKtorVersion = "2.8.0-alpha"
 coroutinesVersion = "1.9.0"
 postgresDriverVersion = "42.7.4"
-flywayVersion = "10.15.0"
+flywayVersion = "10.18.2"
 hikariVersion = "5.1.0"
 
 [libraries]
