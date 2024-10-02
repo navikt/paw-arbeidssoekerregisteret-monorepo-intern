@@ -12,15 +12,15 @@ val jvmMajorVersion: String by project
 
 dependencies {
     implementation(project(":domain:interne-hendelser"))
-    implementation(libs.pawPdlClient)
-    api(libs.micrometerRegistryPrometheus)
+    implementation(libs.paw.pdl.client)
+    api(libs.micrometer.registryPrometheus)
     api(libs.arrowCore)
-    testImplementation(libs.ktorServerTestsJvm)
-    testImplementation(libs.runnerJunit5)
-    testImplementation(libs.assertionsCore)
-    testImplementation(libs.testContainers)
-    testImplementation(libs.mockOauth2Server)
-    testImplementation(libs.mockk)
+    testImplementation(libs.ktor.server.testJvm)
+    testImplementation(libs.test.junit5.runner)
+    testImplementation(libs.test.kotest.assertionsCore)
+    testImplementation(libs.test.testContainers.core)
+    testImplementation(libs.test.mockOauth2Server)
+    testImplementation(libs.test.mockk.core)
 }
 
 java {

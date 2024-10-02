@@ -4,17 +4,17 @@ plugins {
 }
 
 dependencies {
-    compileOnly(libs.jacksonDatatypeJsr310)
-    compileOnly(libs.jacksonKotlin)
-    compileOnly(libs.jacksonCore)
-    compileOnly(libs.kafkaClients)
+    compileOnly(libs.jackson.datatypeJsr310)
+    compileOnly(libs.jackson.kotlin)
+    compileOnly(libs.jackson.core)
+    compileOnly(libs.paw.kafkaClients)
 
-    testImplementation(libs.runnerJunit5)
-    testImplementation(libs.assertionsCore)
-    testImplementation(libs.kafkaClients)
-    testImplementation(libs.jacksonDatatypeJsr310)
-    testImplementation(libs.jacksonKotlin)
-    testImplementation(libs.jacksonCore)
+    testImplementation(libs.test.junit5.runner)
+    testImplementation(libs.test.kotest.assertionsCore)
+    testImplementation(libs.paw.kafkaClients)
+    testImplementation(libs.jackson.datatypeJsr310)
+    testImplementation(libs.jackson.kotlin)
+    testImplementation(libs.jackson.core)
 }
 
 val jvmMajorVersion: String by project

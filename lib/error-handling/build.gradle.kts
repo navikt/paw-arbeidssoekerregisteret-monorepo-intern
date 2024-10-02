@@ -3,20 +3,20 @@ plugins {
 }
 
 dependencies {
-    compileOnly(libs.ktorServerCors)
-    compileOnly(libs.ktorSerializationJackson)
-    compileOnly(libs.kafkaStreams)
+    compileOnly(libs.ktor.server.cors)
+    compileOnly(libs.ktor.serialization.jackson)
+    compileOnly(libs.kafka.streams.core)
     compileOnly(libs.logbackClassic)
 
     //Test
     testImplementation(libs.bundles.testLibsWithUnitTesting)
-    testImplementation(libs.ktorServerTestsJvm)
-    testImplementation(libs.ktorServerContentNegotiation)
-    testImplementation(libs.ktorServerStatusPages)
-    testImplementation(libs.ktorSerializationJackson)
-    testImplementation(libs.ktorClientContentNegotiation)
-    testImplementation(libs.ktorServerCore)
-    testImplementation(libs.kafkaStreams)
+    testImplementation(libs.ktor.server.testJvm)
+    testImplementation(libs.ktor.server.contentNegotiation)
+    testImplementation(libs.ktor.server.statusPages)
+    testImplementation(libs.ktor.serialization.jackson)
+    testImplementation(libs.ktor.client.contentNegotiation)
+    testImplementation(libs.ktor.server.core)
+    testImplementation(libs.kafka.streams.core)
     testImplementation(libs.logbackClassic)
 }
 

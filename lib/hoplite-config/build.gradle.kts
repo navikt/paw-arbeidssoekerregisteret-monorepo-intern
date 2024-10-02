@@ -3,8 +3,8 @@ plugins {
 }
 
 dependencies {
-    implementation(libs.hopliteCore)
-    implementation(libs.hopliteToml)
+    implementation(libs.hoplite.core)
+    implementation(libs.hoplite.toml)
 }
 
 tasks.withType<Test>().configureEach {

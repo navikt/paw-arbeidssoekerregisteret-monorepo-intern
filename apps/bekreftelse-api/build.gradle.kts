@@ -22,52 +22,52 @@ dependencies {
 
     // Server
     implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
-    implementation(libs.ktorServerContentNegotiation)
-    implementation(libs.ktorServerStatusPages)
-    implementation(libs.ktorServerCors)
-    implementation(libs.ktorServerCallId)
-    implementation(libs.ktorServerAuth)
+    implementation(libs.ktor.server.contentNegotiation)
+    implementation(libs.ktor.server.statusPages)
+    implementation(libs.ktor.server.cors)
+    implementation(libs.ktor.server.callId)
+    implementation(libs.ktor.server.auth)
 
     // Client
-    implementation(libs.ktorClientCore)
-    implementation(libs.ktorClientCio)
-    implementation(libs.ktorClientContentNegotiation)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.contentNegotiation)
 
     // Serialization
-    implementation(libs.ktorSerializationJackson)
-    implementation(libs.ktorSerializationJson)
-    implementation(libs.jacksonDatatypeJsr310)
+    implementation(libs.ktor.serialization.jackson)
+    implementation(libs.ktor.serialization.json)
+    implementation(libs.jackson.datatypeJsr310)
 
     // Authentication
-    implementation(libs.tokenValidationKtorV2)
+    implementation(libs.nav.security.tokenValidationKtorV2)
 
     // Authorization
-    implementation(libs.tilgangClient)
+    implementation(libs.poao.tilgangClient)
 
     // Documentation
-    implementation(libs.ktorServerOpenapi)
-    implementation(libs.ktorServerSwagger)
+    implementation(libs.ktor.server.openapi)
+    implementation(libs.ktor.server.swagger)
 
     // Logging
     implementation(libs.logbackClassic)
     implementation(libs.logstashLogbackEncoder)
-    implementation(libs.log)
-    implementation(libs.auditLog)
+    implementation(libs.nav.common.log)
+    implementation(libs.nav.common.auditLog)
 
     // Instrumentation
-    implementation(libs.micrometerRegistryPrometheus)
-    implementation(libs.opentelemetryApi)
-    implementation(libs.opentelemetryAnnotations)
+    implementation(libs.micrometer.registryPrometheus)
+    implementation(libs.opentelemetry.api)
+    implementation(libs.opentelemetry.annotations)
 
     // Kafka
-    implementation(libs.kafkaStreams)
-    implementation(libs.kafkaStreamsAvroSerde)
+    implementation(libs.kafka.streams.core)
+    implementation(libs.avro.kafkaStreamsSerde)
 
     // Test
-    testImplementation(libs.ktorServerTestsJvm)
-    testImplementation(libs.ktorClientMock)
+    testImplementation(libs.ktor.server.testJvm)
+    testImplementation(libs.ktor.client.mock)
     testImplementation(libs.bundles.testLibsWithUnitTesting)
-    testImplementation(libs.mockOauth2Server)
+    testImplementation(libs.test.mockOauth2Server)
 }
 
 java {

@@ -25,28 +25,28 @@ dependencies {
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:kafka-streams"))
 
-    implementation(libs.ktorServerNetty)
-    implementation(libs.ktorServerCore)
-    implementation(libs.ktorServerCoreJvm)
+    implementation(libs.ktor.server.netty)
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.coreJvm)
     implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
-    implementation(libs.micrometerRegistryPrometheus)
+    implementation(libs.micrometer.registryPrometheus)
 
     implementation(libs.logbackClassic)
     implementation(libs.logstashLogbackEncoder)
-    implementation(libs.log)
+    implementation(libs.nav.common.log)
 
-    implementation(libs.kafkaStreams)
+    implementation(libs.kafka.streams.core)
 
-    implementation(libs.kafkaSerializer)
-    implementation(libs.kafkaStreamsAvroSerde)
-    implementation(libs.avro)
+    implementation(libs.avro.kafkaSerializer)
+    implementation(libs.avro.kafkaStreamsSerde)
+    implementation(libs.avro.core)
 
-    implementation(libs.jacksonKotlin)
-    implementation(libs.jacksonDatatypeJsr310)
+    implementation(libs.jackson.kotlin)
+    implementation(libs.jackson.datatypeJsr310)
 
-    testImplementation(libs.runnerJunit5)
-    testImplementation(libs.streamsTest)
-    testImplementation(libs.assertionsCore)
+    testImplementation(libs.test.junit5.runner)
+    testImplementation(libs.kafka.streams.test)
+    testImplementation(libs.test.kotest.assertionsCore)
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

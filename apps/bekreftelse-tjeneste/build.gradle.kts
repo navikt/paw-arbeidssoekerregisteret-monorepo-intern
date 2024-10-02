@@ -25,9 +25,9 @@ dependencies {
     implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
 
     // Serialization
-    implementation(libs.ktorSerializationJackson)
-    implementation(libs.ktorSerializationJson)
-    implementation(libs.jacksonDatatypeJsr310)
+    implementation(libs.ktor.serialization.jackson)
+    implementation(libs.ktor.serialization.json)
+    implementation(libs.jackson.datatypeJsr310)
 
     // Tooling
     implementation(libs.arrowCore)
@@ -35,20 +35,20 @@ dependencies {
     // Logging
     implementation(libs.logbackClassic)
     implementation(libs.logstashLogbackEncoder)
-    implementation(libs.log)
-    implementation(libs.auditLog)
+    implementation(libs.nav.common.log)
+    implementation(libs.nav.common.auditLog)
 
     // Instrumentation
-    implementation(libs.micrometerRegistryPrometheus)
-    implementation(libs.opentelemetryAnnotations)
+    implementation(libs.micrometer.registryPrometheus)
+    implementation(libs.opentelemetry.annotations)
 
     // Kafka
-    implementation(libs.kafkaStreams)
-    implementation(libs.kafkaStreamsAvroSerde)
+    implementation(libs.kafka.streams.core)
+    implementation(libs.avro.kafkaStreamsSerde)
 
     // Testing
-    testImplementation(libs.ktorServerTestsJvm)
-    testImplementation(libs.streamsTest)
+    testImplementation(libs.ktor.server.testJvm)
+    testImplementation(libs.kafka.streams.test)
     testImplementation(libs.bundles.testLibsWithUnitTesting)
     testImplementation(project(":test:test-data-lib"))
 }

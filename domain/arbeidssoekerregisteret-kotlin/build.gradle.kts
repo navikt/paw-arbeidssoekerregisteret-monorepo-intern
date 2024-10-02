@@ -5,8 +5,8 @@ plugins {
 
 dependencies {
     implementation(project(":domain:interne-hendelser"))
-    compileOnly(libs.jacksonDatatypeJsr310)
-    compileOnly(libs.jacksonKotlin)
+    compileOnly(libs.jackson.datatypeJsr310)
+    compileOnly(libs.jackson.kotlin)
 }
 
 val jvmMajorVersion: String by project

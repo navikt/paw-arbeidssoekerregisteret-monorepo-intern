@@ -16,23 +16,23 @@ dependencies {
     implementation(project(":domain:main-avro-schema"))
     implementation(project(":lib:hoplite-config"))
 
-    implementation(libs.opentelemetryAnnotations)
-    implementation(libs.jacksonDatatypeJsr310)
-    implementation(libs.jacksonKotlin)
-    implementation(libs.log)
-    implementation(libs.kafkaClients)
-    implementation(libs.kafkaStreams)
-    implementation(libs.avro)
-    implementation(libs.kafkaStreamsAvroSerde)
+    implementation(libs.opentelemetry.annotations)
+    implementation(libs.jackson.datatypeJsr310)
+    implementation(libs.jackson.kotlin)
+    implementation(libs.nav.common.log)
+    implementation(libs.paw.kafkaClients)
+    implementation(libs.kafka.streams.core)
+    implementation(libs.avro.core)
+    implementation(libs.avro.kafkaStreamsSerde)
 
-    implementation(libs.micrometerRegistryPrometheus)
-    implementation(libs.ktorServerCore)
+    implementation(libs.micrometer.registryPrometheus)
+    implementation(libs.ktor.server.core)
     implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
-    implementation(libs.ktorServerNetty)
-    implementation(libs.ktorServerCoreJvm)
+    implementation(libs.ktor.server.netty)
+    implementation(libs.ktor.server.coreJvm)
 
-    testImplementation(libs.runnerJunit5)
-    testImplementation(libs.streamsTest)
+    testImplementation(libs.test.junit5.runner)
+    testImplementation(libs.kafka.streams.test)
 }
 
 java {

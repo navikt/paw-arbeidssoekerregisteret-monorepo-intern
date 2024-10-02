@@ -10,5 +10,5 @@ dependencies {
     implementation(project(":lib:kafka-key-generator-client"))
 
     implementation(libs.coroutinesCore)
-    implementation(libs.avro)
+    implementation(libs.avro.core)
 }

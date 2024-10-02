@@ -6,14 +6,14 @@ val jvmVersion = JavaVersion.valueOf("VERSION_$jvmMajorVersion")
 
 dependencies {
     implementation(project(":lib:hoplite-config"))
-    implementation(libs.jacksonDatatypeJsr310)
-    implementation(libs.jacksonKotlin)
-    implementation(libs.ktorClientContentNegotiation)
-    implementation(libs.ktorClientCore)
-    implementation(libs.ktorClientCio)
-    implementation(libs.ktorSerializationJackson)
-    implementation(libs.tokenClientCore)
-    api(libs.tokenClient)
+    implementation(libs.jackson.datatypeJsr310)
+    implementation(libs.jackson.kotlin)
+    implementation(libs.ktor.client.contentNegotiation)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.serialization.jackson)
+    implementation(libs.nav.security.tokenClientCore)
+    api(libs.nav.common.tokenClient)
 }
 
 java {

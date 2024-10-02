@@ -27,38 +27,38 @@ dependencies {
 
     api(libs.arrowCore)
 
-    implementation(libs.kafkaStreams)
-    implementation(libs.pawPdlClient)
+    implementation(libs.kafka.streams.core)
+    implementation(libs.paw.pdl.client)
 
     implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
-    implementation(libs.micrometerRegistryPrometheus)
+    implementation(libs.micrometer.registryPrometheus)
 
     implementation(libs.logbackClassic)
     implementation(libs.logstashLogbackEncoder)
 
-    implementation(libs.log)
-    implementation(libs.tokenClient)
+    implementation(libs.nav.common.log)
+    implementation(libs.nav.common.tokenClient)
 
-    implementation(libs.kafkaSerializer)
-    implementation(libs.kafkaStreamsAvroSerde)
-    implementation(libs.avro)
+    implementation(libs.avro.kafkaSerializer)
+    implementation(libs.avro.kafkaStreamsSerde)
+    implementation(libs.avro.core)
 
-    implementation(libs.jacksonDatatypeJsr310)
-    implementation(libs.ktorSerializationJackson)
-    implementation(libs.ktorSerializationJvm)
+    implementation(libs.jackson.datatypeJsr310)
+    implementation(libs.ktor.serialization.jackson)
+    implementation(libs.ktor.serialization.jvm)
 
-    implementation(libs.ktorClientContentNegotiation)
-    implementation(libs.ktorClientCore)
-    implementation(libs.ktorClientCio)
+    implementation(libs.ktor.client.contentNegotiation)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.cio)
 
-    testImplementation(libs.ktorServerTestsJvm)
-    testImplementation(libs.runnerJunit5)
-    testImplementation(libs.assertionsCore)
-    testImplementation(libs.testContainers)
-    testImplementation(libs.mockOauth2Server)
-    testImplementation(libs.mockk)
+    testImplementation(libs.ktor.server.testJvm)
+    testImplementation(libs.test.junit5.runner)
+    testImplementation(libs.test.kotest.assertionsCore)
+    testImplementation(libs.test.testContainers.core)
+    testImplementation(libs.test.mockOauth2Server)
+    testImplementation(libs.test.mockk.core)
     testImplementation(libs.bundles.testLibsWithUnitTesting)
-    testImplementation(libs.streamsTest)
+    testImplementation(libs.kafka.streams.test)
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
