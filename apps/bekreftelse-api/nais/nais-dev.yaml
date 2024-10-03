@@ -68,9 +68,13 @@ spec:
           namespace: paw
         - application: arbeidssoekerregisteret-for-personbruker
           namespace: paw
+        - application: paw-arbeidssoekerregisteret-api-bekreftelse
+          namespace: paw
     outbound:
       rules:
-        - application: paw-kafka-key-generator
-          namespace: paw
         - application: poao-tilgang
           namespace: poao
+        - application: paw-kafka-key-generator
+          namespace: paw
+        - application: paw-arbeidssoekerregisteret-api-bekreftelse
+          namespace: paw
