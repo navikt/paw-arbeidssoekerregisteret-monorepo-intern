@@ -1,9 +1,12 @@
 package no.nav.paw.bekreftelsetjeneste.tilstand
 
 import arrow.core.NonEmptyList
+import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Instant
 
+const val MAKS_ANTALL_UTSTEENDE_BEKREFTELSER: Int = 100
+private val maksAntallLogger = LoggerFactory.getLogger("maksAntallLogger")
 fun Bekreftelse.erKlarForUtfylling(now: Instant, tilgjengeligOffset: Duration): Boolean =
     now.isAfter(gjelderTil.minus(tilgjengeligOffset))
 
@@ -19,6 +22,12 @@ fun Bekreftelse.harGraceperiodeUtloept(now: Instant, graceperiode: Duration): Bo
     now.isAfter(fristUtloept?.plus(graceperiode) ?: gjelderTil.plus(graceperiode))
 
 fun NonEmptyList<Bekreftelse>.shouldCreateNewBekreftelse(now: Instant, interval: Duration, tilgjengeligOffset: Duration): Boolean =
+    (size < MAKS_ANTALL_UTSTEENDE_BEKREFTELSER)
+        .also { underGrense ->
+            if (!underGrense) {
+                maksAntallLogger.warn("Maks antall bekreftelser er nådd!")
+            }
+        } &&
     maxBy { it.gjelderTil }
         .let {
             now.isAfter(it.gjelderTil.plus(interval.minus(tilgjengeligOffset)))
