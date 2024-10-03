@@ -37,7 +37,7 @@ import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.state.Stores
 import org.slf4j.LoggerFactory
 
-const val APP_SUFFIX = "beta"
+const val APP_SUFFIX = "beta-v2"
 val STATE_STORE_NAME: StateStoreName = StateStoreName("internal_state")
 
 val appLogger = LoggerFactory.getLogger("main")

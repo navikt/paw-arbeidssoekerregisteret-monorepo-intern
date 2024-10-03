@@ -10,7 +10,7 @@ spec:
   port: 8080
   env:
     - name: KAFKA_STREAMS_ID_SUFFIX
-      value: "v1"
+      value: "v2"
     - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_TOPIC
       value: "paw.arbeidssoker-bekreftelse-beta-v1"
     - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_HENDELSELOGG_TOPIC
