@@ -23,7 +23,8 @@ import java.util.*
 
 typealias InternalStateStore = KeyValueStore<UUID, InternTilstand>
 
-fun ProcessorContext<*, *>.getStateStore(stateStoreName: StateStoreName ): InternalStateStore = getStateStore(stateStoreName.value)
+fun ProcessorContext<*, *>.getStateStore(stateStoreName: StateStoreName): InternalStateStore =
+    getStateStore(stateStoreName.value)
 
 private val logger = LoggerFactory.getLogger("bekreftelse.varsler.topology")
 
@@ -46,7 +47,7 @@ fun StreamsBuilder.applicationTopology(
     stream(
         kafkaTopics.bekreftelseHendelseTopic, Consumed.with(Serdes.Long(), BekreftelseHendelseSerde())
     ).mapWithContext("bekreftelse-hendelse-mottatt", stateStoreName.value) { hendelse ->
-        val store: KeyValueStore<UUID, InternTilstand> = getStateStore(stateStoreName.value)
+        val store = getStateStore(stateStoreName)
         val tilstand = store[hendelse.periodeId]
         if (tilstand == null) {
             logger.warn(
@@ -64,9 +65,11 @@ fun StreamsBuilder.applicationTopology(
             }
             meldinger
         }
-    }.flatMapValues { _, meldinger -> meldinger }.mapKeyAndValue("map_til_utgaaende") { _, melding ->
-        melding.varselId.toString() to melding.value
-    }.to(kafkaTopics.tmsOppgaveTopic, Produced.with(Serdes.String(), Serdes.String()))
+    }
+        .flatMapValues { _, meldinger -> meldinger }
+        .mapKeyAndValue("map_til_utgaaende") { _, melding ->
+            melding.varselId.toString() to melding.value
+        }.to(kafkaTopics.tmsOppgaveTopic, Produced.with(Serdes.String(), Serdes.String()))
 
     return build()
 }
