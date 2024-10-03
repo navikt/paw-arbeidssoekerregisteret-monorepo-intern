@@ -1,5 +1,5 @@
 port = 8080
-host = "${HOSTNAME}"
+host = "${OTEL_POD_IP}"
 callGroupSize = 16
 workerGroupSize = 8
 connectionGroupSize = 8
