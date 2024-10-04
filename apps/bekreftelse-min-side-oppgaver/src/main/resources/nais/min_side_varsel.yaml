@@ -1,10 +1,10 @@
 standardSpraak:
-  kode: en
+  kode: nb
 link: ${VARSEL_LINK}
 tekster:
   - spraak:
       kode: nb
-    tekst: Det er påtide å bekrefte arbeidssøkerperioden din i NAV.
+    tekst: Det er påt ide å bekrefte arbeidssøkerperioden din i NAV.
   - spraak:
       kode: en
     tekst: It is time to confirm your jobseeker period in NAV.
