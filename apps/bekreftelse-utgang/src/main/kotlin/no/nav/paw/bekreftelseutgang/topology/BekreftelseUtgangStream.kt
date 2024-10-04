@@ -10,12 +10,15 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.baOmAaAvsluttePeriodeHendelsesType
 import no.nav.paw.bekreftelse.internehendelser.registerGracePeriodeUtloeptHendelseType
 import no.nav.paw.bekreftelseutgang.config.ApplicationConfig
+import no.nav.paw.bekreftelseutgang.tilstand.InternTilstand
+import no.nav.paw.bekreftelseutgang.tilstand.StateStore
 import no.nav.paw.config.env.appImageOrDefaultForLocal
 import no.nav.paw.config.kafka.streams.genericProcess
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.Produced
-import org.apache.kafka.streams.state.KeyValueStore
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
 
@@ -24,39 +27,62 @@ fun StreamsBuilder.buildBekreftelseUtgangStream(applicationConfig: ApplicationCo
         stream<Long, BekreftelseHendelse>(bekreftelseHendelseloggTopic)
             .genericProcess<Long, BekreftelseHendelse, Long, Hendelse>(
                 name = "bekreftelseUtgangStream",
-                internStateStoreName,
-                punctuation = null,
+                stateStoreName,
             ) { record ->
-                val stateStore = getStateStore<KeyValueStore<UUID, String>>(internStateStoreName)
-                // TODO: Må jeg ta høyde for at periodeStream ikke er ajoure og har lagt inn identitetsnummer i state?
-                val identitetsnummer = stateStore[record.value().periodeId] ?: return@genericProcess
+                val stateStore: StateStore = getStateStore(stateStoreName)
+                val currentState = stateStore[record.value().periodeId]
 
-                when(record.value().hendelseType) {
-                    registerGracePeriodeUtloeptHendelseType -> avsluttetHendelse(
-                        identitetsnummer = identitetsnummer,
-                        periodeId = record.value().periodeId,
-                        arbeidssoekerId = record.value().arbeidssoekerId,
-                        utfoertAv = Bruker(
-                            type = BrukerType.SYSTEM,
-                            id = applicationConfig.getAppImage()
-                        ),
-                        aarsak = "Graceperiode utløpt"
-                    )
-                    baOmAaAvsluttePeriodeHendelsesType -> avsluttetHendelse(
-                        identitetsnummer = identitetsnummer,
-                        periodeId = record.value().periodeId,
-                        arbeidssoekerId = record.value().arbeidssoekerId,
-                        utfoertAv = Bruker(
-                            type = BrukerType.SLUTTBRUKER,
-                            id = identitetsnummer
-                        ),
-                        aarsak = "Svarte NEI på spørsmål 'Vil du fortsatt være registrert som arbeidssøker?'"
-                    )
-                    else -> {
-                        return@genericProcess
-                    }
+                if(currentState == null) {
+                    stateStore.put(record.value().periodeId, InternTilstand(
+                        null,
+                        bekreftelseHendelse = record.value()
+                    ))
+                    return@genericProcess
                 }
+
+                if(currentState.identitetsnummer != null) {
+                    processBekreftelseHendelse(
+                        bekreftelseHendelse = record.value(),
+                        identitetsnummer = currentState.identitetsnummer,
+                        applicationConfig = applicationConfig,
+                    ) ?: return@genericProcess
+
+                    stateStore.delete(record.value().periodeId)
+                }
+
+                logger.info("Sender AvsluttetHendelse for periodeId ${record.value().periodeId}")
+
             }.to(hendelseloggTopic, Produced.with(Serdes.Long(), HendelseSerde()))
+    }
+}
+
+fun processBekreftelseHendelse(
+    bekreftelseHendelse: BekreftelseHendelse,
+    identitetsnummer: String,
+    applicationConfig: ApplicationConfig,
+): Avsluttet? {
+    return when(bekreftelseHendelse.hendelseType) {
+        registerGracePeriodeUtloeptHendelseType -> avsluttetHendelse(
+            identitetsnummer = identitetsnummer,
+            periodeId = bekreftelseHendelse.periodeId,
+            arbeidssoekerId = bekreftelseHendelse.arbeidssoekerId,
+            utfoertAv = Bruker(
+                type = BrukerType.SYSTEM,
+                id = applicationConfig.getAppImage()
+            ),
+            aarsak = "Graceperiode utløpt"
+        )
+        baOmAaAvsluttePeriodeHendelsesType -> avsluttetHendelse(
+            identitetsnummer = identitetsnummer,
+            periodeId = bekreftelseHendelse.periodeId,
+            arbeidssoekerId = bekreftelseHendelse.arbeidssoekerId,
+            utfoertAv = Bruker(
+                type = BrukerType.SLUTTBRUKER,
+                id = identitetsnummer
+            ),
+            aarsak = "Svarte NEI på spørsmål 'Vil du fortsatt være registrert som arbeidssøker?'"
+        )
+        else -> null
     }
 }
 
@@ -76,3 +102,5 @@ fun metadata(utfoertAv: Bruker, aarsak: String) = Metadata(
     kilde = "paw.arbeidssoekerregisteret.bekreftelse-utgang",
     aarsak = aarsak,
 )
+
+val logger: Logger = LoggerFactory.getLogger("bekreftelseUtgangStream")

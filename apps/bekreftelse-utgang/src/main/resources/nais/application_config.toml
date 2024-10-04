@@ -1,6 +1,6 @@
 [kafkaTopology]
 applicationIdSuffix = "${KAFKA_STREAMS_ID_SUFFIX}"
-internStateStoreName = "intern-tilstand"
+stateStoreName = "bekreftelse-utgang-intern-tilstand"
 periodeTopic = "${KAFKA_PAW_ARBEIDSSOKERPERIODER_TOPIC}"
 bekreftelseHendelseloggTopic = "${KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_HENDELSELOGG_TOPIC}"
 hendelseloggTopic = "${KAFKA_PAW_ARBEIDSSOKER_HENDELSELOGG_TOPIC}"

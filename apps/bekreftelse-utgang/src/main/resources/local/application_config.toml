@@ -1,6 +1,6 @@
 [kafkaTopology]
 applicationIdSuffix = "v1"
-internStateStoreName = "intern-tilstand"
+stateStoreName = "bekreftelse-utgang-intern-tilstand"
 periodeTopic = "paw.arbeidssokerperioder-v1
 hendelseloggTopic = "paw.arbeidssoker-hendelseslogg-v1"
 bekreftelseHendelseloggTopic = "paw.arbeidssoker-bekreftelse-hendelseslogg-v1"
