@@ -15,11 +15,14 @@ import no.nav.paw.error.model.build500Error
 import no.nav.paw.error.model.buildError
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.slf4j.MDC
 
 private val logger: Logger = LoggerFactory.getLogger("no.nav.paw.logger.error.http")
 
 suspend fun ApplicationCall.handleException(throwable: Throwable) {
     val problemDetails = resolveProblemDetails(request, throwable)
+    MDC.put("x_error_id", problemDetails.id.toString())
+    MDC.put("x_error_code", problemDetails.code)
     logger.error(problemDetails.detail, throwable)
     respond(problemDetails.status, problemDetails)
 }

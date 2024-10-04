@@ -59,7 +59,7 @@ fun buildKafkaStreams(
     )
         .withDefaultKeySerde(Serdes.Long()::class)
         .withDefaultValueSerde(SpecificAvroSerde::class)
-        .withServerConfig(serverConfig.host, serverConfig.port)
+        .withServerConfig(serverConfig.ip, serverConfig.port)
 
     val kafkaStreams = KafkaStreams(
         topology,

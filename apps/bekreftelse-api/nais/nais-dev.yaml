@@ -9,6 +9,10 @@ spec:
   image: {{ image }}
   port: 8080
   env:
+    - name: POD_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.podIP
     - name: KAFKA_STREAMS_ID_SUFFIX
       value: "v2"
     - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_TOPIC

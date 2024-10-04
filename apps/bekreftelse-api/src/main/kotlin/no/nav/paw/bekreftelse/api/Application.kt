@@ -26,9 +26,10 @@ fun main() {
     val applicationContext = ApplicationContext.create()
     val appName = applicationContext.serverConfig.runtimeEnvironment.appNameOrDefaultForLocal()
 
-    logger.info("Starter: $appName")
 
     with(applicationContext.serverConfig) {
+        logger.info("Starter $appName med IP $ip og port $port")
+
         embeddedServer(Netty, port = port) {
             module(applicationContext)
         }.apply {

@@ -5,12 +5,14 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import io.ktor.http.HttpStatusCode
 import no.nav.paw.error.serialize.HttpStatusCodeDeserializer
 import no.nav.paw.error.serialize.HttpStatusCodeSerializer
+import java.util.*
 
 /**
  * Object som inneholder detaljer om en oppstått feilsituasjon, basert på RFC 9457.
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc9457">IETF RFC 9457</a>
  */
 data class ProblemDetails(
+    val id: UUID = UUID.randomUUID(),
     val code: String, // Maskinelt lesbar feilkode
     val title: String,
     @JsonSerialize(using = HttpStatusCodeSerializer::class) @JsonDeserialize(using = HttpStatusCodeDeserializer::class) val status: HttpStatusCode,
