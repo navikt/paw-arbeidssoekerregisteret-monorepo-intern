@@ -2,6 +2,7 @@ package no.nav.paw.bekreftelse.api.services
 
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
+import no.nav.paw.bekreftelse.api.config.ServerConfig
 import no.nav.paw.bekreftelse.api.consumer.BekreftelseHttpConsumer
 import no.nav.paw.bekreftelse.api.context.SecurityContext
 import no.nav.paw.bekreftelse.api.exception.DataIkkeFunnetException
@@ -23,6 +24,7 @@ import org.apache.kafka.streams.state.QueryableStoreTypes
 import org.apache.kafka.streams.state.ReadOnlyKeyValueStore
 
 class BekreftelseService(
+    private val serverConfig: ServerConfig,
     private val applicationConfig: ApplicationConfig,
     private val bekreftelseHttpConsumer: BekreftelseHttpConsumer,
     private val kafkaStreams: KafkaStreams,
@@ -123,6 +125,10 @@ class BekreftelseService(
             throw SystemfeilException("Fant ikke metadata for arbeidsøker i Kafka Streams")
         } else {
             val hostInfo = metadata.activeHost()
+            if (hostInfo.host() == serverConfig.ip) {
+                logger.info("Fant ingen tilgjengelige bekreftelser for arbeidssøker")
+                return emptyList()
+            }
             val host = "${hostInfo.host()}:${hostInfo.port()}"
             logger.info("Må hente tilgjengelige bekreftelser fra node $host")
             val tilgjendeligeBekreftelser = bekreftelseHttpConsumer.finnTilgjengeligBekreftelser(
@@ -150,6 +156,9 @@ class BekreftelseService(
             throw SystemfeilException("Fant ikke metadata for arbeidsøker i Kafka Streams")
         } else {
             val hostInfo = metadata.activeHost()
+            if (hostInfo.host() == serverConfig.ip) {
+                throw DataIkkeFunnetException("Fant ingen bekreftelse for gitt id")
+            }
             val host = "${hostInfo.host()}:${hostInfo.port()}"
             logger.info("Oversender svar for bekreftelse som er på node $host")
             bekreftelseHttpConsumer.sendBekreftelse(

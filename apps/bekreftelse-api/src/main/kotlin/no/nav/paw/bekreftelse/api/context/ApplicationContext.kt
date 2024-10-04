@@ -92,6 +92,7 @@ data class ApplicationContext(
             val bekreftelseHttpConsumer = BekreftelseHttpConsumer(httpClient)
 
             val bekreftelseService = BekreftelseService(
+                serverConfig,
                 applicationConfig,
                 bekreftelseHttpConsumer,
                 bekreftelseKafkaStreams,

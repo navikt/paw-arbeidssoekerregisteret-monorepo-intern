@@ -50,7 +50,6 @@ class TestDataGenerator {
     ) = BekreftelseRequest(identitetsnummer, bekreftelseId, harJobbetIDennePerioden, vilFortsetteSomArbeidssoeker)
 
     fun nyKeyQueryMetadata(
-    ) = KeyQueryMetadata(nyHostInfo(), emptySet(), 1)
-
-    fun nyHostInfo() = HostInfo("localhost", 8080)
+        host: String = "10.0.0.100"
+    ) = KeyQueryMetadata(HostInfo(host, 8080), emptySet(), 1)
 }
