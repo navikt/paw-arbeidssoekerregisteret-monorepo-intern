@@ -41,12 +41,12 @@ jobs:
         run: echo "MODULE=hendelselogg-backup" >> $GITHUB_ENV
       - name: Set version
         run: echo "VERSION=$(date +'%y.%m.%d').${{ github.run_number }}-${{ github.run_attempt }}" >> $GITHUB_ENV
-      - name: Login GAR
-        uses: nais/login@v0
-        with:
-          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
-          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
-          team: paw
+#      - name: Login GAR
+#        uses: nais/login@v0
+#        with:
+#          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
+#          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+#          team: paw
       - name: Build with Gradle
         id: docker-build-push
         working-directory: ./
