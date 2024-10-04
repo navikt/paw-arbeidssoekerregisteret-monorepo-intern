@@ -12,7 +12,7 @@ import no.nav.paw.bekreftelse.api.context.ApplicationContext
 import no.nav.paw.bekreftelse.api.context.resolveRequest
 import no.nav.paw.bekreftelse.api.model.BekreftelseRequest
 import no.nav.paw.bekreftelse.api.model.TilgjengeligeBekreftelserRequest
-import no.nav.paw.bekreftelse.api.utils.mottaBekreftelseCounter
+import no.nav.paw.bekreftelse.api.utils.mottaBekreftelseHttpCounter
 import no.nav.poao_tilgang.client.TilgangType
 
 fun Route.bekreftelseRoutes(applicationContext: ApplicationContext) {
@@ -47,7 +47,7 @@ fun Route.bekreftelseRoutes(applicationContext: ApplicationContext) {
             post<BekreftelseRequest>("/bekreftelse") { request ->
                 val requestContext = resolveRequest(request.identitetsnummer)
                 val securityContext = authorizationService.authorize(requestContext, TilgangType.SKRIVE)
-                prometheusMeterRegistry.mottaBekreftelseCounter()
+                prometheusMeterRegistry.mottaBekreftelseHttpCounter()
                 bekreftelseService.mottaBekreftelse(
                     securityContext,
                     request,

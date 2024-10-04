@@ -4,7 +4,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.utils.buildBekreftelseSerde
 import no.nav.paw.bekreftelse.api.utils.buildLogger
-import no.nav.paw.bekreftelse.api.utils.sendeBekreftelseCounter
+import no.nav.paw.bekreftelse.api.utils.sendeBekreftelseKafkaCounter
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.config.kafka.KafkaFactory
 import no.nav.paw.config.kafka.sendDeferred
@@ -30,7 +30,7 @@ class BekreftelseKafkaProducer(
     }
 
     suspend fun produceMessage(key: Long, message: Bekreftelse) {
-        meterRegistry.sendeBekreftelseCounter()
+        meterRegistry.sendeBekreftelseKafkaCounter()
         val topic = applicationConfig.kafkaTopology.bekreftelseTopic
         val record = ProducerRecord(topic, key, message)
         val recordMetadata = producer.sendDeferred(record).await()
