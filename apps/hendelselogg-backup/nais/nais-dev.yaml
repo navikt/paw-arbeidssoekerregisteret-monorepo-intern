@@ -44,7 +44,7 @@ spec:
       cpu: 25m
   gcp:
     sqlInstances:
-      - type: POSTGRES_15
+      - type: POSTGRES_16
         tier: db-f1-micro
         databases:
           - name: hendelselogg
