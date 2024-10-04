@@ -26,6 +26,5 @@ data class KafkaTopologyConfig(
     val periodeTopic: String,
     val hendelseloggTopic: String,
     val bekreftelseHendelseloggTopic: String,
-    val punctuationInterval: Duration,
     val shutdownTimeout: Duration = Duration.ofMinutes(5),
 )

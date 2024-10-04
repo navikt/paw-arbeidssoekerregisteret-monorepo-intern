@@ -4,7 +4,6 @@ stateStoreName = "bekreftelse-utgang-intern-tilstand"
 periodeTopic = "paw.arbeidssokerperioder-v1
 hendelseloggTopic = "paw.arbeidssoker-hendelseslogg-v1"
 bekreftelseHendelseloggTopic = "paw.arbeidssoker-bekreftelse-hendelseslogg-v1"
-punctuationInterval = "PT5S"
 
 [azureM2M]
 tokenEndpointUrl = "http://localhost:8081/azure/token"

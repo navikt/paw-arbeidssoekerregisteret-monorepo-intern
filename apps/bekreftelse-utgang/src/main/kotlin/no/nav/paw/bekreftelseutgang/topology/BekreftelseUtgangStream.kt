@@ -7,50 +7,36 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.bekreftelse.internehendelser.baOmAaAvsluttePeriodeHendelsesType
 import no.nav.paw.bekreftelse.internehendelser.registerGracePeriodeUtloeptHendelseType
 import no.nav.paw.bekreftelseutgang.config.ApplicationConfig
 import no.nav.paw.bekreftelseutgang.tilstand.InternTilstand
 import no.nav.paw.bekreftelseutgang.tilstand.StateStore
+import no.nav.paw.bekreftelseutgang.tilstand.generateAvsluttetEventIfStateIsComplete
 import no.nav.paw.config.env.appImageOrDefaultForLocal
-import no.nav.paw.config.kafka.streams.genericProcess
+import no.nav.paw.config.kafka.streams.mapNonNull
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
+import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.Produced
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
 
 fun StreamsBuilder.buildBekreftelseUtgangStream(applicationConfig: ApplicationConfig) {
     with(applicationConfig.kafkaTopology) {
-        stream<Long, BekreftelseHendelse>(bekreftelseHendelseloggTopic)
-            .genericProcess<Long, BekreftelseHendelse, Long, Hendelse>(
+        stream(bekreftelseHendelseloggTopic, Consumed.with(Serdes.Long(), BekreftelseHendelseSerde()))
+            .mapNonNull<Long, BekreftelseHendelse, Hendelse>(
                 name = "bekreftelseUtgangStream",
                 stateStoreName,
-            ) { record ->
+            ) { bekreftelseHendelse ->
                 val stateStore: StateStore = getStateStore(stateStoreName)
-                val currentState = stateStore[record.value().periodeId]
+                val currentState = stateStore[bekreftelseHendelse.periodeId] ?: InternTilstand(null, null)
+                val newState = currentState.copy(bekreftelseHendelse = bekreftelseHendelse)
 
-                if(currentState == null) {
-                    stateStore.put(record.value().periodeId, InternTilstand(
-                        null,
-                        bekreftelseHendelse = record.value()
-                    ))
-                    return@genericProcess
-                }
+                stateStore.put(bekreftelseHendelse.periodeId, newState)
 
-                if(currentState.identitetsnummer != null) {
-                    processBekreftelseHendelse(
-                        bekreftelseHendelse = record.value(),
-                        identitetsnummer = currentState.identitetsnummer,
-                        applicationConfig = applicationConfig,
-                    ) ?: return@genericProcess
-
-                    stateStore.delete(record.value().periodeId)
-                }
-
-                logger.info("Sender AvsluttetHendelse for periodeId ${record.value().periodeId}")
+                newState.generateAvsluttetEventIfStateIsComplete(applicationConfig)
 
             }.to(hendelseloggTopic, Produced.with(Serdes.Long(), HendelseSerde()))
     }
@@ -102,5 +88,3 @@ fun metadata(utfoertAv: Bruker, aarsak: String) = Metadata(
     kilde = "paw.arbeidssoekerregisteret.bekreftelse-utgang",
     aarsak = aarsak,
 )
-
-val logger: Logger = LoggerFactory.getLogger("bekreftelseUtgangStream")

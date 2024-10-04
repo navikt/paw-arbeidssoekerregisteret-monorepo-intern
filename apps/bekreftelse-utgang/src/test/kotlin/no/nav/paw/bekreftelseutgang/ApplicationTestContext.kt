@@ -14,9 +14,10 @@ import no.nav.paw.bekreftelseutgang.config.APPLICATION_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelseutgang.config.ApplicationConfig
 import no.nav.paw.bekreftelseutgang.context.ApplicationContext
 import no.nav.paw.bekreftelseutgang.tilstand.InternTilstandSerde
+import no.nav.paw.bekreftelseutgang.topology.buildBekreftelseUtgangStream
+import no.nav.paw.bekreftelseutgang.topology.buildPeriodeStream
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.health.repository.HealthIndicatorRepository
-import no.nav.paw.kafkakeygenerator.client.inMemoryKafkaKeysMock
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
@@ -38,13 +39,11 @@ class ApplicationTestContext(initialWallClockTime: Instant = Instant.now()) {
     val bekreftelseHendelseLoggSerde: Serde<BekreftelseHendelse> = BekreftelseHendelseSerde()
     val hendelseLoggSerde: Serde<Hendelse> = HendelseSerde()
     val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG_FILE_NAME)
-    val kafkaKeysClient = inMemoryKafkaKeysMock()
 
     val applicationContext = ApplicationContext(
         applicationConfig = applicationConfig,
         prometheusMeterRegistry = mockk<PrometheusMeterRegistry>(),
         healthIndicatorRepository = HealthIndicatorRepository(),
-        kafkaKeysClient = kafkaKeysClient
     )
 
     val logger: Logger = LoggerFactory.getLogger(ApplicationTestContext::class.java)
@@ -58,6 +57,8 @@ class ApplicationTestContext(initialWallClockTime: Instant = Instant.now()) {
                 Time.SYSTEM
             )
         )
+        buildPeriodeStream(applicationConfig)
+        buildBekreftelseUtgangStream(applicationConfig)
     }.build()
 
     val testDriver: TopologyTestDriver = TopologyTestDriver(topology, kafkaStreamProperties, initialWallClockTime)
@@ -80,10 +81,10 @@ class ApplicationTestContext(initialWallClockTime: Instant = Instant.now()) {
         bekreftelseHendelseLoggSerde.deserializer()
     )
 
-    val hendelseLoggTopicOut: TestInputTopic<Long, Hendelse> = testDriver.createInputTopic(
+    val hendelseLoggTopicOut: TestOutputTopic<Long, Hendelse> = testDriver.createOutputTopic(
         applicationConfig.kafkaTopology.hendelseloggTopic,
-        Serdes.Long().serializer(),
-        hendelseLoggSerde.serializer()
+        Serdes.Long().deserializer(),
+        hendelseLoggSerde.deserializer()
     )
 }
 
