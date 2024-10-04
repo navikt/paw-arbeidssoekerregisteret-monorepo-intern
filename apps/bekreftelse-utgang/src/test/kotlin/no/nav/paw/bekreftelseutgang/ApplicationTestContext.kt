@@ -13,6 +13,7 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.bekreftelseutgang.config.APPLICATION_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelseutgang.config.ApplicationConfig
 import no.nav.paw.bekreftelseutgang.context.ApplicationContext
+import no.nav.paw.bekreftelseutgang.tilstand.InternTilstandSerde
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.client.inMemoryKafkaKeysMock
@@ -51,9 +52,9 @@ class ApplicationTestContext(initialWallClockTime: Instant = Instant.now()) {
     val topology = StreamsBuilder().apply {
         addStateStore(
             KeyValueStoreBuilder(
-                InMemoryKeyValueBytesStoreSupplier(applicationConfig.kafkaTopology.internStateStoreName),
+                InMemoryKeyValueBytesStoreSupplier(applicationConfig.kafkaTopology.stateStoreName),
                 Serdes.UUID(),
-                Serdes.String(),
+                InternTilstandSerde(),
                 Time.SYSTEM
             )
         )
