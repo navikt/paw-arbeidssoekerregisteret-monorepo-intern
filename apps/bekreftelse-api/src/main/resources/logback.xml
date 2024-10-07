@@ -28,7 +28,7 @@
             <root level="INFO">
                 <appender-ref ref="STDOUT_JSON"/>
             </root>
-            <logger name="no.nav.paw.logger.application" level="DEBUG"/> <!-- TODO Slette før prod? -->
+            <logger name="no.nav.paw" level="DEBUG"/> <!-- TODO Slette før prod? -->
             <include resource="no/nav/common/audit_log/logback-naudit.xml"/>
         </else>
     </if>
