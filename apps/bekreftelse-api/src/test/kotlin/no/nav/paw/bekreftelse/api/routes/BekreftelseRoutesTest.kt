@@ -441,9 +441,9 @@ class BekreftelseRoutesTest : FreeSpec({
                         setBody(request)
                     }
 
-                    response.status shouldBe HttpStatusCode.NotFound
+                    response.status shouldBe HttpStatusCode.BadRequest
                     val body = response.body<ProblemDetails>()
-                    body.code shouldBe "PAW_DATA_IKKE_FUNNET"
+                    body.code shouldBe "PAW_DATA_IKKE_FUNNET_FOR_ID"
                     verify { kafkaStreamsMock.state() }
                     verify { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) }
                     verify {
