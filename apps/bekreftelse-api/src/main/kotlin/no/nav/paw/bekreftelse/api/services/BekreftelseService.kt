@@ -5,7 +5,7 @@ import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.config.ServerConfig
 import no.nav.paw.bekreftelse.api.consumer.BekreftelseHttpConsumer
 import no.nav.paw.bekreftelse.api.context.SecurityContext
-import no.nav.paw.bekreftelse.api.exception.DataIkkeFunnetException
+import no.nav.paw.bekreftelse.api.exception.DataIkkeFunnetForIdException
 import no.nav.paw.bekreftelse.api.exception.DataTilhoererIkkeBrukerException
 import no.nav.paw.bekreftelse.api.exception.SystemfeilException
 import no.nav.paw.bekreftelse.api.model.BekreftelseRequest
@@ -20,6 +20,7 @@ import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.KeyQueryMetadata
 import org.apache.kafka.streams.StoreQueryParameters
+import org.apache.kafka.streams.state.HostInfo
 import org.apache.kafka.streams.state.QueryableStoreTypes
 import org.apache.kafka.streams.state.ReadOnlyKeyValueStore
 
@@ -33,21 +34,6 @@ class BekreftelseService(
     private val logger = buildLogger
     private val mockDataService = MockDataService()
     private var internStateStore: ReadOnlyKeyValueStore<Long, InternState>? = null
-
-    private fun getInternStateStore(): ReadOnlyKeyValueStore<Long, InternState> {
-        if (!kafkaStreams.state().isRunningOrRebalancing) {
-            throw SystemfeilException("Kafka Streams kjører ikke")
-        }
-        if (internStateStore == null) {
-            internStateStore = kafkaStreams.store(
-                StoreQueryParameters.fromNameAndType(
-                    applicationConfig.kafkaTopology.internStateStoreName,
-                    QueryableStoreTypes.keyValueStore()
-                )
-            )
-        }
-        return internStateStore ?: throw SystemfeilException("Intern state store er ikke initiert")
-    }
 
     @WithSpan
     suspend fun finnTilgjengeligBekreftelser(
@@ -65,7 +51,7 @@ class BekreftelseService(
         val internState = getInternStateStore().get(securityContext.sluttbruker.arbeidssoekerId)
 
         if (internState != null) {
-            logger.info("Fant ${internState.tilgjendeligeBekreftelser.size} tilgjengelige bekreftelser i lokal state")
+            logger.info("Fant {} tilgjengelige bekreftelser i lokal state", internState.tilgjendeligeBekreftelser.size)
             return internState.tilgjendeligeBekreftelser.toResponse()
         } else {
             return finnTilgjengeligBekreftelserFraAnnenNode(securityContext, request)
@@ -103,7 +89,7 @@ class BekreftelseService(
                 )
                 bekreftelseKafkaProducer.produceMessage(securityContext.sluttbruker.kafkaKey, bekreftelse)
             } else {
-                throw DataIkkeFunnetException("Fant ingen bekreftelse for gitt id")
+                throw DataIkkeFunnetForIdException("Fant ingen bekreftelse for gitt id")
             }
         } else {
             sendBekreftelseTilAnnenNode(securityContext, request)
@@ -114,58 +100,73 @@ class BekreftelseService(
         securityContext: SecurityContext,
         request: TilgjengeligeBekreftelserRequest
     ): TilgjengeligBekreftelserResponse {
-        val metadata = kafkaStreams.queryMetadataForKey(
-            applicationConfig.kafkaTopology.internStateStoreName,
-            securityContext.sluttbruker.arbeidssoekerId,
-            Serdes.Long().serializer()
-        )
+        val hostInfo = kafkaStreams.hentHostInfoFraKafka(securityContext.sluttbruker.arbeidssoekerId)
+        val hostInfoForKey = kafkaStreams.hentHostInfoFraKafka(securityContext.sluttbruker.kafkaKey)
+        logger.debug("Med store key: {} med stream key {}", hostInfo, hostInfoForKey)
+        val host = "${hostInfo.host()}:${hostInfo.port()}"
+        logger.debug("Sjekker om informasjon finnes på node {}", host)
 
-        if (metadata == null || metadata == KeyQueryMetadata.NOT_AVAILABLE) {
-            logger.error("Fant ikke metadata for arbeidsoeker, $metadata")
-            throw SystemfeilException("Fant ikke metadata for arbeidsøker i Kafka Streams")
-        } else {
-            val hostInfo = metadata.activeHost()
-            if (hostInfo.host() == serverConfig.ip) {
-                logger.info("Fant ingen tilgjengelige bekreftelser for arbeidssøker")
-                return emptyList()
-            }
-            val host = "${hostInfo.host()}:${hostInfo.port()}"
-            logger.info("Må hente tilgjengelige bekreftelser fra node $host")
-            val tilgjendeligeBekreftelser = bekreftelseHttpConsumer.finnTilgjengeligBekreftelser(
-                host = host,
-                bearerToken = securityContext.accessToken.jwt,
-                request = request
-            )
-            logger.info("Fant ${tilgjendeligeBekreftelser.size} tilgjengelige bekreftelser på node $host")
-            return tilgjendeligeBekreftelser
+        if (hostInfo.host() == serverConfig.ip) {
+            logger.info("Fant ingen tilgjengelige bekreftelser for arbeidssøker")
+            return emptyList()
         }
+
+        logger.info("Må hente tilgjengelige bekreftelser fra node {}", host)
+        val tilgjendeligeBekreftelser = bekreftelseHttpConsumer.finnTilgjengeligBekreftelser(
+            host = host,
+            bearerToken = securityContext.accessToken.jwt,
+            request = request
+        )
+        logger.info("Fant {} tilgjengelige bekreftelser på node {}", tilgjendeligeBekreftelser.size, host)
+        return tilgjendeligeBekreftelser
     }
 
     private suspend fun sendBekreftelseTilAnnenNode(
         securityContext: SecurityContext,
         request: BekreftelseRequest
     ) {
-        val metadata = kafkaStreams.queryMetadataForKey(
+        val hostInfo = kafkaStreams.hentHostInfoFraKafka(securityContext.sluttbruker.arbeidssoekerId)
+        val host = "${hostInfo.host()}:${hostInfo.port()}"
+        logger.debug("Sjekker om informasjon finnes på node {}", host)
+
+        if (hostInfo.host() == serverConfig.ip) {
+            throw DataIkkeFunnetForIdException("Fant ingen bekreftelse for gitt id")
+        }
+
+        logger.info("Oversender svar for bekreftelse som er på node {}", host)
+        bekreftelseHttpConsumer.sendBekreftelse(
+            host = "${hostInfo.host()}:${hostInfo.port()}",
+            bearerToken = securityContext.accessToken.jwt,
+            request = request
+        )
+    }
+
+    private fun KafkaStreams.hentHostInfoFraKafka(key: Long): HostInfo {
+        val metadata = queryMetadataForKey(
             applicationConfig.kafkaTopology.internStateStoreName,
-            securityContext.sluttbruker.arbeidssoekerId,
+            key,
             Serdes.Long().serializer()
         )
-
         if (metadata == null || metadata == KeyQueryMetadata.NOT_AVAILABLE) {
-            logger.error("Fant ikke metadata for arbeidsoeker, $metadata")
+            logger.error("Fant ikke metadata for arbeidsoeker, {}", metadata)
             throw SystemfeilException("Fant ikke metadata for arbeidsøker i Kafka Streams")
         } else {
-            val hostInfo = metadata.activeHost()
-            if (hostInfo.host() == serverConfig.ip) {
-                throw DataIkkeFunnetException("Fant ingen bekreftelse for gitt id")
-            }
-            val host = "${hostInfo.host()}:${hostInfo.port()}"
-            logger.info("Oversender svar for bekreftelse som er på node $host")
-            bekreftelseHttpConsumer.sendBekreftelse(
-                host = "${hostInfo.host()}:${hostInfo.port()}",
-                bearerToken = securityContext.accessToken.jwt,
-                request = request
+            return metadata.activeHost()
+        }
+    }
+
+    private fun getInternStateStore(): ReadOnlyKeyValueStore<Long, InternState> {
+        if (!kafkaStreams.state().isRunningOrRebalancing) {
+            throw SystemfeilException("Kafka Streams kjører ikke")
+        }
+        if (internStateStore == null) {
+            internStateStore = kafkaStreams.store(
+                StoreQueryParameters.fromNameAndType(
+                    applicationConfig.kafkaTopology.internStateStoreName,
+                    QueryableStoreTypes.keyValueStore()
+                )
             )
         }
+        return internStateStore ?: throw SystemfeilException("Intern state store er ikke initiert")
     }
 }
