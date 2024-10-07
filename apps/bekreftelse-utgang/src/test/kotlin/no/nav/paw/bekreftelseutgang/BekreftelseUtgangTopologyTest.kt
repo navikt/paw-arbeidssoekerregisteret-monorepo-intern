@@ -131,6 +131,10 @@ class BekreftelseUtgangTopologyTest : FreeSpec({
 
                 val stateStore: StateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.stateStoreName)
                 val currentState = stateStore[periode.id]
+                logger.info("Current state: ${currentState.bekreftelseHendelse}")
+                logger.info("BekreftelseHendelse: $graceperiodeUtloeptHendelse")
+                println("Current state: ${currentState.bekreftelseHendelse}")
+                println("BekreftelseHendelse: $graceperiodeUtloeptHendelse")
                 currentState shouldBe InternTilstand(identitetsnummer = identitetsnummer, bekreftelseHendelse = graceperiodeUtloeptHendelse)
 
                 hendelseLoggTopicOut.isEmpty shouldBe false
@@ -170,10 +174,10 @@ fun baOmAaAvslutteHendelse(periodeId: UUID, arbeidssoekerId: Long) = BaOmAaAvslu
     hendelseTidspunkt = Instant.now(),
 )
 
-fun graceperiodeUtloeptHendelse(periodeId: UUID, arbeidssoekerId: Long) = RegisterGracePeriodeUtloept(
+fun graceperiodeUtloeptHendelse(periodeId: UUID, arbeidssoekerId: Long, hendelseTidspunkt: Instant = Instant.now()) = RegisterGracePeriodeUtloept(
     hendelseId = UUID.randomUUID(),
     periodeId = periodeId,
     arbeidssoekerId = arbeidssoekerId,
-    hendelseTidspunkt = Instant.now(),
+    hendelseTidspunkt = hendelseTidspunkt,
     bekreftelseId = UUID.randomUUID(),
 )
