@@ -131,8 +131,7 @@ class BekreftelseUtgangTopologyTest : FreeSpec({
 
                 val stateStore: StateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.stateStoreName)
                 val currentState = stateStore[periode.id]
-                logger.info("Current state: ${currentState.bekreftelseHendelse}")
-                logger.info("BekreftelseHendelse: $graceperiodeUtloeptHendelse")
+                logger.error("Current state: {} BekreftelseHendelse: {}", currentState.bekreftelseHendelse, graceperiodeUtloeptHendelse)
                 println("Current state: ${currentState.bekreftelseHendelse}")
                 println("BekreftelseHendelse: $graceperiodeUtloeptHendelse")
                 currentState shouldBe InternTilstand(identitetsnummer = identitetsnummer, bekreftelseHendelse = graceperiodeUtloeptHendelse)
