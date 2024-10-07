@@ -1,5 +1,6 @@
 package no.nav.paw.bekreftelse.internehendelser
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -31,7 +32,11 @@ object BekreftelseHendelseSerializer: Serializer<BekreftelseHendelse> {
 object BekreftelseHendelseDeserializer: Deserializer<BekreftelseHendelse> {
     override fun deserialize(topic: String?, data: ByteArray?): BekreftelseHendelse {
         val node = objectMapper.readTree(data)
-        return when (val hendelseType = node.get("hendelseType")?.asText()) {
+        return deserializeNode(node)
+    }
+
+    fun deserializeNode(node: JsonNode) =
+        when (val hendelseType = node.get("hendelseType")?.asText()) {
             leveringsfristUtloeptHendelseType -> objectMapper.readValue<LeveringsfristUtloept>(node.traverse())
             eksternGracePeriodeUtloeptHendelseType -> objectMapper.readValue<EksternGracePeriodeUtloept>(node.traverse())
             registerGracePeriodeUtloeptHendelseType -> objectMapper.readValue<RegisterGracePeriodeUtloept>(node.traverse())
@@ -42,5 +47,5 @@ object BekreftelseHendelseDeserializer: Deserializer<BekreftelseHendelse> {
             baOmAaAvsluttePeriodeHendelsesType -> objectMapper.readValue<BaOmAaAvsluttePeriode>(node.traverse())
             else -> throw IllegalArgumentException("Ukjent hendelseType: $hendelseType")
         }
-    }
 }
+
