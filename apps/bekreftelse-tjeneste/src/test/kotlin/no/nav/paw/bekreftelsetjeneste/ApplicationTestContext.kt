@@ -78,7 +78,7 @@ class ApplicationTestContext(initialWallClockTime: Instant = Instant.now()) {
         bekreftelseSerde.serializer()
     )
 
-    val hendelseLoggTopicOut: TestOutputTopic<Long, BekreftelseHendelse> = testDriver.createOutputTopic(
+    val bekreftelseHendelseloggTopicOut: TestOutputTopic<Long, BekreftelseHendelse> = testDriver.createOutputTopic(
         applicationConfig.kafkaTopology.bekreftelseHendelseloggTopic,
         Serdes.Long().deserializer(),
         hendelseLoggSerde.deserializer()

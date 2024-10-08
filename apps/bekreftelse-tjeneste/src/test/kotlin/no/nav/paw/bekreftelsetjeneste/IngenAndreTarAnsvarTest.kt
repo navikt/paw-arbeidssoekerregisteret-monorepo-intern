@@ -19,12 +19,12 @@ class IngenAndreTarAnsvarTest : FreeSpec({
                     val (id, key, periode) = periode(identitetsnummer = "12345678901")
                     periodeTopic.pipeInput(key, periode)
                     "Nå perioden opprettes skal det ikke skje noe" {
-                        hendelseLoggTopicOut.isEmpty shouldBe true
+                        bekreftelseHendelseloggTopicOut.isEmpty shouldBe true
                     }
                     "Etter 13 dager skal en rapportering være tilgjengelig" {
                         testDriver.advanceWallClockTime(Duration.ofDays(13))
-                        hendelseLoggTopicOut.isEmpty shouldBe false
-                        val kv = hendelseLoggTopicOut.readKeyValue()
+                        bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
+                        val kv = bekreftelseHendelseloggTopicOut.readKeyValue()
                         kv.key shouldBe key
                         with(kv.value.shouldBeInstanceOf<BekreftelseTilgjengelig>()) {
                             periodeId shouldBe periode.id
@@ -34,8 +34,8 @@ class IngenAndreTarAnsvarTest : FreeSpec({
                     }
                     "Når rapporteringen ikke blir besvart innen fristen sendes det ut en melding" {
                         testDriver.advanceWallClockTime(Duration.ofDays(4))
-                        hendelseLoggTopicOut.isEmpty shouldBe false
-                        val kv = hendelseLoggTopicOut.readKeyValue()
+                        bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
+                        val kv = bekreftelseHendelseloggTopicOut.readKeyValue()
                         kv.key shouldBe key
                         with(kv.value.shouldBeInstanceOf<LeveringsfristUtloept>()) {
                             periodeId shouldBe periode.id

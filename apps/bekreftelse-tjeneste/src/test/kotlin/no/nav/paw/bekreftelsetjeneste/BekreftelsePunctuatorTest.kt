@@ -38,7 +38,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                 testDriver.advanceWallClockTime(Duration.ofSeconds(5))
 
                 "Når perioden opprettes skal det opprettes en intern tilstand med en bekreftelse" {
-                    hendelseLoggTopicOut.isEmpty shouldBe true
+                    bekreftelseHendelseloggTopicOut.isEmpty shouldBe true
                     val stateStore: StateStore =
                         testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
                     val currentState = stateStore.get(periode.id)
@@ -75,8 +75,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
                             logger.info("key: ${it.key}, value: ${it.value}")
                         }
                     }
-                    hendelseLoggTopicOut.isEmpty shouldBe false
-                    val hendelser = hendelseLoggTopicOut.readKeyValuesToList()
+                    bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
+                    val hendelser = bekreftelseHendelseloggTopicOut.readKeyValuesToList()
                     logger.info("hendelser: $hendelser")
                     hendelser.size shouldBe 1
                     val kv = hendelser.last()
@@ -93,8 +93,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
                             logger.info("key: ${it.key}, value: ${it.value}")
                         }
                     }
-                    hendelseLoggTopicOut.isEmpty shouldBe false
-                    val hendelser = hendelseLoggTopicOut.readKeyValuesToList()
+                    bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
+                    val hendelser = bekreftelseHendelseloggTopicOut.readKeyValuesToList()
                     logger.info("hendelser: $hendelser")
                     hendelser.size shouldBe 1
                     val hendelseLast = hendelser.last()
@@ -110,8 +110,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
                             logger.info("key: ${it.key}, value: ${it.value}")
                         }
                     }
-                    hendelseLoggTopicOut.isEmpty shouldBe false
-                    val hendelser = hendelseLoggTopicOut.readKeyValuesToList()
+                    bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
+                    val hendelser = bekreftelseHendelseloggTopicOut.readKeyValuesToList()
                     logger.info("hendelser: $hendelser")
                     hendelser.size shouldBe 1
                     val kv = hendelser.last()
@@ -127,8 +127,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
                             logger.info("key: ${it.key}, value: ${it.value}")
                         }
                     }
-                    hendelseLoggTopicOut.isEmpty shouldBe false
-                    val hendelser = hendelseLoggTopicOut.readKeyValuesToList()
+                    bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
+                    val hendelser = bekreftelseHendelseloggTopicOut.readKeyValuesToList()
                     logger.info("hendelser: $hendelser")
                     hendelser.size shouldBe 1
                     val kv = hendelser.last()
@@ -150,8 +150,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
                             logger.info("key: ${it.key}, value: ${it.value}")
                         }
                     }
-                    hendelseLoggTopicOut.isEmpty shouldBe false
-                    val hendelser = hendelseLoggTopicOut.readKeyValuesToList()
+                    bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
+                    val hendelser = bekreftelseHendelseloggTopicOut.readKeyValuesToList()
                     logger.info("hendelser: $hendelser")
                     hendelser.size shouldBe 1
                     val kv = hendelser.last()
@@ -192,7 +192,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                 )
                 testDriver.advanceWallClockTime(Duration.ofSeconds(5))
                 testDriver.advanceWallClockTime(tilgjengeligOffset.plus(graceperiode))
-                val hendelseLoggOutput = hendelseLoggTopicOut.readKeyValuesToList()
+                val hendelseLoggOutput = bekreftelseHendelseloggTopicOut.readKeyValuesToList()
                 logger.info("hendelseOutput: $hendelseLoggOutput")
                 stateStore.all().use {
                     it.forEach {
@@ -240,7 +240,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                 )
                 testDriver.advanceWallClockTime(Duration.ofSeconds(5))
                 testDriver.advanceWallClockTime(tilgjengeligOffset.plus(graceperiode))
-                val hendelseLoggOutput = hendelseLoggTopicOut.readKeyValuesToList()
+                val hendelseLoggOutput = bekreftelseHendelseloggTopicOut.readKeyValuesToList()
                 logger.info("hendelseOutput: $hendelseLoggOutput")
                 stateStore.all().use {
                     it.forEach {
@@ -291,7 +291,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                             )
                         )
                     )
-                    hendelseLoggTopicOut.isEmpty shouldBe true
+                    bekreftelseHendelseloggTopicOut.isEmpty shouldBe true
                 }
             }
         }
@@ -335,8 +335,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
                             )
                         )
                     )
-                    hendelseLoggTopicOut.isEmpty shouldBe false
-                    val hendelser = hendelseLoggTopicOut.readKeyValuesToList()
+                    bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
+                    val hendelser = bekreftelseHendelseloggTopicOut.readKeyValuesToList()
                     hendelser.size shouldBe 1
                     val kv = hendelser.last()
                     kv.key shouldBe key
@@ -391,8 +391,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
                             )
                         )
                     )
-                    hendelseLoggTopicOut.isEmpty shouldBe false
-                    val hendelser = hendelseLoggTopicOut.readKeyValuesToList()
+                    bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
+                    val hendelser = bekreftelseHendelseloggTopicOut.readKeyValuesToList()
                     logger.info("hendelser: $hendelser")
                     hendelser.size shouldBe 2
                     val kv = hendelser.last()
@@ -446,8 +446,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
                             )
                         )
                     )
-                    hendelseLoggTopicOut.isEmpty shouldBe false
-                    val hendelser = hendelseLoggTopicOut.readKeyValuesToList()
+                    bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
+                    val hendelser = bekreftelseHendelseloggTopicOut.readKeyValuesToList()
                     logger.info("hendelser: $hendelser")
                     hendelser.size shouldBe 3
                     val kv = hendelser.last()
@@ -503,8 +503,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
                             )
                         )
                     )
-                    hendelseLoggTopicOut.isEmpty shouldBe false
-                    val hendelser = hendelseLoggTopicOut.readKeyValuesToList()
+                    bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
+                    val hendelser = bekreftelseHendelseloggTopicOut.readKeyValuesToList()
                     logger.info("hendelser: $hendelser")
                     hendelser.size shouldBe 4
                     val kv = hendelser.last()

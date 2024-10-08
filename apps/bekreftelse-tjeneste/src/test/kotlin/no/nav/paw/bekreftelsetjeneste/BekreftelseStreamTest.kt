@@ -3,17 +3,13 @@ package no.nav.paw.bekreftelsetjeneste
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import no.nav.paw.arbeidssoekerregisteret.testdata.bekreftelse.bekreftelseMelding
 import no.nav.paw.arbeidssoekerregisteret.testdata.kafkaKeyContext
 import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.metadata
 import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.periode
 import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
-import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
-import no.nav.paw.bekreftelse.melding.v1.vo.Bruker
-import no.nav.paw.bekreftelse.melding.v1.vo.BrukerType
-import no.nav.paw.bekreftelse.melding.v1.vo.Metadata
-import no.nav.paw.bekreftelse.melding.v1.vo.Svar
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.PeriodeInfo
 import no.nav.paw.bekreftelsetjeneste.tilstand.Tilstand
@@ -21,7 +17,7 @@ import java.time.Instant
 import java.util.*
 
 
-class BekreftelseMeldingTopologyTest : FreeSpec({
+class BekreftelseStreamTest : FreeSpec({
 
     val identitetsnummer = "12345678901"
     val startTime = Instant.ofEpochMilli(1704185347000)
@@ -42,7 +38,7 @@ class BekreftelseMeldingTopologyTest : FreeSpec({
                 testDriver.getKeyValueStore<UUID, InternTilstand>(applicationConfig.kafkaTopology.internStateStoreName)
             stateStore.all().asSequence().count() shouldBe 0
 
-            hendelseLoggTopicOut.isEmpty shouldBe true
+            bekreftelseHendelseloggTopicOut.isEmpty shouldBe true
         }
     }
 
@@ -56,12 +52,12 @@ class BekreftelseMeldingTopologyTest : FreeSpec({
                 testDriver.advanceWallClockTime(
                     interval.minus(tilgjengeligOffset).plusSeconds(5)
                 )
-                val bekreftelseId = (hendelseLoggTopicOut.readValue() as BekreftelseTilgjengelig).bekreftelseId
+                val bekreftelseId = (bekreftelseHendelseloggTopicOut.readValue() as BekreftelseTilgjengelig).bekreftelseId
                 testDriver.advanceWallClockTime(tilgjengeligOffset.plusSeconds(5))
                 testDriver.advanceWallClockTime(varselFoerGraceperiodeUtloept.plusSeconds(5))
                 testDriver.advanceWallClockTime(varselFoerGraceperiodeUtloept.plusSeconds(5))
 
-                hendelseLoggTopicOut.readRecordsToList()
+                bekreftelseHendelseloggTopicOut.readRecordsToList()
                 val bekreftelseMelding = bekreftelseMelding(
                     id = bekreftelseId,
                     periodeId = periode.id,
@@ -103,7 +99,7 @@ class BekreftelseMeldingTopologyTest : FreeSpec({
                     )
                 )
 
-                hendelseLoggTopicOut.isEmpty shouldBe true
+                bekreftelseHendelseloggTopicOut.isEmpty shouldBe true
             }
         }
     }
@@ -119,7 +115,7 @@ class BekreftelseMeldingTopologyTest : FreeSpec({
                     interval.minus(tilgjengeligOffset).plusSeconds(5)
                 )
 
-                val bekreftelseId = (hendelseLoggTopicOut.readValue() as BekreftelseTilgjengelig).bekreftelseId
+                val bekreftelseId = (bekreftelseHendelseloggTopicOut.readValue() as BekreftelseTilgjengelig).bekreftelseId
                 val bekreftelseMelding = bekreftelseMelding(
                     id = bekreftelseId,
                     periodeId = periode.id,
@@ -160,8 +156,8 @@ class BekreftelseMeldingTopologyTest : FreeSpec({
                     )
                 )
 
-                hendelseLoggTopicOut.isEmpty shouldBe false
-                val hendelse = hendelseLoggTopicOut.readKeyValue()
+                bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
+                val hendelse = bekreftelseHendelseloggTopicOut.readKeyValue()
                 hendelse.key shouldBe key
                 hendelse.value shouldBe BekreftelseMeldingMottatt(
                     hendelseId = hendelse.value.hendelseId,
@@ -185,7 +181,7 @@ class BekreftelseMeldingTopologyTest : FreeSpec({
                     interval.minus(tilgjengeligOffset).plusSeconds(5)
                 )
 
-                val bekreftelseId = (hendelseLoggTopicOut.readValue() as BekreftelseTilgjengelig).bekreftelseId
+                val bekreftelseId = (bekreftelseHendelseloggTopicOut.readValue() as BekreftelseTilgjengelig).bekreftelseId
                 val bekreftelseMelding = bekreftelseMelding(
                     id = bekreftelseId,
                     periodeId = periode.id,
@@ -226,8 +222,8 @@ class BekreftelseMeldingTopologyTest : FreeSpec({
                     )
                 )
 
-                hendelseLoggTopicOut.isEmpty shouldBe false
-                val hendelse = hendelseLoggTopicOut.readKeyValuesToList()
+                bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
+                val hendelse = bekreftelseHendelseloggTopicOut.readKeyValuesToList()
                 hendelse[0].key shouldBe key
                 hendelse[0].value.shouldBeInstanceOf<BekreftelseMeldingMottatt>()
                 hendelse[1].key shouldBe key
@@ -237,41 +233,3 @@ class BekreftelseMeldingTopologyTest : FreeSpec({
     }
 
 })
-
-// TODO: flytt denne til test-data-lib
-fun bekreftelseMelding(
-    id: UUID = UUID.randomUUID(),
-    periodeId: UUID = UUID.randomUUID(),
-    namespace: String = "paw",
-    gjelderFra: Instant = Instant.now(),
-    gjelderTil: Instant = Instant.now(),
-    harJobbetIDennePerioden: Boolean = true,
-    vilFortsetteSomArbeidssoeker: Boolean = true
-) =
-    Bekreftelse
-        .newBuilder()
-        .setPeriodeId(periodeId)
-        .setNamespace(namespace)
-        .setId(id)
-        .setSvar(Svar
-                .newBuilder()
-                .setSendtInn(
-                    Metadata
-                        .newBuilder()
-                        .setTidspunkt(Instant.now())
-                        .setUtfoertAv(
-                            Bruker
-                                .newBuilder()
-                                .setId("test")
-                                .setType(BrukerType.SLUTTBRUKER)
-                                .build()
-                        ).setKilde("test")
-                        .setAarsak("test")
-                        .build()
-                )
-                .setGjelderFra(gjelderFra)
-                .setGjelderTil(gjelderTil)
-                .setHarJobbetIDennePerioden(harJobbetIDennePerioden)
-                .setVilFortsetteSomArbeidssoeker(vilFortsetteSomArbeidssoeker)
-                .build())
-        .build()
