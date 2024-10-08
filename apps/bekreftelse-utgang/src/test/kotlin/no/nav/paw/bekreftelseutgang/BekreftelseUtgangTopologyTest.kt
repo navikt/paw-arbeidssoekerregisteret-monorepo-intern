@@ -15,7 +15,6 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 
-
 class BekreftelseUtgangTopologyTest : FreeSpec({
 
     val startTime = Instant.ofEpochMilli(1704185347000)
@@ -76,19 +75,18 @@ class BekreftelseUtgangTopologyTest : FreeSpec({
         }
     }
 
-    "Periode with identitetsnummer but without corresponding BekreftelseHendelse does not send 'Avsluttet' event" {
+    "identitetsnummer men ingen tilhørende BekreftelseHendelse sender ikke 'Avsluttet' hendelse" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
                 val (_, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
                 periodeTopic.pipeInput(key, periode)
 
-                // No BekreftelseHendelse is sent yet, only Periode.
                 hendelseLoggTopicOut.isEmpty shouldBe true
             }
         }
     }
 
-    "Avsluttet periode removes state and does not send 'Avsluttet' hendelse" {
+    "Avsluttet periode sletter state og sender ikke 'Avsluttet' hendelse" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
                 val (_, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
@@ -107,20 +105,16 @@ class BekreftelseUtgangTopologyTest : FreeSpec({
         }
     }
 
-    "BekreftelseHendelse without identitetsnummer in state does not send 'Avsluttet' hendelse" {
+    "BekreftelseHendelse uten tilhørende identitetsnummer i state sender ikke 'Avsluttet' hendelse" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
-            with(kafkaKeyContext()) {
-                val (id, key) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
+            val graceperiodeUtloeptHendelse = graceperiodeUtloeptHendelse(periodeId = UUID.randomUUID(), arbeidssoekerId = 1234L)
+            bekreftelseHendelseLoggTopic.pipeInput(1234L, graceperiodeUtloeptHendelse)
 
-                val graceperiodeUtloeptHendelse = graceperiodeUtloeptHendelse(periodeId = UUID.randomUUID(), arbeidssoekerId = id)
-                bekreftelseHendelseLoggTopic.pipeInput(key, graceperiodeUtloeptHendelse)
-
-                hendelseLoggTopicOut.isEmpty shouldBe true
-            }
+            hendelseLoggTopicOut.isEmpty shouldBe true
         }
     }
 
-    "State is updated with BekreftelseHendelse" {
+    "State blir oppdatert med BekreftelseHendelse" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
                 val (id, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
@@ -143,7 +137,7 @@ class BekreftelseUtgangTopologyTest : FreeSpec({
         }
     }
 
-    "Multiple Periode and BekreftelseHendelse events update state correctly and send events when necessary" {
+    "Flere perioder og BekreftelseHendelse hendelser oppdaterer state riktig og sender hendelser" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
                 val (id, key, periode1) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
@@ -158,10 +152,12 @@ class BekreftelseUtgangTopologyTest : FreeSpec({
                 val graceperiodeUtloeptHendelse1 = graceperiodeUtloeptHendelse(periodeId = periode1.id, arbeidssoekerId = id)
                 bekreftelseHendelseLoggTopic.pipeInput(key, graceperiodeUtloeptHendelse1)
                 hendelseLoggTopicOut.isEmpty shouldBe false
+                hendelseLoggTopicOut.readRecordsToList().size shouldBe 1
 
                 val graceperiodeUtloeptHendelse2 = graceperiodeUtloeptHendelse(periodeId = periode2.id, arbeidssoekerId = id2)
                 bekreftelseHendelseLoggTopic.pipeInput(key2, graceperiodeUtloeptHendelse2)
                 hendelseLoggTopicOut.isEmpty shouldBe false
+                hendelseLoggTopicOut.readRecordsToList().size shouldBe 1
             }
         }
     }
