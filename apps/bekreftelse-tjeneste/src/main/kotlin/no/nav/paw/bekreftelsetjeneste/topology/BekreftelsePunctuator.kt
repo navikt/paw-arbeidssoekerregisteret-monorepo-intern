@@ -35,20 +35,20 @@ fun bekreftelsePunctuator(
     }
 }
 
-private fun processBekreftelser(
+fun processBekreftelser(
     bekreftelseIntervals: BekreftelseIntervals,
     currentState: InternTilstand,
-    timestamp: Instant,
+    currentTime: Instant,
 ): Pair<InternTilstand, List<BekreftelseHendelse>> {
     val existingBekreftelse = currentState.bekreftelser.firstOrNull()
 
     val (tilstand, hendelse) = if (existingBekreftelse == null) {
         currentState.createInitialBekreftelse(bekreftelseIntervals.interval) to null
     } else {
-        currentState.checkAndCreateNewBekreftelse(timestamp, bekreftelseIntervals)
+        currentState.checkAndCreateNewBekreftelse(currentTime, bekreftelseIntervals)
     }
 
-    val (updatedTilstand, additionalHendelse) = tilstand.handleUpdateBekreftelser(timestamp, bekreftelseIntervals)
+    val (updatedTilstand, additionalHendelse) = tilstand.handleUpdateBekreftelser(currentTime, bekreftelseIntervals)
 
     return updatedTilstand to listOfNotNull(hendelse, additionalHendelse)
 }
