@@ -18,7 +18,7 @@ dependencies {
     implementation(project(":domain:main-avro-schema"))
     implementation(libs.jackson.datatypeJsr310)
     implementation(libs.jackson.kotlin)
-    implementation(libs.arrowCore)
+    implementation(libs.arrow.core.core)
     implementation(libs.hoplite.yaml)
     implementation(libs.nav.common.log)
     implementation(libs.logbackClassic)

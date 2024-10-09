@@ -8,30 +8,53 @@ import java.time.Instant
 const val MAKS_ANTALL_UTSTEENDE_BEKREFTELSER: Int = 100
 private val maksAntallLogger = LoggerFactory.getLogger("maksAntallLogger")
 fun Bekreftelse.erKlarForUtfylling(now: Instant, tilgjengeligOffset: Duration): Boolean =
-    now.isAfter(gjelderTil.minus(tilgjengeligOffset))
+    when (sisteTilstand()) {
+        is IkkeKlarForUtfylling -> now.isAfter(gjelderTil.minus(tilgjengeligOffset))
+        else -> false
+    }
+
 
 fun Bekreftelse.harFristUtloept(now: Instant, tilgjengeligOffset: Duration): Boolean =
-    now.isAfter(tilgjengeliggjort?.plus(tilgjengeligOffset) ?: gjelderTil)
+    when (val gjeldeneTilstand = sisteTilstand()) {
+        is KlarForUtfylling -> now.isAfter(gjeldeneTilstand.timestamp.plus(tilgjengeligOffset))
+        else -> false
+    }
+
 
 fun Bekreftelse.erSisteVarselOmGjenstaaendeGraceTid(now: Instant, varselFoerGraceperiodeUtloept: Duration): Boolean =
-    sisteVarselOmGjenstaaendeGraceTid == null && now.isAfter(fristUtloept?.plus(varselFoerGraceperiodeUtloept) ?: gjelderTil.plus(
-        varselFoerGraceperiodeUtloept
-    ))
+    when (val gjeldeneTilstand = sisteTilstand()) {
+        is VenterSvar -> !has<GracePeriodeVarselet>() && now.isAfter(
+            gjeldeneTilstand.timestamp.plus(
+                varselFoerGraceperiodeUtloept
+            )
+        )
+
+        else -> false
+    }
 
 fun Bekreftelse.harGraceperiodeUtloept(now: Instant, graceperiode: Duration): Boolean =
-    now.isAfter(fristUtloept?.plus(graceperiode) ?: gjelderTil.plus(graceperiode))
+    when (val gjeldeneTilstand = sisteTilstand()) {
+        is VenterSvar -> now.isAfter(gjeldeneTilstand.timestamp.plus(graceperiode))
+        is GracePeriodeVarselet -> tilstandsLogg.get<VenterSvar>()?.timestamp?.let { ts ->  now.isAfter(ts.plus(graceperiode)) } ?: false
+        else -> false
+    }
 
-fun NonEmptyList<Bekreftelse>.shouldCreateNewBekreftelse(now: Instant, interval: Duration, tilgjengeligOffset: Duration): Boolean =
+
+fun NonEmptyList<Bekreftelse>.shouldCreateNewBekreftelse(
+    now: Instant,
+    interval: Duration,
+    tilgjengeligOffset: Duration
+): Boolean =
     (size < MAKS_ANTALL_UTSTEENDE_BEKREFTELSER)
         .also { underGrense ->
             if (!underGrense) {
                 maksAntallLogger.warn("Maks antall bekreftelser er nådd!")
             }
         } &&
-    maxBy { it.gjelderTil }
-        .let {
-            now.isAfter(it.gjelderTil.plus(interval.minus(tilgjengeligOffset)))
-        }
+            maxBy { it.gjelderTil }
+                .let {
+                    now.isAfter(it.gjelderTil.plus(interval.minus(tilgjengeligOffset)))
+                }
 
 
 

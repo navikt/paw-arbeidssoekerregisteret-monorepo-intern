@@ -21,7 +21,7 @@ dependencies {
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:kafka-key-generator-client"))
 
-    implementation(libs.arrowCore)
+    implementation(libs.arrow.core.core)
     implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
     implementation(libs.ktor.server.cors)
     implementation(libs.ktor.server.swagger)

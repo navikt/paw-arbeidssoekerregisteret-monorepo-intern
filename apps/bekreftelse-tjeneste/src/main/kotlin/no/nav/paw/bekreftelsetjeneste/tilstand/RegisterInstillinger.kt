@@ -13,7 +13,7 @@ fun fristForNesteBekreftelse(forrige: Instant, interval: Duration): Instant {
 }
 
 fun Bekreftelse.gjenstaendeGraceperiode(timestamp: Instant, graceperiode: Duration): Duration {
-    val utvidetGjelderTil = fristUtloept?.plus(graceperiode) ?: gjelderTil.plus(graceperiode)
+    val utvidetGjelderTil = tilstand<VenterSvar>()?.timestamp?.plus(graceperiode) ?: gjelderTil.plus(graceperiode)
 
     return if (timestamp.isAfter(utvidetGjelderTil)) {
         Duration.ZERO

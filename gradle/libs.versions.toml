@@ -4,6 +4,7 @@ pawAaregClientVersion = "24.07.04.18-1"
 arbeidssokerregisteretVersion = "1.9348086045.48-1"
 bekreftelseSchemaVersion = "24.09.16.1-1"
 arrowVersion = "1.2.4"
+arrowJacksonIntegrationVersion = "0.14.1"
 noNavCommonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
 noNavSecurityVersion = "5.0.5"
 comSksamuelHopliteVersion = "2.8.2"
@@ -29,7 +30,9 @@ hikariVersion = "6.0.0"
 
 [libraries]
 coroutinesCore = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutinesVersion" }
-arrowCore = { group = "io.arrow-kt", name = "arrow-core", version.ref = "arrowVersion" }
+arrow-core-core = { group = "io.arrow-kt", name = "arrow-core", version.ref = "arrowVersion" }
+arrow-core-serialization = { group = "io.arrow-kt", name = "arrow-core-serialization", version.ref = "arrowVersion" }
+arrow-integration-jackson = { group = "io.arrow-kt", name = "arrow-integrations-jackson-module", version.ref = "arrowJacksonIntegrationVersion" }
 logbackClassic = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logbackVersion" }
 logstashLogbackEncoder = { group = "net.logstash.logback", name = "logstash-logback-encoder", version.ref = "logstashVersion" }
 ktor-client-contentNegotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version = "2.3.12" }

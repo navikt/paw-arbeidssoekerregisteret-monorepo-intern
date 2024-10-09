@@ -25,7 +25,7 @@ dependencies {
     implementation(project(":lib:kafka-streams"))
     implementation(project(":lib:hoplite-config"))
 
-    api(libs.arrowCore)
+    api(libs.arrow.core.core)
 
     implementation(libs.kafka.streams.core)
     implementation(libs.paw.pdl.client)

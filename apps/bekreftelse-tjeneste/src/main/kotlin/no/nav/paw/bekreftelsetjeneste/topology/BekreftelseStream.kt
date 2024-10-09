@@ -11,11 +11,7 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
-import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
-import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstand
-import no.nav.paw.bekreftelsetjeneste.tilstand.Tilstand
-import no.nav.paw.bekreftelsetjeneste.tilstand.Tilstand.KlarForUtfylling
-import no.nav.paw.bekreftelsetjeneste.tilstand.Tilstand.VenterSvar
+import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import no.nav.paw.config.kafka.streams.Punctuation
 import no.nav.paw.config.kafka.streams.genericProcess
 import org.apache.kafka.common.serialization.Serdes
@@ -92,22 +88,22 @@ fun processPawNamespace(
         return
     }
 
-    when (bekreftelse.tilstand) {
+    when (val sisteTilstand = bekreftelse.sisteTilstand()) {
         is VenterSvar, is KlarForUtfylling -> {
             val (hendelser, oppdatertBekreftelse) = behandleGyldigSvar(gjeldeneTilstand, record, bekreftelse)
             oppdaterStateStore(stateStore, gjeldeneTilstand, oppdatertBekreftelse)
 
-            Span.current().setAttribute("bekreftelse.tilstand", bekreftelse.tilstand.toString())
+            Span.current().setAttribute("bekreftelse.tilstand", sisteTilstand.toString())
 
             forwardHendelser(record, hendelser, forward)
         }
 
         else -> {
-            Span.current().setAttribute("unexpected_tilstand", bekreftelse.tilstand.toString())
+            Span.current().setAttribute("unexpected_tilstand", sisteTilstand.toString())
             meldingsLogger.warn(
                 "Melding {} har ikke forventet tilstand, tilstand={}",
                 record.value().id,
-                bekreftelse.tilstand
+                sisteTilstand
             )
         }
     }
@@ -125,14 +121,14 @@ fun behandleGyldigSvar(
     bekreftelse: Bekreftelse
 ): Pair<List<BekreftelseHendelse>, Bekreftelse> {
     val arbeidssoekerId = gjeldeneTilstand.periode.arbeidsoekerId
-
+    val sisteTilstand = bekreftelse.sisteTilstand()
     Span.current().setAttribute("arbeidsoekerId", arbeidssoekerId.toString())
     Span.current().setAttribute("bekreftelseId", bekreftelse.bekreftelseId.toString())
     Span.current().setAttribute("periodeId", record.value().periodeId.toString())
-    Span.current().setAttribute("bekreftelse.oldTilstand", bekreftelse.tilstand.toString())
+    Span.current().setAttribute("bekreftelse.oldTilstand", sisteTilstand.toString())
 
-    val oppdatertBekreftelse = bekreftelse.copy(tilstand = Tilstand.Levert)
-    Span.current().setAttribute("bekreftelse.newTilstand", Tilstand.Levert.toString())
+    val oppdatertBekreftelse = bekreftelse + Levert(Instant.now())
+    Span.current().setAttribute("bekreftelse.newTilstand", oppdatertBekreftelse.sisteTilstand().toString())
 
     val vilFortsette = record.value().svar.vilFortsetteSomArbeidssoeker
     Span.current().setAttribute("vilFortsetteSomArbeidssoeker", vilFortsette.toString())

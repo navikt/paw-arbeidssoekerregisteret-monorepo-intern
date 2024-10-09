@@ -14,7 +14,7 @@ dependencies {
     implementation(project(":domain:interne-hendelser"))
     implementation(libs.paw.pdl.client)
     api(libs.micrometer.registryPrometheus)
-    api(libs.arrowCore)
+    api(libs.arrow.core.core)
     testImplementation(libs.ktor.server.testJvm)
     testImplementation(libs.test.junit5.runner)
     testImplementation(libs.test.kotest.assertionsCore)

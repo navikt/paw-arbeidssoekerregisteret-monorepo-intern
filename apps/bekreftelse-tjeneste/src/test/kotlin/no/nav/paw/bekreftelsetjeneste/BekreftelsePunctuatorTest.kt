@@ -1,6 +1,7 @@
 package no.nav.paw.bekreftelsetjeneste
 
 import io.kotest.core.spec.style.FreeSpec
+import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import no.nav.paw.arbeidssoekerregisteret.testdata.kafkaKeyContext
@@ -15,11 +16,7 @@ import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
 import no.nav.paw.bekreftelse.melding.v1.vo.BrukerType
 import no.nav.paw.bekreftelse.melding.v1.vo.Metadata
 import no.nav.paw.bekreftelse.melding.v1.vo.Svar
-import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
-import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstand
-import no.nav.paw.bekreftelsetjeneste.tilstand.PeriodeInfo
-import no.nav.paw.bekreftelsetjeneste.tilstand.Tilstand
-import no.nav.paw.bekreftelsetjeneste.tilstand.fristForNesteBekreftelse
+import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import no.nav.paw.bekreftelsetjeneste.topology.StateStore
 import java.time.Duration
 import java.time.Instant
@@ -31,9 +28,12 @@ class BekreftelsePunctuatorTest : FreeSpec({
 
     "BekreftelsePunctuator sender riktig hendelser i rekkefølge" - {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
-            with(kafkaKeyContext()){
+            with(kafkaKeyContext()) {
                 val (interval, graceperiode, tilgjengeligOffset, varselFoerGraceperiodeUtloept) = applicationConfig.bekreftelseIntervals
-                val (id, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
+                val (id, key, periode) = periode(
+                    identitetsnummer = identitetsnummer,
+                    startetMetadata = metadata(tidspunkt = startTime)
+                )
                 periodeTopic.pipeInput(key, periode)
                 testDriver.advanceWallClockTime(Duration.ofSeconds(5))
 
@@ -41,29 +41,27 @@ class BekreftelsePunctuatorTest : FreeSpec({
                     bekreftelseHendelseloggTopicOut.isEmpty shouldBe true
                     val stateStore: StateStore =
                         testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
-                    val currentState = stateStore.get(periode.id)
-                    currentState shouldBe InternTilstand(
-                        periode = PeriodeInfo(
+
+                    stateStore.get(periode.id) should { currentState ->
+                        currentState.periode shouldBe PeriodeInfo(
                             periodeId = periode.id,
                             identitetsnummer = periode.identitetsnummer,
                             arbeidsoekerId = id,
                             recordKey = key,
                             startet = periode.startet.tidspunkt,
                             avsluttet = periode.avsluttet?.tidspunkt
-                        ), bekreftelser = listOf(
-                            Bekreftelse(
-                                tilstand = Tilstand.IkkeKlarForUtfylling,
-                                tilgjengeliggjort = null,
-                                fristUtloept = null,
-                                sisteVarselOmGjenstaaendeGraceTid = null,
-                                bekreftelseId = currentState.bekreftelser.first().bekreftelseId,
-                                gjelderFra = periode.startet.tidspunkt,
-                                gjelderTil = fristForNesteBekreftelse(
-                                    periode.startet.tidspunkt, interval
-                                )
-                            )
                         )
-                    )
+                        currentState.bekreftelser.size shouldBe 1
+                        currentState.bekreftelser.first() should { bekreftelse ->
+                            bekreftelse.gjelderFra shouldBe periode.startet.tidspunkt
+                            bekreftelse.gjelderTil shouldBe fristForNesteBekreftelse(
+                                periode.startet.tidspunkt,
+                                interval
+                            )
+                            bekreftelse.tilstandsLogg.asList().size shouldBe 1
+                            bekreftelse.has<IkkeKlarForUtfylling>() shouldBe true
+                        }
+                    }
                 }
 
                 "Etter 11 dager skal det ha blitt sendt en BekreftelseTilgjengelig hendelse" {
@@ -163,9 +161,12 @@ class BekreftelsePunctuatorTest : FreeSpec({
     }
     "BekreftelsePunctuator håndterer BekreftelseMeldingMottatt hendelse" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
-            with(kafkaKeyContext()){
+            with(kafkaKeyContext()) {
                 val (interval, graceperiode, tilgjengeligOffset, _) = applicationConfig.bekreftelseIntervals
-                val (_, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
+                val (_, key, periode) = periode(
+                    identitetsnummer = identitetsnummer,
+                    startetMetadata = metadata(tidspunkt = startTime)
+                )
 
                 periodeTopic.pipeInput(key, periode)
                 testDriver.advanceWallClockTime(
@@ -269,28 +270,26 @@ class BekreftelsePunctuatorTest : FreeSpec({
                     val stateStore: StateStore =
                         testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
                     val currentState = stateStore.get(periode.id)
-                    currentState shouldBe InternTilstand(
-                        periode = PeriodeInfo(
+                    currentState should {
+                        it.periode shouldBe PeriodeInfo(
                             periodeId = periode.id,
                             identitetsnummer = periode.identitetsnummer,
                             arbeidsoekerId = id,
                             recordKey = key,
                             startet = periode.startet.tidspunkt,
                             avsluttet = periode.avsluttet?.tidspunkt
-                        ), bekreftelser = listOf(
-                            Bekreftelse(
-                                tilstand = Tilstand.IkkeKlarForUtfylling,
-                                tilgjengeliggjort = null,
-                                fristUtloept = null,
-                                sisteVarselOmGjenstaaendeGraceTid = null,
-                                bekreftelseId = currentState.bekreftelser.first().bekreftelseId,
-                                gjelderFra = periode.startet.tidspunkt,
-                                gjelderTil = fristForNesteBekreftelse(
-                                    periode.startet.tidspunkt, interval
-                                )
-                            )
                         )
-                    )
+                        it.bekreftelser.size shouldBe 1
+                        it.bekreftelser.first() should { bekreftelse ->
+                            bekreftelse.gjelderFra shouldBe periode.startet.tidspunkt
+                            bekreftelse.gjelderTil shouldBe fristForNesteBekreftelse(
+                                periode.startet.tidspunkt,
+                                interval
+                            )
+                            bekreftelse.tilstandsLogg.asList().size shouldBe 1
+                            bekreftelse.has<IkkeKlarForUtfylling>() shouldBe true
+                        }
+                    }
                     bekreftelseHendelseloggTopicOut.isEmpty shouldBe true
                 }
             }
@@ -312,29 +311,27 @@ class BekreftelsePunctuatorTest : FreeSpec({
                     val stateStore: StateStore =
                         testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
                     val currentState = stateStore.get(periode.id)
-                    currentState shouldBe InternTilstand(
-                        periode = PeriodeInfo(
+                    currentState should {
+                        it.periode shouldBe PeriodeInfo(
                             periodeId = periode.id,
                             identitetsnummer = periode.identitetsnummer,
                             arbeidsoekerId = id,
                             recordKey = key,
                             startet = periode.startet.tidspunkt,
                             avsluttet = periode.avsluttet?.tidspunkt
-                        ), bekreftelser = listOf(
-                            Bekreftelse(
-                                tilstand = Tilstand.KlarForUtfylling,
-                                tilgjengeliggjort = startTime.plus(interval)
-                                    .minus(tilgjengeligOffset).plusSeconds(5),
-                                fristUtloept = null,
-                                sisteVarselOmGjenstaaendeGraceTid = null,
-                                bekreftelseId = currentState.bekreftelser.first().bekreftelseId,
-                                gjelderFra = periode.startet.tidspunkt,
-                                gjelderTil = fristForNesteBekreftelse(
-                                    periode.startet.tidspunkt, interval
-                                )
-                            )
                         )
-                    )
+                        it.bekreftelser.size shouldBe 1
+                        it.bekreftelser.first() should { bekreftelse ->
+                            bekreftelse.gjelderFra shouldBe periode.startet.tidspunkt
+                            bekreftelse.gjelderTil shouldBe fristForNesteBekreftelse(
+                                periode.startet.tidspunkt,
+                                interval
+                            )
+                            bekreftelse.tilstandsLogg.asList().size shouldBe 2
+                            bekreftelse.has<IkkeKlarForUtfylling>() shouldBe true
+                            bekreftelse.has<KlarForUtfylling>() shouldBe true
+                        }
+                    }
                     bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
                     val hendelser = bekreftelseHendelseloggTopicOut.readKeyValuesToList()
                     hendelser.size shouldBe 1
@@ -368,29 +365,28 @@ class BekreftelsePunctuatorTest : FreeSpec({
                         }
                     }
                     val currentState = stateStore.get(periode.id)
-                    currentState shouldBe InternTilstand(
-                        periode = PeriodeInfo(
+                    currentState should {
+                        it.periode shouldBe PeriodeInfo(
                             periodeId = periode.id,
                             identitetsnummer = periode.identitetsnummer,
                             arbeidsoekerId = id,
                             recordKey = key,
                             startet = periode.startet.tidspunkt,
                             avsluttet = periode.avsluttet?.tidspunkt
-                        ), bekreftelser = listOf(
-                            Bekreftelse(
-                                tilstand = Tilstand.VenterSvar,
-                                tilgjengeliggjort = startTime.plus(interval)
-                                    .minus(tilgjengeligOffset).plusSeconds(5),
-                                fristUtloept = startTime.plus(interval).plusSeconds(10),
-                                sisteVarselOmGjenstaaendeGraceTid = null,
-                                bekreftelseId = currentState.bekreftelser.first().bekreftelseId,
-                                gjelderFra = periode.startet.tidspunkt,
-                                gjelderTil = fristForNesteBekreftelse(
-                                    periode.startet.tidspunkt, interval
-                                )
-                            )
                         )
-                    )
+                        it.bekreftelser.size shouldBe 1
+                        it.bekreftelser.first() should { bekreftelse ->
+                            bekreftelse.gjelderFra shouldBe periode.startet.tidspunkt
+                            bekreftelse.gjelderTil shouldBe fristForNesteBekreftelse(
+                                periode.startet.tidspunkt,
+                                interval
+                            )
+                            bekreftelse.tilstandsLogg.asList().size shouldBe 3
+                            bekreftelse.has<IkkeKlarForUtfylling>() shouldBe true
+                            bekreftelse.has<KlarForUtfylling>() shouldBe true
+                            bekreftelse.has<VenterSvar>() shouldBe true
+                        }
+                    }
                     bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
                     val hendelser = bekreftelseHendelseloggTopicOut.readKeyValuesToList()
                     logger.info("hendelser: $hendelser")
@@ -422,30 +418,29 @@ class BekreftelsePunctuatorTest : FreeSpec({
                     val stateStore: StateStore =
                         testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
                     val currentState = stateStore.get(periode.id)
-                    currentState shouldBe InternTilstand(
-                        periode = PeriodeInfo(
+                    currentState should {
+                        it.periode shouldBe PeriodeInfo(
                             periodeId = periode.id,
                             identitetsnummer = periode.identitetsnummer,
                             arbeidsoekerId = id,
                             recordKey = key,
                             startet = periode.startet.tidspunkt,
                             avsluttet = periode.avsluttet?.tidspunkt
-                        ), bekreftelser = listOf(
-                            Bekreftelse(
-                                tilstand = Tilstand.VenterSvar,
-                                tilgjengeliggjort = startTime.plus(interval)
-                                    .minus(tilgjengeligOffset).plusSeconds(5),
-                                fristUtloept = startTime.plus(interval).plusSeconds(10),
-                                sisteVarselOmGjenstaaendeGraceTid = startTime.plus(interval)
-                                    .plus(varselFoerGraceperiodeUtloept).plusSeconds(15),
-                                bekreftelseId = currentState.bekreftelser.first().bekreftelseId,
-                                gjelderFra = periode.startet.tidspunkt,
-                                gjelderTil = fristForNesteBekreftelse(
-                                    periode.startet.tidspunkt, interval
-                                )
-                            )
                         )
-                    )
+                        it.bekreftelser.size shouldBe 1
+                        it.bekreftelser.first() should { bekreftelse ->
+                            bekreftelse.gjelderFra shouldBe periode.startet.tidspunkt
+                            bekreftelse.gjelderTil shouldBe fristForNesteBekreftelse(
+                                periode.startet.tidspunkt,
+                                interval
+                            )
+                            bekreftelse.tilstandsLogg.asList().size shouldBe 4
+                            bekreftelse.has<IkkeKlarForUtfylling>() shouldBe true
+                            bekreftelse.has<KlarForUtfylling>() shouldBe true
+                            bekreftelse.has<VenterSvar>() shouldBe true
+                            bekreftelse.has<GracePeriodeVarselet>() shouldBe true
+                        }
+                    }
                     bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
                     val hendelser = bekreftelseHendelseloggTopicOut.readKeyValuesToList()
                     logger.info("hendelser: $hendelser")
@@ -479,30 +474,30 @@ class BekreftelsePunctuatorTest : FreeSpec({
                     val stateStore: StateStore =
                         testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
                     val currentState = stateStore.get(periode.id)
-                    currentState shouldBe InternTilstand(
-                        periode = PeriodeInfo(
+                    currentState should {
+                        it.periode shouldBe PeriodeInfo(
                             periodeId = periode.id,
                             identitetsnummer = periode.identitetsnummer,
                             arbeidsoekerId = id,
                             recordKey = key,
                             startet = periode.startet.tidspunkt,
                             avsluttet = periode.avsluttet?.tidspunkt
-                        ), bekreftelser = listOf(
-                            Bekreftelse(
-                                tilstand = Tilstand.GracePeriodeUtloept,
-                                tilgjengeliggjort = startTime.plus(interval)
-                                    .minus(tilgjengeligOffset).plusSeconds(5),
-                                fristUtloept = startTime.plus(interval).plusSeconds(10),
-                                sisteVarselOmGjenstaaendeGraceTid = startTime.plus(interval)
-                                    .plus(varselFoerGraceperiodeUtloept).plusSeconds(15),
-                                bekreftelseId = currentState.bekreftelser.first().bekreftelseId,
-                                gjelderFra = periode.startet.tidspunkt,
-                                gjelderTil = fristForNesteBekreftelse(
-                                    periode.startet.tidspunkt, interval
-                                )
-                            )
                         )
-                    )
+                        it.bekreftelser.size shouldBe 1
+                        it.bekreftelser.first() should { bekreftelse ->
+                            bekreftelse.gjelderFra shouldBe periode.startet.tidspunkt
+                            bekreftelse.gjelderTil shouldBe fristForNesteBekreftelse(
+                                periode.startet.tidspunkt,
+                                interval
+                            )
+                            bekreftelse.tilstandsLogg.asList().size shouldBe 5
+                            bekreftelse.has<IkkeKlarForUtfylling>() shouldBe true
+                            bekreftelse.has<KlarForUtfylling>() shouldBe true
+                            bekreftelse.has<VenterSvar>() shouldBe true
+                            bekreftelse.has<GracePeriodeVarselet>() shouldBe true
+                            bekreftelse.has<GracePeriodeUtloept>() shouldBe true
+                        }
+                    }
                     bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
                     val hendelser = bekreftelseHendelseloggTopicOut.readKeyValuesToList()
                     logger.info("hendelser: $hendelser")

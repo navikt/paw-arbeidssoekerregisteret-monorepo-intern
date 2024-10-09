@@ -30,7 +30,7 @@ dependencies {
     implementation(libs.jackson.datatypeJsr310)
 
     // Tooling
-    implementation(libs.arrowCore)
+    implementation(libs.arrow.core.core)
 
     // Logging
     implementation(libs.logbackClassic)
