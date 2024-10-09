@@ -24,3 +24,10 @@ fun initTilstand(
         ),
         bekreftelser = emptyList()
     )
+
+fun InternTilstand.oppdaterBekreftelse(ny: Bekreftelse): InternTilstand {
+    val nyBekreftelser = bekreftelser.map {
+        if (it.bekreftelseId == ny.bekreftelseId) ny else it
+    }
+    return copy(bekreftelser = nyBekreftelser)
+}
