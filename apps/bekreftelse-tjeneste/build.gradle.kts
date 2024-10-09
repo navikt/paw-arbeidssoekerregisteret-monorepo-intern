@@ -51,6 +51,7 @@ dependencies {
     testImplementation(libs.kafka.streams.test)
     testImplementation(libs.bundles.testLibsWithUnitTesting)
     testImplementation(project(":test:test-data-lib"))
+    testImplementation(project(":test:kafka-streams-test-functions"))
 }
 
 java {

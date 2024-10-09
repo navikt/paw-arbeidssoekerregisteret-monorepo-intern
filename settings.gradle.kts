@@ -15,6 +15,7 @@ include(
     "lib:kafka-streams",
     "lib:kafka-key-generator-client",
     "test:test-data-lib",
+    "test:kafka-streams-test-functions",
     "domain:bekreftelse-interne-hendelser",
     "domain:bekreftelsesansvar-avro-schema",
     "domain:bekreftelsesmelding-avro-schema",

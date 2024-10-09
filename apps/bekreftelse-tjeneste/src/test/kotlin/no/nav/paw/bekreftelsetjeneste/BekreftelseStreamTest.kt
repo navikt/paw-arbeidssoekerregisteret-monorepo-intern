@@ -13,25 +13,12 @@ import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.metadata
 import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.periode
 import no.nav.paw.bekreftelse.internehendelser.*
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
+import no.nav.paw.test.assertEvent
+import no.nav.paw.test.seconds
 import org.apache.kafka.streams.TestOutputTopic
 import java.time.Duration
 import java.time.Instant
 import java.util.*
-
-inline fun <reified T: BekreftelseHendelse, A> TestOutputTopic<Long, BekreftelseHendelse>.assertEvent(function: (T) -> A): A =
-    assertEvent<T>().let(function)
-
-inline fun <reified T: BekreftelseHendelse> TestOutputTopic<Long, BekreftelseHendelse>.assertEvent(): T {
-    withClue("Expected event of type ${T::class.simpleName}, no event was found") {
-        isEmpty shouldBe false
-    }
-    withClue("Expected event of type ${T::class.simpleName}") {
-        val event = readValue()
-        return event.shouldBeInstanceOf<T>()
-    }
-}
-
-val Int.seconds: Duration get() = Duration.ofSeconds(this.toLong())
 
 class BekreftelseStreamTest : FreeSpec({
 
