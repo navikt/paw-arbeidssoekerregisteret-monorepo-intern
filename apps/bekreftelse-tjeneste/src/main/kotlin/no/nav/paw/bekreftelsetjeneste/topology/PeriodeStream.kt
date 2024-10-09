@@ -63,7 +63,7 @@ fun StreamsBuilder.buildPeriodeStream(
                                     arbeidssoekerId = action.arbeidsoekerId,
                                     hendelseTidspunkt = Instant.now()
                                 ) as BekreftelseHendelse
-                            )
+                            ).withTimestamp(Instant.now().toEpochMilli())
                         )
                         keyValueStore.delete(action.periode.id)
                     }

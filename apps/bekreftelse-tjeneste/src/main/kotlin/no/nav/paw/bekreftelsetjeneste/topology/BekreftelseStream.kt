@@ -188,13 +188,13 @@ fun forwardHendelser(
     forward: (Record<Long, BekreftelseHendelse>) -> Unit
 ) {
     hendelser.map(record::withValue).forEach {
-        forward(it)
+        forward(it.withTimestamp(Instant.now().toEpochMilli()))
         Span.current().addEvent("Forwarded hendelse", Attributes.of(
             AttributeKey.stringKey("hendelseId"), it.value().hendelseId.toString()
         ))
     }
 
-    Span.current().addEvent("Events forwarded", Attributes.of(
+    Span.current().addEvent("Antall hendelser forwarded", Attributes.of(
         AttributeKey.stringKey("event_count"), hendelser.size.toString()
     ))
 }
