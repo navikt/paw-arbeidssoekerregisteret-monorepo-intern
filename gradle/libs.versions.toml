@@ -45,7 +45,7 @@ ktor-server-cors = { group = "io.ktor", name = "ktor-server-cors", version = "2.
 ktor-server-swagger = { group = "io.ktor", name = "ktor-server-swagger", version = "2.3.12" }
 ktor-server-callId = { group = "io.ktor", name = "ktor-server-call-id", version = "2.3.12" }
 ktor-server-statusPages = { group = "io.ktor", name = "ktor-server-status-pages", version = "2.3.12" }
-ktor-server-contentNegotiation = { group = "io.ktor", name = "ktor-server-content-negotiation", version = "2.3.12" }
+ktor-server-contentNegotiation = { group = "io.ktor", name = "ktor-server-content-negotiation", version = "3.0.0" }
 ktor-server-coreJvm = { group = "io.ktor", name = "ktor-server-core-jvm", version = "2.3.12" }
 ktor-server-core = { group = "io.ktor", name = "ktor-server-core", version = "2.3.12" }
 ktor-server-openapi = { group = "io.ktor", name = "ktor-server-openapi", version = "2.3.12" }
