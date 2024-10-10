@@ -1,0 +1,6 @@
+* Melding om ansvar kommer inn ->
+ - finn periode (InternTilstand)
+   - dersom periode eksisterer:
+     - legg til ansvarlig i Ansvar (legg til/oppdater)
+     - sett InternTilstand.registeretHarAnsvar til false dersom den er true
+       ved toggling til false, sett inneværende bekreftelse periode til besvart, fjærn eventuelle fremtidige bekreftelser.
