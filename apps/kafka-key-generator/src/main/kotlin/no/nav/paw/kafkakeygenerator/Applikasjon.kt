@@ -11,17 +11,25 @@ class Applikasjon(
     private val kafkaKeys: KafkaKeys,
     private val identitetsTjeneste: PdlIdentitesTjeneste
 ) {
+
     @WithSpan
-    suspend fun hentEllerOpprett(callId: CallId, identitet: Identitetsnummer): Either<Failure, Long> {
+    suspend fun hent(callId: CallId, identitet: Identitetsnummer): Either<Failure, Long> {
         return kafkaKeys.hent(identitet)
             .recover(DB_NOT_FOUND) {
                 sjekkMotAliaser(callId, identitet)
-            }.recover(DB_NOT_FOUND) {
+            }
+    }
+
+    @WithSpan
+    suspend fun hentEllerOpprett(callId: CallId, identitet: Identitetsnummer): Either<Failure, Long> {
+        return hent(callId, identitet)
+            .recover(DB_NOT_FOUND) {
                 kafkaKeys.opprett(identitet)
             }.recover(CONFLICT) {
                 kafkaKeys.hent(identitet)
             }
     }
+
     @WithSpan
     private suspend fun sjekkMotAliaser(callId: CallId, identitet: Identitetsnummer): Either<Failure, Long> {
         return identitetsTjeneste.hentIdentiter(callId, identitet)

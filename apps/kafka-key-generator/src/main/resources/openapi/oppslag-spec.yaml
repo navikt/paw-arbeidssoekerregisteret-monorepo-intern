@@ -1,0 +1,69 @@
+openapi: "3.0.3"
+info:
+  title: "paw_kafka_key_generator Oppslag API"
+  description: "Read only API"
+  version: "1.0.0"
+servers:
+- url: "https://paw_kafka_key_generator"
+paths:
+  /api/oppslag/v1/recordKey:
+    post:
+      description: ""
+      parameters:
+      - name: "traceparent"
+        in: "header"
+        required: false
+        schema:
+          type: "string"
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: "#/components/schemas/RecordKeyLookupRequestV1"
+        required: true
+      responses:
+        "400":
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/FailureResponseV1"
+        "500":
+          description: "Internal Server Error"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/FailureResponseV1"
+        "200":
+          description: ""
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RecordKeyLookupResponseV1"
+components:
+  schemas:
+    RecordKeyLookupRequestV1:
+      type: "object"
+      properties:
+        ident:
+          type: "string"
+      required:
+      - "ident"
+    RecordKeyLookupResponseV1:
+      type: "object"
+      properties:
+        key:
+          type: "integer"
+          format: "int64"
+    FailureResponseV1:
+        type: "object"
+        properties:
+            message:
+              type: "string"
+            code:
+              type: "string"
+              enum:
+                - "UKJENT_REGISTERET"
+                - "UKJENT_IDENT"
+        required:
+        - "message"
