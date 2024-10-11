@@ -27,6 +27,7 @@ coroutinesVersion = "1.9.0"
 postgresDriverVersion = "42.7.4"
 flywayVersion = "10.19.0"
 hikariVersion = "6.0.0"
+ktorVersion = "2.3.12"
 
 [libraries]
 coroutinesCore = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutinesVersion" }
@@ -35,28 +36,28 @@ arrow-core-serialization = { group = "io.arrow-kt", name = "arrow-core-serializa
 arrow-integration-jackson = { group = "io.arrow-kt", name = "arrow-integrations-jackson-module", version.ref = "arrowJacksonIntegrationVersion" }
 logbackClassic = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logbackVersion" }
 logstashLogbackEncoder = { group = "net.logstash.logback", name = "logstash-logback-encoder", version.ref = "logstashVersion" }
-ktor-client-contentNegotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version = "2.3.12" }
-ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version = "2.3.12" }
-ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version = "2.3.12" }
-ktor-client-mock = { group = "io.ktor", name = "ktor-client-mock", version = "2.3.12" }
-ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version = "2.3.12" }
-ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version = "2.3.12" }
-ktor-server-cors = { group = "io.ktor", name = "ktor-server-cors", version = "2.3.12" }
-ktor-server-swagger = { group = "io.ktor", name = "ktor-server-swagger", version = "2.3.12" }
-ktor-server-callId = { group = "io.ktor", name = "ktor-server-call-id", version = "2.3.12" }
-ktor-server-statusPages = { group = "io.ktor", name = "ktor-server-status-pages", version = "2.3.12" }
-ktor-server-contentNegotiation = { group = "io.ktor", name = "ktor-server-content-negotiation", version = "2.3.12" }
-ktor-server-coreJvm = { group = "io.ktor", name = "ktor-server-core-jvm", version = "2.3.12" }
-ktor-server-core = { group = "io.ktor", name = "ktor-server-core", version = "2.3.12" }
-ktor-server-openapi = { group = "io.ktor", name = "ktor-server-openapi", version = "2.3.12" }
-ktor-server-netty = { group = "io.ktor", name = "ktor-server-netty", version = "2.3.12" }
-ktor-server-auth = { group = "io.ktor", name = "ktor-server-auth", version = "2.3.12" }
-ktor-server-metricsMicrometer = { group = "io.ktor", name = "ktor-server-metrics-micrometer", version = "2.3.12" }
-ktor-server-testJvm = { group = "io.ktor", name = "ktor-server-tests-jvm", version = "2.3.12" }
-ktor-serialization-core = { group = "io.ktor", name = "ktor-serialization", version = "2.3.12" }
-ktor-serialization-jvm = { group = "io.ktor", name = "ktor-serialization-jvm", version = "2.3.12" }
-ktor-serialization-jackson = { group = "io.ktor", name = "ktor-serialization-jackson", version = "2.3.12" }
-ktor-serialization-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version = "2.3.12" }
+ktor-client-contentNegotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktorVersion" }
+ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktorVersion" }
+ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktorVersion" }
+ktor-client-mock = { group = "io.ktor", name = "ktor-client-mock", version.ref = "ktorVersion" }
+ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktorVersion" }
+ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktorVersion" }
+ktor-server-cors = { group = "io.ktor", name = "ktor-server-cors", version.ref = "ktorVersion" }
+ktor-server-swagger = { group = "io.ktor", name = "ktor-server-swagger", version.ref = "ktorVersion" }
+ktor-server-callId = { group = "io.ktor", name = "ktor-server-call-id", version.ref = "ktorVersion" }
+ktor-server-statusPages = { group = "io.ktor", name = "ktor-server-status-pages", version.ref = "ktorVersion" }
+ktor-server-contentNegotiation = { group = "io.ktor", name = "ktor-server-content-negotiation", version.ref = "ktorVersion" }
+ktor-server-coreJvm = { group = "io.ktor", name = "ktor-server-core-jvm", version.ref = "ktorVersion" }
+ktor-server-core = { group = "io.ktor", name = "ktor-server-core", version.ref = "ktorVersion" }
+ktor-server-openapi = { group = "io.ktor", name = "ktor-server-openapi", version.ref = "ktorVersion" }
+ktor-server-netty = { group = "io.ktor", name = "ktor-server-netty", version.ref = "ktorVersion" }
+ktor-server-auth = { group = "io.ktor", name = "ktor-server-auth", version.ref = "ktorVersion" }
+ktor-server-metricsMicrometer = { group = "io.ktor", name = "ktor-server-metrics-micrometer", version.ref = "ktorVersion" }
+ktor-server-testJvm = { group = "io.ktor", name = "ktor-server-tests-jvm", version.ref = "ktorVersion" }
+ktor-serialization-core = { group = "io.ktor", name = "ktor-serialization", version.ref = "ktorVersion" }
+ktor-serialization-jvm = { group = "io.ktor", name = "ktor-serialization-jvm", version.ref = "ktorVersion" }
+ktor-serialization-jackson = { group = "io.ktor", name = "ktor-serialization-jackson", version.ref = "ktorVersion" }
+ktor-serialization-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktorVersion" }
 opentelemetry-api = { group = "io.opentelemetry", name = "opentelemetry-api", version.ref = "otelTargetSdkVersion" }
 opentelemetry-ktor = { group = "io.opentelemetry.instrumentation", name = "opentelemetry-ktor-2.0", version.ref = "otelInstrumentationKtorVersion" }
 opentelemetry-annotations = { group = "io.opentelemetry.instrumentation", name = "opentelemetry-instrumentation-annotations", version.ref = "otelInstrumentationVersion" }
