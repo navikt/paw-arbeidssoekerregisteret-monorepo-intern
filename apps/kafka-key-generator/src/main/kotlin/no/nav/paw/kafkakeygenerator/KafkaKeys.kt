@@ -2,15 +2,14 @@ package no.nav.paw.kafkakeygenerator
 
 import no.nav.paw.kafkakeygenerator.database.IdentitetTabell
 import no.nav.paw.kafkakeygenerator.database.KafkaKeysTabell
+import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class KafkaKeys(private val database: Database) {
 
-    fun hent(identiteter: List<String>): Either<Failure, Map<String, Long>> =
+    fun hent(identiteter: List<String>): Either<Failure, Map<String, ArbeidssoekerId>> =
         attempt {
             transaction(database) {
                 IdentitetTabell
@@ -22,9 +21,9 @@ class KafkaKeys(private val database: Database) {
             }
         }.mapToFailure { exception ->
             Failure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
-        }
+        }.map { resultMap -> resultMap.mapValues { ArbeidssoekerId(it.value) } }
 
-    fun hent(identitet: Identitetsnummer): Either<Failure, Long> =
+    fun hent(identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> =
         attempt {
             transaction(database) {
                 IdentitetTabell
@@ -34,14 +33,16 @@ class KafkaKeys(private val database: Database) {
             }
         }.mapToFailure { exception ->
             Failure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
-        }.flatMap { id -> id?.let(::right) ?: left(Failure("database", FailureCode.DB_NOT_FOUND)) }
+        }
+            .map { id -> id?.let(::ArbeidssoekerId) }
+            .flatMap { id -> id?.let(::right) ?: left(Failure("database", FailureCode.DB_NOT_FOUND)) }
 
-    fun lagre(identitet: Identitetsnummer, nøkkel: Long): Either<Failure, Unit> =
+    fun lagre(identitet: Identitetsnummer, arbeidssoekerId: ArbeidssoekerId): Either<Failure, Unit> =
         attempt {
             transaction(database) {
                 IdentitetTabell.insertIgnore {
                     it[identitetsnummer] = identitet.value
-                    it[kafkaKey] = nøkkel
+                    it[kafkaKey] = arbeidssoekerId.value
                 }.insertedCount
             }
         }
@@ -51,7 +52,7 @@ class KafkaKeys(private val database: Database) {
             .flatMap { if (it == 1) right(Unit) else left(Failure("database", FailureCode.CONFLICT)) }
 
 
-    fun opprett(identitet: Identitetsnummer): Either<Failure, Long> =
+    fun opprett(identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> =
         attempt {
             transaction(database) {
                 val nøkkel = KafkaKeysTabell.insert { }[KafkaKeysTabell.id]
@@ -63,5 +64,7 @@ class KafkaKeys(private val database: Database) {
             }
         }.mapToFailure { exception ->
             Failure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
-        }.flatMap { id -> id?.let(::right) ?: left(Failure("database", FailureCode.CONFLICT)) }
+        }
+            .map { id -> id?.let(::ArbeidssoekerId) }
+            .flatMap { id -> id?.let(::right) ?: left(Failure("database", FailureCode.CONFLICT)) }
 }

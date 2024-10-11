@@ -43,7 +43,7 @@ private suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest(
     val request = call.receive<RecordKeyLookupRequestV1>()
     val result = applikasjon.hent(callId, Identitetsnummer(request.ident))
         .map(::publicTopicKeyFunction)
-        .map(::RecordKeyLookupResponseV1)
+        .map(::recordKeyLookupResponseV1)
         .onLeft { failure ->
             if (failure.code in listOf(FailureCode.INTERNAL_TECHINCAL_ERROR, FailureCode.CONFLICT)) {
                 logger.error("kode: '{}', system: '{}'", failure.code, failure.system, failure.exception)

@@ -45,7 +45,7 @@ private suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest(
     when (val resultat = applikasjon.hentEllerOpprett(callId, Identitetsnummer(request.ident))) {
         is Right -> {
             call.respond(
-                OK, ResponseV2(
+                OK, responseV2(
                     id = resultat.right,
                     key = publicTopicKeyFunction(resultat.right)
                 )

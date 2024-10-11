@@ -8,6 +8,7 @@ import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import kotlinx.coroutines.runBlocking
 import no.nav.paw.kafkakeygenerator.pdl.PdlIdentitesTjeneste
+import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.CallId
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import no.nav.paw.pdl.PdlClient
@@ -27,7 +28,7 @@ class ApplikasjonsTest : StringSpec({
         kafkaKeys = KafkaKeys(Database.connect(dataSource)),
         identitetsTjeneste = PdlIdentitesTjeneste(pdlKlient)
     )
-    fun hentEllerOpprett(identitetsnummer: String): Either<Failure, Long> = runBlocking {
+    fun hentEllerOpprett(identitetsnummer: String): Either<Failure, ArbeidssoekerId> = runBlocking {
         app.hentEllerOpprett(CallId(UUID.randomUUID().toString()), Identitetsnummer(identitetsnummer))
     }
     "alle identer for person1 skal gi samme nøkkel" {
@@ -39,7 +40,7 @@ class ApplikasjonsTest : StringSpec({
             person1_dnummer
         ).map(::hentEllerOpprett)
         person1KafkaNøkler.filterIsInstance<Left<Failure>>().size shouldBe 0
-        person1KafkaNøkler.filterIsInstance<Right<Long>>()
+        person1KafkaNøkler.filterIsInstance<Right<ArbeidssoekerId>>()
             .map { it.right }
             .distinct().size shouldBe 1
     }
@@ -50,7 +51,7 @@ class ApplikasjonsTest : StringSpec({
             person2_fødselsnummer
         ).map(::hentEllerOpprett)
         person2KafkaNøkler.filterIsInstance<Left<Failure>>().size shouldBe 0
-        person2KafkaNøkler.filterIsInstance<Right<Long>>()
+        person2KafkaNøkler.filterIsInstance<Right<ArbeidssoekerId>>()
             .map { it.right }
             .distinct().size shouldBe 1
     }

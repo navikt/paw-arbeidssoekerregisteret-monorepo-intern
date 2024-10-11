@@ -4,6 +4,7 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.kafkakeygenerator.FailureCode.CONFLICT
 import no.nav.paw.kafkakeygenerator.FailureCode.DB_NOT_FOUND
 import no.nav.paw.kafkakeygenerator.pdl.PdlIdentitesTjeneste
+import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.CallId
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 
@@ -13,7 +14,7 @@ class Applikasjon(
 ) {
 
     @WithSpan
-    suspend fun hent(callId: CallId, identitet: Identitetsnummer): Either<Failure, Long> {
+    suspend fun hent(callId: CallId, identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> {
         return kafkaKeys.hent(identitet)
             .recover(DB_NOT_FOUND) {
                 sjekkMotAliaser(callId, identitet)
@@ -21,7 +22,7 @@ class Applikasjon(
     }
 
     @WithSpan
-    suspend fun hentEllerOpprett(callId: CallId, identitet: Identitetsnummer): Either<Failure, Long> {
+    suspend fun hentEllerOpprett(callId: CallId, identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> {
         return hent(callId, identitet)
             .recover(DB_NOT_FOUND) {
                 kafkaKeys.opprett(identitet)
@@ -31,7 +32,7 @@ class Applikasjon(
     }
 
     @WithSpan
-    private suspend fun sjekkMotAliaser(callId: CallId, identitet: Identitetsnummer): Either<Failure, Long> {
+    private suspend fun sjekkMotAliaser(callId: CallId, identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> {
         return identitetsTjeneste.hentIdentiter(callId, identitet)
             .flatMap(kafkaKeys::hent)
             .flatMap { ids ->
