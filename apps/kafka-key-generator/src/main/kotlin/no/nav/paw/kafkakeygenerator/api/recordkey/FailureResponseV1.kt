@@ -1,9 +1,9 @@
-package no.nav.paw.kafkakeygenerator.api.oppslag
+package no.nav.paw.kafkakeygenerator.api.recordkey
 
 data class FailureResponseV1(
     val message: String,
     val code: Feilkode
-)
+): RecordKeyResponse
 
 enum class Feilkode {
     UKJENT_IDENT,
