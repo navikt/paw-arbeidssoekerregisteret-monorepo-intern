@@ -10,11 +10,13 @@ paths:
     post:
       description: ""
       parameters:
-      - name: "traceparent"
-        in: "header"
-        required: false
-        schema:
-          type: "string"
+        - name: "traceparent"
+          in: "header"
+          required: false
+          description: "https://www.w3.org/TR/trace-context/#traceparent-header-field-values"
+          schema:
+            type: "string"
+            format: "traceparent"
       requestBody:
         content:
           '*/*':
