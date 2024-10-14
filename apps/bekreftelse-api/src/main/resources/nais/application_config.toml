@@ -1,34 +1,22 @@
 [autorisasjon]
 corsAllowOrigins = "${CORS_ALLOW_ORIGINS}"
 
-[kafkaTopology]
-applicationIdSuffix = "${KAFKA_STREAMS_ID_SUFFIX}"
-producerId = "${NAIS_APP_NAME}"
-bekreftelseTopic = "${KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_TOPIC}"
-bekreftelseHendelsesloggTopic = "${KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_HENDELSESLOGG_TOPIC}"
-internStateStoreName = "intern-state-store"
-
-[[authProviders]]
-name = "idporten"
-discoveryUrl = "${IDPORTEN_WELL_KNOWN_URL}
-clientId = "${IDPORTEN_CLIENT_ID}"
-[authProviders.claims]
-map = ["acr=idporten-loa-high"]
-
 [[authProviders]]
 name = "tokenx"
 discoveryUrl = "${TOKEN_X_WELL_KNOWN_URL}"
 clientId = "${TOKEN_X_CLIENT_ID}"
-[authProviders.claims]
-map = ["acr=Level4", "acr=idporten-loa-high"]
-combineWithOr = true
+
+    [authProviders.claims]
+    map = ["acr=Level4", "acr=idporten-loa-high"]
+    combineWithOr = true
 
 [[authProviders]]
 name = "azure"
 discoveryUrl = "${AZURE_APP_WELL_KNOWN_URL}"
 clientId = "${AZURE_APP_CLIENT_ID}"
-[authProviders.claims]
-map = ["NAVident"]
+
+    [authProviders.claims]
+    map = ["NAVident"]
 
 [azureM2M]
 tokenEndpointUrl = "${AZURE_OPENID_CONFIG_TOKEN_ENDPOINT}"
@@ -45,11 +33,26 @@ scope = "api://${NAIS_CLUSTER_NAME}.paw.paw-kafka-key-generator/.default"
 [kafkaClients]
 brokers = "${KAFKA_BROKERS}"
 applicationIdPrefix = "${KAFKA_STREAMS_APPLICATION_ID}"
-[kafkaClients.authentication]
-keystorePath = "${KAFKA_KEYSTORE_PATH}"
-truststorePath = "${KAFKA_TRUSTSTORE_PATH}"
-credstorePassword = "${KAFKA_CREDSTORE_PASSWORD}"
-[kafkaClients.schemaRegistry]
-url = "${KAFKA_SCHEMA_REGISTRY}"
-username = "${KAFKA_SCHEMA_REGISTRY_USER}"
-password = "${KAFKA_SCHEMA_REGISTRY_PASSWORD}"
+
+    [kafkaClients.authentication]
+    keystorePath = "${KAFKA_KEYSTORE_PATH}"
+    truststorePath = "${KAFKA_TRUSTSTORE_PATH}"
+    credstorePassword = "${KAFKA_CREDSTORE_PASSWORD}"
+
+    [kafkaClients.schemaRegistry]
+    url = "${KAFKA_SCHEMA_REGISTRY}"
+    username = "${KAFKA_SCHEMA_REGISTRY_USER}"
+    password = "${KAFKA_SCHEMA_REGISTRY_PASSWORD}"
+
+[kafkaTopology]
+version = 1
+antallPartitioner = 6
+producerId = "${NAIS_APP_NAME}-v1-producer"
+consumerId = "${NAIS_APP_NAME}-v1-consumer"
+consumerGroupId = "${NAIS_APP_NAME}-v1"
+bekreftelseTopic = "${KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_TOPIC}"
+bekreftelseHendelsesloggTopic = "${KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_HENDELSESLOGG_TOPIC}"
+
+[database]
+jdbcUrl = "${NAIS_DATABASE_PAW_ARBEIDSSOEKERREGISTERET_API_BEKREFTELSE_BEKREFTELSER_JDBC_URL}"
+driverClassName = "org.postgresql.Driver"

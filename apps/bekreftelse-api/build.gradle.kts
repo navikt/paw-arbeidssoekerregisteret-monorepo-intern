@@ -59,8 +59,16 @@ dependencies {
     implementation(libs.opentelemetry.api)
     implementation(libs.opentelemetry.annotations)
 
+    // Database
+    implementation(libs.exposed.jdbc)
+    implementation(libs.exposed.json)
+    implementation(libs.exposed.javaTime)
+    implementation(libs.database.hikari.connectionPool)
+    implementation(libs.database.postgres.driver)
+    implementation(libs.database.flyway.postgres)
+
     // Kafka
-    implementation(libs.kafka.streams.core)
+    implementation(libs.kafka.clients)
     implementation(libs.avro.kafkaStreamsSerde)
 
     // Test
@@ -68,6 +76,7 @@ dependencies {
     testImplementation(libs.ktor.client.mock)
     testImplementation(libs.bundles.testLibsWithUnitTesting)
     testImplementation(libs.test.mockOauth2Server)
+    testImplementation(libs.test.testContainers.postgresql)
 }
 
 java {

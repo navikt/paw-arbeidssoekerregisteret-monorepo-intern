@@ -6,7 +6,7 @@ plugins {
 dependencies {
     compileOnly(libs.coroutinesCore)
     compileOnly(libs.avro.kafkaSerializer)
-    implementation(libs.paw.kafkaClients)
+    implementation(libs.kafka.clients)
 
     // Test
     testImplementation(libs.bundles.testLibsWithUnitTesting)

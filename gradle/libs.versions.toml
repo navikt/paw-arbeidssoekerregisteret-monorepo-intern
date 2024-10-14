@@ -66,7 +66,7 @@ micrometer-registryPrometheus = { group = "io.micrometer", name = "micrometer-re
 paw-pdl-client = { group = "no.nav.paw", name = "pdl-client", version.ref = "pawPdlClientVersion" }
 paw-aareg-client = { group = "no.nav.paw", name = "aareg-client", version.ref = "pawAaregClientVersion" }
 paw-schema-main = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "main-avro-schema", version.ref = "arbeidssokerregisteretVersion" }
-paw-kafkaClients = { group = "org.apache.kafka", name = "kafka-clients", version.ref = "orgApacheKafkaVersion" }
+kafka-clients = { group = "org.apache.kafka", name = "kafka-clients", version.ref = "orgApacheKafkaVersion" }
 kafka-streams-core = { group = "org.apache.kafka", name = "kafka-streams", version.ref = "orgApacheKafkaVersion" }
 kafka-streams-test = { group = "org.apache.kafka", name = "kafka-streams-test-utils", version.ref = "orgApacheKafkaVersion" }
 avro-core = { group = "org.apache.avro", name = "avro", version.ref = "orgApacheAvroVersion" }
@@ -84,6 +84,7 @@ hoplite-core = { group = "com.sksamuel.hoplite", name = "hoplite-core", version.
 hoplite-toml = { group = "com.sksamuel.hoplite", name = "hoplite-toml", version.ref = "comSksamuelHopliteVersion" }
 hoplite-yaml = { group = "com.sksamuel.hoplite", name = "hoplite-yaml", version.ref = "comSksamuelHopliteVersion" }
 exposed-core = { group = "org.jetbrains.exposed", name = "exposed-core", version.ref = "kotlinExposedVersion" }
+exposed-json = { group = "org.jetbrains.exposed", name = "exposed-json", version.ref = "kotlinExposedVersion" }
 exposed-crypt = { group = "org.jetbrains.exposed", name = "exposed-crypt", version.ref = "kotlinExposedVersion" }
 exposed-dao = { group = "org.jetbrains.exposed", name = "exposed-dao", version.ref = "kotlinExposedVersion" }
 exposed-jdbc = { group = "org.jetbrains.exposed", name = "exposed-jdbc", version.ref = "kotlinExposedVersion" }

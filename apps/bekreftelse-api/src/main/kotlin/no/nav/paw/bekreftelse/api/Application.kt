@@ -7,6 +7,7 @@ import io.ktor.server.netty.Netty
 import io.ktor.server.routing.routing
 import no.nav.paw.bekreftelse.api.context.ApplicationContext
 import no.nav.paw.bekreftelse.api.plugins.configureAuthentication
+import no.nav.paw.bekreftelse.api.plugins.configureDatabase
 import no.nav.paw.bekreftelse.api.plugins.configureHTTP
 import no.nav.paw.bekreftelse.api.plugins.configureKafka
 import no.nav.paw.bekreftelse.api.plugins.configureLogging
@@ -49,6 +50,7 @@ fun Application.module(applicationContext: ApplicationContext) {
     configureLogging()
     configureSerialization()
     configureTracing()
+    configureDatabase(applicationContext)
     configureKafka(applicationContext)
 
     routing {

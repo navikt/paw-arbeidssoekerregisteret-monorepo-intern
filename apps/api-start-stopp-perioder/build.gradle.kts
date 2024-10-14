@@ -39,7 +39,7 @@ dependencies {
     implementation(libs.paw.pdl.client)
     implementation(libs.logbackClassic)
     implementation(libs.logstashLogbackEncoder)
-    implementation(libs.paw.kafkaClients)
+    implementation(libs.kafka.clients)
     implementation(libs.ktor.client.contentNegotiation)
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.cio)

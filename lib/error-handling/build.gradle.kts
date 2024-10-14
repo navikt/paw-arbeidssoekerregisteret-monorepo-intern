@@ -17,6 +17,7 @@ dependencies {
     testImplementation(libs.ktor.client.contentNegotiation)
     testImplementation(libs.ktor.server.core)
     testImplementation(libs.kafka.streams.core)
+    testImplementation(libs.jackson.datatypeJsr310)
     testImplementation(libs.logbackClassic)
 }
 

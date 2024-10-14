@@ -39,10 +39,6 @@ spec:
       claims:
         extra:
           - NAVident
-  idporten:
-    enabled: true
-    sidecar:
-      enabled: true
   liveness:
     path: /internal/isAlive
     initialDelay: 10
@@ -59,6 +55,12 @@ spec:
   kafka:
     pool: nav-prod
     streams: true
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_16
+        tier: db-custom-1-6144
+        databases:
+          - name: bekreftelser
   accessPolicy:
     inbound:
       rules:

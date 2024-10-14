@@ -21,8 +21,6 @@ spec:
       value: "paw.arbeidssoker-bekreftelse-hendelseslogg-beta-v2"
     - name: CORS_ALLOW_ORIGINS
       value: "www.intern.dev.nav.no"
-  ingresses:
-    - https://bekreftelse-arbeidssoekerregisteret.intern.dev.nav.no
   replicas:
     min: 2
     max: 2
@@ -41,10 +39,6 @@ spec:
       claims:
         extra:
           - NAVident
-  idporten:
-    enabled: true
-    sidecar:
-      enabled: true
   liveness:
     path: /internal/isAlive
     initialDelay: 10
@@ -61,6 +55,12 @@ spec:
   kafka:
     pool: nav-dev
     streams: true
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_16
+        tier: db-f1-micro
+        databases:
+          - name: bekreftelser
   accessPolicy:
     inbound:
       rules:

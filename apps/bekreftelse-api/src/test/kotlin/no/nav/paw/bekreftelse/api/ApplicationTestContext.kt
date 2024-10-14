@@ -19,79 +19,117 @@ import no.nav.paw.bekreftelse.api.config.APPLICATION_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.config.AuthProvider
 import no.nav.paw.bekreftelse.api.config.AuthProviderClaims
-import no.nav.paw.bekreftelse.api.config.AuthProviders
 import no.nav.paw.bekreftelse.api.config.SERVER_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelse.api.config.ServerConfig
-import no.nav.paw.bekreftelse.api.consumer.BekreftelseHttpConsumer
 import no.nav.paw.bekreftelse.api.context.ApplicationContext
 import no.nav.paw.bekreftelse.api.context.resolveRequest
+import no.nav.paw.bekreftelse.api.handler.KafkaConsumerExceptionHandler
 import no.nav.paw.bekreftelse.api.model.Azure
-import no.nav.paw.bekreftelse.api.model.IdPorten
-import no.nav.paw.bekreftelse.api.model.InternState
 import no.nav.paw.bekreftelse.api.model.TilgjengeligeBekreftelserRequest
 import no.nav.paw.bekreftelse.api.model.TokenX
+import no.nav.paw.bekreftelse.api.plugin.TestData
+import no.nav.paw.bekreftelse.api.plugin.configTestDataPlugin
 import no.nav.paw.bekreftelse.api.plugins.configureAuthentication
+import no.nav.paw.bekreftelse.api.plugins.configureDatabase
 import no.nav.paw.bekreftelse.api.plugins.configureHTTP
-import no.nav.paw.bekreftelse.api.plugins.configureLogging
 import no.nav.paw.bekreftelse.api.plugins.configureSerialization
 import no.nav.paw.bekreftelse.api.producer.BekreftelseKafkaProducer
+import no.nav.paw.bekreftelse.api.repository.BekreftelseRepository
 import no.nav.paw.bekreftelse.api.routes.bekreftelseRoutes
 import no.nav.paw.bekreftelse.api.services.AuthorizationService
 import no.nav.paw.bekreftelse.api.services.BekreftelseService
 import no.nav.paw.bekreftelse.api.utils.configureJackson
+import no.nav.paw.bekreftelse.api.utils.createDataSource
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
+import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
+import no.nav.paw.health.model.LivenessHealthIndicator
+import no.nav.paw.health.model.ReadinessHealthIndicator
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.security.mock.oauth2.MockOAuth2Server
-import org.apache.kafka.streams.KafkaStreams
-import org.apache.kafka.streams.state.ReadOnlyKeyValueStore
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.producer.Producer
+import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.containers.wait.strategy.Wait
+import javax.sql.DataSource
 
 class ApplicationTestContext {
 
     val testData = TestDataGenerator()
     val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG_FILE_NAME)
     val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG_FILE_NAME)
+    val dataSource = createTestDataSource()
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-    val kafkaStreamsMock = mockk<KafkaStreams>()
-    val stateStoreMock = mockk<ReadOnlyKeyValueStore<Long, InternState>>()
     val kafkaKeysClientMock = mockk<KafkaKeysClient>()
     val poaoTilgangClientMock = mockk<PoaoTilgangClient>()
+    val kafkaProducerMock = mockk<Producer<Long, Bekreftelse>>()
     val bekreftelseKafkaProducerMock = mockk<BekreftelseKafkaProducer>()
-    val bekreftelseHttpConsumerMock = mockk<BekreftelseHttpConsumer>()
-    val authorizationService =
-        AuthorizationService(serverConfig, applicationConfig, kafkaKeysClientMock, poaoTilgangClientMock)
-    val bekreftelseServiceMock = mockk<BekreftelseService>()
-    val bekreftelseServiceReal = BekreftelseService(
+    val kafkaConsumerMock = mockk<KafkaConsumer<Long, BekreftelseHendelse>>()
+    val kafkaConsumerExceptionHandler = KafkaConsumerExceptionHandler(
+        LivenessHealthIndicator(),
+        ReadinessHealthIndicator()
+    )
+    val authorizationService = AuthorizationService(
         serverConfig,
         applicationConfig,
-        bekreftelseHttpConsumerMock,
-        kafkaStreamsMock,
-        bekreftelseKafkaProducerMock
+        kafkaKeysClientMock,
+        poaoTilgangClientMock
+    )
+    val bekreftelseRepository = BekreftelseRepository()
+    val bekreftelseServiceMock = mockk<BekreftelseService>()
+    val bekreftelseService = BekreftelseService(
+        serverConfig,
+        applicationConfig,
+        prometheusMeterRegistry,
+        bekreftelseKafkaProducerMock,
+        bekreftelseRepository
     )
     val mockOAuth2Server = MockOAuth2Server()
 
-    fun ApplicationTestBuilder.configureTestApplication(bekreftelseService: BekreftelseService) {
-        val applicationContext = ApplicationContext(
-            serverConfig,
-            applicationConfig.copy(authProviders = mockOAuth2Server.createAuthProviders()),
-            kafkaKeysClientMock,
-            prometheusMeterRegistry,
-            HealthIndicatorRepository(),
-            kafkaStreamsMock,
-            authorizationService,
-            bekreftelseService
-        )
+    fun createApplicationContext(bekreftelseService: BekreftelseService) = ApplicationContext(
+        serverConfig,
+        applicationConfig.copy(authProviders = mockOAuth2Server.createAuthProviders()),
+        dataSource,
+        kafkaKeysClientMock,
+        prometheusMeterRegistry,
+        HealthIndicatorRepository(),
+        kafkaProducerMock,
+        kafkaConsumerMock,
+        kafkaConsumerExceptionHandler,
+        authorizationService,
+        bekreftelseService
+    )
+
+    fun ApplicationTestBuilder.configureSimpleTestApplication(bekreftelseService: BekreftelseService) {
+        val applicationContext = createApplicationContext(bekreftelseService)
 
         application {
             configureHTTP(applicationContext)
             configureAuthentication(applicationContext)
-            configureLogging()
             configureSerialization()
             routing {
-                bekreftelseRoutes(applicationContext)
                 testRoutes()
+            }
+        }
+    }
+
+    fun ApplicationTestBuilder.configureCompleteTestApplication(
+        bekreftelseService: BekreftelseService,
+        testData: TestData = TestData()
+    ) {
+        val applicationContext = createApplicationContext(bekreftelseService)
+
+        application {
+            configureHTTP(applicationContext)
+            configureAuthentication(applicationContext)
+            configureSerialization()
+            configureDatabase(applicationContext)
+            configTestDataPlugin(testData)
+            routing {
+                bekreftelseRoutes(applicationContext)
             }
         }
     }
@@ -108,7 +146,7 @@ class ApplicationTestContext {
 
     private fun Route.testRoutes() {
         route("/api/secured") {
-            authenticate("idporten", "tokenx", "azure") {
+            authenticate(TokenX.name, Azure.name) {
                 get("/") {
                     authorizationService.authorize(resolveRequest(), TilgangType.LESE)
                     call.respond("WHATEVER")
@@ -125,16 +163,9 @@ class ApplicationTestContext {
         }
     }
 
-    private fun MockOAuth2Server.createAuthProviders(): AuthProviders {
+    private fun MockOAuth2Server.createAuthProviders(): List<AuthProvider> {
         val wellKnownUrl = wellKnownUrl("default").toString()
         return listOf(
-            AuthProvider(
-                IdPorten.name, wellKnownUrl, "default", AuthProviderClaims(
-                    listOf(
-                        "acr=idporten-loa-high"
-                    )
-                )
-            ),
             AuthProvider(
                 TokenX.name, wellKnownUrl, "default", AuthProviderClaims(
                     listOf(
@@ -150,5 +181,27 @@ class ApplicationTestContext {
                 )
             )
         )
+    }
+
+    private fun createTestDataSource(): DataSource {
+        val postgres = postgresContainer()
+        val databaseConfig = postgres.let {
+            applicationConfig.database.copy(
+                jdbcUrl = "jdbc:postgresql://${it.host}:${it.firstMappedPort}/${it.databaseName}?user=${it.username}&password=${it.password}"
+            )
+        }
+        return createDataSource(databaseConfig)
+    }
+
+    private fun postgresContainer(): PostgreSQLContainer<out PostgreSQLContainer<*>> {
+        val postgres = PostgreSQLContainer("postgres:16").apply {
+            addEnv("POSTGRES_PASSWORD", "bekreftelse_api")
+            addEnv("POSTGRES_USER", "5up3r_53cr3t_p455w0rd")
+            addEnv("POSTGRES_DB", "bekreftelser")
+            addExposedPorts(5432)
+        }
+        postgres.start()
+        postgres.waitingFor(Wait.forHealthcheck())
+        return postgres
     }
 }

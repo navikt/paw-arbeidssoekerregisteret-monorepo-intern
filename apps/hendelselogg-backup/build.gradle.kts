@@ -46,7 +46,7 @@ dependencies {
     implementation(libs.nav.common.log)
     implementation(libs.logbackClassic)
     implementation(libs.logstashLogbackEncoder)
-    implementation(libs.paw.kafkaClients)
+    implementation(libs.kafka.clients)
     implementation(libs.exposed.core)
     implementation(libs.exposed.jdbc)
     implementation(libs.exposed.javaTime)

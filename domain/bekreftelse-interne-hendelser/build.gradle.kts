@@ -7,11 +7,11 @@ dependencies {
     implementation(libs.jackson.datatypeJsr310)
     implementation(libs.jackson.kotlin)
     implementation(libs.jackson.core)
-    compileOnly(libs.paw.kafkaClients)
+    compileOnly(libs.kafka.clients)
 
     testImplementation(libs.test.junit5.runner)
     testImplementation(libs.test.kotest.assertionsCore)
-    testImplementation(libs.paw.kafkaClients)
+    testImplementation(libs.kafka.clients)
 }
 
 val jvmMajorVersion: String by project

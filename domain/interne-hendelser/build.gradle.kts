@@ -7,11 +7,11 @@ dependencies {
     compileOnly(libs.jackson.datatypeJsr310)
     compileOnly(libs.jackson.kotlin)
     compileOnly(libs.jackson.core)
-    compileOnly(libs.paw.kafkaClients)
+    compileOnly(libs.kafka.clients)
 
     testImplementation(libs.test.junit5.runner)
     testImplementation(libs.test.kotest.assertionsCore)
-    testImplementation(libs.paw.kafkaClients)
+    testImplementation(libs.kafka.clients)
     testImplementation(libs.jackson.datatypeJsr310)
     testImplementation(libs.jackson.kotlin)
     testImplementation(libs.jackson.core)

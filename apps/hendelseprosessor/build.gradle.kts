@@ -20,7 +20,7 @@ dependencies {
     implementation(libs.jackson.datatypeJsr310)
     implementation(libs.jackson.kotlin)
     implementation(libs.nav.common.log)
-    implementation(libs.paw.kafkaClients)
+    implementation(libs.kafka.clients)
     implementation(libs.kafka.streams.core)
     implementation(libs.avro.core)
     implementation(libs.avro.kafkaStreamsSerde)

@@ -22,16 +22,10 @@ import io.mockk.just
 import io.mockk.runs
 import io.mockk.verify
 import no.nav.paw.bekreftelse.api.ApplicationTestContext
-import no.nav.paw.bekreftelse.api.model.BekreftelseRequest
-import no.nav.paw.bekreftelse.api.model.InternState
 import no.nav.paw.bekreftelse.api.model.TilgjengeligBekreftelserResponse
-import no.nav.paw.bekreftelse.api.model.TilgjengeligeBekreftelserRequest
+import no.nav.paw.bekreftelse.api.plugin.TestData
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
-import no.nav.paw.error.model.ProblemDetails
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
-import org.apache.kafka.common.serialization.Serializer
-import org.apache.kafka.streams.KafkaStreams
-import org.apache.kafka.streams.StoreQueryParameters
 
 class BekreftelseRoutesTest : FreeSpec({
     with(ApplicationTestContext()) {
@@ -43,12 +37,11 @@ class BekreftelseRoutesTest : FreeSpec({
         afterSpec {
             coVerify { kafkaKeysClientMock.getIdAndKey(any<String>()) }
             confirmVerified(
-                kafkaStreamsMock,
-                stateStoreMock,
                 kafkaKeysClientMock,
                 poaoTilgangClientMock,
                 bekreftelseKafkaProducerMock,
-                bekreftelseHttpConsumerMock,
+                kafkaProducerMock,
+                kafkaConsumerMock,
                 bekreftelseServiceMock
             )
             mockOAuth2Server.shutdown()
@@ -58,252 +51,24 @@ class BekreftelseRoutesTest : FreeSpec({
         * SLUTTBRUKER TESTER
         */
         "Test suite for sluttbruker" - {
-            "Skal få 500 om Kafka Streams ikke kjører" {
+            "Skal hente tilgjengelige bekreftelser" {
                 coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
-                    testData.arbeidsoekerId1,
+                    testData.arbeidssoekerId1,
                     testData.kafkaKey1
-                )
-                every { kafkaStreamsMock.state() } returns KafkaStreams.State.NOT_RUNNING
-
-                testApplication {
-                    configureTestApplication(bekreftelseServiceReal)
-                    val client = configureTestClient()
-
-                    val token = mockOAuth2Server.issueToken(
-                        claims = mapOf(
-                            "acr" to "idporten-loa-high",
-                            "pid" to "01017012345"
-                        )
-                    )
-
-                    val response = client.get("/api/v1/tilgjengelige-bekreftelser") {
-                        bearerAuth(token.serialize())
-                    }
-
-                    response.status shouldBe HttpStatusCode.InternalServerError
-                    val body = response.body<ProblemDetails>()
-                    body.status shouldBe HttpStatusCode.InternalServerError
-                    body.code shouldBe "PAW_SYSTEMFEIL"
-                    verify { kafkaStreamsMock.state() }
-                }
-            }
-
-            "Skal få 500 om ingen state store funnet" {
-                coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
-                    testData.arbeidsoekerId1,
-                    testData.kafkaKey1
-                )
-                every { kafkaStreamsMock.state() } returns KafkaStreams.State.RUNNING
-                every { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) } returns null
-
-                testApplication {
-                    configureTestApplication(bekreftelseServiceReal)
-                    val client = configureTestClient()
-
-                    val token = mockOAuth2Server.issueToken(
-                        claims = mapOf(
-                            "acr" to "idporten-loa-high",
-                            "pid" to "01017012345"
-                        )
-                    )
-
-                    val response = client.get("/api/v1/tilgjengelige-bekreftelser") {
-                        bearerAuth(token.serialize())
-                    }
-
-                    response.status shouldBe HttpStatusCode.InternalServerError
-                    val body = response.body<ProblemDetails>()
-                    body.status shouldBe HttpStatusCode.InternalServerError
-                    body.code shouldBe "PAW_SYSTEMFEIL"
-                    verify { kafkaStreamsMock.state() }
-                    verify { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) }
-                }
-            }
-
-            "Skal hente tilgjengelige bekreftelser fra intern state store" {
-                coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
-                    testData.arbeidsoekerId1,
-                    testData.kafkaKey1
-                )
-                every { kafkaStreamsMock.state() } returns KafkaStreams.State.RUNNING
-                every { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) } returns stateStoreMock
-                every { stateStoreMock.get(any<Long>()) } returns InternState(
-                    listOf(
-                        testData.nyBekreftelseTilgjengelig()
-                    )
                 )
 
                 testApplication {
-                    configureTestApplication(bekreftelseServiceReal)
-                    val client = configureTestClient()
-
-                    val token = mockOAuth2Server.issueToken(
-                        claims = mapOf(
-                            "acr" to "idporten-loa-high",
-                            "pid" to "01017012345"
+                    configureCompleteTestApplication(
+                        bekreftelseService, TestData(
+                            bereftelseRows = testData.nyBekreftelseRows(
+                                arbeidssoekerId = testData.arbeidssoekerId1,
+                                periodeId = testData.periodeId1,
+                                bekreftelseRow = listOf(
+                                    1L to testData.bekreftelseId1, 2L to testData.bekreftelseId2
+                                )
+                            )
                         )
                     )
-
-                    val response = client.get("/api/v1/tilgjengelige-bekreftelser") {
-                        bearerAuth(token.serialize())
-                    }
-
-                    response.status shouldBe HttpStatusCode.OK
-                    val body = response.body<TilgjengeligBekreftelserResponse>()
-                    body.size shouldBe 1
-                    verify { kafkaStreamsMock.state() }
-                    verify { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) }
-                    verify { stateStoreMock.get(any<Long>()) }
-                }
-            }
-
-            "Skal hente tilgjengelige bekreftelser fra annen node" {
-                coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
-                    testData.arbeidsoekerId1,
-                    testData.kafkaKey1
-                )
-                every { kafkaStreamsMock.state() } returns KafkaStreams.State.RUNNING
-                every { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) } returns stateStoreMock
-                every { stateStoreMock.get(any<Long>()) } returns null
-                every {
-                    kafkaStreamsMock.queryMetadataForKey(
-                        any<String>(),
-                        any<Long>(),
-                        any<Serializer<Long>>()
-                    )
-                } returns testData.nyKeyQueryMetadata()
-                coEvery {
-                    bekreftelseHttpConsumerMock.finnTilgjengeligBekreftelser(
-                        any<String>(),
-                        any<String>(),
-                        any<TilgjengeligeBekreftelserRequest>()
-                    )
-                } returns listOf(testData.nyTilgjengeligBekreftelse())
-
-                testApplication {
-                    configureTestApplication(bekreftelseServiceReal)
-                    val client = configureTestClient()
-
-                    val token = mockOAuth2Server.issueToken(
-                        claims = mapOf(
-                            "acr" to "idporten-loa-high",
-                            "pid" to "01017012345"
-                        )
-                    )
-
-                    val response = client.get("/api/v1/tilgjengelige-bekreftelser") {
-                        bearerAuth(token.serialize())
-                    }
-
-                    response.status shouldBe HttpStatusCode.OK
-                    val body = response.body<TilgjengeligBekreftelserResponse>()
-                    body.size shouldBe 1
-                    verify { kafkaStreamsMock.state() }
-                    verify { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) }
-                    verify {
-                        kafkaStreamsMock.queryMetadataForKey(
-                            any<String>(),
-                            any<Long>(),
-                            any<Serializer<Long>>()
-                        )
-                    }
-                    verify { stateStoreMock.get(any<Long>()) }
-                    coVerify {
-                        bekreftelseHttpConsumerMock.finnTilgjengeligBekreftelser(
-                            any<String>(),
-                            any<String>(),
-                            any<TilgjengeligeBekreftelserRequest>()
-                        )
-                    }
-                }
-            }
-
-            "Skal hente tilgjengelige bekreftelser men finner ingen" {
-                coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
-                    testData.arbeidsoekerId1,
-                    testData.kafkaKey1
-                )
-                every { kafkaStreamsMock.state() } returns KafkaStreams.State.RUNNING
-                every { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) } returns stateStoreMock
-                every { stateStoreMock.get(any<Long>()) } returns null
-                every {
-                    kafkaStreamsMock.queryMetadataForKey(
-                        any<String>(),
-                        any<Long>(),
-                        any<Serializer<Long>>()
-                    )
-                } returns testData.nyKeyQueryMetadata(host = "127.0.0.1")
-                coEvery {
-                    bekreftelseHttpConsumerMock.finnTilgjengeligBekreftelser(
-                        any<String>(),
-                        any<String>(),
-                        any<TilgjengeligeBekreftelserRequest>()
-                    )
-                } returns listOf(testData.nyTilgjengeligBekreftelse())
-
-                testApplication {
-                    configureTestApplication(bekreftelseServiceReal)
-                    val client = configureTestClient()
-
-                    val token = mockOAuth2Server.issueToken(
-                        claims = mapOf(
-                            "acr" to "idporten-loa-high",
-                            "pid" to "01017012345"
-                        )
-                    )
-
-                    val response = client.get("/api/v1/tilgjengelige-bekreftelser") {
-                        bearerAuth(token.serialize())
-                    }
-
-                    response.status shouldBe HttpStatusCode.OK
-                    val body = response.body<TilgjengeligBekreftelserResponse>()
-                    body.size shouldBe 0
-                    verify { kafkaStreamsMock.state() }
-                    verify { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) }
-                    verify {
-                        kafkaStreamsMock.queryMetadataForKey(
-                            any<String>(),
-                            any<Long>(),
-                            any<Serializer<Long>>()
-                        )
-                    }
-                    verify { stateStoreMock.get(any<Long>()) }
-                    coVerify {
-                        bekreftelseHttpConsumerMock.finnTilgjengeligBekreftelser(
-                            any<String>(),
-                            any<String>(),
-                            any<TilgjengeligeBekreftelserRequest>()
-                        )
-                    }
-                }
-            }
-
-            "Skal motta bekreftelse via intern state store" {
-                coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
-                    testData.arbeidsoekerId1,
-                    testData.kafkaKey1
-                )
-                val request = testData.nyBekreftelseRequest(identitetsnummer = testData.fnr1)
-                every { kafkaStreamsMock.state() } returns KafkaStreams.State.RUNNING
-                every { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) } returns stateStoreMock
-                every { stateStoreMock.get(any<Long>()) } returns InternState(
-                    listOf(
-                        testData.nyBekreftelseTilgjengelig(
-                            bekreftelseId = request.bekreftelseId,
-                            arbeidsoekerId = testData.arbeidsoekerId1
-                        )
-                    )
-                )
-                coEvery {
-                    bekreftelseKafkaProducerMock.produceMessage(
-                        any<Long>(),
-                        any<Bekreftelse>()
-                    )
-                } just runs
-
-                testApplication {
-                    configureTestApplication(bekreftelseServiceReal)
                     val client = configureTestClient()
 
                     val token = mockOAuth2Server.issueToken(
@@ -313,53 +78,39 @@ class BekreftelseRoutesTest : FreeSpec({
                         )
                     )
 
-                    val response = client.post("/api/v1/bekreftelse") {
+                    val response = client.get("/api/v1/tilgjengelige-bekreftelser") {
                         bearerAuth(token.serialize())
-                        headers {
-                            append(HttpHeaders.ContentType, ContentType.Application.Json)
-                        }
-                        setBody(request)
                     }
 
                     response.status shouldBe HttpStatusCode.OK
-                    verify { kafkaStreamsMock.state() }
-                    verify { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) }
-                    verify { stateStoreMock.get(any<Long>()) }
-                    coVerify {
-                        bekreftelseKafkaProducerMock.produceMessage(
-                            any<Long>(),
-                            any<Bekreftelse>()
-                        )
-                    }
+                    val body = response.body<TilgjengeligBekreftelserResponse>()
+                    body.size shouldBe 2
                 }
             }
 
-            "Skal motta bekreftelse og overføre den til annen node" {
+            "Skal motta bekreftelse" {
                 coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
-                    testData.arbeidsoekerId2,
+                    testData.arbeidssoekerId2,
                     testData.kafkaKey2
                 )
-                val request = testData.nyBekreftelseRequest(identitetsnummer = testData.fnr2)
-                every { kafkaStreamsMock.state() } returns KafkaStreams.State.RUNNING
-                every { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) } returns stateStoreMock
-                every { stateStoreMock.get(any<Long>()) } returns null
-                every {
-                    kafkaStreamsMock.queryMetadataForKey(
-                        any<String>(),
-                        any<Long>(),
-                        any<Serializer<Long>>()
-                    )
-                } returns testData.nyKeyQueryMetadata()
-                coEvery {
-                    bekreftelseHttpConsumerMock.sendBekreftelse(
-                        any<String>(),
-                        any<String>(),
-                        any<BekreftelseRequest>()
-                    )
-                } just runs
+                every { bekreftelseKafkaProducerMock.produceMessage(any<Long>(), any<Bekreftelse>()) } just runs
+                val request = testData.nyBekreftelseRequest(
+                    identitetsnummer = testData.fnr2,
+                    bekreftelseId = testData.bekreftelseId3
+                )
 
                 testApplication {
-                    configureTestApplication(bekreftelseServiceReal)
+                    configureCompleteTestApplication(
+                        bekreftelseService, TestData(
+                            bereftelseRows = testData.nyBekreftelseRows(
+                                arbeidssoekerId = testData.arbeidssoekerId2,
+                                periodeId = testData.periodeId2,
+                                bekreftelseRow = listOf(
+                                    3L to testData.bekreftelseId3
+                                )
+                            )
+                        )
+                    )
                     val client = configureTestClient()
 
                     val token = mockOAuth2Server.issueToken(
@@ -378,58 +129,25 @@ class BekreftelseRoutesTest : FreeSpec({
                     }
 
                     response.status shouldBe HttpStatusCode.OK
-                    verify { kafkaStreamsMock.state() }
-                    verify { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) }
-                    verify {
-                        kafkaStreamsMock.queryMetadataForKey(
-                            any<String>(),
-                            any<Long>(),
-                            any<Serializer<Long>>()
-                        )
-                    }
-                    verify { stateStoreMock.get(any<Long>()) }
-                    coVerify {
-                        bekreftelseHttpConsumerMock.sendBekreftelse(
-                            any<String>(),
-                            any<String>(),
-                            any<BekreftelseRequest>()
-                        )
-                    }
+                    verify { bekreftelseKafkaProducerMock.produceMessage(any<Long>(), any<Bekreftelse>()) }
                 }
             }
 
             "Skal motta bekreftelse men finner ikke relatert tilgjengelig bekreftelse" {
                 coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
-                    testData.arbeidsoekerId2,
-                    testData.kafkaKey2
+                    testData.arbeidssoekerId3,
+                    testData.kafkaKey3
                 )
-                val request = testData.nyBekreftelseRequest(identitetsnummer = testData.fnr2)
-                every { kafkaStreamsMock.state() } returns KafkaStreams.State.RUNNING
-                every { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) } returns stateStoreMock
-                every { stateStoreMock.get(any<Long>()) } returns null
-                every {
-                    kafkaStreamsMock.queryMetadataForKey(
-                        any<String>(),
-                        any<Long>(),
-                        any<Serializer<Long>>()
-                    )
-                } returns testData.nyKeyQueryMetadata(host = "127.0.0.1")
-                coEvery {
-                    bekreftelseHttpConsumerMock.sendBekreftelse(
-                        any<String>(),
-                        any<String>(),
-                        any<BekreftelseRequest>()
-                    )
-                } just runs
+                val request = testData.nyBekreftelseRequest(identitetsnummer = testData.fnr3)
 
                 testApplication {
-                    configureTestApplication(bekreftelseServiceReal)
+                    configureCompleteTestApplication(bekreftelseService)
                     val client = configureTestClient()
 
                     val token = mockOAuth2Server.issueToken(
                         claims = mapOf(
                             "acr" to "idporten-loa-high",
-                            "pid" to testData.fnr2
+                            "pid" to testData.fnr3
                         )
                     )
 
@@ -442,25 +160,6 @@ class BekreftelseRoutesTest : FreeSpec({
                     }
 
                     response.status shouldBe HttpStatusCode.BadRequest
-                    val body = response.body<ProblemDetails>()
-                    body.code shouldBe "PAW_DATA_IKKE_FUNNET_FOR_ID"
-                    verify { kafkaStreamsMock.state() }
-                    verify { kafkaStreamsMock.store(any<StoreQueryParameters<*>>()) }
-                    verify {
-                        kafkaStreamsMock.queryMetadataForKey(
-                            any<String>(),
-                            any<Long>(),
-                            any<Serializer<Long>>()
-                        )
-                    }
-                    verify { stateStoreMock.get(any<Long>()) }
-                    coVerify {
-                        bekreftelseHttpConsumerMock.sendBekreftelse(
-                            any<String>(),
-                            any<String>(),
-                            any<BekreftelseRequest>()
-                        )
-                    }
                 }
             }
         }

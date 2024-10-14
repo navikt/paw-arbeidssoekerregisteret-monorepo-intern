@@ -51,7 +51,7 @@ class AuthRoutesTest : FreeSpec({
 
             "Skal få 401 ved manglende Bearer Token" {
                 testApplication {
-                    configureTestApplication(bekreftelseServiceMock)
+                    configureSimpleTestApplication(bekreftelseServiceMock)
                     val client = configureTestClient()
 
                     val response = client.get("/api/secured")
@@ -62,7 +62,7 @@ class AuthRoutesTest : FreeSpec({
 
             "Skal få 401 ved token utstedt av ukjent issuer" {
                 testApplication {
-                    configureTestApplication(bekreftelseServiceMock)
+                    configureSimpleTestApplication(bekreftelseServiceMock)
                     val client = configureTestClient()
 
                     val token = mockOAuth2Server.issueToken(
@@ -83,7 +83,7 @@ class AuthRoutesTest : FreeSpec({
 
             "Skal få 403 ved token uten noen claims" {
                 testApplication {
-                    configureTestApplication(bekreftelseServiceMock)
+                    configureSimpleTestApplication(bekreftelseServiceMock)
                     val client = configureTestClient()
 
                     val token = mockOAuth2Server.issueToken()
@@ -107,7 +107,7 @@ class AuthRoutesTest : FreeSpec({
 
             "Skal få 403 ved TokenX-token uten pid claim" {
                 testApplication {
-                    configureTestApplication(bekreftelseServiceMock)
+                    configureSimpleTestApplication(bekreftelseServiceMock)
                     val client = configureTestClient()
 
                     val token = mockOAuth2Server.issueToken(
@@ -129,7 +129,7 @@ class AuthRoutesTest : FreeSpec({
 
             "Skal få 403 ved TokenX-token når innsendt ident ikke er lik pid claim" {
                 testApplication {
-                    configureTestApplication(bekreftelseServiceMock)
+                    configureSimpleTestApplication(bekreftelseServiceMock)
                     val client = configureTestClient()
 
                     val token = mockOAuth2Server.issueToken(
@@ -158,7 +158,7 @@ class AuthRoutesTest : FreeSpec({
                 coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(1, 1)
 
                 testApplication {
-                    configureTestApplication(bekreftelseServiceMock)
+                    configureSimpleTestApplication(bekreftelseServiceMock)
                     val client = configureTestClient()
 
                     val token = mockOAuth2Server.issueToken(
@@ -193,7 +193,7 @@ class AuthRoutesTest : FreeSpec({
 
             "Skal få 403 ved Azure-token men GET-request" {
                 testApplication {
-                    configureTestApplication(bekreftelseServiceMock)
+                    configureSimpleTestApplication(bekreftelseServiceMock)
                     val client = configureTestClient()
 
                     val token = mockOAuth2Server.issueToken(
@@ -216,7 +216,7 @@ class AuthRoutesTest : FreeSpec({
 
             "Skal få 403 ved Azure-token med POST-request uten ident" {
                 testApplication {
-                    configureTestApplication(bekreftelseServiceMock)
+                    configureSimpleTestApplication(bekreftelseServiceMock)
                     val client = configureTestClient()
 
                     val token = mockOAuth2Server.issueToken(
@@ -249,7 +249,7 @@ class AuthRoutesTest : FreeSpec({
                 )
 
                 testApplication {
-                    configureTestApplication(bekreftelseServiceMock)
+                    configureSimpleTestApplication(bekreftelseServiceMock)
                     val client = configureTestClient()
 
                     val token = mockOAuth2Server.issueToken(
@@ -285,7 +285,7 @@ class AuthRoutesTest : FreeSpec({
                 )
 
                 testApplication {
-                    configureTestApplication(bekreftelseServiceMock)
+                    configureSimpleTestApplication(bekreftelseServiceMock)
                     val client = configureTestClient()
 
                     val token = mockOAuth2Server.issueToken(

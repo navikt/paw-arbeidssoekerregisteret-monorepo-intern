@@ -1,0 +1,25 @@
+### SERVICES ###
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+    volumes:
+      - ./config/initdb/:/docker-entrypoint-initdb.d/
+      - postgres:/var/lib/postgresql
+    networks:
+      - postgres
+
+### VOLUMES ###
+volumes:
+  postgres:
+    name: postgres
+
+### NETWORKS ###
+networks:
+  postgres:
+    name: postgres

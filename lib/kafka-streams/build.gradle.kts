@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     api(project(":lib:kafka"))
-    implementation(libs.paw.kafkaClients)
+    implementation(libs.kafka.clients)
     implementation(libs.kafka.streams.core)
     implementation(libs.avro.kafkaStreamsSerde)
 

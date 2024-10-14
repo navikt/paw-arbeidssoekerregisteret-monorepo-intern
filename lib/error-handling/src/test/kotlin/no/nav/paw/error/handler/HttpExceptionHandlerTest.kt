@@ -1,5 +1,7 @@
 package no.nav.paw.error.handler
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.kotlinModule
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.ktor.client.call.body
@@ -29,7 +31,10 @@ class HttpExceptionHandlerTest : FreeSpec({
                     }
                 }
                 serverInstall(ServerContentNegotiation) {
-                    jackson {}
+                    jackson {
+                        registerModule(JavaTimeModule())
+                        kotlinModule()
+                    }
                 }
                 routing {
                     get("/api/400") {
@@ -40,7 +45,10 @@ class HttpExceptionHandlerTest : FreeSpec({
 
             val client = createClient {
                 install(ClientContentNegotiation) {
-                    jackson {}
+                    jackson {
+                        registerModule(JavaTimeModule())
+                        kotlinModule()
+                    }
                 }
             }
 

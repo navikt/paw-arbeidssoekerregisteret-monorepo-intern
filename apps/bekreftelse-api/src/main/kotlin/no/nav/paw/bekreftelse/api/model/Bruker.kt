@@ -4,6 +4,7 @@ import no.nav.paw.bekreftelse.melding.v1.vo.Bruker
 import java.util.*
 
 enum class BrukerType {
+    UKJENT_VERDI,
     SLUTTBRUKER,
     VEILEDER
 }
@@ -16,17 +17,18 @@ data class Sluttbruker(
     val kafkaKey: Long
 )
 
-fun InnloggetBruker.asApi(): Bruker {
+fun InnloggetBruker.asBruker(): Bruker {
     return Bruker.newBuilder()
         .setId(ident)
-        .setType(type.asApi())
+        .setType(type.asBrukerType())
         .build()
 }
 
-fun BrukerType.asApi(): no.nav.paw.bekreftelse.melding.v1.vo.BrukerType {
+fun BrukerType.asBrukerType(): no.nav.paw.bekreftelse.melding.v1.vo.BrukerType {
     return when (this) {
         BrukerType.SLUTTBRUKER -> no.nav.paw.bekreftelse.melding.v1.vo.BrukerType.SLUTTBRUKER
         BrukerType.VEILEDER -> no.nav.paw.bekreftelse.melding.v1.vo.BrukerType.VEILEDER
+        else -> no.nav.paw.bekreftelse.melding.v1.vo.BrukerType.UKJENT_VERDI
     }
 }
 

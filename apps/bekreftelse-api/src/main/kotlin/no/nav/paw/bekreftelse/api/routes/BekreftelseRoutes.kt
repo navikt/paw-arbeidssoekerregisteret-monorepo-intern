@@ -10,48 +10,39 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import no.nav.paw.bekreftelse.api.context.ApplicationContext
 import no.nav.paw.bekreftelse.api.context.resolveRequest
-import no.nav.paw.bekreftelse.api.model.BekreftelseRequest
+import no.nav.paw.bekreftelse.api.model.Azure
+import no.nav.paw.bekreftelse.api.model.MottaBekreftelseRequest
 import no.nav.paw.bekreftelse.api.model.TilgjengeligeBekreftelserRequest
-import no.nav.paw.bekreftelse.api.utils.mottaBekreftelseHttpCounter
+import no.nav.paw.bekreftelse.api.model.TokenX
 import no.nav.poao_tilgang.client.TilgangType
 
 fun Route.bekreftelseRoutes(applicationContext: ApplicationContext) {
-    val prometheusMeterRegistry = applicationContext.prometheusMeterRegistry
     val authorizationService = applicationContext.authorizationService
     val bekreftelseService = applicationContext.bekreftelseService
 
     route("/api/v1") {
-        authenticate("idporten", "tokenx", "azure") {
+        authenticate(TokenX.name, Azure.name) {
             get("/tilgjengelige-bekreftelser") {
                 val requestContext = resolveRequest()
                 val securityContext = authorizationService.authorize(requestContext, TilgangType.LESE)
-                val response = bekreftelseService.finnTilgjengeligBekreftelser(
-                    securityContext,
-                    TilgjengeligeBekreftelserRequest(securityContext.sluttbruker.identitetsnummer),
-                    requestContext.useMockData
-                )
+                val response = bekreftelseService.finnTilgjengeligBekreftelser(securityContext.sluttbruker)
                 call.respond(HttpStatusCode.OK, response)
             }
 
             post<TilgjengeligeBekreftelserRequest>("/tilgjengelige-bekreftelser") { request ->
                 val requestContext = resolveRequest(request.identitetsnummer)
                 val securityContext = authorizationService.authorize(requestContext, TilgangType.LESE)
-                val response = bekreftelseService.finnTilgjengeligBekreftelser(
-                    securityContext,
-                    request,
-                    requestContext.useMockData
-                )
+                val response = bekreftelseService.finnTilgjengeligBekreftelser(securityContext.sluttbruker)
                 call.respond(HttpStatusCode.OK, response)
             }
 
-            post<BekreftelseRequest>("/bekreftelse") { request ->
+            post<MottaBekreftelseRequest>("/bekreftelse") { request ->
                 val requestContext = resolveRequest(request.identitetsnummer)
                 val securityContext = authorizationService.authorize(requestContext, TilgangType.SKRIVE)
-                prometheusMeterRegistry.mottaBekreftelseHttpCounter()
                 bekreftelseService.mottaBekreftelse(
-                    securityContext,
+                    securityContext.innloggetBruker,
+                    securityContext.sluttbruker,
                     request,
-                    requestContext.useMockData
                 )
                 call.respond(HttpStatusCode.OK)
             }

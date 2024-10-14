@@ -1,0 +1,35 @@
+package no.nav.paw.bekreftelse.api.plugins.custom
+
+import io.ktor.events.EventDefinition
+import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationPlugin
+import io.ktor.server.application.ApplicationStarted
+import io.ktor.server.application.createApplicationPlugin
+import io.ktor.server.application.hooks.MonitoringEvent
+import io.ktor.server.application.log
+import io.ktor.util.KtorDsl
+import org.jetbrains.exposed.sql.Database
+import javax.sql.DataSource
+
+val DataSourceReady: EventDefinition<Application> = EventDefinition()
+
+@KtorDsl
+class DataSourcePluginConfig {
+    var dataSource: DataSource? = null
+
+    companion object {
+        const val PLUGIN_NAME = "DataSourcePlugin"
+    }
+}
+
+val DataSourcePlugin: ApplicationPlugin<DataSourcePluginConfig> =
+    createApplicationPlugin(DataSourcePluginConfig.PLUGIN_NAME, ::DataSourcePluginConfig) {
+        application.log.info("Oppretter {}", DataSourcePluginConfig.PLUGIN_NAME)
+        val dataSource = requireNotNull(pluginConfig.dataSource) { "DataSource er null" }
+
+        on(MonitoringEvent(ApplicationStarted)) { application ->
+            application.log.info("Initializing data source")
+            val database = Database.connect(dataSource)
+            application.environment.monitor.raise(DataSourceReady, application)
+        }
+    }

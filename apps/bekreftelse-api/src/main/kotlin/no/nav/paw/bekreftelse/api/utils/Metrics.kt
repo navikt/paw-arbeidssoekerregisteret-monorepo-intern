@@ -7,68 +7,57 @@ import java.util.concurrent.atomic.AtomicLong
 
 private const val METRIC_PREFIX = "paw_arbeidssoekerregisteret_api_bekreftelse"
 
-fun MeterRegistry.mottaBekreftelseHttpCounter() {
+fun MeterRegistry.receiveBekreftelseCounter(type: String, amount: Int = 1) {
     counter(
         "${METRIC_PREFIX}_counter",
         Tags.of(
-            Tag.of("action", "mottatt_bekreftelse"),
+            Tag.of("action", "receive"),
             Tag.of("channel", "http")
         )
     ).increment()
+    bekreftelseCounter(type, "receive", "http", "kafka", amount)
 }
 
-fun MeterRegistry.sendeBekreftelseKafkaCounter() {
+fun MeterRegistry.sendBekreftelseHendelseCounter(type: String, amount: Int = 1) {
+    bekreftelseCounter(type, "send", "http", "kafka", amount)
+}
+
+fun MeterRegistry.receiveBekreftelseHendelseCounter(type: String, amount: Int = 1) {
+    bekreftelseCounter(type, "receive", "kafka", "database", amount)
+}
+
+fun MeterRegistry.insertBekreftelseHendelseCounter(type: String, amount: Int = 1) {
+    bekreftelseCounter(type, "insert", "kafka", "database", amount)
+}
+
+fun MeterRegistry.updateBekreftelseHendelseCounter(type: String, amount: Int = 1) {
+    bekreftelseCounter(type, "update", "kafka", "database", amount)
+}
+
+fun MeterRegistry.deleteBekreftelseHendelseCounter(type: String, amount: Int = 1) {
+    bekreftelseCounter(type, "delete", "kafka", "database", amount)
+}
+
+fun MeterRegistry.ignoreBekreftelseHendeleCounter(type: String, amount: Int = 1) {
+    bekreftelseCounter(type, "ignore", "kafka", "none", amount)
+}
+
+fun MeterRegistry.bekreftelseCounter(
+    type: String,
+    action: String,
+    source: String,
+    target: String,
+    amount: Int = 1
+) {
     counter(
         "${METRIC_PREFIX}_counter",
         Tags.of(
-            Tag.of("action", "sendt_bekreftelse"),
-            Tag.of("channel", "kafka")
-        )
-    ).increment()
-}
-
-fun MeterRegistry.mottattBekreftelseHendelseKafkaCounter(hendelseType: String) {
-    counter(
-        "${METRIC_PREFIX}_counter",
-        Tags.of(
-            Tag.of("action", "mottatt_bekreftelse_hendelse"),
-            Tag.of("type", hendelseType),
-            Tag.of("channel", "kafka")
-        )
-    ).increment()
-}
-
-fun MeterRegistry.lagreBekreftelseHendelseCounter(hendelseType: String, amount: Long = 1) {
-    counter(
-        "${METRIC_PREFIX}_counter",
-        Tags.of(
-            Tag.of("action", "lagret_bekreftelse_hendelse"),
-            Tag.of("type", hendelseType),
-            Tag.of("channel", "state")
+            Tag.of("type", type),
+            Tag.of("action", action),
+            Tag.of("source", source),
+            Tag.of("target", target)
         )
     ).increment(amount.toDouble())
-}
-
-fun MeterRegistry.slettetBekreftelseHendelseCounter(hendelseType: String, amount: Long = 1) {
-    counter(
-        "${METRIC_PREFIX}_counter",
-        Tags.of(
-            Tag.of("action", "slettet_bekreftelse_hendelse"),
-            Tag.of("type", hendelseType),
-            Tag.of("channel", "state")
-        )
-    ).increment(amount.toDouble())
-}
-
-fun MeterRegistry.ignorertBekreftelseHendeleCounter(hendelseType: String) {
-    counter(
-        "${METRIC_PREFIX}_counter",
-        Tags.of(
-            Tag.of("action", "ignorert_bekreftelse_hendelse"),
-            Tag.of("type", hendelseType),
-            Tag.of("channel", "state")
-        )
-    ).increment()
 }
 
 fun MeterRegistry.lagredeBekreftelserTotaltGauge(antallReference: AtomicLong) {

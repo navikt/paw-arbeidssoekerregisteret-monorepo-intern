@@ -15,21 +15,21 @@ private val objectMapper: ObjectMapper = ObjectMapper()
 
 class BekreftelseHendelseSerde: Serde<BekreftelseHendelse> {
     override fun serializer(): Serializer<BekreftelseHendelse> {
-        return BekreftelseHendelseSerializer
+        return BekreftelseHendelseSerializer()
     }
 
     override fun deserializer(): Deserializer<BekreftelseHendelse> {
-        return BekreftelseHendelseDeserializer
+        return BekreftelseHendelseDeserializer()
     }
 }
 
-object BekreftelseHendelseSerializer: Serializer<BekreftelseHendelse> {
+class BekreftelseHendelseSerializer: Serializer<BekreftelseHendelse> {
     override fun serialize(topic: String?, data: BekreftelseHendelse?): ByteArray? {
         return data?.let { objectMapper.writeValueAsBytes(it) }
     }
 }
 
-object BekreftelseHendelseDeserializer: Deserializer<BekreftelseHendelse> {
+class BekreftelseHendelseDeserializer: Deserializer<BekreftelseHendelse> {
     override fun deserialize(topic: String?, data: ByteArray?): BekreftelseHendelse {
         val node = objectMapper.readTree(data)
         return deserializeNode(node)

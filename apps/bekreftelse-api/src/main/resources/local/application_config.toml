@@ -1,34 +1,22 @@
 [autorisasjon]
 corsAllowOrigins = "localhost"
 
-[kafkaTopology]
-applicationIdSuffix = "v1"
-producerId = "paw-arbeidssoekerregisteret-api-bekreftelse"
-bekreftelseTopic = "paw.arbeidssoker-bekreftelse-v1"
-bekreftelseHendelsesloggTopic = "paw.arbeidssoker-bekreftelse-hendelseslogg-v1"
-internStateStoreName = "intern-state-store"
-
-[[authProviders]]
-name = "idporten"
-discoveryUrl = "http://localhost:8081/idporten/.well-known/openid-configuration"
-clientId = "paw-arbeidssoekerregisteret-api-bekreftelse"
-[authProviders.claims]
-map = ["acr=idporten-loa-high"]
-
 [[authProviders]]
 name = "tokenx"
 discoveryUrl = "http://localhost:8081/tokenx/.well-known/openid-configuration"
 clientId = "paw-arbeidssoekerregisteret-api-bekreftelse"
-[authProviders.claims]
-map = ["acr=Level4", "acr=idporten-loa-high"]
-combineWithOr = true
+
+    [authProviders.claims]
+    map = ["acr=Level4", "acr=idporten-loa-high"]
+    combineWithOr = true
 
 [[authProviders]]
 name = "azure"
 discoveryUrl = "http://localhost:8081/azure/.well-known/openid-configuration"
 clientId = "paw-arbeidssoekerregisteret-api-bekreftelse"
-[authProviders.claims]
-map = ["NAVident"]
+
+    [authProviders.claims]
+    map = ["NAVident"]
 
 [azureM2M]
 tokenEndpointUrl = "http://localhost:8081/azure/token"
@@ -45,5 +33,19 @@ scope = "api://test.test.kafka-keys/.default"
 [kafkaClients]
 brokers = "localhost:9092"
 applicationIdPrefix = "paw-arbeidssoekerregisteret-api-bekreftelse"
-[kafkaClients.schemaRegistry]
-url = "http://localhost:8082"
+
+    [kafkaClients.schemaRegistry]
+    url = "http://localhost:8082"
+
+[kafkaTopology]
+version = 1
+antallPartitioner = 1
+producerId = "paw-arbeidssoekerregisteret-api-bekreftelse-v1-producer"
+consumerId = "paw-arbeidssoekerregisteret-api-bekreftelse-v1-consumer"
+consumerGroupId = "paw-arbeidssoekerregisteret-api-bekreftelse-v1"
+bekreftelseTopic = "paw.arbeidssoker-bekreftelse-v1"
+bekreftelseHendelsesloggTopic = "paw.arbeidssoker-bekreftelse-hendelseslogg-v1"
+
+[database]
+jdbcUrl = "jdbc:postgresql://localhost:5432/bekreftelser?user=bekreftelse_api&password=5up3r_53cr3t_p455w0rd"
+driverClassName = "org.postgresql.Driver"

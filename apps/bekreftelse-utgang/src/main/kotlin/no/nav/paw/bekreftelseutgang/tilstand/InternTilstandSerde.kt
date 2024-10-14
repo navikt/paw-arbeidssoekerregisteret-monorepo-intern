@@ -37,13 +37,17 @@ object InternTilstandDeserializer : Deserializer<InternTilstand> {
 
 private val internTilstandObjectMapper = ObjectMapper()
     .registerKotlinModule()
-    .registerModules(SimpleModule().addDeserializer(BekreftelseHendelse::class.java,
-        BekreftelseHendelseJsonDeserializer
-    ))
+    .registerModules(
+        SimpleModule().addDeserializer(
+            BekreftelseHendelse::class.java,
+            BekreftelseHendelseJsonDeserializer
+        )
+    )
     .registerModules(JavaTimeModule())
 
 object BekreftelseHendelseJsonDeserializer : JsonDeserializer<BekreftelseHendelse>() {
+    private val deserializer = BekreftelseHendelseDeserializer()
     override fun deserialize(parser: JsonParser, context: DeserializationContext): BekreftelseHendelse =
-        BekreftelseHendelseDeserializer.deserializeNode(context.readTree(parser))
+        deserializer.deserializeNode(context.readTree(parser))
 }
 

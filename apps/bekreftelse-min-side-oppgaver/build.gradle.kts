@@ -23,7 +23,7 @@ dependencies {
     implementation(libs.nav.common.log)
     implementation(libs.logbackClassic)
     implementation(libs.logstashLogbackEncoder)
-    implementation(libs.paw.kafkaClients)
+    implementation(libs.kafka.clients)
     implementation(libs.kafka.streams.core)
     implementation(libs.avro.core)
     implementation(libs.avro.kafkaStreamsSerde)

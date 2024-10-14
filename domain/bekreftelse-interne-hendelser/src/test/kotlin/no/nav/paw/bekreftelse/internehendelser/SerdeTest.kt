@@ -16,10 +16,10 @@ class SerdeTest : FreeSpec({
                 hendelseTidspunkt = Instant.now(),
                 leveringsfrist = Instant.now()
             )
-            val resultat = BekreftelseHendelseSerializer.serialize("", hendelse)
+            val resultat = BekreftelseHendelseSerializer().serialize("", hendelse)
                 .let { serialized ->
                     println("serialized: ${String(serialized!!)}")
-                    BekreftelseHendelseDeserializer.deserialize("", serialized)
+                    BekreftelseHendelseDeserializer().deserialize("", serialized)
                 }
             resultat shouldBe hendelse
         }
