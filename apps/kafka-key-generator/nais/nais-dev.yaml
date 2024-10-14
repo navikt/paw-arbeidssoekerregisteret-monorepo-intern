@@ -8,6 +8,8 @@ metadata:
 spec:
   image: {{ image }}
   port: 8080
+  ingress:
+    - https://record-key-arbeidssoekerregisteret.intern.dev.nav.no/api/v1/record-key
   replicas:
     min: 2
     max: 2

@@ -4,9 +4,11 @@ info:
   description: "Read only API"
   version: "1.0.0"
 servers:
-- url: "https://paw_kafka_key_generator"
+  - url: "https://paw_kafka_key_generator"
+  - url: "https://record-key-arbeidssoekerregisteret.intern.dev.nav.no"
+    description: "Dev"
 paths:
-  /api/oppslag/v1/recordKey:
+  /api/v1/record-key:
     post:
       description: ""
       parameters:

@@ -22,7 +22,7 @@ fun Routing.configureRecordKeyApi(
 ) {
     val logger = LoggerFactory.getLogger("record-key-api")
     authenticate(autentiseringKonfigurasjon.kafkaKeyApiAuthProvider) {
-        post("/api/oppslag/v1/metadata") {
+        post("/api/v1/record-key") {
             handleRequest(applikasjon, logger)
         }
     }
