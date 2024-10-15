@@ -1,4 +1,3 @@
-ip = "${POD_IP}"
 host = "${HOSTNAME}"
 port = 8080
 callGroupSize = 16

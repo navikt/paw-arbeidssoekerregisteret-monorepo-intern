@@ -2,6 +2,14 @@
 corsAllowOrigins = "localhost"
 
 [[authProviders]]
+name = "idporten"
+discoveryUrl = "${IDPORTEN_WELL_KNOWN_URL}
+clientId = "${IDPORTEN_CLIENT_ID}"
+
+    [authProviders.claims]
+    map = ["acr=idporten-loa-high"]
+
+[[authProviders]]
 name = "tokenx"
 discoveryUrl = "http://localhost:8081/tokenx/.well-known/openid-configuration"
 clientId = "paw-arbeidssoekerregisteret-api-bekreftelse"

@@ -9,12 +9,6 @@ spec:
   image: {{ image }}
   port: 8080
   env:
-    - name: POD_IP
-      valueFrom:
-        fieldRef:
-          fieldPath: status.podIP
-    - name: KAFKA_STREAMS_ID_SUFFIX
-      value: "v2"
     - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_TOPIC
       value: "paw.arbeidssoker-bekreftelse-beta-v1"
     - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_HENDELSESLOGG_TOPIC
@@ -30,6 +24,12 @@ spec:
     requests:
       cpu: 200m
       memory: 256Mi
+  ingresses:
+    - https://bekreftelse-arbeidssoekerregisteret.intern.dev.nav.no
+  idporten:
+    enabled: true
+    sidecar:
+      enabled: true
   tokenx:
     enabled: true
   azure:
@@ -54,7 +54,6 @@ spec:
       runtime: java
   kafka:
     pool: nav-dev
-    streams: true
   gcp:
     sqlInstances:
       - type: POSTGRES_16
@@ -75,13 +74,9 @@ spec:
           namespace: paw
         - application: arbeidssoekerregisteret-for-personbruker
           namespace: paw
-        - application: paw-arbeidssoekerregisteret-api-bekreftelse
-          namespace: paw
     outbound:
       rules:
         - application: poao-tilgang
           namespace: poao
         - application: paw-kafka-key-generator
-          namespace: paw
-        - application: paw-arbeidssoekerregisteret-api-bekreftelse
           namespace: paw

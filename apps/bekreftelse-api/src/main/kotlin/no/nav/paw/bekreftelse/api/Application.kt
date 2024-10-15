@@ -29,7 +29,7 @@ fun main() {
 
 
     with(applicationContext.serverConfig) {
-        logger.info("Starter $appName med IP $ip og port $port")
+        logger.info("Starter $appName med hostname $host og port $port")
 
         embeddedServer(Netty, port = port) {
             module(applicationContext)

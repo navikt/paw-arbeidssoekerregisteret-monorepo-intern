@@ -2,6 +2,14 @@
 corsAllowOrigins = "${CORS_ALLOW_ORIGINS}"
 
 [[authProviders]]
+name = "idporten"
+discoveryUrl = "${IDPORTEN_WELL_KNOWN_URL}
+clientId = "${IDPORTEN_CLIENT_ID}"
+
+    [authProviders.claims]
+    map = ["acr=idporten-loa-high"]
+
+[[authProviders]]
 name = "tokenx"
 discoveryUrl = "${TOKEN_X_WELL_KNOWN_URL}"
 clientId = "${TOKEN_X_CLIENT_ID}"

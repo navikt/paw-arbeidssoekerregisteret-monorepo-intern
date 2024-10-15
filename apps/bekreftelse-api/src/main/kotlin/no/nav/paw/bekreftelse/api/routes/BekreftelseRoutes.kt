@@ -11,6 +11,7 @@ import io.ktor.server.routing.route
 import no.nav.paw.bekreftelse.api.context.ApplicationContext
 import no.nav.paw.bekreftelse.api.context.resolveRequest
 import no.nav.paw.bekreftelse.api.model.Azure
+import no.nav.paw.bekreftelse.api.model.IdPorten
 import no.nav.paw.bekreftelse.api.model.MottaBekreftelseRequest
 import no.nav.paw.bekreftelse.api.model.TilgjengeligeBekreftelserRequest
 import no.nav.paw.bekreftelse.api.model.TokenX
@@ -21,7 +22,7 @@ fun Route.bekreftelseRoutes(applicationContext: ApplicationContext) {
     val bekreftelseService = applicationContext.bekreftelseService
 
     route("/api/v1") {
-        authenticate(TokenX.name, Azure.name) {
+        authenticate(IdPorten.name, TokenX.name, Azure.name) {
             get("/tilgjengelige-bekreftelser") {
                 val requestContext = resolveRequest()
                 val securityContext = authorizationService.authorize(requestContext, TilgangType.LESE)
