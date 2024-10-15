@@ -56,3 +56,5 @@ bekreftelseHendelsesloggTopic = "${KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_HENDELSESL
 [database]
 jdbcUrl = "${NAIS_DATABASE_PAW_ARBEIDSSOEKERREGISTERET_API_BEKREFTELSE_BEKREFTELSER_JDBC_URL}"
 driverClassName = "org.postgresql.Driver"
+autoCommit = false
+maxPoolSize = 3

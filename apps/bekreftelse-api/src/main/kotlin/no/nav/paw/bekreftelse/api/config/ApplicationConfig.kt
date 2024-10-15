@@ -52,8 +52,8 @@ data class KafkaTopologyConfig(
 data class DatabaseConfig(
     val jdbcUrl: String,
     val driverClassName: String,
-    val autoCommit: Boolean = false,
-    val maxPoolSize: Int = 10,
+    val autoCommit: Boolean,
+    val maxPoolSize: Int,
     val connectionTimeout: Duration = Duration.ofSeconds(30),
     val idleTimeout: Duration = Duration.ofMinutes(10),
     val maxLifetime: Duration = Duration.ofMinutes(30)
