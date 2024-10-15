@@ -4,6 +4,7 @@ import io.ktor.events.EventDefinition
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationPlugin
 import io.ktor.server.application.ApplicationStarted
+import io.ktor.server.application.ApplicationStopping
 import io.ktor.server.application.createApplicationPlugin
 import io.ktor.server.application.hooks.MonitoringEvent
 import io.ktor.server.application.log
@@ -29,7 +30,12 @@ val DataSourcePlugin: ApplicationPlugin<DataSourcePluginConfig> =
 
         on(MonitoringEvent(ApplicationStarted)) { application ->
             application.log.info("Initializing data source")
-            val database = Database.connect(dataSource)
+            Database.connect(dataSource)
             application.environment.monitor.raise(DataSourceReady, application)
+        }
+
+        on(MonitoringEvent(ApplicationStopping)) { application ->
+            application.log.info("Closing data source")
+            dataSource.connection.close()
         }
     }

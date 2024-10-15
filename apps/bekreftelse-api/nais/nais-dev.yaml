@@ -61,6 +61,9 @@ spec:
         tier: db-f1-micro
         databases:
           - name: bekreftelser
+        flags:
+          - name: max_connections
+            value: "25"
   accessPolicy:
     inbound:
       rules:
