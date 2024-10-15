@@ -25,6 +25,7 @@ import no.nav.paw.bekreftelse.api.context.ApplicationContext
 import no.nav.paw.bekreftelse.api.context.resolveRequest
 import no.nav.paw.bekreftelse.api.handler.KafkaConsumerExceptionHandler
 import no.nav.paw.bekreftelse.api.model.Azure
+import no.nav.paw.bekreftelse.api.model.IdPorten
 import no.nav.paw.bekreftelse.api.model.TilgjengeligeBekreftelserRequest
 import no.nav.paw.bekreftelse.api.model.TokenX
 import no.nav.paw.bekreftelse.api.plugin.TestData
@@ -166,6 +167,13 @@ class ApplicationTestContext {
     private fun MockOAuth2Server.createAuthProviders(): List<AuthProvider> {
         val wellKnownUrl = wellKnownUrl("default").toString()
         return listOf(
+            AuthProvider(
+                IdPorten.name, wellKnownUrl, "default", AuthProviderClaims(
+                    listOf(
+                        "acr=idporten-loa-high"
+                    )
+                )
+            ),
             AuthProvider(
                 TokenX.name, wellKnownUrl, "default", AuthProviderClaims(
                     listOf(

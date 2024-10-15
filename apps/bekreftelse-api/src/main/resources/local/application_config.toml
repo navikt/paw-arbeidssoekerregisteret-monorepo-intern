@@ -3,8 +3,8 @@ corsAllowOrigins = "localhost"
 
 [[authProviders]]
 name = "idporten"
-discoveryUrl = "${IDPORTEN_WELL_KNOWN_URL}
-clientId = "${IDPORTEN_CLIENT_ID}"
+discoveryUrl = "http://localhost:8081/idporten/.well-known/openid-configuration"
+clientId = "paw-arbeidssoekerregisteret-api-bekreftelse"
 
     [authProviders.claims]
     map = ["acr=idporten-loa-high"]
