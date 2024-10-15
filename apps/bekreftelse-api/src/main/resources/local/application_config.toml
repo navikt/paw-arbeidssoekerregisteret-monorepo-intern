@@ -40,7 +40,6 @@ scope = "api://test.test.kafka-keys/.default"
 
 [kafkaClients]
 brokers = "localhost:9092"
-applicationIdPrefix = "paw-arbeidssoekerregisteret-api-bekreftelse"
 
     [kafkaClients.schemaRegistry]
     url = "http://localhost:8082"

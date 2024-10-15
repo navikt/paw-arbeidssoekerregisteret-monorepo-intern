@@ -40,7 +40,6 @@ scope = "api://${NAIS_CLUSTER_NAME}.paw.paw-kafka-key-generator/.default"
 
 [kafkaClients]
 brokers = "${KAFKA_BROKERS}"
-applicationIdPrefix = "${KAFKA_STREAMS_APPLICATION_ID}"
 
     [kafkaClients.authentication]
     keystorePath = "${KAFKA_KEYSTORE_PATH}"
