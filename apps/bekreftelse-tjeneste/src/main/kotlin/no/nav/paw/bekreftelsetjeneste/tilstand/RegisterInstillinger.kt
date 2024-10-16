@@ -3,13 +3,17 @@ package no.nav.paw.bekreftelsetjeneste.tilstand
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.Instant
-import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.temporal.TemporalAdjuster
 import java.time.temporal.TemporalAdjusters
 
 fun fristForNesteBekreftelse(forrige: Instant, interval: Duration): Instant {
-    return forrige.plus(interval)
+    val osloTimezone = ZoneId.of("Europe/Oslo")
+    return if(LocalDateTime.ofInstant(forrige, osloTimezone).dayOfWeek != DayOfWeek.MONDAY) {
+        magicMonday(forrige, interval)
+    } else {
+        forrige.plus(interval)
+    }
 }
 
 fun Bekreftelse.gjenstaendeGraceperiode(timestamp: Instant, graceperiode: Duration): Duration {
@@ -22,36 +26,13 @@ fun Bekreftelse.gjenstaendeGraceperiode(timestamp: Instant, graceperiode: Durati
     }
 }
 
-// TODO: Finn regler for magic monday og gjør nødvendig justeringer
-/*fun fristForNesteBekreftelseWithMagicMonday(forrige: Instant, interval: Duration): Instant {
+fun magicMonday(startTime: Instant, interval: Duration): Instant {
+    val osloTimezone = ZoneId.of("Europe/Oslo")
 
-    val magicMondayAdjuster = MagicMondayAdjuster()
-    val zoneId = ZoneId.of("Europe/Oslo")
-    return forrige
-        .plus(interval)
-        .let { LocalDate.ofInstant(it, ZoneId.systemDefault()) }
-        .with(magicMondayAdjuster)
-        .plusDays(1)
-        .atStartOfDay(zoneId).toInstant()
-}*/
+    val startDateTime = LocalDateTime.ofInstant(startTime, osloTimezone)
+    val endDateTime = startDateTime.plus(interval)
 
-class MagicMondayAdjuster: TemporalAdjuster {
-    override fun adjustInto(temporal: java.time.temporal.Temporal): java.time.temporal.Temporal {
-        val internalAdjuster = TemporalAdjusters.next(DayOfWeek.MONDAY)
-        val internalTemporal = when (temporal) {
-            is LocalDate -> temporal
-            is Instant -> LocalDate.ofInstant(temporal, ZoneId.systemDefault())
-            else -> LocalDate.from(temporal)
-        }
-        return internalTemporal
-            .with(internalAdjuster)
-            .skipForwardIfNotMagicMonday()
-            .plusDays(1)
-            .atStartOfDay(ZoneId.systemDefault())
-            .toInstant()
-    }
-}
+    val lastMondayInInterval = endDateTime.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
 
-fun LocalDate.skipForwardIfNotMagicMonday(): LocalDate {
-    return this
+    return lastMondayInInterval.atZone(osloTimezone).toInstant()
 }

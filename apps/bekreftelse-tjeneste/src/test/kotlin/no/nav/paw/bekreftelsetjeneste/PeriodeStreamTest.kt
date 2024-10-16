@@ -6,6 +6,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import no.nav.paw.arbeidssoekerregisteret.testdata.kafkaKeyContext
 import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.metadata
 import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.periode
+import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.initTilstand
 import no.nav.paw.bekreftelsetjeneste.topology.StateStore
@@ -13,9 +14,9 @@ import java.time.Instant
 
 class PeriodeStreamTest : FreeSpec({
     val identitetsnummer = "12345678901"
-    val startTime = Instant.ofEpochMilli(1704185347000)
+    val startTime = Instant.parse("2024-01-01T08:00:00Z")
 
-    "state is null and periode is avsluttet, do nothing" {
+    "Tilstand er null og periode er avsluttet - gjør ingenting" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
                 val (_, key, periode) = periode(identitetsnummer = identitetsnummer, avsluttetMetadata = metadata(tidspunkt = startTime))
@@ -29,7 +30,7 @@ class PeriodeStreamTest : FreeSpec({
         }
     }
 
-    "state is null and periode is not avsluttet, update state" {
+    "Tilstand er null og periode er ikke avsluttet, opprett tilstand" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
                 val (id, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
@@ -43,7 +44,7 @@ class PeriodeStreamTest : FreeSpec({
         }
     }
 
-    "state is not null and periode is avsluttet, delete state and emit" {
+    "Tilstand er ikke null og periode er avsluttet, slett state og send PeriodeAvsluttet hendelse" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
                 val (_, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
@@ -57,11 +58,14 @@ class PeriodeStreamTest : FreeSpec({
 
                 stateStore.get(periode.id) shouldBe null
                 bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
+                val kv = bekreftelseHendelseloggTopicOut.readKeyValue()
+                kv.key shouldBe key
+                kv.value.shouldBeInstanceOf<PeriodeAvsluttet>()
             }
         }
     }
 
-    "state is not null and periode is not avsluttet, do nothing" {
+    "Tilstand er ikke null og periode er ikke avsluttet, gjør ingenting" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
                 val (id, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))

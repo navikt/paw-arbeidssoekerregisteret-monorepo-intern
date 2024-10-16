@@ -23,7 +23,7 @@ import java.time.Instant
 
 class BekreftelsePunctuatorTest : FreeSpec({
 
-    val startTime = Instant.ofEpochMilli(1704185347000) // 01-01-2024 - 08:49:07
+    val startTime = Instant.parse("2024-01-01T08:00:00Z")
     val identitetsnummer = "12345678901"
 
     "BekreftelsePunctuator sender riktig hendelser i rekkefølge" - {

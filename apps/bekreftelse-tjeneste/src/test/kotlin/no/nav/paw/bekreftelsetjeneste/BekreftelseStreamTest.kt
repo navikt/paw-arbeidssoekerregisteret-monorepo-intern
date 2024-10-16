@@ -1,6 +1,5 @@
 package no.nav.paw.bekreftelsetjeneste
 
-import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.comparables.shouldBeGreaterThan
@@ -15,15 +14,13 @@ import no.nav.paw.bekreftelse.internehendelser.*
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import no.nav.paw.test.assertEvent
 import no.nav.paw.test.seconds
-import org.apache.kafka.streams.TestOutputTopic
-import java.time.Duration
 import java.time.Instant
 import java.util.*
 
 class BekreftelseStreamTest : FreeSpec({
 
     val identitetsnummer = "12345678901"
-    val startTime = Instant.ofEpochMilli(1704185347000)
+    val startTime = Instant.parse("2024-01-01T08:00:00Z")
 
     "For melding mottatt uten en tilhørende tilstand skal tilstand være uendret og hendelselogg skal være tom" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
@@ -151,7 +148,7 @@ class BekreftelseStreamTest : FreeSpec({
                 val internTilstand = stateStore[periode.id]
 
                 internTilstand should {
-                    val periode = PeriodeInfo(
+                    val periodeInfo = PeriodeInfo(
                         periodeId = periode.id,
                         identitetsnummer = periode.identitetsnummer,
                         arbeidsoekerId = id,
@@ -159,7 +156,7 @@ class BekreftelseStreamTest : FreeSpec({
                         startet = periode.startet.tidspunkt,
                         avsluttet = periode.avsluttet?.tidspunkt
                     )
-                    it.periode shouldBe periode
+                    it.periode shouldBe periodeInfo
                     it.bekreftelser.size shouldBe 1
                     it.bekreftelser.first().should { bekreftelse ->
                         bekreftelse.gjelderFra shouldBe bekreftelseMelding.svar.gjelderFra

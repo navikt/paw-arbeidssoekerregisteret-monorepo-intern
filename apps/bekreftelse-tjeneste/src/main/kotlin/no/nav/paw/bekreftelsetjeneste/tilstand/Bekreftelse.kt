@@ -30,7 +30,7 @@ fun opprettFoersteBekreftelse(
         BekreftelseTilstandsLogg(IkkeKlarForUtfylling(periode.startet), emptyList()),
         bekreftelseId = UUID.randomUUID(),
         gjelderFra = periode.startet,
-        gjelderTil = fristForNesteBekreftelse(periode.startet, interval)
+        gjelderTil = magicMonday(periode.startet, interval)
     )
 
 
