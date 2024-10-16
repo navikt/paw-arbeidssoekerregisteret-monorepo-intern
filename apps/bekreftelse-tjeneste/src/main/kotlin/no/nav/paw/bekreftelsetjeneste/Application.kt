@@ -19,6 +19,7 @@ import no.nav.paw.config.env.appNameOrDefaultForLocal
 import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.health.route.healthRoutes
+import org.apache.kafka.streams.state.Stores
 import org.slf4j.LoggerFactory
 
 fun main() {
@@ -42,7 +43,10 @@ fun main() {
 fun Application.module(applicationConfig: ApplicationConfig) {
     val applicationContext = ApplicationContext.create(applicationConfig)
 
-    val kafkaTopology = buildTopology(applicationContext)
+    val kafkaTopology = buildTopology(
+        applicationContext = applicationContext,
+        keyValueStateStoreSupplier = Stores::persistentKeyValueStore
+    )
     val kafkaStreams = buildKafkaStreams(applicationContext, kafkaTopology)
 
     configureMetrics(applicationContext)

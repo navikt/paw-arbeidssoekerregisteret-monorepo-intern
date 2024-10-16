@@ -13,23 +13,18 @@ import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.bekreftelsetjeneste.config.APPLICATION_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
 import no.nav.paw.bekreftelsetjeneste.context.ApplicationContext
-import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstandSerde
-import no.nav.paw.bekreftelsetjeneste.topology.buildBekreftelseStream
-import no.nav.paw.bekreftelsetjeneste.topology.buildPeriodeStream
+import no.nav.paw.bekreftelsetjeneste.topology.buildTopology
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.client.inMemoryKafkaKeysMock
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.common.utils.Time
-import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.TestInputTopic
 import org.apache.kafka.streams.TestOutputTopic
 import org.apache.kafka.streams.TopologyTestDriver
-import org.apache.kafka.streams.state.internals.InMemoryKeyValueBytesStoreSupplier
-import org.apache.kafka.streams.state.internals.KeyValueStoreBuilder
+import org.apache.kafka.streams.state.Stores
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.Instant
@@ -51,18 +46,10 @@ class ApplicationTestContext(initialWallClockTime: Instant = Instant.now()) {
 
     val logger: Logger = LoggerFactory.getLogger(ApplicationTestContext::class.java)
 
-    val topology = StreamsBuilder().apply {
-        addStateStore(
-            KeyValueStoreBuilder(
-                InMemoryKeyValueBytesStoreSupplier(applicationConfig.kafkaTopology.internStateStoreName),
-                Serdes.UUID(),
-                InternTilstandSerde(),
-                Time.SYSTEM
-            )
-        )
-        buildPeriodeStream(applicationConfig, kafkaKeysClient)
-        buildBekreftelseStream(applicationConfig)
-    }.build()
+    val topology = buildTopology(
+        applicationContext = applicationContext,
+        keyValueStateStoreSupplier = Stores::inMemoryKeyValueStore
+    )
 
     val testDriver: TopologyTestDriver = TopologyTestDriver(topology, kafkaStreamProperties, initialWallClockTime)
 
