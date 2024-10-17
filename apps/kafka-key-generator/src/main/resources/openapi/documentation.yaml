@@ -4,17 +4,63 @@ info:
   description: "paw_kafka_key_generator API"
   version: "1.0.0"
 servers:
-- url: "https://paw_kafka_key_generator"
+  - url: "https://paw_kafka_key_generator"
 paths:
+  /api/v2/info:
+    post:
+      description: ""
+      parameters:
+        - name: "traceparent"
+          in: "header"
+          required: false
+          schema:
+            type: "string"
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: "#/components/schemas/RequestV2"
+        required: true
+      responses:
+        "400":
+          description: "Bad Request"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "Bad request"
+        "500":
+          description: "Internal Server Error"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "En uventet feil oppstod"
+        "200":
+          description: ""
+          content:
+            text/plain:
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "Intern feil, prøv igjen senere"
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/InfoResponse"
   /api/v2/hentEllerOpprett:
     post:
       description: ""
       parameters:
-      - name: "traceparent"
-        in: "header"
-        required: false
-        schema:
-          type: "string"
+        - name: "traceparent"
+          in: "header"
+          required: false
+          schema:
+            type: "string"
       requestBody:
         content:
           '*/*':
@@ -54,13 +100,34 @@ paths:
                 $ref: "#/components/schemas/ResponseV2"
 components:
   schemas:
+    InfoResponse:
+      type: "object"
+      properties:
+        lagretData:
+          type: "object"
+          properties:
+            arbeidssoekerId:
+              type: "integer"
+              format: "int64"
+            recordKey:
+              type: "integer"
+              format: "int64"
+        pdlData:
+          type: "object"
+          properties:
+            error:
+              type: "string"
+            id:
+              type: "array"
+              items:
+                type: "string"
     RequestV2:
       type: "object"
       properties:
         ident:
           type: "string"
       required:
-      - "ident"
+        - "ident"
     ResponseV2:
       type: "object"
       properties:

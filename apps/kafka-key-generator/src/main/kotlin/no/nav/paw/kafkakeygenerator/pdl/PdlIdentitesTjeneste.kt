@@ -5,20 +5,20 @@ import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import no.nav.paw.kafkakeygenerator.vo.CallId
 import no.nav.paw.pdl.PdlClient
 import no.nav.paw.pdl.PdlException
+import no.nav.paw.pdl.graphql.generated.hentidenter.IdentInformasjon
 import no.nav.paw.pdl.hentIdenter
 
 private const val consumerId = "paw-arbeidssoekerregisteret"
 private const val behandlingsnummer = "B452"
 
 class PdlIdentitesTjeneste(private val pdlKlient: PdlClient) {
-    suspend fun hentIdentiter(
+    suspend fun hentIdentInformasjon(
         callId: CallId,
         identitet: Identitetsnummer
-    ): Either<Failure, List<String>> {
+    ): Either<Failure, List<IdentInformasjon>> {
         return suspendeableAttempt {
             pdlKlient
                 .hentIdenter(identitet.value, callId.value, consumerId, behandlingsnummer)
-                ?.map { it.ident }
         }.mapToFailure { exception ->
             when (exception) {
                 is PdlException -> mapPdlException(exception)
@@ -32,6 +32,12 @@ class PdlIdentitesTjeneste(private val pdlKlient: PdlClient) {
             }
         }
     }
+
+    suspend fun hentIdentiter(
+        callId: CallId,
+        identitet: Identitetsnummer
+    ): Either<Failure, List<String>> = hentIdentInformasjon(callId, identitet)
+        .map { liste -> liste.map { it.ident } }
 
     private fun mapPdlException(ex: PdlException): Failure {
         return if (ex.errors?.any { it.message.contains("Fant ikke person") } == true) {

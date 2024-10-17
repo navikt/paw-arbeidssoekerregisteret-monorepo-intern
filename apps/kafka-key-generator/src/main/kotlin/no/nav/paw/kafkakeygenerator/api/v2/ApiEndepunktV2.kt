@@ -28,13 +28,34 @@ fun Routing.konfigurerApiV2(
     val logger = LoggerFactory.getLogger("api")
     authenticate(autentiseringKonfigurasjon.kafkaKeyApiAuthProvider) {
         post("/api/v2/hentEllerOpprett") {
-            handleRequest(applikasjon, logger)
+            hentEllerOpprett(applikasjon, logger)
+        }
+        post("/api/v2/info") {
+            hentEllerOpprett(applikasjon, logger)
         }
     }
 }
 
 @WithSpan
-private suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest(
+suspend fun PipelineContext<Unit, ApplicationCall>.hentInfo(
+    applikasjon: Applikasjon,
+    logger: Logger
+) {
+    val callId = call.request.headers["traceparent"]
+        ?.let { CallId(it) }
+        ?: CallId(UUID.randomUUID().toString())
+    val request = call.receive<RequestV2>()
+    when (val resultat = applikasjon.hentInfo(callId, Identitetsnummer(request.ident))) {
+        is Left -> call.respond(
+            status = InternalServerError,
+            message = resultat.left.code.name
+        )
+        is Right -> call.respond(resultat.right)
+    }
+}
+
+@WithSpan
+private suspend fun PipelineContext<Unit, ApplicationCall>.hentEllerOpprett(
     applikasjon: Applikasjon,
     logger: Logger
 ) {

@@ -3,15 +3,37 @@ package no.nav.paw.kafkakeygenerator
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.kafkakeygenerator.FailureCode.CONFLICT
 import no.nav.paw.kafkakeygenerator.FailureCode.DB_NOT_FOUND
+import no.nav.paw.kafkakeygenerator.api.v2.*
 import no.nav.paw.kafkakeygenerator.pdl.PdlIdentitesTjeneste
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.CallId
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import kotlin.math.absoluteValue
 
 class Applikasjon(
     private val kafkaKeys: KafkaKeys,
     private val identitetsTjeneste: PdlIdentitesTjeneste
 ) {
+
+    @WithSpan
+    suspend fun hentInfo(callId: CallId, identitet: Identitetsnummer): Either<Failure, InfoResponse> {
+        val pdlIdInfo = identitetsTjeneste.hentIdentInformasjon(callId, identitet)
+        return kafkaKeys.hent(identitet)
+            .map { arbeidssoekerId ->
+                LokalIdData(
+                    arbeidsoekerId = arbeidssoekerId.value,
+                    recordKey = publicTopicKeyFunction(arbeidssoekerId).value
+                )
+            }.map { lokalIdData ->
+                InfoResponse(
+                    lagretData = lokalIdData,
+                    pdlData = pdlIdInfo.fold(
+                        { PdlData(error = it.code.name, id = null) },
+                        { PdlData(error = null, id = it.map { identInfo ->  PdlId(identInfo.gruppe.name, identInfo.ident) })}
+                    )
+                )
+            }
+    }
 
     @WithSpan
     suspend fun hent(callId: CallId, identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> {
