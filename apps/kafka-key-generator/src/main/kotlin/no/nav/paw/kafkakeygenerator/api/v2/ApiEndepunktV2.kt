@@ -31,7 +31,7 @@ fun Routing.konfigurerApiV2(
             hentEllerOpprett(applikasjon, logger)
         }
         post("/api/v2/info") {
-            hentEllerOpprett(applikasjon, logger)
+            hentInfo(applikasjon, logger)
         }
     }
 }
