@@ -66,9 +66,40 @@ class MagicMondayTest : FreeSpec({
     "fristForNesteBekreftelse() returnerer riktig mandag" {
         // mandag uke 1
         val periodeStart = Instant.parse("2024-01-01T08:00:00Z")
-        val frist = fristForNesteBekreftelse(periodeStart, fourteenDaysInterval)
+        val frist = fristForNesteBekreftelse(periodeStart, fourteenDaysInterval, periodeStart)
 
         // frist burde være mandag uke 3
         frist.toString() shouldBe expectedDatetimeWithFourteenDaysInterval
+
+        // mandag uke 2
+        val periodeStart2 = Instant.parse("2024-01-08T08:00:00Z")
+        val frist2 = fristForNesteBekreftelse(periodeStart2, fourteenDaysInterval, periodeStart2)
+
+        // frist burde være mandag uke 4
+        frist2.toString() shouldBe "2024-01-22T08:00:00Z"
+    }
+
+    "Gamle perioder gis riktig frist" {
+        // mandag uke 1
+        val periodeStart = Instant.parse("2024-01-01T08:00:00Z")
+        // tirsdag uke 1
+        val periodeStart2 = Instant.parse("2024-01-02T08:00:00Z")
+
+        val expectedDatetime = "2024-04-15T08:00:00Z" // mandag uke 16
+
+        val magicMonday = fristForNesteBekreftelse(periodeStart, fourteenDaysInterval,
+            Instant.parse("2024-04-04T08:00:00Z") // torsdag uke 14
+        )
+        magicMonday.toString() shouldBe expectedDatetime
+
+        val magicMonday2 = fristForNesteBekreftelse(periodeStart2, fourteenDaysInterval,
+            Instant.parse("2024-04-06T08:00:00Z") // lørdag uke 14
+        )
+        magicMonday2.toString() shouldBe expectedDatetime
+
+        val magicMonday3 = fristForNesteBekreftelse(periodeStart2, fourteenDaysInterval,
+            Instant.parse("2024-04-01T08:00:00Z") // mandag uke 14
+        )
+        magicMonday3.toString() shouldBe expectedDatetime
     }
 })

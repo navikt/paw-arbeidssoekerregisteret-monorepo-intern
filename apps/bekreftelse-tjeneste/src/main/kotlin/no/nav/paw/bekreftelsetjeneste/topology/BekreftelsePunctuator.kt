@@ -43,7 +43,7 @@ fun processBekreftelser(
     val existingBekreftelse = currentState.bekreftelser.firstOrNull()
 
     val (tilstand, hendelse) = if (existingBekreftelse == null) {
-        currentState.createInitialBekreftelse(bekreftelseIntervals.interval) to null
+        currentState.createInitialBekreftelse(bekreftelseIntervals.interval, currentTime) to null
     } else {
         currentState.checkAndCreateNewBekreftelse(currentTime, bekreftelseIntervals)
     }
@@ -53,8 +53,8 @@ fun processBekreftelser(
     return updatedTilstand to listOfNotNull(hendelse, additionalHendelse)
 }
 
-private fun InternTilstand.createInitialBekreftelse(interval: Duration): InternTilstand =
-    copy(bekreftelser = listOf(opprettFoersteBekreftelse(periode, interval)))
+private fun InternTilstand.createInitialBekreftelse(interval: Duration, currentTime: Instant): InternTilstand =
+    copy(bekreftelser = listOf(opprettFoersteBekreftelse(periode, interval, currentTime)))
 
 private fun InternTilstand.checkAndCreateNewBekreftelse(
     timestamp: Instant,
@@ -65,7 +65,7 @@ private fun InternTilstand.checkAndCreateNewBekreftelse(
     return if (nonEmptyBekreftelser.shouldCreateNewBekreftelse(timestamp, bekreftelseIntervals.interval, bekreftelseIntervals.tilgjengeligOffset)) {
         val newBekreftelse = nonEmptyBekreftelser.opprettNesteTilgjengeligeBekreftelse(
             tilgjengeliggjort = timestamp,
-            interval = bekreftelseIntervals.interval
+            interval = bekreftelseIntervals.interval,
         )
         copy(bekreftelser = nonEmptyBekreftelser + newBekreftelse) to createNewBekreftelseTilgjengelig(newBekreftelse)
     } else {

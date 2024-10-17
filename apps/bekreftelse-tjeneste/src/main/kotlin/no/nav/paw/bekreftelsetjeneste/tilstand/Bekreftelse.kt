@@ -25,24 +25,25 @@ operator fun Bekreftelse.plus(bekreftelseTilstand: BekreftelseTilstand): Bekreft
 fun opprettFoersteBekreftelse(
     periode: PeriodeInfo,
     interval: Duration,
+    currentTime: Instant
 ): Bekreftelse =
     Bekreftelse(
         BekreftelseTilstandsLogg(IkkeKlarForUtfylling(periode.startet), emptyList()),
         bekreftelseId = UUID.randomUUID(),
         gjelderFra = periode.startet,
-        gjelderTil = magicMonday(periode.startet, interval)
+        gjelderTil = fristForNesteBekreftelse(periode.startet, interval, currentTime)
     )
 
 
 fun NonEmptyList<Bekreftelse>.opprettNesteTilgjengeligeBekreftelse(
     tilgjengeliggjort: Instant,
-    interval: Duration
+    interval: Duration,
 ): Bekreftelse {
     val sisteBekreftelse = maxBy { it.gjelderTil }
     return Bekreftelse(
         bekreftelseId = UUID.randomUUID(),
         gjelderFra = sisteBekreftelse.gjelderTil,
-        gjelderTil = fristForNesteBekreftelse(sisteBekreftelse.gjelderTil, interval),
+        gjelderTil = fristForNesteBekreftelse(sisteBekreftelse.gjelderTil, interval, tilgjengeliggjort),
         tilstandsLogg = BekreftelseTilstandsLogg(
             siste = KlarForUtfylling(tilgjengeliggjort),
             tidligere = emptyList()

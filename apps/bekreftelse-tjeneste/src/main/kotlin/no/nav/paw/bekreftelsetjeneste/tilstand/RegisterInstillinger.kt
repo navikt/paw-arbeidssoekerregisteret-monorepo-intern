@@ -7,14 +7,15 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.temporal.TemporalAdjusters
 
-fun fristForNesteBekreftelse(forrige: Instant, interval: Duration): Instant {
-    val osloTimezone = ZoneId.of("Europe/Oslo")
-    return if(LocalDateTime.ofInstant(forrige, osloTimezone).dayOfWeek != DayOfWeek.MONDAY) {
-        magicMonday(forrige, interval)
-    } else {
+fun fristForNesteBekreftelse(forrige: Instant, interval: Duration, now: Instant = Instant.now()): Instant =
+     if (forrige.isBefore(now.minus(interval))) {
+        // gammel periode
+        magicMonday(now, interval)
+    } else if(LocalDateTime.ofInstant(forrige, ZoneId.of("Europe/Oslo")).dayOfWeek == DayOfWeek.MONDAY) {
         forrige.plus(interval)
+    } else {
+        magicMonday(forrige, interval)
     }
-}
 
 fun Bekreftelse.gjenstaendeGraceperiode(timestamp: Instant, graceperiode: Duration): Duration {
     val utvidetGjelderTil = tilstand<VenterSvar>()?.timestamp?.plus(graceperiode) ?: gjelderTil.plus(graceperiode)

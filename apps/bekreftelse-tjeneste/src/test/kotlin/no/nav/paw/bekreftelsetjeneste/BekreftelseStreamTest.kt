@@ -137,7 +137,7 @@ class BekreftelseStreamTest : FreeSpec({
                     periodeId = periode.id,
                     namespace = "paw",
                     gjelderFra = startTime,
-                    gjelderTil = startTime.plus(interval),
+                    gjelderTil = fristForNesteBekreftelse(periode.startet.tidspunkt, interval, startTime),
                     harJobbetIDennePerioden = true,
                     vilFortsetteSomArbeidssoeker = true
                 )
@@ -202,7 +202,7 @@ class BekreftelseStreamTest : FreeSpec({
                     periodeId = periode.id,
                     namespace = "paw",
                     gjelderFra = startTime,
-                    gjelderTil = startTime.plus(interval),
+                    gjelderTil = fristForNesteBekreftelse(periode.startet.tidspunkt, interval, startTime),
                     harJobbetIDennePerioden = true,
                     vilFortsetteSomArbeidssoeker = false
                 )

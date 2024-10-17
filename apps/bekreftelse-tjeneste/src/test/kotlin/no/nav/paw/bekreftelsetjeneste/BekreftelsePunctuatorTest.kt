@@ -56,7 +56,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
                             bekreftelse.gjelderFra shouldBe periode.startet.tidspunkt
                             bekreftelse.gjelderTil shouldBe fristForNesteBekreftelse(
                                 periode.startet.tidspunkt,
-                                interval
+                                interval,
+                                startTime
                             )
                             bekreftelse.tilstandsLogg.asList().size shouldBe 1
                             bekreftelse.has<IkkeKlarForUtfylling>() shouldBe true
@@ -185,7 +186,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                                 ), "test", "test"
                             ),
                             periode.startet.tidspunkt,
-                            fristForNesteBekreftelse(periode.startet.tidspunkt, interval),
+                            fristForNesteBekreftelse(periode.startet.tidspunkt, interval, startTime),
                             true,
                             true
                         )
@@ -233,7 +234,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                                 ), "test", "test"
                             ),
                             periode.startet.tidspunkt,
-                            fristForNesteBekreftelse(periode.startet.tidspunkt, interval),
+                            fristForNesteBekreftelse(periode.startet.tidspunkt, interval, startTime),
                             true,
                             false
                         )
@@ -284,7 +285,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
                             bekreftelse.gjelderFra shouldBe periode.startet.tidspunkt
                             bekreftelse.gjelderTil shouldBe fristForNesteBekreftelse(
                                 periode.startet.tidspunkt,
-                                interval
+                                interval,
+                                startTime
                             )
                             bekreftelse.tilstandsLogg.asList().size shouldBe 1
                             bekreftelse.has<IkkeKlarForUtfylling>() shouldBe true
@@ -325,7 +327,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
                             bekreftelse.gjelderFra shouldBe periode.startet.tidspunkt
                             bekreftelse.gjelderTil shouldBe fristForNesteBekreftelse(
                                 periode.startet.tidspunkt,
-                                interval
+                                interval,
+                                startTime
                             )
                             bekreftelse.tilstandsLogg.asList().size shouldBe 2
                             bekreftelse.has<IkkeKlarForUtfylling>() shouldBe true
@@ -379,7 +382,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
                             bekreftelse.gjelderFra shouldBe periode.startet.tidspunkt
                             bekreftelse.gjelderTil shouldBe fristForNesteBekreftelse(
                                 periode.startet.tidspunkt,
-                                interval
+                                interval,
+                                startTime
                             )
                             bekreftelse.tilstandsLogg.asList().size shouldBe 3
                             bekreftelse.has<IkkeKlarForUtfylling>() shouldBe true
@@ -432,7 +436,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
                             bekreftelse.gjelderFra shouldBe periode.startet.tidspunkt
                             bekreftelse.gjelderTil shouldBe fristForNesteBekreftelse(
                                 periode.startet.tidspunkt,
-                                interval
+                                interval,
+                                startTime
                             )
                             bekreftelse.tilstandsLogg.asList().size shouldBe 4
                             bekreftelse.has<IkkeKlarForUtfylling>() shouldBe true
@@ -488,7 +493,8 @@ class BekreftelsePunctuatorTest : FreeSpec({
                             bekreftelse.gjelderFra shouldBe periode.startet.tidspunkt
                             bekreftelse.gjelderTil shouldBe fristForNesteBekreftelse(
                                 periode.startet.tidspunkt,
-                                interval
+                                interval,
+                                startTime
                             )
                             bekreftelse.tilstandsLogg.asList().size shouldBe 5
                             bekreftelse.has<IkkeKlarForUtfylling>() shouldBe true
