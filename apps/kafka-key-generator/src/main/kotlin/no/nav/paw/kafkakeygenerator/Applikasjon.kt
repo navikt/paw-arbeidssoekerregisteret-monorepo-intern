@@ -17,7 +17,11 @@ class Applikasjon(
 
     @WithSpan
     suspend fun hentInfo(callId: CallId, identitet: Identitetsnummer): Either<Failure, InfoResponse> {
-        val pdlIdInfo = identitetsTjeneste.hentIdentInformasjon(callId, identitet)
+        val pdlIdInfo = identitetsTjeneste.hentIdentInformasjon(
+            callId = callId,
+            identitet = identitet,
+            histrorikk = true
+        )
         return kafkaKeys.hent(identitet)
             .map { arbeidssoekerId ->
                 LokalIdData(
