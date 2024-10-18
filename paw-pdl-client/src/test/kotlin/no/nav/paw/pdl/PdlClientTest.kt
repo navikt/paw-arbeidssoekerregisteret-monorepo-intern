@@ -30,7 +30,12 @@ class PdlClientTest {
         assertFailsWith<PdlException>(
             block = {
                 runBlocking {
-                    pdlClient.hentIdenter("2649500819544", callId, navConsumerId, "B123")
+                    pdlClient.hentIdenter(
+                        ident = "2649500819544",
+                        callId = callId,
+                        navConsumerId = navConsumerId,
+                        behandlingsnummer = "B123",
+                    )
                 }
             },
         )
@@ -41,7 +46,15 @@ class PdlClientTest {
         val respons = readResource("hentIdenter-response.json")
         val pdlClient = mockPdlClient(respons)
 
-        val resultat = runBlocking { pdlClient.hentIdenter("2649500819544", callId, navConsumerId, "B123") }
+        val resultat =
+            runBlocking {
+                pdlClient.hentIdenter(
+                    ident = "2649500819544",
+                    callId = callId,
+                    navConsumerId = navConsumerId,
+                    behandlingsnummer = "B123",
+                )
+            }
         val forventet = "09127821914"
         assertEquals(forventet, resultat!!.first().ident)
     }
