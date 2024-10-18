@@ -14,11 +14,18 @@ private const val behandlingsnummer = "B452"
 class PdlIdentitesTjeneste(private val pdlKlient: PdlClient) {
     suspend fun hentIdentInformasjon(
         callId: CallId,
-        identitet: Identitetsnummer
+        identitet: Identitetsnummer,
+        histrorikk: Boolean = false
     ): Either<Failure, List<IdentInformasjon>> {
         return suspendeableAttempt {
             pdlKlient
-                .hentIdenter(identitet.value, callId.value, consumerId, behandlingsnummer)
+                .hentIdenter(
+                    ident = identitet.value,
+                    callId = callId.value,
+                    navConsumerId = consumerId,
+                    behandlingsnummer = behandlingsnummer,
+                    historikk = histrorikk
+                )
         }.mapToFailure { exception ->
             when (exception) {
                 is PdlException -> mapPdlException(exception)
@@ -35,9 +42,13 @@ class PdlIdentitesTjeneste(private val pdlKlient: PdlClient) {
 
     suspend fun hentIdentiter(
         callId: CallId,
-        identitet: Identitetsnummer
-    ): Either<Failure, List<String>> = hentIdentInformasjon(callId, identitet)
-        .map { liste -> liste.map { it.ident } }
+        identitet: Identitetsnummer,
+        histrorikk: Boolean = false
+    ): Either<Failure, List<String>> = hentIdentInformasjon(
+        callId = callId,
+        identitet = identitet,
+        histrorikk = histrorikk
+    ).map { liste -> liste.map { it.ident } }
 
     private fun mapPdlException(ex: PdlException): Failure {
         return if (ex.errors?.any { it.message.contains("Fant ikke person") } == true) {

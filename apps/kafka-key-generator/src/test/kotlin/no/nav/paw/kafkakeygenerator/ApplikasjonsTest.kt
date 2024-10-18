@@ -29,7 +29,10 @@ class ApplikasjonsTest : StringSpec({
         identitetsTjeneste = PdlIdentitesTjeneste(pdlKlient)
     )
     fun hentEllerOpprett(identitetsnummer: String): Either<Failure, ArbeidssoekerId> = runBlocking {
-        app.hentEllerOpprett(CallId(UUID.randomUUID().toString()), Identitetsnummer(identitetsnummer))
+        app.hentEllerOpprett(
+            callId = CallId(UUID.randomUUID().toString()),
+            identitet = Identitetsnummer(identitetsnummer)
+        )
     }
     "alle identer for person1 skal gi samme nøkkel" {
         val person1KafkaNøkler = listOf(

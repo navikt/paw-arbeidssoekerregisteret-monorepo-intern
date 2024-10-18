@@ -55,7 +55,11 @@ class Applikasjon(
 
     @WithSpan
     private suspend fun sjekkMotAliaser(callId: CallId, identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> {
-        return identitetsTjeneste.hentIdentiter(callId, identitet)
+        return identitetsTjeneste.hentIdentiter(
+            callId = callId,
+            identitet = identitet,
+            histrorikk = true
+        )
             .flatMap(kafkaKeys::hent)
             .flatMap { ids ->
                 ids.values

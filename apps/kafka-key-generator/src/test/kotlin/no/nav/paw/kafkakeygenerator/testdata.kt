@@ -47,7 +47,7 @@ const val person1MockSvar = """
         },
         {
           "ident": "$person1_dnummer",
-          "gruppe": "DNUMMER"
+          "gruppe": "FOLKEREGISTERIDENT"
         },
         {
           "ident": "$person1_annen_ident",
@@ -84,6 +84,8 @@ fun MockRequestHandleScope.genererResponse(it: HttpRequestData): HttpResponseDat
     val end = text.indexOf("}", start)
     val ident = text
         .substring(start, end)
+        .split(",")
+        .first()
         .replace("\"", "")
         .replace("ident:", "")
         .trim()
