@@ -5,6 +5,7 @@ import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
@@ -41,7 +42,7 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
                 val gjeldendeTilstand: InternTilstand? = retrieveState(stateStore, record)
 
                 if (gjeldendeTilstand == null) {
-                    Span.current().addEvent("tilstand is null for record", Attributes.of(
+                    Span.current().setStatus(StatusCode.ERROR).addEvent("tilstand is null for record", Attributes.of(
                         AttributeKey.longKey("recordKey"), record.key()
                     ))
                     meldingsLogger.warn("Melding mottatt for periode som ikke er aktiv/eksisterer")
@@ -53,6 +54,7 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
                     if (nyTilstand != gjeldendeTilstand) {
                         stateStore.put(gjeldendeTilstand.periode.periodeId, nyTilstand)
                     }
+
                     forwardHendelser(record, hendelser, this::forward)
                 }
             }
@@ -156,28 +158,6 @@ fun behandleGyldigSvar(
 
     return listOfNotNull(meldingMottatt, baOmAaAvslutte) to oppdatertBekreftelse
 }
-
-@WithSpan(
-    value = "oppdaterStateStore",
-    kind = SpanKind.INTERNAL
-)
-fun oppdaterStateStore(
-    stateStore: StateStore,
-    gjeldeneTilstand: InternTilstand,
-    oppdatertBekreftelse: Bekreftelse
-) {
-    val oppdatertTilstand = gjeldeneTilstand.updateBekreftelse(oppdatertBekreftelse)
-
-    stateStore.put(oppdatertTilstand.periode.periodeId, oppdatertTilstand)
-
-    Span.current().setAttribute("periodeId", oppdatertTilstand.periode.periodeId.toString())
-}
-
-fun InternTilstand.updateBekreftelse(oppdatertBekreftelse: Bekreftelse): InternTilstand =
-    copy(
-        bekreftelser = this.bekreftelser
-            .filterNot { it.bekreftelseId == oppdatertBekreftelse.bekreftelseId } + oppdatertBekreftelse
-    )
 
 @WithSpan(
     value = "forwardHendelser",
