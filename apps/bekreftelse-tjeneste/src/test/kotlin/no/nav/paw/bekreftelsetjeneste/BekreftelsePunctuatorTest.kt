@@ -13,6 +13,7 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjenstaaendeTid
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
+import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelse.melding.v1.vo.BrukerType
 import no.nav.paw.bekreftelse.melding.v1.vo.Metadata
 import no.nav.paw.bekreftelse.melding.v1.vo.Svar
@@ -179,7 +180,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                 val currentState = stateStore.get(periode.id)
                 bekreftelseTopic.pipeInput(
                     key, no.nav.paw.bekreftelse.melding.v1.Bekreftelse(
-                        periode.id, "paw", currentState.bekreftelser.first().bekreftelseId, Svar(
+                        periode.id, Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET, currentState.bekreftelser.first().bekreftelseId, Svar(
                             Metadata(
                                 Instant.now(), no.nav.paw.bekreftelse.melding.v1.vo.Bruker(
                                     BrukerType.SLUTTBRUKER, "12345678901"
@@ -227,7 +228,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                 val currentState = stateStore.get(periode.id)
                 bekreftelseTopic.pipeInput(
                     key, no.nav.paw.bekreftelse.melding.v1.Bekreftelse(
-                        periode.id, "paw", currentState.bekreftelser.first().bekreftelseId, Svar(
+                        periode.id, Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET, currentState.bekreftelser.first().bekreftelseId, Svar(
                             Metadata(
                                 Instant.now(), no.nav.paw.bekreftelse.melding.v1.vo.Bruker(
                                     BrukerType.SLUTTBRUKER, "12345678901"

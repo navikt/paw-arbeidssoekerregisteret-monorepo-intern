@@ -2,6 +2,7 @@ package no.nav.paw.bekreftelse.api.model
 
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
+import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelse.melding.v1.vo.Bruker
 import no.nav.paw.bekreftelse.melding.v1.vo.Metadata
 import no.nav.paw.bekreftelse.melding.v1.vo.Svar
@@ -21,10 +22,10 @@ fun BekreftelseTilgjengelig.asBekreftelse(
     bruker: Bruker,
     kilde: String,
     aarsak: String,
-    namespace: String
+    bekreftelsesloesning: Bekreftelsesloesning
 ): Bekreftelse {
     return Bekreftelse.newBuilder()
-        .setNamespace(namespace)
+        .setBekreftelsesloesning(bekreftelsesloesning)
         .setId(bekreftelseId)
         .setPeriodeId(periodeId)
         .setSvar(

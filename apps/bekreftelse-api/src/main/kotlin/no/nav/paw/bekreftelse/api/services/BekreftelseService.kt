@@ -31,8 +31,8 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
 import no.nav.paw.bekreftelse.internehendelser.meldingMottattHendelseType
+import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.config.env.appImageOrDefaultForLocal
-import no.nav.paw.config.env.namespaceOrDefaultForLocal
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -65,7 +65,6 @@ class BekreftelseService(
             meterRegistry.receiveBekreftelseCounter(meldingMottattHendelseType)
 
             val kilde = serverConfig.runtimeEnvironment.appImageOrDefaultForLocal()
-            val namespace = serverConfig.runtimeEnvironment.namespaceOrDefaultForLocal()
 
             val bekreftelse = bekreftelseRepository.getByBekreftelseId(request.bekreftelseId)
             if (bekreftelse != null) {
@@ -78,8 +77,8 @@ class BekreftelseService(
                     request.vilFortsetteSomArbeidssoeker,
                     innloggetBruker.asBruker(),
                     kilde,
-                    "Mottok bekreftelse", // TODO Hva skal dette være
-                    namespace
+                    "Bekreftelse levert",
+                    Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET
                 )
 
                 logger.debug("Sletter bekreftelse fra database")

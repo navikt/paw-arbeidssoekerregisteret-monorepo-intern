@@ -10,6 +10,7 @@ import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
+import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import no.nav.paw.config.kafka.streams.Punctuation
@@ -47,7 +48,7 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
                     return@genericProcess
                 }
 
-                if (record.value().namespace == "paw") {
+                if (record.value().bekreftelsesloesning == Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET) {
                     val (nyTilstand, hendelser) = processPawNamespace(record.value(), gjeldendeTilstand)
                     if (nyTilstand != gjeldendeTilstand) {
                         stateStore.put(gjeldendeTilstand.periode.periodeId, nyTilstand)

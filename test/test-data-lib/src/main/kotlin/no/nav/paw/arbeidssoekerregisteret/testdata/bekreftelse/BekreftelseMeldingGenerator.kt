@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssoekerregisteret.testdata.bekreftelse
 
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
+import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelse.melding.v1.vo.Bruker
 import no.nav.paw.bekreftelse.melding.v1.vo.BrukerType
 import no.nav.paw.bekreftelse.melding.v1.vo.Svar
@@ -11,7 +12,7 @@ import java.util.*
 fun bekreftelseMelding(
     id: UUID = UUID.randomUUID(),
     periodeId: UUID = UUID.randomUUID(),
-    namespace: String = "paw",
+    bekreftelsesloesning: Bekreftelsesloesning = Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET,
     gjelderFra: Instant = Instant.now(),
     gjelderTil: Instant = Instant.now(),
     harJobbetIDennePerioden: Boolean = true,
@@ -20,7 +21,7 @@ fun bekreftelseMelding(
     Bekreftelse
         .newBuilder()
         .setPeriodeId(periodeId)
-        .setNamespace(namespace)
+        .setBekreftelsesloesning(bekreftelsesloesning)
         .setId(id)
         .setSvar(
             Svar

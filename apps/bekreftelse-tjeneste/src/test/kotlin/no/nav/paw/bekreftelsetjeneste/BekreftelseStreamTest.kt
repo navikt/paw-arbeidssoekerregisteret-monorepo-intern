@@ -11,6 +11,7 @@ import no.nav.paw.arbeidssoekerregisteret.testdata.kafkaKeyContext
 import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.metadata
 import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.periode
 import no.nav.paw.bekreftelse.internehendelser.*
+import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import no.nav.paw.test.assertEvent
 import no.nav.paw.test.seconds
@@ -26,7 +27,7 @@ class BekreftelseStreamTest : FreeSpec({
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             val bekreftelseMelding = bekreftelseMelding(
                 periodeId = UUID.randomUUID(),
-                namespace = "tullball",
+                bekreftelsesloesning = Bekreftelsesloesning.DAGPENGER,
                 gjelderFra = Instant.now(),
                 gjelderTil = Instant.now(),
                 harJobbetIDennePerioden = true,
@@ -69,7 +70,7 @@ class BekreftelseStreamTest : FreeSpec({
                 val bekreftelseMelding = bekreftelseMelding(
                     id = bekreftelseId,
                     periodeId = periode.id,
-                    namespace = "paw",
+                    bekreftelsesloesning = Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET,
                     gjelderFra = startTime,
                     gjelderTil = startTime.plus(interval),
                     harJobbetIDennePerioden = true,
@@ -135,7 +136,7 @@ class BekreftelseStreamTest : FreeSpec({
                 val bekreftelseMelding = bekreftelseMelding(
                     id = bekreftelseId,
                     periodeId = periode.id,
-                    namespace = "paw",
+                    bekreftelsesloesning = Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET,
                     gjelderFra = startTime,
                     gjelderTil = fristForNesteBekreftelse(periode.startet.tidspunkt, interval, startTime),
                     harJobbetIDennePerioden = true,
@@ -200,7 +201,7 @@ class BekreftelseStreamTest : FreeSpec({
                 val bekreftelseMelding = bekreftelseMelding(
                     id = bekreftelseId,
                     periodeId = periode.id,
-                    namespace = "paw",
+                    bekreftelsesloesning = Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET,
                     gjelderFra = startTime,
                     gjelderTil = fristForNesteBekreftelse(periode.startet.tidspunkt, interval, startTime),
                     harJobbetIDennePerioden = true,
