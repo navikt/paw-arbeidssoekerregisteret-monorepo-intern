@@ -1,7 +1,7 @@
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
     kotlin("jvm") version "2.0.21" apply false
-    id("com.google.cloud.tools.jib") version "3.4.3" apply false
+    id("com.google.cloud.tools.jib") version "3.4.4" apply false
     id("org.openapi.generator") version "7.9.0" apply false
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1" apply false
 }
