@@ -102,4 +102,13 @@ class MagicMondayTest : FreeSpec({
         )
         magicMonday3.toString() shouldBe expectedDatetime
     }
+
+    "Gammel periode med start 19.januar med dagens dato 15.mars skal få magic monday 25.mars" {
+        val periodeStartFredag19Januar = Instant.parse("2024-01-19T08:00:00Z")
+        val magicMondayFraFredag15mars = fristForNesteBekreftelse(periodeStartFredag19Januar, fourteenDaysInterval,
+            Instant.parse("2024-03-15T08:00:00Z")
+        )
+
+        magicMondayFraFredag15mars.toString() shouldBe "2024-03-25T08:00:00Z"
+    }
 })
