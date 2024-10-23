@@ -26,13 +26,17 @@ fun opprettFoersteBekreftelse(
     periode: PeriodeInfo,
     interval: Duration,
     currentTime: Instant
-): Bekreftelse =
-    Bekreftelse(
+): Bekreftelse {
+    val start = lastOf(periode.startet, currentTime - interval)
+    return Bekreftelse(
         BekreftelseTilstandsLogg(IkkeKlarForUtfylling(periode.startet), emptyList()),
         bekreftelseId = UUID.randomUUID(),
         gjelderFra = periode.startet,
-        gjelderTil = fristForNesteBekreftelse(periode.startet, interval, currentTime)
+        gjelderTil = fristForNesteBekreftelse(start, interval, periode.startet+interval)
     )
+}
+
+fun lastOf(a: Instant, b: Instant): Instant = if (a.isAfter(b)) a else b
 
 
 fun NonEmptyList<Bekreftelse>.opprettNesteTilgjengeligeBekreftelse(

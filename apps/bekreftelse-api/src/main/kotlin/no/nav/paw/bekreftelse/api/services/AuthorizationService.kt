@@ -1,5 +1,6 @@
 package no.nav.paw.bekreftelse.api.services
 
+import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.config.ServerConfig
@@ -54,7 +55,6 @@ class AuthorizationService(
             accessToken = accessToken,
             tilgangType = tilgangType
         )
-
         return authorize(securityContext)
     }
 

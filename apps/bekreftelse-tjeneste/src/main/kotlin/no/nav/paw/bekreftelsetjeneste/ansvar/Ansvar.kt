@@ -1,5 +1,6 @@
 package no.nav.paw.bekreftelsetjeneste.ansvar
 
+import no.nav.paw.bekreftelse.ansvar.v1.vo.Bekreftelsesloesning
 import java.time.Duration
 import java.util.*
 
@@ -7,6 +8,26 @@ data class Ansvar(
     val periodeId: UUID,
     val ansvarlige: List<Ansvarlig>
 )
+
+data class Ansvarlig(
+    val loesning: Loesning,
+    val intervall: Duration,
+    val gracePeriode: Duration
+)
+
+enum class Loesning {
+    UKJENT_VERDI,
+    ARBEIDSSOEKERREGISTERET,
+    DAGPENGER;
+
+    companion object {
+        fun from(value: Bekreftelsesloesning): Loesning = when (value) {
+            Bekreftelsesloesning.UKJENT_VERDI -> UKJENT_VERDI
+            Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET -> ARBEIDSSOEKERREGISTERET
+            Bekreftelsesloesning.DAGPENGER -> DAGPENGER
+        }
+    }
+}
 
 fun ansvar(
     periodeId: UUID,
@@ -18,19 +39,11 @@ fun ansvar(
 
 operator fun Ansvar.plus(ansvarlig: Ansvarlig): Ansvar =
     copy(ansvarlige = ansvarlige
-        .filterNot { it.namespace == ansvarlig.namespace} + ansvarlig
+        .filterNot { it.loesning == ansvarlig.loesning} + ansvarlig
     )
 
-operator fun Ansvar.minus(namespace: String): Ansvar? =
-    ansvarlige.filterNot { it.namespace == namespace }
-        .takeIf(List<Ansvarlig>::isNotEmpty)
+operator fun Ansvar?.minus(loesning: Loesning): Ansvar? =
+    this?.ansvarlige
+        ?.filterNot { it.loesning == loesning }
+        ?.takeIf(List<Ansvarlig>::isNotEmpty)
         ?.let { copy(ansvarlige = it) }
-
-
-
-data class Ansvarlig(
-    val namespace: String,
-    val id: String,
-    val intervall: Duration,
-    val gracePeriode: Duration
-)

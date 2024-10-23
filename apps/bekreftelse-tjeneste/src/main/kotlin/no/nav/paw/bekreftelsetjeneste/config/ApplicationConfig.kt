@@ -31,9 +31,11 @@ data class BekreftelseIntervals(
 data class KafkaTopologyConfig(
     val applicationIdSuffix: String,
     val internStateStoreName: String,
+    val ansvarStateStoreName: String,
     val periodeTopic: String,
     val bekreftelseTopic: String,
     val bekreftelseHendelseloggTopic: String,
+    val ansvarsTopic: String,
     val punctuationInterval: Duration,
     val shutdownTimeout: Duration = Duration.ofMinutes(5),
 )

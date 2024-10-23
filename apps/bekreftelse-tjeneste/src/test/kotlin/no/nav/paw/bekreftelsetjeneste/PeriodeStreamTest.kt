@@ -9,7 +9,7 @@ import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.periode
 import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.initTilstand
-import no.nav.paw.bekreftelsetjeneste.topology.StateStore
+import no.nav.paw.bekreftelsetjeneste.topology.InternTilstandStateStore
 import java.time.Instant
 
 class PeriodeStreamTest : FreeSpec({
@@ -22,8 +22,8 @@ class PeriodeStreamTest : FreeSpec({
                 val (_, key, periode) = periode(identitetsnummer = identitetsnummer, avsluttetMetadata = metadata(tidspunkt = startTime))
                 periodeTopic.pipeInput(key, periode)
 
-                val stateStore: StateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
-                stateStore.get(periode.id) shouldBe null
+                val internTilstandStateStore: InternTilstandStateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
+                internTilstandStateStore.get(periode.id) shouldBe null
 
                 bekreftelseHendelseloggTopicOut.isEmpty shouldBe true
             }
@@ -36,8 +36,8 @@ class PeriodeStreamTest : FreeSpec({
                 val (id, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
                 periodeTopic.pipeInput(key, periode)
 
-                val stateStore: StateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
-                val currentState = stateStore.get(periode.id)
+                val internTilstandStateStore: InternTilstandStateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
+                val currentState = internTilstandStateStore.get(periode.id)
                 currentState.shouldBeInstanceOf<InternTilstand>()
                 currentState shouldBe initTilstand(id, key, periode)
             }
@@ -49,14 +49,14 @@ class PeriodeStreamTest : FreeSpec({
             with(kafkaKeyContext()) {
                 val (_, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
                 periodeTopic.pipeInput(key, periode)
-                val stateStore: StateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
+                val internTilstandStateStore: InternTilstandStateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
 
-                stateStore.get(periode.id).shouldBeInstanceOf<InternTilstand>()
+                internTilstandStateStore.get(periode.id).shouldBeInstanceOf<InternTilstand>()
 
                 val (_, _, periode2) = periode(periodeId = periode.id, identitetsnummer = identitetsnummer, avsluttetMetadata = metadata(tidspunkt = startTime))
                 periodeTopic.pipeInput(key, periode2)
 
-                stateStore.get(periode.id) shouldBe null
+                internTilstandStateStore.get(periode.id) shouldBe null
                 bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
                 val kv = bekreftelseHendelseloggTopicOut.readKeyValue()
                 kv.key shouldBe key
@@ -69,12 +69,12 @@ class PeriodeStreamTest : FreeSpec({
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
                 val (id, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
-                val stateStore: StateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
-                stateStore.put(periode.id, initTilstand(id, key, periode))
-                val state = stateStore.get(periode.id)
+                val internTilstandStateStore: InternTilstandStateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
+                internTilstandStateStore.put(periode.id, initTilstand(id, key, periode))
+                val state = internTilstandStateStore.get(periode.id)
                 periodeTopic.pipeInput(key, periode)
 
-                stateStore.get(periode.id) shouldBe state
+                internTilstandStateStore.get(periode.id) shouldBe state
                 bekreftelseHendelseloggTopicOut.isEmpty shouldBe true
             }
         }

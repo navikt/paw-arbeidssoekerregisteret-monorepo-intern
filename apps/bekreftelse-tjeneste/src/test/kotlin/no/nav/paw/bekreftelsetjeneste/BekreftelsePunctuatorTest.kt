@@ -18,7 +18,7 @@ import no.nav.paw.bekreftelse.melding.v1.vo.BrukerType
 import no.nav.paw.bekreftelse.melding.v1.vo.Metadata
 import no.nav.paw.bekreftelse.melding.v1.vo.Svar
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
-import no.nav.paw.bekreftelsetjeneste.topology.StateStore
+import no.nav.paw.bekreftelsetjeneste.topology.InternTilstandStateStore
 import java.time.Duration
 import java.time.Instant
 
@@ -40,10 +40,10 @@ class BekreftelsePunctuatorTest : FreeSpec({
 
                 "Når perioden opprettes skal det opprettes en intern tilstand med en bekreftelse" {
                     bekreftelseHendelseloggTopicOut.isEmpty shouldBe true
-                    val stateStore: StateStore =
+                    val internTilstandStateStore: InternTilstandStateStore =
                         testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
 
-                    stateStore.get(periode.id) should { currentState ->
+                    internTilstandStateStore.get(periode.id) should { currentState ->
                         currentState.periode shouldBe PeriodeInfo(
                             periodeId = periode.id,
                             identitetsnummer = periode.identitetsnummer,
@@ -68,9 +68,9 @@ class BekreftelsePunctuatorTest : FreeSpec({
 
                 "Etter 11 dager skal det ha blitt sendt en BekreftelseTilgjengelig hendelse" {
                     testDriver.advanceWallClockTime(interval.minus(tilgjengeligOffset))
-                    val stateStore: StateStore =
+                    val internTilstandStateStore: InternTilstandStateStore =
                         testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
-                    stateStore.all().use {
+                    internTilstandStateStore.all().use {
                         it.forEach {
                             logger.info("key: ${it.key}, value: ${it.value}")
                         }
@@ -86,9 +86,9 @@ class BekreftelsePunctuatorTest : FreeSpec({
 
                 "Etter 14 dager skal det ha blitt sendt en LeveringsFristUtloept hendelse" {
                     testDriver.advanceWallClockTime(tilgjengeligOffset.plusSeconds(5))
-                    val stateStore: StateStore =
+                    val internTilstandStateStore: InternTilstandStateStore =
                         testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
-                    stateStore.all().use {
+                    internTilstandStateStore.all().use {
                         it.forEach {
                             logger.info("key: ${it.key}, value: ${it.value}")
                         }
@@ -103,9 +103,9 @@ class BekreftelsePunctuatorTest : FreeSpec({
                 }
                 "Etter 17,5 dager uten svar skal det ha blitt sendt en RegisterGracePeriodeGjenstaaendeTid hendelse" {
                     testDriver.advanceWallClockTime(varselFoerGraceperiodeUtloept.plusSeconds(5))
-                    val stateStore: StateStore =
+                    val internTilstandStateStore: InternTilstandStateStore =
                         testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
-                    stateStore.all().use {
+                    internTilstandStateStore.all().use {
                         it.forEach {
                             logger.info("key: ${it.key}, value: ${it.value}")
                         }
@@ -120,9 +120,9 @@ class BekreftelsePunctuatorTest : FreeSpec({
                 }
                 "Etter 21 dager uten svar skal det ha blitt sendt en RegisterGracePeriodeUtloept hendelse" {
                     testDriver.advanceWallClockTime(varselFoerGraceperiodeUtloept.plusSeconds(5))
-                    val stateStore: StateStore =
+                    val internTilstandStateStore: InternTilstandStateStore =
                         testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
-                    stateStore.all().use {
+                    internTilstandStateStore.all().use {
                         it.forEach {
                             logger.info("key: ${it.key}, value: ${it.value}")
                         }
@@ -143,9 +143,9 @@ class BekreftelsePunctuatorTest : FreeSpec({
                                 .plus(interval.minus(tilgjengeligOffset))
                         )
                     )
-                    val stateStore: StateStore =
+                    val internTilstandStateStore: InternTilstandStateStore =
                         testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
-                    stateStore.all().use {
+                    internTilstandStateStore.all().use {
                         it.forEach {
                             logger.info("key: ${it.key}, value: ${it.value}")
                         }
@@ -175,9 +175,9 @@ class BekreftelsePunctuatorTest : FreeSpec({
                     interval.minus(tilgjengeligOffset)
                         .plusSeconds(5)
                 )
-                val stateStore: StateStore =
+                val internTilstandStateStore: InternTilstandStateStore =
                     testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
-                val currentState = stateStore.get(periode.id)
+                val currentState = internTilstandStateStore.get(periode.id)
                 bekreftelseTopic.pipeInput(
                     key, no.nav.paw.bekreftelse.melding.v1.Bekreftelse(
                         periode.id, Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET, currentState.bekreftelser.first().bekreftelseId, Svar(
@@ -197,7 +197,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                 testDriver.advanceWallClockTime(tilgjengeligOffset.plus(graceperiode))
                 val hendelseLoggOutput = bekreftelseHendelseloggTopicOut.readKeyValuesToList()
                 logger.info("hendelseOutput: $hendelseLoggOutput")
-                stateStore.all().use {
+                internTilstandStateStore.all().use {
                     it.forEach {
                         logger.info("key: ${it.key}, value: ${it.value}")
                     }
@@ -223,9 +223,9 @@ class BekreftelsePunctuatorTest : FreeSpec({
                     interval.minus(tilgjengeligOffset)
                         .plusSeconds(5)
                 )
-                val stateStore: StateStore =
+                val internTilstandStateStore: InternTilstandStateStore =
                     testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
-                val currentState = stateStore.get(periode.id)
+                val currentState = internTilstandStateStore.get(periode.id)
                 bekreftelseTopic.pipeInput(
                     key, no.nav.paw.bekreftelse.melding.v1.Bekreftelse(
                         periode.id, Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET, currentState.bekreftelser.first().bekreftelseId, Svar(
@@ -245,7 +245,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                 testDriver.advanceWallClockTime(tilgjengeligOffset.plus(graceperiode))
                 val hendelseLoggOutput = bekreftelseHendelseloggTopicOut.readKeyValuesToList()
                 logger.info("hendelseOutput: $hendelseLoggOutput")
-                stateStore.all().use {
+                internTilstandStateStore.all().use {
                     it.forEach {
                         logger.info("key: ${it.key}, value: ${it.value}")
                     }
@@ -269,9 +269,9 @@ class BekreftelsePunctuatorTest : FreeSpec({
                     )
                     periodeTopic.pipeInput(key, periode)
                     testDriver.advanceWallClockTime(Duration.ofSeconds(5))
-                    val stateStore: StateStore =
+                    val internTilstandStateStore: InternTilstandStateStore =
                         testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
-                    val currentState = stateStore.get(periode.id)
+                    val currentState = internTilstandStateStore.get(periode.id)
                     currentState should {
                         it.periode shouldBe PeriodeInfo(
                             periodeId = periode.id,
@@ -311,9 +311,9 @@ class BekreftelsePunctuatorTest : FreeSpec({
                         interval.minus(tilgjengeligOffset)
                             .plusSeconds(5)
                     )
-                    val stateStore: StateStore =
+                    val internTilstandStateStore: InternTilstandStateStore =
                         testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
-                    val currentState = stateStore.get(periode.id)
+                    val currentState = internTilstandStateStore.get(periode.id)
                     currentState should {
                         it.periode shouldBe PeriodeInfo(
                             periodeId = periode.id,
@@ -361,14 +361,14 @@ class BekreftelsePunctuatorTest : FreeSpec({
                     )
                     // Spoler frem til LeveringsfristUtloept
                     testDriver.advanceWallClockTime(tilgjengeligOffset.plusSeconds(5))
-                    val stateStore: StateStore =
+                    val internTilstandStateStore: InternTilstandStateStore =
                         testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
-                    stateStore.all().use {
+                    internTilstandStateStore.all().use {
                         it.forEach {
                             logger.info("key: ${it.key}, value: ${it.value}")
                         }
                     }
-                    val currentState = stateStore.get(periode.id)
+                    val currentState = internTilstandStateStore.get(periode.id)
                     currentState should {
                         it.periode shouldBe PeriodeInfo(
                             periodeId = periode.id,
@@ -420,9 +420,9 @@ class BekreftelsePunctuatorTest : FreeSpec({
                     testDriver.advanceWallClockTime(tilgjengeligOffset.plusSeconds(5))
                     // Spoler frem til RegisterGracePeriodeGjenstaaende
                     testDriver.advanceWallClockTime(varselFoerGraceperiodeUtloept.plusSeconds(5))
-                    val stateStore: StateStore =
+                    val internTilstandStateStore: InternTilstandStateStore =
                         testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
-                    val currentState = stateStore.get(periode.id)
+                    val currentState = internTilstandStateStore.get(periode.id)
                     currentState should {
                         it.periode shouldBe PeriodeInfo(
                             periodeId = periode.id,
@@ -477,9 +477,9 @@ class BekreftelsePunctuatorTest : FreeSpec({
                     testDriver.advanceWallClockTime(varselFoerGraceperiodeUtloept.plusSeconds(5))
                     // Spoler frem til RegisterGracePeriodeUtloept
                     testDriver.advanceWallClockTime(varselFoerGraceperiodeUtloept.plusSeconds(5))
-                    val stateStore: StateStore =
+                    val internTilstandStateStore: InternTilstandStateStore =
                         testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
-                    val currentState = stateStore.get(periode.id)
+                    val currentState = internTilstandStateStore.get(periode.id)
                     currentState should {
                         it.periode shouldBe PeriodeInfo(
                             periodeId = periode.id,

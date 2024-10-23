@@ -11,28 +11,45 @@ import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
+import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Instant
 import java.util.*
-
+private val punctuatorLogger = LoggerFactory.getLogger("punctuator.bekreftelse")
 fun bekreftelsePunctuator(
-    stateStoreName: String,
+    interntilstandStateStoreName: String,
+    ansvarStateStoreName: String,
     bekreftelseIntervals: BekreftelseIntervals,
     timestamp: Instant,
     ctx: ProcessorContext<Long, BekreftelseHendelse>
 ) {
-    val stateStore: StateStore = ctx.getStateStore(stateStoreName)
+    val internTilstandStateStore: InternTilstandStateStore = ctx.getStateStore(interntilstandStateStoreName)
+    val ansvarStateStore: AnsvarStateStore = ctx.getStateStore(ansvarStateStoreName)
 
-    stateStore.all().use { states ->
-        states.forEach { (key, value) ->
-            val (updatedState, bekreftelseHendelser) = processBekreftelser(bekreftelseIntervals, value, timestamp)
-
-            bekreftelseHendelser.forEach {
-                ctx.forward(Record(value.periode.recordKey, it, Instant.now().toEpochMilli()))
-            }
-            stateStore.put(key, updatedState)
+    internTilstandStateStore
+        .all()
+        .use { states ->
+            states
+                .asSequence()
+                .filter { (_, value) -> (ansvarStateStore.get(value.periode.periodeId) == null)
+                    .also { result ->
+                        punctuatorLogger.info("Periode ${value.periode.periodeId}, registeret har ansvar: $result")
+                    }}
+                .forEach { (key, value) ->
+                    val (updatedState, bekreftelseHendelser) = processBekreftelser(
+                        bekreftelseIntervals,
+                        value,
+                        timestamp
+                    )
+                    punctuatorLogger.info("Wallclocktime: $timestamp")
+                    punctuatorLogger.info("Eksiterende bekreftelser: ${value.bekreftelser} ${if (value.bekreftelser.isEmpty()) ", periode startet: ${value.periode.startet}" else ""}")
+                    punctuatorLogger.info("Oppdaterte bekreftelser: ${updatedState.bekreftelser}")
+                    bekreftelseHendelser.forEach {
+                        ctx.forward(Record(value.periode.recordKey, it, Instant.now().toEpochMilli()))
+                    }
+                    internTilstandStateStore.put(key, updatedState)
+                }
         }
-    }
 }
 
 fun processBekreftelser(
@@ -62,7 +79,12 @@ private fun InternTilstand.checkAndCreateNewBekreftelse(
 ): Pair<InternTilstand, BekreftelseHendelse?> {
     val nonEmptyBekreftelser = bekreftelser.toNonEmptyListOrNull() ?: return this to null
 
-    return if (nonEmptyBekreftelser.shouldCreateNewBekreftelse(timestamp, bekreftelseIntervals.interval, bekreftelseIntervals.tilgjengeligOffset)) {
+    return if (nonEmptyBekreftelser.shouldCreateNewBekreftelse(
+            timestamp,
+            bekreftelseIntervals.interval,
+            bekreftelseIntervals.tilgjengeligOffset
+        )
+    ) {
         val newBekreftelse = nonEmptyBekreftelser.opprettNesteTilgjengeligeBekreftelse(
             tilgjengeliggjort = timestamp,
             interval = bekreftelseIntervals.interval,
@@ -79,13 +101,21 @@ private fun InternTilstand.handleUpdateBekreftelser(
 ): Pair<InternTilstand, BekreftelseHendelse?> {
     val updatedBekreftelser = bekreftelser.map { bekreftelse ->
         generateSequence(bekreftelse to null as BekreftelseHendelse?) { (currentBekreftelse, _) ->
-            getProcessedBekreftelseTilstandAndHendelse(currentBekreftelse, timestamp, bekreftelseIntervals).takeIf { it.second != null }
+            getProcessedBekreftelseTilstandAndHendelse(
+                currentBekreftelse,
+                timestamp,
+                bekreftelseIntervals
+            ).takeIf { it.second != null }
         }.last().first
     }
 
     val hendelse: BekreftelseHendelse? = bekreftelser.flatMap { bekreftelse ->
         generateSequence(bekreftelse to null as BekreftelseHendelse?) { (currentBekreftelse, _) ->
-            getProcessedBekreftelseTilstandAndHendelse(currentBekreftelse, timestamp, bekreftelseIntervals).takeIf { it.second != null }
+            getProcessedBekreftelseTilstandAndHendelse(
+                currentBekreftelse,
+                timestamp,
+                bekreftelseIntervals
+            ).takeIf { it.second != null }
         }.mapNotNull { it.second }
     }.lastOrNull()
 
@@ -107,7 +137,8 @@ private fun InternTilstand.getProcessedBekreftelseTilstandAndHendelse(
                 bekreftelseId = bekreftelse.bekreftelseId,
                 gjelderFra = bekreftelse.gjelderFra,
                 gjelderTil = bekreftelse.gjelderTil,
-            hendelseTidspunkt = Instant.now())
+                hendelseTidspunkt = Instant.now()
+            )
             updatedBekreftelse to hendelse
         }
 
@@ -118,8 +149,9 @@ private fun InternTilstand.getProcessedBekreftelseTilstandAndHendelse(
                 periodeId = periode.periodeId,
                 arbeidssoekerId = periode.arbeidsoekerId,
                 bekreftelseId = bekreftelse.bekreftelseId,
-            hendelseTidspunkt = Instant.now(),
-                    leveringsfrist = bekreftelse.gjelderTil)
+                hendelseTidspunkt = Instant.now(),
+                leveringsfrist = bekreftelse.gjelderTil
+            )
             updatedBekreftelse to hendelse
         }
 
@@ -130,11 +162,15 @@ private fun InternTilstand.getProcessedBekreftelseTilstandAndHendelse(
                 periodeId = periode.periodeId,
                 arbeidssoekerId = periode.arbeidsoekerId,
                 bekreftelseId = bekreftelse.bekreftelseId,
-                hendelseTidspunkt = Instant.now())
+                hendelseTidspunkt = Instant.now()
+            )
             updatedBekreftelse to hendelse
         }
 
-        bekreftelse.erSisteVarselOmGjenstaaendeGraceTid(timestamp, bekreftelseIntervals.varselFoerGraceperiodeUtloept) -> {
+        bekreftelse.erSisteVarselOmGjenstaaendeGraceTid(
+            timestamp,
+            bekreftelseIntervals.varselFoerGraceperiodeUtloept
+        ) -> {
             val updatedBekreftelse = bekreftelse + GracePeriodeVarselet(timestamp)
             val hendelse = RegisterGracePeriodeGjenstaaendeTid(
                 hendelseId = UUID.randomUUID(),
@@ -142,7 +178,8 @@ private fun InternTilstand.getProcessedBekreftelseTilstandAndHendelse(
                 arbeidssoekerId = periode.arbeidsoekerId,
                 bekreftelseId = bekreftelse.bekreftelseId,
                 gjenstaandeTid = bekreftelse.gjenstaendeGraceperiode(timestamp, bekreftelseIntervals.graceperiode),
-            hendelseTidspunkt = Instant.now())
+                hendelseTidspunkt = Instant.now()
+            )
             updatedBekreftelse to hendelse
         }
 

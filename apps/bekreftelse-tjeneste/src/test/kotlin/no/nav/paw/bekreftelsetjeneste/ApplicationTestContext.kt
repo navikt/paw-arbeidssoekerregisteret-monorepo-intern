@@ -3,6 +3,7 @@ package no.nav.paw.bekreftelsetjeneste
 import io.confluent.kafka.schemaregistry.testutil.MockSchemaRegistry
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.mockk.mockk
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
@@ -10,9 +11,11 @@ import no.nav.paw.bekreftelse.ansvar.v1.AnsvarEndret
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
+import no.nav.paw.bekreftelsetjeneste.ansvar.AnsvarSerde
 import no.nav.paw.bekreftelsetjeneste.config.APPLICATION_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
 import no.nav.paw.bekreftelsetjeneste.context.ApplicationContext
+import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstandSerde
 import no.nav.paw.bekreftelsetjeneste.topology.buildTopology
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.health.repository.HealthIndicatorRepository
@@ -20,6 +23,7 @@ import no.nav.paw.kafkakeygenerator.client.inMemoryKafkaKeysMock
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
+import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.TestInputTopic
 import org.apache.kafka.streams.TestOutputTopic
@@ -39,17 +43,29 @@ class ApplicationTestContext(initialWallClockTime: Instant = Instant.now()) {
     val kafkaKeysClient = inMemoryKafkaKeysMock()
     val applicationContext = ApplicationContext(
         applicationConfig = applicationConfig,
-        prometheusMeterRegistry = mockk<PrometheusMeterRegistry>(),
+        prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
         healthIndicatorRepository = HealthIndicatorRepository(),
         kafkaKeysClient = kafkaKeysClient
     )
 
     val logger: Logger = LoggerFactory.getLogger(ApplicationTestContext::class.java)
 
-    val topology = buildTopology(
-        applicationContext = applicationContext,
-        keyValueStateStoreSupplier = Stores::inMemoryKeyValueStore
-    )
+    val topology = StreamsBuilder()
+        .addStateStore(
+            Stores.keyValueStoreBuilder(
+                Stores.inMemoryKeyValueStore(applicationContext.applicationConfig.kafkaTopology.internStateStoreName),
+                Serdes.UUID(),
+                InternTilstandSerde()
+            )
+        )
+        .addStateStore(
+            Stores.keyValueStoreBuilder(
+                Stores.inMemoryKeyValueStore(applicationContext.applicationConfig.kafkaTopology.ansvarStateStoreName),
+                Serdes.UUID(),
+                AnsvarSerde()
+            )
+        )
+        .buildTopology(applicationContext)
 
     val testDriver: TopologyTestDriver = TopologyTestDriver(topology, kafkaStreamProperties, initialWallClockTime)
 
@@ -63,6 +79,12 @@ class ApplicationTestContext(initialWallClockTime: Instant = Instant.now()) {
         applicationConfig.kafkaTopology.bekreftelseTopic,
         Serdes.Long().serializer(),
         bekreftelseSerde.serializer()
+    )
+
+    val ansvarsTopic: TestInputTopic<Long, AnsvarEndret> = testDriver.createInputTopic(
+        applicationConfig.kafkaTopology.ansvarsTopic,
+        Serdes.Long().serializer(),
+        ansvarsTopicSerde.serializer()
     )
 
     val bekreftelseHendelseloggTopicOut: TestOutputTopic<Long, BekreftelseHendelse> = testDriver.createOutputTopic(

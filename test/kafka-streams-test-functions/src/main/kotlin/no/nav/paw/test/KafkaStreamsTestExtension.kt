@@ -19,4 +19,11 @@ inline fun <reified T : Any> TestOutputTopic<*, in T>.assertEvent(): T {
     }
 }
 
+fun TestOutputTopic<*, *>.assertNoMessage() {
+    val message = if (isEmpty) null else readValue()
+    withClue("Expected no message, but found: $message") {
+        message shouldBe null
+    }
+}
+
 val Int.seconds: Duration get() = Duration.ofSeconds(this.toLong())

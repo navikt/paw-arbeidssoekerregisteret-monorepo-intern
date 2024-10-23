@@ -31,15 +31,19 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
             .genericProcess<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse, Long, BekreftelseHendelse>(
                 name = "meldingMottatt",
                 internStateStoreName,
+                ansvarStateStoreName,
                 punctuation = Punctuation(
                     punctuationInterval,
                     PunctuationType.WALL_CLOCK_TIME,
-                    ::bekreftelsePunctuator.partially1(internStateStoreName).partially1(applicationConfig.bekreftelseIntervals)
+                    ::bekreftelsePunctuator
+                        .partially1(internStateStoreName)
+                        .partially1(ansvarStateStoreName)
+                        .partially1(applicationConfig.bekreftelseIntervals)
                 ),
             ) { record ->
-                val stateStore = getStateStore<StateStore>(internStateStoreName)
+                val internTilstandStateStore = getStateStore<InternTilstandStateStore>(internStateStoreName)
 
-                val gjeldendeTilstand: InternTilstand? = retrieveState(stateStore, record)
+                val gjeldendeTilstand: InternTilstand? = retrieveState(internTilstandStateStore, record)
 
                 if (gjeldendeTilstand == null) {
                     Span.current().setStatus(StatusCode.ERROR).addEvent("tilstand is null for record", Attributes.of(
@@ -52,9 +56,8 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
                 if (record.value().bekreftelsesloesning == Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET) {
                     val (nyTilstand, hendelser) = processPawNamespace(record.value(), gjeldendeTilstand)
                     if (nyTilstand != gjeldendeTilstand) {
-                        stateStore.put(gjeldendeTilstand.periode.periodeId, nyTilstand)
+                        internTilstandStateStore.put(gjeldendeTilstand.periode.periodeId, nyTilstand)
                     }
-
                     forwardHendelser(record, hendelser, this::forward)
                 }
             }
@@ -67,11 +70,11 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
     kind = SpanKind.INTERNAL
 )
 fun retrieveState(
-    stateStore: StateStore,
+    internTilstandStateStore: InternTilstandStateStore,
     record: Record<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>
 ): InternTilstand? {
     val periodeId = record.value().periodeId
-    val state = stateStore[periodeId]
+    val state = internTilstandStateStore[periodeId]
 
     Span.current().setAttribute("periodeId", periodeId.toString())
     return state

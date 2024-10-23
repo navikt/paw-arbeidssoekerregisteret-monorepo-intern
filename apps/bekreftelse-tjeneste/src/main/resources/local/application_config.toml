@@ -6,8 +6,10 @@ tilgjengeligOffset = "P3D"
 [kafkaTopology]
 applicationIdSuffix = "v1"
 internStateStoreName = "intern-tilstand"
+ansvarStateStoreName = "ansvar"
 periodeTopic = "paw.arbeidssokerperioder-v1"
 bekreftelseTopic = "paw.arbeidssoker-bekreftelse-v1"
+ansvarsTopic = "paw.arbeidssoker-bekreftelse-ansvar-v1"
 bekreftelseHendelseloggTopic = "paw.arbeidssoker-bekreftelse-hendelseslogg-v1"
 punctuationInterval = "PT5S"
 
