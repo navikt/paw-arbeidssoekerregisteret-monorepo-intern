@@ -35,16 +35,16 @@ class AndreTarAnsvarMenDetSendesAldriInnNoeTest: FreeSpec({
                     bekreftelseHendelseloggTopicOut.assertNoMessage()
                 }
                 "Når leveringsfristen utløper når andre har ansvar skjer det ingenting" {
-                    testDriver.advanceWallClockTime(intervall + 1.day)
+                    testDriver.advanceWallClockTime(intervall + 1.days)
                     bekreftelseHendelseloggTopicOut.assertNoMessage()
                 }
                 "Når grace perioden utløpet når andre har ansvar skjer det ingenting" {
-                    testDriver.advanceWallClockTime(grace + 1.day)
+                    testDriver.advanceWallClockTime(grace + 1.days)
                     bekreftelseHendelseloggTopicOut.assertNoMessage()
                 }
                 "Når andre avslutter ansvar blir en ny bekreftelse tilgjengelig" {
                     ansvarsTopic.pipeInput(key, avslutterAnsvar(periodeId = periode.id))
-                    testDriver.advanceWallClockTime(1.day)
+                    testDriver.advanceWallClockTime(1.days)
                     bekreftelseHendelseloggTopicOut.assertEvent { hendelse: BekreftelseTilgjengelig ->
                         hendelse.gjelderFra shouldBe periode.startet.tidspunkt
                     }

@@ -34,7 +34,7 @@ class IngenAndreTarAnsvarTest : FreeSpec({
                         }
                     }
                     "Når rapporteringen ikke blir besvart innen fristen sendes det ut en melding" {
-                        testDriver.advanceWallClockTime(grace + 1.day)
+                        testDriver.advanceWallClockTime(grace + 1.days)
                         bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
                         val kv = bekreftelseHendelseloggTopicOut.readKeyValue()
                         kv.key shouldBe key
@@ -50,4 +50,4 @@ class IngenAndreTarAnsvarTest : FreeSpec({
     }
 })
 
-val Int.day: Duration get() = Duration.ofDays(this.toLong())
+val Int.days: Duration get() = Duration.ofDays(this.toLong())

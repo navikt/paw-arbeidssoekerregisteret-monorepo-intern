@@ -33,3 +33,11 @@ fun InternTilstand.oppdaterBekreftelse(ny: Bekreftelse): InternTilstand {
     }
     return copy(bekreftelser = nyBekreftelser)
 }
+
+fun InternTilstand.leggTilNyBekreftelse(ny: Bekreftelse): InternTilstand {
+    val nyBekreftelser = bekreftelser
+        .filter { it.bekreftelseId != ny.bekreftelseId }
+        .plus(ny)
+    return copy(bekreftelser = nyBekreftelser)
+}
+

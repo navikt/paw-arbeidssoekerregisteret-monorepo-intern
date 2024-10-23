@@ -16,6 +16,7 @@ import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.Produced
 import org.apache.kafka.streams.state.KeyValueStore
+import java.time.Instant
 import java.util.*
 
 fun StreamsBuilder.byggAnsvarsStroem(
@@ -36,6 +37,7 @@ fun StreamsBuilder.byggAnsvarsStroem(
             val internTilstand = internStateStore[message.periodeId]
             val ansvar = ansvarStateStore[message.periodeId]
             haandterAnsvarEndret(
+                wallclock = WallClock(Instant.now()),
                 tilstand = internTilstand,
                 ansvar = ansvar,
                 ansvarEndret = message
@@ -44,6 +46,7 @@ fun StreamsBuilder.byggAnsvarsStroem(
                     is SendHendelse -> handling.hendelse
                     is SkrivAnsvar -> ansvarStateStore.put(handling.id, handling.value)
                     is SlettAnsvar -> ansvarStateStore.delete(handling.id)
+                    is SkrivInternTilstand -> internStateStore.put(handling.id, handling.value)
                 }
             }.filterIsInstance<BekreftelseHendelse>()
         }
