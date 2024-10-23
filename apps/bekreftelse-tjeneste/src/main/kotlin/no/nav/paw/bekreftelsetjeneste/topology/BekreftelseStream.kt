@@ -12,6 +12,7 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
+import no.nav.paw.bekreftelsetjeneste.ansvar.Loesning
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import no.nav.paw.config.kafka.streams.Punctuation
@@ -59,6 +60,20 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
                         internTilstandStateStore.put(gjeldendeTilstand.periode.periodeId, nyTilstand)
                     }
                     forwardHendelser(record, hendelser, this::forward)
+                } else {
+                    val ansvarStateStore = getStateStore<AnsvarStateStore>(ansvarStateStoreName)
+                    val ansvar = ansvarStateStore[gjeldendeTilstand.periode.periodeId]?.ansvarlige ?: emptyList()
+                    if (ansvar.any { ansvarlig -> ansvarlig.loesning == Loesning.from(record.value().bekreftelsesloesning) }) {
+                        gjeldendeTilstand.oppdaterBekreftelse(Bekreftelse(
+                            tilstandsLogg = BekreftelseTilstandsLogg(
+                                siste = Levert(record.value().svar.sendtInn.tidspunkt),
+                                tidligere = emptyList()
+                            ),
+                            bekreftelseId = record.value().id,
+                            gjelderFra = record.value().svar.gjelderFra,
+                            gjelderTil = record.value().svar.gjelderTil
+                        ))
+                    }
                 }
             }
             .to(bekreftelseHendelseloggTopic, Produced.with(Serdes.Long(), BekreftelseHendelseSerde()))

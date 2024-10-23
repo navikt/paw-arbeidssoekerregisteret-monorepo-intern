@@ -2,6 +2,8 @@ package no.nav.paw.bekreftelsetjeneste.tilstand
 
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 
+const val MAKS_ANTALL_HISTRISKE_BEKREFTELSER = 20
+
 @JvmRecord
 data class InternTilstand(
     val periode: PeriodeInfo,

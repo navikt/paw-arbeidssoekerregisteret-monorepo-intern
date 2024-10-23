@@ -26,6 +26,11 @@ enum class Loesning {
             Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET -> ARBEIDSSOEKERREGISTERET
             Bekreftelsesloesning.DAGPENGER -> DAGPENGER
         }
+        fun from(value: no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning): Loesning = when (value) {
+            no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning.UKJENT_VERDI -> UKJENT_VERDI
+            no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET -> ARBEIDSSOEKERREGISTERET
+            no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning.DAGPENGER -> DAGPENGER
+        }
     }
 }
 
