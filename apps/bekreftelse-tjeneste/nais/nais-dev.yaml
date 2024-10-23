@@ -17,6 +17,8 @@ spec:
       value: "paw.arbeidssoker-bekreftelse-hendelseslogg-beta-v2"
     - name: KAFKA_PAW_ARBEIDSSOKERPERIODER_TOPIC
       value: "paw.arbeidssokerperioder-v1"
+    - name: KAFKA_PAW_ANSVARS_TOPIC
+      value: "paw.arbeidssoker-bekreftelse-ansvar-beta-v1"
     - name: KAFKA_PUNCTUATOR_INTERVAL
       value: "PT1M"
     - name: BEKREFTELSE_INTERVAL
