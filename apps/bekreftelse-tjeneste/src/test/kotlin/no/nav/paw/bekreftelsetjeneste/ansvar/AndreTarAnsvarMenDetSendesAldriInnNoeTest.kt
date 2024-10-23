@@ -17,14 +17,14 @@ class AndreTarAnsvarMenDetSendesAldriInnNoeTest: FreeSpec({
         val intervall = applicationConfig.bekreftelseIntervals.interval
         val grace = applicationConfig.bekreftelseIntervals.graceperiode
         with(kafkaKeyContext()) {
-            "Applikasjonstest hvor noen tar ansvar etter at perioden er lest, men avslutter ansvar igjen før en eneste" +
+            "Applikasjonstest hvor noen tar ansvar rett etter at perioden er lest, men avslutter ansvar igjen før en eneste" +
                     " bekreftelse er levert" - {
                 val (id, key, periode) = periode(identitetsnummer = "12345678902")
-                periodeTopic.pipeInput(key, periode)
                 "Når perioden opprettes skal det ikke skje noe" {
+                    periodeTopic.pipeInput(key, periode)
                     bekreftelseHendelseloggTopicOut.assertNoMessage()
                 }
-                "Når andre tar ansvar sendes en event" {
+                "Når andre tar ansvar sendes en 'AndreHarOvertattAnsvar' hendelse" {
                     val tarAnsvar = tarAnsvar(periodeId = periode.id)
                     ansvarsTopic.pipeInput(key, tarAnsvar)
                     logger.info("Tar ansvar: $tarAnsvar")
@@ -32,21 +32,21 @@ class AndreTarAnsvarMenDetSendesAldriInnNoeTest: FreeSpec({
                         hedelse.periodeId shouldBe periode.id
                         hedelse.arbeidssoekerId shouldBe id
                     }
+                    bekreftelseHendelseloggTopicOut.assertNoMessage()
                 }
                 "Når leveringsfristen utløper når andre har ansvar skjer det ingenting" {
-                    bekreftelseHendelseloggTopicOut.assertNoMessage()
                     testDriver.advanceWallClockTime(intervall + 1.day)
                     bekreftelseHendelseloggTopicOut.assertNoMessage()
                 }
                 "Når grace perioden utløpet når andre har ansvar skjer det ingenting" {
                     testDriver.advanceWallClockTime(grace + 1.day)
-                    bekreftelseHendelseloggTopicOut.isEmpty shouldBe true
+                    bekreftelseHendelseloggTopicOut.assertNoMessage()
                 }
-                "Når andre avslutter ansvar sendes blie en ny bekreftelse tilgjengelig" {
+                "Når andre avslutter ansvar blir en ny bekreftelse tilgjengelig" {
                     ansvarsTopic.pipeInput(key, avslutterAnsvar(periodeId = periode.id))
                     testDriver.advanceWallClockTime(1.day)
                     bekreftelseHendelseloggTopicOut.assertEvent { hendelse: BekreftelseTilgjengelig ->
-                        logger.info("Bekreftelse tilgjengelig: $hendelse")
+                        hendelse.gjelderFra shouldBe periode.startet.tidspunkt
                     }
                 }
             }
