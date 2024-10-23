@@ -30,4 +30,5 @@
             <include resource="no/nav/common/audit_log/logback-naudit.xml"/>
         </else>
     </if>
+    <logger name="punctuator.bekreftelse" level="info"/>
 </configuration>

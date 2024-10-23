@@ -33,7 +33,7 @@ fun bekreftelsePunctuator(
                 .asSequence()
                 .filter { (_, value) -> (ansvarStateStore.get(value.periode.periodeId) == null)
                     .also { result ->
-                        punctuatorLogger.info("Periode ${value.periode.periodeId}, registeret har ansvar: $result")
+                        punctuatorLogger.trace("Periode {}, registeret har ansvar: {}", value.periode.periodeId, result)
                     }}
                 .forEach { (key, value) ->
                     val (updatedState, bekreftelseHendelser) = processBekreftelser(
@@ -41,9 +41,13 @@ fun bekreftelsePunctuator(
                         value,
                         timestamp
                     )
-                    punctuatorLogger.info("Wallclocktime: $timestamp")
-                    punctuatorLogger.info("Eksiterende bekreftelser: ${value.bekreftelser} ${if (value.bekreftelser.isEmpty()) ", periode startet: ${value.periode.startet}" else ""}")
-                    punctuatorLogger.info("Oppdaterte bekreftelser: ${updatedState.bekreftelser}")
+                    punctuatorLogger.trace("Wallclocktime: {}", timestamp)
+                    punctuatorLogger.trace(
+                        "Eksiterende bekreftelser: {} {}",
+                        value.bekreftelser,
+                        if (value.bekreftelser.isEmpty()) ", periode startet: ${value.periode.startet}" else ""
+                    )
+                    punctuatorLogger.trace("Oppdaterte bekreftelser: {}", updatedState.bekreftelser)
                     bekreftelseHendelser.forEach {
                         ctx.forward(Record(value.periode.recordKey, it, Instant.now().toEpochMilli()))
                     }
