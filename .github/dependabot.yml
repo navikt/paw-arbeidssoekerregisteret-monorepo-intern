@@ -13,6 +13,9 @@ updates:
       - dependency-name: "org.apache.kafka.*"
         versions: '>= 4'
     groups:
+      opentelemetry:
+        patterns:
+          - "io.opentelemetry"
       kotlin:
         patterns:
           - "org.jetbrains.kotlin"
