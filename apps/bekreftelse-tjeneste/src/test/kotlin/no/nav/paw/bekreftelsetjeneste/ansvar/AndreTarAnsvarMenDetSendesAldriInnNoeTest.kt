@@ -9,6 +9,7 @@ import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.periode
 import no.nav.paw.bekreftelse.internehendelser.AndreHarOvertattAnsvar
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelsetjeneste.ApplicationTestContext
+import no.nav.paw.bekreftelsetjeneste.days
 import no.nav.paw.test.assertEvent
 import no.nav.paw.test.assertNoMessage
 

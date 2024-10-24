@@ -8,7 +8,9 @@ import no.nav.paw.bekreftelse.ansvar.v1.vo.TarAnsvar
 import no.nav.paw.bekreftelse.internehendelser.AndreHarOvertattAnsvar
 import no.nav.paw.bekreftelsetjeneste.*
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseIntervals
-import no.nav.paw.bekreftelsetjeneste.tilstand.*
+import no.nav.paw.bekreftelsetjeneste.tilstand.AnsvarOvertattAvAndre
+import no.nav.paw.bekreftelsetjeneste.tilstand.leggTilNyEllerOppdaterBekreftelse
+import no.nav.paw.bekreftelsetjeneste.tilstand.sisteTilstand
 import java.time.Duration
 import java.time.Instant
 
@@ -21,11 +23,11 @@ class DagpengerTarAnsvar1DagFoerGraceperiodenUtloeper : FreeSpec({
     )
 
     val periodeStart = Instant.parse("2024-10-23T08:00:00Z")
-    val initiellTilstand = internTilstand(periodeStart)
+    val initiellTilstand = internTilstand(periodeStart = periodeStart)
 
     "${Loesning.DAGPENGER} tar ansvar 1 dag før grace perioden utøper" - {
         val tilstand = initiellTilstand.leggTilNyEllerOppdaterBekreftelse(
-            ny = intervaller.bekreftelse(
+            intervaller.bekreftelse(
                 gjelderFra = periodeStart,
                 gracePeriodeUtloept = null
             )

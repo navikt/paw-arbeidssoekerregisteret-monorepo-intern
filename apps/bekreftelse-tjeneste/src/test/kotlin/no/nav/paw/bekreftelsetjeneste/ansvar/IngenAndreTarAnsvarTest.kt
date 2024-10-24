@@ -8,7 +8,7 @@ import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.periode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
 import no.nav.paw.bekreftelsetjeneste.ApplicationTestContext
-import java.time.Duration
+import no.nav.paw.bekreftelsetjeneste.days
 
 class IngenAndreTarAnsvarTest : FreeSpec({
     with(ApplicationTestContext()) {
@@ -50,4 +50,3 @@ class IngenAndreTarAnsvarTest : FreeSpec({
     }
 })
 
-val Int.days: Duration get() = Duration.ofDays(this.toLong())

@@ -4,8 +4,11 @@ import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseIntervals
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
+import java.time.Duration
 import java.time.Instant
 import java.util.*
+
+val Int.days: Duration get() = Duration.ofDays(this.toLong())
 
 inline fun <T1: Any, reified T2: T1> List<T1>.assertExactlyOne(f: T2.() -> Unit) =
     filterIsInstance<T2>()
