@@ -6,11 +6,11 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import no.nav.paw.bekreftelse.ansvar.v1.vo.TarAnsvar
 import no.nav.paw.bekreftelse.internehendelser.AndreHarOvertattAnsvar
+import no.nav.paw.bekreftelsetjeneste.*
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseIntervals
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import java.time.Duration
 import java.time.Instant
-import java.util.*
 
 class DagpengerTarAnsvar1DagFoerGraceperiodenUtloeper : FreeSpec({
     val intervaller = BekreftelseIntervals(
@@ -24,18 +24,10 @@ class DagpengerTarAnsvar1DagFoerGraceperiodenUtloeper : FreeSpec({
     val initiellTilstand = internTilstand(periodeStart)
 
     "${Loesning.DAGPENGER} tar ansvar 1 dag før grace perioden utøper" - {
-        val tilstand = initiellTilstand.leggTilNyBekreftelse(
-            ny = Bekreftelse(
-                tilstandsLogg = BekreftelseTilstandsLogg(
-                    siste = GracePeriodeVarselet(intervaller.gracePeriodeVarsel(periodeStart)),
-                    tidligere = listOf(
-                        KlarForUtfylling(intervaller.tilgjengelig(periodeStart)),
-                        VenterSvar(intervaller.frist(periodeStart))
-                    )
-                ),
-                bekreftelseId = UUID.randomUUID(),
+        val tilstand = initiellTilstand.leggTilNyEllerOppdaterBekreftelse(
+            ny = intervaller.bekreftelse(
                 gjelderFra = periodeStart,
-                gjelderTil = periodeStart.plus(intervaller.interval)
+                gracePeriodeUtloept = null
             )
         )
         val dagpengerTarAnsvar = no.nav.paw.arbeidssoekerregisteret.testdata.bekreftelse.tarAnsvar(
@@ -43,13 +35,13 @@ class DagpengerTarAnsvar1DagFoerGraceperiodenUtloeper : FreeSpec({
             bekreftelsesloesning = no.nav.paw.bekreftelse.ansvar.v1.vo.Bekreftelsesloesning.DAGPENGER,
         )
         val handlinger = haandterAnsvarEndret(
-            wallclock = WallClock(periodeStart.plus(intervaller.graceperiode).minus(1.days)),
+            wallclock = WallClock(intervaller.gracePeriodeUtloeper(periodeStart) - 1.days),
             tilstand = tilstand,
             ansvar = null,
             ansvarEndret = dagpengerTarAnsvar
         )
         "Ansvar skal skrives til key-value store" {
-            handlinger.handling<SkrivAnsvar> {
+            handlinger.assertExactlyOne<Handling, SkrivAnsvar> {
                 id shouldBe tilstand.periode.periodeId
                 value shouldBe Ansvar(
                     periodeId = tilstand.periode.periodeId,
@@ -64,52 +56,22 @@ class DagpengerTarAnsvar1DagFoerGraceperiodenUtloeper : FreeSpec({
             }
         }
         "AndreHarOvertattAnsvar hendelse skal sendes" {
-            handlinger.handling<SendHendelse> {
+            handlinger.assertExactlyOne<Handling, SendHendelse> {
                 hendelse.shouldBeInstanceOf<AndreHarOvertattAnsvar>()
                 hendelse.periodeId shouldBe tilstand.periode.periodeId
             }
         }
         "Åpne bekreftelser settes til AnsvarOvertattAvAndre" {
-            handlinger.handling<SkrivInternTilstand> {
-                id shouldBe tilstand.periode.periodeId
-                value.bekreftelser.size shouldBe 1
-                value.bekreftelser.first().sisteTilstand().shouldBeInstanceOf<AnsvarOvertattAvAndre>()
+            withClue("Handlinger inneholdt ikke skriving av intern tilstand med forventet status: ${handlinger.filterIsInstance<SkrivInternTilstand>()}") {
+                handlinger.assertExactlyOne<Handling, SkrivInternTilstand> {
+                    id shouldBe tilstand.periode.periodeId
+                    value.bekreftelser.size shouldBe 1
+                    value.bekreftelser.first().sisteTilstand().shouldBeInstanceOf<AnsvarOvertattAvAndre>()
+                }
             }
         }
         "Ingen andre handlinger skal utføres" {
             handlinger.size shouldBe 3
         }
     }
-
 })
-
-inline fun <reified T : Handling> List<Handling>.handling(f: T.() -> Unit = { }): T =
-    filterIsInstance<T>()
-        .let {
-            withClue("Expected exactly one ${T::class.simpleName} but found ${it.size}") {
-                it.size shouldBe 1
-            }
-            it.first()
-        }
-
-fun internTilstand(periodeStart: Instant) = InternTilstand(
-    periode = PeriodeInfo(
-        periodeId = UUID.randomUUID(),
-        identitetsnummer = "12345678901",
-        arbeidsoekerId = 1L,
-        recordKey = 1L,
-        startet = periodeStart,
-        avsluttet = null
-    ),
-    bekreftelser = emptyList()
-)
-
-fun BekreftelseIntervals.gracePeriodeVarsel(startTid: Instant): Instant =
-    startTid.plus(interval).plus(graceperiode).minus(varselFoerGraceperiodeUtloept)
-
-fun BekreftelseIntervals.gracePeriodeUtloeper(startTid: Instant): Instant =
-    startTid.plus(interval).plus(graceperiode)
-
-fun BekreftelseIntervals.tilgjengelig(startTid: Instant): Instant = startTid.plus(interval).plus(tilgjengeligOffset)
-
-fun BekreftelseIntervals.frist(startTid: Instant): Instant = startTid.plus(interval)

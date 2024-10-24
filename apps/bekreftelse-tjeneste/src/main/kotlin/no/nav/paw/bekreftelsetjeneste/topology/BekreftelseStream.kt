@@ -7,10 +7,7 @@ import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.instrumentation.annotations.WithSpan
-import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
-import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
-import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
-import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
+import no.nav.paw.bekreftelse.internehendelser.*
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import no.nav.paw.config.kafka.streams.Punctuation
@@ -96,7 +93,9 @@ fun processPawNamespace(
     }
 
     return when (val sisteTilstand = bekreftelse.sisteTilstand()) {
-        is VenterSvar, is KlarForUtfylling -> {
+        is VenterSvar,
+        is KlarForUtfylling,
+        is AnsvarOvertattAvAndre -> {
             val (hendelser, oppdatertBekreftelse) = behandleGyldigSvar(gjeldeneTilstand, hendelse, bekreftelse)
             Span.current().setAttribute("bekreftelse.tilstand", sisteTilstand.toString())
             gjeldeneTilstand.oppdaterBekreftelse(oppdatertBekreftelse) to hendelser
