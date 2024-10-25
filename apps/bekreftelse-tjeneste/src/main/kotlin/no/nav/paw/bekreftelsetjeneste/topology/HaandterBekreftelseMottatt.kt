@@ -10,6 +10,7 @@ import kotlin.reflect.KClass
 val maksAntallBekreftelserEtterStatus = mapOf(
     Levert::class to 1,
     AnsvarOvertattAvAndre::class to 4,
+    GracePeriodeUtloept::class to 10
 )
 
 fun haandterBekreftelseMottatt(
