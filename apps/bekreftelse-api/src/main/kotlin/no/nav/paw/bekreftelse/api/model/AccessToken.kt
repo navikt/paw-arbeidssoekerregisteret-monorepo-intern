@@ -1,9 +1,6 @@
 package no.nav.paw.bekreftelse.api.model
 
 import no.nav.paw.bekreftelse.api.exception.UgyldigBearerTokenException
-import no.nav.paw.bekreftelse.api.model.ResolveToken.AzureToken
-import no.nav.paw.bekreftelse.api.model.ResolveToken.IdPortenToken
-import no.nav.paw.bekreftelse.api.model.ResolveToken.TokenXToken
 import no.nav.security.token.support.core.context.TokenValidationContext
 import no.nav.security.token.support.core.jwt.JwtToken
 import java.util.*
@@ -39,14 +36,11 @@ data object OID : Claim<UUID>("oid", UUID::fromString)
 data object Name : Claim<String>("name", { it })
 data object NavIdent : Claim<String>("NAVident", { it })
 
-private sealed class ResolveToken(
-    val issuer: Issuer,
-    val claims: List<Claim<*>>
-) {
-    data object IdPortenToken : ResolveToken(IdPorten, listOf(PID))
-    data object TokenXToken : ResolveToken(TokenX, listOf(PID))
-    data object AzureToken : ResolveToken(Azure, listOf(OID, Name, NavIdent))
-}
+sealed class ResolveToken(val issuer: Issuer, val claims: List<Claim<*>>)
+
+data object IdPortenToken : ResolveToken(IdPorten, listOf(PID))
+data object TokenXToken : ResolveToken(TokenX, listOf(PID))
+data object AzureToken : ResolveToken(Azure, listOf(OID, Name, NavIdent))
 
 private val validTokens: List<ResolveToken> = listOf(IdPortenToken, TokenXToken, AzureToken)
 

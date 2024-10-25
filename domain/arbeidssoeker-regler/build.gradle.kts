@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     kotlin("jvm")
     id("org.openapi.generator")
@@ -11,8 +9,8 @@ val baseImage: String by project
 val jvmMajorVersion: String by project
 
 dependencies {
+    implementation(project(":lib:pdl-client"))
     implementation(project(":domain:interne-hendelser"))
-    implementation(libs.paw.pdl.client)
     api(libs.micrometer.registryPrometheus)
     api(libs.arrow.core.core)
     testImplementation(libs.ktor.server.testJvm)

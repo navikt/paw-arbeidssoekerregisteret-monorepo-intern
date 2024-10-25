@@ -1,6 +1,4 @@
-import org.gradle.configurationcache.extensions.capitalized
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
@@ -23,6 +21,7 @@ dependencies {
     implementation(project(":lib:kafka"))
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:kafka-key-generator-client"))
+    implementation(project(":lib:pdl-client"))
     implementation(project(":domain:arbeidssoeker-regler"))
     implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
     implementation(libs.micrometer.registryPrometheus)
@@ -36,7 +35,6 @@ dependencies {
     implementation(libs.nav.common.auditLog)
     implementation(libs.nav.common.log)
     implementation(libs.poao.tilgangClient)
-    implementation(libs.paw.pdl.client)
     implementation(libs.logbackClassic)
     implementation(libs.logstashLogbackEncoder)
     implementation(libs.kafka.clients)
@@ -93,8 +91,8 @@ jib {
         environment = mapOf(
             "IMAGE_WITH_VERSION" to "${image ?: project.name}:${project.version}",
             "OTEL_INSTRUMENTATION_METHODS_INCLUDE" to ("io.ktor.server.routing.Routing[interceptor,executeResult];" +
-                "io.ktor.server.netty.NettyApplicationCallHandler[handleRequest,exceptionCaught];") +
-            "io.ktor.serialization.jackson.JacksonConverter[deserialize,serializeNullable]"
+                    "io.ktor.server.netty.NettyApplicationCallHandler[handleRequest,exceptionCaught];") +
+                    "io.ktor.serialization.jackson.JacksonConverter[deserialize,serializeNullable]"
         )
         jvmFlags = listOf("-XX:ActiveProcessorCount=4", "-XX:+UseZGC", "-XX:+ZGenerational")
     }
@@ -107,7 +105,7 @@ mapOf(
     "${layout.projectDirectory}/src/main/resources/openapi/opplysninger.yaml" to "${generatedCodePackageName}.opplysningermottatt",
     "${layout.projectDirectory}/src/main/resources/openapi/startstopp.yaml" to "${generatedCodePackageName}.startstopp"
 ).map { (openApiDocFile, pkgName) ->
-    val taskName = "generate${pkgName.capitalized()}"
+    val taskName = "generate${pkgName.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}"
     tasks.register(taskName, GenerateTask::class) {
         generatorName.set("kotlin-server")
         library = "ktor"

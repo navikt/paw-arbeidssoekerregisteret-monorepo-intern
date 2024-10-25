@@ -1,0 +1,17 @@
+{
+  "data": {
+    "hentPersonBolk": [
+      {
+        "ident": "2649500819544",
+        "person": {
+          "folkeregisterpersonstatus": [
+            {
+              "forenkletStatus": "bosattEtterFolkeregisterloven"
+            }
+          ]
+        },
+        "code": "ok"
+      }
+    ]
+  }
+}

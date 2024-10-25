@@ -20,15 +20,15 @@ dependencies {
     implementation(project(":domain:arbeidssoekerregisteret-kotlin"))
     implementation(project(":domain:arbeidssoeker-regler"))
 
-    implementation(project(":lib:kafka-key-generator-client"))
+    implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:kafka"))
     implementation(project(":lib:kafka-streams"))
-    implementation(project(":lib:hoplite-config"))
+    implementation(project(":lib:kafka-key-generator-client"))
+    implementation(project(":lib:pdl-client"))
 
     api(libs.arrow.core.core)
 
     implementation(libs.kafka.streams.core)
-    implementation(libs.paw.pdl.client)
 
     implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
     implementation(libs.micrometer.registryPrometheus)
