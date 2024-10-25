@@ -27,3 +27,6 @@ fun TestOutputTopic<*, *>.assertNoMessage() {
 }
 
 val Int.seconds: Duration get() = Duration.ofSeconds(this.toLong())
+val Int.days: Duration get() = Duration.ofDays(this.toLong())
+val Long.seconds: Duration get() = Duration.ofSeconds(this)
+val Long.days: Duration get() = Duration.ofDays(this)

@@ -2,13 +2,19 @@ package no.nav.paw.bekreftelsetjeneste
 
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
-import no.nav.paw.bekreftelsetjeneste.config.BekreftelseIntervals
+import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
-import java.time.Duration
+import no.nav.paw.test.days
 import java.time.Instant
 import java.util.*
 
-val Int.days: Duration get() = Duration.ofDays(this.toLong())
+val standardIntervaller = BekreftelseKonfigurasjon(
+    migreringstidspunkt = Instant.parse("2024-09-29T22:00:00Z"),
+    interval = 14.days,
+    tilgjengeligOffset = 3.days,
+    graceperiode = 7.days,
+    varselFoerGraceperiodeUtloept = 3.days
+)
 
 inline fun <T1: Any, reified T2: T1> List<T1>.assertExactlyOne(f: T2.() -> Unit) =
     filterIsInstance<T2>()
@@ -39,7 +45,7 @@ fun internTilstand(
     bekreftelser = bekreftelser
 )
 
-fun BekreftelseIntervals.bekreftelse(
+fun BekreftelseKonfigurasjon.bekreftelse(
     gjelderFra: Instant = Instant.now(),
     gjelderTil: Instant = gjelderFra + interval,
     ikkeKlarForUtfylling: IkkeKlarForUtfylling? = IkkeKlarForUtfylling(gjelderFra),
@@ -66,12 +72,12 @@ fun BekreftelseIntervals.bekreftelse(
     gjelderTil = gjelderTil
 )
 
-fun BekreftelseIntervals.gracePeriodeVarsel(startTid: Instant): Instant =
+fun BekreftelseKonfigurasjon.gracePeriodeVarsel(startTid: Instant): Instant =
     startTid.plus(interval).plus(graceperiode).minus(varselFoerGraceperiodeUtloept)
 
-fun BekreftelseIntervals.gracePeriodeUtloeper(startTid: Instant): Instant =
+fun BekreftelseKonfigurasjon.gracePeriodeUtloeper(startTid: Instant): Instant =
     startTid.plus(interval).plus(graceperiode)
 
-fun BekreftelseIntervals.tilgjengelig(startTid: Instant): Instant = startTid.plus(interval).plus(tilgjengeligOffset)
+fun BekreftelseKonfigurasjon.tilgjengelig(startTid: Instant): Instant = startTid.plus(interval).plus(tilgjengeligOffset)
 
-fun BekreftelseIntervals.frist(startTid: Instant): Instant = startTid.plus(interval)
+fun BekreftelseKonfigurasjon.frist(startTid: Instant): Instant = startTid.plus(interval)

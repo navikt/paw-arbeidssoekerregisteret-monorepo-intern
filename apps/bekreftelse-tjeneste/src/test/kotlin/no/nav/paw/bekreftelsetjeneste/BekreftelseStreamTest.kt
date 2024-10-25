@@ -47,7 +47,7 @@ class BekreftelseStreamTest : FreeSpec({
     "Mottatt melding med tilhørende tilstand GracePeriodeUtloept skal tilstand være uendret og hendelselogg skal være tom" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
-                val (interval, graceperiode, tilgjengeligOffset, varselFoerGraceperiodeUtloept) = applicationConfig.bekreftelseIntervals
+                val (_, interval, graceperiode, tilgjengeligOffset, varselFoerGraceperiodeUtloept) = applicationConfig.bekreftelseKonfigurasjon
                 (varselFoerGraceperiodeUtloept.multipliedBy(2) + 5.seconds) shouldBeGreaterThan graceperiode
                 val (id, key, periode) = periode(
                     identitetsnummer = identitetsnummer,
@@ -56,9 +56,7 @@ class BekreftelseStreamTest : FreeSpec({
 
                 periodeTopic.pipeInput(key, periode)
                 testDriver.advanceWallClockTime(interval - tilgjengeligOffset + 5.seconds)
-                val bekreftelseId = bekreftelseHendelseloggTopicOut.assertEvent { event: BekreftelseTilgjengelig ->
-                    event.bekreftelseId
-                }
+                val bekreftelse = bekreftelseHendelseloggTopicOut.assertEvent<BekreftelseTilgjengelig>()
                 testDriver.advanceWallClockTime(tilgjengeligOffset + 5.seconds)
                 bekreftelseHendelseloggTopicOut.assertEvent<LeveringsfristUtloept>()
                 testDriver.advanceWallClockTime(varselFoerGraceperiodeUtloept + 5.seconds)
@@ -68,11 +66,11 @@ class BekreftelseStreamTest : FreeSpec({
 
                 bekreftelseHendelseloggTopicOut.readRecordsToList()
                 val bekreftelseMelding = bekreftelseMelding(
-                    id = bekreftelseId,
+                    id = bekreftelse.bekreftelseId,
                     periodeId = periode.id,
                     bekreftelsesloesning = Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET,
-                    gjelderFra = startTime,
-                    gjelderTil = startTime.plus(interval),
+                    gjelderFra = bekreftelse.gjelderFra,
+                    gjelderTil = bekreftelse.gjelderTil,
                     harJobbetIDennePerioden = true,
                     vilFortsetteSomArbeidssoeker = true
                 )
@@ -119,7 +117,7 @@ class BekreftelseStreamTest : FreeSpec({
     "Mottatt melding med tilhørende tilstand av typen VenterSvar skal oppdatere tilstand til Levert og sende BekreftelseMeldingMottatt hendelse" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
-                val (interval, _, tilgjengeligOffset, _) = applicationConfig.bekreftelseIntervals
+                val (_, interval, _, tilgjengeligOffset, _) = applicationConfig.bekreftelseKonfigurasjon
                 val (id, key, periode) = periode(
                     identitetsnummer = identitetsnummer,
                     startetMetadata = metadata(tidspunkt = startTime)
@@ -138,7 +136,7 @@ class BekreftelseStreamTest : FreeSpec({
                     periodeId = periode.id,
                     bekreftelsesloesning = Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET,
                     gjelderFra = startTime,
-                    gjelderTil = fristForNesteBekreftelse(periode.startet.tidspunkt, interval, startTime),
+                    gjelderTil = sluttTidForBekreftelsePeriode(periode.startet.tidspunkt, interval),
                     harJobbetIDennePerioden = true,
                     vilFortsetteSomArbeidssoeker = true
                 )
@@ -186,7 +184,7 @@ class BekreftelseStreamTest : FreeSpec({
     "Mottatt melding med tilhørende tilstand KlarForUtfylling skal oppdatere tilstand til Levert og sende BekreftelseMeldingMottatt og BaOmAaAvsluttePeriode hendelse om svaret er at bruker ikke vil fortsette som arbeidssøker" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
-                val (interval, _, tilgjengeligOffset, _) = applicationConfig.bekreftelseIntervals
+                val (_, interval, _, tilgjengeligOffset, _) = applicationConfig.bekreftelseKonfigurasjon
                 val (id, key, periode) = periode(
                     identitetsnummer = identitetsnummer,
                     startetMetadata = metadata(tidspunkt = startTime)
@@ -203,7 +201,7 @@ class BekreftelseStreamTest : FreeSpec({
                     periodeId = periode.id,
                     bekreftelsesloesning = Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET,
                     gjelderFra = startTime,
-                    gjelderTil = fristForNesteBekreftelse(periode.startet.tidspunkt, interval, startTime),
+                    gjelderTil = sluttTidForBekreftelsePeriode(periode.startet.tidspunkt, interval),
                     harJobbetIDennePerioden = true,
                     vilFortsetteSomArbeidssoeker = false
                 )

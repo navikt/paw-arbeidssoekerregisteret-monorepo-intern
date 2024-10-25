@@ -34,7 +34,7 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
                     ::bekreftelsePunctuator
                         .partially1(internStateStoreName)
                         .partially1(ansvarStateStoreName)
-                        .partially1(applicationConfig.bekreftelseIntervals)
+                        .partially1(applicationConfig.bekreftelseKonfigurasjon)
                 ),
             ) { record ->
                 val internTilstandStateStore = getStateStore<InternTilstandStateStore>(internStateStoreName)

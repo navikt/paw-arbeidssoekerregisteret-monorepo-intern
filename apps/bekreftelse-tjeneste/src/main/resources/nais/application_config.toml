@@ -1,4 +1,5 @@
-[bekreftelseIntervals]
+[bekreftelseKonfigurasjon]
+migreringstidspunkt = "${BEKREFTELSE_MIGRERINGSTIDSPUNKT}"
 interval = "${BEKREFTELSE_INTERVAL}"
 graceperiode = "${BEKREFTELSE_GRACEPERIODE}"
 tilgjengeligOffset = "${BEKREFTELSE_GRACEPERIODE}"

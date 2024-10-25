@@ -9,14 +9,14 @@ import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.periode
 import no.nav.paw.bekreftelse.internehendelser.AndreHarOvertattAnsvar
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelsetjeneste.ApplicationTestContext
-import no.nav.paw.bekreftelsetjeneste.days
 import no.nav.paw.test.assertEvent
 import no.nav.paw.test.assertNoMessage
+import no.nav.paw.test.days
 
 class AndreTarAnsvarMenDetSendesAldriInnNoeTest: FreeSpec({
     with(ApplicationTestContext()) {
-        val intervall = applicationConfig.bekreftelseIntervals.interval
-        val grace = applicationConfig.bekreftelseIntervals.graceperiode
+        val intervall = applicationConfig.bekreftelseKonfigurasjon.interval
+        val grace = applicationConfig.bekreftelseKonfigurasjon.graceperiode
         with(kafkaKeyContext()) {
             "Applikasjonstest hvor noen tar ansvar rett etter at perioden er lest, men avslutter ansvar igjen før en eneste" +
                     " bekreftelse er levert" - {

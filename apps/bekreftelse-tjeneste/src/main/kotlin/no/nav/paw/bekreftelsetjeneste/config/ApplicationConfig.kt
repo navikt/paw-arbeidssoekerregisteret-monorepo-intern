@@ -7,11 +7,12 @@ import no.nav.paw.kafkakeygenerator.auth.AzureM2MConfig
 import no.nav.paw.kafkakeygenerator.client.KafkaKeyConfig
 import java.net.InetAddress
 import java.time.Duration
+import java.time.Instant
 
 const val APPLICATION_CONFIG_FILE_NAME = "application_config.toml"
 
 data class ApplicationConfig(
-    val bekreftelseIntervals: BekreftelseIntervals,
+    val bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
     val kafkaTopology: KafkaTopologyConfig,
     val kafkaStreams: KafkaConfig,
     val azureM2M: AzureM2MConfig,
@@ -21,7 +22,8 @@ data class ApplicationConfig(
     val hostname: String = InetAddress.getLocalHost().hostName
 )
 
-data class BekreftelseIntervals(
+data class BekreftelseKonfigurasjon(
+    val migreringstidspunkt: Instant,
     val interval: Duration,
     val graceperiode: Duration,
     val tilgjengeligOffset: Duration,

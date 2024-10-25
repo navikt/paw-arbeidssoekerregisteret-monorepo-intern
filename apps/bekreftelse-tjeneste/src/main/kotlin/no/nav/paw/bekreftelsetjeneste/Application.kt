@@ -25,6 +25,7 @@ import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.state.Stores
 import org.slf4j.LoggerFactory
+import java.time.Instant
 
 fun main() {
     val logger = LoggerFactory.getLogger("no.nav.paw.logger.application")

@@ -23,21 +23,22 @@ operator fun Bekreftelse.plus(bekreftelseTilstand: BekreftelseTilstand): Bekreft
     copy(tilstandsLogg = tilstandsLogg + bekreftelseTilstand)
 
 fun opprettFoersteBekreftelse(
+    tidligsteStartTidspunktForBekreftelse: Instant,
     periode: PeriodeInfo,
-    interval: Duration,
-    currentTime: Instant
+    interval: Duration
 ): Bekreftelse {
-    val start = lastOf(periode.startet, currentTime - interval)
+    val start = kalkulerInitiellStartTidForPeriode(
+        tidligsteStartTidspunkt = tidligsteStartTidspunktForBekreftelse,
+        periodeStart = periode.startet,
+        interval = interval
+    )
     return Bekreftelse(
         BekreftelseTilstandsLogg(IkkeKlarForUtfylling(periode.startet), emptyList()),
         bekreftelseId = UUID.randomUUID(),
-        gjelderFra = periode.startet,
-        gjelderTil = fristForNesteBekreftelse(start, interval, periode.startet+interval)
+        gjelderFra = start,
+        gjelderTil = sluttTidForBekreftelsePeriode(start, interval)
     )
 }
-
-fun lastOf(a: Instant, b: Instant): Instant = if (a.isAfter(b)) a else b
-
 
 fun NonEmptyList<Bekreftelse>.opprettNesteTilgjengeligeBekreftelse(
     tilgjengeliggjort: Instant,
@@ -47,7 +48,7 @@ fun NonEmptyList<Bekreftelse>.opprettNesteTilgjengeligeBekreftelse(
     return Bekreftelse(
         bekreftelseId = UUID.randomUUID(),
         gjelderFra = sisteBekreftelse.gjelderTil,
-        gjelderTil = fristForNesteBekreftelse(sisteBekreftelse.gjelderTil, interval, tilgjengeliggjort),
+        gjelderTil = sluttTidForBekreftelsePeriode(sisteBekreftelse.gjelderTil, interval),
         tilstandsLogg = BekreftelseTilstandsLogg(
             siste = KlarForUtfylling(tilgjengeliggjort),
             tidligere = emptyList()

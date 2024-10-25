@@ -2,8 +2,10 @@ package no.nav.paw.bekreftelsetjeneste.tilstand
 
 import java.time.DayOfWeek
 import java.time.Duration
+import java.time.Duration.ofDays
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDate.ofInstant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
@@ -11,23 +13,47 @@ import java.time.temporal.TemporalAdjusters
 
 val osloTimezone: ZoneId = ZoneId.of("Europe/Oslo")
 
-fun fristForNesteBekreftelse(forrige: Instant, interval: Duration, now: Instant = Instant.now()): Instant =
-    if (forrige.isBefore(now.minus(interval))) {
-        // For gamle perioder må vi regne oss opp til neste frist med hensyn til dagens dato
-        val startDato = LocalDate.ofInstant(forrige, osloTimezone)
-        val dagensDato = LocalDate.ofInstant(now, osloTimezone)
-        val antallDagerIPeriode = ChronoUnit.DAYS.between(startDato, dagensDato)
-        val antallIntervaller = antallDagerIPeriode / interval.toDays()
-        val overskuddsdager = antallDagerIPeriode % interval.toDays()
+private val sameOrPreviousMondayAdjuster = TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)
+private val sameOrNextMondayAdjuster = TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY)
 
-        magicMonday(forrige.plus(interval.multipliedBy(antallIntervaller).plusDays(overskuddsdager)), interval)
-    } else if (LocalDateTime.ofInstant(forrige, osloTimezone).dayOfWeek == DayOfWeek.MONDAY) {
-        // Hvis ikke det er gammel periode og forrige frist var en mandag kan vi bare legge til intervallet
-        forrige.plus(interval)
-    } else {
-        // Hvis forrige periode ikke sluttet på mandag må vi finne siste mandag i intervallet
-        magicMonday(forrige, interval)
+fun kalkulerInitiellStartTidForPeriode(
+    tidligsteStartTidspunkt: Instant,
+    periodeStart: Instant,
+    interval: Duration
+): Instant {
+    //Bruker 'not isBefore' siden den også inkluderer de som er like, i motsetning til 'isAfter'
+    if (!periodeStart.isBefore(tidligsteStartTidspunkt)) return periodeStart
+
+    val antattMeldekortStartDato = ofInstant(periodeStart, osloTimezone)
+        .let(sameOrPreviousMondayAdjuster::adjustInto)
+    val maalDato = ofInstant(tidligsteStartTidspunkt, osloTimezone)
+    val dagerIIntervall = interval.toDays()
+    val antallDagerIPeriode = ChronoUnit.DAYS.between(antattMeldekortStartDato, maalDato)
+    val manglendeDager = dagerIIntervall - (antallDagerIPeriode % dagerIIntervall)
+    return when {
+        manglendeDager == 0L -> tidligsteStartTidspunkt
+        manglendeDager in 1..<dagerIIntervall -> {
+            sameOrNextMondayAdjuster
+                .adjustInto(ofInstant(tidligsteStartTidspunkt.plus(ofDays(manglendeDager)), osloTimezone))
+                .let(LocalDate::from)
+                .let(LocalDate::atStartOfDay)
+                .atZone(osloTimezone)
+                .toInstant()
+        }
+        else -> return tidligsteStartTidspunkt + ofDays(dagerIIntervall)
     }
+
+}
+
+fun sluttTidForBekreftelsePeriode(startTid: Instant, interval: Duration): Instant {
+    val maal = startTid + interval
+    return sameOrNextMondayAdjuster.adjustInto(ofInstant(maal, osloTimezone))
+    .let(LocalDate::from)
+    .let(LocalDate::atStartOfDay)
+    .atZone(osloTimezone)
+    .toInstant()
+}
+
 
 fun Bekreftelse.gjenstaendeGraceperiode(timestamp: Instant, graceperiode: Duration): Duration {
     val utvidetGjelderTil = tilstand<VenterSvar>()?.timestamp?.plus(graceperiode) ?: gjelderTil.plus(graceperiode)
@@ -37,13 +63,4 @@ fun Bekreftelse.gjenstaendeGraceperiode(timestamp: Instant, graceperiode: Durati
     } else {
         Duration.between(timestamp, utvidetGjelderTil)
     }
-}
-
-fun magicMonday(startTime: Instant, interval: Duration): Instant {
-    val startDateTime = LocalDateTime.ofInstant(startTime, osloTimezone)
-    val endDateTime = startDateTime.plus(interval)
-
-    val lastMondayInInterval = endDateTime.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-
-    return lastMondayInInterval.atZone(osloTimezone).toInstant()
 }

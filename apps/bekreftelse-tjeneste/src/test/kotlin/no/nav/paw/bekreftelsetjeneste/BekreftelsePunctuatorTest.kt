@@ -30,7 +30,11 @@ class BekreftelsePunctuatorTest : FreeSpec({
     "BekreftelsePunctuator sender riktig hendelser i rekkefølge" - {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
-                val (interval, graceperiode, tilgjengeligOffset, varselFoerGraceperiodeUtloept) = applicationConfig.bekreftelseIntervals
+                val (_,
+                    interval,
+                    graceperiode,
+                    tilgjengeligOffset,
+                    varselFoerGraceperiodeUtloept) = applicationConfig.bekreftelseKonfigurasjon
                 val (id, key, periode) = periode(
                     identitetsnummer = identitetsnummer,
                     startetMetadata = metadata(tidspunkt = startTime)
@@ -55,10 +59,9 @@ class BekreftelsePunctuatorTest : FreeSpec({
                         currentState.bekreftelser.size shouldBe 1
                         currentState.bekreftelser.first() should { bekreftelse ->
                             bekreftelse.gjelderFra shouldBe periode.startet.tidspunkt
-                            bekreftelse.gjelderTil shouldBe fristForNesteBekreftelse(
+                            bekreftelse.gjelderTil shouldBe sluttTidForBekreftelsePeriode(
                                 periode.startet.tidspunkt,
-                                interval,
-                                startTime
+                                interval
                             )
                             bekreftelse.tilstandsLogg.asList().size shouldBe 1
                             bekreftelse.has<IkkeKlarForUtfylling>() shouldBe true
@@ -164,7 +167,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
     "BekreftelsePunctuator håndterer BekreftelseMeldingMottatt hendelse" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
-                val (interval, graceperiode, tilgjengeligOffset, _) = applicationConfig.bekreftelseIntervals
+                val (_, interval, graceperiode, tilgjengeligOffset, _) = applicationConfig.bekreftelseKonfigurasjon
                 val (_, key, periode) = periode(
                     identitetsnummer = identitetsnummer,
                     startetMetadata = metadata(tidspunkt = startTime)
@@ -180,14 +183,17 @@ class BekreftelsePunctuatorTest : FreeSpec({
                 val currentState = internTilstandStateStore.get(periode.id)
                 bekreftelseTopic.pipeInput(
                     key, no.nav.paw.bekreftelse.melding.v1.Bekreftelse(
-                        periode.id, Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET, currentState.bekreftelser.first().bekreftelseId, Svar(
+                        periode.id,
+                        Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET,
+                        currentState.bekreftelser.first().bekreftelseId,
+                        Svar(
                             Metadata(
                                 Instant.now(), no.nav.paw.bekreftelse.melding.v1.vo.Bruker(
                                     BrukerType.SLUTTBRUKER, "12345678901"
                                 ), "test", "test"
                             ),
                             periode.startet.tidspunkt,
-                            fristForNesteBekreftelse(periode.startet.tidspunkt, interval, startTime),
+                            sluttTidForBekreftelsePeriode(periode.startet.tidspunkt, interval),
                             true,
                             true
                         )
@@ -212,7 +218,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
     "BekreftelsePunctuator håndterer BaOmAaAvslutePeriode hendelse" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
-                val (interval, graceperiode, tilgjengeligOffset, _) = applicationConfig.bekreftelseIntervals
+                val (_, interval, graceperiode, tilgjengeligOffset, _) = applicationConfig.bekreftelseKonfigurasjon
                 val (_, key, periode) = periode(
                     identitetsnummer = identitetsnummer,
                     startetMetadata = metadata(tidspunkt = startTime)
@@ -228,14 +234,17 @@ class BekreftelsePunctuatorTest : FreeSpec({
                 val currentState = internTilstandStateStore.get(periode.id)
                 bekreftelseTopic.pipeInput(
                     key, no.nav.paw.bekreftelse.melding.v1.Bekreftelse(
-                        periode.id, Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET, currentState.bekreftelser.first().bekreftelseId, Svar(
+                        periode.id,
+                        Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET,
+                        currentState.bekreftelser.first().bekreftelseId,
+                        Svar(
                             Metadata(
                                 Instant.now(), no.nav.paw.bekreftelse.melding.v1.vo.Bruker(
                                     BrukerType.SLUTTBRUKER, "12345678901"
                                 ), "test", "test"
                             ),
                             periode.startet.tidspunkt,
-                            fristForNesteBekreftelse(periode.startet.tidspunkt, interval, startTime),
+                            sluttTidForBekreftelsePeriode(periode.startet.tidspunkt, interval),
                             true,
                             false
                         )
@@ -262,7 +271,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
         "IkkeKlarForUtfylling" {
             with(ApplicationTestContext(initialWallClockTime = startTime)) {
                 with(kafkaKeyContext()) {
-                    val (interval, _, _, _) = applicationConfig.bekreftelseIntervals
+                    val (_, interval, _, _, _) = applicationConfig.bekreftelseKonfigurasjon
                     val (id, key, periode) = periode(
                         identitetsnummer = identitetsnummer,
                         startetMetadata = metadata(tidspunkt = startTime)
@@ -284,10 +293,9 @@ class BekreftelsePunctuatorTest : FreeSpec({
                         it.bekreftelser.size shouldBe 1
                         it.bekreftelser.first() should { bekreftelse ->
                             bekreftelse.gjelderFra shouldBe periode.startet.tidspunkt
-                            bekreftelse.gjelderTil shouldBe fristForNesteBekreftelse(
+                            bekreftelse.gjelderTil shouldBe sluttTidForBekreftelsePeriode(
                                 periode.startet.tidspunkt,
-                                interval,
-                                startTime
+                                interval
                             )
                             bekreftelse.tilstandsLogg.asList().size shouldBe 1
                             bekreftelse.has<IkkeKlarForUtfylling>() shouldBe true
@@ -300,7 +308,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
         "KlarForUtfylling og BekreftelseTilgjengelig" {
             with(ApplicationTestContext(initialWallClockTime = startTime)) {
                 with(kafkaKeyContext()) {
-                    val (interval, _, tilgjengeligOffset, _) = applicationConfig.bekreftelseIntervals
+                    val (_, interval, _, tilgjengeligOffset, _) = applicationConfig.bekreftelseKonfigurasjon
                     val (id, key, periode) = periode(
                         identitetsnummer = identitetsnummer,
                         startetMetadata = metadata(tidspunkt = startTime)
@@ -326,10 +334,9 @@ class BekreftelsePunctuatorTest : FreeSpec({
                         it.bekreftelser.size shouldBe 1
                         it.bekreftelser.first() should { bekreftelse ->
                             bekreftelse.gjelderFra shouldBe periode.startet.tidspunkt
-                            bekreftelse.gjelderTil shouldBe fristForNesteBekreftelse(
+                            bekreftelse.gjelderTil shouldBe sluttTidForBekreftelsePeriode(
                                 periode.startet.tidspunkt,
-                                interval,
-                                startTime
+                                interval
                             )
                             bekreftelse.tilstandsLogg.asList().size shouldBe 2
                             bekreftelse.has<IkkeKlarForUtfylling>() shouldBe true
@@ -348,7 +355,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
         "VenterSvar og LeveringsfristUtloept" {
             with(ApplicationTestContext(initialWallClockTime = startTime)) {
                 with(kafkaKeyContext()) {
-                    val (interval, _, tilgjengeligOffset, _) = applicationConfig.bekreftelseIntervals
+                    val (_, interval, _, tilgjengeligOffset, _) = applicationConfig.bekreftelseKonfigurasjon
                     val (id, key, periode) = periode(
                         identitetsnummer = identitetsnummer,
                         startetMetadata = metadata(tidspunkt = startTime)
@@ -381,10 +388,9 @@ class BekreftelsePunctuatorTest : FreeSpec({
                         it.bekreftelser.size shouldBe 1
                         it.bekreftelser.first() should { bekreftelse ->
                             bekreftelse.gjelderFra shouldBe periode.startet.tidspunkt
-                            bekreftelse.gjelderTil shouldBe fristForNesteBekreftelse(
+                            bekreftelse.gjelderTil shouldBe sluttTidForBekreftelsePeriode(
                                 periode.startet.tidspunkt,
-                                interval,
-                                startTime
+                                interval
                             )
                             bekreftelse.tilstandsLogg.asList().size shouldBe 3
                             bekreftelse.has<IkkeKlarForUtfylling>() shouldBe true
@@ -405,7 +411,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
         "VenterSvar og RegisterGracePeriodeGjenstaaende" {
             with(ApplicationTestContext(initialWallClockTime = startTime)) {
                 with(kafkaKeyContext()) {
-                    val (interval, _, tilgjengeligOffset, varselFoerGraceperiodeUtloept) = applicationConfig.bekreftelseIntervals
+                    val (_, interval, _, tilgjengeligOffset, varselFoerGraceperiodeUtloept) = applicationConfig.bekreftelseKonfigurasjon
                     val (id, key, periode) = periode(
                         identitetsnummer = identitetsnummer,
                         startetMetadata = metadata(tidspunkt = startTime)
@@ -435,10 +441,9 @@ class BekreftelsePunctuatorTest : FreeSpec({
                         it.bekreftelser.size shouldBe 1
                         it.bekreftelser.first() should { bekreftelse ->
                             bekreftelse.gjelderFra shouldBe periode.startet.tidspunkt
-                            bekreftelse.gjelderTil shouldBe fristForNesteBekreftelse(
+                            bekreftelse.gjelderTil shouldBe sluttTidForBekreftelsePeriode(
                                 periode.startet.tidspunkt,
-                                interval,
-                                startTime
+                                interval
                             )
                             bekreftelse.tilstandsLogg.asList().size shouldBe 4
                             bekreftelse.has<IkkeKlarForUtfylling>() shouldBe true
@@ -460,7 +465,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
         "GracePeriodeUtloept og RegisterGracePeriodeUtloept" {
             with(ApplicationTestContext(initialWallClockTime = startTime)) {
                 with(kafkaKeyContext()) {
-                    val (interval, _, tilgjengeligOffset, varselFoerGraceperiodeUtloept) = applicationConfig.bekreftelseIntervals
+                    val (_, interval, _, tilgjengeligOffset, varselFoerGraceperiodeUtloept) = applicationConfig.bekreftelseKonfigurasjon
                     val (id, key, periode) = periode(
                         identitetsnummer = identitetsnummer,
                         startetMetadata = metadata(tidspunkt = startTime)
@@ -492,10 +497,9 @@ class BekreftelsePunctuatorTest : FreeSpec({
                         it.bekreftelser.size shouldBe 1
                         it.bekreftelser.first() should { bekreftelse ->
                             bekreftelse.gjelderFra shouldBe periode.startet.tidspunkt
-                            bekreftelse.gjelderTil shouldBe fristForNesteBekreftelse(
+                            bekreftelse.gjelderTil shouldBe sluttTidForBekreftelsePeriode(
                                 periode.startet.tidspunkt,
-                                interval,
-                                startTime
+                                interval
                             )
                             bekreftelse.tilstandsLogg.asList().size shouldBe 5
                             bekreftelse.has<IkkeKlarForUtfylling>() shouldBe true

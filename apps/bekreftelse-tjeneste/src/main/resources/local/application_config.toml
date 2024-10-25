@@ -1,4 +1,5 @@
-[bekreftelseIntervals]
+[bekreftelseKonfigurasjon]
+migreringstidspunkt = "2020-01-06T23:00:00Z"
 interval = "P14D"
 graceperiode = "P7D"
 tilgjengeligOffset = "P3D"
