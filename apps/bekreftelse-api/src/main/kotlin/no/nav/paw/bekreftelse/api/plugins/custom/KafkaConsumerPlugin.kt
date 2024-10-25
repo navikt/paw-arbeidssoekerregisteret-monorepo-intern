@@ -64,6 +64,7 @@ val KafkaConsumerPlugin: ApplicationPlugin<KafkaConsumerPluginConfig> =
             application.log.info("Stopper Kafka Consumer")
             pollingFlag.set(false)
             consumeJob?.cancel()
+            consumer.unsubscribe()
             consumer.close(shutDownTimeout)
         }
 

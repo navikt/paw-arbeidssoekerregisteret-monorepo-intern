@@ -1,6 +1,4 @@
-import org.gradle.configurationcache.extensions.capitalized
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
@@ -23,6 +21,7 @@ dependencies {
     implementation(project(":lib:kafka"))
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:kafka-key-generator-client"))
+    implementation(project(":lib:pdl-client"))
     implementation(project(":domain:arbeidssoeker-regler"))
     implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
     implementation(libs.micrometer.registryPrometheus)
@@ -36,7 +35,6 @@ dependencies {
     implementation(libs.nav.common.auditLog)
     implementation(libs.nav.common.log)
     implementation(libs.poao.tilgangClient)
-    implementation(libs.paw.pdl.client)
     implementation(libs.logbackClassic)
     implementation(libs.logstashLogbackEncoder)
     implementation(libs.kafka.clients)

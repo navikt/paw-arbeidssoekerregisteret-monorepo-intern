@@ -13,7 +13,7 @@ val jvmMajorVersion: String by project
 dependencies {
     // PAW
     implementation(project(":lib:hoplite-config"))
-    implementation(libs.paw.pdl.client)
+    implementation(project(":lib:pdl-client"))
 
     // NAV
     implementation(libs.nav.common.log)

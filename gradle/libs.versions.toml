@@ -1,6 +1,4 @@
 [versions]
-pawPdlClientVersion = "24.10.18.41-1"
-pawAaregClientVersion = "24.07.04.18-1"
 noNavSecurityVersion = "5.0.5"
 noNavCommonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
 arbeidssokerregisteretVersion = "1.9348086045.48-1"
@@ -68,8 +66,6 @@ opentelemetry-ktor = { group = "io.opentelemetry.instrumentation", name = "opent
 opentelemetry-annotations = { group = "io.opentelemetry.instrumentation", name = "opentelemetry-instrumentation-annotations", version.ref = "otelInstrumentationVersion" }
 micrometerCore = { group = "io.micrometer", name = "micrometer-core", version.ref = "micrometerVersion" }
 micrometer-registryPrometheus = { group = "io.micrometer", name = "micrometer-registry-prometheus", version.ref = "micrometerVersion" }
-paw-pdl-client = { group = "no.nav.paw", name = "pdl-client", version.ref = "pawPdlClientVersion" }
-paw-aareg-client = { group = "no.nav.paw", name = "aareg-client", version.ref = "pawAaregClientVersion" }
 paw-schema-main = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "main-avro-schema", version.ref = "arbeidssokerregisteretVersion" }
 kafka-clients = { group = "org.apache.kafka", name = "kafka-clients", version.ref = "orgApacheKafkaVersion" }
 kafka-streams-core = { group = "org.apache.kafka", name = "kafka-streams", version.ref = "orgApacheKafkaVersion" }
