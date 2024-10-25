@@ -1,0 +1,74 @@
+query($identer: [ID!]!, $historisk: Boolean) {
+    hentPersonBolk(identer: $identer) {
+        ident
+        person {
+            foedsel {
+                foedselsdato
+                foedselsaar
+            }
+            statsborgerskap(historikk: $historisk) {
+                land
+                metadata {
+                    endringer {
+                        type
+                        registrert
+                        kilde
+                    }
+                }
+            }
+            opphold(historikk: $historisk) {
+                oppholdFra
+                oppholdTil
+                type
+                metadata {
+                    endringer {
+                        type
+                        registrert
+                        kilde
+                    }
+                }
+            }
+            folkeregisterpersonstatus(historikk: $historisk) {
+                forenkletStatus
+                metadata {
+                    endringer {
+                        type
+                        registrert
+                        kilde
+                    }
+                }
+            }
+            bostedsadresse(historikk: $historisk) {
+                angittFlyttedato
+                gyldigFraOgMed
+                gyldigTilOgMed
+                vegadresse {
+                    kommunenummer
+                }
+                matrikkeladresse {
+                    kommunenummer
+                }
+                ukjentBosted {
+                    bostedskommune
+                }
+                utenlandskAdresse {
+                    landkode
+                }
+            }
+            innflyttingTilNorge {
+                folkeregistermetadata {
+                    gyldighetstidspunkt
+                    ajourholdstidspunkt
+                }
+            }
+            utflyttingFraNorge {
+                utflyttingsdato
+                folkeregistermetadata {
+                    gyldighetstidspunkt
+                    ajourholdstidspunkt
+                }
+            }
+        }
+        code
+    }
+}

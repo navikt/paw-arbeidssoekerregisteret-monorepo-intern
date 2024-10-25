@@ -1,0 +1,97 @@
+{
+  "data": {
+    "hentIdenter": {
+      "identer": [
+        {
+          "ident": "09127821914",
+          "gruppe": "FOLKEREGISTERIDENT"
+        },
+        {
+          "ident": "2649500819544",
+          "gruppe": "AKTORID"
+        }
+      ]
+    },
+
+    "hentGeografiskTilknytning": {
+      "gtType": "KOMMUNE",
+      "gtKommune": "1851",
+      "gtBydel": null,
+      "gtLand": null
+    },
+
+    "hentPerson": {
+      "navn": [
+        {
+          "fornavn": "NILS",
+          "etternavn": "FALSKESEN",
+          "metadata": {
+            "master": "Freg"
+          }
+        }
+      ],
+      "bostedsadresse": [
+        {
+          "gyldigFraOgMed": "2014-07-29T00:00",
+          "angittFlyttedato": "2014-07-29",
+          "vegadresse": {
+            "kommunenummer": "1221"
+          }
+        },
+        {
+          "gyldigFraOgMed": "2016-02-05T00:00",
+          "angittFlyttedato": "2016-01-26",
+          "gyldigTilOgMed": null,
+          "vegadresse": {
+            "kommunenummer": "1106"
+          }
+        },
+        {
+          "gyldigFraOgMed": "2014-02-05T00:00",
+          "angittFlyttedato": "2014-02-02",
+          "vegadresse": {
+            "kommunenummer": "1106"
+          }
+        },
+        {
+          "gyldigFraOgMed": "2017-05-03T00:00",
+          "angittFlyttedato": "2017-05-03",
+          "ukjentBosted": {
+            "bostedskommune": "1106"
+          }
+        },
+        {
+          "gyldigFraOgMed": "2014-05-09T00:00",
+          "angittFlyttedato": "2014-05-08",
+          "vegadresse": {
+            "kommunenummer": "1221"
+          }
+        },
+        {
+          "gyldigFraOgMed": "2015-08-13T00:00",
+          "angittFlyttedato": "2015-08-13",
+          "vegadresse": {
+            "kommunenummer": "0626"
+          }
+        }
+      ],
+      "statsborgerskap": [
+        {
+          "land": "NOR"
+        }
+      ],
+      "foedsel": [
+        {
+          "foedselsdato": "1984-01-31"
+        }
+      ],
+      "doedsfall": [],
+      "adressebeskyttelse": [],
+      "kjoenn": [
+        {
+          "kjoenn": "MANN"
+        }
+      ]
+    }
+  }
+}

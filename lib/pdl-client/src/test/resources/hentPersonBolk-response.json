@@ -1,0 +1,75 @@
+{
+  "data": {
+    "hentPersonBolk": [
+      {
+        "ident": "2649500819544",
+        "person": {
+          "statsborgerskap": [
+            {
+              "land": "NOR",
+              "metadata": {
+                "endringer": [{
+                  "type:": "OPPRETT",
+                  "registrert": "2010-01-20",
+                  "kilde": "FOLKEREGISTERET"
+                }]
+              }
+            }
+          ],
+          "foedsel": [
+            {
+              "foedselsdato": "1986-11-26",
+              "foedselsaar": "1986"
+            }
+          ],
+          "opphold": [
+            {
+              "oppholdFra": "2010-01-20",
+              "oppholdTil": "2022-01-20",
+              "type": "PERMANENT",
+              "metadata": {
+                "endringer": [
+                  {
+                    "type:": "OPPRETT",
+                    "registrert": "2010-01-20",
+                    "kilde": "FOLKEREGISTERET"
+                  }
+                ]
+              }
+            }
+          ],
+          "folkeregisterpersonstatus": [
+            {
+              "forenkletStatus": "bosattEtterFolkeregisterloven",
+              "metadata": {
+                "endringer": [
+                  {
+                    "type:": "OPPRETT",
+                    "registrert": "2010-01-20",
+                    "kilde": "FOLKEREGISTERET"
+                  }
+                ]
+              }
+            }
+          ],
+          "bostedsadresse": [
+            {
+              "angittFlyttedato": "2010-01-20",
+              "gyldigFraOgMed": "2010-01-20",
+              "gyldigTilOgMed": "2022-01-20",
+              "vegadresse": {
+                "kommunenummer": "0301"
+              },
+              "matrikkeladresse": null,
+              "ukjentBosted": null,
+              "utenlandskAdresse": null
+            }
+          ],
+          "innflyttingTilNorge": [],
+          "utflyttingFraNorge": []
+        },
+        "code": "ok"
+      }
+    ]
+  }
+}
