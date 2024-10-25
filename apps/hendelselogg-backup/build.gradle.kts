@@ -1,4 +1,3 @@
-import org.gradle.configurationcache.extensions.capitalized
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
@@ -107,7 +106,7 @@ val generatedCodeOutputDir = "${layout.buildDirectory.get()}/generated/"
 mapOf(
     "${layout.projectDirectory}/src/main/resources/openapi/Brukerstoette.yaml" to "${generatedCodePackageName}.brukerstoette"
 ).map { (openApiDocFile, pkgName) ->
-    val taskName = "generate${pkgName.capitalized()}"
+    val taskName = "generate${pkgName.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}"
     tasks.register(taskName, GenerateTask::class) {
         generatorName.set("kotlin-server")
         library = "ktor"
@@ -142,7 +141,7 @@ mapOf(
 mapOf(
     "${layout.projectDirectory}/src/main/resources/openapi/oppslags-api.yaml" to "${generatedCodePackageName}.oppslagsapi"
 ).map { (openApiDocFile, pkgName) ->
-    val taskName = "generate${pkgName.capitalized()}"
+    val taskName = "generate${pkgName.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}"
     tasks.register(taskName, GenerateTask::class) {
         generatorName.set("kotlin")
         library = "jvm-ktor"

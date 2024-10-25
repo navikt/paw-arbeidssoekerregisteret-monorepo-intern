@@ -1,9 +1,11 @@
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
     kotlin("jvm") version "2.0.21" apply false
+    kotlin("plugin.serialization") version "2.0.21" apply false
     id("com.google.cloud.tools.jib") version "3.4.4" apply false
     id("org.openapi.generator") version "7.9.0" apply false
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1" apply false
+    id("com.expediagroup.graphql") version "7.1.1" apply false
 }
 
 rootProject.name = "paw-arbeidssoekerregisteret-monorepo-intern"
@@ -14,6 +16,8 @@ include(
     "lib:kafka",
     "lib:kafka-streams",
     "lib:kafka-key-generator-client",
+    "lib:pdl-client",
+    "lib:aareg-client",
     "test:test-data-lib",
     "test:kafka-streams-test-functions",
     "domain:bekreftelse-interne-hendelser",

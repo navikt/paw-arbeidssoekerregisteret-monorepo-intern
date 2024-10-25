@@ -93,8 +93,8 @@ jib {
         environment = mapOf(
             "IMAGE_WITH_VERSION" to "${image ?: project.name}:${project.version}",
             "OTEL_INSTRUMENTATION_METHODS_INCLUDE" to ("io.ktor.server.routing.Routing[interceptor,executeResult];" +
-                "io.ktor.server.netty.NettyApplicationCallHandler[handleRequest,exceptionCaught];") +
-            "io.ktor.serialization.jackson.JacksonConverter[deserialize,serializeNullable]"
+                    "io.ktor.server.netty.NettyApplicationCallHandler[handleRequest,exceptionCaught];") +
+                    "io.ktor.serialization.jackson.JacksonConverter[deserialize,serializeNullable]"
         )
         jvmFlags = listOf("-XX:ActiveProcessorCount=4", "-XX:+UseZGC", "-XX:+ZGenerational")
     }
@@ -107,7 +107,7 @@ mapOf(
     "${layout.projectDirectory}/src/main/resources/openapi/opplysninger.yaml" to "${generatedCodePackageName}.opplysningermottatt",
     "${layout.projectDirectory}/src/main/resources/openapi/startstopp.yaml" to "${generatedCodePackageName}.startstopp"
 ).map { (openApiDocFile, pkgName) ->
-    val taskName = "generate${pkgName.capitalized()}"
+    val taskName = "generate${pkgName.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}"
     tasks.register(taskName, GenerateTask::class) {
         generatorName.set("kotlin-server")
         library = "ktor"

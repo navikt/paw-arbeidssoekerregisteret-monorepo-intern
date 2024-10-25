@@ -35,7 +35,7 @@ dependencies {
 
     // Serialization
     implementation(libs.ktor.serialization.jackson)
-    implementation(libs.ktor.serialization.json)
+    implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.jackson.datatypeJsr310)
 
     // Authentication

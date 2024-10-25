@@ -1,28 +1,23 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
-group = "no.nav.paw"
-
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
     id("com.expediagroup.graphql")
-    id("org.jmailen.kotlinter")
-    id("maven-publish")
 }
 
-tasks {
-    withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "21"
-    }
-    test {
-        useJUnitPlatform()
-    }
-    lintKotlinMain {
-        exclude("no/nav/paw/pdl/graphql/generated/**/*.kt")
-    }
-    formatKotlinMain {
-        exclude("no/nav/paw/pdl/graphql/generated/**/*.kt")
-    }
+val jvmMajorVersion: String by project
+
+dependencies {
+    api(libs.kotlinx.serialization.json)
+
+    implementation(libs.ktor.client.contentNegotiation)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.ktor.client.logging)
+    api(libs.graphql.ktor.client)
+
+    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.ktor.client.mock)
+    testImplementation(libs.kotlinx.coroutines.core)
 }
 
 java {
@@ -32,21 +27,6 @@ java {
     }
 }
 
-repositories {
-    mavenCentral()
-    mavenNav("*")
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("mavenJava") {
-            from(components["java"])
-        }
-    }
-    repositories {
-        mavenNav("paw-kotlin-clients")
-    }
-}
 
 graphql {
     client {
@@ -57,35 +37,6 @@ graphql {
     }
 }
 
-dependencies {
-    val coroutinesVersion: String by project
-    val kotlinSerializationVersion: String by project
-    val ktorVersion: String by project
-    val mockkVersion: String by project
-    val graphQLKotlinVersion: String by project
-
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinSerializationVersion")
-
-    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-    implementation("io.ktor:ktor-client-core:$ktorVersion")
-    implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
-    api("com.expediagroup:graphql-kotlin-ktor-client:$graphQLKotlinVersion")
-
-    testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
-    testImplementation("io.mockk:mockk:$mockkVersion")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-    testImplementation(kotlin("test"))
-}
-
-fun RepositoryHandler.mavenNav(repo: String): MavenArtifactRepository {
-    val githubPassword: String by project
-
-    return maven {
-        setUrl("https://maven.pkg.github.com/navikt/$repo")
-        credentials {
-            username = "x-access-token"
-            password = githubPassword
-        }
-    }
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }
