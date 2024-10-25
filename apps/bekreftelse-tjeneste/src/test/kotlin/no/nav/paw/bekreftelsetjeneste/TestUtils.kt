@@ -52,14 +52,18 @@ fun BekreftelseKonfigurasjon.bekreftelse(
     klarForUtfylling: KlarForUtfylling? = KlarForUtfylling(gjelderFra + interval - tilgjengeligOffset),
     venterSvar: VenterSvar? = VenterSvar(gjelderFra + interval),
     gracePeriodeVarselet: GracePeriodeVarselet? = GracePeriodeVarselet(gjelderFra + interval + varselFoerGraceperiodeUtloept),
-    gracePeriodeUtloept: GracePeriodeUtloept? = GracePeriodeUtloept(gjelderFra + interval + graceperiode)
+    gracePeriodeUtloept: GracePeriodeUtloept? = GracePeriodeUtloept(gjelderFra + interval + graceperiode),
+    levert: Levert? = null,
+    ansvarOvertattAvAndre: AnsvarOvertattAvAndre? = null,
 ): Bekreftelse = Bekreftelse(
     tilstandsLogg = listOfNotNull(
         ikkeKlarForUtfylling,
         klarForUtfylling,
         venterSvar,
         gracePeriodeVarselet,
-        gracePeriodeUtloept
+        gracePeriodeUtloept,
+        levert,
+        ansvarOvertattAvAndre
     ).sortedBy { it.timestamp }
         .let {
             BekreftelseTilstandsLogg(
