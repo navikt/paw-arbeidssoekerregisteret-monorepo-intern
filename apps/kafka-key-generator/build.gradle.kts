@@ -69,6 +69,7 @@ dependencies {
     testImplementation(libs.test.testContainers.postgresql)
     testImplementation(libs.ktor.server.testJvm)
     testImplementation(libs.ktor.client.mock)
+    testImplementation(libs.kafka.clients)
 }
 
 java {
