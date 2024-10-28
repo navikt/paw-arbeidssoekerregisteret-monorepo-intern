@@ -23,12 +23,14 @@ class KafkaKeys(private val database: Database) {
             .map { id -> id?.let(::ArbeidssoekerId) }
             .flatMap { id -> id?.let(::right) ?: left(Failure("database", FailureCode.DB_NOT_FOUND)) }
 
-    fun hent(arbeidssoekerIdRange: LongRange): Either<Failure, Map<Identitetsnummer, ArbeidssoekerId>> {
+    fun hent(currentPos: Long, maxSize: Int): Either<Failure, Map<Identitetsnummer, ArbeidssoekerId>> {
         return attempt {
             transaction(database) {
                 IdentitetTabell
                     .selectAll()
-                    .where { IdentitetTabell.kafkaKey inList arbeidssoekerIdRange.toList() }
+                    .where { IdentitetTabell.kafkaKey greaterEq currentPos and (IdentitetTabell.kafkaKey less (currentPos + maxSize)) }
+                    .orderBy(column = IdentitetTabell.kafkaKey, order = SortOrder.DESC)
+                    .limit(maxSize)
                     .associate {
                         Identitetsnummer(it[IdentitetTabell.identitetsnummer]) to ArbeidssoekerId(it[IdentitetTabell.kafkaKey])
                     }

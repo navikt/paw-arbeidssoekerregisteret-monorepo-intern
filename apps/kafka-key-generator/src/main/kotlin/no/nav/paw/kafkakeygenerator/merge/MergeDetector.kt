@@ -11,16 +11,24 @@ class MergeDetector(
     private val pdlIdentitesTjeneste: PdlIdentitesTjeneste,
     private val kafkaKeys: KafkaKeys
 ) {
-    suspend fun findMerges(batchSize: Long): Either<Failure, List<MergeDetected>> {
+    suspend fun findMerges(batchSize: Int): Either<Failure, List<MergeDetected>> {
         require(batchSize > 0) { "Batch size must be greater than 0" }
         return kafkaKeys.hentSisteArbeidssoekerId()
             .map { it.value }
-            .map { (it - batchSize)..it }
-            .suspendingFlatMap { processRange(it, right(emptyList())) }
+            .suspendingFlatMap { max ->
+                processRange(
+                    stopAt = max,
+                    maxSize = batchSize,
+                    currentPos = 0L,
+                    right(emptyList())
+                )
+            }
     }
 
     tailrec suspend fun processRange(
-        range: LongRange,
+        stopAt: Long,
+        maxSize: Int,
+        currentPos: Long,
         results: Either<Failure, List<MergeDetected>>
     ): Either<Failure, List<MergeDetected>> {
         return when (results) {
@@ -29,19 +37,20 @@ class MergeDetector(
             }
 
             is Right -> {
-                if (range.isEmpty()) {
+                if (currentPos >= stopAt) {
                     results
                 } else {
-                    val detected = kafkaKeys.hent(range)
+                    val storedData = kafkaKeys.hent(currentPos, maxSize)
+                    val detected = storedData
                         .suspendingFlatMap {
                             pdlIdentitesTjeneste.hentIdenter(it.keys.toList()).map { res -> it to res }
                         }
                         .map { (local, pdl) ->
                             detectMerges(local, pdl)
                         }.map(results.right::plus)
-                    val newStart = range.first - range.count()
-                    val newEnd = range.first
-                    processRange(newStart..<newEnd, detected)
+                    val newStart =
+                        storedData.fold({ -1L }, { it.values.maxOfOrNull(ArbeidssoekerId::value)?.plus(1) ?: -1 })
+                    processRange(stopAt, maxSize, newStart, detected)
                 }
             }
         }
