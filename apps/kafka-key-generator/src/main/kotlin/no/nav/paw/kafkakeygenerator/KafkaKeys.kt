@@ -9,6 +9,21 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 class KafkaKeys(private val database: Database) {
 
+    fun hent(arbeidssoekerIdRange: LongRange): Either<Failure, Map<Identitetsnummer, ArbeidssoekerId>> {
+        return attempt {
+            transaction(database) {
+                IdentitetTabell
+                    .selectAll()
+                    .where { IdentitetTabell.kafkaKey inList arbeidssoekerIdRange.toList() }
+                    .associate {
+                        Identitetsnummer(it[IdentitetTabell.identitetsnummer]) to ArbeidssoekerId(it[IdentitetTabell.kafkaKey])
+                    }
+            }
+        }.mapToFailure { exception ->
+            Failure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
+        }
+    }
+
     fun hent(identiteter: List<String>): Either<Failure, Map<String, ArbeidssoekerId>> =
         attempt {
             transaction(database) {
