@@ -18,5 +18,6 @@ data class PdlData(
 
 data class PdlId(
     val gruppe: String,
-    val id: String
+    val id: String,
+    val gjeldende: Boolean
 )

@@ -54,7 +54,11 @@ class Applikasjon(
                         {
                             PdlData(
                                 error = null,
-                                id = it.map { identInfo -> PdlId(identInfo.gruppe.name, identInfo.ident) })
+                                id = it.map { identInfo -> PdlId(
+                                    gruppe = identInfo.gruppe.name,
+                                    id = identInfo.ident,
+                                    gjeldende = !identInfo.historisk
+                                ) })
                         }
                     )
                 )
