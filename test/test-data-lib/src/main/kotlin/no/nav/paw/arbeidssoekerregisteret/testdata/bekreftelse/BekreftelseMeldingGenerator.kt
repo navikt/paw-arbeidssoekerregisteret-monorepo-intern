@@ -26,7 +26,7 @@ fun bekreftelseMelding(
         .setSvar(
             Svar
             .newBuilder()
-            .setSendtInn(
+            .setSendtInnAv(
                 Metadata
                     .newBuilder()
                     .setTidspunkt(Instant.now())

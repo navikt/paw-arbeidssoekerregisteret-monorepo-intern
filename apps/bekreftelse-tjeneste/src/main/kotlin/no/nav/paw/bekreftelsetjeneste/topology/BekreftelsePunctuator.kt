@@ -6,8 +6,8 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjenstaaendeTid
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
-import no.nav.paw.bekreftelsetjeneste.ansvar.Ansvar
-import no.nav.paw.bekreftelsetjeneste.ansvar.WallClock
+import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
+import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import org.apache.kafka.streams.KeyValue
@@ -21,20 +21,20 @@ import java.util.*
 private val punctuatorLogger = LoggerFactory.getLogger("punctuator.bekreftelse")
 fun bekreftelsePunctuator(
     interntilstandStateStoreName: String,
-    ansvarStateStoreName: String,
+    paaVegneAvTilstandStateStoreName: String,
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
     timestamp: Instant,
     ctx: ProcessorContext<Long, BekreftelseHendelse>
 ) {
     val internTilstandStateStore: InternTilstandStateStore = ctx.getStateStore(interntilstandStateStoreName)
-    val ansvarStateStore: AnsvarStateStore = ctx.getStateStore(ansvarStateStoreName)
+    val paaVegneAvTilstandStateStore: PaaVegneAvTilstandStateStore = ctx.getStateStore(paaVegneAvTilstandStateStoreName)
 
     internTilstandStateStore
         .all()
         .use { states ->
             states
                 .asSequence()
-                .map { (_, tilstand) -> tilstand to ansvarStateStore.get(tilstand.periode.periodeId) }
+                .map { (_, tilstand) -> tilstand to paaVegneAvTilstandStateStore.get(tilstand.periode.periodeId) }
                 .prosessererBekreftelser(bekreftelseKonfigurasjon, WallClock(timestamp))
                 .forEach { (updatedState, bekreftelseHendelser) ->
                     bekreftelseHendelser.forEach {
@@ -45,12 +45,12 @@ fun bekreftelsePunctuator(
         }
 }
 
-fun Sequence<Pair<InternTilstand, Ansvar?>>.prosessererBekreftelser(
+fun Sequence<Pair<InternTilstand, PaaVegneAvTilstand?>>.prosessererBekreftelser(
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
     wallClock: WallClock
 ): Sequence<Pair<InternTilstand, List<BekreftelseHendelse>>> =
-    filter { (internTilstand, ansvar) ->
-        (ansvar == null)
+    filter { (internTilstand, paaVegneAvTilstand) ->
+        (paaVegneAvTilstand == null)
             .also { result ->
                 punctuatorLogger.trace(
                     "Periode {}, registeret har ansvar: {}",

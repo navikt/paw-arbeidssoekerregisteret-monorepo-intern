@@ -1,7 +1,7 @@
 package no.nav.paw.bekreftelsetjeneste.topology
 
 import kotlinx.coroutines.runBlocking
-import no.nav.paw.bekreftelsetjeneste.ansvar.Ansvar
+import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
 import no.nav.paw.bekreftelsetjeneste.context.ApplicationContext
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstand
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
@@ -12,14 +12,14 @@ import org.apache.kafka.streams.state.KeyValueStore
 import java.util.*
 
 typealias InternTilstandStateStore = KeyValueStore<UUID, InternTilstand>
-typealias AnsvarStateStore = KeyValueStore<UUID, Ansvar>
+typealias PaaVegneAvTilstandStateStore = KeyValueStore<UUID, PaaVegneAvTilstand>
 
 fun StreamsBuilder.buildTopology(
     applicationContext: ApplicationContext
 ): Topology {
     buildPeriodeStream(applicationContext.applicationConfig, applicationContext.kafkaKeysClient)
     buildBekreftelseStream(applicationContext.applicationConfig)
-    byggAnsvarsStroem(
+    byggBekreftelsePaaVegneAvStroem(
         registry = applicationContext.prometheusMeterRegistry,
         kafkaTopologyConfig = applicationContext.applicationConfig.kafkaTopology,
         bekreftelseHendelseSerde = applicationContext.bekreftelseHendelseSerde

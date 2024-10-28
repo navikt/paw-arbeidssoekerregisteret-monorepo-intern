@@ -6,7 +6,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
-import no.nav.paw.bekreftelsetjeneste.ansvar.WallClock
+import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
 import no.nav.paw.bekreftelsetjeneste.gracePeriodeUtloeper
 import no.nav.paw.bekreftelsetjeneste.internTilstand
 import no.nav.paw.bekreftelsetjeneste.standardIntervaller

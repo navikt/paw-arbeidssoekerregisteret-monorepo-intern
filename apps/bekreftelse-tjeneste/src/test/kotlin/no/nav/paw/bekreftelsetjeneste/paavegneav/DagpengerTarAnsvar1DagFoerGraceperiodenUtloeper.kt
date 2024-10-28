@@ -1,13 +1,12 @@
-package no.nav.paw.bekreftelsetjeneste.ansvar
+package no.nav.paw.bekreftelsetjeneste.paavegneav
 
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import no.nav.paw.bekreftelse.ansvar.v1.vo.TarAnsvar
-import no.nav.paw.bekreftelse.internehendelser.AndreHarOvertattAnsvar
+import no.nav.paw.bekreftelse.internehendelser.BekreftelsePaaVegneAvStartet
+import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
 import no.nav.paw.bekreftelsetjeneste.*
-import no.nav.paw.bekreftelsetjeneste.tilstand.AnsvarOvertattAvAndre
 import no.nav.paw.bekreftelsetjeneste.tilstand.leggTilNyEllerOppdaterBekreftelse
 import no.nav.paw.bekreftelsetjeneste.tilstand.sisteTilstand
 import no.nav.paw.test.days
@@ -27,26 +26,26 @@ class DagpengerTarAnsvar1DagFoerGraceperiodenUtloeper : FreeSpec({
                 gracePeriodeUtloept = null
             )
         )
-        val dagpengerTarAnsvar = no.nav.paw.arbeidssoekerregisteret.testdata.bekreftelse.tarAnsvar(
+        val dagpengerTarAnsvar = no.nav.paw.arbeidssoekerregisteret.testdata.bekreftelse.startPaaVegneAv(
             periodeId = tilstand.periode.periodeId,
-            bekreftelsesloesning = no.nav.paw.bekreftelse.ansvar.v1.vo.Bekreftelsesloesning.DAGPENGER,
+            bekreftelsesloesning = no.nav.paw.bekreftelse.paavegneav.v1.vo.Bekreftelsesloesning.DAGPENGER,
         )
-        val handlinger = haandterAnsvarEndret(
+        val handlinger = haandterBekreftelsePaaVegneAvEndret(
             wallclock = WallClock(intervaller.gracePeriodeUtloeper(periodeStart) - 1.days),
             tilstand = tilstand,
-            ansvar = null,
-            ansvarEndret = dagpengerTarAnsvar
+            paaVegneAvTilstand = null,
+            paaVegneAv = dagpengerTarAnsvar
         )
         "Ansvar skal skrives til key-value store" {
-            handlinger.assertExactlyOne<Handling, SkrivAnsvar> {
+            handlinger.assertExactlyOne<Handling, SkrivBekreftelsePaaVegneAv> {
                 id shouldBe tilstand.periode.periodeId
-                value shouldBe Ansvar(
+                value shouldBe PaaVegneAvTilstand(
                     periodeId = tilstand.periode.periodeId,
-                    ansvarlige = listOf(
-                        Ansvarlig(
+                    internPaaVegneAvList = listOf(
+                        InternPaaVegneAv(
                             loesning = Loesning.DAGPENGER,
-                            intervall = Duration.ofMillis((dagpengerTarAnsvar.handling as TarAnsvar).intervalMS),
-                            gracePeriode = Duration.ofMillis((dagpengerTarAnsvar.handling as TarAnsvar).graceMS)
+                            intervall = Duration.ofMillis((dagpengerTarAnsvar.handling as Start).intervalMS),
+                            gracePeriode = Duration.ofMillis((dagpengerTarAnsvar.handling as Start).graceMS)
                         )
                     )
                 )
@@ -54,7 +53,7 @@ class DagpengerTarAnsvar1DagFoerGraceperiodenUtloeper : FreeSpec({
         }
         "AndreHarOvertattAnsvar hendelse skal sendes" {
             handlinger.assertExactlyOne<Handling, SendHendelse> {
-                hendelse.shouldBeInstanceOf<AndreHarOvertattAnsvar>()
+                hendelse.shouldBeInstanceOf<BekreftelsePaaVegneAvStartet>()
                 hendelse.periodeId shouldBe tilstand.periode.periodeId
             }
         }
@@ -63,7 +62,7 @@ class DagpengerTarAnsvar1DagFoerGraceperiodenUtloeper : FreeSpec({
                 handlinger.assertExactlyOne<Handling, SkrivInternTilstand> {
                     id shouldBe tilstand.periode.periodeId
                     value.bekreftelser.size shouldBe 1
-                    value.bekreftelser.first().sisteTilstand().shouldBeInstanceOf<AnsvarOvertattAvAndre>()
+                    value.bekreftelser.first().sisteTilstand().shouldBeInstanceOf<no.nav.paw.bekreftelsetjeneste.tilstand.InternBekreftelsePaaVegneAvStartet>()
                 }
             }
         }

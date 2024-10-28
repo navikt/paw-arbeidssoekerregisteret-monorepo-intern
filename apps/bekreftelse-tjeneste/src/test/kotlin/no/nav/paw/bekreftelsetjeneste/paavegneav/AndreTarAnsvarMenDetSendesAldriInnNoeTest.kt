@@ -1,12 +1,12 @@
-package no.nav.paw.bekreftelsetjeneste.ansvar
+package no.nav.paw.bekreftelsetjeneste.paavegneav
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import no.nav.paw.arbeidssoekerregisteret.testdata.bekreftelse.avslutterAnsvar
-import no.nav.paw.arbeidssoekerregisteret.testdata.bekreftelse.tarAnsvar
+import no.nav.paw.arbeidssoekerregisteret.testdata.bekreftelse.stoppPaaVegneAv
+import no.nav.paw.arbeidssoekerregisteret.testdata.bekreftelse.startPaaVegneAv
 import no.nav.paw.arbeidssoekerregisteret.testdata.kafkaKeyContext
 import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.periode
-import no.nav.paw.bekreftelse.internehendelser.AndreHarOvertattAnsvar
+import no.nav.paw.bekreftelse.internehendelser.BekreftelsePaaVegneAvStartet
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelsetjeneste.ApplicationTestContext
 import no.nav.paw.test.assertEvent
@@ -26,10 +26,10 @@ class AndreTarAnsvarMenDetSendesAldriInnNoeTest: FreeSpec({
                     bekreftelseHendelseloggTopicOut.assertNoMessage()
                 }
                 "Når andre tar ansvar sendes en 'AndreHarOvertattAnsvar' hendelse" {
-                    val tarAnsvar = tarAnsvar(periodeId = periode.id)
-                    ansvarsTopic.pipeInput(key, tarAnsvar)
+                    val tarAnsvar = startPaaVegneAv(periodeId = periode.id)
+                    bekreftelsePaaVegneAvTopic.pipeInput(key, tarAnsvar)
                     logger.info("Tar ansvar: $tarAnsvar")
-                    bekreftelseHendelseloggTopicOut.assertEvent { hedelse: AndreHarOvertattAnsvar ->
+                    bekreftelseHendelseloggTopicOut.assertEvent { hedelse: BekreftelsePaaVegneAvStartet ->
                         hedelse.periodeId shouldBe periode.id
                         hedelse.arbeidssoekerId shouldBe id
                     }
@@ -44,7 +44,7 @@ class AndreTarAnsvarMenDetSendesAldriInnNoeTest: FreeSpec({
                     bekreftelseHendelseloggTopicOut.assertNoMessage()
                 }
                 "Når andre avslutter ansvar blir en ny bekreftelse tilgjengelig" {
-                    ansvarsTopic.pipeInput(key, avslutterAnsvar(periodeId = periode.id))
+                    bekreftelsePaaVegneAvTopic.pipeInput(key, stoppPaaVegneAv(periodeId = periode.id))
                     testDriver.advanceWallClockTime(1.days)
                     bekreftelseHendelseloggTopicOut.assertEvent { hendelse: BekreftelseTilgjengelig ->
                         hendelse.gjelderFra shouldBe periode.startet.tidspunkt

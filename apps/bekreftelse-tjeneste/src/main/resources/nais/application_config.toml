@@ -7,11 +7,11 @@ tilgjengeligOffset = "${BEKREFTELSE_GRACEPERIODE}"
 [kafkaTopology]
 applicationIdSuffix = "${KAFKA_STREAMS_ID_SUFFIX}"
 internStateStoreName = "intern-tilstand"
-ansvarStateStoreName = "ansvar"
+bekreftelsePaaVegneAvStateStoreName = "paa-vegne-av-tilstand"
 periodeTopic = "${KAFKA_PAW_ARBEIDSSOKERPERIODER_TOPIC}"
 bekreftelseTopic = "${KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_TOPIC}"
 bekreftelseHendelseloggTopic = "${KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_HENDELSELOGG_TOPIC}"
-ansvarsTopic = "${KAFKA_PAW_ANSVARS_TOPIC}"
+bekreftelsePaaVegneAvTopic = "${KAFKA_PAW_BEKREFTELSE_PAA_VEGNE_AV_TOPIC}"
 punctuationInterval = "${KAFKA_PUNCTUATOR_INTERVAL}"
 
 [azureM2M]

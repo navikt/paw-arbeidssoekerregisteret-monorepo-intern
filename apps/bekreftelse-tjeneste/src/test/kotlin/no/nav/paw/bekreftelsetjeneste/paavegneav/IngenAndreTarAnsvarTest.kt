@@ -1,4 +1,4 @@
-package no.nav.paw.bekreftelsetjeneste.ansvar
+package no.nav.paw.bekreftelsetjeneste.paavegneav
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe

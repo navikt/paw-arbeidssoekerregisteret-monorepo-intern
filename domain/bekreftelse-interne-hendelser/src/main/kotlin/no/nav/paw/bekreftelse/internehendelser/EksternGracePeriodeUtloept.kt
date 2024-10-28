@@ -10,8 +10,8 @@ data class EksternGracePeriodeUtloept(
     override val periodeId: UUID,
     override val arbeidssoekerId: Long,
     override val hendelseTidspunkt: Instant,
-    val ansvarligNamespace: String,
-    val ansvarligId: String
+    val paaVegneAvNamespace: String,
+    val paaVegneAvId: String
 ) : BekreftelseHendelse {
     override val hendelseType: String = eksternGracePeriodeUtloeptHendelseType
 }

@@ -18,7 +18,7 @@ dependencies {
     implementation(project(":lib:kafka-key-generator-client"))
     implementation(project(":domain:main-avro-schema"))
     implementation(project(":domain:bekreftelse-interne-hendelser"))
-    implementation(project(":domain:bekreftelsesansvar-avro-schema"))
+    implementation(project(":domain:bekreftelse-paavegneav-avro-schema"))
     implementation(project(":domain:bekreftelsesmelding-avro-schema"))
 
     // Server

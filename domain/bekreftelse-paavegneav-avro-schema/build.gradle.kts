@@ -10,8 +10,8 @@ val schema by configurations.creating {
 }
 
 dependencies {
-    schema(libs.paw.schema.bekreftelsesansvar)
-    implementation(libs.paw.schema.bekreftelsesansvar)
+    schema(libs.paw.schema.bekreftelse.paavegneav)
+    implementation(libs.paw.schema.bekreftelse.paavegneav)
     api(libs.avro.core)
 }
 

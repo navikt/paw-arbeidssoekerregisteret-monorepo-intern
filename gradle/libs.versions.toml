@@ -2,7 +2,7 @@
 noNavSecurityVersion = "5.0.5"
 noNavCommonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
 arbeidssokerregisteretVersion = "1.9348086045.48-1"
-bekreftelseSchemaVersion = "24.10.21.12-1"
+bekreftelseSchemaVersion = "24.10.28.13-1"
 arrowVersion = "1.2.4"
 arrowJacksonIntegrationVersion = "0.14.1"
 comSksamuelHopliteVersion = "2.8.2"
@@ -103,7 +103,7 @@ database-flyway-core = { group = "org.flywaydb", name = "flyway-core", version.r
 database-flyway-postgres = { group = "org.flywaydb", name = "flyway-database-postgresql", version.ref = "flywayVersion" }
 database-hikari-connectionPool = { group = "com.zaxxer", name = "HikariCP", version.ref = "hikariVersion" }
 poao-tilgangClient = { group = "no.nav.poao-tilgang", name = "client", version = "2024.04.29_13.59-a0ddddd36ac9" }
-paw-schema-bekreftelsesansvar = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "bekreftelsesansvar-schema", version.ref = "bekreftelseSchemaVersion" }
+paw-schema-bekreftelse-paavegneav = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "bekreftelse-paavegneav-schema", version.ref = "bekreftelseSchemaVersion" }
 paw-schema-bekreftelsesmelding = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "bekreftelsesmelding-schema", version.ref = "bekreftelseSchemaVersion" }
 
 [bundles]

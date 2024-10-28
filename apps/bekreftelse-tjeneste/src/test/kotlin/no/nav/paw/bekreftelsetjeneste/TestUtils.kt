@@ -54,7 +54,7 @@ fun BekreftelseKonfigurasjon.bekreftelse(
     gracePeriodeVarselet: GracePeriodeVarselet? = GracePeriodeVarselet(gjelderFra + interval + varselFoerGraceperiodeUtloept),
     gracePeriodeUtloept: GracePeriodeUtloept? = GracePeriodeUtloept(gjelderFra + interval + graceperiode),
     levert: Levert? = null,
-    ansvarOvertattAvAndre: AnsvarOvertattAvAndre? = null,
+    internBekreftelsePaaVegneAvStartet: InternBekreftelsePaaVegneAvStartet? = null,
 ): Bekreftelse = Bekreftelse(
     tilstandsLogg = listOfNotNull(
         ikkeKlarForUtfylling,
@@ -63,7 +63,7 @@ fun BekreftelseKonfigurasjon.bekreftelse(
         gracePeriodeVarselet,
         gracePeriodeUtloept,
         levert,
-        ansvarOvertattAvAndre
+        internBekreftelsePaaVegneAvStartet
     ).sortedBy { it.timestamp }
         .let {
             BekreftelseTilstandsLogg(

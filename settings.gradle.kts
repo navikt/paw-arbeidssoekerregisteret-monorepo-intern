@@ -21,7 +21,7 @@ include(
     "test:test-data-lib",
     "test:kafka-streams-test-functions",
     "domain:bekreftelse-interne-hendelser",
-    "domain:bekreftelsesansvar-avro-schema",
+    "domain:bekreftelse-paavegneav-avro-schema",
     "domain:bekreftelsesmelding-avro-schema",
     "domain:main-avro-schema",
     "domain:interne-hendelser",

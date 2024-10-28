@@ -10,6 +10,7 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.internehendelser.*
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
+import no.nav.paw.bekreftelsetjeneste.tilstand.InternBekreftelsePaaVegneAvStartet
 import no.nav.paw.config.kafka.streams.Punctuation
 import no.nav.paw.config.kafka.streams.genericProcess
 import org.apache.kafka.common.serialization.Serdes
@@ -27,21 +28,21 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
             .genericProcess<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse, Long, BekreftelseHendelse>(
                 name = "meldingMottatt",
                 internStateStoreName,
-                ansvarStateStoreName,
+                bekreftelsePaaVegneAvStateStoreName,
                 punctuation = Punctuation(
                     punctuationInterval,
                     PunctuationType.WALL_CLOCK_TIME,
                     ::bekreftelsePunctuator
                         .partially1(internStateStoreName)
-                        .partially1(ansvarStateStoreName)
+                        .partially1(bekreftelsePaaVegneAvStateStoreName)
                         .partially1(applicationConfig.bekreftelseKonfigurasjon)
                 ),
             ) { record ->
                 val internTilstandStateStore = getStateStore<InternTilstandStateStore>(internStateStoreName)
-                val ansvarStateStore = getStateStore<AnsvarStateStore>(ansvarStateStoreName)
+                val paaVegneAvTilstandStateStore = getStateStore<PaaVegneAvTilstandStateStore>(bekreftelsePaaVegneAvStateStoreName)
 
                 val gjeldendeTilstand: InternTilstand? = retrieveState(internTilstandStateStore, record)
-                val ansvar = ansvarStateStore[record.value().periodeId]
+                val paaVegneAvTilstand = paaVegneAvTilstandStateStore[record.value().periodeId]
                 val melding = record.value()
 
                 if (gjeldendeTilstand == null) {
@@ -51,7 +52,7 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
                     meldingsLogger.warn("Melding mottatt for periode som ikke er aktiv/eksisterer")
                     return@genericProcess
                 }
-                val (oppdatertTilstand, hendelser) = haandterBekreftelseMottatt(gjeldendeTilstand, ansvar, melding)
+                val (oppdatertTilstand, hendelser) = haandterBekreftelseMottatt(gjeldendeTilstand, paaVegneAvTilstand, melding)
                 if (oppdatertTilstand != gjeldendeTilstand) {
                     internTilstandStateStore.put(oppdatertTilstand.periode.periodeId, oppdatertTilstand)
                 }
@@ -95,7 +96,7 @@ fun processPawNamespace(
     return when (val sisteTilstand = bekreftelse.sisteTilstand()) {
         is VenterSvar,
         is KlarForUtfylling,
-        is AnsvarOvertattAvAndre -> {
+        is InternBekreftelsePaaVegneAvStartet -> {
             val (hendelser, oppdatertBekreftelse) = behandleGyldigSvar(gjeldeneTilstand, hendelse, bekreftelse)
             Span.current().setAttribute("bekreftelse.tilstand", sisteTilstand.toString())
             gjeldeneTilstand.oppdaterBekreftelse(oppdatertBekreftelse) to hendelser

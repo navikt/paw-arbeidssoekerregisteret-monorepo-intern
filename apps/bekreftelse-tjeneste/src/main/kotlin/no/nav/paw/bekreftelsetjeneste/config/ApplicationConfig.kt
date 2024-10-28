@@ -33,11 +33,11 @@ data class BekreftelseKonfigurasjon(
 data class KafkaTopologyConfig(
     val applicationIdSuffix: String,
     val internStateStoreName: String,
-    val ansvarStateStoreName: String,
+    val bekreftelsePaaVegneAvStateStoreName: String,
     val periodeTopic: String,
     val bekreftelseTopic: String,
     val bekreftelseHendelseloggTopic: String,
-    val ansvarsTopic: String,
+    val bekreftelsePaaVegneAvTopic: String,
     val punctuationInterval: Duration,
     val shutdownTimeout: Duration = Duration.ofMinutes(5),
 )

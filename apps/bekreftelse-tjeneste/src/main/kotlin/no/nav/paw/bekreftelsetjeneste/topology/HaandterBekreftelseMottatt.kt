@@ -2,31 +2,31 @@ package no.nav.paw.bekreftelsetjeneste.topology
 
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
-import no.nav.paw.bekreftelsetjeneste.ansvar.Ansvar
-import no.nav.paw.bekreftelsetjeneste.ansvar.Loesning
+import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
+import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import kotlin.reflect.KClass
 
 val maksAntallBekreftelserEtterStatus = mapOf(
     Levert::class to 1,
-    AnsvarOvertattAvAndre::class to 4,
+    InternBekreftelsePaaVegneAvStartet::class to 4,
     GracePeriodeUtloept::class to 10
 )
 
 fun haandterBekreftelseMottatt(
     gjeldendeTilstand: InternTilstand,
-    ansvar: Ansvar?,
+    paaVegneAvTilstand: PaaVegneAvTilstand?,
     melding: no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 ): Pair<InternTilstand, List<BekreftelseHendelse>> {
     val (tilstand, hendelser) = if (melding.bekreftelsesloesning == Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET) {
         processPawNamespace(melding, gjeldendeTilstand)
     } else {
-        val ansvarlige = ansvar?.ansvarlige ?: emptyList()
-        if (ansvarlige.any { it.loesning == Loesning.from(melding.bekreftelsesloesning) }) {
+        val paaVegneAvList = paaVegneAvTilstand?.internPaaVegneAvList ?: emptyList()
+        if (paaVegneAvList.any { it.loesning == Loesning.from(melding.bekreftelsesloesning) }) {
             gjeldendeTilstand.leggTilNyEllerOppdaterBekreftelse(
                 Bekreftelse(
                     tilstandsLogg = BekreftelseTilstandsLogg(
-                        siste = Levert(melding.svar.sendtInn.tidspunkt),
+                        siste = Levert(melding.svar.sendtInnAv.tidspunkt),
                         tidligere = emptyList()
                     ),
                     bekreftelseId = melding.id,

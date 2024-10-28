@@ -5,13 +5,12 @@ import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import io.mockk.mockk
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
-import no.nav.paw.bekreftelse.ansvar.v1.AnsvarEndret
+import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
-import no.nav.paw.bekreftelsetjeneste.ansvar.AnsvarSerde
+import no.nav.paw.bekreftelsetjeneste.paavegneav.BekreftelsePaaVegneAvSerde
 import no.nav.paw.bekreftelsetjeneste.config.APPLICATION_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
 import no.nav.paw.bekreftelsetjeneste.context.ApplicationContext
@@ -35,7 +34,7 @@ import java.time.Instant
 import java.util.*
 
 class ApplicationTestContext(initialWallClockTime: Instant = Instant.now()) {
-    val ansvarsTopicSerde: Serde<AnsvarEndret> = opprettSerde()
+    val bekreftelsePaaVegneAvTopicSerde: Serde<PaaVegneAv> = opprettSerde()
     val bekreftelseSerde: Serde<Bekreftelse> = opprettSerde()
     val periodeTopicSerde: Serde<Periode> = opprettSerde()
     val hendelseLoggSerde: Serde<BekreftelseHendelse> = BekreftelseHendelseSerde()
@@ -60,9 +59,9 @@ class ApplicationTestContext(initialWallClockTime: Instant = Instant.now()) {
         )
         .addStateStore(
             Stores.keyValueStoreBuilder(
-                Stores.inMemoryKeyValueStore(applicationContext.applicationConfig.kafkaTopology.ansvarStateStoreName),
+                Stores.inMemoryKeyValueStore(applicationContext.applicationConfig.kafkaTopology.bekreftelsePaaVegneAvStateStoreName),
                 Serdes.UUID(),
-                AnsvarSerde()
+                BekreftelsePaaVegneAvSerde()
             )
         )
         .buildTopology(applicationContext)
@@ -81,10 +80,10 @@ class ApplicationTestContext(initialWallClockTime: Instant = Instant.now()) {
         bekreftelseSerde.serializer()
     )
 
-    val ansvarsTopic: TestInputTopic<Long, AnsvarEndret> = testDriver.createInputTopic(
-        applicationConfig.kafkaTopology.ansvarsTopic,
+    val bekreftelsePaaVegneAvTopic: TestInputTopic<Long, PaaVegneAv> = testDriver.createInputTopic(
+        applicationConfig.kafkaTopology.bekreftelsePaaVegneAvTopic,
         Serdes.Long().serializer(),
-        ansvarsTopicSerde.serializer()
+        bekreftelsePaaVegneAvTopicSerde.serializer()
     )
 
     val bekreftelseHendelseloggTopicOut: TestOutputTopic<Long, BekreftelseHendelse> = testDriver.createOutputTopic(

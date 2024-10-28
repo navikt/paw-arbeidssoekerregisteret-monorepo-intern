@@ -1,15 +1,15 @@
-package no.nav.paw.bekreftelsetjeneste.ansvar
+package no.nav.paw.bekreftelsetjeneste.paavegneav
 
-import no.nav.paw.bekreftelse.ansvar.v1.vo.Bekreftelsesloesning
+import no.nav.paw.bekreftelse.paavegneav.v1.vo.Bekreftelsesloesning
 import java.time.Duration
 import java.util.*
 
-data class Ansvar(
+data class PaaVegneAvTilstand(
     val periodeId: UUID,
-    val ansvarlige: List<Ansvarlig>
+    val internPaaVegneAvList: List<InternPaaVegneAv>
 )
 
-data class Ansvarlig(
+data class InternPaaVegneAv(
     val loesning: Loesning,
     val intervall: Duration,
     val gracePeriode: Duration
@@ -34,21 +34,21 @@ enum class Loesning {
     }
 }
 
-fun ansvar(
+fun bekreftelsePaaVegneAvTilstand(
     periodeId: UUID,
-    ansvarlig: Ansvarlig? = null
-): Ansvar = Ansvar(
+    internPaaVegneAv: InternPaaVegneAv? = null
+): PaaVegneAvTilstand = PaaVegneAvTilstand(
     periodeId = periodeId,
-    ansvarlige = listOfNotNull(ansvarlig)
+    internPaaVegneAvList = listOfNotNull(internPaaVegneAv)
 )
 
-operator fun Ansvar.plus(ansvarlig: Ansvarlig): Ansvar =
-    copy(ansvarlige = ansvarlige
-        .filterNot { it.loesning == ansvarlig.loesning} + ansvarlig
+operator fun PaaVegneAvTilstand.plus(internPaaVegneAv: InternPaaVegneAv): PaaVegneAvTilstand =
+    copy(internPaaVegneAvList = internPaaVegneAvList
+        .filterNot { it.loesning == internPaaVegneAv.loesning} + internPaaVegneAv
     )
 
-operator fun Ansvar?.minus(loesning: Loesning): Ansvar? =
-    this?.ansvarlige
+operator fun PaaVegneAvTilstand?.minus(loesning: Loesning): PaaVegneAvTilstand? =
+    this?.internPaaVegneAvList
         ?.filterNot { it.loesning == loesning }
-        ?.takeIf(List<Ansvarlig>::isNotEmpty)
-        ?.let { copy(ansvarlige = it) }
+        ?.takeIf(List<InternPaaVegneAv>::isNotEmpty)
+        ?.let { copy(internPaaVegneAvList = it) }

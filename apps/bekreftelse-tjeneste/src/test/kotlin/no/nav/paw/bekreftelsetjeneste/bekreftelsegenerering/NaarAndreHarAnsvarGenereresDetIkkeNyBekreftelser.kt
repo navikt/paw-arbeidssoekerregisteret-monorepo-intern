@@ -3,10 +3,10 @@ package no.nav.paw.bekreftelsetjeneste.bekreftelsegenerering
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import no.nav.paw.bekreftelsetjeneste.ansvar.Ansvarlig
-import no.nav.paw.bekreftelsetjeneste.ansvar.Loesning
-import no.nav.paw.bekreftelsetjeneste.ansvar.WallClock
-import no.nav.paw.bekreftelsetjeneste.ansvar.ansvar
+import no.nav.paw.bekreftelsetjeneste.paavegneav.InternPaaVegneAv
+import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
+import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
+import no.nav.paw.bekreftelsetjeneste.paavegneav.bekreftelsePaaVegneAvTilstand
 import no.nav.paw.bekreftelsetjeneste.bekreftelse
 import no.nav.paw.bekreftelsetjeneste.internTilstand
 import no.nav.paw.bekreftelsetjeneste.standardIntervaller
@@ -19,9 +19,9 @@ class NaarAndreHarAnsvarGenereresDetIkkeNyBekreftelser : FreeSpec({
     val intervaller = standardIntervaller
     val periodeStart = Instant.parse("2024-10-27T18:00:00Z")
     val internTilstand = internTilstand(periodeStart = periodeStart)
-    val ansvar = ansvar(
+    val ansvar = bekreftelsePaaVegneAvTilstand(
         periodeId = internTilstand.periode.periodeId,
-        ansvarlig = Ansvarlig(
+        internPaaVegneAv = InternPaaVegneAv(
             loesning = Loesning.DAGPENGER,
             intervall = intervaller.interval,
             gracePeriode = intervaller.graceperiode

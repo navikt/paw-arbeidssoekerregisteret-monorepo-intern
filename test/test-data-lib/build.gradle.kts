@@ -5,7 +5,7 @@ plugins {
 dependencies {
     implementation(project(":domain:bekreftelse-interne-hendelser"))
     implementation(project(":domain:bekreftelsesmelding-avro-schema"))
-    implementation(project(":domain:bekreftelsesansvar-avro-schema"))
+    implementation(project(":domain:bekreftelse-paavegneav-avro-schema"))
     implementation(project(":domain:main-avro-schema"))
     implementation(project(":lib:kafka-key-generator-client"))
 

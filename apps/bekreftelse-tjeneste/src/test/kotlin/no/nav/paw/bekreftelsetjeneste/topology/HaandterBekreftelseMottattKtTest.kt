@@ -6,7 +6,7 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import no.nav.paw.bekreftelsetjeneste.bekreftelse
 import no.nav.paw.bekreftelsetjeneste.standardIntervaller
-import no.nav.paw.bekreftelsetjeneste.tilstand.AnsvarOvertattAvAndre
+import no.nav.paw.bekreftelsetjeneste.tilstand.InternBekreftelsePaaVegneAvStartet
 import no.nav.paw.bekreftelsetjeneste.tilstand.Levert
 import no.nav.paw.test.days
 import no.nav.paw.test.seconds
@@ -22,7 +22,7 @@ class HaandterBekreftelseMottattKtTest : FreeSpec({
             standardIntervaller.bekreftelse(gracePeriodeUtloept = null, levert = Levert(Instant.now())),
             standardIntervaller.bekreftelse(
                 gracePeriodeUtloept = null,
-                ansvarOvertattAvAndre = AnsvarOvertattAvAndre(Instant.now())
+                internBekreftelsePaaVegneAvStartet = InternBekreftelsePaaVegneAvStartet(Instant.now())
             )
         )
         val result = bekrefteler.filterByStatusAndCount(maksAntallBekreftelserEtterStatus)

@@ -5,7 +5,7 @@ import io.ktor.server.engine.addShutdownHook
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.routing.routing
-import no.nav.paw.bekreftelsetjeneste.ansvar.AnsvarSerde
+import no.nav.paw.bekreftelsetjeneste.paavegneav.BekreftelsePaaVegneAvSerde
 import no.nav.paw.bekreftelsetjeneste.config.APPLICATION_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
 import no.nav.paw.bekreftelsetjeneste.config.SERVER_CONFIG_FILE_NAME
@@ -25,7 +25,6 @@ import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.state.Stores
 import org.slf4j.LoggerFactory
-import java.time.Instant
 
 fun main() {
     val logger = LoggerFactory.getLogger("no.nav.paw.logger.application")
@@ -57,9 +56,9 @@ fun Application.module(applicationConfig: ApplicationConfig) {
     )
     stream.addStateStore(
         Stores.keyValueStoreBuilder(
-            Stores.persistentKeyValueStore(applicationContext.applicationConfig.kafkaTopology.ansvarStateStoreName),
+            Stores.persistentKeyValueStore(applicationContext.applicationConfig.kafkaTopology.bekreftelsePaaVegneAvStateStoreName),
             Serdes.UUID(),
-            AnsvarSerde()
+            BekreftelsePaaVegneAvSerde()
         )
     )
     val kafkaTopology = stream.buildTopology(applicationContext)

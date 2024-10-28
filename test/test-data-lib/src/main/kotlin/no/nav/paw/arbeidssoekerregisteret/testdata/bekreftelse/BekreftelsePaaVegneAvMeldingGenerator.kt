@@ -1,22 +1,22 @@
 package no.nav.paw.arbeidssoekerregisteret.testdata.bekreftelse
 
-import no.nav.paw.bekreftelse.ansvar.v1.AnsvarEndret
-import no.nav.paw.bekreftelse.ansvar.v1.vo.AvslutterAnsvar
-import no.nav.paw.bekreftelse.ansvar.v1.vo.Bekreftelsesloesning
-import no.nav.paw.bekreftelse.ansvar.v1.vo.TarAnsvar
+import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
+import no.nav.paw.bekreftelse.paavegneav.v1.vo.Stopp
+import no.nav.paw.bekreftelse.paavegneav.v1.vo.Bekreftelsesloesning
+import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
 import java.time.Duration
 import java.util.UUID
 
 
-fun tarAnsvar(
+fun startPaaVegneAv(
     periodeId: UUID = UUID.randomUUID(),
     bekreftelsesloesning: Bekreftelsesloesning = Bekreftelsesloesning.DAGPENGER,
     grace: Duration = Duration.ofDays(14),
     interval: Duration = Duration.ofDays(7)
-): AnsvarEndret =
-    AnsvarEndret.newBuilder()
+): PaaVegneAv =
+    PaaVegneAv.newBuilder()
         .setHandling(
-            TarAnsvar
+            Start
                 .newBuilder()
                 .setGraceMS(grace.toMillis())
                 .setIntervalMS(interval.toMillis())
@@ -26,12 +26,12 @@ fun tarAnsvar(
         .setBekreftelsesloesning(bekreftelsesloesning)
         .build()
 
-fun avslutterAnsvar(
+fun stoppPaaVegneAv(
     periodeId: UUID = UUID.randomUUID(),
     bekreftelsesloesning: Bekreftelsesloesning = Bekreftelsesloesning.DAGPENGER
-): AnsvarEndret =
-    AnsvarEndret.newBuilder()
-        .setHandling(AvslutterAnsvar())
+): PaaVegneAv =
+    PaaVegneAv.newBuilder()
+        .setHandling(Stopp())
         .setBekreftelsesloesning(bekreftelsesloesning)
         .setPeriodeId(periodeId)
         .build()

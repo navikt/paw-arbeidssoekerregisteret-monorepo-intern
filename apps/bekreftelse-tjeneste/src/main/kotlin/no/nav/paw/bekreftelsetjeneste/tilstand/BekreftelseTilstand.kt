@@ -26,4 +26,4 @@ data class IkkeKlarForUtfylling(override val timestamp: Instant) : BekreftelseTi
 data class KlarForUtfylling(override val timestamp: Instant) : BekreftelseTilstand
 data class Levert(override val timestamp: Instant) : BekreftelseTilstand
 data class VenterSvar(override val timestamp: Instant) : BekreftelseTilstand
-data class AnsvarOvertattAvAndre(override val timestamp: Instant) : BekreftelseTilstand
+data class InternBekreftelsePaaVegneAvStartet(override val timestamp: Instant) : BekreftelseTilstand
