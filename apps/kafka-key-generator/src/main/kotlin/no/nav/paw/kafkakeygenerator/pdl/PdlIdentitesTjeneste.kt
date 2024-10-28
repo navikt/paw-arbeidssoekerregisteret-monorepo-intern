@@ -5,13 +5,35 @@ import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import no.nav.paw.kafkakeygenerator.vo.CallId
 import no.nav.paw.pdl.PdlClient
 import no.nav.paw.pdl.PdlException
+import no.nav.paw.pdl.graphql.generated.enums.IdentGruppe
 import no.nav.paw.pdl.graphql.generated.hentidenter.IdentInformasjon
 import no.nav.paw.pdl.hentIdenter
+import no.nav.paw.pdl.hentIdenterBolk
 
 private const val consumerId = "paw-arbeidssoekerregisteret"
 private const val behandlingsnummer = "B452"
 
 class PdlIdentitesTjeneste(private val pdlKlient: PdlClient) {
+
+    suspend fun hentIdenter(
+        identiteter: List<Identitetsnummer>,
+    ): Either<Failure, Map<String, List<IdentInformasjon>>> =
+        suspendeableAttempt {
+            pdlKlient.hentIdenterBolk(
+                identer = identiteter.map { it.value },
+                grupper = listOf(IdentGruppe.FOLKEREGISTERIDENT),
+                historikk = true,
+                behandlingsnummer = behandlingsnummer,
+                callId = null,
+                navConsumerId = null
+            )
+        }.mapToFailure { exception ->
+            when (exception) {
+                is PdlException -> mapPdlException(exception)
+                else -> Failure("pdl", FailureCode.EXTERNAL_TECHINCAL_ERROR, exception)
+            }
+        }
+
     suspend fun hentIdentInformasjon(
         callId: CallId,
         identitet: Identitetsnummer,
