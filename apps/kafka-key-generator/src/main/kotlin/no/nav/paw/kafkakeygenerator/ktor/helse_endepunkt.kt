@@ -27,7 +27,7 @@ fun Routing.konfigurereHelse(
         call.respondText(
             mergeDetector
                 .findMerges(900)
-                .map { "Number of pending merges: ${it.size } "}
+                .map { "Number of pending merges: $it "}
                 .onRight { mergeLogger.info(it) }
                 .onLeft { mergeLogger.error("Error: ${it.system}:${it.code}", it.exception) }
                 .fold( { "Error: ${it.system}:${it.code}" }, { it } )
