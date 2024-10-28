@@ -9,6 +9,20 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 class KafkaKeys(private val database: Database) {
 
+    fun hentSisteArbeidssoekerId(): Either<Failure, ArbeidssoekerId> =
+        attempt {
+            transaction(database) {
+                IdentitetTabell
+                    .selectAll()
+                    .orderBy(IdentitetTabell.kafkaKey, SortOrder.DESC)
+                    .firstOrNull()?.get(IdentitetTabell.kafkaKey)
+            }
+        }.mapToFailure { exception ->
+            Failure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
+        }
+            .map { id -> id?.let(::ArbeidssoekerId) }
+            .flatMap { id -> id?.let(::right) ?: left(Failure("database", FailureCode.DB_NOT_FOUND)) }
+
     fun hent(arbeidssoekerIdRange: LongRange): Either<Failure, Map<Identitetsnummer, ArbeidssoekerId>> {
         return attempt {
             transaction(database) {

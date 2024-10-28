@@ -8,6 +8,7 @@ import no.nav.paw.kafkakeygenerator.config.dataSource
 import no.nav.paw.kafkakeygenerator.config.lastKonfigurasjon
 import no.nav.paw.kafkakeygenerator.database.flywayMigrate
 import no.nav.paw.kafkakeygenerator.ktor.initKtorServer
+import no.nav.paw.kafkakeygenerator.merge.MergeDetector
 import no.nav.paw.kafkakeygenerator.pdl.PdlIdentitesTjeneste
 import no.nav.paw.kafkakeygenerator.pdl.opprettPdlKlient
 import no.nav.paw.pdl.PdlClient
@@ -42,12 +43,20 @@ fun startApplikasjon(
     val database = Database.connect(dataSource)
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     flywayMigrate(dataSource)
+    val kafkaKeysDbTjeneste = KafkaKeys(database)
+    val pdlIdTjeneste = PdlIdentitesTjeneste(pdlKlient)
+    val applikasjon = Applikasjon(
+        kafkaKeysDbTjeneste,
+        pdlIdTjeneste
+    )
+    val mergeDetector = MergeDetector(
+        pdlIdTjeneste,
+        kafkaKeysDbTjeneste
+    )
     initKtorServer(
         autentiseringKonfig,
         prometheusMeterRegistry,
-        Applikasjon(
-            KafkaKeys(database),
-            PdlIdentitesTjeneste(pdlKlient)
-        )
+        applikasjon,
+        mergeDetector
     ).start(wait = true)
 }

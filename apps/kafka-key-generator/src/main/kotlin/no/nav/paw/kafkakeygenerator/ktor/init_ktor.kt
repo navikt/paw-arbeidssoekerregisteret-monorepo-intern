@@ -5,11 +5,13 @@ import io.ktor.server.netty.Netty
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.kafkakeygenerator.Applikasjon
 import no.nav.paw.kafkakeygenerator.config.Autentiseringskonfigurasjon
+import no.nav.paw.kafkakeygenerator.merge.MergeDetector
 
 fun initKtorServer(
     autentiseringKonfigurasjon: Autentiseringskonfigurasjon,
     prometheusMeterRegistry: PrometheusMeterRegistry,
-    applikasjon: Applikasjon
+    applikasjon: Applikasjon,
+    mergeDetector: MergeDetector
 ) = embeddedServer(
     factory = Netty,
     port = 8080,
@@ -19,5 +21,10 @@ fun initKtorServer(
         callGroupSize = 16
     }
 ) {
-    konfigurerServer(autentiseringKonfigurasjon, prometheusMeterRegistry, applikasjon)
+    konfigurerServer(
+        autentiseringKonfigurasjon = autentiseringKonfigurasjon,
+        prometheusMeterRegistry = prometheusMeterRegistry,
+        applikasjon = applikasjon,
+        mergeDetector = mergeDetector
+    )
 }

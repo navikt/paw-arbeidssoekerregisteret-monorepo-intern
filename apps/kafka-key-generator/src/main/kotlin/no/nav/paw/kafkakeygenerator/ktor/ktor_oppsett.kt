@@ -25,6 +25,7 @@ import no.nav.paw.kafkakeygenerator.api.recordkey.configureRecordKeyApi
 import no.nav.paw.kafkakeygenerator.api.v2.konfigurerApiV2
 import no.nav.paw.kafkakeygenerator.config.Autentiseringskonfigurasjon
 import no.nav.paw.kafkakeygenerator.masker
+import no.nav.paw.kafkakeygenerator.merge.MergeDetector
 import no.nav.security.token.support.v2.IssuerConfig
 import no.nav.security.token.support.v2.RequiredClaims
 import no.nav.security.token.support.v2.TokenSupportConfig
@@ -35,7 +36,8 @@ import java.time.Duration
 fun Application.konfigurerServer(
     autentiseringKonfigurasjon: Autentiseringskonfigurasjon,
     prometheusMeterRegistry: PrometheusMeterRegistry,
-    applikasjon: Applikasjon
+    applikasjon: Applikasjon,
+    mergeDetector: MergeDetector
 ) {
     autentisering(autentiseringKonfigurasjon)
     micrometerMetrics(prometheusMeterRegistry)
@@ -43,7 +45,10 @@ fun Application.konfigurerServer(
     serialisering()
     statusPages()
     routing {
-        konfigurereHelse(prometheusMeterRegistry)
+        konfigurereHelse(
+            prometheusMeterRegistry = prometheusMeterRegistry,
+            mergeDetector = mergeDetector
+        )
         konfigurerApiV2(autentiseringKonfigurasjon, applikasjon)
         configureRecordKeyApi(autentiseringKonfigurasjon, applikasjon)
         swaggerUI(path = "docs", swaggerFile = "openapi/documentation.yaml")
