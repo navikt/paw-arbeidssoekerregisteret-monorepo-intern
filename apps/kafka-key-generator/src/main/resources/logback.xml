@@ -26,4 +26,5 @@
     <logger name="io.confluent" level="INFO" />
     <logger name="no.nav" level="INFO" />
     <logger name="no.nav.paw.pdl.PdlClient" level="WARN"/>
+    <logger name="MergeDetector" level="INFO"/>
 </configuration>
