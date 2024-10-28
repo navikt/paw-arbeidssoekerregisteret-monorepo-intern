@@ -23,7 +23,7 @@ fun Routing.konfigurereHelse(
     get("/internal/metrics") {
         call.respond(prometheusMeterRegistry.scrape())
     }
-    get("internal/mergeDetector") {
+    /*get("internal/mergeDetector") {
         call.respondText(
             mergeDetector
                 .findMerges(900)
@@ -32,5 +32,5 @@ fun Routing.konfigurereHelse(
                 .onLeft { mergeLogger.error("Error: ${it.system}:${it.code}", it.exception) }
                 .fold( { "Error: ${it.system}:${it.code}" }, { it } )
         )
-    }
+    }*/
 }
