@@ -27,7 +27,7 @@ class PdlClient(
             httpClient = httpClient,
         )
 
-    internal suspend fun <T : Any> execute(
+    suspend fun <T : Any> execute(
         query: GraphQLClientRequest<T>,
         behandlingsnummer: String,
         callId: String?,
