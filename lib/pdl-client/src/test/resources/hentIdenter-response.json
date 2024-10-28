@@ -4,11 +4,13 @@
       "identer": [
         {
           "ident": "09127821914",
-          "gruppe": "FOLKEREGISTERIDENT"
+          "gruppe": "FOLKEREGISTERIDENT",
+          "historisk": false
         },
         {
           "ident": "2649500819544",
-          "gruppe": "AKTORID"
+          "gruppe": "AKTORID",
+          "historisk": false
         }
       ]
     }

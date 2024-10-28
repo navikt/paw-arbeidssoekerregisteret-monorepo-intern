@@ -3,6 +3,7 @@ query($ident: ID!, $historisk: Boolean) {
         identer {
             ident
             gruppe
+            historisk
         }
     }
 }

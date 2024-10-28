@@ -39,19 +39,23 @@ const val person1MockSvar = """
       "identer": [
         {
           "ident": "$person1_fødselsnummer",
-          "gruppe": "FOLKEREGISTERIDENT"
+          "gruppe": "FOLKEREGISTERIDENT",
+          "historisk": false
         },
         {
           "ident": "$person1_aktor_id",
-          "gruppe": "AKTORID"
+          "gruppe": "AKTORID",
+          "historisk": false
         },
         {
           "ident": "$person1_dnummer",
-          "gruppe": "FOLKEREGISTERIDENT"
+          "gruppe": "FOLKEREGISTERIDENT",
+          "historisk": true
         },
         {
           "ident": "$person1_annen_ident",
-          "gruppe": "ANNEN_IDENT"
+          "gruppe": "ANNEN_IDENT",
+          "historisk": true
         }
       ]
     }
@@ -66,11 +70,13 @@ const val person2MockSvar = """
       "identer": [
         {
           "ident": "$person2_fødselsnummer",
-          "gruppe": "FOLKEREGISTERIDENT"
+          "gruppe": "FOLKEREGISTERIDENT",
+          "historisk": false
         },
         {
           "ident": "$person2_aktor_id",
-          "gruppe": "AKTORID"
+          "gruppe": "AKTORID",
+          "historisk": false
         }
       ]
     }
