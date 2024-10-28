@@ -4,19 +4,36 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.kafkakeygenerator.FailureCode.CONFLICT
 import no.nav.paw.kafkakeygenerator.FailureCode.DB_NOT_FOUND
 import no.nav.paw.kafkakeygenerator.api.v2.*
+import no.nav.paw.kafkakeygenerator.mergedetector.findMerge
+import no.nav.paw.kafkakeygenerator.mergedetector.hentLagretData
+import no.nav.paw.kafkakeygenerator.mergedetector.vo.MergeDetected
 import no.nav.paw.kafkakeygenerator.pdl.PdlIdentitesTjeneste
-import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.vo.CallId
-import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
-import kotlin.math.absoluteValue
+import no.nav.paw.kafkakeygenerator.vo.*
 
 class Applikasjon(
     private val kafkaKeys: KafkaKeys,
     private val identitetsTjeneste: PdlIdentitesTjeneste
 ) {
+    @WithSpan
+    suspend fun validerLagretData(callId: CallId, identitet: Identitetsnummer): Either<Failure, InfoResponse> {
+        return hentInfo(callId, identitet)
+            .flatMap { info ->
+                hentLagretData(
+                    hentArbeidssoekerId = kafkaKeys::hent,
+                    info = info
+                ).map { info to it }
+            }
+            .map { (info, lagretDatra ) -> info to findMerge(lagretDatra) }
+            .map { (info, merge) ->
+                InfoResponse(
+                    info = info,
+                    mergeDetected = merge as? MergeDetected
+                )
+            }
+    }
 
     @WithSpan
-    suspend fun hentInfo(callId: CallId, identitet: Identitetsnummer): Either<Failure, InfoResponse> {
+    suspend fun hentInfo(callId: CallId, identitet: Identitetsnummer): Either<Failure, Info> {
         val pdlIdInfo = identitetsTjeneste.hentIdentInformasjon(
             callId = callId,
             identitet = identitet,
@@ -29,11 +46,16 @@ class Applikasjon(
                     recordKey = publicTopicKeyFunction(arbeidssoekerId).value
                 )
             }.map { lokalIdData ->
-                InfoResponse(
+                Info(
+                    identitetsnummer = identitet.value,
                     lagretData = lokalIdData,
                     pdlData = pdlIdInfo.fold(
                         { PdlData(error = it.code.name, id = null) },
-                        { PdlData(error = null, id = it.map { identInfo ->  PdlId(identInfo.gruppe.name, identInfo.ident) })}
+                        {
+                            PdlData(
+                                error = null,
+                                id = it.map { identInfo -> PdlId(identInfo.gruppe.name, identInfo.ident) })
+                        }
                     )
                 )
             }
@@ -42,7 +64,7 @@ class Applikasjon(
     @WithSpan
     suspend fun hent(callId: CallId, identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> {
         return kafkaKeys.hent(identitet)
-            .recover(DB_NOT_FOUND) {
+            .suspendingRecover(DB_NOT_FOUND) {
                 sjekkMotAliaser(callId, identitet)
             }
     }
@@ -50,7 +72,7 @@ class Applikasjon(
     @WithSpan
     suspend fun hentEllerOpprett(callId: CallId, identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> {
         return hent(callId, identitet)
-            .recover(DB_NOT_FOUND) {
+            .suspendingRecover(DB_NOT_FOUND) {
                 kafkaKeys.opprett(identitet)
             }.recover(CONFLICT) {
                 kafkaKeys.hent(identitet)

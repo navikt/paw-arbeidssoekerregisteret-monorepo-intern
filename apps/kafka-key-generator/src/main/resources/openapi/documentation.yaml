@@ -103,6 +103,24 @@ components:
     InfoResponse:
       type: "object"
       properties:
+        info:
+          $ref: "#/components/schemas/Info"
+        mergeDetected:
+          type: "object"
+          properties:
+            id:
+              type: "object"
+              properties:
+                value:
+                  type: "string"
+            map:
+              type: "object"
+              additionalProperties: true
+    Info:
+      type: "object"
+      properties:
+        identitetsnummer:
+          type: "string"
         lagretData:
           type: "object"
           properties:

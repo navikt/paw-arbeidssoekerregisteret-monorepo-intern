@@ -40,7 +40,18 @@ fun <R> Either<Exception, R>.mapToFailure(
     }
 }
 
-suspend fun <R> Either<Failure, R>.recover(failureCode: FailureCode, f: suspend () -> Either<Failure, R>): Either<Failure, R> {
+suspend fun <R> Either<Failure, R>.suspendingRecover(failureCode: FailureCode, f: suspend () -> Either<Failure, R>): Either<Failure, R> {
+    return when (this) {
+        is Right -> this
+        is Left -> if (left.code == failureCode) {
+            f()
+        } else {
+            this
+        }
+    }
+}
+
+fun <R> Either<Failure, R>.recover(failureCode: FailureCode, f: () -> Either<Failure, R>): Either<Failure, R> {
     return when (this) {
         is Right -> this
         is Left -> if (left.code == failureCode) {

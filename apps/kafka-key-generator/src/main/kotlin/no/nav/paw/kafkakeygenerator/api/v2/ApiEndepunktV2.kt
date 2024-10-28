@@ -45,7 +45,7 @@ suspend fun PipelineContext<Unit, ApplicationCall>.hentInfo(
         ?.let { CallId(it) }
         ?: CallId(UUID.randomUUID().toString())
     val request = call.receive<RequestV2>()
-    when (val resultat = applikasjon.hentInfo(callId, Identitetsnummer(request.ident))) {
+    when (val resultat = applikasjon.validerLagretData(callId, Identitetsnummer(request.ident))) {
         is Left -> call.respond(
             status = InternalServerError,
             message = resultat.left.code.name
