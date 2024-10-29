@@ -48,7 +48,7 @@ private fun BekreftelseTilgjengelig.asSvar(
     aarsak: String
 ): Svar {
     return Svar.newBuilder()
-        .setSendtInn(
+        .setSendtInnAv(
             Metadata.newBuilder()
                 .setUtfoertAv(bruker)
                 .setKilde(kilde)
