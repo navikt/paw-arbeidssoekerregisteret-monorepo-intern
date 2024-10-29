@@ -31,7 +31,7 @@ fun Routing.konfigurereHelse(
     get("/internal/metrics") {
         call.respond(prometheusMeterRegistry.scrape())
     }
-    get("internal/mergeDetector") {
+   /* get("internal/mergeDetector") {
         val t = task.get()
         if (t == null) {
             task.set(supplyAsync { runBlocking { mergeDetector.findMerges(900) } })
@@ -49,5 +49,5 @@ fun Routing.konfigurereHelse(
                 call.respondText("Merge detection in progress")
             }
         }
-    }
+    }*/
 }
