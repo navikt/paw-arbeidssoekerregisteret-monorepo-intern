@@ -13,6 +13,13 @@ class MergeDetector(
     private val kafkaKeys: KafkaKeys
 ) {
     private val logger = LoggerFactory.getLogger("MergeDetector")
+    private val hentEllerNull: (Identitetsnummer) -> ArbeidssoekerId? = { id ->
+        kafkaKeys.hent(id)
+            .fold(
+                { null},
+                { it }
+            )
+    }
 
     suspend fun findMerges(batchSize: Int): Either<Failure, Long> {
         require(batchSize > 0) { "Batch size must be greater than 0" }
@@ -47,9 +54,9 @@ class MergeDetector(
                     val storedData = kafkaKeys.hent(currentPos, maxSize)
                     val detected = storedData
                         .suspendingFlatMap {
-                            pdlIdentitesTjeneste.hentIdenter(it.keys.toList()).map { res -> it to res }
+                            pdlIdentitesTjeneste.hentIdenter(it.keys.toList())
                         }
-                        .map { (local, pdl) -> detectMerges(local, pdl) }
+                        .map { pdl -> detectMerges(hentEllerNull, pdl) }
                         .map(Sequence<MergeDetected>::count)
                         .map(Int::toLong)
                         .map(results.right::plus)
@@ -63,7 +70,7 @@ class MergeDetector(
 }
 
 fun detectMerges(
-    local: Map<Identitetsnummer, ArbeidssoekerId>,
+    local: (Identitetsnummer) -> ArbeidssoekerId?,
     pdl: Map<String, List<IdentInformasjon>>
 ): Sequence<MergeDetected> {
     return pdl.asSequence()
@@ -71,7 +78,7 @@ fun detectMerges(
             val arbIds = resultIds
                 .map { Identitetsnummer(it.ident) }
                 .mapNotNull { pdlId ->
-                    local[pdlId]?.let { pdlId to it }
+                    local(pdlId)?.let { pdlId to it }
                 }
             if (arbIds.map { (_, arbId) -> arbId }.distinct().size > 1) {
                 MergeDetected(

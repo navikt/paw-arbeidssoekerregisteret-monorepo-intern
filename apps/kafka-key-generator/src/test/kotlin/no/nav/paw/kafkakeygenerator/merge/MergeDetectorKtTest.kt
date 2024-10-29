@@ -16,10 +16,11 @@ import org.junit.jupiter.api.Assertions.*
 class MergeDetectorKtTest : FreeSpec({
 
     "Når 2 identiteter er samme person i PDL, men har forskjellige arbeidssøkerId skal det slå ut som 'merge detected" {
-        val local = mapOf(
+        val localMap = mapOf(
             Identitetsnummer("1") to ArbeidssoekerId(11),
             Identitetsnummer("2") to ArbeidssoekerId(12)
         )
+        fun local(id: Identitetsnummer): ArbeidssoekerId? = localMap[id]
         val pdl = mapOf(
             "1" to listOf(
                 IdentInformasjon(
@@ -35,7 +36,7 @@ class MergeDetectorKtTest : FreeSpec({
             )
         )
         detectMerges(
-            local = local,
+            local = ::local,
             pdl = pdl
         ) should { merges ->
             merges.toList().size shouldBe 1
@@ -43,10 +44,11 @@ class MergeDetectorKtTest : FreeSpec({
     }
 
     "Når 2 identiteter er samme person i PDL, og har arbeidssøkerId skal det ikke slå ut som 'merge detected" {
-        val local = mapOf(
+        val localMap = mapOf(
             Identitetsnummer("1") to ArbeidssoekerId(11),
             Identitetsnummer("2") to ArbeidssoekerId(11)
         )
+        fun local(id: Identitetsnummer): ArbeidssoekerId? = localMap[id]
         val pdl = mapOf(
             "1" to listOf(
                 IdentInformasjon(
@@ -62,7 +64,7 @@ class MergeDetectorKtTest : FreeSpec({
             )
         )
         detectMerges(
-            local = local,
+            local = ::local,
             pdl = pdl
         ).shouldBeEmpty()
     }
