@@ -14,14 +14,14 @@ val maksAntallBekreftelserEtterStatus = mapOf(
 )
 
 fun haandterBekreftelseMottatt(
-    gjeldendeTilstand: InternTilstand,
+    gjeldendeTilstand: BekreftelseTilstand,
     paaVegneAvTilstand: PaaVegneAvTilstand?,
     melding: no.nav.paw.bekreftelse.melding.v1.Bekreftelse
-): Pair<InternTilstand, List<BekreftelseHendelse>> {
+): Pair<BekreftelseTilstand, List<BekreftelseHendelse>> {
     val (tilstand, hendelser) = if (melding.bekreftelsesloesning == Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET) {
         processPawNamespace(melding, gjeldendeTilstand)
     } else {
-        val paaVegneAvList = paaVegneAvTilstand?.internPaaVegneAvList ?: emptyList()
+        val paaVegneAvList = paaVegneAvTilstand?.paaVegneAvList ?: emptyList()
         if (paaVegneAvList.any { it.loesning == Loesning.from(melding.bekreftelsesloesning) }) {
             gjeldendeTilstand.leggTilNyEllerOppdaterBekreftelse(
                 Bekreftelse(
@@ -41,7 +41,7 @@ fun haandterBekreftelseMottatt(
     ) to hendelser
 }
 
-fun Collection<Bekreftelse>.filterByStatusAndCount(maxSizeConfig: Map<KClass<out BekreftelseTilstand>, Int>): List<Bekreftelse> =
+fun Collection<Bekreftelse>.filterByStatusAndCount(maxSizeConfig: Map<KClass<out BekreftelseTilstandStatus>, Int>): List<Bekreftelse> =
     groupBy { it.sisteTilstand()::class }
         .mapValues { (_, values) -> values.sortedBy { it.gjelderTil }.reversed() }
         .mapValues { (status, values) -> values.take(maxSizeConfig[status] ?: Integer.MAX_VALUE) }

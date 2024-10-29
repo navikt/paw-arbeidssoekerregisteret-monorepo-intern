@@ -45,10 +45,10 @@ fun bekreftelsePunctuator(
         }
 }
 
-fun Sequence<Pair<InternTilstand, PaaVegneAvTilstand?>>.prosessererBekreftelser(
+fun Sequence<Pair<BekreftelseTilstand, PaaVegneAvTilstand?>>.prosessererBekreftelser(
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
     wallClock: WallClock
-): Sequence<Pair<InternTilstand, List<BekreftelseHendelse>>> =
+): Sequence<Pair<BekreftelseTilstand, List<BekreftelseHendelse>>> =
     filter { (internTilstand, paaVegneAvTilstand) ->
         (paaVegneAvTilstand == null)
             .also { result ->
@@ -69,9 +69,9 @@ fun Sequence<Pair<InternTilstand, PaaVegneAvTilstand?>>.prosessererBekreftelser(
 
 fun processBekreftelser(
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
-    currentState: InternTilstand,
+    currentState: BekreftelseTilstand,
     currentTime: Instant,
-): Pair<InternTilstand, List<BekreftelseHendelse>> {
+): Pair<BekreftelseTilstand, List<BekreftelseHendelse>> {
     val existingBekreftelse = currentState.bekreftelser.firstOrNull()
 
     val (tilstand, hendelse) = if (existingBekreftelse == null) {
@@ -88,20 +88,20 @@ fun processBekreftelser(
     return updatedTilstand to listOfNotNull(hendelse, additionalHendelse)
 }
 
-private fun InternTilstand.createInitialBekreftelse(
+private fun BekreftelseTilstand.createInitialBekreftelse(
     tidligsteStartTidspunktForBekreftelse: Instant,
     interval: Duration
-): InternTilstand =
+): BekreftelseTilstand =
     copy(bekreftelser = listOf(opprettFoersteBekreftelse(
         tidligsteStartTidspunktForBekreftelse = tidligsteStartTidspunktForBekreftelse,
         periode = periode,
         interval = interval
     )))
 
-private fun InternTilstand.checkAndCreateNewBekreftelse(
+private fun BekreftelseTilstand.checkAndCreateNewBekreftelse(
     timestamp: Instant,
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
-): Pair<InternTilstand, BekreftelseHendelse?> {
+): Pair<BekreftelseTilstand, BekreftelseHendelse?> {
     val nonEmptyBekreftelser = bekreftelser.toNonEmptyListOrNull() ?: return this to null
 
     return if (nonEmptyBekreftelser.shouldCreateNewBekreftelse(
@@ -120,10 +120,10 @@ private fun InternTilstand.checkAndCreateNewBekreftelse(
     }
 }
 
-private fun InternTilstand.handleUpdateBekreftelser(
+private fun BekreftelseTilstand.handleUpdateBekreftelser(
     timestamp: Instant,
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
-): Pair<InternTilstand, BekreftelseHendelse?> {
+): Pair<BekreftelseTilstand, BekreftelseHendelse?> {
     val updatedBekreftelser = bekreftelser.map { bekreftelse ->
         generateSequence(bekreftelse to null as BekreftelseHendelse?) { (currentBekreftelse, _) ->
             getProcessedBekreftelseTilstandAndHendelse(
@@ -147,7 +147,7 @@ private fun InternTilstand.handleUpdateBekreftelser(
     return copy(bekreftelser = updatedBekreftelser) to hendelse
 }
 
-private fun InternTilstand.getProcessedBekreftelseTilstandAndHendelse(
+private fun BekreftelseTilstand.getProcessedBekreftelseTilstandAndHendelse(
     bekreftelse: Bekreftelse,
     timestamp: Instant,
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
@@ -214,7 +214,7 @@ private fun InternTilstand.getProcessedBekreftelseTilstandAndHendelse(
     }
 }
 
-private fun InternTilstand.createNewBekreftelseTilgjengelig(newBekreftelse: Bekreftelse) =
+private fun BekreftelseTilstand.createNewBekreftelseTilgjengelig(newBekreftelse: Bekreftelse) =
     BekreftelseTilgjengelig(
         hendelseId = UUID.randomUUID(),
         periodeId = periode.periodeId,

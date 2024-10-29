@@ -15,22 +15,22 @@ value class WallClock(val value: Instant)
 
 fun haandterBekreftelsePaaVegneAvEndret(
     wallclock: WallClock,
-    tilstand: InternTilstand?,
+    bekreftelseTilstand: BekreftelseTilstand?,
     paaVegneAvTilstand: PaaVegneAvTilstand?,
-    paaVegneAv: PaaVegneAv
+    paaVegneAvHendelse: PaaVegneAv
 ): List<Handling> {
-    return when (val handling = paaVegneAv.handling) {
+    return when (val handling = paaVegneAvHendelse.handling) {
         is Start -> startPaaVegneAv(
             wallclock = wallclock,
-            tilstand = tilstand,
+            bekreftelseTilstand = bekreftelseTilstand,
             paaVegneAvTilstand = paaVegneAvTilstand,
-            paaVegneAv = paaVegneAv,
+            paaVegneAvHendelse = paaVegneAvHendelse,
             handling = handling
         )
 
         is Stopp -> stoppPaaVegneAv(
             paaVegneAvTilstand = paaVegneAvTilstand,
-            paaVegneAv = paaVegneAv
+            paaVegneAvHendelse = paaVegneAvHendelse
         )
 
         else -> emptyList()
@@ -39,12 +39,12 @@ fun haandterBekreftelsePaaVegneAvEndret(
 
 fun stoppPaaVegneAv(
     paaVegneAvTilstand: PaaVegneAvTilstand?,
-    paaVegneAv: PaaVegneAv
+    paaVegneAvHendelse: PaaVegneAv
 ): List<Handling> {
-    val oppdatertPaaVegneAv = paaVegneAvTilstand - Loesning.from(paaVegneAv.bekreftelsesloesning)
+    val oppdatertPaaVegneAv = paaVegneAvTilstand - Loesning.from(paaVegneAvHendelse.bekreftelsesloesning)
     val paaVegneAvHandling = when {
-        paaVegneAvTilstand != null && oppdatertPaaVegneAv == null -> SlettBekreftelsePaaVegneAv(paaVegneAv.periodeId)
-        paaVegneAvTilstand != null && oppdatertPaaVegneAv != null -> SkrivBekreftelsePaaVegneAv(paaVegneAv.periodeId, oppdatertPaaVegneAv)
+        paaVegneAvTilstand != null && oppdatertPaaVegneAv == null -> SlettPaaVegneAvTilstand(paaVegneAvHendelse.periodeId)
+        paaVegneAvTilstand != null && oppdatertPaaVegneAv != null -> SkrivPaaVegneAvTilstand(paaVegneAvHendelse.periodeId, oppdatertPaaVegneAv)
         else -> null
     }
     return listOfNotNull(paaVegneAvHandling)
@@ -52,27 +52,27 @@ fun stoppPaaVegneAv(
 
 fun startPaaVegneAv(
     wallclock: WallClock,
-    tilstand: InternTilstand?,
+    bekreftelseTilstand: BekreftelseTilstand?,
     paaVegneAvTilstand: PaaVegneAvTilstand?,
-    paaVegneAv: PaaVegneAv,
+    paaVegneAvHendelse: PaaVegneAv,
     handling: Start
 ): List<Handling> {
-    val oppdatertInternPaaVegneAv =
-        (paaVegneAvTilstand ?: bekreftelsePaaVegneAvTilstand(paaVegneAv.periodeId)) +
+    val oppdatertPaaVegneAvTilstand =
+        (paaVegneAvTilstand ?: opprettPaaVegneAvTilstand(paaVegneAvHendelse.periodeId)) +
                 InternPaaVegneAv(
-                    loesning = Loesning.from(paaVegneAv.bekreftelsesloesning),
+                    loesning = Loesning.from(paaVegneAvHendelse.bekreftelsesloesning),
                     intervall = Duration.ofMillis(handling.intervalMS),
                     gracePeriode = Duration.ofMillis(handling.graceMS)
                 )
-    val hendelse = tilstand?.let {
+    val hendelse = bekreftelseTilstand?.let {
         BekreftelsePaaVegneAvStartet(
             hendelseId = UUID.randomUUID(),
-            periodeId = paaVegneAv.periodeId,
-            arbeidssoekerId = tilstand.periode.arbeidsoekerId,
+            periodeId = paaVegneAvHendelse.periodeId,
+            arbeidssoekerId = bekreftelseTilstand.periode.arbeidsoekerId,
             hendelseTidspunkt = wallclock.value,
         )
     }
-    val oppdaterInternTilstand = tilstand?.let {
+    val oppdaterBekreftelseTilstand = bekreftelseTilstand?.let {
         val oppdaterteBekreftelser = it.bekreftelser
             .map { bekreftelse ->
                 when (bekreftelse.sisteTilstand()) {
@@ -85,19 +85,19 @@ fun startPaaVegneAv(
             }
         it.copy(bekreftelser = oppdaterteBekreftelser)
     }
-        ?.takeIf { oppdatertTilstand -> oppdatertTilstand != tilstand }
-        ?.let { oppdatertTilstand -> SkrivInternTilstand(oppdatertTilstand.periode.periodeId, oppdatertTilstand) }
+        ?.takeIf { oppdatertBekreftelseTilstand -> oppdatertBekreftelseTilstand != bekreftelseTilstand }
+        ?.let { oppdatertBekreftelseTilstand -> SkrivBekreftelseTilstand(oppdatertBekreftelseTilstand.periode.periodeId, oppdatertBekreftelseTilstand) }
 
     return listOfNotNull(
-        if (paaVegneAvTilstand != oppdatertInternPaaVegneAv) SkrivBekreftelsePaaVegneAv(paaVegneAv.periodeId, oppdatertInternPaaVegneAv) else null,
-        oppdaterInternTilstand,
+        if (paaVegneAvTilstand != oppdatertPaaVegneAvTilstand) SkrivPaaVegneAvTilstand(paaVegneAvHendelse.periodeId, oppdatertPaaVegneAvTilstand) else null,
+        oppdaterBekreftelseTilstand,
         hendelse?.let(::SendHendelse)
     )
 }
 
 
 sealed interface Handling
-data class SlettBekreftelsePaaVegneAv(val id: UUID) : Handling
-data class SkrivBekreftelsePaaVegneAv(val id: UUID, val value: PaaVegneAvTilstand) : Handling
-data class SkrivInternTilstand(val id: UUID, val value: InternTilstand) : Handling
+data class SlettPaaVegneAvTilstand(val id: UUID) : Handling
+data class SkrivPaaVegneAvTilstand(val id: UUID, val value: PaaVegneAvTilstand) : Handling
+data class SkrivBekreftelseTilstand(val id: UUID, val value: BekreftelseTilstand) : Handling
 data class SendHendelse(val hendelse: BekreftelseHendelse) : Handling

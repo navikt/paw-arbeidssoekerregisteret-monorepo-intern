@@ -3,7 +3,7 @@ package no.nav.paw.bekreftelsetjeneste.topology
 import kotlinx.coroutines.runBlocking
 import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
 import no.nav.paw.bekreftelsetjeneste.context.ApplicationContext
-import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstand
+import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
 import org.apache.kafka.streams.StreamsBuilder
@@ -11,7 +11,7 @@ import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.state.KeyValueStore
 import java.util.*
 
-typealias InternTilstandStateStore = KeyValueStore<UUID, InternTilstand>
+typealias InternTilstandStateStore = KeyValueStore<UUID, BekreftelseTilstand>
 typealias PaaVegneAvTilstandStateStore = KeyValueStore<UUID, PaaVegneAvTilstand>
 
 fun StreamsBuilder.buildTopology(

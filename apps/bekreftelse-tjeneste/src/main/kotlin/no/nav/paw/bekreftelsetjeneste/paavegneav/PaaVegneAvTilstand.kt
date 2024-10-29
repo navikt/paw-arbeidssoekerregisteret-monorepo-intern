@@ -6,7 +6,7 @@ import java.util.*
 
 data class PaaVegneAvTilstand(
     val periodeId: UUID,
-    val internPaaVegneAvList: List<InternPaaVegneAv>
+    val paaVegneAvList: List<InternPaaVegneAv>
 )
 
 data class InternPaaVegneAv(
@@ -34,21 +34,21 @@ enum class Loesning {
     }
 }
 
-fun bekreftelsePaaVegneAvTilstand(
+fun opprettPaaVegneAvTilstand(
     periodeId: UUID,
-    internPaaVegneAv: InternPaaVegneAv? = null
+    paaVegneAv: InternPaaVegneAv? = null
 ): PaaVegneAvTilstand = PaaVegneAvTilstand(
     periodeId = periodeId,
-    internPaaVegneAvList = listOfNotNull(internPaaVegneAv)
+    paaVegneAvList = listOfNotNull(paaVegneAv)
 )
 
-operator fun PaaVegneAvTilstand.plus(internPaaVegneAv: InternPaaVegneAv): PaaVegneAvTilstand =
-    copy(internPaaVegneAvList = internPaaVegneAvList
-        .filterNot { it.loesning == internPaaVegneAv.loesning} + internPaaVegneAv
+operator fun PaaVegneAvTilstand.plus(paaVegneAv: InternPaaVegneAv): PaaVegneAvTilstand =
+    copy(paaVegneAvList = paaVegneAvList
+        .filterNot { it.loesning == paaVegneAv.loesning} + paaVegneAv
     )
 
 operator fun PaaVegneAvTilstand?.minus(loesning: Loesning): PaaVegneAvTilstand? =
-    this?.internPaaVegneAvList
+    this?.paaVegneAvList
         ?.filterNot { it.loesning == loesning }
         ?.takeIf(List<InternPaaVegneAv>::isNotEmpty)
-        ?.let { copy(internPaaVegneAvList = it) }
+        ?.let { copy(paaVegneAvList = it) }

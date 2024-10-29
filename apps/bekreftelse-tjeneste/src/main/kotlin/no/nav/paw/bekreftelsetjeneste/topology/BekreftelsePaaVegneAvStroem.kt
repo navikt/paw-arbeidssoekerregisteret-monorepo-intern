@@ -10,7 +10,7 @@ import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Stopp
 import no.nav.paw.bekreftelsetjeneste.paavegneav.*
 import no.nav.paw.bekreftelsetjeneste.config.KafkaTopologyConfig
-import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstand
+import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
 import no.nav.paw.config.kafka.streams.mapNonNull
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
@@ -31,22 +31,22 @@ fun StreamsBuilder.byggBekreftelsePaaVegneAvStroem(
             kafkaTopologyConfig.bekreftelsePaaVegneAvStateStoreName,
             kafkaTopologyConfig.internStateStoreName
         ) { message ->
-            val internStateStore =
-                getStateStore<KeyValueStore<UUID, InternTilstand>>(kafkaTopologyConfig.internStateStoreName)
+            val bekreftelseTilstandStateStore =
+                getStateStore<KeyValueStore<UUID, BekreftelseTilstand>>(kafkaTopologyConfig.internStateStoreName)
             val paaVegneAvTilstandStateStore = getStateStore<KeyValueStore<UUID, PaaVegneAvTilstand>>(kafkaTopologyConfig.bekreftelsePaaVegneAvStateStoreName)
-            val internTilstand = internStateStore[message.periodeId]
-            val bekreftelsePaaVegneAv = paaVegneAvTilstandStateStore[message.periodeId]
+            val bekreftelseTilstand = bekreftelseTilstandStateStore[message.periodeId]
+            val paaVegneAvTilstand = paaVegneAvTilstandStateStore[message.periodeId]
             haandterBekreftelsePaaVegneAvEndret(
                 wallclock = WallClock(Instant.now()),
-                tilstand = internTilstand,
-                paaVegneAvTilstand = bekreftelsePaaVegneAv,
-                paaVegneAv = message
+                bekreftelseTilstand = bekreftelseTilstand,
+                paaVegneAvTilstand = paaVegneAvTilstand,
+                paaVegneAvHendelse = message
             ).map { handling ->
                 when (handling) {
                     is SendHendelse -> handling.hendelse
-                    is SkrivBekreftelsePaaVegneAv -> paaVegneAvTilstandStateStore.put(handling.id, handling.value)
-                    is SlettBekreftelsePaaVegneAv -> paaVegneAvTilstandStateStore.delete(handling.id)
-                    is SkrivInternTilstand -> internStateStore.put(handling.id, handling.value)
+                    is SkrivPaaVegneAvTilstand -> paaVegneAvTilstandStateStore.put(handling.id, handling.value)
+                    is SlettPaaVegneAvTilstand -> paaVegneAvTilstandStateStore.delete(handling.id)
+                    is SkrivBekreftelseTilstand -> bekreftelseTilstandStateStore.put(handling.id, handling.value)
                 }
             }.filterIsInstance<BekreftelseHendelse>()
         }

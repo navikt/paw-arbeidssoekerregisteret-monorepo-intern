@@ -36,7 +36,7 @@ class BekreftelseStreamTest : FreeSpec({
 
             bekreftelseTopic.pipeInput(1234L, bekreftelseMelding)
             val stateStore =
-                testDriver.getKeyValueStore<UUID, InternTilstand>(applicationConfig.kafkaTopology.internStateStoreName)
+                testDriver.getKeyValueStore<UUID, BekreftelseTilstand>(applicationConfig.kafkaTopology.internStateStoreName)
             stateStore.all().asSequence().count() shouldBe 0
 
             bekreftelseHendelseloggTopicOut.isEmpty shouldBe true
@@ -78,7 +78,7 @@ class BekreftelseStreamTest : FreeSpec({
                 bekreftelseTopic.pipeInput(key, bekreftelseMelding)
 
                 val stateStore =
-                    testDriver.getKeyValueStore<UUID, InternTilstand>(applicationConfig.kafkaTopology.internStateStoreName)
+                    testDriver.getKeyValueStore<UUID, BekreftelseTilstand>(applicationConfig.kafkaTopology.internStateStoreName)
                 val internTilstand = stateStore[periode.id]
 
                 internTilstand should {
@@ -97,7 +97,7 @@ class BekreftelseStreamTest : FreeSpec({
                         bekreftelse.gjelderTil shouldBe bekreftelseMelding.svar.gjelderTil
                         bekreftelse.tilstandsLogg
                             .asList()
-                            .sortedBy(BekreftelseTilstand::timestamp)
+                            .sortedBy(BekreftelseTilstandStatus::timestamp)
                             .map { it::class }
                             .shouldContainExactly(
                                 IkkeKlarForUtfylling::class,
@@ -143,7 +143,7 @@ class BekreftelseStreamTest : FreeSpec({
                 bekreftelseTopic.pipeInput(key, bekreftelseMelding)
 
                 val stateStore =
-                    testDriver.getKeyValueStore<UUID, InternTilstand>(applicationConfig.kafkaTopology.internStateStoreName)
+                    testDriver.getKeyValueStore<UUID, BekreftelseTilstand>(applicationConfig.kafkaTopology.internStateStoreName)
                 val internTilstand = stateStore[periode.id]
 
                 internTilstand should {
@@ -208,7 +208,7 @@ class BekreftelseStreamTest : FreeSpec({
                 bekreftelseTopic.pipeInput(key, bekreftelseMelding)
 
                 val stateStore =
-                    testDriver.getKeyValueStore<UUID, InternTilstand>(applicationConfig.kafkaTopology.internStateStoreName)
+                    testDriver.getKeyValueStore<UUID, BekreftelseTilstand>(applicationConfig.kafkaTopology.internStateStoreName)
                 val internTilstand = stateStore[periode.id]
 
                 internTilstand should {
@@ -227,7 +227,7 @@ class BekreftelseStreamTest : FreeSpec({
                         bekreftelse.bekreftelseId shouldBe bekreftelseMelding.id
                         bekreftelse.tilstandsLogg
                             .asList()
-                            .sortedBy(BekreftelseTilstand::timestamp)
+                            .sortedBy(BekreftelseTilstandStatus::timestamp)
                             .map { it::class }
                             .shouldContainExactly(
                                 IkkeKlarForUtfylling::class,

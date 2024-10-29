@@ -5,8 +5,8 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
-import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstand
-import no.nav.paw.bekreftelsetjeneste.tilstand.initTilstand
+import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
+import no.nav.paw.bekreftelsetjeneste.tilstand.opprettBekreftelseTilstand
 import no.nav.paw.config.kafka.streams.genericProcess
 import no.nav.paw.config.kafka.streams.mapWithContext
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
@@ -27,7 +27,7 @@ fun StreamsBuilder.buildPeriodeStream(
                 "lagreEllerSlettPeriode",
                 internStateStoreName
             ) { periode ->
-                val keyValueStore: KeyValueStore<UUID, InternTilstand> =
+                val keyValueStore: KeyValueStore<UUID, BekreftelseTilstand> =
                     getStateStore(internStateStoreName)
                 val currentState = keyValueStore[periode.id]
                 val (arbeidsoekerId, kafkaKey) = currentState?.let { it.periode.arbeidsoekerId to it.periode.recordKey }
@@ -36,7 +36,7 @@ fun StreamsBuilder.buildPeriodeStream(
                     currentState == null && periode.avsluttet() -> Action.DoNothing
                     periode.avsluttet() -> Action.DeleteStateAndEmit(arbeidsoekerId, periode)
                     currentState == null -> Action.UpdateState(
-                        initTilstand(
+                        opprettBekreftelseTilstand(
                             id = arbeidsoekerId,
                             key = kafkaKey,
                             periode = periode
@@ -51,7 +51,7 @@ fun StreamsBuilder.buildPeriodeStream(
                 punctuation = null,
                 stateStoreNames = arrayOf(internStateStoreName)
             ) { record ->
-                val keyValueStore: KeyValueStore<UUID, InternTilstand> =
+                val keyValueStore: KeyValueStore<UUID, BekreftelseTilstand> =
                     getStateStore(internStateStoreName)
                 when (val action = record.value()) {
                     is Action.DeleteStateAndEmit -> {
@@ -80,5 +80,5 @@ fun Periode.avsluttet(): Boolean = avsluttet != null
 sealed interface Action {
     data object DoNothing : Action
     data class DeleteStateAndEmit(val arbeidsoekerId: Long, val periode: Periode) : Action
-    data class UpdateState(val state: InternTilstand) : Action
+    data class UpdateState(val state: BekreftelseTilstand) : Action
 }

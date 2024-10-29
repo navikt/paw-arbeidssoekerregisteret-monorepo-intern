@@ -13,14 +13,14 @@ data class Bekreftelse(
     val gjelderTil: Instant
 )
 
-inline fun <reified T: BekreftelseTilstand> Bekreftelse.tilstand(): T? = tilstandsLogg.get()
+inline fun <reified T: BekreftelseTilstandStatus> Bekreftelse.tilstand(): T? = tilstandsLogg.get()
 
-inline fun <reified T: BekreftelseTilstand> Bekreftelse.has(): Boolean = tilstand<T>() != null
+inline fun <reified T: BekreftelseTilstandStatus> Bekreftelse.has(): Boolean = tilstand<T>() != null
 
-fun Bekreftelse.sisteTilstand(): BekreftelseTilstand = tilstandsLogg.siste
+fun Bekreftelse.sisteTilstand(): BekreftelseTilstandStatus = tilstandsLogg.siste
 
-operator fun Bekreftelse.plus(bekreftelseTilstand: BekreftelseTilstand): Bekreftelse =
-    copy(tilstandsLogg = tilstandsLogg + bekreftelseTilstand)
+operator fun Bekreftelse.plus(bekreftelseTilstandStatus: BekreftelseTilstandStatus): Bekreftelse =
+    copy(tilstandsLogg = tilstandsLogg + bekreftelseTilstandStatus)
 
 fun opprettFoersteBekreftelse(
     tidligsteStartTidspunktForBekreftelse: Instant,

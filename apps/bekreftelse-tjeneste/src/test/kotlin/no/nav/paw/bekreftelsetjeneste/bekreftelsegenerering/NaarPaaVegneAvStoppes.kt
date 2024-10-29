@@ -8,7 +8,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
 import no.nav.paw.bekreftelsetjeneste.gracePeriodeUtloeper
-import no.nav.paw.bekreftelsetjeneste.internTilstand
+import no.nav.paw.bekreftelsetjeneste.bekreftelseTilstand
 import no.nav.paw.bekreftelsetjeneste.standardIntervaller
 import no.nav.paw.bekreftelsetjeneste.tilgjengelig
 import no.nav.paw.bekreftelsetjeneste.tilstand.IkkeKlarForUtfylling
@@ -18,13 +18,13 @@ import no.nav.paw.test.days
 import no.nav.paw.test.seconds
 import java.time.Instant
 
-class NaarAnsvaretGaarTilbakeTilRegisteret : FreeSpec({
+class NaarPaaVegneAvStoppes : FreeSpec({
     val intervaller = standardIntervaller.copy(
         migreringstidspunkt = Instant.parse("2022-01-27T23:12:11Z"),
     )
     val startTid = Instant.parse("2023-01-27T23:12:11Z")
-    val tilstand = internTilstand(periodeStart = startTid)
-    "Når ansvaret går tilbake til registeret" - {
+    val tilstand = bekreftelseTilstand(periodeStart = startTid)
+    "Når paaVegneAv stoppes" - {
         "og ingen tidligere bekreftelser finnes" - {
             "bare opprettes en intern bekreftelse før ${startTid + intervaller.interval - intervaller.tilgjengeligOffset}" {
                 val (interntTilstand, hendelser) = sequenceOf(tilstand to null)
@@ -80,7 +80,17 @@ class NaarAnsvaretGaarTilbakeTilRegisteret : FreeSpec({
             }
         }
         "uten at noen bekreftelser er levert, skal det genereres en ny bekreftelse som starter ved periode start" - {
-
+            val (interntTilstand, hendelser) = sequenceOf(tilstand to null)
+                .prosessererBekreftelser(
+                    bekreftelseKonfigurasjon = intervaller,
+                    wallClock = WallClock(startTid + 1.days)
+                ).first()
+            interntTilstand shouldNotBe tilstand
+            interntTilstand.bekreftelser.size shouldBe 1
+            interntTilstand.bekreftelser.first().gjelderFra shouldBe startTid
+            interntTilstand.bekreftelser.first().tilstandsLogg.siste.shouldBeInstanceOf<IkkeKlarForUtfylling>()
+            interntTilstand.bekreftelser.first().gjelderTil shouldBe Instant.parse("2023-02-12T23:00:00Z")
+            hendelser.shouldBeEmpty()
         }
     }
 })

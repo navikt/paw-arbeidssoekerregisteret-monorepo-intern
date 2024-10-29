@@ -6,13 +6,13 @@ import org.slf4j.LoggerFactory
 
 @JvmRecord
 data class BekreftelseTilstandsLogg(
-    val siste: BekreftelseTilstand,
-    val tidligere: List<BekreftelseTilstand>
+    val siste: BekreftelseTilstandStatus,
+    val tidligere: List<BekreftelseTilstandStatus>
 )
 
 private val bekreftelseTilstandsLoggProblemerLogger = LoggerFactory.getLogger(BekreftelseTilstandsLogg::class.java)
-operator fun BekreftelseTilstandsLogg.plus(bekreftelseTilstand: BekreftelseTilstand): BekreftelseTilstandsLogg =
-    (tidligere + siste + bekreftelseTilstand)
+operator fun BekreftelseTilstandsLogg.plus(bekreftelseTilstandStatus: BekreftelseTilstandStatus): BekreftelseTilstandsLogg =
+    (tidligere + siste + bekreftelseTilstandStatus)
         .groupBy { it::class }
         .values
         .map { gruppe ->
@@ -28,7 +28,7 @@ operator fun BekreftelseTilstandsLogg.plus(bekreftelseTilstand: BekreftelseTilst
             BekreftelseTilstandsLogg(siste, tidligere)
         }
 
-inline fun <reified T : BekreftelseTilstand> BekreftelseTilstandsLogg.get(): T? =
+inline fun <reified T : BekreftelseTilstandStatus> BekreftelseTilstandsLogg.get(): T? =
     tidligere.filterIsInstance<T>().firstOrNull() ?: siste as? T
 
-fun BekreftelseTilstandsLogg.asList(): NonEmptyList<BekreftelseTilstand> = nonEmptyListOf(siste) + tidligere
+fun BekreftelseTilstandsLogg.asList(): NonEmptyList<BekreftelseTilstandStatus> = nonEmptyListOf(siste) + tidligere

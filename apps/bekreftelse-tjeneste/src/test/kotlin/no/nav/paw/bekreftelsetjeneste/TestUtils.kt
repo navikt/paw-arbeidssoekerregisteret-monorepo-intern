@@ -25,7 +25,7 @@ inline fun <T1: Any, reified T2: T1> List<T1>.assertExactlyOne(f: T2.() -> Unit)
             it.first()
         }.apply(f)
 
-fun internTilstand(
+fun bekreftelseTilstand(
     periodeStart: Instant,
     periodeId: UUID = UUID.randomUUID(),
     identitetsnummer: String = "12345678901",
@@ -33,7 +33,7 @@ fun internTilstand(
     recordKey: Long = 1L,
     avsluttet: Instant? = null,
     bekreftelser: List<Bekreftelse> = emptyList()
-) = InternTilstand(
+) = BekreftelseTilstand(
     periode = PeriodeInfo(
         periodeId = periodeId,
         identitetsnummer = identitetsnummer,

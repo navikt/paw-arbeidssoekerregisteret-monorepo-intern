@@ -41,7 +41,7 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
                 val internTilstandStateStore = getStateStore<InternTilstandStateStore>(internStateStoreName)
                 val paaVegneAvTilstandStateStore = getStateStore<PaaVegneAvTilstandStateStore>(bekreftelsePaaVegneAvStateStoreName)
 
-                val gjeldendeTilstand: InternTilstand? = retrieveState(internTilstandStateStore, record)
+                val gjeldendeTilstand: BekreftelseTilstand? = retrieveState(internTilstandStateStore, record)
                 val paaVegneAvTilstand = paaVegneAvTilstandStateStore[record.value().periodeId]
                 val melding = record.value()
 
@@ -69,7 +69,7 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
 fun retrieveState(
     internTilstandStateStore: InternTilstandStateStore,
     record: Record<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>
-): InternTilstand? {
+): BekreftelseTilstand? {
     val periodeId = record.value().periodeId
     val state = internTilstandStateStore[periodeId]
 
@@ -83,8 +83,8 @@ fun retrieveState(
 )
 fun processPawNamespace(
     hendelse: no.nav.paw.bekreftelse.melding.v1.Bekreftelse,
-    gjeldeneTilstand: InternTilstand
-): Pair<InternTilstand, List<BekreftelseHendelse>> {
+    gjeldeneTilstand: BekreftelseTilstand
+): Pair<BekreftelseTilstand, List<BekreftelseHendelse>> {
     val bekreftelse = gjeldeneTilstand.findBekreftelse(hendelse.id)
 
     if (bekreftelse == null) {
@@ -114,14 +114,14 @@ fun processPawNamespace(
     }
 }
 
-fun InternTilstand.findBekreftelse(id: UUID): Bekreftelse? = bekreftelser.find { it.bekreftelseId == id }
+fun BekreftelseTilstand.findBekreftelse(id: UUID): Bekreftelse? = bekreftelser.find { it.bekreftelseId == id }
 
 @WithSpan(
     value = "behandleGyldigSvar",
     kind = SpanKind.INTERNAL
 )
 fun behandleGyldigSvar(
-    gjeldeneTilstand: InternTilstand,
+    gjeldeneTilstand: BekreftelseTilstand,
     record: no.nav.paw.bekreftelse.melding.v1.Bekreftelse,
     bekreftelse: Bekreftelse
 ): Pair<List<BekreftelseHendelse>, Bekreftelse> {

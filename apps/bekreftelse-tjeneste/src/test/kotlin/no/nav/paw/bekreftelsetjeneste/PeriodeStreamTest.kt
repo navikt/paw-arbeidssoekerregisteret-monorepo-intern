@@ -7,8 +7,8 @@ import no.nav.paw.arbeidssoekerregisteret.testdata.kafkaKeyContext
 import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.metadata
 import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.periode
 import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
-import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstand
-import no.nav.paw.bekreftelsetjeneste.tilstand.initTilstand
+import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
+import no.nav.paw.bekreftelsetjeneste.tilstand.opprettBekreftelseTilstand
 import no.nav.paw.bekreftelsetjeneste.topology.InternTilstandStateStore
 import java.time.Instant
 
@@ -38,8 +38,8 @@ class PeriodeStreamTest : FreeSpec({
 
                 val internTilstandStateStore: InternTilstandStateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
                 val currentState = internTilstandStateStore.get(periode.id)
-                currentState.shouldBeInstanceOf<InternTilstand>()
-                currentState shouldBe initTilstand(id, key, periode)
+                currentState.shouldBeInstanceOf<BekreftelseTilstand>()
+                currentState shouldBe opprettBekreftelseTilstand(id, key, periode)
             }
         }
     }
@@ -51,7 +51,7 @@ class PeriodeStreamTest : FreeSpec({
                 periodeTopic.pipeInput(key, periode)
                 val internTilstandStateStore: InternTilstandStateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
 
-                internTilstandStateStore.get(periode.id).shouldBeInstanceOf<InternTilstand>()
+                internTilstandStateStore.get(periode.id).shouldBeInstanceOf<BekreftelseTilstand>()
 
                 val (_, _, periode2) = periode(periodeId = periode.id, identitetsnummer = identitetsnummer, avsluttetMetadata = metadata(tidspunkt = startTime))
                 periodeTopic.pipeInput(key, periode2)
@@ -70,7 +70,7 @@ class PeriodeStreamTest : FreeSpec({
             with(kafkaKeyContext()) {
                 val (id, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
                 val internTilstandStateStore: InternTilstandStateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
-                internTilstandStateStore.put(periode.id, initTilstand(id, key, periode))
+                internTilstandStateStore.put(periode.id, opprettBekreftelseTilstand(id, key, periode))
                 val state = internTilstandStateStore.get(periode.id)
                 periodeTopic.pipeInput(key, periode)
 

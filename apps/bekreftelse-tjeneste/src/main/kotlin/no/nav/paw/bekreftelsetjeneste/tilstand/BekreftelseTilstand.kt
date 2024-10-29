@@ -1,29 +1,43 @@
 package no.nav.paw.bekreftelsetjeneste.tilstand
 
-import com.fasterxml.jackson.annotation.JsonSubTypes
-import com.fasterxml.jackson.annotation.JsonTypeInfo
-import java.time.Instant
+import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 
-@JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    include = JsonTypeInfo.As.PROPERTY,
-    property = "type"
+const val MAKS_ANTALL_HISTRISKE_BEKREFTELSER = 20
+
+@JvmRecord
+data class BekreftelseTilstand(
+    val periode: PeriodeInfo,
+    val bekreftelser: List<Bekreftelse>
 )
-@JsonSubTypes(
-    JsonSubTypes.Type(value = IkkeKlarForUtfylling::class, name = "IkkeKlarForUtfylling"),
-    JsonSubTypes.Type(value = KlarForUtfylling::class, name = "KlarForUtfylling"),
-    JsonSubTypes.Type(value = VenterSvar::class, name = "VenterSvar"),
-    JsonSubTypes.Type(value = GracePeriodeUtloept::class, name = "GracePeriodeUtloept"),
-    JsonSubTypes.Type(value = Levert::class, name = "Levert")
-)
-sealed interface BekreftelseTilstand {
-    val timestamp: Instant
+
+fun opprettBekreftelseTilstand(
+    id: Long,
+    key: Long,
+    periode: Periode,
+): BekreftelseTilstand =
+    BekreftelseTilstand(
+        periode = PeriodeInfo(
+            periodeId = periode.id,
+            identitetsnummer = periode.identitetsnummer,
+            arbeidsoekerId = id,
+            recordKey = key,
+            startet = periode.startet.tidspunkt,
+            avsluttet = periode.avsluttet?.tidspunkt
+        ),
+        bekreftelser = emptyList()
+    )
+
+fun BekreftelseTilstand.oppdaterBekreftelse(ny: Bekreftelse): BekreftelseTilstand {
+    val nyBekreftelser = bekreftelser.map {
+        if (it.bekreftelseId == ny.bekreftelseId) ny else it
+    }
+    return copy(bekreftelser = nyBekreftelser)
 }
 
-data class GracePeriodeUtloept(override val timestamp: Instant) : BekreftelseTilstand
-data class GracePeriodeVarselet(override val timestamp: Instant) : BekreftelseTilstand
-data class IkkeKlarForUtfylling(override val timestamp: Instant) : BekreftelseTilstand
-data class KlarForUtfylling(override val timestamp: Instant) : BekreftelseTilstand
-data class Levert(override val timestamp: Instant) : BekreftelseTilstand
-data class VenterSvar(override val timestamp: Instant) : BekreftelseTilstand
-data class InternBekreftelsePaaVegneAvStartet(override val timestamp: Instant) : BekreftelseTilstand
+fun BekreftelseTilstand.leggTilNyEllerOppdaterBekreftelse(ny: Bekreftelse): BekreftelseTilstand {
+    val nyBekreftelser = bekreftelser
+        .filter { it.bekreftelseId != ny.bekreftelseId }
+        .plus(ny)
+    return copy(bekreftelser = nyBekreftelser)
+}
+

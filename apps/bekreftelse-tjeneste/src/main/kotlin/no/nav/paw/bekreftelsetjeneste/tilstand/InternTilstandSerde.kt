@@ -7,25 +7,25 @@ import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
 
-class InternTilstandSerde : Serde<InternTilstand> {
-    override fun serializer(): Serializer<InternTilstand> {
+class InternTilstandSerde : Serde<BekreftelseTilstand> {
+    override fun serializer(): Serializer<BekreftelseTilstand> {
         return InternTilstandSerializer
     }
 
-    override fun deserializer(): Deserializer<InternTilstand> {
+    override fun deserializer(): Deserializer<BekreftelseTilstand> {
         return InternTilstandDeserializer
     }
 }
 
-object InternTilstandSerializer : Serializer<InternTilstand> {
-    override fun serialize(topic: String?, data: InternTilstand?): ByteArray {
+object InternTilstandSerializer : Serializer<BekreftelseTilstand> {
+    override fun serialize(topic: String?, data: BekreftelseTilstand?): ByteArray {
         return internTilstandObjectMapper.writeValueAsBytes(data)
     }
 }
 
-object InternTilstandDeserializer : Deserializer<InternTilstand> {
-    override fun deserialize(topic: String?, data: ByteArray?): InternTilstand {
-        return internTilstandObjectMapper.readValue(data, InternTilstand::class.java)
+object InternTilstandDeserializer : Deserializer<BekreftelseTilstand> {
+    override fun deserialize(topic: String?, data: ByteArray?): BekreftelseTilstand {
+        return internTilstandObjectMapper.readValue(data, BekreftelseTilstand::class.java)
     }
 }
 
