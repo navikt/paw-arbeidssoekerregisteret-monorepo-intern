@@ -29,7 +29,7 @@ class KafkaKeys(private val database: Database) {
                 IdentitetTabell
                     .selectAll()
                     .where { IdentitetTabell.kafkaKey greaterEq currentPos and (IdentitetTabell.kafkaKey less (currentPos + maxSize)) }
-                    .orderBy(column = IdentitetTabell.kafkaKey, order = SortOrder.DESC)
+                    .orderBy(column = IdentitetTabell.kafkaKey, order = SortOrder.ASC)
                     .limit(maxSize)
                     .associate {
                         Identitetsnummer(it[IdentitetTabell.identitetsnummer]) to ArbeidssoekerId(it[IdentitetTabell.kafkaKey])

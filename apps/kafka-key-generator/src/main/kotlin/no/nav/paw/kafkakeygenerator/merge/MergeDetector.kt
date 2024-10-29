@@ -6,11 +6,14 @@ import no.nav.paw.kafkakeygenerator.pdl.PdlIdentitesTjeneste
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import no.nav.paw.pdl.graphql.generated.hentidenter.IdentInformasjon
+import org.slf4j.LoggerFactory
 
 class MergeDetector(
     private val pdlIdentitesTjeneste: PdlIdentitesTjeneste,
     private val kafkaKeys: KafkaKeys
 ) {
+    private val logger = LoggerFactory.getLogger("MergeDetector")
+
     suspend fun findMerges(batchSize: Int): Either<Failure, Long> {
         require(batchSize > 0) { "Batch size must be greater than 0" }
         return kafkaKeys.hentSisteArbeidssoekerId()
@@ -31,6 +34,7 @@ class MergeDetector(
         currentPos: Long,
         results: Either<Failure, Long>
     ): Either<Failure, Long> {
+        logger.info("Processing range:stopAt={}, maxSize={}, currentPos={}, results={}", stopAt, maxSize, currentPos, results)
         return when (results) {
             is Left -> {
                 return results
