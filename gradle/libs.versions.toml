@@ -1,6 +1,8 @@
 [versions]
 noNavSecurityVersion = "5.0.5"
+noNavSecurityMockOauth2ServerVersion = "2.1.5"
 noNavCommonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
+navPoaoTilgangClientVersion = "2024.04.29_13.59-a0ddddd36ac9"
 arbeidssokerregisteretVersion = "1.9348086045.48-1"
 bekreftelseSchemaVersion = "24.10.28.13-1"
 arrowVersion = "1.2.4"
@@ -66,7 +68,6 @@ opentelemetry-ktor = { group = "io.opentelemetry.instrumentation", name = "opent
 opentelemetry-annotations = { group = "io.opentelemetry.instrumentation", name = "opentelemetry-instrumentation-annotations", version.ref = "otelInstrumentationVersion" }
 micrometerCore = { group = "io.micrometer", name = "micrometer-core", version.ref = "micrometerVersion" }
 micrometer-registryPrometheus = { group = "io.micrometer", name = "micrometer-registry-prometheus", version.ref = "micrometerVersion" }
-paw-schema-main = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "main-avro-schema", version.ref = "arbeidssokerregisteretVersion" }
 kafka-clients = { group = "org.apache.kafka", name = "kafka-clients", version.ref = "orgApacheKafkaVersion" }
 kafka-streams-core = { group = "org.apache.kafka", name = "kafka-streams", version.ref = "orgApacheKafkaVersion" }
 kafka-streams-test = { group = "org.apache.kafka", name = "kafka-streams-test-utils", version.ref = "orgApacheKafkaVersion" }
@@ -76,11 +77,6 @@ avro-kafkaStreamsSerde = { group = "io.confluent", name = "kafka-streams-avro-se
 jackson-datatypeJsr310 = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version.ref = "comFasterxmlJacksonVersion" }
 jackson-kotlin = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "comFasterxmlJacksonVersion" }
 jackson-core = { group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "comFasterxmlJacksonVersion" }
-nav-common-tokenClient = { group = "no.nav.common", name = "token-client", version.ref = "noNavCommonVersion" }
-nav-common-log = { group = "no.nav.common", name = "log", version.ref = "noNavCommonVersion" }
-nav-common-auditLog = { group = "no.nav.common", name = "audit-log", version.ref = "noNavCommonVersion" }
-nav-security-tokenValidationKtorV2 = { group = "no.nav.security", name = "token-validation-ktor-v2", version.ref = "noNavSecurityVersion" }
-nav-security-tokenClientCore = { group = "no.nav.security", name = "token-client-core", version.ref = "noNavSecurityVersion" }
 graphql-client = { group = "com.expediagroup", name = "graphql-kotlin-client", version.ref = "graphqlClientVersion" }
 graphql-ktor-client = { group = "com.expediagroup", name = "graphql-kotlin-ktor-client", version.ref = "graphqlClientVersion" }
 hoplite-core = { group = "com.sksamuel.hoplite", name = "hoplite-core", version.ref = "comSksamuelHopliteVersion" }
@@ -102,9 +98,16 @@ database-postgres-driver = { group = "org.postgresql", name = "postgresql", vers
 database-flyway-core = { group = "org.flywaydb", name = "flyway-core", version.ref = "flywayVersion" }
 database-flyway-postgres = { group = "org.flywaydb", name = "flyway-database-postgresql", version.ref = "flywayVersion" }
 database-hikari-connectionPool = { group = "com.zaxxer", name = "HikariCP", version.ref = "hikariVersion" }
-poao-tilgangClient = { group = "no.nav.poao-tilgang", name = "client", version = "2024.04.29_13.59-a0ddddd36ac9" }
-paw-schema-bekreftelse-paavegneav = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "bekreftelse-paavegneav-schema", version.ref = "bekreftelseSchemaVersion" }
-paw-schema-bekreftelsesmelding = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "bekreftelsesmelding-schema", version.ref = "bekreftelseSchemaVersion" }
+nav-common-tokenClient = { group = "no.nav.common", name = "token-client", version.ref = "noNavCommonVersion" }
+nav-common-log = { group = "no.nav.common", name = "log", version.ref = "noNavCommonVersion" }
+nav-common-auditLog = { group = "no.nav.common", name = "audit-log", version.ref = "noNavCommonVersion" }
+nav-security-tokenClientCore = { group = "no.nav.security", name = "token-client-core", version.ref = "noNavSecurityVersion" }
+nav-security-tokenValidationKtorV2 = { group = "no.nav.security", name = "token-validation-ktor-v2", version.ref = "noNavSecurityVersion" }
+nav-security-mockOauth2Server = { group = "no.nav.security", name = "mock-oauth2-server", version.ref = "noNavSecurityMockOauth2ServerVersion" }
+nav-poao-tilgangClient = { group = "no.nav.poao-tilgang", name = "client", version.ref = "navPoaoTilgangClientVersion" }
+nav-paw-schema-main = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "main-avro-schema", version.ref = "arbeidssokerregisteretVersion" }
+nav-paw-schema-bekreftelse-paavegneav = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "bekreftelse-paavegneav-schema", version.ref = "bekreftelseSchemaVersion" }
+nav-paw-schema-bekreftelsesmelding = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "bekreftelsesmelding-schema", version.ref = "bekreftelseSchemaVersion" }
 
 [bundles]
 ktorServerWithNettyAndMicrometer = ["ktor-server-core", "ktor-server-coreJvm", "ktor-server-netty", "ktor-server-metricsMicrometer"]

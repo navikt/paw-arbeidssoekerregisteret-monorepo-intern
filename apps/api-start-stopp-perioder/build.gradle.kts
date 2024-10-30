@@ -34,7 +34,7 @@ dependencies {
     implementation(libs.nav.common.tokenClient)
     implementation(libs.nav.common.auditLog)
     implementation(libs.nav.common.log)
-    implementation(libs.poao.tilgangClient)
+    implementation(libs.nav.poao.tilgangClient)
     implementation(libs.logbackClassic)
     implementation(libs.logstashLogbackEncoder)
     implementation(libs.kafka.clients)

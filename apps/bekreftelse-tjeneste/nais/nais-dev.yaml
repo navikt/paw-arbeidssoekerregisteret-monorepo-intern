@@ -20,15 +20,15 @@ spec:
     - name: KAFKA_PAW_BEKREFTELSE_PAA_VEGNE_AV_TOPIC
       value: "paw.arbeidssoker-bekreftelse-paavegneav-beta-v1"
     - name: KAFKA_PUNCTUATOR_INTERVAL
-      value: "PT1M"
+      value: "PT1H"
     - name: BEKREFTELSE_MIGRERINGSTIDSPUNKT
       value: "2024-09-29T22:00:00Z"
     - name: BEKREFTELSE_INTERVAL
-      value: "PT28M"
+      value: "P1D"
     - name: BEKREFTELSE_GRACEPERIODE
-      value: "PT14M"
+      value: "PT12H"
     - name: BEKREFTELSE_TILGJENGELIG_OFFSET
-      value: "PT6M"
+      value: "PT6H"
   azure:
     application:
       enabled: true

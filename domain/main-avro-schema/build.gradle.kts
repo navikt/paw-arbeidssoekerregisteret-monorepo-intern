@@ -10,8 +10,8 @@ val schema by configurations.creating {
 }
 
 dependencies {
-    schema(libs.paw.schema.main)
-    api(libs.paw.schema.main)
+    schema(libs.nav.paw.schema.main)
+    api(libs.nav.paw.schema.main)
     api(libs.avro.core)
 }
 
