@@ -42,7 +42,7 @@ dependencies {
     implementation(libs.nav.security.tokenValidationKtorV2)
 
     // Authorization
-    implementation(libs.poao.tilgangClient)
+    implementation(libs.nav.poao.tilgangClient)
 
     // Documentation
     implementation(libs.ktor.server.openapi)
