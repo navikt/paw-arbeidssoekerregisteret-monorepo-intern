@@ -6,7 +6,11 @@ import org.apache.kafka.clients.producer.Callback
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
-import org.apache.kafka.common.*
+import org.apache.kafka.common.Metric
+import org.apache.kafka.common.MetricName
+import org.apache.kafka.common.PartitionInfo
+import org.apache.kafka.common.TopicPartition
+import org.apache.kafka.common.Uuid
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.CompletableFuture
@@ -26,6 +30,7 @@ class ProducerMock<K, V> : Producer<K, V> {
 
     override fun beginTransaction() {}
 
+    @Deprecated(message = "Use sendOffsetsToTransaction(Map<TopicPartition, OffsetAndMetadata>, ConsumerGroupMetadata")
     override fun sendOffsetsToTransaction(
         offsets: MutableMap<TopicPartition, OffsetAndMetadata>?,
         consumerGroupId: String?
