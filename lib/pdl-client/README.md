@@ -1,6 +1,6 @@
 # paw-pdl-client
 
-Klient for å gjøre spørringer mot Persondataløsningen [PDL](https://pdldocs-navno.msappproxy.net/ekstern/index.html).
+Klient for å gjøre spørringer mot Persondataløsningen [PDL](https://pdl-docs.ansatt.nav.no/ekstern/index.html).
 
 ### Bruk av paw-pdl-client
 

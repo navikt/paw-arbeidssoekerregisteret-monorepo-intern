@@ -1,8 +1,13 @@
 query($ident: ID!, $historisk: Boolean) {
     hentPerson(ident: $ident) {
-        foedsel {
+        foedselsdato {
             foedselsdato
             foedselsaar
+        }
+        foedested {
+            foedeland
+            foedested
+            foedekommune
         }
         statsborgerskap(historikk: $historisk) {
             land

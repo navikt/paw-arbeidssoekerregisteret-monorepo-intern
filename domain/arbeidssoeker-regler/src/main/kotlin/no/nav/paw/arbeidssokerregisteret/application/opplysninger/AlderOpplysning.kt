@@ -1,14 +1,14 @@
 package no.nav.paw.arbeidssokerregisteret.application.opplysninger
 
-import no.nav.paw.pdl.graphql.generated.hentperson.Foedsel
+import no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning.*
 import java.time.LocalDate
 import java.time.Month
 
-fun alderOpplysning(foedsel: Foedsel?): Set<Opplysning> {
-    val dateOfBirth = foedsel?.foedselsdato?.let(LocalDate::parse)
+fun alderOpplysning(foedselsdato: Foedselsdato?): Set<Opplysning> {
+    val dateOfBirth = foedselsdato?.foedselsdato?.let(LocalDate::parse)
     val lastDayInYearOfBirth =
-        { foedsel?.foedselsaar?.let { foedselsAar -> LocalDate.of(foedselsAar, Month.DECEMBER, 31) } }
+        { foedselsdato?.foedselsaar?.let { foedselsAar -> LocalDate.of(foedselsAar, Month.DECEMBER, 31) } }
     val dob = dateOfBirth ?: lastDayInYearOfBirth()
     val preliminaryEvalResult = if (dateOfBirth != null) emptySet() else setOf(UkjentFoedselsdato)
     return if (dob != null) {

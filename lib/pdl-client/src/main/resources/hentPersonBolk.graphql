@@ -2,9 +2,14 @@ query($identer: [ID!]!, $historisk: Boolean) {
     hentPersonBolk(identer: $identer) {
         ident
         person {
-            foedsel {
+            foedselsdato {
                 foedselsdato
                 foedselsaar
+            }
+            foedested {
+                foedeland
+                foedested
+                foedekommune
             }
             statsborgerskap(historikk: $historisk) {
                 land

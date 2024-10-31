@@ -120,7 +120,8 @@ class RequestValidatorTest : FreeSpec({
                     coEvery {
                         personInfoService.hentPersonInfo(requestScope, identitsnummer.verdi)
                     } returns Person(
-                        foedsel = listOf(Foedsel("2000-01-01", 2000)),
+                        foedselsdato = listOf(Foedselsdato("2000-01-01", 2000)),
+                        foedested = listOf(Foedested("NOR", "Norge", "NO")),
                         bostedsadresse = emptyList(),
                         folkeregisterpersonstatus = listOf(
                             Folkeregisterpersonstatus(
@@ -162,7 +163,8 @@ class RequestValidatorTest : FreeSpec({
                     coEvery {
                         personInfoService.hentPersonInfo(requestScope, identitsnummer.verdi)
                     } returns Person(
-                        foedsel = listOf(Foedsel("2000-01-01", 2000)),
+                        foedselsdato = listOf(Foedselsdato("2000-01-01", 2000)),
+                        foedested = listOf(Foedested("NOR", "Oslo", "Oslo")),
                         bostedsadresse = emptyList(),
                         folkeregisterpersonstatus = listOf(
                             Folkeregisterpersonstatus(
@@ -194,7 +196,8 @@ class RequestValidatorTest : FreeSpec({
                     coEvery {
                         personInfoService.hentPersonInfo(requestScope, identitsnummer.verdi)
                     } returns Person(
-                        foedsel = listOf(Foedsel("2000-01-01", 2000)),
+                        foedselsdato = listOf(Foedselsdato("2000-01-01", 2000)),
+                        foedested = listOf(Foedested("NOR", "Oslo", "Oslo")),
                         bostedsadresse = emptyList(),
                         folkeregisterpersonstatus = listOf(
                             Folkeregisterpersonstatus(
@@ -250,7 +253,8 @@ class RequestValidatorTest : FreeSpec({
                     coEvery {
                         personInfoService.hentPersonInfo(requestScope, identitsnummer.verdi)
                     } returns Person(
-                        foedsel = emptyList(),
+                        foedselsdato = emptyList(),
+                        foedested = listOf(Foedested("ARG", "Argentina", "AR")),
                         bostedsadresse = emptyList(),
                         folkeregisterpersonstatus = emptyList(),
                         opphold = emptyList(),
@@ -274,7 +278,8 @@ class RequestValidatorTest : FreeSpec({
                     coEvery {
                         personInfoService.hentPersonInfo(requestScope, identitsnummer.verdi)
                     } returns Person(
-                        foedsel = listOf(Foedsel("2000-01-01", 2000)),
+                        foedselsdato = listOf(Foedselsdato("2000-01-01", 2000)),
+                        foedested = listOf(Foedested("ARG", "Argentina", "AR")),
                         bostedsadresse = emptyList(),
                         folkeregisterpersonstatus = listOf(
                             Folkeregisterpersonstatus(
@@ -305,7 +310,8 @@ class RequestValidatorTest : FreeSpec({
                     coEvery {
                         personInfoService.hentPersonInfo(requestScope, identitsnummer.verdi)
                     } returns Person(
-                        foedsel = listOf(Foedsel("2000-01-01", 2000)),
+                        foedselsdato = listOf(Foedselsdato("2000-01-01", 2000)),
+                        foedested = listOf(Foedested("ARG", "Argentina", "AR")),
                         bostedsadresse = emptyList(),
                         folkeregisterpersonstatus = listOf(
                             Folkeregisterpersonstatus(

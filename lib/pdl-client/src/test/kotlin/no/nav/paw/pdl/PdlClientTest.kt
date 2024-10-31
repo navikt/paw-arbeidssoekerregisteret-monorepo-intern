@@ -137,6 +137,30 @@ class PdlClientTest : FreeSpec({
 
         resultat!!.first().person!!.folkeregisterpersonstatus.map { it.forenkletStatus } shouldContain forventet
     }
+
+    "Forventer gyldig respons fra hentFoedested" {
+        val respons = readResource("hentFoedested-response.json")
+        val pdlClient = mockPdlClient(respons)
+
+        val resultat = runBlocking {
+            pdlClient.hentFoedested("2649500819544", callId, null, navConsumerId, "B123")
+        }
+        val forventet = "NOR"
+
+        resultat!!.foedeland shouldBe forventet
+    }
+
+    "Forventer gyldig respons fra hentFoedselsdato" {
+        val respons = readResource("hentFoedselsdato-response.json")
+        val pdlClient = mockPdlClient(respons)
+
+        val resultat = runBlocking {
+            pdlClient.hentFoedselsdato("2649500819544", callId, null, navConsumerId, "B123")
+        }
+        val forventet = "1986-11-26"
+
+        resultat!!.foedselsdato shouldBe forventet
+    }
 })
 
 private fun readResource(filename: String) = ClassLoader.getSystemResource(filename).readText()

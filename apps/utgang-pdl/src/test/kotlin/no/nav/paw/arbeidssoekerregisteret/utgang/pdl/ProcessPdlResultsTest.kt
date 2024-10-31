@@ -17,7 +17,8 @@ import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.processPdlResultsV2
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseState
 import no.nav.paw.arbeidssokerregisteret.application.InngangsReglerV3
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
-import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Foedsel
+import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Foedselsdato
+import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Foedested
 import no.nav.paw.pdl.graphql.generated.hentpersonbolk.HentPersonBolkResult
 import org.apache.kafka.streams.KeyValue
 import org.slf4j.Logger
@@ -29,7 +30,8 @@ class ProcessPdlResultsTest : FreeSpec({
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     "processPdlResults should correctly set avsluttPeriode to true if multiple problems in pdlEvaluering" {
         val person = getPerson(
-            foedsel = Foedsel("2014-01-01"),
+            foedselsdato = Foedselsdato("2014-01-01", 2014),
+            foedested = Foedested("NOR", "Oslo", "Oslo"),
             statsborgerskap = getStatsborgerskap("NOR"),
             opphold = null,
             folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("ikkeBosatt"),
@@ -71,7 +73,8 @@ class ProcessPdlResultsTest : FreeSpec({
             val logger = mockk<Logger>(relaxed = true)
 
             val utflyttetPerson = getPerson(
-                foedsel = Foedsel("2000-01-01"),
+                foedselsdato = Foedselsdato("2000-01-01", 2000),
+                foedested = Foedested("BRA", "Brasilia", "Brasilia"),
                 statsborgerskap = getStatsborgerskap("BRA"),
                 opphold = null,
                 folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("ikkeBosatt"),
@@ -105,7 +108,8 @@ class ProcessPdlResultsTest : FreeSpec({
             val logger = mockk<Logger>(relaxed = true)
 
             val doedPerson = getPerson(
-                foedsel = Foedsel("2006-01-01"),
+                foedselsdato = Foedselsdato("2006-01-01", 2006),
+                foedested = Foedested("NOR", "Oslo", "Oslo"),
                 statsborgerskap = getStatsborgerskap("NOR"),
                 opphold = null,
                 folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("doedIFolkeregisteret"),
@@ -139,7 +143,8 @@ class ProcessPdlResultsTest : FreeSpec({
             val logger = mockk<Logger>(relaxed = true)
 
             val savnetPerson = getPerson(
-                foedsel = Foedsel("2006-01-01"),
+                foedselsdato = Foedselsdato("2006-01-01", 2006),
+                foedested = Foedested("NOR", "Oslo", "Oslo"),
                 statsborgerskap = getStatsborgerskap("NOR"),
                 opphold = null,
                 folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("forsvunnet"),
@@ -175,7 +180,8 @@ class ProcessPdlResultsTest : FreeSpec({
         "if Folkeregisterpersonstatus is 'bosattEtterFolkeregisterloven'" {
             val logger = mockk<Logger>(relaxed = true)
             val bosattPerson = getPerson(
-                foedsel = Foedsel("2000-01-01"),
+                foedselsdato = Foedselsdato("2000-01-01", 2000),
+                foedested = Foedested("NOR", "Oslo", "Oslo"),
                 statsborgerskap = getStatsborgerskap("NOR"),
                 opphold = getOppholdstillatelse(),
                 folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("bosattEtterFolkeregisterloven"),
@@ -208,7 +214,8 @@ class ProcessPdlResultsTest : FreeSpec({
             val logger = mockk<Logger>(relaxed = true)
 
             val savnetPerson = getPerson(
-                foedsel = Foedsel("2000-01-01"),
+                foedselsdato = Foedselsdato("2000-01-01", 2000),
+                foedested = Foedested("NOR", "Oslo", "Oslo"),
                 statsborgerskap = getStatsborgerskap("NOR"),
                 opphold = getOppholdstillatelse(),
                 folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("forsvunnet"),
@@ -246,7 +253,8 @@ class ProcessPdlResultsTest : FreeSpec({
             val logger = mockk<Logger>(relaxed = true)
 
             val bosattPerson = getPerson(
-                foedsel = Foedsel("2000-01-01"),
+                foedselsdato = Foedselsdato("2000-01-01", 2000),
+                foedested = Foedested("NOR", "Oslo", "Oslo"),
                 statsborgerskap = getStatsborgerskap("NOR"),
                 opphold = getOppholdstillatelse(),
                 folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("bosattEtterFolkeregisterloven"),
@@ -367,7 +375,8 @@ class ProcessPdlResultsTest : FreeSpec({
         val logger = mockk<Logger>(relaxed = true)
 
         val validPerson = getPerson(
-            foedsel = Foedsel("2000-01-01"),
+            foedselsdato = Foedselsdato("2000-01-01", 2000),
+            foedested = Foedested("NOR", "Oslo", "Oslo"),
             statsborgerskap = getStatsborgerskap("NOR"),
             opphold = getOppholdstillatelse(),
             folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("bosatt"),

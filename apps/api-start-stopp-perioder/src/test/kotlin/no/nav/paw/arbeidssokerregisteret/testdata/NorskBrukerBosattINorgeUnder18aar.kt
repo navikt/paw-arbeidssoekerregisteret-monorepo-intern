@@ -12,7 +12,8 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
 import no.nav.paw.arbeidssokerregisteret.routes.apiRegel
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
-import no.nav.paw.pdl.graphql.generated.hentperson.Foedsel
+import no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato
+import no.nav.paw.pdl.graphql.generated.hentperson.Foedested
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 import no.nav.paw.pdl.graphql.generated.hentperson.Vegadresse
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -28,9 +29,10 @@ data object NorskBrukerBosattINorgeUnder18aar: TestCase {
         .withZone(ZoneId.systemDefault())
     override val id = "12345678909"
     override val person = Person(
-        foedsel = Instant.now().let { dato ->
-            Foedsel(dateFormatter.format(dato), yearFormatter.format(dato).toInt()).list()
+        foedselsdato = Instant.now().let { dato ->
+            Foedselsdato(dateFormatter.format(dato), yearFormatter.format(dato).toInt()).list()
         },
+        foedested = Foedested("NOR", "Bergen", "Bergen").list(),
         statsborgerskap = "NOR".statsborgerskap(),
         opphold = emptyList(),
         folkeregisterpersonstatus = bosatt.folkeregisterpersonstatus(),

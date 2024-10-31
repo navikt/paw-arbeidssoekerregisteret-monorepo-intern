@@ -12,7 +12,8 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
 import no.nav.paw.arbeidssokerregisteret.routes.apiRegel
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
-import no.nav.paw.pdl.graphql.generated.hentperson.Foedsel
+import no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato
+import no.nav.paw.pdl.graphql.generated.hentperson.Foedested
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 import no.nav.paw.pdl.graphql.generated.hentperson.UtenlandskAdresse
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -23,7 +24,8 @@ import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Opplysning as Ap
 data object IkkeEuEoesBrukerIkkeBosatt: TestCase {
     override val id = "12345678919"
     override val person = Person(
-        foedsel = Foedsel("2000-03-04", 2000).list(),
+        foedselsdato = Foedselsdato("2000-03-04", 2000).list(),
+        foedested = Foedested("USA", "New York", "New York").list(),
         statsborgerskap = "USA".statsborgerskap(),
         opphold = ("2018-01-01" to "2018-02-01").opphold(),
         folkeregisterpersonstatus = dNummer.folkeregisterpersonstatus(),

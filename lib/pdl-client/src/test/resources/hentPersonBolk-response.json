@@ -16,10 +16,17 @@
               }
             }
           ],
-          "foedsel": [
+          "foedselsdato": [
             {
               "foedselsdato": "1986-11-26",
               "foedselsaar": "1986"
+            }
+          ],
+          "foedested": [
+            {
+              "foedeland": "NOR",
+              "foedested": "Oslo",
+              "foedekommune": "Oslo"
             }
           ],
           "opphold": [

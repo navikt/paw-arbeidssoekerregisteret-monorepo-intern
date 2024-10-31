@@ -3,7 +3,6 @@ package no.nav.paw.arbeidssokerregisteret.testdata
 import io.kotest.common.runBlocking
 import io.ktor.http.*
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.AarsakTilAvvisningV2
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiRegelId
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
 import no.nav.paw.arbeidssokerregisteret.*
 import no.nav.paw.arbeidssokerregisteret.application.IkkeBosattINorgeIHenholdTilFolkeregisterloven
@@ -14,7 +13,8 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
 import no.nav.paw.arbeidssokerregisteret.routes.apiRegel
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
-import no.nav.paw.pdl.graphql.generated.hentperson.Foedsel
+import no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato
+import no.nav.paw.pdl.graphql.generated.hentperson.Foedested
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 import no.nav.paw.pdl.graphql.generated.hentperson.UtenlandskAdresse
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -31,12 +31,13 @@ data object SvenskBrukerBosattISverigeUnder18aar : TestCase {
         .withZone(ZoneId.systemDefault())
     override val id = "12345678909"
     override val person = Person(
-        foedsel = Instant.now().let { dato ->
-            Foedsel(
+        foedselsdato = Instant.now().let { dato ->
+            Foedselsdato(
                 dateFormatter.format(dato),
                 yearFormatter.format(dato).toInt()
             ).list()
         },
+        foedested = Foedested("NOR", "Bergen", "Bergen").list(),
         statsborgerskap = "SWE".statsborgerskap(),
         opphold = emptyList(),
         folkeregisterpersonstatus = dNummer.folkeregisterpersonstatus(),

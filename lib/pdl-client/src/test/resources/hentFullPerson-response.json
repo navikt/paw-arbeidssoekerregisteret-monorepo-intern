@@ -80,9 +80,17 @@
           "land": "NOR"
         }
       ],
-      "foedsel": [
+      "foedselsdato": [
         {
-          "foedselsdato": "1984-01-31"
+          "foedselsdato": "1986-11-26",
+          "foedselsaar": 1986
+        }
+      ],
+      "foedested": [
+        {
+          "foedeland": "NOR",
+          "foedested": "Oslo",
+          "foedekommune": "Oslo"
         }
       ],
       "doedsfall": [],

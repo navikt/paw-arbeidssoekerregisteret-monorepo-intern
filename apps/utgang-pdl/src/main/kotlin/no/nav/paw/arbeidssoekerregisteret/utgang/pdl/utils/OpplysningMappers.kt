@@ -19,11 +19,11 @@ val negativeOpplysninger = setOf(
 )
 
 fun genererPersonFakta(person: Person): Set<no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning> {
-    require(person.foedsel.size <= 1) { "Personen har flere fødselsdatoer enn forventet" }
+    require(person.foedselsdato.size <= 1) { "Personen har flere fødselsdatoer enn forventet" }
     require(person.bostedsadresse.size <= 1) { "Personen har flere bostedsadresser enn forventet" }
     require(person.opphold.size <= 1) { "Personen har flere opphold enn forventet" }
 
-    return alderOpplysning(person.foedsel.firstOrNull()) +
+    return alderOpplysning(person.foedselsdato.firstOrNull()) +
             adreseOpplysning(person.bostedsadresse.firstOrNull()) +
             euEoesStatsborgerOpplysning(person.statsborgerskap) +
             gbrStatsborgerOpplysning(person.statsborgerskap) +

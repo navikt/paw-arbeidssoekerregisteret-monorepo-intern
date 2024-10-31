@@ -1,21 +1,21 @@
 package no.nav.paw.pdl
 
-import no.nav.paw.pdl.graphql.generated.HentFoedsel
-import no.nav.paw.pdl.graphql.generated.hentfoedsel.Foedsel
+import no.nav.paw.pdl.graphql.generated.hentfoedselsdato.Foedselsdato
+import no.nav.paw.pdl.graphql.generated.HentFoedselsdato
 
-suspend fun PdlClient.hentFoedsel(
+suspend fun PdlClient.hentFoedselsdato(
     ident: String,
     callId: String?,
     traceparent: String? = null,
     navConsumerId: String?,
     behandlingsnummer: String,
-): Foedsel? {
+): Foedselsdato? {
     val query =
-        HentFoedsel(
-            HentFoedsel.Variables(ident),
+        HentFoedselsdato(
+            HentFoedselsdato.Variables(ident),
         )
 
-    logger.trace("Henter 'hentFoedsel' fra PDL")
+    logger.trace("Henter 'hentFoedselsdato' fra PDL")
 
     val respons =
         execute(
@@ -30,11 +30,11 @@ suspend fun PdlClient.hentFoedsel(
         throw PdlException("'hentPerson' feilet", it)
     }
 
-    logger.trace("Hentet 'hentFoedsel' fra PDL")
+    logger.trace("Hentet 'hentFoedselsdato' fra PDL")
 
     return respons
         .data
         ?.hentPerson
-        ?.foedsel
+        ?.foedselsdato
         ?.firstOrNull()
 }

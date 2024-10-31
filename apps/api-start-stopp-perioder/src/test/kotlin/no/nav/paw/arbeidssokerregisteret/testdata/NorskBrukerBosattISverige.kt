@@ -3,7 +3,6 @@ package no.nav.paw.arbeidssokerregisteret.testdata
 import io.kotest.common.runBlocking
 import io.ktor.http.*
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.AarsakTilAvvisningV2
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiRegelId
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
 import no.nav.paw.arbeidssokerregisteret.*
 import no.nav.paw.arbeidssokerregisteret.application.IkkeBosattINorgeIHenholdTilFolkeregisterloven
@@ -13,7 +12,8 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
 import no.nav.paw.arbeidssokerregisteret.routes.apiRegel
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
-import no.nav.paw.pdl.graphql.generated.hentperson.Foedsel
+import no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato
+import no.nav.paw.pdl.graphql.generated.hentperson.Foedested
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 import no.nav.paw.pdl.graphql.generated.hentperson.UtenlandskAdresse
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -24,7 +24,8 @@ import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Opplysning as Ap
 data object NorskBrukerBosattISverige: TestCase {
     override val id = "12345678909"
     override val person = Person(
-        foedsel = Foedsel("2000-03-04", 2000).list(),
+        foedselsdato = Foedselsdato("2000-03-04", 2000).list(),
+        foedested = Foedested("NOR", "Bergen", "Bergen").list(),
         statsborgerskap = "NOR".statsborgerskap(),
         opphold = emptyList(),
         folkeregisterpersonstatus = ikkeBosatt.folkeregisterpersonstatus(),

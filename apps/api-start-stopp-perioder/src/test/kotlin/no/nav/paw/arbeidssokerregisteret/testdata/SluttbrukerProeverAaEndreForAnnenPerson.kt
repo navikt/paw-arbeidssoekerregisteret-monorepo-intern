@@ -4,7 +4,6 @@ import io.kotest.common.runBlocking
 import io.ktor.http.*
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
 import no.nav.paw.arbeidssokerregisteret.application.regler.EndreForAnnenBruker
-import no.nav.paw.arbeidssokerregisteret.application.regler.IkkeTilgang
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
@@ -21,7 +20,8 @@ import java.util.*
 data object SluttbrukerProeverAaEndreForAnnenPerson : TestCase {
     override val id: String = "09876543211"
     override val person: Person = Person(
-        foedsel = emptyList(),
+        foedselsdato = emptyList(),
+        foedested = emptyList(),
         statsborgerskap = emptyList(),
         opphold = emptyList(),
         folkeregisterpersonstatus = emptyList(),
