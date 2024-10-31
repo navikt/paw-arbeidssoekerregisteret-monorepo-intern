@@ -8,13 +8,11 @@ import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.config.ServerConfig
 import no.nav.paw.bekreftelse.api.exception.DataIkkeFunnetForIdException
 import no.nav.paw.bekreftelse.api.exception.DataTilhoererIkkeBrukerException
-import no.nav.paw.bekreftelse.api.model.InnloggetBruker
 import no.nav.paw.bekreftelse.api.model.MottaBekreftelseRequest
-import no.nav.paw.bekreftelse.api.model.Sluttbruker
 import no.nav.paw.bekreftelse.api.model.TilgjengeligBekreftelserResponse
 import no.nav.paw.bekreftelse.api.model.asBekreftelse
+import no.nav.paw.bekreftelse.api.model.asBekreftelseBruker
 import no.nav.paw.bekreftelse.api.model.asBekreftelseRow
-import no.nav.paw.bekreftelse.api.model.asBruker
 import no.nav.paw.bekreftelse.api.model.asTilgjengeligBekreftelse
 import no.nav.paw.bekreftelse.api.producer.BekreftelseKafkaProducer
 import no.nav.paw.bekreftelse.api.repository.BekreftelseRepository
@@ -33,6 +31,9 @@ import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
 import no.nav.paw.bekreftelse.internehendelser.meldingMottattHendelseType
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.config.env.appImageOrDefaultForLocal
+import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
+import no.nav.paw.security.authentication.model.Bruker
+import no.nav.paw.security.authentication.model.Identitetsnummer
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -40,26 +41,31 @@ class BekreftelseService(
     private val serverConfig: ServerConfig,
     private val applicationConfig: ApplicationConfig,
     private val meterRegistry: MeterRegistry,
+    private val kafkaKeysClient: KafkaKeysClient,
     private val bekreftelseKafkaProducer: BekreftelseKafkaProducer,
     private val bekreftelseRepository: BekreftelseRepository,
 ) {
     private val logger = buildLogger
 
     @WithSpan(value = "finnTilgjengeligBekreftelser")
-    fun finnTilgjengeligBekreftelser(sluttbruker: Sluttbruker): TilgjengeligBekreftelserResponse {
+    suspend fun finnTilgjengeligBekreftelser(identitetsnummer: Identitetsnummer): TilgjengeligBekreftelserResponse {
+        val kafkaKeysResponse = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
+
         return transaction {
             logger.info("Skal hente tilgjengelige bekreftelser")
-            val bekreftelser = bekreftelseRepository.findByArbeidssoekerId(sluttbruker.arbeidssoekerId)
+            val bekreftelser = bekreftelseRepository.findByArbeidssoekerId(kafkaKeysResponse.id)
             bekreftelser.map { it.asTilgjengeligBekreftelse() }
         }
     }
 
     @WithSpan(value = "mottaBekreftelse")
-    fun mottaBekreftelse(
-        innloggetBruker: InnloggetBruker,
-        sluttbruker: Sluttbruker,
+    suspend fun mottaBekreftelse(
+        bruker: Bruker<*>,
+        identitetsnummer: Identitetsnummer,
         request: MottaBekreftelseRequest
     ) {
+        val kafkaKeysResponse = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
+
         return transaction {
             logger.info("Har mottatt bekreftelse")
             meterRegistry.receiveBekreftelseCounter(meldingMottattHendelseType)
@@ -68,14 +74,15 @@ class BekreftelseService(
 
             val bekreftelse = bekreftelseRepository.getByBekreftelseId(request.bekreftelseId)
             if (bekreftelse != null) {
-                if (bekreftelse.arbeidssoekerId != sluttbruker.arbeidssoekerId) {
+
+                if (bekreftelse.arbeidssoekerId != kafkaKeysResponse.id) {
                     throw DataTilhoererIkkeBrukerException("Bekreftelse tilhører ikke bruker")
                 }
                 val key = bekreftelse.recordKey
                 val message = bekreftelse.data.asBekreftelse(
                     request.harJobbetIDennePerioden,
                     request.vilFortsetteSomArbeidssoeker,
-                    innloggetBruker.asBruker(),
+                    bruker.asBekreftelseBruker(),
                     kilde,
                     "Bekreftelse levert",
                     Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET

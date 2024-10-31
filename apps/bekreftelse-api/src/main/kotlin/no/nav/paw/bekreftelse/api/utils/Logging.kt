@@ -3,7 +3,6 @@ package no.nav.paw.bekreftelse.api.utils
 import no.nav.common.audit_log.cef.CefMessage
 import no.nav.common.audit_log.cef.CefMessageEvent
 import no.nav.common.audit_log.cef.CefMessageSeverity
-import no.nav.paw.bekreftelse.api.model.NavAnsatt
 import no.nav.paw.config.env.RuntimeEnvironment
 import no.nav.paw.config.env.appNameOrDefaultForLocal
 import no.nav.poao_tilgang.client.TilgangType
@@ -18,8 +17,8 @@ inline val buildAuditLogger: Logger get() = LoggerFactory.getLogger("AuditLogger
 
 fun Logger.audit(
     runtimeEnvironment: RuntimeEnvironment,
-    identitetsnummer: String,
-    navAnsatt: NavAnsatt,
+    aktorIdent: String,
+    sluttbrukerIdent: String,
     tilgangType: TilgangType,
     melding: String,
 ) {
@@ -28,8 +27,8 @@ fun Logger.audit(
         .event(if (tilgangType == TilgangType.LESE) CefMessageEvent.ACCESS else CefMessageEvent.UPDATE)
         .name("Sporingslogg")
         .severity(CefMessageSeverity.INFO)
-        .sourceUserId(navAnsatt.navIdent)
-        .destinationUserId(identitetsnummer)
+        .sourceUserId(aktorIdent)
+        .destinationUserId(sluttbrukerIdent)
         .timeEnded(System.currentTimeMillis())
         .extension("msg", melding)
         .build()

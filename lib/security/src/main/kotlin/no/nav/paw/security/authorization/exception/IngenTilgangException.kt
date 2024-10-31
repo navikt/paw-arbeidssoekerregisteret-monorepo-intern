@@ -1,4 +1,4 @@
-package no.nav.paw.security.authentication.exception
+package no.nav.paw.security.authorization.exception
 
 import no.nav.paw.error.exception.AuthorizationException
 

@@ -1,4 +1,4 @@
-package no.nav.paw.bekreftelse.api
+package no.nav.paw.bekreftelse.api.test
 
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -26,19 +26,13 @@ fun main() {
         valueSerializer = BekreftelseHendelseSerializer::class
     )
 
-    val arbeidssoekerId = 1L
-    val periodeId = UUID.fromString("3e415602-b7b6-47d4-bbd7-efdda468ca20")
-    val bekreftelseId = UUID.randomUUID()
-
-    val testData = TestDataGenerator()
-
     val topic = applicationConfig.kafkaTopology.bekreftelseHendelsesloggTopic
-    val key = 1L
-    val value = testData.nyBekreftelseTilgjengelig(
+    val key = TestData.kafkaKey1
+    val value = TestData.nyBekreftelseTilgjengelig(
         hendelseId = UUID.randomUUID(),
-        periodeId = periodeId,
-        arbeidssoekerId = arbeidssoekerId,
-        bekreftelseId = bekreftelseId,
+        periodeId = TestData.periodeId1,
+        arbeidssoekerId = TestData.arbeidssoekerId1,
+        bekreftelseId = TestData.bekreftelseId1,
         gjelderFra = Instant.now(),
         gjelderTil = Instant.now().plus(Duration.ofDays(14)),
     )

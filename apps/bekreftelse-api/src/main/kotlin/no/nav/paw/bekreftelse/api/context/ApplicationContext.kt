@@ -72,12 +72,7 @@ data class ApplicationContext(
                 )
             )
 
-            val authorizationService = AuthorizationService(
-                serverConfig,
-                applicationConfig,
-                kafkaKeysClient,
-                poaoTilgangClient
-            )
+            val authorizationService = AuthorizationService(serverConfig, poaoTilgangClient)
 
             val kafkaConsumerExceptionHandler = KafkaConsumerExceptionHandler(
                 healthIndicatorRepository.addLivenessIndicator(LivenessHealthIndicator(HealthStatus.HEALTHY)),
@@ -107,6 +102,7 @@ data class ApplicationContext(
                 serverConfig,
                 applicationConfig,
                 prometheusMeterRegistry,
+                kafkaKeysClient,
                 bekreftelseKafkaProducer,
                 bekreftelseRepository
             )

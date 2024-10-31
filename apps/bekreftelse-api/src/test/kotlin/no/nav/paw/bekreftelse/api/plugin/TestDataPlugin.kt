@@ -10,11 +10,8 @@ import io.ktor.util.KtorDsl
 import no.nav.paw.bekreftelse.api.model.BekreftelseRow
 import no.nav.paw.bekreftelse.api.plugins.custom.FlywayMigrationCompleted
 import no.nav.paw.bekreftelse.api.repository.BekreftelseRepository
+import no.nav.paw.bekreftelse.api.test.TestData
 import org.jetbrains.exposed.sql.transactions.transaction
-
-data class TestData(
-    val bereftelseRows: List<BekreftelseRow> = listOf()
-)
 
 @KtorDsl
 class TestDataPluginConfig {
