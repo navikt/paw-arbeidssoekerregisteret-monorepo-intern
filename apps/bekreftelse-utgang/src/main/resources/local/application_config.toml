@@ -11,6 +11,7 @@ clientId = "paw-arbeidssoekerregisteret-bekreftelse-utgang"
 
 [kafkaKeysClient]
 url = "http://localhost:8081/api/v2/hentEllerOpprett"
+urlLokalInfo = "http://localhost:8081/api/v2/lokalInfo"
 scope = "api://local.paw.paw-kafka-key-generator/.default"
 
 [kafkaStreams]

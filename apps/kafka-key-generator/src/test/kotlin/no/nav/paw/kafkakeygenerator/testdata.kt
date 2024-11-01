@@ -11,6 +11,7 @@ const val person1_dnummer = "09127821913"
 const val person1_annen_ident = "12129127821913"
 const val person2_fødselsnummer = "01017012345"
 const val person2_aktor_id = "1649500819544"
+const val person3_fødselsnummer = "01017012344"
 
 fun hentSvar(ident: String) =
     when(ident) {
@@ -20,6 +21,7 @@ fun hentSvar(ident: String) =
         person1_annen_ident -> person1MockSvar
         person2_fødselsnummer -> person2MockSvar
         person2_aktor_id -> person2MockSvar
+        person3_fødselsnummer -> person3MockSvar
         else -> ingenTreffMockSvar
     }
 
@@ -56,6 +58,22 @@ const val person1MockSvar = """
           "ident": "$person1_annen_ident",
           "gruppe": "ANNEN_IDENT",
           "historisk": true
+        }
+      ]
+    }
+  }
+}
+"""
+
+const val person3MockSvar = """
+    {
+  "data": {
+    "hentIdenter": {
+      "identer": [
+        {
+          "ident": "$person3_fødselsnummer",
+          "gruppe": "FOLKEREGISTERIDENT",
+          "historisk": false
         }
       ]
     }

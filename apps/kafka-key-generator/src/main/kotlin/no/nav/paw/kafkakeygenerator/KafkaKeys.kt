@@ -68,6 +68,19 @@ class KafkaKeys(private val database: Database) {
             .map { id -> id?.let(::ArbeidssoekerId) }
             .flatMap { id -> id?.let(::right) ?: left(Failure("database", FailureCode.DB_NOT_FOUND)) }
 
+    fun hent(arbeidssoekerId: ArbeidssoekerId): Either<Failure, List<Identitetsnummer>> =
+        attempt {
+            transaction(database) {
+                IdentitetTabell
+                    .selectAll()
+                    .where { IdentitetTabell.kafkaKey eq arbeidssoekerId.value }
+                    .map { Identitetsnummer(it[IdentitetTabell.identitetsnummer]) }
+            }
+        }.mapToFailure { exception ->
+            Failure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
+        }
+
+
     fun lagre(identitet: Identitetsnummer, arbeidssoekerId: ArbeidssoekerId): Either<Failure, Unit> =
         attempt {
             transaction(database) {

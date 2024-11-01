@@ -16,5 +16,24 @@ fun inMemoryKafkaKeysMock(): KafkaKeysClient {
             val id = map.computeIfAbsent(identitetsnummer) { sekvens.incrementAndGet() }
             return KafkaKeysResponse(id, id % 2)
         }
+
+        override suspend fun getAlias(antallPartisjoner: Int, identitetsnummer: List<String>): AliasResponse =
+            identitetsnummer
+                .mapNotNull { id ->
+                    map[id]?.let { id to it }
+                }.map { (ident, arbeidssoekerId) ->
+                    ident to map
+                        .filterValues { it == arbeidssoekerId }
+                        .map { (id, key) ->
+                            Alias(
+                                identitetsnummer = id,
+                                arbeidsoekerId = key,
+                                recordKey = key % 2,
+                                partition = (key % 2).toInt() % antallPartisjoner
+                            )
+                        }
+                }.map { (ident, aliases) ->
+                    LokaleAlias(ident, aliases)
+                }.let { AliasResponse(it) }
     }
 }

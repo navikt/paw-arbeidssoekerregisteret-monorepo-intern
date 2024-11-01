@@ -7,6 +7,7 @@ pdlClientConfig:
   scope: api://test.test.pdl-api/.default
 kafkaKeysConfig:
   url: http://localhost:8090/kafka-keys
+  urlLokalInfo: http://localhost:8090/kafka-keys/lokalinfo
   scope: api://test.test.kafka-keys/.default
 authProviders:
   azure:

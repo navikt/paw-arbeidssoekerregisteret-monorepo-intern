@@ -4,5 +4,6 @@ const val KAFKA_KEY_GENERATOR_CLIENT_CONFIG = "kafka_key_generator_client_config
 
 data class KafkaKeyConfig(
     val url: String,
+    val urlLokalInfo: String,
     val scope: String
 )

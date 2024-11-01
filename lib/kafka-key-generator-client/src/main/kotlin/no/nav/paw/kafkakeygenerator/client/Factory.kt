@@ -34,7 +34,8 @@ private fun kafkaKeysMedHttpClient(config: KafkaKeyConfig, m2mTokenFactory: () -
         }
     }
     return StandardKafkaKeysClient(
-        httpClient,
-        config.url
+        httpClient = httpClient,
+        kafkaKeysUrl = config.url,
+        kafkaKeysLokalInfoUrl = config.urlLokalInfo
     ) { m2mTokenFactory() }
 }

@@ -22,11 +22,14 @@ interface KafkaKeysClient {
     suspend fun getIdAndKeyOrNull(identitetsnummer: String): KafkaKeysResponse?
     suspend fun getIdAndKey(identitetsnummer: String): KafkaKeysResponse =
         getIdAndKeyOrNull(identitetsnummer) ?: throw IllegalStateException("Kafka-key-client: Uventet feil mot server: http-status=404")
+
+    suspend fun getAlias(antallPartisjoner: Int, identitetsnummer: List<String>): AliasResponse
 }
 
 class StandardKafkaKeysClient(
     private val httpClient: HttpClient,
     private val kafkaKeysUrl: String,
+    private val kafkaKeysLokalInfoUrl: String,
     private val getAccessToken: () -> String
 ) : KafkaKeysClient {
     override suspend fun getIdAndKeyOrNull(identitetsnummer: String): KafkaKeysResponse? =
@@ -46,4 +49,22 @@ class StandardKafkaKeysClient(
                 }
             }
         }
+
+    override suspend fun getAlias(antallPartisjoner: Int, identitetsnummer: List<String>): AliasResponse {
+        return httpClient.post(kafkaKeysLokalInfoUrl) {
+            header("Authorization", "Bearer ${getAccessToken()}")
+            contentType(ContentType.Application.Json)
+            setBody(AliasRequest(antallPartisjoner, identitetsnummer))
+        }.let { response ->
+            when (response.status) {
+                io.ktor.http.HttpStatusCode.OK -> {
+                    response.body<AliasResponse>()
+                }
+
+                else -> {
+                    throw Exception("Kunne ikke hente alias, http_status=${response.status}}")
+                }
+            }
+        }
+    }
 }

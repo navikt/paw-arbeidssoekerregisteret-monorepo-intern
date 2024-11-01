@@ -9,11 +9,50 @@ import no.nav.paw.kafkakeygenerator.mergedetector.hentLagretData
 import no.nav.paw.kafkakeygenerator.mergedetector.vo.MergeDetected
 import no.nav.paw.kafkakeygenerator.pdl.PdlIdentitesTjeneste
 import no.nav.paw.kafkakeygenerator.vo.*
+import org.apache.kafka.clients.producer.internals.BuiltInPartitioner
+import org.apache.kafka.clients.producer.internals.BuiltInPartitioner.partitionForKey
+import org.apache.kafka.common.serialization.Serdes
 
 class Applikasjon(
     private val kafkaKeys: KafkaKeys,
     private val identitetsTjeneste: PdlIdentitesTjeneste
 ) {
+    private val keySerializer = Serdes.Long().serializer()
+
+    @WithSpan
+    fun hentLokaleAlias(
+        antallPartisjoner: Int,
+        identitet: Identitetsnummer
+    ): Either<Failure, LokaleAlias> {
+        return kafkaKeys.hent(identitet)
+            .map { arbeidssoekerId ->
+                val recordKey = publicTopicKeyFunction(arbeidssoekerId)
+                Alias(
+                    identitetsnummer = identitet.value,
+                    arbeidsoekerId = arbeidssoekerId.value,
+                    recordKey = recordKey.value,
+                    partition = partitionForKey(keySerializer.serialize("", recordKey.value), antallPartisjoner)
+                )
+            }.flatMap { alias ->
+                kafkaKeys.hent(ArbeidssoekerId(alias.arbeidsoekerId))
+                    .map { identiteter ->
+                        identiteter.map { identitetsnummer ->
+                            Alias(
+                                identitetsnummer = identitetsnummer.value,
+                                arbeidsoekerId = alias.arbeidsoekerId,
+                                recordKey = alias.recordKey,
+                                partition = alias.partition
+                            )
+                        }
+                    }
+            }.map { aliases ->
+                LokaleAlias(
+                    identitetsnummer = identitet.value,
+                    kobliner = aliases
+                )
+            }
+    }
+
     @WithSpan
     suspend fun validerLagretData(callId: CallId, identitet: Identitetsnummer): Either<Failure, InfoResponse> {
         return hentInfo(callId, identitet)
@@ -23,7 +62,7 @@ class Applikasjon(
                     info = info
                 ).map { info to it }
             }
-            .map { (info, lagretDatra ) -> info to findMerge(lagretDatra) }
+            .map { (info, lagretDatra) -> info to findMerge(lagretDatra) }
             .map { (info, merge) ->
                 InfoResponse(
                     info = info,
@@ -54,11 +93,13 @@ class Applikasjon(
                         {
                             PdlData(
                                 error = null,
-                                id = it.map { identInfo -> PdlId(
-                                    gruppe = identInfo.gruppe.name,
-                                    id = identInfo.ident,
-                                    gjeldende = !identInfo.historisk
-                                ) })
+                                id = it.map { identInfo ->
+                                    PdlId(
+                                        gruppe = identInfo.gruppe.name,
+                                        id = identInfo.ident,
+                                        gjeldende = !identInfo.historisk
+                                    )
+                                })
                         }
                     )
                 )

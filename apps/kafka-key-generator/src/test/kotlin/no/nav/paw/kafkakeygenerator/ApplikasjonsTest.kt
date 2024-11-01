@@ -1,18 +1,21 @@
 package no.nav.paw.kafkakeygenerator
 
 import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import kotlinx.coroutines.runBlocking
+import no.nav.paw.kafkakeygenerator.api.v2.LokaleAlias
 import no.nav.paw.kafkakeygenerator.pdl.PdlIdentitesTjeneste
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.CallId
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import no.nav.paw.pdl.PdlClient
 import org.jetbrains.exposed.sql.Database
+import org.junit.jupiter.api.fail
 import java.util.*
 
 class ApplikasjonsTest : StringSpec({
@@ -46,6 +49,18 @@ class ApplikasjonsTest : StringSpec({
         person1KafkaNøkler.filterIsInstance<Right<ArbeidssoekerId>>()
             .map { it.right }
             .distinct().size shouldBe 1
+        val lokaleAlias = app.hentLokaleAlias(2, Identitetsnummer(person1_dnummer))
+        hentEllerOpprett(person3_fødselsnummer).shouldBeInstanceOf<Right<ArbeidssoekerId>>()
+        lokaleAlias
+            .onLeft { fail { "Uventet feil: $it" } }
+            .onRight { alias ->
+                alias.identitetsnummer shouldBe person1_dnummer
+                alias.kobliner.size shouldBe 4
+                alias.kobliner.any { it.identitetsnummer == person1_fødselsnummer } shouldBe true
+                alias.kobliner.any { it.identitetsnummer == person1_dnummer } shouldBe true
+                alias.kobliner.any { it.identitetsnummer == person1_aktor_id } shouldBe true
+                alias.kobliner.any { it.identitetsnummer == person1_annen_ident } shouldBe true
+            }
     }
     "alle identer for person2 skal gi samme nøkkel" {
         val person2KafkaNøkler = listOf(

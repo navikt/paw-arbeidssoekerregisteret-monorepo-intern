@@ -1,11 +1,9 @@
-package no.nav.paw.kafkakeygenerator.api.v2
+package no.nav.paw.kafkakeygenerator.client
 
-import no.nav.paw.kafkakeygenerator.mergedetector.vo.MergeDetected
-import no.nav.paw.kafkakeygenerator.vo.Info
 
-data class InfoResponse(
-    val info: Info,
-    val mergeDetected: MergeDetected?
+data class AliasRequest(
+    val antallPartisjoner: Int,
+    val identer: List<String>
 )
 
 data class AliasResponse(

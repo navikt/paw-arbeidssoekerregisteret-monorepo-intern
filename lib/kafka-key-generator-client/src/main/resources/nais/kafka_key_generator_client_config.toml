@@ -1,2 +1,3 @@
 url = "http://paw-kafka-key-generator/api/v2/hentEllerOpprett"
+urlLokalInfo = "http://paw-kafka-key-generator/api/v2/lokalInfo"
 scope = "${KAFKA_KEYS_SCOPE}"

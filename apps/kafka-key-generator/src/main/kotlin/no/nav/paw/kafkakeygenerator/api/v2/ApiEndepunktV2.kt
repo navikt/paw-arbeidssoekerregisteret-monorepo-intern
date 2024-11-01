@@ -33,6 +33,31 @@ fun Routing.konfigurerApiV2(
         post("/api/v2/info") {
             hentInfo(applikasjon, logger)
         }
+        post("/api/v2/lokalInfo") {
+            hentLokalInfo(applikasjon, logger)
+        }
+    }
+}
+
+@WithSpan
+suspend fun PipelineContext<Unit, ApplicationCall>.hentLokalInfo(
+    applikasjon: Applikasjon,
+    logger: Logger
+) {
+    val request = call.receive<AliasRequest>()
+    when (val resultat = applikasjon.hentLokaleAlias(request.antallPartisjoner, request.identer)) {
+        is Right -> call.respond(
+            OK, AliasResponse(
+                alias = resultat.right
+            )
+        )
+        is Left -> {
+            logger.error("Kunne ikke hente alias for identer: {}", resultat.left.code, resultat.left.exception)
+            call.respond(
+                status = InternalServerError,
+                message = resultat.left.code.name
+            )
+        }
     }
 }
 

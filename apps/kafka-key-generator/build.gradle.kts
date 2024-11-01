@@ -21,6 +21,9 @@ dependencies {
     implementation(libs.nav.security.tokenClientCore)
     implementation(libs.nav.security.tokenValidationKtorV2)
 
+    // Kafka (for å beregne partisjonsnummer)
+    implementation(libs.kafka.clients)
+
     // Ktor
     implementation(libs.ktor.serialization.jackson)
 
@@ -69,7 +72,6 @@ dependencies {
     testImplementation(libs.test.testContainers.postgresql)
     testImplementation(libs.ktor.server.testJvm)
     testImplementation(libs.ktor.client.mock)
-    testImplementation(libs.kafka.clients)
 }
 
 java {

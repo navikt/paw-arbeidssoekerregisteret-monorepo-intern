@@ -1,2 +1,3 @@
 url = "http://localhost:8090/kafka-keys"
+urlLokalInfo = "http://localhost:8090/lokal-info"
 scope = "api://test.test.kafka-keys/.default"
