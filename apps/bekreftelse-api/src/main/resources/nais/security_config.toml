@@ -1,0 +1,24 @@
+[[authProviders]]
+name = "idporten"
+discoveryUrl = "${IDPORTEN_WELL_KNOWN_URL}
+clientId = "${IDPORTEN_CLIENT_ID}"
+
+    [authProviders.claims]
+    map = ["acr=idporten-loa-high"]
+
+[[authProviders]]
+name = "tokenx"
+discoveryUrl = "${TOKEN_X_WELL_KNOWN_URL}"
+clientId = "${TOKEN_X_CLIENT_ID}"
+
+    [authProviders.claims]
+    map = ["acr=Level4", "acr=idporten-loa-high"]
+    combineWithOr = true
+
+[[authProviders]]
+name = "azure"
+discoveryUrl = "${AZURE_APP_WELL_KNOWN_URL}"
+clientId = "${AZURE_APP_CLIENT_ID}"
+
+    [authProviders.claims]
+    map = ["NAVident"]

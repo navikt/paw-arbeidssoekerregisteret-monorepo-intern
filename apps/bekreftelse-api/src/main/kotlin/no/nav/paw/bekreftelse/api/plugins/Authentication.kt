@@ -9,7 +9,7 @@ import no.nav.security.token.support.v2.TokenSupportConfig
 import no.nav.security.token.support.v2.tokenValidationSupport
 
 fun Application.configureAuthentication(applicationContext: ApplicationContext) {
-    with(applicationContext.applicationConfig) {
+    with(applicationContext.securityConfig) {
         authentication {
             authProviders.forEach { provider ->
                 tokenValidationSupport(

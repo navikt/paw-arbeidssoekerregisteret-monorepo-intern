@@ -1,49 +1,6 @@
 [autorisasjon]
 corsAllowOrigins = "localhost"
 
-[[authProviders]]
-name = "idporten"
-discoveryUrl = "http://localhost:8081/idporten/.well-known/openid-configuration"
-clientId = "paw-arbeidssoekerregisteret-api-bekreftelse"
-
-    [authProviders.claims]
-    map = ["acr=idporten-loa-high"]
-
-[[authProviders]]
-name = "tokenx"
-discoveryUrl = "http://localhost:8081/tokenx/.well-known/openid-configuration"
-clientId = "paw-arbeidssoekerregisteret-api-bekreftelse"
-
-    [authProviders.claims]
-    map = ["acr=Level4", "acr=idporten-loa-high"]
-    combineWithOr = true
-
-[[authProviders]]
-name = "azure"
-discoveryUrl = "http://localhost:8081/azure/.well-known/openid-configuration"
-clientId = "paw-arbeidssoekerregisteret-api-bekreftelse"
-
-    [authProviders.claims]
-    map = ["NAVident"]
-
-[azureM2M]
-tokenEndpointUrl = "http://localhost:8081/azure/token"
-clientId = "paw-arbeidssoekerregisteret-api-bekreftelse"
-
-[poaoClientConfig]
-url = "http://localhost:8090/poao-tilgang/"
-scope = "api://test.test.poao-tilgang/.default"
-
-[kafkaKeysClient]
-url = "http://localhost:8090/kafka-keys"
-scope = "api://test.test.kafka-keys/.default"
-
-[kafkaClients]
-brokers = "localhost:9092"
-
-    [kafkaClients.schemaRegistry]
-    url = "http://localhost:8082"
-
 [kafkaTopology]
 version = 1
 antallPartitioner = 1

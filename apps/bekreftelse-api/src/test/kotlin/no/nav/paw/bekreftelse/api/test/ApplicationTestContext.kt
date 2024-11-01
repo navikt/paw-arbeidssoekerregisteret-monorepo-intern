@@ -8,10 +8,8 @@ import io.ktor.server.testing.ApplicationTestBuilder
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.mockk.mockk
-import no.nav.paw.bekreftelse.api.config.APPLICATION_CONFIG_FILE_NAME
+import no.nav.paw.bekreftelse.api.config.APPLICATION_CONFIG
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
-import no.nav.paw.bekreftelse.api.config.AuthProvider
-import no.nav.paw.bekreftelse.api.config.AuthProviderClaims
 import no.nav.paw.bekreftelse.api.config.SERVER_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelse.api.config.ServerConfig
 import no.nav.paw.bekreftelse.api.context.ApplicationContext
@@ -35,6 +33,10 @@ import no.nav.paw.health.model.LivenessHealthIndicator
 import no.nav.paw.health.model.ReadinessHealthIndicator
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
+import no.nav.paw.security.authentication.config.AuthProvider
+import no.nav.paw.security.authentication.config.AuthProviderClaims
+import no.nav.paw.security.authentication.config.SECURITY_CONFIG
+import no.nav.paw.security.authentication.config.SecurityConfig
 import no.nav.paw.security.authentication.token.AzureAd
 import no.nav.paw.security.authentication.token.IdPorten
 import no.nav.paw.security.authentication.token.TokenX
@@ -49,7 +51,8 @@ import javax.sql.DataSource
 class ApplicationTestContext {
 
     val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG_FILE_NAME)
-    val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG_FILE_NAME)
+    val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG)
+    val securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>(SECURITY_CONFIG)
     val dataSource = createTestDataSource()
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val kafkaKeysClientMock = mockk<KafkaKeysClient>()
@@ -76,7 +79,8 @@ class ApplicationTestContext {
 
     fun createApplicationContext(bekreftelseService: BekreftelseService) = ApplicationContext(
         serverConfig,
-        applicationConfig.copy(authProviders = mockOAuth2Server.createAuthProviders()),
+        applicationConfig,
+        securityConfig.copy(authProviders = mockOAuth2Server.createAuthProviders()),
         dataSource,
         kafkaKeysClientMock,
         prometheusMeterRegistry,
@@ -120,25 +124,22 @@ class ApplicationTestContext {
         val wellKnownUrl = wellKnownUrl("default").toString()
         return listOf(
             AuthProvider(
-                IdPorten.name, wellKnownUrl, "default", AuthProviderClaims(
-                    listOf(
-                        "acr=idporten-loa-high"
-                    )
-                )
+                name = IdPorten.name,
+                clientId = "default",
+                discoveryUrl = wellKnownUrl,
+                claims = AuthProviderClaims(listOf("acr=idporten-loa-high"))
             ),
             AuthProvider(
-                TokenX.name, wellKnownUrl, "default", AuthProviderClaims(
-                    listOf(
-                        "acr=Level4", "acr=idporten-loa-high"
-                    ), true
-                )
+                name = TokenX.name,
+                clientId = "default",
+                discoveryUrl = wellKnownUrl,
+                claims = AuthProviderClaims(listOf("acr=Level4", "acr=idporten-loa-high"), true)
             ),
             AuthProvider(
-                AzureAd.name, wellKnownUrl, "default", AuthProviderClaims(
-                    listOf(
-                        "NAVident"
-                    )
-                )
+                name = AzureAd.name,
+                clientId = "default",
+                discoveryUrl = wellKnownUrl,
+                claims = AuthProviderClaims(listOf("NAVident"))
             )
         )
     }
