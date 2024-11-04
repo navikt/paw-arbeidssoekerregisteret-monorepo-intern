@@ -11,6 +11,7 @@ clientId = "${AZURE_APP_CLIENT_ID}"
 
 [kafkaKeysClient]
 url = "http://paw-kafka-key-generator/api/v2/hentEllerOpprett"
+urlLokalInfo = "http://paw-kafka-key-generator/api/v2/lokalInfo"
 scope = "api://${NAIS_CLUSTER_NAME}.paw.paw-kafka-key-generator/.default"
 
 [kafkaStreams]

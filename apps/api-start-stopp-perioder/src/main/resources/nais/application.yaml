@@ -7,6 +7,7 @@ pdlClientConfig:
   scope: ${PDL_SCOPE}
 kafkaKeysConfig:
   url: http://paw-kafka-key-generator/api/v2/hentEllerOpprett
+  urlLokalInfo: http://paw-kafka-key-generator/api/v2/lokalInfo
   scope: ${KAFKA_KEY_SCOPE}
 authProviders:
   azure:
