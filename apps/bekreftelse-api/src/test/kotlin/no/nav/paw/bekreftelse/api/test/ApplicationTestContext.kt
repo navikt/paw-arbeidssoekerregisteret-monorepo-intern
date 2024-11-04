@@ -10,7 +10,7 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.mockk.mockk
 import no.nav.paw.bekreftelse.api.config.APPLICATION_CONFIG
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
-import no.nav.paw.bekreftelse.api.config.SERVER_CONFIG_FILE_NAME
+import no.nav.paw.bekreftelse.api.config.SERVER_CONFIG
 import no.nav.paw.bekreftelse.api.config.ServerConfig
 import no.nav.paw.bekreftelse.api.context.ApplicationContext
 import no.nav.paw.bekreftelse.api.handler.KafkaConsumerExceptionHandler
@@ -50,7 +50,7 @@ import javax.sql.DataSource
 
 class ApplicationTestContext {
 
-    val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG_FILE_NAME)
+    val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG)
     val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG)
     val securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>(SECURITY_CONFIG)
     val dataSource = createTestDataSource()
@@ -118,30 +118,6 @@ class ApplicationTestContext {
                 }
             }
         }
-    }
-
-    private fun MockOAuth2Server.createAuthProviders(): List<AuthProvider> {
-        val wellKnownUrl = wellKnownUrl("default").toString()
-        return listOf(
-            AuthProvider(
-                name = IdPorten.name,
-                clientId = "default",
-                discoveryUrl = wellKnownUrl,
-                claims = AuthProviderClaims(listOf("acr=idporten-loa-high"))
-            ),
-            AuthProvider(
-                name = TokenX.name,
-                clientId = "default",
-                discoveryUrl = wellKnownUrl,
-                claims = AuthProviderClaims(listOf("acr=Level4", "acr=idporten-loa-high"), true)
-            ),
-            AuthProvider(
-                name = AzureAd.name,
-                clientId = "default",
-                discoveryUrl = wellKnownUrl,
-                claims = AuthProviderClaims(listOf("NAVident"))
-            )
-        )
     }
 
     private fun createTestDataSource(): DataSource {

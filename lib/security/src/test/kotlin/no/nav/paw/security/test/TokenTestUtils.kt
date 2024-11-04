@@ -1,5 +1,7 @@
 package no.nav.paw.security.test
 
+import no.nav.paw.security.authentication.config.AuthProvider
+import no.nav.paw.security.authentication.config.AuthProviderClaims
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import java.util.*
 
@@ -57,24 +59,15 @@ fun MockOAuth2Server.getAuthProviders(): List<AuthProvider> {
     val issuerId = "default"
     val wellKnownUrl = wellKnownUrl(issuerId).toString()
     return listOf(
-        "idporten" to arrayOf("acr=idporten-loa-high"),
-        "tokenx" to arrayOf("acr=idporten-loa-high"),
-        "azure" to arrayOf("NAVident")
+        "idporten" to listOf("acr=idporten-loa-high"),
+        "tokenx" to listOf("acr=idporten-loa-high"),
+        "azure" to listOf("NAVident")
     ).map {
         AuthProvider(
             name = it.first,
+            clientId = issuerId,
             discoveryUrl = wellKnownUrl,
-            acceptedAudience = listOf(issuerId),
-            claimMap = it.second,
-            combineWithOr = true
+            claims = AuthProviderClaims(map = it.second, combineWithOr = true)
         )
     }
 }
-
-data class AuthProvider(
-    val name: String,
-    val discoveryUrl: String,
-    val acceptedAudience: List<String>,
-    val claimMap: Array<String>,
-    val combineWithOr: Boolean
-)

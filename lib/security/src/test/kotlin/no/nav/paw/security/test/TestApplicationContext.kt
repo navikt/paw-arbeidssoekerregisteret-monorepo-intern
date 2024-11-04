@@ -104,13 +104,13 @@ class TestApplicationContext {
                         IssuerConfig(
                             name = authProvider.name,
                             discoveryUrl = authProvider.discoveryUrl,
-                            acceptedAudience = authProvider.acceptedAudience
+                            acceptedAudience = listOf(authProvider.clientId)
                         )
                     ),
                     requiredClaims = RequiredClaims(
                         authProvider.name,
-                        authProvider.claimMap,
-                        authProvider.combineWithOr
+                        authProvider.claims.map.toTypedArray(),
+                        authProvider.claims.combineWithOr
                     )
                 )
             }

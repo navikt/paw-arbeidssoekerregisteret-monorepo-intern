@@ -4,8 +4,9 @@ import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.bekreftelse.api.config.APPLICATION_CONFIG
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
+import no.nav.paw.bekreftelse.api.config.ClientConfig
 import no.nav.paw.bekreftelse.api.config.POAO_TILGANG_CLIENT_CONFIG
-import no.nav.paw.bekreftelse.api.config.SERVER_CONFIG_FILE_NAME
+import no.nav.paw.bekreftelse.api.config.SERVER_CONFIG
 import no.nav.paw.bekreftelse.api.config.ServerConfig
 import no.nav.paw.bekreftelse.api.handler.KafkaConsumerExceptionHandler
 import no.nav.paw.bekreftelse.api.producer.BekreftelseKafkaProducer
@@ -58,13 +59,13 @@ data class ApplicationContext(
 ) {
     companion object {
         fun create(): ApplicationContext {
-            val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG_FILE_NAME)
+            val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG)
             val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG)
             val securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>(SECURITY_CONFIG)
             val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG_WITH_SCHEME_REG)
             val azureM2MConfig = loadNaisOrLocalConfiguration<AzureM2MConfig>(AZURE_M2M_CONFIG)
             val kafkaKeysClientConfig = loadNaisOrLocalConfiguration<KafkaKeyConfig>(KAFKA_KEY_GENERATOR_CLIENT_CONFIG)
-            val poaoTilgangClientConfig = loadNaisOrLocalConfiguration<KafkaKeyConfig>(POAO_TILGANG_CLIENT_CONFIG)
+            val poaoTilgangClientConfig = loadNaisOrLocalConfiguration<ClientConfig>(POAO_TILGANG_CLIENT_CONFIG)
 
             val dataSource = createDataSource(applicationConfig.database)
 

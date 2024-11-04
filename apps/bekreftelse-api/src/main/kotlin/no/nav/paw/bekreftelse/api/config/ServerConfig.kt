@@ -3,7 +3,7 @@ package no.nav.paw.bekreftelse.api.config
 import no.nav.paw.config.env.RuntimeEnvironment
 import no.nav.paw.config.env.currentRuntimeEnvironment
 
-const val SERVER_CONFIG_FILE_NAME = "server_config.toml"
+const val SERVER_CONFIG = "server_config.toml"
 
 data class ServerConfig(
     val host: String,

@@ -27,7 +27,6 @@ fun main() {
     val applicationContext = ApplicationContext.create()
     val appName = applicationContext.serverConfig.runtimeEnvironment.appNameOrDefaultForLocal()
 
-
     with(applicationContext.serverConfig) {
         logger.info("Starter $appName med hostname $host og port $port")
 

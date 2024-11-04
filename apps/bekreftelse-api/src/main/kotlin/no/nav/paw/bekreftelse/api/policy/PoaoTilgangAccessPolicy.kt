@@ -48,14 +48,14 @@ class PoaoTilgangAccessPolicy(
                     return Deny("Veileder må sende med identitetsnummer for sluttbruker")
                 }
 
-                val navAnsattTilgang = poaoTilgangClient.evaluatePolicy(
+                val result = poaoTilgangClient.evaluatePolicy(
                     NavAnsattTilgangTilEksternBrukerPolicyInput(
                         navAnsattAzureId = bruker.oid,
                         tilgangType = tilgangType,
                         norskIdent = identitetsnummer.verdi
                     )
                 )
-                val tilgang = navAnsattTilgang.get()
+                val tilgang = result.get()
                 if (tilgang == null) {
                     return Deny("Kunne ikke finne tilgang for ansatt")
                 } else if (tilgang.isDeny) {
@@ -66,7 +66,7 @@ class PoaoTilgangAccessPolicy(
                         runtimeEnvironment = serverConfig.runtimeEnvironment,
                         aktorIdent = bruker.ident,
                         sluttbrukerIdent = identitetsnummer.verdi,
-                        tilgangType = tilgangType,
+                        action = action,
                         melding = "NAV-ansatt har benyttet $tilgangType-tilgang til informasjon om sluttbruker"
                     )
                     return Permit("Veileder har $tilgangType-tilgang til sluttbruker")
@@ -74,10 +74,10 @@ class PoaoTilgangAccessPolicy(
             }
 
             is M2MToken -> {
-                if (identitetsnummer == null) {
-                    return Deny("M2M-token må sende med identitetsnummer for sluttbruker")
+                if (identitetsnummer != null) {
+                    return Permit("M2M-token har $tilgangType-tilgang til sluttbruker")
                 }
-                return Permit("M2M-token har $tilgangType-tilgang til sluttbruker")
+                return Deny("M2M-token må sende med identitetsnummer for sluttbruker")
             }
 
             else -> {

@@ -5,7 +5,7 @@ import no.nav.common.audit_log.cef.CefMessageEvent
 import no.nav.common.audit_log.cef.CefMessageSeverity
 import no.nav.paw.config.env.RuntimeEnvironment
 import no.nav.paw.config.env.appNameOrDefaultForLocal
-import no.nav.poao_tilgang.client.TilgangType
+import no.nav.paw.security.authorization.model.Action
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -19,12 +19,12 @@ fun Logger.audit(
     runtimeEnvironment: RuntimeEnvironment,
     aktorIdent: String,
     sluttbrukerIdent: String,
-    tilgangType: TilgangType,
+    action: Action,
     melding: String,
 ) {
     val message = CefMessage.builder()
         .applicationName(runtimeEnvironment.appNameOrDefaultForLocal())
-        .event(if (tilgangType == TilgangType.LESE) CefMessageEvent.ACCESS else CefMessageEvent.UPDATE)
+        .event(if (action == Action.READ) CefMessageEvent.ACCESS else CefMessageEvent.UPDATE)
         .name("Sporingslogg")
         .severity(CefMessageSeverity.INFO)
         .sourceUserId(aktorIdent)

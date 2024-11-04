@@ -34,3 +34,8 @@ data class DatabaseConfig(
     val idleTimeout: Duration = Duration.ofMinutes(10),
     val maxLifetime: Duration = Duration.ofMinutes(30)
 )
+
+data class ClientConfig(
+    val url: String,
+    val scope: String
+)
