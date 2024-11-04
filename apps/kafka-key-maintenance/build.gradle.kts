@@ -14,6 +14,7 @@ val image: String? by project
 dependencies {
     implementation(project(":domain:interne-hendelser"))
     implementation(project(":domain:pdl-aktoer-schema"))
+    implementation(project(":domain:main-avro-schema"))
     implementation(project(":lib:kafka"))
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:kafka-key-generator-client"))
