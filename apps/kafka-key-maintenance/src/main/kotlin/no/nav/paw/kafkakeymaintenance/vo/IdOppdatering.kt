@@ -3,7 +3,7 @@ package no.nav.paw.kafkakeymaintenance.vo
 import no.nav.paw.kafkakeygenerator.client.Alias
 import no.nav.paw.kafkakeymaintenance.perioder.PeriodeRad
 
-interface IdOppdatering {}
+sealed interface IdOppdatering {}
 data class ManuellIdOppdatering(
     val gjeldeneIdentitetsnummer: String?,
     val pdlIdentitetsnummer: List<String>,

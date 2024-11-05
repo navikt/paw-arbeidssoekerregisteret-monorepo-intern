@@ -17,6 +17,8 @@ fun genererNyInternTilstandOgNyeApiTilstander(
             is OpplysningerOmArbeidssoekerMottatt -> opplysningerOmArbeidssoekerMottatt(hendelse)
             is Avvist -> avvist(hendelse)
             is AvvistStoppAvPeriode -> ingenEndringEllerUtgaaendeMeldinger()
+            is IdentitetsnummerOpphoert -> ingenEndringEllerUtgaaendeMeldinger()
+            is IdentitetsnummerSammenslaatt -> ingenEndringEllerUtgaaendeMeldinger()
         }
     }
 }

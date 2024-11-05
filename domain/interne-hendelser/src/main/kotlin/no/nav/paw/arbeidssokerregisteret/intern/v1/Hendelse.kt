@@ -7,6 +7,8 @@ const val avsluttetHendelseType = "intern.v1.avsluttet"
 const val avvistHendelseType = "intern.v1.avvist"
 const val avvistStoppAvPeriodeHendelseType = "intent.v1.avvist_stopp_av_periode"
 const val opplysningerOmArbeidssoekerHendelseType = "intern.v1.opplysninger_om_arbeidssoeker"
+const val identitetsnummerOpphoertHendelseType = "intern.v1.identitetsnummer_opphoert"
+const val identitetsnummerSammenslaattHendelseType = "intern.v1.identitetsnummer_sammenslaatt"
 
 sealed interface Hendelse : HarIdentitetsnummer, HarMetadata {
     val id: Long

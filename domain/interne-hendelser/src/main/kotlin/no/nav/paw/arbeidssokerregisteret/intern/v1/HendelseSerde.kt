@@ -78,5 +78,7 @@ fun eventTypeToClass(type: String?): KClass<out Hendelse> =
         avvistHendelseType -> Avvist::class
         avvistStoppAvPeriodeHendelseType -> AvvistStoppAvPeriode::class
         opplysningerOmArbeidssoekerHendelseType -> OpplysningerOmArbeidssoekerMottatt::class
+        identitetsnummerOpphoertHendelseType -> IdentitetsnummerOpphoert::class
+        identitetsnummerSammenslaattHendelseType -> IdentitetsnummerSammenslaatt::class
         else -> throw IllegalArgumentException("Ukjent hendelse type: '$type'")
     }
