@@ -6,7 +6,6 @@ import java.time.Duration.ofDays
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDate.ofInstant
-import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
@@ -16,7 +15,7 @@ val osloTimezone: ZoneId = ZoneId.of("Europe/Oslo")
 private val sameOrPreviousMondayAdjuster = TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)
 private val sameOrNextMondayAdjuster = TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY)
 
-fun kalkulerInitiellStartTidForPeriode(
+fun kalkulerInitiellStartTidForBekreftelsePeriode(
     tidligsteStartTidspunkt: Instant,
     periodeStart: Instant,
     interval: Duration
@@ -30,9 +29,9 @@ fun kalkulerInitiellStartTidForPeriode(
     val dagerIIntervall = interval.toDays()
     val antallDagerIPeriode = ChronoUnit.DAYS.between(antattMeldekortStartDato, maalDato)
     val manglendeDager = dagerIIntervall - (antallDagerIPeriode % dagerIIntervall)
-    return when {
-        manglendeDager == 0L -> tidligsteStartTidspunkt
-        manglendeDager in 1..<dagerIIntervall -> {
+    return when (manglendeDager) {
+        0L -> tidligsteStartTidspunkt
+        in 1..< dagerIIntervall -> {
             sameOrNextMondayAdjuster
                 .adjustInto(ofInstant(tidligsteStartTidspunkt.plus(ofDays(manglendeDager)), osloTimezone))
                 .let(LocalDate::from)
@@ -42,12 +41,13 @@ fun kalkulerInitiellStartTidForPeriode(
         }
         else -> return tidligsteStartTidspunkt + ofDays(dagerIIntervall)
     }
-
 }
 
 fun sluttTidForBekreftelsePeriode(startTid: Instant, interval: Duration): Instant {
-    val maal = startTid + interval
-    return sameOrNextMondayAdjuster.adjustInto(ofInstant(maal, osloTimezone))
+    val maalDato = startTid + interval
+    // For testing i dev, hvor vi kan ha intervaller på 1 dag eller mindre, bryr vi oss ikke om magic monday
+    if(interval.toDays() <= 1L) return maalDato
+    return sameOrNextMondayAdjuster.adjustInto(ofInstant(maalDato, osloTimezone))
     .let(LocalDate::from)
     .let(LocalDate::atStartOfDay)
     .atZone(osloTimezone)

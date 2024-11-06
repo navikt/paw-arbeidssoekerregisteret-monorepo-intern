@@ -12,14 +12,14 @@ class BekreftelseStartTidKalkulator: FreeSpec({
 
     "Når en periode startetes etter migreringstidspunktet skal første bekreftelseperiode starte ved periode start" - {
         "Når periode ble startet $migreringstidspunkt skal første bekreftelseperiode starte $migreringstidspunkt" {
-            kalkulerInitiellStartTidForPeriode(
+            kalkulerInitiellStartTidForBekreftelsePeriode(
                 tidligsteStartTidspunkt = migreringstidspunkt,
                 periodeStart = migreringstidspunkt,
                 interval = intervall
             ) shouldBe migreringstidspunkt
         }
         "Når perioden ble startet ${migreringstidspunkt + 23.days} skal første bekreftelseperiode starte ${migreringstidspunkt + 23.days}" {
-            kalkulerInitiellStartTidForPeriode(
+            kalkulerInitiellStartTidForBekreftelsePeriode(
                 tidligsteStartTidspunkt = migreringstidspunkt,
                 periodeStart = migreringstidspunkt + 23.days,
                 interval = intervall
@@ -28,7 +28,7 @@ class BekreftelseStartTidKalkulator: FreeSpec({
     }
     "Når perioden er startet før migreringstidspunktet, skal vi sette startdato slik at den matcher antatt siste meldekort" - {
         "Når perioden startes ${migreringstidspunkt - 5.days} skal første bekreftelseperiode starte 2024-01-14 23:00:00 UTC" {
-            kalkulerInitiellStartTidForPeriode(
+            kalkulerInitiellStartTidForBekreftelsePeriode(
                 tidligsteStartTidspunkt = migreringstidspunkt,
                 periodeStart = migreringstidspunkt - 5.days,
                 interval = Duration.ofDays(14)
@@ -36,7 +36,7 @@ class BekreftelseStartTidKalkulator: FreeSpec({
         }
         //TODO: Vi må avklare om vi vil at denne skal starte 7. januar eller 21. januar, er det egentlig viktig?
         "Når perioden startes lørdag 30. desember 2023 skal første bekreftelseperiode starte 2024-01-07 23:00:00 UTC".config(enabled = false) {
-            kalkulerInitiellStartTidForPeriode(
+            kalkulerInitiellStartTidForBekreftelsePeriode(
                 tidligsteStartTidspunkt = migreringstidspunkt, //tidspunkt søndag 2024-01-07T23:00:00Z
                 periodeStart = Instant.parse("2023-12-30T14:00:00Z"),
                 interval = Duration.ofDays(14)

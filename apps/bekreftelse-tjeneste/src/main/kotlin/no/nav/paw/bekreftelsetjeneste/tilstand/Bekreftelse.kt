@@ -27,7 +27,7 @@ fun opprettFoersteBekreftelse(
     periode: PeriodeInfo,
     interval: Duration
 ): Bekreftelse {
-    val start = kalkulerInitiellStartTidForPeriode(
+    val start = kalkulerInitiellStartTidForBekreftelsePeriode(
         tidligsteStartTidspunkt = tidligsteStartTidspunktForBekreftelse,
         periodeStart = periode.startet,
         interval = interval
