@@ -8,10 +8,10 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 
 fun hentData(
     hentAlias: (List<String>) -> List<LokaleAlias>,
-    record: ConsumerRecord<String, Aktor>,
+    aktor: Aktor,
 ): Data =
-    record.value().identifikatorer
+    aktor.identifikatorer
         .filter { it.type == Type.FOLKEREGISTERIDENT }
         .map { it.idnummer }
         .let(hentAlias)
-        .let { Data(record, it) }
+        .let { Data(aktor, it) }

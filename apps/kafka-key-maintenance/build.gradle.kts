@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":domain:pdl-aktoer-schema"))
     implementation(project(":domain:main-avro-schema"))
     implementation(project(":lib:kafka"))
+    implementation(project(":lib:kafka-streams"))
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:kafka-key-generator-client"))
 
@@ -45,6 +46,7 @@ dependencies {
     implementation(libs.logbackClassic)
     implementation(libs.logstashLogbackEncoder)
     implementation(libs.kafka.clients)
+    implementation(libs.kafka.streams.core)
     implementation(libs.avro.core)
     implementation(libs.avro.kafkaSerializer)
     implementation(libs.exposed.core)

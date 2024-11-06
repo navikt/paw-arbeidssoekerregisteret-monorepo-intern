@@ -5,6 +5,6 @@ import no.nav.person.pdl.aktor.v2.Aktor
 import org.apache.kafka.clients.consumer.ConsumerRecord
 
 data class Data(
-    val record: ConsumerRecord<String, Aktor>,
+    val aktor: Aktor,
     val alias: List<LokaleAlias>
 )

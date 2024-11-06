@@ -3,8 +3,8 @@ package no.nav.paw.kafkakeymaintenance.vo
 import no.nav.paw.kafkakeygenerator.client.Alias
 import no.nav.person.pdl.aktor.v2.Type
 
-fun avviksMelding(data: Data): AvviksMelding {
-    val fregIder = data.record.value()
+fun genererAvviksMelding(data: Data): AvviksMelding {
+    val fregIder = data.aktor
         .identifikatorer
         .filter { it.type == Type.FOLKEREGISTERIDENT }
     return AvviksMelding(
