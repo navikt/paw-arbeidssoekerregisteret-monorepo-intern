@@ -24,9 +24,9 @@ spec:
     - name: BEKREFTELSE_MIGRERINGSTIDSPUNKT
       value: "2024-09-29T22:00:00Z"
     - name: BEKREFTELSE_INTERVAL
-      value: "PT8M"
+      value: "PT5M"
     - name: BEKREFTELSE_GRACEPERIODE
-      value: "PT4M"
+      value: "PT8M"
     - name: BEKREFTELSE_TILGJENGELIG_OFFSET
       value: "PT2M"
   azure:
