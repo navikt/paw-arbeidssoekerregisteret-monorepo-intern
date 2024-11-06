@@ -72,6 +72,7 @@ fun processBekreftelser(
     currentState: BekreftelseTilstand,
     currentTime: Instant,
 ): Pair<BekreftelseTilstand, List<BekreftelseHendelse>> {
+    punctuatorLogger.trace("processBekreftelser: config='{}', state='{}', currentTime='{}'", bekreftelseKonfigurasjon, currentState, currentTime)
     val existingBekreftelse = currentState.bekreftelser.firstOrNull()
 
     val (tilstand, hendelse) = if (existingBekreftelse == null) {
