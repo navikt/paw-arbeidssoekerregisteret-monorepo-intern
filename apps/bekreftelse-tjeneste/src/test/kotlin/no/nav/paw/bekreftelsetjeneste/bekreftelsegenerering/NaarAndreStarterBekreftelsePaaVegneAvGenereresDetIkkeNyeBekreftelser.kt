@@ -10,7 +10,7 @@ import no.nav.paw.bekreftelsetjeneste.paavegneav.opprettPaaVegneAvTilstand
 import no.nav.paw.bekreftelsetjeneste.bekreftelse
 import no.nav.paw.bekreftelsetjeneste.bekreftelseTilstand
 import no.nav.paw.bekreftelsetjeneste.standardIntervaller
-import no.nav.paw.bekreftelsetjeneste.topology.prosessererBekreftelser
+import no.nav.paw.bekreftelsetjeneste.topology.prosesserBekreftelseOgPaaVegneAvTilstand
 import no.nav.paw.test.days
 import no.nav.paw.test.seconds
 import java.time.Instant
@@ -37,7 +37,7 @@ class NaarAndreStarterBekreftelsePaaVegneAvGenereresDetIkkeNyeBekreftelser : Fre
         ).forEach { tidEtterStart ->
             "bekreftelse puntuator kjører $tidEtterStart etter start av periode" - {
                 val resultat = sequenceOf(bekreftelseTilstand to paaVegneAvTilstand)
-                    .prosessererBekreftelser(
+                    .prosesserBekreftelseOgPaaVegneAvTilstand(
                         bekreftelseKonfigurasjon = intervaller,
                         wallClock = WallClock(periodeStart + tidEtterStart)
                     ).toList()
@@ -69,7 +69,7 @@ class NaarAndreStarterBekreftelsePaaVegneAvGenereresDetIkkeNyeBekreftelser : Fre
                         )
                     ) to paaVegneAvTilstand
                 )
-                    .prosessererBekreftelser(
+                    .prosesserBekreftelseOgPaaVegneAvTilstand(
                         bekreftelseKonfigurasjon = intervaller,
                         wallClock = WallClock(periodeStart + tidEtterStart)
                     ).toList()

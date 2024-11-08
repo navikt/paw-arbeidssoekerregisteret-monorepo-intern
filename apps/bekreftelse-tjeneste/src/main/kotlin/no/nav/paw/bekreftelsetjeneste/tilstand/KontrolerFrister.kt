@@ -40,7 +40,7 @@ fun Bekreftelse.harGraceperiodeUtloept(now: Instant, graceperiode: Duration): Bo
     }
 
 
-fun NonEmptyList<Bekreftelse>.shouldCreateNewBekreftelse(
+fun NonEmptyList<Bekreftelse>.skalOppretteNyBekreftelse(
     now: Instant,
     interval: Duration,
     tilgjengeligOffset: Duration

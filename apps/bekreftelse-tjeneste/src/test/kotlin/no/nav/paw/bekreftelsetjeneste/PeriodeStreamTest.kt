@@ -9,7 +9,7 @@ import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.periode
 import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.opprettBekreftelseTilstand
-import no.nav.paw.bekreftelsetjeneste.topology.InternTilstandStateStore
+import no.nav.paw.bekreftelsetjeneste.topology.BekreftelseTilstandStateStore
 import java.time.Instant
 
 class PeriodeStreamTest : FreeSpec({
@@ -22,8 +22,8 @@ class PeriodeStreamTest : FreeSpec({
                 val (_, key, periode) = periode(identitetsnummer = identitetsnummer, avsluttetMetadata = metadata(tidspunkt = startTime))
                 periodeTopic.pipeInput(key, periode)
 
-                val internTilstandStateStore: InternTilstandStateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
-                internTilstandStateStore.get(periode.id) shouldBe null
+                val bekreftelseTilstandStateStore: BekreftelseTilstandStateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
+                bekreftelseTilstandStateStore.get(periode.id) shouldBe null
 
                 bekreftelseHendelseloggTopicOut.isEmpty shouldBe true
             }
@@ -36,8 +36,8 @@ class PeriodeStreamTest : FreeSpec({
                 val (id, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
                 periodeTopic.pipeInput(key, periode)
 
-                val internTilstandStateStore: InternTilstandStateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
-                val currentState = internTilstandStateStore.get(periode.id)
+                val bekreftelseTilstandStateStore: BekreftelseTilstandStateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
+                val currentState = bekreftelseTilstandStateStore.get(periode.id)
                 currentState.shouldBeInstanceOf<BekreftelseTilstand>()
                 currentState shouldBe opprettBekreftelseTilstand(id, key, periode)
             }
@@ -49,14 +49,14 @@ class PeriodeStreamTest : FreeSpec({
             with(kafkaKeyContext()) {
                 val (_, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
                 periodeTopic.pipeInput(key, periode)
-                val internTilstandStateStore: InternTilstandStateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
+                val bekreftelseTilstandStateStore: BekreftelseTilstandStateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
 
-                internTilstandStateStore.get(periode.id).shouldBeInstanceOf<BekreftelseTilstand>()
+                bekreftelseTilstandStateStore.get(periode.id).shouldBeInstanceOf<BekreftelseTilstand>()
 
                 val (_, _, periode2) = periode(periodeId = periode.id, identitetsnummer = identitetsnummer, avsluttetMetadata = metadata(tidspunkt = startTime))
                 periodeTopic.pipeInput(key, periode2)
 
-                internTilstandStateStore.get(periode.id) shouldBe null
+                bekreftelseTilstandStateStore.get(periode.id) shouldBe null
                 bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
                 val kv = bekreftelseHendelseloggTopicOut.readKeyValue()
                 kv.key shouldBe key
@@ -69,12 +69,12 @@ class PeriodeStreamTest : FreeSpec({
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
                 val (id, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
-                val internTilstandStateStore: InternTilstandStateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
-                internTilstandStateStore.put(periode.id, opprettBekreftelseTilstand(id, key, periode))
-                val state = internTilstandStateStore.get(periode.id)
+                val bekreftelseTilstandStateStore: BekreftelseTilstandStateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
+                bekreftelseTilstandStateStore.put(periode.id, opprettBekreftelseTilstand(id, key, periode))
+                val state = bekreftelseTilstandStateStore.get(periode.id)
                 periodeTopic.pipeInput(key, periode)
 
-                internTilstandStateStore.get(periode.id) shouldBe state
+                bekreftelseTilstandStateStore.get(periode.id) shouldBe state
                 bekreftelseHendelseloggTopicOut.isEmpty shouldBe true
             }
         }

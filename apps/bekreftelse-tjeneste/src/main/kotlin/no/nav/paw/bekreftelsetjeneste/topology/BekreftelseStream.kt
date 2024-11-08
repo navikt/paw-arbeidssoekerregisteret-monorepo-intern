@@ -38,10 +38,10 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
                         .partially1(applicationConfig.bekreftelseKonfigurasjon)
                 ),
             ) { record ->
-                val internTilstandStateStore = getStateStore<InternTilstandStateStore>(internStateStoreName)
+                val bekreftelseTilstandStateStore = getStateStore<BekreftelseTilstandStateStore>(internStateStoreName)
                 val paaVegneAvTilstandStateStore = getStateStore<PaaVegneAvTilstandStateStore>(bekreftelsePaaVegneAvStateStoreName)
 
-                val gjeldendeTilstand: BekreftelseTilstand? = retrieveState(internTilstandStateStore, record)
+                val gjeldendeTilstand: BekreftelseTilstand? = retrieveState(bekreftelseTilstandStateStore, record)
                 val paaVegneAvTilstand = paaVegneAvTilstandStateStore[record.value().periodeId]
                 val melding = record.value()
 
@@ -54,7 +54,7 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
                 }
                 val (oppdatertTilstand, hendelser) = haandterBekreftelseMottatt(gjeldendeTilstand, paaVegneAvTilstand, melding)
                 if (oppdatertTilstand != gjeldendeTilstand) {
-                    internTilstandStateStore.put(oppdatertTilstand.periode.periodeId, oppdatertTilstand)
+                    bekreftelseTilstandStateStore.put(oppdatertTilstand.periode.periodeId, oppdatertTilstand)
                 }
                 forwardHendelser(record, hendelser, this::forward)
             }
@@ -67,11 +67,11 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
     kind = SpanKind.INTERNAL
 )
 fun retrieveState(
-    internTilstandStateStore: InternTilstandStateStore,
+    bekreftelseTilstandStateStore: BekreftelseTilstandStateStore,
     record: Record<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>
 ): BekreftelseTilstand? {
     val periodeId = record.value().periodeId
-    val state = internTilstandStateStore[periodeId]
+    val state = bekreftelseTilstandStateStore[periodeId]
 
     Span.current().setAttribute("periodeId", periodeId.toString())
     return state

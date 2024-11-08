@@ -11,7 +11,7 @@ import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.state.KeyValueStore
 import java.util.*
 
-typealias InternTilstandStateStore = KeyValueStore<UUID, BekreftelseTilstand>
+typealias BekreftelseTilstandStateStore = KeyValueStore<UUID, BekreftelseTilstand>
 typealias PaaVegneAvTilstandStateStore = KeyValueStore<UUID, PaaVegneAvTilstand>
 
 fun StreamsBuilder.buildTopology(

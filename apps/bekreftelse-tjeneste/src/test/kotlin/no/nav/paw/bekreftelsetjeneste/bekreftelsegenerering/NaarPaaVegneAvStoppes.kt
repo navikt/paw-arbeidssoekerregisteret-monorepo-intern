@@ -13,7 +13,7 @@ import no.nav.paw.bekreftelsetjeneste.standardIntervaller
 import no.nav.paw.bekreftelsetjeneste.tilgjengelig
 import no.nav.paw.bekreftelsetjeneste.tilstand.IkkeKlarForUtfylling
 import no.nav.paw.bekreftelsetjeneste.tilstand.KlarForUtfylling
-import no.nav.paw.bekreftelsetjeneste.topology.prosessererBekreftelser
+import no.nav.paw.bekreftelsetjeneste.topology.prosesserBekreftelseOgPaaVegneAvTilstand
 import no.nav.paw.test.days
 import no.nav.paw.test.seconds
 import java.time.Instant
@@ -28,7 +28,7 @@ class NaarPaaVegneAvStoppes : FreeSpec({
         "og ingen tidligere bekreftelser finnes" - {
             "bare opprettes en intern bekreftelse før ${startTid + intervaller.interval - intervaller.tilgjengeligOffset}" {
                 val (interntTilstand, hendelser) = sequenceOf(tilstand to null)
-                    .prosessererBekreftelser(
+                    .prosesserBekreftelseOgPaaVegneAvTilstand(
                         bekreftelseKonfigurasjon = intervaller,
                         wallClock = WallClock(startTid + 1.days)
                     ).first()
@@ -41,7 +41,7 @@ class NaarPaaVegneAvStoppes : FreeSpec({
             }
             "genereres det en ny bekreftelse etter ${intervaller.tilgjengelig(startTid)}" {
                 val (interntTilstand, hendelser) = sequenceOf(tilstand to null)
-                    .prosessererBekreftelser(
+                    .prosesserBekreftelseOgPaaVegneAvTilstand(
                         bekreftelseKonfigurasjon = intervaller,
                         wallClock = WallClock(intervaller.tilgjengelig(startTid) + 1.seconds)
                     ).first()
@@ -56,12 +56,12 @@ class NaarPaaVegneAvStoppes : FreeSpec({
             "genereres det 2 nye bekreftelser etter ${intervaller.gracePeriodeUtloeper(startTid) - 1.seconds + intervaller.interval + intervaller.graceperiode}" {
                 val wallClock = WallClock(intervaller.gracePeriodeUtloeper(startTid) - 1.seconds + intervaller.interval + intervaller.graceperiode)
                 val (interntTilstand1, hendelser1) = sequenceOf(tilstand to null)
-                    .prosessererBekreftelser(
+                    .prosesserBekreftelseOgPaaVegneAvTilstand(
                         bekreftelseKonfigurasjon = intervaller,
                         wallClock = wallClock
                     ).first()
                 val (interntTilstand, hendelser2) = sequenceOf(interntTilstand1 to null)
-                    .prosessererBekreftelser(
+                    .prosesserBekreftelseOgPaaVegneAvTilstand(
                         bekreftelseKonfigurasjon = intervaller,
                         wallClock = wallClock
                     ).first()
@@ -81,7 +81,7 @@ class NaarPaaVegneAvStoppes : FreeSpec({
         }
         "uten at noen bekreftelser er levert, skal det genereres en ny bekreftelse som starter ved periode start" - {
             val (interntTilstand, hendelser) = sequenceOf(tilstand to null)
-                .prosessererBekreftelser(
+                .prosesserBekreftelseOgPaaVegneAvTilstand(
                     bekreftelseKonfigurasjon = intervaller,
                     wallClock = WallClock(startTid + 1.days)
                 ).first()

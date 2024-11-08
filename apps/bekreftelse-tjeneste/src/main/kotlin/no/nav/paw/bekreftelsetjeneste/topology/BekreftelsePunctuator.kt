@@ -19,77 +19,76 @@ import java.time.Instant
 import java.util.*
 
 private val punctuatorLogger = LoggerFactory.getLogger("punctuator.bekreftelse")
+
 fun bekreftelsePunctuator(
-    interntilstandStateStoreName: String,
+    bekreftelseTilstandStateStoreName: String,
     paaVegneAvTilstandStateStoreName: String,
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
     timestamp: Instant,
     ctx: ProcessorContext<Long, BekreftelseHendelse>
 ) {
-    val internTilstandStateStore: InternTilstandStateStore = ctx.getStateStore(interntilstandStateStoreName)
+    val bekreftelseTilstandStateStore: BekreftelseTilstandStateStore = ctx.getStateStore(bekreftelseTilstandStateStoreName)
     val paaVegneAvTilstandStateStore: PaaVegneAvTilstandStateStore = ctx.getStateStore(paaVegneAvTilstandStateStoreName)
 
-    internTilstandStateStore
+    bekreftelseTilstandStateStore
         .all()
         .use { states ->
             states
                 .asSequence()
                 .map { (_, tilstand) -> tilstand to paaVegneAvTilstandStateStore.get(tilstand.periode.periodeId) }
-                .prosessererBekreftelser(bekreftelseKonfigurasjon, WallClock(timestamp))
-                .forEach { (updatedState, bekreftelseHendelser) ->
+                .prosesserBekreftelseOgPaaVegneAvTilstand(bekreftelseKonfigurasjon, WallClock(timestamp))
+                .forEach { (oppdatertTilstand, bekreftelseHendelser) ->
                     bekreftelseHendelser.forEach {
-                        ctx.forward(Record(updatedState.periode.recordKey, it, Instant.now().toEpochMilli()))
+                        ctx.forward(Record(oppdatertTilstand.periode.recordKey, it, Instant.now().toEpochMilli()))
                     }
-                    internTilstandStateStore.put(updatedState.periode.periodeId, updatedState)
+                    bekreftelseTilstandStateStore.put(oppdatertTilstand.periode.periodeId, oppdatertTilstand)
                 }
         }
 }
 
-fun Sequence<Pair<BekreftelseTilstand, PaaVegneAvTilstand?>>.prosessererBekreftelser(
+fun Sequence<Pair<BekreftelseTilstand, PaaVegneAvTilstand?>>.prosesserBekreftelseOgPaaVegneAvTilstand(
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
     wallClock: WallClock
 ): Sequence<Pair<BekreftelseTilstand, List<BekreftelseHendelse>>> =
-    filter { (internTilstand, paaVegneAvTilstand) ->
+    filter { (bekreftelseTilstand, paaVegneAvTilstand) ->
         (paaVegneAvTilstand == null)
             .also { result ->
                 punctuatorLogger.trace(
                     "Periode {}, registeret har ansvar: {}",
-                    internTilstand.periode.periodeId,
+                    bekreftelseTilstand.periode.periodeId,
                     result
                 )
             }
     }
-        .map { (tilstand, _) ->
-            processBekreftelser(
+        .map { (bekreftelseTilstand, _) ->
+            bekreftelseTilstand.prosesserBekreftelser(
                 bekreftelseKonfigurasjon,
-                tilstand,
                 wallClock.value
             )
         }
 
-fun processBekreftelser(
+fun BekreftelseTilstand.prosesserBekreftelser(
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
-    currentState: BekreftelseTilstand,
     currentTime: Instant,
 ): Pair<BekreftelseTilstand, List<BekreftelseHendelse>> {
-    punctuatorLogger.trace("processBekreftelser: config='{}', state='{}', currentTime='{}'", bekreftelseKonfigurasjon, currentState, currentTime)
-    val existingBekreftelse = currentState.bekreftelser.firstOrNull()
+    punctuatorLogger.trace("processBekreftelser: config='{}', state='{}', currentTime='{}'", bekreftelseKonfigurasjon, this, currentTime)
+    val ingenBekreftelserITilstand = bekreftelser.firstOrNull() == null
 
-    val (tilstand, hendelse) = if (existingBekreftelse == null) {
-        currentState.createInitialBekreftelse(
+    val (tilstand, hendelse) = if (ingenBekreftelserITilstand) {
+        opprettInitiellBekreftelse(
             tidligsteStartTidspunktForBekreftelse = bekreftelseKonfigurasjon.migreringstidspunkt,
             interval = bekreftelseKonfigurasjon.interval
         ) to null
     } else {
-        currentState.checkAndCreateNewBekreftelse(currentTime, bekreftelseKonfigurasjon)
+        sjekkOgLagNyBekreftelse(currentTime, bekreftelseKonfigurasjon)
     }
 
-    val (updatedTilstand, additionalHendelse) = tilstand.handleUpdateBekreftelser(currentTime, bekreftelseKonfigurasjon)
+    val (oppdatertTilstand, additionalHendelser) = tilstand.hentOppdatertBekreftelseTilstandOgGenererteHendelser(currentTime, bekreftelseKonfigurasjon)
 
-    return updatedTilstand to listOfNotNull(hendelse, additionalHendelse)
+    return oppdatertTilstand to listOfNotNull(hendelse) + additionalHendelser
 }
 
-private fun BekreftelseTilstand.createInitialBekreftelse(
+private fun BekreftelseTilstand.opprettInitiellBekreftelse(
     tidligsteStartTidspunktForBekreftelse: Instant,
     interval: Duration
 ): BekreftelseTilstand =
@@ -99,13 +98,13 @@ private fun BekreftelseTilstand.createInitialBekreftelse(
         interval = interval
     )))
 
-private fun BekreftelseTilstand.checkAndCreateNewBekreftelse(
+private fun BekreftelseTilstand.sjekkOgLagNyBekreftelse(
     timestamp: Instant,
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
 ): Pair<BekreftelseTilstand, BekreftelseHendelse?> {
     val nonEmptyBekreftelser = bekreftelser.toNonEmptyListOrNull() ?: return this to null
 
-    return if (nonEmptyBekreftelser.shouldCreateNewBekreftelse(
+    return if (nonEmptyBekreftelser.skalOppretteNyBekreftelse(
             timestamp,
             bekreftelseKonfigurasjon.interval,
             bekreftelseKonfigurasjon.tilgjengeligOffset
@@ -115,40 +114,48 @@ private fun BekreftelseTilstand.checkAndCreateNewBekreftelse(
             tilgjengeliggjort = timestamp,
             interval = bekreftelseKonfigurasjon.interval,
         )
-        copy(bekreftelser = nonEmptyBekreftelser + newBekreftelse) to createNewBekreftelseTilgjengelig(newBekreftelse)
+        copy(bekreftelser = nonEmptyBekreftelser + newBekreftelse) to opprettNyBekreftelseTilgjengeligHendelse(newBekreftelse)
     } else {
         this to null
     }
 }
 
-private fun BekreftelseTilstand.handleUpdateBekreftelser(
+private fun BekreftelseTilstand.hentOppdatertBekreftelseTilstandOgGenererteHendelser(
     timestamp: Instant,
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
-): Pair<BekreftelseTilstand, BekreftelseHendelse?> {
-    val updatedBekreftelser = bekreftelser.map { bekreftelse ->
-        generateSequence(bekreftelse to null as BekreftelseHendelse?) { (currentBekreftelse, _) ->
-            getProcessedBekreftelseTilstandAndHendelse(
-                currentBekreftelse,
-                timestamp,
-                bekreftelseKonfigurasjon
-            ).takeIf { it.second != null }
-        }.last().first
+): Pair<BekreftelseTilstand, List<BekreftelseHendelse>> =
+    copy(bekreftelser = hentOppdaterteBekreftelser(timestamp, bekreftelseKonfigurasjon)) to hentGenererteHendelser(timestamp, bekreftelseKonfigurasjon)
+
+private fun BekreftelseTilstand.hentOppdaterteBekreftelser(
+    timestamp: Instant,
+    bekreftelseKonfigurasjon: BekreftelseKonfigurasjon
+): List<Bekreftelse> =
+    bekreftelser.map { bekreftelse ->
+        prosesserBekreftelseTilstand(bekreftelse, timestamp, bekreftelseKonfigurasjon).last().first
     }
 
-    val hendelse: BekreftelseHendelse? = bekreftelser.flatMap { bekreftelse ->
-        generateSequence(bekreftelse to null as BekreftelseHendelse?) { (currentBekreftelse, _) ->
-            getProcessedBekreftelseTilstandAndHendelse(
-                currentBekreftelse,
-                timestamp,
-                bekreftelseKonfigurasjon
-            ).takeIf { it.second != null }
-        }.mapNotNull { it.second }
-    }.lastOrNull()
+private fun BekreftelseTilstand.hentGenererteHendelser(
+    timestamp: Instant,
+    bekreftelseKonfigurasjon: BekreftelseKonfigurasjon
+): List<BekreftelseHendelse> =
+    bekreftelser.flatMap { bekreftelse ->
+        prosesserBekreftelseTilstand(bekreftelse, timestamp, bekreftelseKonfigurasjon).mapNotNull { it.second }
+    }
 
-    return copy(bekreftelser = updatedBekreftelser) to hendelse
-}
+private fun BekreftelseTilstand.prosesserBekreftelseTilstand(
+    bekreftelse: Bekreftelse,
+    timestamp: Instant,
+    bekreftelseKonfigurasjon: BekreftelseKonfigurasjon
+): Sequence<Pair<Bekreftelse, BekreftelseHendelse?>> =
+    generateSequence(bekreftelse to null as BekreftelseHendelse?) { (currentBekreftelse, _) ->
+        hentProsessertBekreftelseTilstandOgHendelser(
+            currentBekreftelse,
+            timestamp,
+            bekreftelseKonfigurasjon
+        ).takeIf { it.second != null }
+    }
 
-private fun BekreftelseTilstand.getProcessedBekreftelseTilstandAndHendelse(
+private fun BekreftelseTilstand.hentProsessertBekreftelseTilstandOgHendelser(
     bekreftelse: Bekreftelse,
     timestamp: Instant,
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
@@ -215,7 +222,7 @@ private fun BekreftelseTilstand.getProcessedBekreftelseTilstandAndHendelse(
     }
 }
 
-private fun BekreftelseTilstand.createNewBekreftelseTilgjengelig(newBekreftelse: Bekreftelse) =
+private fun BekreftelseTilstand.opprettNyBekreftelseTilgjengeligHendelse(newBekreftelse: Bekreftelse) =
     BekreftelseTilgjengelig(
         hendelseId = UUID.randomUUID(),
         periodeId = periode.periodeId,
