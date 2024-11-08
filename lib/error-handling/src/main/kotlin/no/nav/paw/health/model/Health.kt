@@ -2,10 +2,10 @@ package no.nav.paw.health.model
 
 import java.util.concurrent.atomic.AtomicReference
 
-enum class HealthStatus(val value: String) {
-    UNKNOWN("UNKNOWN"),
-    HEALTHY("HEALTHY"),
-    UNHEALTHY("UNHEALTHY"),
+enum class HealthStatus(val value: String, val priority: Int) {
+    UNKNOWN("UNKNOWN", 10),
+    HEALTHY("HEALTHY", 5),
+    UNHEALTHY("UNHEALTHY", 1),
 }
 
 open class HealthIndicator(initialStatus: HealthStatus) {
@@ -41,17 +41,9 @@ open class HealthIndicator(initialStatus: HealthStatus) {
 
 typealias HealthIndicatorList = MutableList<HealthIndicator>
 
-fun HealthIndicatorList.getAggregatedStatus(): HealthStatus {
-    return if (this.isEmpty()) {
-        HealthStatus.UNKNOWN
-    } else if (this.all { it.getStatus() == HealthStatus.HEALTHY }) {
-        HealthStatus.HEALTHY
-    } else if (this.any { it.getStatus() == HealthStatus.UNHEALTHY }) {
-        HealthStatus.UNHEALTHY
-    } else {
-        HealthStatus.UNKNOWN
-    }
-}
+fun HealthIndicatorList.getAggregatedStatus(): HealthStatus =
+    map(HealthIndicator::getStatus)
+        .minByOrNull(HealthStatus::priority) ?: HealthStatus.UNKNOWN
 
 class ReadinessHealthIndicator(initialStatus: HealthStatus = HealthStatus.UNKNOWN) : HealthIndicator(initialStatus)
 class LivenessHealthIndicator(initialStatus: HealthStatus = HealthStatus.HEALTHY) : HealthIndicator(initialStatus)
