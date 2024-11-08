@@ -1,26 +1,16 @@
-package no.nav.paw.kafkakeymaintenance.functions
+package no.nav.paw.kafkakeymaintenance.pdlprocessor
 
 import arrow.core.partially1
-import kotlinx.coroutines.runBlocking
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.TidspunktFraKilde
-import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.kafkakeygenerator.client.LokaleAlias
-import no.nav.paw.kafkakeymaintenance.ANTALL_PARTISJONER
-import no.nav.paw.kafkakeymaintenance.kafka.Topic
-import no.nav.paw.kafkakeymaintenance.kafka.TransactionContext
-import no.nav.paw.kafkakeymaintenance.kafka.updateHwm
-import no.nav.paw.kafkakeymaintenance.metadata
+import no.nav.paw.kafkakeymaintenance.pdlprocessor.functions.*
 import no.nav.paw.kafkakeymaintenance.perioder.Perioder
 import no.nav.paw.kafkakeymaintenance.vo.*
 import no.nav.person.pdl.aktor.v2.Aktor
-import org.apache.kafka.clients.consumer.ConsumerRecord
-import org.apache.kafka.streams.StreamsBuilder
-import org.apache.kafka.streams.kstream.Suppressed
 import org.apache.kafka.streams.processor.api.Record
-import java.time.Duration
 import java.time.Instant
 
 
@@ -39,16 +29,6 @@ fun processPdlRecord(
         )
     )
     return prosesser(hentAlias, record.value(), perioder, metadata)
-}
-
-fun Perioder.hentPerioder(avviksMelding: AvviksMelding): AvvvikOgPerioder {
-    val identiteter = avviksMelding.lokaleAlias
-        .map { it.identitetsnummer } +
-            avviksMelding.pdlIdentitetsnummer
-    return AvvvikOgPerioder(
-        avviksMelding = avviksMelding,
-        perioder = get(identiteter)
-    )
 }
 
 fun prosesser(

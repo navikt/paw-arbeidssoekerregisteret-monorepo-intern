@@ -1,4 +1,4 @@
-package no.nav.paw.kafkakeymaintenance.functions
+package no.nav.paw.kafkakeymaintenance.pdlprocessor.functions
 
 import arrow.core.NonEmptyList
 import arrow.core.nonEmptyListOf

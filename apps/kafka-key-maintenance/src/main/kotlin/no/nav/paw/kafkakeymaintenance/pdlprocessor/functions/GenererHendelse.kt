@@ -1,4 +1,4 @@
-package no.nav.paw.kafkakeymaintenance.functions
+package no.nav.paw.kafkakeymaintenance.pdlprocessor.functions
 
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerOpphoert

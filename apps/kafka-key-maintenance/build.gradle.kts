@@ -19,6 +19,7 @@ dependencies {
     implementation(project(":lib:kafka-streams"))
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:kafka-key-generator-client"))
+    implementation(project(":lib:error-handling"))
 
     implementation(libs.arrow.core.core)
     implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
@@ -49,6 +50,7 @@ dependencies {
     implementation(libs.kafka.streams.core)
     implementation(libs.avro.core)
     implementation(libs.avro.kafkaSerializer)
+    implementation(libs.avro.kafkaStreamsSerde)
     implementation(libs.exposed.core)
     implementation(libs.exposed.jdbc)
     implementation(libs.exposed.javaTime)
@@ -65,6 +67,8 @@ dependencies {
     testImplementation(libs.test.testContainers.core)
     testImplementation(libs.test.testContainers.postgresql)
     testImplementation(libs.ktor.server.testJvm)
+    testImplementation(libs.kafka.streams.test)
+    testImplementation(project(":test:kafka-streams-test-functions"))
 }
 
 java {

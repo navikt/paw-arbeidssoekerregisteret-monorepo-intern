@@ -1,4 +1,4 @@
-package no.nav.paw.kafkakeymaintenance.functions
+package no.nav.paw.kafkakeymaintenance.pdlprocessor.functions
 
 import no.nav.paw.kafkakeymaintenance.vo.AutomatiskIdOppdatering
 import no.nav.paw.kafkakeymaintenance.vo.IdOppdatering

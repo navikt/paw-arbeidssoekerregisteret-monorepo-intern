@@ -1,4 +1,4 @@
-package no.nav.paw.kafkakeymaintenance
+package no.nav.paw.kafkakeymaintenance.pdlprocessor.functions
 
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType

@@ -1,0 +1,4 @@
+aktorTopic = "pdl.aktor-v2"
+hendelseloggTopic = "${HENDELSELOGG_TOPIC}"
+supressionDelay = "PT24H"
+internval = "PT1H"
