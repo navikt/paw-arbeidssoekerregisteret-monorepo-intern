@@ -54,7 +54,7 @@ fun createHealthIndicatorStateListener(
             livenessIndicator.setUnhealthy()
         }
 
-        else -> {
+        null -> {
             readinessIndicator.setUnknown()
             livenessIndicator.setUnknown()
         }
