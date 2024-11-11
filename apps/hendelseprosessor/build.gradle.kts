@@ -1,5 +1,3 @@
-import com.github.davidmc24.gradle.plugin.avro.GenerateAvroProtocolTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm")
@@ -33,6 +31,7 @@ dependencies {
 
     testImplementation(libs.test.junit5.runner)
     testImplementation(libs.kafka.streams.test)
+    testImplementation(project(":test:kafka-streams-test-functions"))
 }
 
 java {

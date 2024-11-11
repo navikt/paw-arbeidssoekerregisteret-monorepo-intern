@@ -3,19 +3,21 @@ package no.nav.paw.arbeidssokerregisteret.app
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.GJELDER_FRA_DATO
 import no.nav.paw.arbeidssokerregisteret.PROSENT
 import no.nav.paw.arbeidssokerregisteret.STILLING
 import no.nav.paw.arbeidssokerregisteret.STILLING_STYRK08
+import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.app.config.ApplicationLogicConfig
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
+import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerSammenslaatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.*
+import no.nav.paw.test.assertEvent
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.TopologyTestDriver
 import java.time.Duration
@@ -298,6 +300,67 @@ class ApplikasjonsTest : FreeSpec({
             )
         }
 
+        "Når vi mottar IdentitetsnummerSammenslatt hendelse også en periode startet hendelse skal det ikke skje noe" {
+            periodeTopic.isEmpty shouldBe true
+            val identitetsnummerSammenslaatt = IdentitetsnummerSammenslaatt(
+                id = 1L,
+                hendelseId = UUID.randomUUID(),
+                identitetsnummer = identitetnummer,
+                metadata = Metadata(
+                    Instant.now(),
+                    Bruker(BrukerType.SYSTEM, "test"),
+                    "unit-test",
+                    "tester"
+                ),
+                alleIdentitetsnummer = listOf(identitetnummer, "12345678902", "12345678903"),
+                flyttetTilArbeidssoekerId = 2L
+            )
+            eventlogTopic.pipeInput(key, identitetsnummerSammenslaatt)
+            val periode = Startet(
+                hendelseId = periodeId2,
+                id = 1L,
+                identitetsnummer = identitetnummer,
+                metadata = Metadata(
+                    tidspunkt = opplysningerTidspunkt.plus(opplysningerTilPeriodeVindu.minusSeconds(1)),
+                    utfoertAv = Bruker(BrukerType.SLUTTBRUKER, "123456788901"),
+                    kilde = "unit-test",
+                    aarsak = "tester"
+                )
+            )
+            eventlogTopic.pipeInput(key, periode)
+            periodeTopic.isEmpty shouldBe true
+        }
+        "Når vi har en aktiv periode og mottar IdentitetsnummerSammenslatt hendelse skal perioden avsluttes" {
+            periodeTopic.isEmpty shouldBe true
+            val periode = Startet(
+                hendelseId = UUID.randomUUID(),
+                id = 5L,
+                identitetsnummer = identitetnummer,
+                metadata = Metadata(
+                    tidspunkt = opplysningerTidspunkt.plus(opplysningerTilPeriodeVindu.minusSeconds(1)),
+                    utfoertAv = Bruker(BrukerType.SLUTTBRUKER, "123456788901"),
+                    kilde = "unit-test",
+                    aarsak = "tester"
+                )
+            )
+            eventlogTopic.pipeInput(key, periode)
+            periodeTopic.assertEvent<Periode>()
+            val identitetsnummerSammenslaatt = IdentitetsnummerSammenslaatt(
+                id = 5L,
+                hendelseId = UUID.randomUUID(),
+                identitetsnummer = identitetnummer,
+                metadata = Metadata(
+                    Instant.now(),
+                    Bruker(BrukerType.SYSTEM, "test"),
+                    "unit-test",
+                    "tester"
+                ),
+                alleIdentitetsnummer = listOf(identitetnummer, "12345678902", "12345678903"),
+                flyttetTilArbeidssoekerId = 2L
+            )
+            eventlogTopic.pipeInput(key, identitetsnummerSammenslaatt)
+            periodeTopic.isEmpty shouldBe false
+        }
     }
 })
 

@@ -30,6 +30,7 @@ data class TilstandV1(
 }
 
 enum class GjeldeneTilstand {
+    @JsonProperty("OPPHOERT") OPPHOERT,
     @JsonProperty("AVVIST") AVVIST,
     @JsonProperty("STARTET") STARTET,
     @JsonProperty("AVSLUTTET") AVSLUTTET

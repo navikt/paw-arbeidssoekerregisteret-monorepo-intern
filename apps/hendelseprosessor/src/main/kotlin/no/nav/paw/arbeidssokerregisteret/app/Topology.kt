@@ -5,6 +5,7 @@ import no.nav.paw.arbeidssokerregisteret.app.config.ApplicationLogicConfig
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.genererNyInternTilstandOgNyeApiTilstander
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.ignorerAvsluttetForAnnenPeriode
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.ignorerDuplikatStartOgStopp
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.ignorerOpphoerteIdenter
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors.MeteredOutboundTopicNameExtractor
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors.lagreInternTilstand
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors.lastInternTilstand
@@ -33,6 +34,7 @@ fun topology(
         strøm
             .peek { _, hendelse -> prometheusMeterRegistry.tellHendelse(innTopic, hendelse) }
             .lastInternTilstand(dbNavn)
+            .filter(::ignorerOpphoerteIdenter)
             .filter(::ignorerDuplikatStartOgStopp)
             .filter(::ignorerAvsluttetForAnnenPeriode)
             .mapValues { internTilstandOgHendelse ->

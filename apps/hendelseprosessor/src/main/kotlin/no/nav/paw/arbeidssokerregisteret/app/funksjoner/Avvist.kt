@@ -20,7 +20,7 @@ fun FunctionContext<TilstandV1?, Long>.avvist(avvist: Avvist): InternTilstandOgA
         )
 
         GjeldeneTilstand.AVVIST -> tilstand.copy(hendelseScope = scope)
-        GjeldeneTilstand.STARTET -> tilstand
+        GjeldeneTilstand.STARTET, GjeldeneTilstand.OPPHOERT -> tilstand
         GjeldeneTilstand.AVSLUTTET -> tilstand.copy(
             hendelseScope = scope,
             gjeldeneTilstand = GjeldeneTilstand.AVVIST
