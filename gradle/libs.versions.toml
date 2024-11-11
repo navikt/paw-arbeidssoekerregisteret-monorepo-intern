@@ -1,6 +1,6 @@
 [versions]
 noNavSecurityVersion = "5.0.8"
-noNavSecurityMockOauth2ServerVersion = "2.1.5"
+noNavSecurityMockOauth2ServerVersion = "2.1.10"
 noNavCommonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
 navPoaoTilgangClientVersion = "2024.04.29_13.59-a0ddddd36ac9"
 arbeidssokerregisteretVersion = "1.9348086045.48-1"
@@ -19,7 +19,6 @@ logbackVersion = "1.5.11"
 kotestVersion = "5.9.1"
 mockkVersion = "1.13.13"
 testContainersVersion = "1.20.3"
-mockOauth2ServerVersion = "2.1.9"
 micrometerVersion = "1.13.6"
 otelTargetSdkVersion = "1.43.0"
 otelInstrumentationVersion = "2.9.0"
@@ -93,7 +92,7 @@ test-kotest-assertionsCore = { group = "io.kotest", name = "kotest-assertions-co
 test-mockk-core = { group = "io.mockk", name = "mockk", version.ref = "mockkVersion" }
 test-testContainers-core = { group = "org.testcontainers", name = "testcontainers", version.ref = "testContainersVersion" }
 test-testContainers-postgresql = { group = "org.testcontainers", name = "postgresql", version.ref = "testContainersVersion" }
-test-mockOauth2Server = { group = "no.nav.security", name = "mock-oauth2-server", version.ref = "mockOauth2ServerVersion" }
+test-mockOauth2Server = { group = "no.nav.security", name = "mock-oauth2-server", version.ref = "noNavSecurityMockOauth2ServerVersion" }
 database-postgres-driver = { group = "org.postgresql", name = "postgresql", version.ref = "postgresDriverVersion" }
 database-flyway-core = { group = "org.flywaydb", name = "flyway-core", version.ref = "flywayVersion" }
 database-flyway-postgres = { group = "org.flywaydb", name = "flyway-database-postgresql", version.ref = "flywayVersion" }
