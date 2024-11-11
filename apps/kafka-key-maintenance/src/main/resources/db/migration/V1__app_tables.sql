@@ -8,3 +8,13 @@ create table hwm
     last_updated timestamp NOT NULL,
     primary key (version, kafka_topic, kafka_partition)
 );
+
+create table perioder
+(
+    version smallint NOT NULL,
+    periode_id uuid NOT NULL,
+    identitetsnummer varchar(11) NOT NULL,
+    fra timestamp NOT NULL,
+    til timestamp,
+    primary key (version, periode_id)
+);
