@@ -84,7 +84,7 @@ fun ignorerOpphoerteIdenter(
     val (_, tilstand, hendelse) = tilstandOgHendelse
     return (tilstand?.gjeldeneTilstand != GjeldeneTilstand.OPPHOERT).also { include ->
         if(!include) {
-            opphoerteIdenterLogger.info("Opphoert identitetsnummer for hendelse: {} {}", hendelse.hendelseType, hendelse.hendelseId)
+            opphoerteIdenterLogger.error("Ignorerte opphoert ident for hendelse: {} {}", hendelse.hendelseType, hendelse.hendelseId)
         }
         Span.current().setAllAttributes(
             Attributes.of(

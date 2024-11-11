@@ -8,10 +8,11 @@ import no.nav.paw.arbeidssokerregisteret.app.tilstand.api
 import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerSammenslaatt
 import org.slf4j.LoggerFactory
 
+private val identitetsnummerSammenslaattLogger = LoggerFactory.getLogger("identitetsnummerSammenslaattAvsluttPeriode")
+
 fun FunctionContext<TilstandV1?, Long>.identitetsnummerSammenslaattAvsluttPeriode(hendelse: IdentitetsnummerSammenslaatt): InternTilstandOgApiTilstander {
-    val logger = LoggerFactory.getLogger("identitetsnummerSammenslaattAvsluttPeriode")
     return if (tilstand?.gjeldenePeriode == null) {
-        logger.info("Gjeldende periode er null, kan ikke avslutte periode for sammenslått identitetsnummer. Ignorerer hendelse: ${hendelse.hendelseId}")
+        identitetsnummerSammenslaattLogger.info("Gjeldende periode er null, kan ikke avslutte periode for sammenslått identitetsnummer. Ignorerer hendelse: ${hendelse.hendelseId}")
         InternTilstandOgApiTilstander(
             id = scope.id,
             tilstand = tilstand?.copy(
