@@ -5,6 +5,7 @@ import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerSammenslaatt
+import no.nav.paw.kafkakeymaintenance.pdlprocessor.supressionDelay
 import no.nav.paw.test.minutes
 import java.time.Instant.parse
 

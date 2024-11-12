@@ -76,8 +76,8 @@ val aktorTopologyConfig
     get() = AktorTopologyConfig(
         aktorTopic = "aktor_topic",
         hendelseloggTopic = "hendelselogg_topic",
-        supressionDelay = Duration.ofHours(1),
-        interval = Duration.ofMinutes(1),
+        supressionDelayMS = Duration.ofHours(1).toMillis(),
+        intervalMS = Duration.ofMinutes(1).toMillis(),
         stateStoreName = "suppression_store"
     )
 
