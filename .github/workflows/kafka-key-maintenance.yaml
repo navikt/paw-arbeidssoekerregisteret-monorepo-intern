@@ -1,4 +1,4 @@
-name: Kafka Key Generator
+name: Kafka Key Maintenance
 
 on:
   push:
@@ -80,4 +80,4 @@ jobs:
         env:
           CLUSTER: dev-gcp
           RESOURCE: apps/kafka-key-maintenance/nais/nais-dev.yaml
-          VAR: image=${{ needs.build.outputs.image }}
+          VAR: image=${{ needs.build.outputs.image }},kafka=nav-dev
