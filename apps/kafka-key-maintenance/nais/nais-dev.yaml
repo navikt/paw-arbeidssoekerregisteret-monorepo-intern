@@ -34,7 +34,7 @@ spec:
       enabled: true
       runtime: java
   kafka:
-    pool: { { kafka } }
+    pool: {{ kafka }}
     streams: true
   gcp:
     sqlInstances:
