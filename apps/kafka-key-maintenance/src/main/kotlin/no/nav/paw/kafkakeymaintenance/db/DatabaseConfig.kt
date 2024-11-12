@@ -10,7 +10,7 @@ data class DatabaseConfig(
     val password: String,
     val jdbc: String?
 ) {
-    val url get() = jdbc ?: "jdbc:postgresql://$host:$port/$name?user=$username&password=$password"
+    val url get() = "jdbc:postgresql://$host:$port/$name?user=$username&password=$password"
 
     override fun toString(): String {
         return if (jdbc != null) {
