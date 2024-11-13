@@ -58,3 +58,4 @@ spec:
           - application: paw-arbeidssoekerregisteret-bekreftelse-tjeneste
           - application: paw-arbeidssoekerregisteret-bekreftelse-min-side-varsler
           - application: paw-brukerstotte
+          - application: paw-kafka-key-maintenance
