@@ -43,6 +43,7 @@ class HwmRebalanceListener(
                 }
             }
             seekTo.forEach { (partition, offset) ->
+                context.logger.info("Seeking to $partition, $offset")
                 consumer.seek(partition, offset + 1)
             }
         }
