@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.database.postgres.driver)
     implementation(libs.database.flyway.core)
     implementation(libs.database.flyway.postgres)
+    implementation(libs.opentelemetry.api)
 
     implementation(libs.jackson.datatypeJsr310)
     implementation(libs.jackson.kotlin)
