@@ -1,4 +1,4 @@
 aktorTopic = "pdl.aktor-v2"
 hendelseloggTopic = "${HENDELSELOGG_TOPIC}"
-supressionDelayMS = 86400000
-intervalMS = 3600000
+supressionDelayMS = 10000
+intervalMS = 5000
