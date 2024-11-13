@@ -14,17 +14,15 @@
             <root level="INFO">
                 <appender-ref ref="STDOUT_JSON"/>
             </root>
+            <logger name="no.nav.paw.pdl.PdlClient" level="WARN"/>
+            <logger name="MergeDetector" level="INFO"/>
         </then>
         <else>
             <root level="INFO">
                 <appender-ref ref="CONSOLE"/>
             </root>
+            <logger name="org.apache.kafka.clients.consumer.ConsumerConfig" level="WARN" />
+            <logger name="org.apache.kafka.clients.producer.ProducerConfig" level="WARN" />
         </else>
     </if>
-
-    <logger name="org.apache.kafka" level="INFO" />
-    <logger name="io.confluent" level="INFO" />
-    <logger name="no.nav" level="INFO" />
-    <logger name="no.nav.paw.pdl.PdlClient" level="WARN"/>
-    <logger name="MergeDetector" level="INFO"/>
 </configuration>
