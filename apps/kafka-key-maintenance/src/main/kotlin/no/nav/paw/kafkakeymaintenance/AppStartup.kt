@@ -12,12 +12,15 @@ import no.nav.paw.kafkakeygenerator.client.createKafkaKeyGeneratorClient
 import no.nav.paw.kafkakeymaintenance.db.DatabaseConfig
 import no.nav.paw.kafkakeymaintenance.db.dataSource
 import no.nav.paw.kafkakeymaintenance.db.migrateDatabase
+import no.nav.paw.kafkakeymaintenance.kafka.Topic
+import no.nav.paw.kafkakeymaintenance.kafka.initHwm
 import no.nav.paw.kafkakeymaintenance.kafka.txContext
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.AktorTopologyConfig
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.functions.hentAlias
 import no.nav.paw.kafkakeymaintenance.perioder.consume
 import no.nav.paw.kafkakeymaintenance.perioder.dbPerioder
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture.runAsync
 import java.util.concurrent.atomic.AtomicBoolean
@@ -45,6 +48,9 @@ fun main() {
         LivenessHealthIndicator(HealthStatus.UNHEALTHY)
     )
     val consumerReadinessHealthIndicator = healthIndicatorRepository.addReadinessIndicator(ReadinessHealthIndicator())
+    transaction {
+        txContext(applicationContext)().initHwm(Topic(PERIODE_TOPIC), 6)
+    }
     runAsync {
         consumerReadinessHealthIndicator.setHealthy()
         consumerLivenessHealthIndicator.setHealthy()
