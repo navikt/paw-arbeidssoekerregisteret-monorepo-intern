@@ -35,7 +35,7 @@ fun main() {
         migrateDatabase(this)
         Database.connect(this)
     }
-    val periodeSequence = with(KafkaFactory(loadNaisOrLocalConfiguration(KAFKA_CONFIG_WITH_SCHEME_REG))) {
+    val (hwmRebalacingListener, periodeSequence) = with(KafkaFactory(loadNaisOrLocalConfiguration(KAFKA_CONFIG_WITH_SCHEME_REG))) {
         initPeriodeConsumer(
             periodeTopic = PERIODE_TOPIC,
             applicationContext = applicationContext
@@ -61,7 +61,7 @@ fun main() {
         perioder = dbPerioder(applicationContext),
         hentAlias = createKafkaKeyGeneratorClient()::hentAlias
     ).start()
-
+    applicationContext.logger.info("Applikasjonen er startet, consumer: {}", hwmRebalacingListener.currentlyAssignedPartitions)
     initKtor(
         healthIndicatorRepository = healthIndicatorRepository,
         prometheusMeterRegistry = applicationContext.meterRegistry
