@@ -1,6 +1,7 @@
 package no.nav.paw.kafkakeymaintenance
 
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.config.kafka.KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG
 import no.nav.paw.config.kafka.streams.KafkaStreamsFactory
@@ -23,6 +24,7 @@ import org.apache.kafka.streams.state.KeyValueBytesStoreSupplier
 import org.apache.kafka.streams.state.Stores
 
 fun initStreams(
+    meterRegistry: PrometheusMeterRegistry,
     aktorTopologyConfig: AktorTopologyConfig,
     healthIndicatorRepository: HealthIndicatorRepository,
     perioder: Perioder,
@@ -36,6 +38,7 @@ fun initStreams(
         .withDefaultValueSerde(SpecificAvroSerde::class)
 
     val topology = initTopology(
+        meterRegistry = meterRegistry,
         aktorSerde = kafkaStreamsFactory.createSpecificAvroSerde<Aktor>(),
         aktorTopologyConfig = aktorTopologyConfig,
         perioder = perioder,
@@ -54,6 +57,7 @@ fun initStreams(
 }
 
 fun initTopology(
+    meterRegistry: PrometheusMeterRegistry,
     stateStoreBuilderFactory: (String) -> KeyValueBytesStoreSupplier,
     aktorTopologyConfig: AktorTopologyConfig,
     perioder: Perioder,
@@ -69,6 +73,7 @@ fun initTopology(
             )
         )
     streamsBuilder.buildAktorTopology(
+        meterRegistry = meterRegistry,
         aktorSerde = aktorSerde,
         aktorTopologyConfig = aktorTopologyConfig,
         perioder = perioder,

@@ -56,6 +56,7 @@ fun main() {
         consumerLivenessHealthIndicator.setUnhealthy()
     }
     initStreams(
+        meterRegistry = applicationContext.meterRegistry,
         aktorTopologyConfig = loadNaisOrLocalConfiguration(AktorTopologyConfig.configFile),
         healthIndicatorRepository = healthIndicatorRepository,
         perioder = dbPerioder(applicationContext),

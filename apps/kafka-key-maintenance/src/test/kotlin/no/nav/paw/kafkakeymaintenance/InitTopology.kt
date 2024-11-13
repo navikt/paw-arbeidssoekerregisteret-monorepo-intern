@@ -1,6 +1,8 @@
 package no.nav.paw.kafkakeymaintenance
 
 import arrow.core.partially1
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
 import no.nav.paw.kafkakeygenerator.client.Alias
@@ -46,6 +48,7 @@ fun initTopologyTestContext(
     val aliasMap: ConcurrentHashMap<String, List<Alias>> = ConcurrentHashMap()
 
     val topology = initTopology(
+        meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
         stateStoreBuilderFactory = Stores::inMemoryKeyValueStore,
         aktorTopologyConfig = aktorTopologyCfg,
         perioder = statiskePerioder(periodeMap),

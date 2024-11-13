@@ -1,5 +1,6 @@
 package no.nav.paw.kafkakeymaintenance.pdlprocessor
 
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
 import no.nav.paw.config.kafka.streams.mapRecord
 import no.nav.paw.config.kafka.streams.supressByWallClock
@@ -14,6 +15,7 @@ import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.Produced
 
 fun StreamsBuilder.buildAktorTopology(
+    meterRegistry: PrometheusMeterRegistry,
     aktorTopologyConfig: AktorTopologyConfig,
     perioder: Perioder,
     hentAlias: (List<String>) -> List<LokaleAlias>,
@@ -27,6 +29,7 @@ fun StreamsBuilder.buildAktorTopology(
         ).mapRecord("aktor_til_hendelse") { record ->
             record.withValue(
                 processPdlRecord(
+                    meterRegistry = meterRegistry,
                     aktorTopic = aktorTopologyConfig.aktorTopic,
                     hentAlias = hentAlias,
                     perioder = perioder,
