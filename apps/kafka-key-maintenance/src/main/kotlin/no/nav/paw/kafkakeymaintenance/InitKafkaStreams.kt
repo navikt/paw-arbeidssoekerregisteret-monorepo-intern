@@ -31,7 +31,7 @@ fun initStreams(
     hentAlias: (List<String>) -> List<LokaleAlias>
 ): KafkaStreams {
     val kafkaStreamsFactory = KafkaStreamsFactory(
-        "beta-v1",
+        "beta-v2",
         loadNaisOrLocalConfiguration(KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG)
     ).withExactlyOnce()
         .withDefaultKeySerde(Serdes.StringSerde::class)
