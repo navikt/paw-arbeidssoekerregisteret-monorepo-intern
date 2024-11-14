@@ -73,7 +73,10 @@ fun <K, V> KStream<K, V>.supressByWallClock(
                 record.key(),
                 ValueAndTimestamp.make(record.value(), timestamp)
             )
-            storeTraceId.put(record.key(), record.headers().lastHeader(TRACE_PARENT)?.value()?.toString(Charsets.UTF_8))
+            storeTraceId.put(
+                record.key(),
+                record.headers().lastHeader(TRACE_PARENT)?.value()?.toString(Charsets.UTF_8)
+            )
         },
         stateStoreNames = listOf(name, "${name}_trace_id").toTypedArray()
     )
