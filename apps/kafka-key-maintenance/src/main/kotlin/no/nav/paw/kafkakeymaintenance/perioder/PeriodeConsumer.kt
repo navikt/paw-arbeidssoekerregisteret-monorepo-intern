@@ -22,7 +22,7 @@ fun Sequence<Iterable<ConsumerRecord<Long, Periode>>>.consume(
 
 @WithSpan(
     value = "process_batch_periode",
-    kind = SpanKind.CONSUMER
+    kind = SpanKind.INTERNAL
 )
 private fun processBatch(
     ctxFactory: Transaction.() -> TransactionContext,

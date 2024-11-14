@@ -23,7 +23,7 @@ import java.time.Instant
 
 @WithSpan(
     value = "process_pdl_aktor_v2_record",
-    kind = SpanKind.CONSUMER
+    kind = SpanKind.INTERNAL
 )
 fun processPdlRecord(
     meterRegistry: PrometheusMeterRegistry,
