@@ -47,6 +47,7 @@ fun startApplikasjon(
     flywayMigrate(dataSource)
     val kafkaKeys = KafkaKeys(database)
     val kafkaConsumerRecordHandler = KafkaConsumerRecordHandler(
+        database = database,
         kafkaKeysRepository = KafkaKeysRepository(database),
         kafkaKeysAuditRepository = KafkaKeysAuditRepository(database)
     )

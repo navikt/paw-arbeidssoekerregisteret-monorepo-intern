@@ -1,9 +1,10 @@
-package no.nav.paw.kafkakeygenerator
+package no.nav.paw.kafkakeygenerator.test
 
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import no.nav.paw.kafkakeygenerator.config.AuthenticationProviderConfig
 import no.nav.paw.kafkakeygenerator.config.AuthenticationConfig
+import no.nav.paw.kafkakeygenerator.startApplikasjon
 import no.nav.paw.pdl.PdlClient
 
 fun main() {

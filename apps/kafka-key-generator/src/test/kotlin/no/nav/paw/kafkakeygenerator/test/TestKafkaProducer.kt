@@ -1,10 +1,7 @@
-package no.nav.paw.kafkakeygenerator.producer
+package no.nav.paw.kafkakeygenerator.test
 
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerializer
-import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerSammenslaatt
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.config.kafka.KAFKA_CONFIG
 import no.nav.paw.config.kafka.KafkaConfig
@@ -12,11 +9,10 @@ import no.nav.paw.config.kafka.KafkaFactory
 import no.nav.paw.kafkakeygenerator.config.KAFKA_TOPOLOGY_CONFIG
 import no.nav.paw.kafkakeygenerator.config.KafkaTopologyConfig
 import no.nav.paw.kafkakeygenerator.utils.buildApplicationLogger
+import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.LongSerializer
-import java.time.Instant
-import java.util.*
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata as HendelseMetadata
 
 private val logger = buildApplicationLogger
 
@@ -36,18 +32,10 @@ fun main() {
     val identitetsnummer = "02017012345"
 
     val key = 1L
-    val value = IdentitetsnummerSammenslaatt(
-        id = fraArbeidssoekerId,
-        hendelseId = UUID.randomUUID(),
-        identitetsnummer = identitetsnummer,
-        metadata = HendelseMetadata(
-            tidspunkt = Instant.now(),
-            utfoertAv = Bruker(type = BrukerType.SYSTEM, id = "paw"),
-            kilde = "paw",
-            aarsak = "test"
-        ),
-        alleIdentitetsnummer = listOf(identitetsnummer),
-        flyttetTilArbeidssoekerId = tilArbeidssoekerId,
+    val value = TestData.getIdentitetsnummerSammenslaatt(
+        listOf(Identitetsnummer(identitetsnummer)),
+        ArbeidssoekerId(fraArbeidssoekerId),
+        ArbeidssoekerId(tilArbeidssoekerId)
     )
 
     try {

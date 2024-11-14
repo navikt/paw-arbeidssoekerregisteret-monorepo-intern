@@ -1,4 +1,4 @@
-package no.nav.paw.kafkakeygenerator
+package no.nav.paw.kafkakeygenerator.test
 
 import no.nav.paw.kafkakeygenerator.config.DatabaseConfig
 import no.nav.paw.kafkakeygenerator.database.createDataSource
