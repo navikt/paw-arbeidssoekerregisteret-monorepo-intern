@@ -3,10 +3,14 @@ package no.nav.paw.kafkakeymaintenance.pdlprocessor
 import arrow.core.partially1
 import io.micrometer.core.instrument.Tag
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanContext
 import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.context.Context
+import io.opentelemetry.context.propagation.TextMapGetter
+import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.instrumentation.annotations.WithSpan
-import io.prometheus.metrics.model.registry.PrometheusRegistry
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
@@ -14,12 +18,21 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.TidspunktFraKilde
 import no.nav.paw.kafkakeygenerator.client.LokaleAlias
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.functions.*
 import no.nav.paw.kafkakeymaintenance.perioder.Perioder
-import no.nav.paw.kafkakeymaintenance.vo.*
+import no.nav.paw.kafkakeymaintenance.vo.genererAvviksMelding
 import no.nav.person.pdl.aktor.v2.Aktor
 import org.apache.kafka.streams.processor.api.Record
+import org.slf4j.LoggerFactory
 import java.time.Instant
 
+fun createSpanFromTraceparent(traceparent: String): Context {
+    val propagator: TextMapPropagator = GlobalOpenTelemetry.getPropagators().textMapPropagator
+    return propagator.extract(Context.current(), traceparent, object : TextMapGetter<String> {
+        override fun keys(carrier: String): Iterable<String> = listOf("traceparent")
+        override fun get(carrier: String?, key: String): String? = carrier
+    })
+}
 
+private val spanLinkLogger = LoggerFactory.getLogger("span_link_logger")
 
 @WithSpan(
     value = "process_pdl_aktor_v2_record",
@@ -32,6 +45,17 @@ fun processPdlRecord(
     perioder: Perioder,
     record: Record<String, Aktor>
 ): List<HendelseRecord<Hendelse>> {
+    record.headers().lastHeader("traceparent")
+        .also { if (it == null) spanLinkLogger.warn("No traceparent header: headers: {}", record.headers().toList().map {h -> h.key() }) }
+        ?.let { traceparent -> createSpanFromTraceparent(String(traceparent.value(), Charsets.UTF_8)) }
+        ?.also { context ->
+            if (context is SpanContext) {
+                spanLinkLogger.info("Linking span with context: {}", context.traceId)
+                Span.current().addLink(context)
+            } else {
+                spanLinkLogger.warn("Not a span context: {}", context::class.java)
+            }
+        }
     val metadata = metadata(
         kilde = aktorTopic,
         tidspunkt = Instant.now(),
