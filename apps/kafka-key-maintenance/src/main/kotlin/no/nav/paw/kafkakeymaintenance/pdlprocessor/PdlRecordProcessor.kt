@@ -70,8 +70,7 @@ fun prosesser(
                     Tag.of("pdl_identiteter", avvikOgPerioder?.avviksMelding?.pdlIdentitetsnummer?.size.toBucket()),
                     Tag.of("frie_identer", avvikOgPerioder?.avviksMelding?.lokaleAliasSomIkkeSkalPekePaaPdlPerson()?.size.toBucket())
                 )
-            )
-
+            ).increment()
     }
     ?.let(::genererIdOppdatering)
     ?.let(::genererHendelser.partially1(metadata))
