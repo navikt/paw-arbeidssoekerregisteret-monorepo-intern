@@ -19,13 +19,14 @@ fun KafkaFactory.initPeriodeConsumer(
         keyDeserializer = LongDeserializer::class,
         valueDeserializer = PeriodeDeserializer::class,
         autoCommit = false,
-        autoOffsetReset = "earliest"
+        autoOffsetReset = "earliest",
+        maxPollrecords = 1000
     )
     val reblancingListener = HwmRebalanceListener(applicationContext, periodeConsumer)
     periodeConsumer.subscribe(listOf(periodeTopic))
     return reblancingListener to periodeConsumer.asSequence(
         stop = applicationContext.shutdownCalled,
-        pollTimeout = Duration.ofMillis(500),
+        pollTimeout = Duration.ofMillis(1000),
         closeTimeout = Duration.ofSeconds(1)
     )
 }
