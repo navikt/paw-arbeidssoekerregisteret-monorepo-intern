@@ -51,12 +51,12 @@ fun prosesser(
     metadata: Metadata
 ) = (hentData(hentAlias, aktor)
     .takeIf(::harAvvik)
-    .also { Span.current().addEvent("Avvik: ${it != null}")}
     ?.let(::genererAvviksMelding)
     ?.let(perioder::hentPerioder)
     ?.also { (_, perioder) ->
         Span.current()
-            .addEvent("Perioder/Aktive: ${perioder.size}/${perioder.filter { p -> p.erAktiv }.size}")
+            .setAttribute("perioder", perioder.size.toLong())
+            .setAttribute("aktive_perioder", perioder.filter { p -> p.erAktiv }.size.toLong())
     }
     .also { avvikOgPerioder ->
         meterRegistry
