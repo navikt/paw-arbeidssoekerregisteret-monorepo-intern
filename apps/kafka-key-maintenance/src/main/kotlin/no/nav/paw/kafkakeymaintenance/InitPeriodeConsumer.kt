@@ -23,7 +23,7 @@ fun KafkaFactory.initPeriodeConsumer(
         maxPollrecords = 1000
     )
     val reblancingListener = HwmRebalanceListener(applicationContext, periodeConsumer)
-    periodeConsumer.subscribe(listOf(periodeTopic))
+    periodeConsumer.subscribe(listOf(periodeTopic), reblancingListener)
     return reblancingListener to periodeConsumer.asSequence(
         stop = applicationContext.shutdownCalled,
         pollTimeout = Duration.ofMillis(1000),
