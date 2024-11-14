@@ -20,11 +20,13 @@ import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
+import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
+import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler.StreamThreadExceptionResponse.SHUTDOWN_APPLICATION
 import org.apache.kafka.streams.state.KeyValueBytesStoreSupplier
 import org.apache.kafka.streams.state.Stores
 
 fun initStreams(
-    meterRegistry: PrometheusMeterRegistry,
+    applicationContext: ApplicationContext,
     aktorTopologyConfig: AktorTopologyConfig,
     healthIndicatorRepository: HealthIndicatorRepository,
     perioder: Perioder,
@@ -38,7 +40,7 @@ fun initStreams(
         .withDefaultValueSerde(SpecificAvroSerde::class)
 
     val topology = initTopology(
-        meterRegistry = meterRegistry,
+        meterRegistry = applicationContext.meterRegistry,
         aktorSerde = kafkaStreamsFactory.createSpecificAvroSerde<Aktor>(),
         aktorTopologyConfig = aktorTopologyConfig,
         perioder = perioder,
@@ -52,7 +54,11 @@ fun initStreams(
             livenessIndicator = healthIndicatorRepository.addLivenessIndicator(LivenessHealthIndicator()),
             readinessIndicator = healthIndicatorRepository.addReadinessIndicator(ReadinessHealthIndicator())
         )
-    streams.withApplicationTerminatingExceptionHandler()
+    streams.setUncaughtExceptionHandler { throwable ->
+        applicationContext.logger.error("Uncaught exception in Kafka Streams", throwable)
+        applicationContext.shutdownCalled.set(true)
+        SHUTDOWN_APPLICATION
+    }
     return streams
 }
 
