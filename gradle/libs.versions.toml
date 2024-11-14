@@ -65,6 +65,7 @@ ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serializatio
 opentelemetry-api = { group = "io.opentelemetry", name = "opentelemetry-api", version.ref = "otelTargetSdkVersion" }
 opentelemetry-ktor = { group = "io.opentelemetry.instrumentation", name = "opentelemetry-ktor-2.0", version.ref = "otelInstrumentationKtorVersion" }
 opentelemetry-annotations = { group = "io.opentelemetry.instrumentation", name = "opentelemetry-instrumentation-annotations", version.ref = "otelInstrumentationVersion" }
+opentelemetry-sdk = { group = "io.opentelemetry", name = "opentelemetry-sdk", version.ref = "otelTargetSdkVersion" }
 micrometerCore = { group = "io.micrometer", name = "micrometer-core", version.ref = "micrometerVersion" }
 micrometer-registryPrometheus = { group = "io.micrometer", name = "micrometer-registry-prometheus", version.ref = "micrometerVersion" }
 kafka-clients = { group = "org.apache.kafka", name = "kafka-clients", version.ref = "orgApacheKafkaVersion" }

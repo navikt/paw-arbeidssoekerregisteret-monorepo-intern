@@ -77,6 +77,12 @@ fun initTopology(
                 Serdes.StringSerde(),
                 aktorSerde
             )
+        ).addStateStore(
+            Stores.keyValueStoreBuilder(
+                stateStoreBuilderFactory("${aktorTopologyConfig.stateStoreName}_trace_id"),
+                Serdes.String(),
+                Serdes.String()
+            )
         )
     streamsBuilder.buildAktorTopology(
         meterRegistry = meterRegistry,
