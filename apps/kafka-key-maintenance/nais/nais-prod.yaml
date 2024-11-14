@@ -47,3 +47,7 @@ spec:
         tier: db-custom-1-3840
         databases:
           - name: pawkafkakeysmaintenance
+  accessPolicy:
+    outbound:
+      rules:
+        - application: paw-kafka-key-generator
