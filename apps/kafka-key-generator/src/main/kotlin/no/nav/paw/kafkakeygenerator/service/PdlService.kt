@@ -1,8 +1,15 @@
-package no.nav.paw.kafkakeygenerator.pdl
+package no.nav.paw.kafkakeygenerator.service
 
-import no.nav.paw.kafkakeygenerator.*
-import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import no.nav.paw.kafkakeygenerator.vo.CallId
+import no.nav.paw.kafkakeygenerator.vo.Either
+import no.nav.paw.kafkakeygenerator.vo.Failure
+import no.nav.paw.kafkakeygenerator.vo.FailureCode
+import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.vo.flatMap
+import no.nav.paw.kafkakeygenerator.vo.left
+import no.nav.paw.kafkakeygenerator.vo.mapToFailure
+import no.nav.paw.kafkakeygenerator.vo.right
+import no.nav.paw.kafkakeygenerator.vo.suspendeableAttempt
 import no.nav.paw.pdl.PdlClient
 import no.nav.paw.pdl.PdlException
 import no.nav.paw.pdl.graphql.generated.enums.IdentGruppe
@@ -10,10 +17,9 @@ import no.nav.paw.pdl.graphql.generated.hentidenter.IdentInformasjon
 import no.nav.paw.pdl.hentIdenter
 import no.nav.paw.pdl.hentIdenterBolk
 
-private const val consumerId = "paw-arbeidssoekerregisteret"
-private const val behandlingsnummer = "B452"
-
-class PdlIdentitesTjeneste(private val pdlKlient: PdlClient) {
+class PdlService(private val pdlKlient: PdlClient) {
+    private val consumerId = "paw-arbeidssoekerregisteret"
+    private val behandlingsnummer = "B452"
 
     suspend fun hentIdenter(
         identiteter: List<Identitetsnummer>,

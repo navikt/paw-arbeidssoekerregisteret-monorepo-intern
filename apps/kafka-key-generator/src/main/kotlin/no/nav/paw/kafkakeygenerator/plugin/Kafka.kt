@@ -10,14 +10,12 @@ import no.nav.paw.config.kafka.KafkaConfig
 import no.nav.paw.config.kafka.KafkaFactory
 import no.nav.paw.kafkakeygenerator.config.KAFKA_TOPOLOGY_CONFIG
 import no.nav.paw.kafkakeygenerator.config.KafkaTopologyConfig
-import no.nav.paw.kafkakeygenerator.handler.KafkaConsumerErrorHandler
-import no.nav.paw.kafkakeygenerator.handler.KafkaConsumerRecordHandler
 import no.nav.paw.kafkakeygenerator.plugin.custom.kafkaConsumerPlugin
+import no.nav.paw.kafkakeygenerator.service.KafkaConsumerService
 import org.apache.kafka.common.serialization.LongDeserializer
 
 fun Application.configureKafka(
-    kafkaConsumerRecordHandler: KafkaConsumerRecordHandler,
-    kafkaConsumerErrorHandler: KafkaConsumerErrorHandler
+    kafkaConsumerService: KafkaConsumerService
 ) {
     val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
     val kafkaTopologyConfig = loadNaisOrLocalConfiguration<KafkaTopologyConfig>(KAFKA_TOPOLOGY_CONFIG)
@@ -31,8 +29,8 @@ fun Application.configureKafka(
     )
 
     install(kafkaConsumerPlugin<Long, Hendelse>()) {
-        consumeFunction = kafkaConsumerRecordHandler::handleRecords
-        errorFunction = kafkaConsumerErrorHandler::handleException
+        consumeFunction = kafkaConsumerService::handleRecords
+        errorFunction = kafkaConsumerService::handleException
         kafkaConsumer = hendelseKafkaConsumer
         kafkaTopics = listOf(kafkaTopologyConfig.hendelseloggTopic)
     }

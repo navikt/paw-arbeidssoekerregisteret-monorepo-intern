@@ -1,8 +1,8 @@
 package no.nav.paw.kafkakeygenerator.api.recordkey.functions
 
 import io.ktor.http.*
-import no.nav.paw.kafkakeygenerator.Failure
-import no.nav.paw.kafkakeygenerator.FailureCode
+import no.nav.paw.kafkakeygenerator.vo.Failure
+import no.nav.paw.kafkakeygenerator.vo.FailureCode
 import no.nav.paw.kafkakeygenerator.api.recordkey.FailureResponseV1
 import no.nav.paw.kafkakeygenerator.api.recordkey.Feilkode
 

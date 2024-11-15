@@ -1,20 +1,20 @@
-package no.nav.paw.kafkakeygenerator
+package no.nav.paw.kafkakeygenerator.service
 
 import io.opentelemetry.instrumentation.annotations.WithSpan
-import no.nav.paw.kafkakeygenerator.FailureCode.CONFLICT
-import no.nav.paw.kafkakeygenerator.FailureCode.DB_NOT_FOUND
+import no.nav.paw.kafkakeygenerator.vo.FailureCode.CONFLICT
+import no.nav.paw.kafkakeygenerator.vo.FailureCode.DB_NOT_FOUND
 import no.nav.paw.kafkakeygenerator.api.v2.*
 import no.nav.paw.kafkakeygenerator.mergedetector.findMerge
 import no.nav.paw.kafkakeygenerator.mergedetector.hentLagretData
 import no.nav.paw.kafkakeygenerator.mergedetector.vo.MergeDetected
-import no.nav.paw.kafkakeygenerator.pdl.PdlIdentitesTjeneste
+import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
 import no.nav.paw.kafkakeygenerator.vo.*
 import org.apache.kafka.clients.producer.internals.BuiltInPartitioner.partitionForKey
 import org.apache.kafka.common.serialization.Serdes
 
-class Applikasjon(
-    private val kafkaKeys: KafkaKeys,
-    private val identitetsTjeneste: PdlIdentitesTjeneste
+class KafkaKeysService(
+    private val kafkaKeysRepository: KafkaKeysRepository,
+    private val pdlService: PdlService
 ) {
     private val keySerializer = Serdes.Long().serializer()
 
@@ -23,7 +23,7 @@ class Applikasjon(
         antallPartisjoner: Int,
         identitet: Identitetsnummer
     ): Either<Failure, LokaleAlias> {
-        return kafkaKeys.hent(identitet)
+        return kafkaKeysRepository.hent(identitet)
             .map { arbeidssoekerId ->
                 val recordKey = publicTopicKeyFunction(arbeidssoekerId)
                 Alias(
@@ -33,7 +33,7 @@ class Applikasjon(
                     partition = partitionForKey(keySerializer.serialize("", recordKey.value), antallPartisjoner)
                 )
             }.flatMap { alias ->
-                kafkaKeys.hent(ArbeidssoekerId(alias.arbeidsoekerId))
+                kafkaKeysRepository.hent(ArbeidssoekerId(alias.arbeidsoekerId))
                     .map { identiteter ->
                         identiteter.map { identitetsnummer ->
                             Alias(
@@ -57,7 +57,7 @@ class Applikasjon(
         return hentInfo(callId, identitet)
             .flatMap { info ->
                 hentLagretData(
-                    hentArbeidssoekerId = kafkaKeys::hent,
+                    hentArbeidssoekerId = kafkaKeysRepository::hent,
                     info = info
                 ).map { info to it }
             }
@@ -72,12 +72,12 @@ class Applikasjon(
 
     @WithSpan
     suspend fun hentInfo(callId: CallId, identitet: Identitetsnummer): Either<Failure, Info> {
-        val pdlIdInfo = identitetsTjeneste.hentIdentInformasjon(
+        val pdlIdInfo = pdlService.hentIdentInformasjon(
             callId = callId,
             identitet = identitet,
             histrorikk = true
         )
-        return kafkaKeys.hent(identitet)
+        return kafkaKeysRepository.hent(identitet)
             .map { arbeidssoekerId ->
                 LokalIdData(
                     arbeidsoekerId = arbeidssoekerId.value,
@@ -107,7 +107,7 @@ class Applikasjon(
 
     @WithSpan
     suspend fun hent(callId: CallId, identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> {
-        return kafkaKeys.hent(identitet)
+        return kafkaKeysRepository.hent(identitet)
             .suspendingRecover(DB_NOT_FOUND) {
                 sjekkMotAliaser(callId, identitet)
             }
@@ -117,25 +117,25 @@ class Applikasjon(
     suspend fun hentEllerOpprett(callId: CallId, identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> {
         return hent(callId, identitet)
             .suspendingRecover(DB_NOT_FOUND) {
-                kafkaKeys.opprett(identitet)
+                kafkaKeysRepository.opprett(identitet)
             }.recover(CONFLICT) {
-                kafkaKeys.hent(identitet)
+                kafkaKeysRepository.hent(identitet)
             }
     }
 
     @WithSpan
     private suspend fun sjekkMotAliaser(callId: CallId, identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> {
-        return identitetsTjeneste.hentIdentiter(
+        return pdlService.hentIdentiter(
             callId = callId,
             identitet = identitet,
             histrorikk = true
         )
-            .flatMap(kafkaKeys::hent)
+            .flatMap(kafkaKeysRepository::hent)
             .flatMap { ids ->
                 ids.values
                     .firstOrNull()?.let(::right)
                     ?: left(Failure("database", DB_NOT_FOUND))
             }
-            .onRight { key -> kafkaKeys.lagre(identitet, key) }
+            .onRight { key -> kafkaKeysRepository.lagre(identitet, key) }
     }
 }

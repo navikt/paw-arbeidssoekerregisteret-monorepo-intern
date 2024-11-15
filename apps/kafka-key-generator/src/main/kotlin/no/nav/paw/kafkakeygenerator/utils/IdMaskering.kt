@@ -1,4 +1,4 @@
-package no.nav.paw.kafkakeygenerator
+package no.nav.paw.kafkakeygenerator.utils
 
 import java.util.regex.Pattern
 

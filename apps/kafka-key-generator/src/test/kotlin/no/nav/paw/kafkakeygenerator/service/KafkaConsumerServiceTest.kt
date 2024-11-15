@@ -1,39 +1,44 @@
-package no.nav.paw.kafkakeygenerator.handler
+package no.nav.paw.kafkakeygenerator.service
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.kafkakeygenerator.Failure
-import no.nav.paw.kafkakeygenerator.FailureCode
-import no.nav.paw.kafkakeygenerator.KafkaKeys
+import no.nav.paw.health.repository.HealthIndicatorRepository
+import no.nav.paw.kafkakeygenerator.plugin.custom.flywayMigrate
+import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
 import no.nav.paw.kafkakeygenerator.test.TestData
 import no.nav.paw.kafkakeygenerator.test.asConsumerRecordsSequence
 import no.nav.paw.kafkakeygenerator.test.initTestDatabase
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.vo.Failure
+import no.nav.paw.kafkakeygenerator.vo.FailureCode
 import no.nav.paw.kafkakeygenerator.vo.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import org.jetbrains.exposed.sql.Database
 import javax.sql.DataSource
 
-class KafkaConsumerRecordHandlerTest : FreeSpec({
+class KafkaConsumerServiceTest : FreeSpec({
 
     lateinit var dataSource: DataSource
-    lateinit var kafkaKeys: KafkaKeys
+    lateinit var kafkaKeysRepository: KafkaKeysRepository
     lateinit var kafkaKeysAuditRepository: KafkaKeysAuditRepository
-    lateinit var kafkaConsumerRecordHandler: KafkaConsumerRecordHandler
+    lateinit var kafkaConsumerService: KafkaConsumerService
 
     beforeSpec {
         dataSource = initTestDatabase()
+        dataSource.flywayMigrate()
         val database = Database.connect(dataSource)
-        kafkaKeys = KafkaKeys(database)
+        val healthIndicatorRepository = HealthIndicatorRepository()
+        kafkaKeysRepository = KafkaKeysRepository(database)
         kafkaKeysAuditRepository = KafkaKeysAuditRepository(database)
-        kafkaConsumerRecordHandler = KafkaConsumerRecordHandler(
+        kafkaConsumerService = KafkaConsumerService(
             database = database,
-            kafkaKeysRepository = KafkaKeysRepository(database),
+            healthIndicatorRepository = healthIndicatorRepository,
+            identitetRepository = IdentitetRepository(database),
             kafkaKeysAuditRepository = kafkaKeysAuditRepository
         )
     }
@@ -53,9 +58,9 @@ class KafkaConsumerRecordHandlerTest : FreeSpec({
             TestData.getIdentitetsnummerOpphoert(identitetsnummer, arbeidssoekerId)
         )
 
-        kafkaConsumerRecordHandler.handleRecords(hendelser.asConsumerRecordsSequence())
+        kafkaConsumerService.handleRecords(hendelser.asConsumerRecordsSequence())
 
-        val keyResult = kafkaKeys.hent(identitetsnummer)
+        val keyResult = kafkaKeysRepository.hent(identitetsnummer)
         val auditResult = kafkaKeysAuditRepository.find(identitetsnummer)
 
         keyResult.onLeft { it shouldBe Failure("database", FailureCode.DB_NOT_FOUND) }
@@ -73,10 +78,10 @@ class KafkaConsumerRecordHandlerTest : FreeSpec({
         )
 
         shouldThrow<IllegalStateException> {
-            kafkaConsumerRecordHandler.handleRecords(hendelser.asConsumerRecordsSequence())
+            kafkaConsumerService.handleRecords(hendelser.asConsumerRecordsSequence())
         }
 
-        val keyResult = kafkaKeys.hent(identitetsnummer)
+        val keyResult = kafkaKeysRepository.hent(identitetsnummer)
         val auditResult = kafkaKeysAuditRepository.find(identitetsnummer)
 
         keyResult.onLeft { it shouldBe Failure("database", FailureCode.DB_NOT_FOUND) }
@@ -89,10 +94,10 @@ class KafkaConsumerRecordHandlerTest : FreeSpec({
         val identitetsnummer2 = Identitetsnummer("04017012345")
         val identitetsnummer3 = Identitetsnummer("05017012345")
 
-        val opprettResult1 = kafkaKeys.opprett(identitetsnummer1)
+        val opprettResult1 = kafkaKeysRepository.opprett(identitetsnummer1)
         opprettResult1.onLeft { it shouldBe null }
         opprettResult1.onRight { tilArbeidssoekerId ->
-            val opprettResult2 = kafkaKeys.opprett(identitetsnummer2)
+            val opprettResult2 = kafkaKeysRepository.opprett(identitetsnummer2)
             opprettResult2.onLeft { it shouldBe null }
             opprettResult2.onRight { fraArbeidssoekerId ->
                 val hendelser: List<Hendelse> = listOf(
@@ -103,11 +108,11 @@ class KafkaConsumerRecordHandlerTest : FreeSpec({
                     )
                 )
 
-                kafkaConsumerRecordHandler.handleRecords(hendelser.asConsumerRecordsSequence())
+                kafkaConsumerService.handleRecords(hendelser.asConsumerRecordsSequence())
 
-                val keyResult1 = kafkaKeys.hent(identitetsnummer1)
-                val keyResult2 = kafkaKeys.hent(identitetsnummer2)
-                val keyResult3 = kafkaKeys.hent(identitetsnummer3)
+                val keyResult1 = kafkaKeysRepository.hent(identitetsnummer1)
+                val keyResult2 = kafkaKeysRepository.hent(identitetsnummer2)
+                val keyResult3 = kafkaKeysRepository.hent(identitetsnummer3)
                 val auditResult1 = kafkaKeysAuditRepository.find(identitetsnummer1)
                 val auditResult2 = kafkaKeysAuditRepository.find(identitetsnummer2)
                 val auditResult3 = kafkaKeysAuditRepository.find(identitetsnummer3)

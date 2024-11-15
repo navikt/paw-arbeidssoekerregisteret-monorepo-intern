@@ -1,19 +1,19 @@
 package no.nav.paw.kafkakeygenerator.mergedetector
 
 import io.opentelemetry.instrumentation.annotations.WithSpan
-import kotlinx.coroutines.yield
-import no.nav.paw.kafkakeygenerator.*
-import no.nav.paw.kafkakeygenerator.FailureCode.DB_NOT_FOUND
-import no.nav.paw.kafkakeygenerator.FailureCode.PDL_NOT_FOUND
+import no.nav.paw.kafkakeygenerator.vo.FailureCode.DB_NOT_FOUND
+import no.nav.paw.kafkakeygenerator.vo.FailureCode.PDL_NOT_FOUND
 import no.nav.paw.kafkakeygenerator.vo.Info
 import no.nav.paw.kafkakeygenerator.vo.PdlId
 import no.nav.paw.kafkakeygenerator.mergedetector.vo.LagretData
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.vo.Either
+import no.nav.paw.kafkakeygenerator.vo.Failure
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.coroutines.createCoroutine
+import no.nav.paw.kafkakeygenerator.vo.flatten
+import no.nav.paw.kafkakeygenerator.vo.left
+import no.nav.paw.kafkakeygenerator.vo.recover
+import no.nav.paw.kafkakeygenerator.vo.right
 
 @WithSpan
 fun hentLagretData(

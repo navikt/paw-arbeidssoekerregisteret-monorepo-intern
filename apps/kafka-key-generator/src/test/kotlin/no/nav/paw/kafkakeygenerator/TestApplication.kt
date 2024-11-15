@@ -1,10 +1,11 @@
-package no.nav.paw.kafkakeygenerator.test
+package no.nav.paw.kafkakeygenerator
 
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import no.nav.paw.kafkakeygenerator.config.AuthenticationProviderConfig
 import no.nav.paw.kafkakeygenerator.config.AuthenticationConfig
-import no.nav.paw.kafkakeygenerator.startApplikasjon
+import no.nav.paw.kafkakeygenerator.test.genererResponse
+import no.nav.paw.kafkakeygenerator.test.initTestDatabase
 import no.nav.paw.pdl.PdlClient
 
 fun main() {
@@ -16,7 +17,7 @@ fun main() {
             genererResponse(it)
         })
     ) { "fake token" }
-    startApplikasjon(AuthenticationConfig(
+    startApplication(AuthenticationConfig(
         providers = listOf(AuthenticationProviderConfig(
             name = "mock",
             discoveryUrl = "http://localhost:8081/.well-known/openid-configuration",

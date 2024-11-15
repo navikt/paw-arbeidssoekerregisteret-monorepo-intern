@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import no.nav.paw.config.kafka.asSequence
+import no.nav.paw.kafkakeygenerator.listener.NoopConsumerRebalanceListener
 import no.nav.paw.kafkakeygenerator.utils.buildApplicationLogger
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
 import org.apache.kafka.clients.consumer.ConsumerRecords
@@ -25,11 +26,12 @@ val KafkaConsumerReady: EventDefinition<Application> = EventDefinition()
 @KtorDsl
 class KafkaConsumerPluginConfig<K, V> {
     var consumeFunction: ((Sequence<ConsumerRecords<K, V>>) -> Unit)? = null
+    var successFunction: ((Unit) -> Unit)? = null
     var errorFunction: ((throwable: Throwable) -> Unit)? = null
     var kafkaConsumer: KafkaConsumer<K, V>? = null
     var kafkaTopics: Collection<String>? = null
-    var pollTimeout: Duration = Duration.ofMillis(100)
-    var closeTimeout: Duration = Duration.ofSeconds(1)
+    var pollTimeout: Duration? = null
+    var closeTimeout: Duration? = null
     var rebalanceListener: ConsumerRebalanceListener? = null
     val shutdownFlag = AtomicBoolean(false)
 
@@ -43,22 +45,19 @@ fun <K, V> kafkaConsumerPlugin(): ApplicationPlugin<KafkaConsumerPluginConfig<K,
         application.log.info("Oppretter {}", KafkaConsumerPluginConfig.PLUGIN_NAME)
         val logger = buildApplicationLogger
         val consumeFunction = requireNotNull(pluginConfig.consumeFunction) { "ConsumeFunction er null" }
-        val errorFunction = pluginConfig.errorFunction ?: { }
+        val successFunction = pluginConfig.successFunction ?: { logger.debug("Kafka Consumer poll fullførte") }
+        val errorFunction = pluginConfig.errorFunction ?: { logger.error("Kafka Consumer poll feilet") }
         val kafkaConsumer = requireNotNull(pluginConfig.kafkaConsumer) { "KafkaConsumer er null" }
         val kafkaTopics = requireNotNull(pluginConfig.kafkaTopics) { "KafkaTopics er null" }
-        val pollTimeout = requireNotNull(pluginConfig.pollTimeout) { "PollTimeout er null" }
-        val closeTimeout = requireNotNull(pluginConfig.closeTimeout) { "CloseTimeout er null" }
-        val rebalanceListener = pluginConfig.rebalanceListener
+        val pollTimeout = pluginConfig.pollTimeout ?: Duration.ofMillis(100)
+        val closeTimeout = pluginConfig.closeTimeout ?: Duration.ofSeconds(1)
+        val rebalanceListener = pluginConfig.rebalanceListener ?: NoopConsumerRebalanceListener()
         val shutdownFlag = pluginConfig.shutdownFlag
         var consumeJob: Job? = null
 
         on(MonitoringEvent(ApplicationStarted)) { application ->
             logger.info("Kafka Consumer klargjøres")
-            if (rebalanceListener == null) {
-                kafkaConsumer.subscribe(kafkaTopics)
-            } else {
-                kafkaConsumer.subscribe(kafkaTopics, rebalanceListener)
-            }
+            kafkaConsumer.subscribe(kafkaTopics, rebalanceListener)
             application.environment.monitor.raise(KafkaConsumerReady, application)
         }
 
@@ -72,19 +71,17 @@ fun <K, V> kafkaConsumerPlugin(): ApplicationPlugin<KafkaConsumerPluginConfig<K,
 
         on(MonitoringEvent(KafkaConsumerReady)) { application ->
             consumeJob = application.launch(Dispatchers.IO) {
-                try {
-                    logger.info("Kafka Consumer starter")
-                    consumeFunction(
-                        kafkaConsumer.asSequence(
-                            stop = shutdownFlag,
-                            pollTimeout = pollTimeout,
-                            closeTimeout = closeTimeout
-                        )
+                logger.info("Kafka Consumer starter")
+                kafkaConsumer
+                    .asSequence(
+                        stop = shutdownFlag,
+                        pollTimeout = pollTimeout,
+                        closeTimeout = closeTimeout
                     )
-                    logger.info("Kafka Consumer polling avsluttet")
-                } catch (throwable: Throwable) {
-                    errorFunction(throwable)
-                }
+                    .runCatching(consumeFunction)
+                    .mapCatching { kafkaConsumer.commitSync() }
+                    .fold(onSuccess = successFunction, onFailure = errorFunction)
+                logger.info("Kafka Consumer avsluttet")
             }
         }
     }

@@ -1,18 +1,15 @@
-package no.nav.paw.kafkakeygenerator
+package no.nav.paw.kafkakeygenerator.api.v2
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import no.nav.paw.kafkakeygenerator.api.v2.PUBLIC_KEY_MODULO_VALUE
-import no.nav.paw.kafkakeygenerator.api.v2.publicTopicKeyFunction
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.vo.RecordKey
 
 /**
  * Enkel test som vil feile ved endring av publicTopicKeyFunction eller nooen av
  * verdiene den bruker.
  * Slike endringer krever replay av eventlog til nye topics.
  */
-class PublicKeyFunctionTest : FreeSpec({
+class KeyCalculationsTest : FreeSpec({
     "publicTopicKeyFunction" - {
         "nøkkelen må aldri endres da dette krever replay av eventlog til nye topics" {
             val expectedModuloValue = 7_500

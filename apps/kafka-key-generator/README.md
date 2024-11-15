@@ -10,26 +10,14 @@ https://paw-kafka-key-generator.intern.dev.nav.no/docs
 
 Øvrige teknologier, rammeverk og biblioteker som er blitt tatt i bruk:
 
-- [**Kotlin**](https://kotlinlang.org/)
-- [**Ktor**](https://ktor.io/)
-- [**PostgreSQL**](https://www.postgresql.org/)
-- [**Flyway**](https://flywaydb.org/)
-- [**Gradle**](https://gradle.org/)
+- [**Kotlin**](https://kotlinlang.org)
+- [**Ktor**](https://ktor.io)
+- [**PostgreSQL**](https://www.postgresql.org)
+- [**Flyway**](https://flywaydb.org)
+- [**Kafka**](https://kafka.apache.org)
+- [**Gradle**](https://gradle.org)
 
 ## Dev oppsett
-
-Eksempel:
-
-```sh
-$ curl -XPOST https://paw-kafka-key-generator.intern.dev.nav.no/api/v1/hentEllerOpprett -H 'Authorization: Bearer <access_token>' -d '{"ident": "2072234860133"}'
-```
-
-## Lokalt oppsett
-Authentisering fungerer ikke lokalt, så det er ikke mulig å teste lokalt på nåværende tidspunkt.
-Lokalt kjører løsning mot statisk PDL data som innehlder 2 personer. Data ligger under src/test i no.nav.paw.kafkakeygenerator.testdata.kt.
-
-Under er det satt opp et par ting som må på plass for at applikasjonen og databasen skal fungere. 
-
 
 ### JDK 21
 
@@ -38,54 +26,60 @@ bruke [sdkman](https://sdkman.io/install).
 
 ### Docker
 
-`docker` og `docker-compose` må være installert.
+[Docker](https://docs.docker.com) og [Docker Compose](https://docs.docker.com/compose) må være installert.
 
-Start PostgreSQL database
-```sh
+#### Start PostgreSQL database
+```shell
 docker compose -f ../../docker/postgres/docker-compose.yaml up -d
 ```
 
-Start Kafka broker
-```sh
+#### Start Kafka broker
+```shell
 docker compose -f ../../docker/kafka/docker-compose.yaml up -d
 ```
 
-Start mocks
-```sh
+#### Start mocks
+Benytter mock [OAuth2 server](https://github.com/navikt/mock-oauth2-server) fra NAV Security og mock PDL vha [Wiremock](https://wiremock.org). 
+```shell
 docker compose -f ../../docker/mocks/docker-compose.yaml up -d
 ```
 
 ### App
 
-Start app med `./gradlew runTestApp` eller kjør main metoden i 'src/test/kotlin/no/nav/paw/kafkakeygenerator/run_test_app.kt' via Intellij.
+#### Gradle
+Start appen vha Gradle sin [application plugin](https://docs.gradle.org/current/userguide/application_plugin.html).
+```shell
+../../gradlew :apps:kafka-key-generator:run
+```
+
+Alternativt test-oppsett.
+```shell
+../../gradlew :apps:kafka-key-generator:runTestApp
+```
+
+#### IntelliJ
+Start appen ved å kjøre `main` funksjonen i `./src/main/kotlin/no/nav/paw/kafkakeygenerator/AppStarter.kt`.
+
+Alternativt test-oppsett i `./src/test/kotlin/no/nav/paw/kafkakeygenerator/TestAppStarter.kt`.
 
 ### Autentisering
+Applikasjonen er sikret som en OAuth2 Resource Server. For å kalle APIet må man sende med et OAuth2 Bearer Token.
 
-For å kalle APIet lokalt må man være autentisert med et Bearer token.
-
-Vi benytter mock-ouath2-server til å utstede tokens på lokal maskin. Følgende steg kan benyttes til å generere opp et token:
-
-1. Sørg for at containeren for mock-oauth2-server kjører lokalt (docker-compose up -d)
-2. Naviger til [mock-oauth2-server sin side for debugging av tokens](http://localhost:8081/default/debugger)
-3. Generer et token
-4. Trykk på knappen Get a token
-5. Skriv inn noe random i "Enter any user/subject" og pid i optional claims, f.eks.
-
-```json
-{ "acr": "Level4", "pid": "18908396568" }
+For å hente token fra `mock-oauth2-server` gjør følgende request med `curl`:
+```shell
+ACCESS_TOKEN="$(curl -X POST http://localhost:8081/azure/token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=client_credentials&client_id=paw-kafka-key-generator&client_secret=abcd1234&scope=openid%20pid" \
+| jq .access_token)"
 ```
 
-6. Trykk Sign in
-7. Kopier verdien for access_token og benytt denne som Bearer i Authorization-header
-
-8. Eksempel:
+### Gjøre kall
 
 ```sh
-$ curl -XPOST http://localhost:8080/api/v1/hentEllerOpprett -H 'Authorization: Bearer access_token' -d '{"ident": "2072234860133"}'
+$ curl -X POST http://localhost:8080/api/v1/hentEllerOpprett -H "Authorization: Bearer ${ACCESS_TOKEN}" -d '{"ident": "01017012345"}'
 ```
 
-eller benytt en REST-klient (f.eks. [insomnia](https://insomnia.rest/) eller [Postman](https://www.postman.com/product/rest-client/))
-
+Kan også benytte en grafisk REST-klient (f.eks. [insomnia](https://insomnia.rest/) eller [Postman](https://www.postman.com/product/rest-client/))
 
 ## Deploye kun til dev
 
@@ -109,7 +103,3 @@ Spørsmål knyttet til koden eller prosjektet kan stilles via issues her på Git
 ## For NAV-ansatte
 
 Interne henvendelser kan sendes via Slack i kanalen [#team-paw-dev](https://nav-it.slack.com/archives/CLTFAEW75)
-
-# Lisens
-
-[MIT](LICENSE)

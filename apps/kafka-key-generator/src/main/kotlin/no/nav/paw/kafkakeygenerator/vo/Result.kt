@@ -1,4 +1,4 @@
-package no.nav.paw.kafkakeygenerator
+package no.nav.paw.kafkakeygenerator.vo
 
 data class Failure(
     val system: String,

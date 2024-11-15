@@ -6,18 +6,18 @@ import io.ktor.server.routing.routing
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.health.route.healthRoutes
-import no.nav.paw.kafkakeygenerator.Applikasjon
+import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
 import no.nav.paw.kafkakeygenerator.api.recordkey.configureRecordKeyApi
 import no.nav.paw.kafkakeygenerator.api.v2.konfigurerApiV2
 import no.nav.paw.kafkakeygenerator.config.AuthenticationConfig
-import no.nav.paw.kafkakeygenerator.ktor.konfigurereMetrics
+import no.nav.paw.kafkakeygenerator.api.internal.konfigurereMetrics
 import no.nav.paw.kafkakeygenerator.merge.MergeDetector
 
 fun Application.configureRouting(
-    autentiseringKonfigurasjon: AuthenticationConfig,
+    authenticationConfig: AuthenticationConfig,
     prometheusMeterRegistry: PrometheusMeterRegistry,
     healthIndicatorRepository: HealthIndicatorRepository,
-    applikasjon: Applikasjon,
+    kafkaKeysService: KafkaKeysService,
     mergeDetector: MergeDetector
 ) {
     routing {
@@ -26,8 +26,8 @@ fun Application.configureRouting(
             prometheusMeterRegistry = prometheusMeterRegistry,
             mergeDetector = mergeDetector
         )
-        konfigurerApiV2(autentiseringKonfigurasjon, applikasjon)
-        configureRecordKeyApi(autentiseringKonfigurasjon, applikasjon)
+        konfigurerApiV2(authenticationConfig, kafkaKeysService)
+        configureRecordKeyApi(authenticationConfig, kafkaKeysService)
         swaggerUI(path = "docs", swaggerFile = "openapi/documentation.yaml")
         swaggerUI(path = "docs/record-key", swaggerFile = "openapi/record-key-api-spec.yaml")
     }

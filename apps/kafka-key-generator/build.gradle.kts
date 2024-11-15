@@ -84,7 +84,7 @@ java {
 }
 
 application {
-    mainClass.set("no.nav.paw.kafkakeygenerator.AppStarterKt")
+    mainClass.set("no.nav.paw.kafkakeygenerator.ApplicationKt")
 }
 
 tasks.withType(Jar::class) {
@@ -116,6 +116,6 @@ tasks.named<Test>("test") {
 tasks.create("runTestApp", JavaExec::class) {
     classpath = sourceSets["test"].runtimeClasspath +
             sourceSets["main"].runtimeClasspath
-    mainClass = "no.nav.paw.kafkakeygenerator.Run_test_appKt"
+    mainClass = "no.nav.paw.kafkakeygenerator.TestApplicationKt"
     args = listOf()
 }

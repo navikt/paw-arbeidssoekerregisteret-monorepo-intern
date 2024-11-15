@@ -27,19 +27,20 @@ fun main() {
         valueSerializer = HendelseSerializer::class
     )
 
-    val fraArbeidssoekerId = 2L
-    val tilArbeidssoekerId = 1L
-    val identitetsnummer = "02017012345"
+    val fraArbeidssoekerId = ArbeidssoekerId(2)
+    val tilArbeidssoekerId = ArbeidssoekerId(1)
+    val identitetsnummer1 = Identitetsnummer("02017012345")
+    val identitetsnummer2 = Identitetsnummer("06017012345")
 
     val key = 1L
     val value = TestData.getIdentitetsnummerSammenslaatt(
-        listOf(Identitetsnummer(identitetsnummer)),
-        ArbeidssoekerId(fraArbeidssoekerId),
-        ArbeidssoekerId(tilArbeidssoekerId)
+        identitetsnummerList = listOf(identitetsnummer1, identitetsnummer2),
+        fraArbeidssoekerId = fraArbeidssoekerId,
+        tilArbeidssoekerId = tilArbeidssoekerId
     )
 
     try {
-        logger.info("Sender hendelse {}", value.id)
+        logger.info("Sender hendelse {}", value)
         kafkaProducer.send(ProducerRecord(kafkaTopologyConfig.hendelseloggTopic, key, value)).get()
     } catch (e: Exception) {
         logger.error("Send hendelse feilet", e)

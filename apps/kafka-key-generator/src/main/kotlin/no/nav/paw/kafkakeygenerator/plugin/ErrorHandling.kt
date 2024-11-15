@@ -8,7 +8,7 @@ import io.ktor.server.application.install
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.path
 import io.ktor.server.response.respondText
-import no.nav.paw.kafkakeygenerator.masker
+import no.nav.paw.kafkakeygenerator.utils.masker
 import org.slf4j.LoggerFactory
 
 private val feilLogger = LoggerFactory.getLogger("error_logger")

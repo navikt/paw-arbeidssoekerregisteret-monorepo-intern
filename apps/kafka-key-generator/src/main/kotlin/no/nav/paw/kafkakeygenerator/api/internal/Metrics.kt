@@ -1,12 +1,12 @@
-package no.nav.paw.kafkakeygenerator.ktor
+package no.nav.paw.kafkakeygenerator.api.internal
 
 import io.ktor.server.application.call
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import no.nav.paw.kafkakeygenerator.Either
-import no.nav.paw.kafkakeygenerator.Failure
+import no.nav.paw.kafkakeygenerator.vo.Either
+import no.nav.paw.kafkakeygenerator.vo.Failure
 import no.nav.paw.kafkakeygenerator.merge.MergeDetector
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
