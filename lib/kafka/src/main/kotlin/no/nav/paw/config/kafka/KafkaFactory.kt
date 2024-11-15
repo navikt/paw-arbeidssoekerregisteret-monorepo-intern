@@ -1,8 +1,10 @@
 package no.nav.paw.config.kafka
 
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClientConfig
+import io.confluent.kafka.serializers.KafkaAvroDeserializer
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
+import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -22,6 +24,35 @@ class KafkaFactory(private val config: KafkaConfig) {
             config.authentication?.let { putAll(authenticationConfig(it)) }
             config.schemaRegistry?.let { putAll(schemaRegistryConfig(it)) }
         }
+
+    fun <K: Any, V: Any> createKafkaAvroValueConsumer(
+        groupId: String,
+        clientId: String,
+        keyDeserializer: KClass<out Deserializer<K>>,
+        autoCommit: Boolean = false,
+        autoOffsetReset: String = "earliest",
+        maxPollrecords: Int = ConsumerConfig.DEFAULT_MAX_POLL_RECORDS
+    ): KafkaConsumer<K, V> = KafkaConsumer(
+        baseProperties +
+                mapOf(
+                    ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to autoCommit,
+                    ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to autoOffsetReset,
+                    ConsumerConfig.GROUP_ID_CONFIG to groupId,
+                    ConsumerConfig.CLIENT_ID_CONFIG to clientId,
+                    ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to keyDeserializer.java,
+                    ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to KafkaAvroDeserializer::class,
+                    ConsumerConfig.MAX_POLL_RECORDS_CONFIG to maxPollrecords
+                )
+    )
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T> kafkaAvroDeSerializer(): Deserializer<T> {
+        val map: Map<String, Any> = baseProperties.toMap().mapKeys { it.key.toString() }
+        val deserializer = KafkaAvroDeserializer().apply {
+            configure(map, false)
+        }
+        return deserializer as Deserializer<T>
+    }
 
     fun <K : Any, V : Any> createProducer(
         clientId: String,
@@ -87,6 +118,7 @@ class KafkaFactory(private val config: KafkaConfig) {
                 SchemaRegistryClientConfig.USER_INFO_CONFIG to "${config.username}:${config.password}"
             }
         }
+
 }
 
 operator fun Properties.plus(other: Map<String, Any>): Properties =

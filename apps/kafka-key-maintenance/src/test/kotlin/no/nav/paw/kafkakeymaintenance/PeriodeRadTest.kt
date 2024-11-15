@@ -19,13 +19,7 @@ class PeriodeRadTest: FreeSpec ({
     val logger = LoggerFactory.getLogger("test-logger")
     "Test periode rad db funksjoner" - {
         initDbContainer()
-        val txCtx = txContext(
-            ApplicationContext(
-                consumerVersion = 1,
-                logger = logger,
-                meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-            )
-        )
+        val txCtx = txContext(1)
         val rad1 = PeriodeRad(
             periodeId = UUID.randomUUID(),
             identitetsnummer = "12345678901",

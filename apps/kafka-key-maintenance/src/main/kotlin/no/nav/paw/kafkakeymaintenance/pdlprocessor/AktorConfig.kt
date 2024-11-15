@@ -2,17 +2,17 @@ package no.nav.paw.kafkakeymaintenance.pdlprocessor
 
 import java.time.Duration
 
-data class AktorTopologyConfig(
+data class AktorConfig(
     val aktorTopic: String,
     val hendelseloggTopic: String,
     val supressionDelayMS: Long,
     val intervalMS: Long,
-    val stateStoreName: String = "aktor_supression"
+    val batchSize: Int = 100
 ) {
     companion object {
         val configFile: String get() = "aktor_topology_config.toml"
     }
 }
 
-val AktorTopologyConfig.supressionDelay: Duration get() = Duration.ofMillis(supressionDelayMS)
-val AktorTopologyConfig.interval: Duration get() = Duration.ofMillis(intervalMS)
+val AktorConfig.supressionDelay: Duration get() = Duration.ofMillis(supressionDelayMS)
+val AktorConfig.interval: Duration get() = Duration.ofMillis(intervalMS)

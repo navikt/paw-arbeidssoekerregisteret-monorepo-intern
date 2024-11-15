@@ -18,7 +18,7 @@ fun statiskePerioder(rader: Map<String, PeriodeRad>): Perioder = object : Period
 }
 
 private class ExpsedPerioder(appContext: ApplicationContext) : Perioder {
-    private val txFactory = txContext(appContext)
+    private val txFactory = txContext(appContext.periodeConsumerVersion)
 
     override fun get(identitetsnummer: String): PeriodeRad? =
         transaction { txFactory().periodeRad(identitetsnummer) }

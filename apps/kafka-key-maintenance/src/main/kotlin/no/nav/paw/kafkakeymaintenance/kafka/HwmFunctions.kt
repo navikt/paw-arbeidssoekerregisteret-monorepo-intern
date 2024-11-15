@@ -1,17 +1,16 @@
 package no.nav.paw.kafkakeymaintenance.kafka
 
-import no.nav.paw.kafkakeymaintenance.ApplicationContext
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.wrap
 import java.time.Instant
 
 data class TransactionContext(
-    val appContext: ApplicationContext,
+    val consumerVersion: Int,
     val transaction: Transaction
 )
 
-fun txContext(applicationContext: ApplicationContext): Transaction.() -> TransactionContext = {
-    TransactionContext(applicationContext, this)
+fun txContext(consumerVersion: Int): Transaction.() -> TransactionContext = {
+    TransactionContext(consumerVersion, this)
 }
 
 fun TransactionContext.initHwm(topic: Topic, partitionCount: Int) {
@@ -26,7 +25,7 @@ fun TransactionContext.getHwm(topic: Topic, partition: Int): Long? =
         .where {
             (HwmTable.topic eq topic.value) and
                     (HwmTable.partition eq partition) and
-                    (HwmTable.version eq appContext.consumerVersion)
+                    (HwmTable.version eq consumerVersion)
         }
         .singleOrNull()?.get(HwmTable.offset)
 
@@ -36,7 +35,7 @@ fun TransactionContext.getTopicPartitionMetadata(topic: Topic, partition: Int): 
         .where {
             (HwmTable.topic eq topic.value) and
                     (HwmTable.partition eq partition) and
-                    (HwmTable.version eq appContext.consumerVersion)
+                    (HwmTable.version eq consumerVersion)
         }
         .singleOrNull()
         ?.let {
@@ -52,7 +51,7 @@ fun TransactionContext.getTopicPartitionMetadata(topic: Topic, partition: Int): 
 fun TransactionContext.getAllHwms(): List<HwmInfo> =
     HwmTable
         .selectAll()
-        .where { HwmTable.version eq appContext.consumerVersion }
+        .where { HwmTable.version eq consumerVersion }
         .map {
             hwmInfo(
                 topic = Topic(it[HwmTable.topic]),
@@ -70,7 +69,7 @@ fun TransactionContext.insertHwm(
 ) {
     HwmTable.insert {
         it[HwmTable.topic] = topic.value
-        it[version] = appContext.consumerVersion
+        it[version] = consumerVersion
         it[HwmTable.partition] = partition
         it[HwmTable.offset] = offset
         it[HwmTable.time] = time
@@ -90,7 +89,7 @@ fun TransactionContext.updateHwm(
             (HwmTable.topic eq topic.value) and
                     (HwmTable.partition eq partition) and
                     (HwmTable.offset less offset) and
-                    (HwmTable.version eq appContext.consumerVersion)
+                    (HwmTable.version eq consumerVersion)
         }
         ) {
             it[HwmTable.offset] = offset

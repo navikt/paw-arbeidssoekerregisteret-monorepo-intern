@@ -1,34 +1,50 @@
 package no.nav.paw.kafkakeymaintenance
 
-import io.confluent.kafka.streams.serdes.avro.SpecificAvroDeserializer
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.config.kafka.KafkaFactory
-import no.nav.paw.config.kafka.asSequence
-import no.nav.paw.kafkakeymaintenance.kafka.HwmRebalanceListener
-import org.apache.kafka.clients.consumer.ConsumerRecord
+import no.nav.paw.health.repository.HealthIndicatorRepository
+import no.nav.paw.kafkakeymaintenance.kafka.*
+import no.nav.paw.kafkakeymaintenance.perioder.lagrePeriode
+import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.LongDeserializer
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Duration
 
 fun KafkaFactory.initPeriodeConsumer(
-    periodeTopic: String,
-    applicationContext: ApplicationContext
-): Pair<HwmRebalanceListener, Sequence<Iterable<ConsumerRecord<Long, Periode>>>> {
-    val periodeConsumer = createConsumer(
-        groupId = "kafka-key-maintenance-v${applicationContext.consumerVersion}",
-        clientId = "kafka-key-maintenance-client-v${applicationContext.consumerVersion}",
+    healthIndicatorRepository: HealthIndicatorRepository,
+    periodeTopic: Topic,
+    applicationContext: ApplicationContext,
+): HwmConsumer<Long, Periode> {
+
+    val periodeConsumer: KafkaConsumer<Long, Periode> = createKafkaAvroValueConsumer(
+        groupId = "kafka-key-maintenance-v${applicationContext.periodeConsumerVersion}",
+        clientId = "kafka-key-maintenance-client-v${applicationContext.periodeConsumerVersion}",
         keyDeserializer = LongDeserializer::class,
-        valueDeserializer = PeriodeDeserializer::class,
         autoCommit = false,
         autoOffsetReset = "earliest",
         maxPollrecords = 1000
     )
-    val reblancingListener = HwmRebalanceListener(applicationContext, periodeConsumer)
-    periodeConsumer.subscribe(listOf(periodeTopic), reblancingListener)
-    return reblancingListener to periodeConsumer.asSequence(
-        stop = applicationContext.shutdownCalled,
-        pollTimeout = Duration.ofMillis(1000),
-        closeTimeout = Duration.ofSeconds(1)
+    val reblancingListener = HwmRebalanceListener(
+        contextFactory = applicationContext.periodeTxContext,
+        context = applicationContext,
+        consumer = periodeConsumer
+    )
+    transaction {
+        txContext(applicationContext.periodeConsumerVersion)().initHwm(
+            periodeTopic,
+            periodeConsumer.partitionsFor(periodeTopic.value).count()
+        )
+    }
+    periodeConsumer.subscribe(listOf(periodeTopic.value), reblancingListener)
+    return HwmConsumer(
+        name = "${periodeTopic}-consumer",
+        healthIndicatorRepository = healthIndicatorRepository,
+        applicationContext = applicationContext,
+        contextFactory = { tx -> txContext(periodeConsumerVersion)(tx) },
+        consumer = periodeConsumer,
+        function = lagrePeriode,
+        pollTimeout = Duration.ofMillis(1000)
     )
 }
 
-class PeriodeDeserializer : SpecificAvroDeserializer<Periode>()
+

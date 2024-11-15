@@ -1,31 +1,31 @@
 package no.nav.paw.kafkakeymaintenance
 
-import arrow.core.partially1
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.TidspunktFraKilde
 import no.nav.paw.kafkakeygenerator.client.Alias
 import no.nav.paw.kafkakeygenerator.client.LokaleAlias
-import no.nav.paw.kafkakeymaintenance.pdlprocessor.AktorTopologyConfig
+import no.nav.paw.kafkakeymaintenance.pdlprocessor.AktorConfig
+import no.nav.paw.kafkakeymaintenance.pdlprocessor.functions.HendelseRecord
+import no.nav.paw.kafkakeymaintenance.pdlprocessor.functions.metadata
+import no.nav.paw.kafkakeymaintenance.pdlprocessor.procesAktorMelding
 import no.nav.paw.kafkakeymaintenance.perioder.PeriodeRad
+import no.nav.paw.kafkakeymaintenance.perioder.Perioder
 import no.nav.paw.kafkakeymaintenance.perioder.statiskePerioder
-import no.nav.paw.test.kafkaStreamProperties
-import no.nav.paw.test.opprettSerde
 import no.nav.person.pdl.aktor.v2.Aktor
 import no.nav.person.pdl.aktor.v2.Identifikator
 import no.nav.person.pdl.aktor.v2.Type
-import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KeyValue
-import org.apache.kafka.streams.TestInputTopic
-import org.apache.kafka.streams.TestOutputTopic
-import org.apache.kafka.streams.TopologyTestDriver
-import org.apache.kafka.streams.state.Stores
 import java.time.Duration
 import java.time.Instant
 import java.time.Instant.parse
 import java.util.*
+import java.util.concurrent.BlockingQueue
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.LinkedBlockingQueue
 
 fun hentAlias(aliasMap: Map<String, List<Alias>>, identitetsnummer: List<String>): List<LokaleAlias> {
     return identitetsnummer.mapNotNull { aliasMap[it]?.let { alias -> LokaleAlias(it, alias) } }
@@ -40,57 +40,47 @@ fun alias(
     return Alias(identitetsnummer, arbeidsoekerId, recordKey, partition)
 }
 
-fun initTopologyTestContext(
-    startTid: Instant,
-    aktorTopologyCfg: AktorTopologyConfig = aktorTopologyConfig
-): TopologyTestContext {
-    val periodeMap: ConcurrentHashMap<String, PeriodeRad> = ConcurrentHashMap()
-    val aliasMap: ConcurrentHashMap<String, List<Alias>> = ConcurrentHashMap()
-
-    val topology = initTopology(
-        meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
-        stateStoreBuilderFactory = Stores::inMemoryKeyValueStore,
-        aktorTopologyConfig = aktorTopologyCfg,
-        perioder = statiskePerioder(periodeMap),
-        hentAlias = ::hentAlias.partially1(aliasMap),
-        aktorSerde = opprettSerde()
-    )
-    val testDriver = TopologyTestDriver(topology, kafkaStreamProperties, startTid)
-    val aktorTopic = testDriver.createInputTopic(
-        aktorTopologyConfig.aktorTopic,
-        Serdes.StringSerde().serializer(),
-        opprettSerde<Aktor>().serializer()
-    )
-    val hendelseloggTopic = testDriver.createOutputTopic(
-        aktorTopologyConfig.hendelseloggTopic,
-        Serdes.Long().deserializer(),
-        HendelseSerde().deserializer()
-    )
-    return TopologyTestContext(
-        perioder = periodeMap,
-        alias = aliasMap,
-        aktorTopic = aktorTopic,
-        hendelseloggTopic = hendelseloggTopic,
-        testDriver = testDriver
-    )
-}
-
-val aktorTopologyConfig
-    get() = AktorTopologyConfig(
+val aktorCfg
+    get() = AktorConfig(
         aktorTopic = "aktor_topic",
         hendelseloggTopic = "hendelselogg_topic",
         supressionDelayMS = Duration.ofHours(1).toMillis(),
         intervalMS = Duration.ofMinutes(1).toMillis(),
-        stateStoreName = "suppression_store"
+        batchSize = 1
     )
 
-class TopologyTestContext(
-    private val perioder: ConcurrentHashMap<String, PeriodeRad>,
-    private val alias: ConcurrentHashMap<String, List<Alias>>,
-    val aktorTopic: TestInputTopic<String, Aktor>,
-    val hendelseloggTopic: TestOutputTopic<Long, Hendelse>,
-    val testDriver: TopologyTestDriver
+fun ApplicationTestContext.process(
+    aktor: Aktor
+): List<HendelseRecord<Hendelse>> {
+    val metadata = metadata(
+        kilde = aktorConfig.aktorTopic,
+        tidspunkt = Instant.now(),
+        tidspunktFraKilde = TidspunktFraKilde(
+            tidspunkt = Instant.now(),
+            avviksType = AvviksType.FORSINKELSE
+        )
+    )
+    return procesAktorMelding(
+        meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+        aliasTjeneste,
+        perioderTjeneste,
+        aktor,
+        metadata
+    )
+}
+
+class ApplicationTestContext(
+    aktorConfig: AktorConfig = aktorCfg
 ) {
+    private val perioder: ConcurrentHashMap<String, PeriodeRad> = ConcurrentHashMap()
+    private val alias: ConcurrentHashMap<String, List<Alias>> = ConcurrentHashMap()
+
+    val aktorConfig = aktorConfig
+    val perioderTjeneste: Perioder get() = statiskePerioder(perioder)
+    val aliasTjeneste: (List<String>) -> List<LokaleAlias> = { hentAlias(alias, it) }
+    val hendelser: BlockingQueue<HendelseRecord<Hendelse>> = LinkedBlockingQueue()
+    val receiver: (HendelseRecord<Hendelse>) -> Unit = { hendelser.add(it) }
+
     fun clearPerioder() {
         perioder.clear()
     }
@@ -108,6 +98,7 @@ class TopologyTestContext(
     fun addPeriode(vararg periode: PeriodeRad) {
         periode.forEach { perioder[it.identitetsnummer] = it }
     }
+
 }
 
 operator fun <K, V> KeyValue<K, V>.component1(): K = key

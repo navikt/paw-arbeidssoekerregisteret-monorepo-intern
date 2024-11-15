@@ -11,7 +11,7 @@ fun TransactionContext.insertOrUpdate(periode: PeriodeRad) {
         .let { lagretDate ->
             if (lagretDate == null) {
                 PerioderTable.insert {
-                    it[version] = appContext.consumerVersion
+                    it[version] = consumerVersion
                     it[periodeId] = periode.periodeId
                     it[identitetsnummer] = periode.identitetsnummer
                     it[fra] = periode.fra
@@ -19,7 +19,7 @@ fun TransactionContext.insertOrUpdate(periode: PeriodeRad) {
                 }
             } else {
                 PerioderTable.update(
-                    where = { (PerioderTable.version eq appContext.consumerVersion) and (PerioderTable.periodeId eq periode.periodeId) }
+                    where = { (PerioderTable.version eq consumerVersion) and (PerioderTable.periodeId eq periode.periodeId) }
                 ) {
                     it[identitetsnummer] = periode.identitetsnummer
                     it[fra] = periode.fra
@@ -33,7 +33,7 @@ fun TransactionContext.periodeRad(identitetsnummer: String): PeriodeRad? =
     PerioderTable
         .selectAll()
         .where {
-            (PerioderTable.version eq appContext.consumerVersion) and
+            (PerioderTable.version eq consumerVersion) and
                     (PerioderTable.identitetsnummer eq identitetsnummer)
         }.firstOrNull()?.let {
             PeriodeRad(

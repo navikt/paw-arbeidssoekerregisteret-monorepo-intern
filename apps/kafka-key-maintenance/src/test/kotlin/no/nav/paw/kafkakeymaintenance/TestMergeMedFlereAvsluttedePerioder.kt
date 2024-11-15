@@ -8,13 +8,13 @@ import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerSammenslaatt
+import no.nav.paw.kafkakeymaintenance.pdlprocessor.procesAktorMelding
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.supressionDelay
 import no.nav.paw.test.minutes
 import java.time.Instant.parse
 
 class TestMergeMedFlereAvsluttedePerioder : FreeSpec({
-    val testTime = parse("2021-12-12T12:00:00Z")
-    with(initTopologyTestContext(testTime)) {
+    with(ApplicationTestContext()) {
         "Test merge med flere avsluttede perioder" {
             val person1 = "12345678901"
             val person2 = "12345678902"
@@ -27,31 +27,23 @@ class TestMergeMedFlereAvsluttedePerioder : FreeSpec({
             addPeriode(testPeriode(identitetsnummer = person2, fra = "2021-12-04T12:00:00Z", til = "2021-12-08T12:00:00Z"))
             addPeriode(testPeriode(identitetsnummer = person2, fra = "2021-11-09T12:00:00Z", til = "2021-12-11T12:00:00Z"))
             addPeriode(testPeriode(identitetsnummer = person3, fra = "2021-11-08T12:00:00Z", til = "2021-12-12T12:00:00Z"))
-            aktorTopic.pipeInput(
-                "p1",
+            process(
                 aktor(//person1 og person2 er samme person i følge PDL, gjeldene identitetsnummer er person1
                     id(identifikasjonsnummer = person3, gjeldende = false),
                     id(identifikasjonsnummer = person1, gjeldende = false),
                     id(identifikasjonsnummer = person2, gjeldende = true),
                     id(identifikasjonsnummer = person4, gjeldende = false)
-                ),
-                testTime
-            )
-            hendelseloggTopic.isEmpty shouldBe true
-            testDriver.advanceWallClockTime(aktorTopologyConfig.supressionDelay - 1.minutes)
-            hendelseloggTopic.isEmpty shouldBe true
-            testDriver.advanceWallClockTime(5.minutes)
-            hendelseloggTopic.isEmpty shouldBe false
-            hendelseloggTopic.readKeyValuesToList() should {
-                it.size shouldBe 2
-                it.find { (key, _) -> key == 0L }
+                )
+            ) should { hendelser ->
+                hendelser.size shouldBe 2
+                hendelser.find { (key, _) -> key == 0L }
                     .shouldNotBeNull() should { (_, hendelse) ->
                     hendelse.identitetsnummer shouldBe person1
                     hendelse.shouldBeInstanceOf<IdentitetsnummerSammenslaatt>()
                     hendelse.flyttetTilArbeidssoekerId shouldBe 2L
                     hendelse.alleIdentitetsnummer shouldContainExactlyInAnyOrder  listOf(person1, person4)
                 }
-                it.find { (key, _) -> key == 1L }
+                hendelser.find { (key, _) -> key == 1L }
                     .shouldNotBeNull() should { (_, hendelse) ->
                     hendelse.identitetsnummer shouldBe person2
                     hendelse.shouldBeInstanceOf<IdentitetsnummerSammenslaatt>()
@@ -60,6 +52,5 @@ class TestMergeMedFlereAvsluttedePerioder : FreeSpec({
                 }
             }
         }
-
     }
 })

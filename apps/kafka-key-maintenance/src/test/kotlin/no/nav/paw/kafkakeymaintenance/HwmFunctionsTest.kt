@@ -17,13 +17,7 @@ class HwmFunctionsTest : FreeSpec({
         val topicA = Topic("topicA")
         val topicB = Topic("topicB")
         "We run som tests with backup version 1" - {
-            val txCtx = txContext(
-                ApplicationContext(
-                    consumerVersion = 1,
-                    logger = logger,
-                    meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-                )
-            )
+            val txCtx = txContext(1)
             "When there is no hwm for the partition, getHwm should return null" {
                 transaction {
                     txCtx().getHwm(topicA, 0) shouldBe null
@@ -131,13 +125,7 @@ class HwmFunctionsTest : FreeSpec({
         }
 
         "we run some tests with backup version 2" - {
-            val txCtx = txContext(
-                ApplicationContext(
-                    consumerVersion = 2,
-                    logger = logger,
-                    meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-                )
-            )
+            val txCtx = txContext(2)
             "We find no hwms for version 2" {
                 transaction {
                     txCtx().getAllHwms() shouldBe emptyList()

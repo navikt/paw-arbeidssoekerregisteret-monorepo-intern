@@ -10,8 +10,7 @@ import no.nav.paw.test.minutes
 import java.time.Instant.parse
 
 class TestMergeIngenPerioder : FreeSpec({
-    val testTime = parse("2021-12-12T12:00:00Z")
-    with(initTopologyTestContext(testTime)) {
+    with(ApplicationTestContext()) {
         "Test merge med ingen perioder" {
             val person1 = "12345678901"
             val person2 = "12345678902"
@@ -19,21 +18,13 @@ class TestMergeIngenPerioder : FreeSpec({
             addAlias(person1, alias(person1, 0L))
             addAlias(person2, alias(person2, 1L))
 
-            aktorTopic.pipeInput(
-                "p1",
+            process(
                 aktor(//person1 og person2 er samme person i følge PDL, gjeldene identitetsnummer er person1
                     id(identifikasjonsnummer = person3, gjeldende = false),
                     id(identifikasjonsnummer = person1, gjeldende = true),
                     id(identifikasjonsnummer = person2, gjeldende = false)
-                ),
-                testTime
-            )
-            hendelseloggTopic.isEmpty shouldBe true
-            testDriver.advanceWallClockTime(aktorTopologyConfig.supressionDelay - 1.minutes)
-            hendelseloggTopic.isEmpty shouldBe true
-            testDriver.advanceWallClockTime(5.minutes)
-            hendelseloggTopic.isEmpty shouldBe false
-            hendelseloggTopic.readKeyValuesToList() should {
+                )
+            ) should {
                 it.size shouldBe 1
                 it.first() should { (key, hendelse) ->
                     key shouldBe 0L
@@ -44,6 +35,5 @@ class TestMergeIngenPerioder : FreeSpec({
                 }
             }
         }
-
     }
 })
