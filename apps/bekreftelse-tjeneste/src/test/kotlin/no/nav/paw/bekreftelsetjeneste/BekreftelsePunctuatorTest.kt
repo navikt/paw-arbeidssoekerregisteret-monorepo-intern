@@ -567,4 +567,166 @@ class BekreftelsePunctuatorTest : FreeSpec({
             }
         }
     }
+
+    "BekreftelsePunctuator håndterer BekreftelsesMeldingMottatt hendelse for begge av to bekreftelser tilgjengelig når en bekreftelse har tilstand GracePeriodeVarselet" {
+        with(ApplicationTestContext(initialWallClockTime = startTime)) {
+            with(kafkaKeyContext()) {
+                val (_, interval, _, tilgjengeligOffset, _) = applicationConfig.bekreftelseKonfigurasjon
+                val (_, key, periode) = periode(
+                    identitetsnummer = identitetsnummer,
+                    startetMetadata = metadata(tidspunkt = startTime)
+                )
+                periodeTopic.pipeInput(key, periode)
+
+                testDriver.advanceWallClockTime(interval - tilgjengeligOffset + 5.seconds)
+
+                val stateStore: BekreftelseTilstandStateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
+                val bekreftelseTilstand = stateStore.get(periode.id)
+                val bekreftelse1 = bekreftelseTilstand.bekreftelser.first()
+                val sisteTilstandsLogg = bekreftelse1.tilstandsLogg.siste.timestamp
+                val gracePeriodeVarseletSisteTilstandStatus = GracePeriodeVarselet(sisteTilstandsLogg + 1.days)
+                val bekreftelse2 = bekreftelse1.copy(
+                    bekreftelseId = UUID.randomUUID(),
+                    tilstandsLogg = bekreftelse1.tilstandsLogg.copy(
+                        siste = gracePeriodeVarseletSisteTilstandStatus,
+                    ),
+                    gjelderFra = bekreftelse1.gjelderFra + 1.days,
+                    gjelderTil = bekreftelse1.gjelderTil + 1.days
+                )
+                val oppdatertTilstandMedToBekreftelserTilgjengelig = bekreftelseTilstand.copy(
+                    bekreftelser = listOf(
+                        bekreftelseTilstand.bekreftelser.first(),
+                        bekreftelse2
+                    )
+                )
+                stateStore.put(periode.id, oppdatertTilstandMedToBekreftelserTilgjengelig)
+
+                testDriver.advanceWallClockTime(tilgjengeligOffset + 5.seconds)
+
+                val melding1 = no.nav.paw.bekreftelse.melding.v1.Bekreftelse(
+                    periode.id,
+                    Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET,
+                    bekreftelse1.bekreftelseId,
+                    Svar(
+                        Metadata(
+                            Instant.now(), no.nav.paw.bekreftelse.melding.v1.vo.Bruker(
+                                BrukerType.SLUTTBRUKER, identitetsnummer
+                            ), "test", "test"
+                        ),
+                        bekreftelse1.gjelderFra,
+                        bekreftelse1.gjelderTil,
+                        true,
+                        true
+                    )
+                )
+
+                val melding2 = no.nav.paw.bekreftelse.melding.v1.Bekreftelse(
+                    periode.id,
+                    Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET,
+                    bekreftelse2.bekreftelseId,
+                    Svar(
+                        Metadata(
+                            Instant.now(), no.nav.paw.bekreftelse.melding.v1.vo.Bruker(
+                                BrukerType.SLUTTBRUKER, identitetsnummer
+                            ), "test", "test"
+                        ),
+                        bekreftelse2.gjelderFra,
+                        bekreftelse2.gjelderTil,
+                        true,
+                        true
+                    )
+                )
+
+                bekreftelseTopic.pipeInput(key, melding1)
+                bekreftelseTopic.pipeInput(key, melding2)
+
+                testDriver.advanceWallClockTime(5.seconds)
+
+                bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
+                val hendelser = bekreftelseHendelseloggTopicOut.readKeyValuesToList()
+                hendelser.filter { it.value is BekreftelseMeldingMottatt }.size shouldBe 2
+            }
+        }
+    }
+
+    "BekreftelsePunctuator håndterer BekreftelsesMeldingMottatt hendelse for begge av to bekreftelser tilgjengelig" {
+        with(ApplicationTestContext(initialWallClockTime = startTime)) {
+            with(kafkaKeyContext()) {
+                val (_, interval, _, tilgjengeligOffset, _) = applicationConfig.bekreftelseKonfigurasjon
+                val (_, key, periode) = periode(
+                    identitetsnummer = identitetsnummer,
+                    startetMetadata = metadata(tidspunkt = startTime)
+                )
+                periodeTopic.pipeInput(key, periode)
+
+                testDriver.advanceWallClockTime(interval - tilgjengeligOffset + 5.seconds)
+
+                val stateStore: BekreftelseTilstandStateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
+                val bekreftelseTilstand = stateStore.get(periode.id)
+                val bekreftelse1 = bekreftelseTilstand.bekreftelser.first()
+                val sisteTilstandsLogg = bekreftelse1.tilstandsLogg.siste.timestamp
+                val bekreftelseTilgjengeligSisteTilstandStatus = KlarForUtfylling(sisteTilstandsLogg + 1.days)
+                val bekreftelse2 = bekreftelse1.copy(
+                    bekreftelseId = UUID.randomUUID(),
+                    tilstandsLogg = bekreftelse1.tilstandsLogg.copy(
+                        siste = bekreftelseTilgjengeligSisteTilstandStatus,
+                    ),
+                    gjelderFra = bekreftelse1.gjelderFra + 1.days,
+                    gjelderTil = bekreftelse1.gjelderTil + 1.days
+                )
+                val oppdatertTilstandMedToBekreftelserTilgjengelig = bekreftelseTilstand.copy(
+                    bekreftelser = listOf(
+                        bekreftelseTilstand.bekreftelser.first(),
+                        bekreftelse2
+                    )
+                )
+                stateStore.put(periode.id, oppdatertTilstandMedToBekreftelserTilgjengelig)
+
+                testDriver.advanceWallClockTime(tilgjengeligOffset + 5.seconds)
+
+                val melding1 = no.nav.paw.bekreftelse.melding.v1.Bekreftelse(
+                    periode.id,
+                    Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET,
+                    bekreftelse1.bekreftelseId,
+                    Svar(
+                        Metadata(
+                            Instant.now(), no.nav.paw.bekreftelse.melding.v1.vo.Bruker(
+                                BrukerType.SLUTTBRUKER, identitetsnummer
+                            ), "test", "test"
+                        ),
+                        bekreftelse1.gjelderFra,
+                        bekreftelse1.gjelderTil,
+                        true,
+                        true
+                    )
+                )
+
+                val melding2 = no.nav.paw.bekreftelse.melding.v1.Bekreftelse(
+                    periode.id,
+                    Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET,
+                    bekreftelse2.bekreftelseId,
+                    Svar(
+                        Metadata(
+                            Instant.now(), no.nav.paw.bekreftelse.melding.v1.vo.Bruker(
+                                BrukerType.SLUTTBRUKER, identitetsnummer
+                            ), "test", "test"
+                        ),
+                        bekreftelse2.gjelderFra,
+                        bekreftelse2.gjelderTil,
+                        true,
+                        true
+                    )
+                )
+
+                bekreftelseTopic.pipeInput(key, melding1)
+                bekreftelseTopic.pipeInput(key, melding2)
+
+                testDriver.advanceWallClockTime(5.seconds)
+
+                bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
+                val hendelser = bekreftelseHendelseloggTopicOut.readKeyValuesToList()
+                hendelser.filter { it.value is BekreftelseMeldingMottatt }.size shouldBe 2
+            }
+        }
+    }
 })

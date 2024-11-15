@@ -96,6 +96,7 @@ fun processPawNamespace(
     return when (val sisteTilstand = bekreftelse.sisteTilstand()) {
         is VenterSvar,
         is KlarForUtfylling,
+        is GracePeriodeVarselet,
         is InternBekreftelsePaaVegneAvStartet -> {
             val (hendelser, oppdatertBekreftelse) = behandleGyldigSvar(gjeldeneTilstand, hendelse, bekreftelse)
             Span.current().setAttribute("bekreftelse.tilstand", sisteTilstand.toString())
@@ -103,8 +104,8 @@ fun processPawNamespace(
         }
 
         else -> {
-            Span.current().setAttribute("unexpected_tilstand", sisteTilstand.toString())
-            meldingsLogger.warn(
+            Span.current().setStatus(StatusCode.ERROR).setAttribute("unexpected_tilstand", sisteTilstand.toString())
+            meldingsLogger.error(
                 "Melding {} har ikke forventet tilstand, tilstand={}",
                 hendelse.id,
                 sisteTilstand
