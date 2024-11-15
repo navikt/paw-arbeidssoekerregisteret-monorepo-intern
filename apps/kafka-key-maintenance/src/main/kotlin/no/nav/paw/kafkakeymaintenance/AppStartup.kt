@@ -61,13 +61,6 @@ fun main() {
         consumerReadinessHealthIndicator.setUnhealthy()
         consumerLivenessHealthIndicator.setUnhealthy()
     }
-    initStreams(
-        applicationContext = applicationContext,
-        aktorTopologyConfig = loadNaisOrLocalConfiguration(AktorTopologyConfig.configFile),
-        healthIndicatorRepository = healthIndicatorRepository,
-        perioder = dbPerioder(applicationContext),
-        hentAlias = createKafkaKeyGeneratorClient()::hentAlias
-    ).start()
     applicationContext.logger.info("Applikasjonen er startet, consumer: {}", hwmRebalacingListener.currentlyAssignedPartitions)
     initKtor(
         healthIndicatorRepository = healthIndicatorRepository,
