@@ -40,7 +40,7 @@ class KafkaFactory(private val config: KafkaConfig) {
                     ConsumerConfig.GROUP_ID_CONFIG to groupId,
                     ConsumerConfig.CLIENT_ID_CONFIG to clientId,
                     ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to keyDeserializer.java,
-                    ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to KafkaAvroDeserializer::class,
+                    ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to KafkaAvroDeserializer::class.java,
                     ConsumerConfig.MAX_POLL_RECORDS_CONFIG to maxPollrecords
                 )
     )
