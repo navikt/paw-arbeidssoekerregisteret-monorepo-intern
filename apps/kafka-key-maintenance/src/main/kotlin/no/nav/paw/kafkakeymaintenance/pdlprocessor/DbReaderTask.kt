@@ -116,7 +116,6 @@ class DbReaderTask(
 
     private fun linkSpan(entry: Data) {
         val traceparent = entry.traceparant?.let { String(it, Charsets.UTF_8) }
-        applicationContext.logger.info("Siste traceparent fra database: $traceparent")
         traceparent?.let { tp ->
             val asArray = tp.split("-")
             SpanContext.createFromRemoteParent(
@@ -124,9 +123,7 @@ class DbReaderTask(
                 asArray[2],
                 TraceFlags.fromHex(asArray[3], 0),
                 TraceState.getDefault()
-            ).also { spanContext ->
-                applicationContext.logger.info("Opprettet spanContext fra traceparent: $spanContext")
-            }
+            )
         }?.also { Span.current().addLink(it) }
     }
 }
