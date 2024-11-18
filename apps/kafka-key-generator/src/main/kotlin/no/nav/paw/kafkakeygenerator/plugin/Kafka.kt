@@ -2,36 +2,23 @@ package no.nav.paw.kafkakeygenerator.plugin
 
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
-import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
-import no.nav.paw.config.kafka.KAFKA_CONFIG
-import no.nav.paw.config.kafka.KafkaConfig
-import no.nav.paw.config.kafka.KafkaFactory
-import no.nav.paw.kafkakeygenerator.config.KAFKA_TOPOLOGY_CONFIG
-import no.nav.paw.kafkakeygenerator.config.KafkaTopologyConfig
 import no.nav.paw.kafkakeygenerator.plugin.custom.kafkaConsumerPlugin
-import no.nav.paw.kafkakeygenerator.service.KafkaConsumerService
-import org.apache.kafka.common.serialization.LongDeserializer
+import org.apache.kafka.clients.consumer.ConsumerRecords
+import org.apache.kafka.clients.consumer.KafkaConsumer
 
-fun Application.configureKafka(
-    kafkaConsumerService: KafkaConsumerService
+fun <K, V> Application.configureKafka(
+    consumeFunction: ((Sequence<ConsumerRecords<K, V>>) -> Unit),
+    successFunction: ((Unit) -> Unit)? = null,
+    errorFunction: ((throwable: Throwable) -> Unit),
+    kafkaConsumer: KafkaConsumer<K, V>,
+    kafkaTopics: List<String>
 ) {
-    val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
-    val kafkaTopologyConfig = loadNaisOrLocalConfiguration<KafkaTopologyConfig>(KAFKA_TOPOLOGY_CONFIG)
-    val kafkaFactory = KafkaFactory(kafkaConfig)
 
-    val hendelseKafkaConsumer = kafkaFactory.createConsumer(
-        groupId = kafkaTopologyConfig.consumerGroupId,
-        clientId = "${kafkaTopologyConfig.consumerGroupId}-consumer",
-        keyDeserializer = LongDeserializer::class,
-        valueDeserializer = HendelseDeserializer::class
-    )
-
-    install(kafkaConsumerPlugin<Long, Hendelse>()) {
-        consumeFunction = kafkaConsumerService::handleRecords
-        errorFunction = kafkaConsumerService::handleException
-        kafkaConsumer = hendelseKafkaConsumer
-        kafkaTopics = listOf(kafkaTopologyConfig.hendelseloggTopic)
+    install(kafkaConsumerPlugin<K, V>()) {
+        this.consumeFunction = consumeFunction
+        this.successFunction = successFunction
+        this.errorFunction = errorFunction
+        this.kafkaConsumer = kafkaConsumer
+        this.kafkaTopics = kafkaTopics
     }
 }

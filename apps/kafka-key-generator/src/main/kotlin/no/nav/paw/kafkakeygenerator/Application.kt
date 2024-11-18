@@ -2,16 +2,23 @@ package no.nav.paw.kafkakeygenerator
 
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.micrometer.core.instrument.binder.kafka.KafkaClientMetrics
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.client.config.AZURE_M2M_CONFIG
 import no.nav.paw.client.config.AzureAdM2MConfig
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
+import no.nav.paw.config.kafka.KAFKA_CONFIG
+import no.nav.paw.config.kafka.KafkaConfig
+import no.nav.paw.config.kafka.KafkaFactory
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.config.AUTHENTICATION_CONFIG
 import no.nav.paw.kafkakeygenerator.config.AuthenticationConfig
 import no.nav.paw.kafkakeygenerator.config.DATABASE_CONFIG
 import no.nav.paw.kafkakeygenerator.config.DatabaseConfig
+import no.nav.paw.kafkakeygenerator.config.KAFKA_TOPOLOGY_CONFIG
+import no.nav.paw.kafkakeygenerator.config.KafkaTopologyConfig
 import no.nav.paw.kafkakeygenerator.config.PDL_CLIENT_CONFIG
 import no.nav.paw.kafkakeygenerator.config.PdlClientConfig
 import no.nav.paw.kafkakeygenerator.database.createDataSource
@@ -32,6 +39,7 @@ import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
 import no.nav.paw.kafkakeygenerator.service.PdlService
 import no.nav.paw.kafkakeygenerator.utils.createPdlClient
 import no.nav.paw.pdl.PdlClient
+import org.apache.kafka.common.serialization.LongDeserializer
 import org.jetbrains.exposed.sql.Database
 import javax.sql.DataSource
 
@@ -53,12 +61,15 @@ fun startApplication(
     val database = Database.connect(dataSource)
     val healthIndicatorRepository = HealthIndicatorRepository()
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+    val identitetRepository = IdentitetRepository(database)
     val kafkaKeysRepository = KafkaKeysRepository(database)
+    val kafkaKeysAuditRepository = KafkaKeysAuditRepository(database)
     val kafkaConsumerService = KafkaConsumerService(
-        database = database,
-        healthIndicatorRepository = healthIndicatorRepository,
-        identitetRepository = IdentitetRepository(database),
-        kafkaKeysAuditRepository = KafkaKeysAuditRepository(database)
+        database,
+        healthIndicatorRepository,
+        prometheusMeterRegistry,
+        identitetRepository,
+        kafkaKeysAuditRepository
     )
     val pdlService = PdlService(pdlClient)
     val kafkaKeysService = KafkaKeysService(
@@ -69,6 +80,17 @@ fun startApplication(
         pdlService,
         kafkaKeysRepository
     )
+    val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
+    val kafkaTopologyConfig = loadNaisOrLocalConfiguration<KafkaTopologyConfig>(KAFKA_TOPOLOGY_CONFIG)
+    val kafkaFactory = KafkaFactory(kafkaConfig)
+
+    val hendelseKafkaConsumer = kafkaFactory.createConsumer(
+        groupId = kafkaTopologyConfig.consumerGroupId,
+        clientId = "${kafkaTopologyConfig.consumerGroupId}-consumer",
+        keyDeserializer = LongDeserializer::class,
+        valueDeserializer = HendelseDeserializer::class
+    )
+
     embeddedServer(
         factory = Netty,
         port = 8080,
@@ -82,9 +104,17 @@ fun startApplication(
         configureLogging()
         configureErrorHandling()
         configureAuthentication(authenticationConfig)
-        configureMetrics(prometheusMeterRegistry)
+        configureMetrics(
+            meterRegistry = prometheusMeterRegistry,
+            extraMeterBinders = listOf(KafkaClientMetrics(hendelseKafkaConsumer))
+        )
         configureDatabase(dataSource)
-        configureKafka(kafkaConsumerService)
+        configureKafka(
+            consumeFunction = kafkaConsumerService::handleRecords,
+            errorFunction = kafkaConsumerService::handleException,
+            kafkaConsumer = hendelseKafkaConsumer,
+            kafkaTopics = listOf(kafkaTopologyConfig.hendelseloggTopic)
+        )
         configureRouting(
             authenticationConfig,
             prometheusMeterRegistry,

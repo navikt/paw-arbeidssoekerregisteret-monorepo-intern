@@ -4,6 +4,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import io.micrometer.core.instrument.logging.LoggingMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.plugin.custom.flywayMigrate
@@ -37,6 +38,7 @@ class KafkaConsumerServiceTest : FreeSpec({
         kafkaKeysAuditRepository = KafkaKeysAuditRepository(database)
         kafkaConsumerService = KafkaConsumerService(
             database = database,
+            meterRegistry = LoggingMeterRegistry(),
             healthIndicatorRepository = healthIndicatorRepository,
             identitetRepository = IdentitetRepository(database),
             kafkaKeysAuditRepository = kafkaKeysAuditRepository

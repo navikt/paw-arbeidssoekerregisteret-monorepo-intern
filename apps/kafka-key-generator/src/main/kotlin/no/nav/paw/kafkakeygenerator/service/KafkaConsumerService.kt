@@ -1,5 +1,6 @@
 package no.nav.paw.kafkakeygenerator.service
 
+import io.micrometer.core.instrument.MeterRegistry
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -13,6 +14,9 @@ import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
 import no.nav.paw.kafkakeygenerator.utils.buildErrorLogger
 import no.nav.paw.kafkakeygenerator.utils.buildLogger
+import no.nav.paw.kafkakeygenerator.utils.countIgnoredEvents
+import no.nav.paw.kafkakeygenerator.utils.countProcessedEvents
+import no.nav.paw.kafkakeygenerator.utils.countReceivedEvents
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Audit
 import no.nav.paw.kafkakeygenerator.vo.IdentitetStatus
@@ -24,6 +28,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 class KafkaConsumerService(
     private val database: Database,
     private val healthIndicatorRepository: HealthIndicatorRepository,
+    private val meterRegistry: MeterRegistry,
     private val identitetRepository: IdentitetRepository,
     private val kafkaKeysAuditRepository: KafkaKeysAuditRepository,
 ) {
@@ -39,6 +44,14 @@ class KafkaConsumerService(
         sequence.forEach { records ->
             records
                 .map { it.value() }
+                .onEach {
+                    meterRegistry.countReceivedEvents()
+                    if (it is IdentitetsnummerSammenslaatt) {
+                        meterRegistry.countProcessedEvents()
+                    } else {
+                        meterRegistry.countIgnoredEvents()
+                    }
+                }
                 .filterIsInstance<IdentitetsnummerSammenslaatt>()
                 .forEach { hendelse ->
                     logger.info("Mottok hendelse om sammenslåing av identitetsnummer")
@@ -76,6 +89,7 @@ class KafkaConsumerService(
         }
     }
 
+    @WithSpan
     private fun updateIdentitet(
         identitetsnummer: Identitetsnummer,
         fraArbeidssoekerId: ArbeidssoekerId,
@@ -100,6 +114,7 @@ class KafkaConsumerService(
         }
     }
 
+    @WithSpan
     private fun insertIdentitet(
         identitetsnummer: Identitetsnummer,
         tilArbeidssoekerId: ArbeidssoekerId
