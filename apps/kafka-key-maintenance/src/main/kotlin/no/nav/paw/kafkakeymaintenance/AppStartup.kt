@@ -70,7 +70,7 @@ fun main() {
         applicationContext = applicationContext,
         dbReaderContext = DbReaderContext(
             aktorConfig = aktorConfig,
-            receiver = producer::sendSync.partially1(topic(aktorConfig.aktorTopic)),
+            receiver = producer::sendSync.partially1(topic(aktorConfig.hendelseloggTopic)),
             perioder = dbPerioder(applicationContext),
             hentAlias = kafkaKeysClient::hentAlias.partially1(antallHendelsePartisjoner),
             aktorDeSerializer = kafkaFactory.kafkaAvroDeSerializer()
