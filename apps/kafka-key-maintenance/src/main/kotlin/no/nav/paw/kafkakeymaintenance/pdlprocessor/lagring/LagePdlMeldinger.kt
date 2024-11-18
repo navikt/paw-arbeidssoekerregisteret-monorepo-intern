@@ -1,5 +1,6 @@
 package no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring
 
+import io.opentelemetry.api.trace.Span
 import no.nav.paw.kafkakeymaintenance.kafka.TransactionContext
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.postgresql.util.PSQLException
@@ -15,11 +16,14 @@ val lagreAktorMelding: TransactionContext.(ConsumerRecord<String, ByteArray>) ->
         )
         delete(record.key())
     } else {
+        val traceparent = Span.current().spanContext.let { ctx ->
+            "00-${ctx.traceId}-${ctx.spanId}-${ctx.traceFlags.asHex()}"
+        }
         kotlin.runCatching {
             insertOrUpdate(
                 record.key(),
                 timestamp = Instant.ofEpochMilli(record.timestamp()),
-                traceparant = record.headers().lastHeader("traceparent")?.value(),
+                traceparant = traceparent.toByteArray(),
                 data = record.value()
             )
         }
