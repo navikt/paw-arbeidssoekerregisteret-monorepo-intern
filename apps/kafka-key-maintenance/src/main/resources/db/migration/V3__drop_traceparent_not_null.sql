@@ -1,0 +1,1 @@
+ALTER TABLE data ALTER COLUMN traceparant DROP NOT NULL;

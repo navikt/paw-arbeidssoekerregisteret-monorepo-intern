@@ -1,7 +1,6 @@
 package no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring
 
 import no.nav.paw.kafkakeymaintenance.kafka.TransactionContext
-import org.apache.kafka.common.protocol.types.Field.Bool
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.time.Instant
