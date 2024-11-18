@@ -23,6 +23,7 @@ import no.nav.person.pdl.aktor.v2.Aktor
 import org.apache.kafka.common.serialization.Deserializer
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletableFuture.supplyAsync
@@ -110,8 +111,10 @@ class DbReaderTask(
         )
     }
 
+    private val spanHandlerLogger = LoggerFactory.getLogger("spanHandler")
     private fun linkSpan(entry: Data) {
         val traceparent = entry.traceparant?.let { String(it, Charsets.UTF_8) }
+        spanHandlerLogger.info("traceparent: {}", traceparent)
         traceparent?.let { tp ->
             val asArray = tp.split("-")
             SpanContext.createFromRemoteParent(
