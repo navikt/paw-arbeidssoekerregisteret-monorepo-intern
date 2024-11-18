@@ -8,7 +8,7 @@ val lagreAktorMelding: TransactionContext.(ConsumerRecord<String, ByteArray>) ->
     insertOrUpdate(
         record.key(),
         timestamp = Instant.ofEpochMilli(record.timestamp()),
-        traceparant = record.headers().lastHeader("traceparant")?.value(),
+        traceparant = record.headers().lastHeader("traceparent")?.value(),
         data = record.value()
     )
 }
