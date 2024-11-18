@@ -26,10 +26,8 @@ val lagreAktorMelding: TransactionContext.(ConsumerRecord<String, ByteArray>) ->
                     data = record.value()
                 )
             }.onFailure { e ->
-                if (e is PSQLException && e.message?.contains("unnamed portal parameter") == true) {
-                    lagreAktorLogger.error("Feil ved lagring av aktør: {}", record.key(), e)
-                }
-            }
+                lagreAktorLogger.error("Feil ved lagring av aktør: {}", record.key(), e)
+            }.getOrThrow()
         }
     }
 }
