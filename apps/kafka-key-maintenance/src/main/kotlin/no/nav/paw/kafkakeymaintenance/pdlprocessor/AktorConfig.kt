@@ -7,7 +7,7 @@ data class AktorConfig(
     val hendelseloggTopic: String,
     val supressionDelayMS: Long,
     val intervalMS: Long,
-    val batchSize: Int = 100
+    val batchSize: Int = 200
 ) {
     companion object {
         val configFile: String get() = "aktor_topology_config.toml"
