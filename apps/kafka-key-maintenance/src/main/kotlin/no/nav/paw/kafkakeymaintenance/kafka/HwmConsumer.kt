@@ -1,5 +1,7 @@
 package no.nav.paw.kafkakeymaintenance.kafka
 
+import io.micrometer.core.instrument.Tag
+import io.micrometer.core.instrument.Tags
 import no.nav.paw.health.model.HealthStatus
 import no.nav.paw.health.model.LivenessHealthIndicator
 import no.nav.paw.health.model.ReadinessHealthIndicator
@@ -49,7 +51,17 @@ class HwmConsumer<K, V>(
                                             offset = record.offset(),
                                             time = Instant.ofEpochMilli(record.timestamp()),
                                             lastUpdated = Instant.now()
-                                        )
+                                        ).also { aboveHwm ->
+                                            applicationContext.meterRegistry.counter(
+                                                "paw_hwm_consumer",
+                                                Tags.of(
+                                                    Tag.of("name", name),
+                                                    Tag.of("topic", record.topic()),
+                                                    Tag.of("partition", record.partition().toString()),
+                                                    Tag.of("above_hwm", aboveHwm.toString())
+                                                )
+                                            ).increment()
+                                        }
                                     }
                                     .forEach { record ->
                                         txContext.function(record)
