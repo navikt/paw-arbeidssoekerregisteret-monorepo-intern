@@ -13,6 +13,7 @@ import no.nav.paw.kafkakeygenerator.client.LokaleAlias
 import no.nav.paw.kafkakeymaintenance.ApplicationContext
 import no.nav.paw.kafkakeymaintenance.ErrorOccurred
 import no.nav.paw.kafkakeymaintenance.ShutdownSignal
+import no.nav.paw.kafkakeymaintenance.kafka.TransactionContext
 import no.nav.paw.kafkakeymaintenance.kafka.topic
 import no.nav.paw.kafkakeymaintenance.kafka.txContext
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.functions.HendelseRecord
@@ -23,6 +24,7 @@ import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.getBatch
 import no.nav.paw.kafkakeymaintenance.perioder.Perioder
 import no.nav.person.pdl.aktor.v2.Aktor
 import org.apache.kafka.common.serialization.Deserializer
+import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Instant
 import java.util.concurrent.CompletableFuture
@@ -54,26 +56,7 @@ class DbReaderTask(
                 liveness.setHealthy()
                 val ctxFactory = txContext(applicationContext.aktorConsumerVersion)
                 while (applicationContext.shutdownCalled.get().not()) {
-                    transaction {
-                        val txContext = ctxFactory()
-                        val batch = txContext.getBatch(
-                            size = dbReaderContext.aktorConfig.batchSize,
-                            time = Instant.now() - dbReaderContext.aktorConfig.supressionDelay
-                        )
-                        val count = batch
-                            .filter { entry -> txContext.delete(entry.id) }
-                            .flatMap { entry ->
-                                processAktorMessage(entry)
-
-                            }.map { hendelseRecord -> dbReaderContext.receiver(hendelseRecord) }
-                            .count()
-                        if (batch.isEmpty()) {
-                            applicationContext.logger.info("Ingen meldinger klare for prosessering, venter ${dbReaderContext.aktorConfig.interval}")
-                            Thread.sleep(dbReaderContext.aktorConfig.interval.toMillis())
-                        } else {
-                            applicationContext.logger.info("Genererte {} hendelser fra {} meldinger", count, batch.size)
-                        }
-                    }
+                    processBatch(ctxFactory)
                 }
             },
             executor
@@ -89,19 +72,38 @@ class DbReaderTask(
     }
 
     @WithSpan(
+        value = "process_pdl_aktor_v2_batch",
+        kind = SpanKind.INTERNAL
+    )
+    private fun processBatch(ctxFactory: Transaction.() -> TransactionContext) {
+        transaction {
+            val txContext = ctxFactory()
+            val batch = txContext.getBatch(
+                size = dbReaderContext.aktorConfig.batchSize,
+                time = Instant.now() - dbReaderContext.aktorConfig.supressionDelay
+            )
+            val count = batch
+                .filter { entry -> txContext.delete(entry.id) }
+                .flatMap { entry ->
+                    processAktorMessage(entry)
+
+                }.map { hendelseRecord -> dbReaderContext.receiver(hendelseRecord) }
+                .count()
+            if (batch.isEmpty()) {
+                applicationContext.logger.info("Ingen meldinger klare for prosessering, venter ${dbReaderContext.aktorConfig.interval}")
+                Thread.sleep(dbReaderContext.aktorConfig.interval.toMillis())
+            } else {
+                applicationContext.logger.info("Genererte {} hendelser fra {} meldinger", count, batch.size)
+            }
+        }
+    }
+
+    @WithSpan(
         value = "process_pdl_aktor_v2_record",
         kind = SpanKind.INTERNAL
     )
     fun processAktorMessage(entry: Data): List<HendelseRecord<Hendelse>> {
         linkSpan(entry)
-        val metadata = metadata(
-            kilde = dbReaderContext.aktorConfig.aktorTopic,
-            tidspunkt = Instant.now(),
-            tidspunktFraKilde = TidspunktFraKilde(
-                tidspunkt = entry.time,
-                avviksType = AvviksType.FORSINKELSE
-            )
-        )
         return procesAktorMelding(
             meterRegistry = applicationContext.meterRegistry,
             hentAlias = dbReaderContext.hentAlias,
@@ -114,7 +116,7 @@ class DbReaderTask(
 
     private fun linkSpan(entry: Data) {
         val traceparent = entry.traceparant?.let { String(it, Charsets.UTF_8) }
-        applicationContext.logger.debug("Lastet traceparent fra database: $traceparent")
+        applicationContext.logger.info("Siste traceparent fra database: $traceparent")
         traceparent?.let { tp ->
             val asArray = tp.split("-")
             SpanContext.createFromRemoteParent(
@@ -122,7 +124,9 @@ class DbReaderTask(
                 asArray[2],
                 TraceFlags.fromHex(asArray[3], 0),
                 TraceState.getDefault()
-            )
+            ).also { spanContext ->
+                applicationContext.logger.info("Opprettet spanContext fra traceparent: $spanContext")
+            }
         }?.also { Span.current().addLink(it) }
     }
 }
