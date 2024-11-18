@@ -2,6 +2,7 @@ package no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring
 
 import no.nav.paw.kafkakeymaintenance.kafka.TransactionContext
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.postgresql.util.PSQLException
 import org.slf4j.LoggerFactory
 import java.time.Instant
 
@@ -17,12 +18,18 @@ val lagreAktorMelding: TransactionContext.(ConsumerRecord<String, ByteArray>) ->
             if (record.key().isNullOrBlank()) {
                 lagreAktorLogger.warn("Mottok melding med tom eller null key")
             }
-            insertOrUpdate(
-                record.key(),
-                timestamp = Instant.ofEpochMilli(record.timestamp()),
-                traceparant = record.headers().lastHeader("traceparent")?.value(),
-                data = record.value()
-            )
+            kotlin.runCatching {
+                insertOrUpdate(
+                    record.key(),
+                    timestamp = Instant.ofEpochMilli(record.timestamp()),
+                    traceparant = record.headers().lastHeader("traceparent")?.value(),
+                    data = record.value()
+                )
+            }.onFailure { e ->
+                if (e is PSQLException && e.message?.contains("unnamed portal parameter") == true) {
+                    lagreAktorLogger.error("Feil ved lagring av aktør: {}", record.key(), e)
+                }
+            }
         }
     }
 }

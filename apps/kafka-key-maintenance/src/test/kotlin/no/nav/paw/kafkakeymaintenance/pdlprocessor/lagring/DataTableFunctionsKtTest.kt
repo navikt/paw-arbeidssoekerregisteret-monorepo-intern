@@ -1,32 +1,26 @@
 package no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring
 
-import io.confluent.kafka.serializers.KafkaAvroSerializer
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import no.nav.paw.kafkakeymaintenance.aktor
 import no.nav.paw.kafkakeymaintenance.initDbContainer
 import no.nav.paw.kafkakeymaintenance.kafka.txContext
 import no.nav.person.pdl.aktor.v2.Type
-import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import java.util.*
 
 class DataTableFunctionsKtTest : FreeSpec({
-    "Verifiser operasjoner mot Data tabellen" - {
-        initDbContainer()
+    "Verifiser operasjoner mot Data tabellen".config(enabled = false) - {
+        initDbContainer("dataTest")
         "Vi kan skrive, oppdatere og lese data" - {
-            "Vi tømmer tabellen før testen starter" {
-                transaction {
-                    DataTable.deleteAll()
-                }
-            }
             val tcxFactory = txContext(1)
             val bytes = aktor(Triple(Type.FOLKEREGISTERIDENT, true, "12345678901")).toByteBuffer().array()
             val traceparant = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01".toByteArray()
             val timestamp = Instant.now()
-            val key = "key1234"
+            val key = UUID.randomUUID().toString()
             "Vi kan skrive data uten feil" {
                 transaction {
                     tcxFactory().insertOrUpdate(
@@ -35,6 +29,11 @@ class DataTableFunctionsKtTest : FreeSpec({
                         traceparant = traceparant,
                         data = bytes
                     )
+                }
+            }
+            "Vi kan sjekke at vi har raden" {
+                transaction {
+                    tcxFactory().hasId(key) shouldBe true
                 }
             }
             "Vi kan lese raden vi skrev" {

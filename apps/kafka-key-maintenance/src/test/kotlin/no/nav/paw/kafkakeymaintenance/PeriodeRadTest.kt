@@ -18,7 +18,7 @@ import java.util.*
 class PeriodeRadTest: FreeSpec ({
     val logger = LoggerFactory.getLogger("test-logger")
     "Test periode rad db funksjoner" - {
-        initDbContainer()
+        initDbContainer("periodeRadTest")
         val txCtx = txContext(1)
         val rad1 = PeriodeRad(
             periodeId = UUID.randomUUID(),

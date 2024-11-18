@@ -8,8 +8,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import javax.sql.DataSource
 
-fun initDbContainer(): Pair<Database, DataSource> {
-    val databaseName = "backupTest"
+fun initDbContainer(databaseName: String): Pair<Database, DataSource> {
     val postgres = PostgreSQLContainer("postgres:16")
         .withDatabaseName(databaseName)
         .withUsername("postgres")

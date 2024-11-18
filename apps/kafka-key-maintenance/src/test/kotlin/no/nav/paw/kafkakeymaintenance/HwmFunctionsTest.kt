@@ -13,7 +13,7 @@ import java.time.Instant
 class HwmFunctionsTest : FreeSpec({
     val logger = LoggerFactory.getLogger("test-logger")
     "Verify Hwm functions" - {
-        initDbContainer()
+        initDbContainer("hwmTest")
         val topicA = Topic("topicA")
         val topicB = Topic("topicB")
         "We run som tests with backup version 1" - {
