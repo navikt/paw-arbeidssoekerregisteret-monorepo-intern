@@ -20,7 +20,7 @@ val lagreAktorMelding: TransactionContext.(ConsumerRecord<String, ByteArray>) ->
             }
             kotlin.runCatching {
                 insertOrUpdate(
-                    record.key(),
+                    record.key().replace("\"", ""),
                     timestamp = Instant.ofEpochMilli(record.timestamp()),
                     traceparant = record.headers().lastHeader("traceparent")?.value(),
                     data = record.value()
