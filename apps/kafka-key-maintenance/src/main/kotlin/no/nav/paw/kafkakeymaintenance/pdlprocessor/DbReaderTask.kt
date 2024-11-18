@@ -3,8 +3,6 @@ package no.nav.paw.kafkakeymaintenance.pdlprocessor
 import io.opentelemetry.api.trace.*
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.TidspunktFraKilde
 import no.nav.paw.health.model.HealthStatus
 import no.nav.paw.health.model.LivenessHealthIndicator
 import no.nav.paw.health.model.ReadinessHealthIndicator
@@ -17,7 +15,6 @@ import no.nav.paw.kafkakeymaintenance.kafka.TransactionContext
 import no.nav.paw.kafkakeymaintenance.kafka.topic
 import no.nav.paw.kafkakeymaintenance.kafka.txContext
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.functions.HendelseRecord
-import no.nav.paw.kafkakeymaintenance.pdlprocessor.functions.metadata
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.Data
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.delete
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.getBatch
@@ -56,7 +53,7 @@ class DbReaderTask(
                 liveness.setHealthy()
                 val ctxFactory = txContext(applicationContext.aktorConsumerVersion)
                 while (applicationContext.shutdownCalled.get().not()) {
-                    processBatch(ctxFactory)
+                    processBatch(executor, ctxFactory)
                 }
             },
             executor
@@ -75,7 +72,7 @@ class DbReaderTask(
         value = "process_pdl_aktor_v2_batch",
         kind = SpanKind.INTERNAL
     )
-    private fun processBatch(ctxFactory: Transaction.() -> TransactionContext) {
+    private fun processBatch(executor: Executor, ctxFactory: Transaction.() -> TransactionContext) {
         transaction {
             val txContext = ctxFactory()
             val batch = txContext.getBatch(
@@ -83,11 +80,12 @@ class DbReaderTask(
                 time = Instant.now() - dbReaderContext.aktorConfig.supressionDelay
             )
             val count = batch
+                .asSequence()
                 .filter { entry -> txContext.delete(entry.id) }
-                .flatMap { entry ->
-                    processAktorMessage(entry)
-
-                }.map { hendelseRecord -> dbReaderContext.receiver(hendelseRecord) }
+                .map { entry ->
+                    supplyAsync( { processAktorMessage(entry) }, executor)
+                }.flatMap { it.get() }
+                .map { hendelseRecord -> dbReaderContext.receiver(hendelseRecord) }
                 .count()
             if (batch.isEmpty()) {
                 applicationContext.logger.info("Ingen meldinger klare for prosessering, venter ${dbReaderContext.aktorConfig.interval}")

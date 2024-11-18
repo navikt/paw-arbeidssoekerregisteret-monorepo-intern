@@ -59,7 +59,7 @@ fun main() {
         keySerializer = LongSerializer::class,
         valueSerializer = HendelseSerializer::class
     )
-    val executor = ThreadPoolExecutor(4, 4, 10L, TimeUnit.SECONDS, LinkedBlockingQueue())
+    val executor = ThreadPoolExecutor(6, 6, 10L, TimeUnit.SECONDS, LinkedBlockingQueue())
     val periodeTask = periodeConsumer.run(executor)
     val aktorTask = aktorConsumer.run(executor)
     val aktorConfig = loadNaisOrLocalConfiguration<AktorConfig>(AktorConfig.configFile)
