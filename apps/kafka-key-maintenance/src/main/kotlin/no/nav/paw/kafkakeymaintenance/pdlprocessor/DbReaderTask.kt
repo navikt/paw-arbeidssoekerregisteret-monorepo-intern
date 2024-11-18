@@ -53,7 +53,7 @@ class DbReaderTask(
                 liveness.setHealthy()
                 val ctxFactory = txContext(applicationContext.aktorConsumerVersion)
                 while (applicationContext.shutdownCalled.get().not()) {
-                    processBatch(executor, ctxFactory)
+                    processBatch(ctxFactory)
                 }
             },
             executor
@@ -72,7 +72,7 @@ class DbReaderTask(
         value = "process_pdl_aktor_v2_batch",
         kind = SpanKind.INTERNAL
     )
-    private fun processBatch(executor: Executor, ctxFactory: Transaction.() -> TransactionContext) {
+    private fun processBatch(ctxFactory: Transaction.() -> TransactionContext) {
         transaction {
             val txContext = ctxFactory()
             val batch = txContext.getBatch(
@@ -80,12 +80,10 @@ class DbReaderTask(
                 time = Instant.now() - dbReaderContext.aktorConfig.supressionDelay
             )
             val count = batch
-                .asSequence()
                 .filter { entry -> txContext.delete(entry.id) }
-                .map { entry ->
-                    supplyAsync( { processAktorMessage(entry) }, executor)
-                }.flatMap { it.get() }
-                .map { hendelseRecord -> dbReaderContext.receiver(hendelseRecord) }
+                .flatMap { entry ->
+                    processAktorMessage(entry)
+                }.map { hendelseRecord -> dbReaderContext.receiver(hendelseRecord) }
                 .count()
             if (batch.isEmpty()) {
                 applicationContext.logger.info("Ingen meldinger klare for prosessering, venter ${dbReaderContext.aktorConfig.interval}")
