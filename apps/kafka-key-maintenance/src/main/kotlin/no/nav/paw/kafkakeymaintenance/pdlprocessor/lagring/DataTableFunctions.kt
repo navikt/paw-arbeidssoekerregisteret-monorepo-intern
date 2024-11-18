@@ -8,7 +8,7 @@ import java.time.Instant
 fun TransactionContext.insertOrUpdate(
     key: String,
     timestamp: Instant,
-    traceparant: ByteArray,
+    traceparent: ByteArray,
     data: ByteArray
 ) {
     if (hasId(key)) {
@@ -17,7 +17,7 @@ fun TransactionContext.insertOrUpdate(
                 (DataTable.version eq consumerVersion) and (DataTable.id eq key)
             }
         ) {
-            it[DataTable.traceparant] = traceparant
+            it[DataTable.traceparent] = traceparent
             it[DataTable.data] = data
         }
     } else {
@@ -25,7 +25,7 @@ fun TransactionContext.insertOrUpdate(
             it[version] = consumerVersion
             it[id] = key
             it[time] = timestamp
-            it[DataTable.traceparant] = traceparant
+            it[DataTable.traceparent] = traceparent
             it[DataTable.data] = data
         }
     }
@@ -40,7 +40,7 @@ fun TransactionContext.getBatch(size: Int, time: Instant): List<Data> {
         .map {
             Data(
                 id = it[DataTable.id],
-                traceparant = it[DataTable.traceparant],
+                traceparant = it[DataTable.traceparent],
                 time = it[DataTable.time],
                 data = it[DataTable.data]
             )

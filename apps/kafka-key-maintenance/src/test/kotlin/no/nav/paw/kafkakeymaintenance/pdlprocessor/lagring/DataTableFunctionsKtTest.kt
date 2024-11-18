@@ -28,7 +28,7 @@ class DataTableFunctionsKtTest : FreeSpec({
                     tcxFactory().insertOrUpdate(
                         key = key,
                         timestamp = timestamp,
-                        traceparant = traceparant,
+                        traceparent = traceparant,
                         data = bytes
                     )
                 }
@@ -55,7 +55,7 @@ class DataTableFunctionsKtTest : FreeSpec({
                     tcxFactory().insertOrUpdate(
                         key = key,
                         timestamp = timestamp,
-                        traceparant = oppdatertTraceparant,
+                        traceparent = oppdatertTraceparant,
                         data = oppdatertBytes
                     )
                 }
@@ -86,7 +86,7 @@ class DataTableFunctionsKtTest : FreeSpec({
                     tcxFactory().insertOrUpdate(
                         key = key,
                         timestamp = timestamp,
-                        traceparant = ALL_ZEROES_TRACEPARENT,
+                        traceparent = ALL_ZEROES_TRACEPARENT,
                         data = bytes
                     )
                 }

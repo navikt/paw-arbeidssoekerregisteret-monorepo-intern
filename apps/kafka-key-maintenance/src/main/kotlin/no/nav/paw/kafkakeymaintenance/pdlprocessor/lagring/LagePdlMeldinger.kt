@@ -3,7 +3,6 @@ package no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring
 import io.opentelemetry.api.trace.Span
 import no.nav.paw.kafkakeymaintenance.kafka.TransactionContext
 import org.apache.kafka.clients.consumer.ConsumerRecord
-import org.postgresql.util.PSQLException
 import org.slf4j.LoggerFactory
 import java.time.Instant
 
@@ -23,7 +22,7 @@ val lagreAktorMelding: TransactionContext.(ConsumerRecord<String, ByteArray>) ->
             insertOrUpdate(
                 record.key(),
                 timestamp = Instant.ofEpochMilli(record.timestamp()),
-                traceparant = traceparent.toByteArray(),
+                traceparent = traceparent.toByteArray(),
                 data = record.value()
             )
         }
