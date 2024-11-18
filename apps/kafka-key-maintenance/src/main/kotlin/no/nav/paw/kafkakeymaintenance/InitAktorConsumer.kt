@@ -5,16 +5,12 @@ import no.nav.paw.config.kafka.KafkaFactory
 import no.nav.paw.config.kafka.plus
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeymaintenance.kafka.*
-import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.lagreAktorMelding
-import org.apache.kafka.clients.consumer.Consumer
+import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.LagreAktorMelding
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
-import org.apache.kafka.common.serialization.Deserializer
-import org.apache.kafka.common.serialization.StringDeserializer
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Duration
-import kotlin.reflect.KClass
 
 fun KafkaFactory.initAktorConsumer(
     healthIndicatorRepository: HealthIndicatorRepository,
@@ -51,7 +47,7 @@ fun KafkaFactory.initAktorConsumer(
         applicationContext = applicationContext,
         contextFactory = { tx -> txContext(aktorConsumerVersion)(tx) },
         consumer = aktorConsumer,
-        function = lagreAktorMelding,
+        function = LagreAktorMelding(),
         pollTimeout = Duration.ofMillis(1000)
     )
 }

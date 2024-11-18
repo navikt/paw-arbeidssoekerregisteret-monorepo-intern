@@ -4,7 +4,7 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.config.kafka.KafkaFactory
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeymaintenance.kafka.*
-import no.nav.paw.kafkakeymaintenance.perioder.lagrePeriode
+import no.nav.paw.kafkakeymaintenance.perioder.LagrePeriode
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.LongDeserializer
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -42,7 +42,7 @@ fun KafkaFactory.initPeriodeConsumer(
         applicationContext = applicationContext,
         contextFactory = { tx -> txContext(periodeConsumerVersion)(tx) },
         consumer = periodeConsumer,
-        function = lagrePeriode,
+        function = LagrePeriode(),
         pollTimeout = Duration.ofMillis(1000)
     )
 }

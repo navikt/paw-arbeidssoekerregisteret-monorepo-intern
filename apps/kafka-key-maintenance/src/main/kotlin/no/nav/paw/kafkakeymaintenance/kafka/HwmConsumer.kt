@@ -2,6 +2,7 @@ package no.nav.paw.kafkakeymaintenance.kafka
 
 import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.Tags
+import io.opentelemetry.api.trace.Span
 import no.nav.paw.health.model.HealthStatus
 import no.nav.paw.health.model.LivenessHealthIndicator
 import no.nav.paw.health.model.ReadinessHealthIndicator
@@ -24,7 +25,7 @@ class HwmConsumer<K, V>(
     private val applicationContext: ApplicationContext,
     private val contextFactory: ApplicationContext.(Transaction) -> TransactionContext,
     private val consumer: KafkaConsumer<K, V>,
-    private val function: TransactionContext.(ConsumerRecord<K, V>) -> Unit,
+    private val function: HwmRunnerProcessor<K, V>,
     private val pollTimeout: Duration = Duration.ofMillis(1000),
 ) {
     private val liveness =
@@ -52,6 +53,7 @@ class HwmConsumer<K, V>(
                                             time = Instant.ofEpochMilli(record.timestamp()),
                                             lastUpdated = Instant.now()
                                         ).also { aboveHwm ->
+                                            Span.current().setAttribute("hwm_result", if (aboveHwm) "above_hwm" else "below_hwm")
                                             applicationContext.meterRegistry.counter(
                                                 "paw_hwm_consumer",
                                                 Tags.of(
@@ -64,7 +66,7 @@ class HwmConsumer<K, V>(
                                         }
                                     }
                                     .forEach { record ->
-                                        txContext.function(record)
+                                        function.process(txContext, record)
                                     }
                             }
                         }
