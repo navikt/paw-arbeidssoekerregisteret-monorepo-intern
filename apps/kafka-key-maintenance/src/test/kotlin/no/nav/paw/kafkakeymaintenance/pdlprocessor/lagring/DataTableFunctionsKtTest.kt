@@ -12,6 +12,8 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
 
+val ALL_ZEROES_TRACEPARENT = "00-00000000000000000000000000000000-0000000000000000-00".toByteArray()
+
 class DataTableFunctionsKtTest : FreeSpec({
     "Verifiser operasjoner mot Data tabellen".config(enabled = false) - {
         initDbContainer("dataTest")
@@ -84,7 +86,7 @@ class DataTableFunctionsKtTest : FreeSpec({
                     tcxFactory().insertOrUpdate(
                         key = key,
                         timestamp = timestamp,
-                        traceparant = null,
+                        traceparant = ALL_ZEROES_TRACEPARENT,
                         data = bytes
                     )
                 }

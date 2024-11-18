@@ -8,7 +8,7 @@ import java.time.Instant
 fun TransactionContext.insertOrUpdate(
     key: String,
     timestamp: Instant,
-    traceparant: ByteArray?,
+    traceparant: ByteArray,
     data: ByteArray
 ) {
     if (hasId(key)) {
