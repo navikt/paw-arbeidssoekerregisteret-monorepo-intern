@@ -81,6 +81,7 @@ class DbReaderTask(
                 time = Instant.now() - dbReaderContext.aktorConfig.supressionDelay
             )
             val count = batch
+                .asSequence()
                 .filter { entry -> txContext.delete(entry.id) }
                 .flatMap { entry ->
                     processAktorMessage(entry)
