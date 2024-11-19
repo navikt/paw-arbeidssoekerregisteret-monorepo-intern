@@ -127,6 +127,7 @@ class DbReaderTask(
             )
         }?.let { spanContext ->
             val spanNoop = Span.wrap(spanContext)
+            Span.current().addLink(spanContext)
             val telemetry = GlobalOpenTelemetry.get()
             val tracer = telemetry.tracerProvider
                 .get("no.nav.paw.kafkakeymaintenance.pdlprocessor.DbReaderTask")
