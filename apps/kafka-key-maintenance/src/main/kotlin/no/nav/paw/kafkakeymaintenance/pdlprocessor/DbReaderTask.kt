@@ -1,6 +1,8 @@
 package no.nav.paw.kafkakeymaintenance.pdlprocessor
 
+import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.trace.*
+import io.opentelemetry.context.Context
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.health.model.HealthStatus
@@ -82,10 +84,14 @@ class DbReaderTask(
             )
             val count = batch
                 .asSequence()
-                .filter { entry -> txContext.delete(entry.id) }
                 .flatMap { entry ->
-                    processAktorMessage(entry)
-                }.map { hendelseRecord -> dbReaderContext.receiver(hendelseRecord) }
+                    initSpan(entry).use {
+                        entry.takeIf { txContext.delete(it.id) }
+                            ?.let(::processAktorMessage)
+                            ?.map { hendelser -> dbReaderContext.receiver(hendelser) }
+                            ?: emptyList()
+                    }
+                }
                 .count()
             if (batch.isEmpty()) {
                 applicationContext.logger.info("Ingen meldinger klare for prosessering, venter ${dbReaderContext.aktorConfig.interval}")
@@ -96,12 +102,7 @@ class DbReaderTask(
         }
     }
 
-    @WithSpan(
-        value = "process_pdl_aktor_v2_record",
-        kind = SpanKind.INTERNAL
-    )
     fun processAktorMessage(entry: Data): List<HendelseRecord<Hendelse>> {
-        linkSpan(entry)
         return procesAktorMelding(
             meterRegistry = applicationContext.meterRegistry,
             hentAlias = dbReaderContext.hentAlias,
@@ -113,17 +114,33 @@ class DbReaderTask(
     }
 
     private val spanHandlerLogger = LoggerFactory.getLogger("spanHandler")
-    private fun linkSpan(entry: Data) {
+    private fun initSpan(entry: Data): ClossableSpan {
         val traceparent = entry.traceparant?.let { String(it, Charsets.UTF_8) }
         spanHandlerLogger.info("traceparent: {}", traceparent)
-        traceparent?.let { tp ->
+        return traceparent?.let { tp ->
             val asArray = tp.split("-")
             SpanContext.createFromRemoteParent(
                 asArray[1],
                 asArray[2],
-                TraceFlags.fromHex(asArray[3], 0),
+                TraceFlags.getSampled(),
                 TraceState.getDefault()
             )
-        }?.also { Span.current().addLink(it) }
+        }?.let { spanContext ->
+            val spanNoop = Span.wrap(spanContext)
+            val telemetry = GlobalOpenTelemetry.get()
+            val tracer = telemetry.tracerProvider
+                .get("no.nav.paw.kafkakeymaintenance.pdlprocessor.DbReaderTask")
+
+            tracer.spanBuilder("process_pdl_aktor_v2_record")
+                .setParent(Context.current().with(spanNoop))
+                .startSpan()
+                .let(::ClossableSpan)
+        } ?: ClossableSpan(null)
+    }
+}
+
+class ClossableSpan(span: Span?) : AutoCloseable, Span by (span ?: Span.getInvalid()) {
+    override fun close() {
+        end()
     }
 }
