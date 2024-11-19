@@ -45,6 +45,7 @@ class HwmConsumer<K, V>(
                             transaction {
                                 val txContext = applicationContext.contextFactory(this)
                                 records
+                                    .asSequence()
                                     .filter { record ->
                                         txContext.updateHwm(
                                             topic = topic(record.topic()),
