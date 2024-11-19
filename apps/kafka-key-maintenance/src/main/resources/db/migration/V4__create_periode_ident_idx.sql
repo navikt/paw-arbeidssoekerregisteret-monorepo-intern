@@ -1,0 +1,1 @@
+CREATE index perioder_identitetsnummer_idx ON perioder(identitetsnummer);
