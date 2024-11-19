@@ -73,6 +73,7 @@ fun startApplication(
     )
     val pdlService = PdlService(pdlClient)
     val kafkaKeysService = KafkaKeysService(
+        prometheusMeterRegistry,
         kafkaKeysRepository,
         pdlService
     )

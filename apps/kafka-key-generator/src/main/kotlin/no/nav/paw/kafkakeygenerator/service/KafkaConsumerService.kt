@@ -14,9 +14,13 @@ import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
 import no.nav.paw.kafkakeygenerator.utils.buildErrorLogger
 import no.nav.paw.kafkakeygenerator.utils.buildLogger
-import no.nav.paw.kafkakeygenerator.utils.countIgnoredEvents
-import no.nav.paw.kafkakeygenerator.utils.countProcessedEvents
-import no.nav.paw.kafkakeygenerator.utils.countReceivedEvents
+import no.nav.paw.kafkakeygenerator.utils.countKafkaFailed
+import no.nav.paw.kafkakeygenerator.utils.countKafkaIgnored
+import no.nav.paw.kafkakeygenerator.utils.countKafkaInserted
+import no.nav.paw.kafkakeygenerator.utils.countKafkaProcessed
+import no.nav.paw.kafkakeygenerator.utils.countKafkaReceived
+import no.nav.paw.kafkakeygenerator.utils.countKafkaUpdated
+import no.nav.paw.kafkakeygenerator.utils.countKafkaVerified
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Audit
 import no.nav.paw.kafkakeygenerator.vo.IdentitetStatus
@@ -45,16 +49,18 @@ class KafkaConsumerService(
             records
                 .map { it.value() }
                 .onEach {
-                    meterRegistry.countReceivedEvents()
+                    meterRegistry.countKafkaReceived()
                     if (it is IdentitetsnummerSammenslaatt) {
-                        meterRegistry.countProcessedEvents()
+                        logger.debug("Prosesserer hendelse av type {}", it.hendelseType)
+                        meterRegistry.countKafkaProcessed()
                     } else {
-                        meterRegistry.countIgnoredEvents()
+                        logger.debug("Ignorerer hendelse av type {}", it.hendelseType)
+                        meterRegistry.countKafkaIgnored()
                     }
                 }
                 .filterIsInstance<IdentitetsnummerSammenslaatt>()
                 .forEach { hendelse ->
-                    logger.info("Mottok hendelse om sammenslåing av identitetsnummer")
+                    logger.info("Mottok hendelse om sammenslåing av Identitetsnummer")
                     val identitetsnummer = hendelse.alleIdentitetsnummer
                         .map { Identitetsnummer(it) } + Identitetsnummer(hendelse.identitetsnummer)
                     val fraArbeidssoekerId = ArbeidssoekerId(hendelse.id)
@@ -70,12 +76,17 @@ class KafkaConsumerService(
         tilArbeidssoekerId: ArbeidssoekerId
     ) {
         transaction(database) {
-            // TODO Dette vil stoppe Kafka Consumer og føre til unhealthy helsestatus for appen. Vil vi det?
             identitetRepository.find(fraArbeidssoekerId).let {
-                if (it == null) throw IllegalStateException("ArbeidssøkerId ikke funnet")
+                if (it == null) {
+                    meterRegistry.countKafkaFailed()
+                    throw IllegalStateException("ArbeidssøkerId ikke funnet")
+                }
             }
             identitetRepository.find(tilArbeidssoekerId).let {
-                if (it == null) throw IllegalStateException("ArbeidssøkerId ikke funnet")
+                if (it == null) {
+                    meterRegistry.countKafkaFailed()
+                    throw IllegalStateException("ArbeidssøkerId ikke funnet")
+                }
             }
 
             identitetsnummerSet.forEach { identitetsnummer ->
@@ -97,9 +108,13 @@ class KafkaConsumerService(
         eksisterendeArbeidssoekerId: ArbeidssoekerId
     ) {
         if (eksisterendeArbeidssoekerId == tilArbeidssoekerId) {
+            logger.info("Identitetsnummer er allerede linket til korrekt ArbeidsøkerId")
+            meterRegistry.countKafkaVerified()
             val audit = Audit(identitetsnummer, IdentitetStatus.VERIFISERT, "Ingen endringer")
             kafkaKeysAuditRepository.insert(audit)
         } else {
+            logger.info("Identitetsnummer oppdateres med annen ArbeidsøkerId")
+            meterRegistry.countKafkaUpdated()
             val count = identitetRepository.update(identitetsnummer, tilArbeidssoekerId)
             if (count != 0) {
                 val audit = Audit(
@@ -119,6 +134,8 @@ class KafkaConsumerService(
         identitetsnummer: Identitetsnummer,
         tilArbeidssoekerId: ArbeidssoekerId
     ) {
+        logger.info("Identitetsnummer opprettes med eksisterende ArbeidsøkerId")
+        meterRegistry.countKafkaInserted()
         val count = identitetRepository.insert(identitetsnummer, tilArbeidssoekerId)
         if (count != 0) {
             val audit = Audit(

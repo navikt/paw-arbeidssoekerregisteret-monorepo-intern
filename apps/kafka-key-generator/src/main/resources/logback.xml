@@ -15,7 +15,6 @@
                 <appender-ref ref="STDOUT_JSON"/>
             </root>
             <logger name="no.nav.paw.pdl.PdlClient" level="WARN"/>
-            <logger name="MergeDetector" level="INFO"/>
         </then>
         <else>
             <root level="INFO">
@@ -23,6 +22,7 @@
             </root>
             <logger name="org.apache.kafka.clients.consumer.ConsumerConfig" level="WARN" />
             <logger name="org.apache.kafka.clients.producer.ProducerConfig" level="WARN" />
+            <logger name="no.nav.paw.kafkakeygenerator" level="DEBUG" />
         </else>
     </if>
 </configuration>

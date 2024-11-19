@@ -7,6 +7,7 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
+import io.micrometer.core.instrument.logging.LoggingMeterRegistry
 import kotlinx.coroutines.runBlocking
 import no.nav.paw.kafkakeygenerator.api.v2.hentLokaleAlias
 import no.nav.paw.kafkakeygenerator.plugin.custom.flywayMigrate
@@ -44,6 +45,7 @@ class KafkaKeysServiceTest : StringSpec({
         })
     ) { "fake token" }
     val kafkaKeysService = KafkaKeysService(
+        meterRegistry = LoggingMeterRegistry(),
         kafkaKeysRepository = KafkaKeysRepository(Database.connect(dataSource)),
         pdlService = PdlService(pdlKlient)
     )
