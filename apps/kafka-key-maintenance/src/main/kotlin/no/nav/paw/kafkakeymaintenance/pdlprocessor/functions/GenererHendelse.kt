@@ -1,7 +1,6 @@
 package no.nav.paw.kafkakeymaintenance.pdlprocessor.functions
 
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerOpphoert
 import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerSammenslaatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
 import no.nav.paw.kafkakeymaintenance.vo.AutomatiskIdOppdatering
@@ -17,28 +16,12 @@ data class HendelseRecord<V: Hendelse>(
 
 fun genererHendelser(metadata: Metadata, idOppdatering: IdOppdatering): List<HendelseRecord<Hendelse>> {
     return when (idOppdatering) {
-        is AutomatiskIdOppdatering -> genererHendelse(metadata, idOppdatering)
+        is AutomatiskIdOppdatering -> {
+            idOppdatering.oppdatertData?.let { genererHendelse(metadata, it) } ?: emptyList()
+        }
+
         is ManuellIdOppdatering -> emptyList()
     }
-}
-
-fun genererHendelse(metadata: Metadata, idOppdatering: AutomatiskIdOppdatering): List<HendelseRecord<Hendelse>> {
-    val identitetsnummerOpphoert = idOppdatering
-        .frieIdentiteter
-        .groupBy { it.arbeidsoekerId }
-        .map { (arbeidsoekerId, alias) ->
-            val identiteter = alias.map { it.identitetsnummer }
-            val hendelse: Hendelse = IdentitetsnummerOpphoert(
-                id = arbeidsoekerId,
-                hendelseId = UUID.randomUUID(),
-                identitetsnummer = identiteter.first(),
-                metadata = metadata,
-                alleIdentitetsnummer = identiteter
-            )
-            HendelseRecord(alias.first().recordKey, hendelse)
-        }
-    val identitetsnummerSammenslaatt = idOppdatering.oppdatertData?.let { genererHendelse(metadata, it) } ?: emptyList()
-    return identitetsnummerSammenslaatt + identitetsnummerOpphoert
 }
 
 fun genererHendelse(metadata: Metadata, idMap: IdMap): List<HendelseRecord<Hendelse>> =
