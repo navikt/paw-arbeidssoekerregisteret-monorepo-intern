@@ -23,7 +23,7 @@ class LagreAktorMelding: HwmRunnerProcessor<String, ByteArray> {
             kotlin.runCatching {
                 txContext.insertOrUpdate(
                     record.key(),
-                    timestamp = Instant.ofEpochMilli(record.timestamp()),
+                    timestamp = Instant.now(),
                     traceparent = traceparent.toByteArray(),
                     data = record.value()
                 )
