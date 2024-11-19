@@ -36,10 +36,6 @@ fun createSpanFromTraceparent(traceparent: String): Context {
 
 private val spanLinkLogger = LoggerFactory.getLogger("span_link_logger")
 
-@WithSpan(
-    value = "process_pdl_aktor_v2_record",
-    kind = SpanKind.INTERNAL
-)
 fun procesAktorMelding(
     meterRegistry: PrometheusMeterRegistry,
     hentAlias: (List<String>) -> List<LokaleAlias>,

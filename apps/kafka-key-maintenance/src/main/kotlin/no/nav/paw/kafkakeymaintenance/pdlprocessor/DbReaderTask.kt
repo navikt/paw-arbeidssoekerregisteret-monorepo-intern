@@ -130,7 +130,6 @@ class DbReaderTask(
             val telemetry = GlobalOpenTelemetry.get()
             val tracer = telemetry.tracerProvider
                 .get("no.nav.paw.kafkakeymaintenance.pdlprocessor.DbReaderTask")
-
             tracer.spanBuilder("process_pdl_aktor_v2_record")
                 .setParent(Context.current().with(spanNoop))
                 .startSpan()
