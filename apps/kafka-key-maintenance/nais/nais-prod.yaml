@@ -44,7 +44,7 @@ spec:
   gcp:
     sqlInstances:
       - type: POSTGRES_16
-        tier: db-custom-4-5840
+        tier: db-custom-4-5120
         databases:
           - name: pawkafkakeysmaintenance
   accessPolicy:
