@@ -8,7 +8,8 @@ import org.slf4j.LoggerFactory
 import java.time.Instant
 
 private val lagreAktorLogger = LoggerFactory.getLogger("lagreAktorMelding")
-class LagreAktorMelding: HwmRunnerProcessor<String, ByteArray> {
+
+class LagreAktorMelding : HwmRunnerProcessor<String, ByteArray> {
     override fun process(txContext: TransactionContext, record: ConsumerRecord<String, ByteArray>) {
         if (record.value() == null || record.value().isEmpty()) {
             lagreAktorLogger.info(
@@ -20,14 +21,12 @@ class LagreAktorMelding: HwmRunnerProcessor<String, ByteArray> {
             val traceparent = Span.current().spanContext.let { ctx ->
                 "00-${ctx.traceId}-${ctx.spanId}-${ctx.traceFlags.asHex()}"
             }
-            kotlin.runCatching {
-                txContext.insertOrUpdate(
-                    record.key(),
-                    timestamp = Instant.now(),
-                    traceparent = traceparent.toByteArray(),
-                    data = record.value()
-                )
-            }
+            txContext.insertOrUpdate(
+                record.key(),
+                timestamp = Instant.now(),
+                traceparent = traceparent.toByteArray(),
+                data = record.value()
+            )
         }
     }
 }
