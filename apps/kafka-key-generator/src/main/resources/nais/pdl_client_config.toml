@@ -1,0 +1,3 @@
+url = "${PDL_URL}"
+scope = "${PDL_SCOPE}"
+tema = "${PDL_TEMA}"

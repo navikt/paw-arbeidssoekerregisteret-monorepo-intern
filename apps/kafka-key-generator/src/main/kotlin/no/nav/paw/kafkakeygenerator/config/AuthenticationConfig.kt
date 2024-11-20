@@ -1,12 +1,13 @@
 package no.nav.paw.kafkakeygenerator.config
 
+const val AUTHENTICATION_CONFIG = "authentication_config.toml"
 
-data class Autentiseringskonfigurasjon(
-    val providers: List<Autentisering>,
+data class AuthenticationConfig(
+    val providers: List<AuthenticationProviderConfig>,
     val kafkaKeyApiAuthProvider: String
 )
 
-data class Autentisering(
+data class AuthenticationProviderConfig(
     val name: String,
     val discoveryUrl: String,
     val acceptedAudience: List<String>,

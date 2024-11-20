@@ -1,0 +1,3 @@
+jdbcUrl = "${NAIS_DATABASE_PAW_KAFKA_KEY_GENERATOR_PAWKAFKAKEYS_JDBC_URL}"
+driverClassName = "org.postgresql.Driver"
+autoCommit = false

@@ -1,0 +1,2 @@
+clientId = "paw-kafka-key-generator"
+tokenEndpointUrl = "http://localhost:8081/azure/token"

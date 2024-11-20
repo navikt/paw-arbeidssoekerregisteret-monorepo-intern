@@ -2,10 +2,14 @@ package no.nav.paw.kafkakeygenerator
 
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import no.nav.paw.kafkakeygenerator.config.Autentiseringskonfigurasjon
-import no.nav.paw.kafkakeygenerator.config.DatabaseKonfigurasjon
-import no.nav.paw.kafkakeygenerator.config.dataSource
-import no.nav.paw.kafkakeygenerator.config.lastKonfigurasjon
+import no.nav.paw.client.config.AZURE_M2M_CONFIG
+import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
+import no.nav.paw.health.repository.HealthIndicatorRepository
+import no.nav.paw.kafkakeygenerator.config.AUTHENTICATION_CONFIG
+import no.nav.paw.kafkakeygenerator.config.AuthenticationConfig
+import no.nav.paw.kafkakeygenerator.config.DATABASE_CONFIG
+import no.nav.paw.kafkakeygenerator.config.PDL_CLIENT_CONFIG
+import no.nav.paw.kafkakeygenerator.database.createDataSource
 import no.nav.paw.kafkakeygenerator.database.flywayMigrate
 import no.nav.paw.kafkakeygenerator.ktor.initKtorServer
 import no.nav.paw.kafkakeygenerator.merge.MergeDetector
@@ -15,48 +19,43 @@ import no.nav.paw.pdl.PdlClient
 import org.jetbrains.exposed.sql.Database
 import javax.sql.DataSource
 
-const val serverAuthentiseringKonfigFil = "ktor_server_autentisering.toml"
-const val postgresKonfigFil = "postgres.toml"
-const val pdlKlientKonfigFil = "pdl_klient.toml"
-const val azureTokenKlientKonfigFil = "azure_token_klient.toml"
-
-
 fun main() {
-    val dataSource = lastKonfigurasjon<DatabaseKonfigurasjon>(postgresKonfigFil)
-        .dataSource()
+    val dataSource = createDataSource(loadNaisOrLocalConfiguration(DATABASE_CONFIG))
     val pdlKlient = opprettPdlKlient(
-        lastKonfigurasjon(pdlKlientKonfigFil),
-        lastKonfigurasjon(azureTokenKlientKonfigFil)
+        loadNaisOrLocalConfiguration(PDL_CLIENT_CONFIG),
+        loadNaisOrLocalConfiguration(AZURE_M2M_CONFIG)
     )
     startApplikasjon(
-        lastKonfigurasjon(serverAuthentiseringKonfigFil),
+        loadNaisOrLocalConfiguration(AUTHENTICATION_CONFIG),
         dataSource,
         pdlKlient
     )
 }
 
 fun startApplikasjon(
-    autentiseringKonfig: Autentiseringskonfigurasjon,
+    autentiseringKonfigurasjon: AuthenticationConfig,
     dataSource: DataSource,
     pdlKlient: PdlClient
 ) {
     val database = Database.connect(dataSource)
+    val healthIndicatorRepository = HealthIndicatorRepository()
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     flywayMigrate(dataSource)
-    val kafkaKeysDbTjeneste = KafkaKeys(database)
+    val kafkaKeys = KafkaKeys(database)
     val pdlIdTjeneste = PdlIdentitesTjeneste(pdlKlient)
     val applikasjon = Applikasjon(
-        kafkaKeysDbTjeneste,
+        kafkaKeys,
         pdlIdTjeneste
     )
     val mergeDetector = MergeDetector(
         pdlIdTjeneste,
-        kafkaKeysDbTjeneste
+        kafkaKeys
     )
     initKtorServer(
-        autentiseringKonfig,
-        prometheusMeterRegistry,
-        applikasjon,
-        mergeDetector
+        autentiseringKonfigurasjon = autentiseringKonfigurasjon,
+        prometheusMeterRegistry = prometheusMeterRegistry,
+        healthIndicatorRepository = healthIndicatorRepository,
+        applikasjon = applikasjon,
+        mergeDetector = mergeDetector
     ).start(wait = true)
 }

@@ -9,7 +9,7 @@ import io.ktor.util.pipeline.*
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.kafkakeygenerator.*
 import no.nav.paw.kafkakeygenerator.api.recordkey.functions.recordKey
-import no.nav.paw.kafkakeygenerator.config.Autentiseringskonfigurasjon
+import no.nav.paw.kafkakeygenerator.config.AuthenticationConfig
 import no.nav.paw.kafkakeygenerator.vo.CallId
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import org.slf4j.Logger
@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory
 import java.util.*
 
 fun Routing.configureRecordKeyApi(
-    autentiseringKonfigurasjon: Autentiseringskonfigurasjon,
+    autentiseringKonfigurasjon: AuthenticationConfig,
     applikasjon: Applikasjon
 ) {
     val logger = LoggerFactory.getLogger("record-key-api")

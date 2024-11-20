@@ -2,6 +2,6 @@ kafkaKeyApiAuthProvider = "azure"
 
 [[providers]]
 name = "azure"
-discoveryUrl = "http://localhost:8081/default/.well-known/openid-configuration"
+discoveryUrl = "http://localhost:8081/azure/.well-known/openid-configuration"
 acceptedAudience = ["paw-kafka-key-generator"]
 requiredClaims = ["NAVident"]

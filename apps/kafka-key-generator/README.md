@@ -31,35 +31,29 @@ Lokalt kjører løsning mot statisk PDL data som innehlder 2 personer. Data ligg
 Under er det satt opp et par ting som må på plass for at applikasjonen og databasen skal fungere. 
 
 
-### JDK 17
+### JDK 21
 
-JDK 17 må være installert. Enkleste måten å installere riktig versjon av Java er ved å
+JDK 21 må være installert. Enkleste måten å installere riktig versjon av Java er ved å
 bruke [sdkman](https://sdkman.io/install).
 
 ### Docker
 
-`docker` og `docker-compose` må være installert. For å
-installere disse kan du følge oppskriften på [Dockers](https://www.docker.com/) offisielle side. For installering på Mac
-trykk [her](https://docs.docker.com/desktop/mac/install/) eller
-trykk [her](https://docs.docker.com/engine/install/ubuntu/) for Ubuntu.
+`docker` og `docker-compose` må være installert.
 
-Man må også installere `docker-compose` som en separat greie
-for [Ubuntu](https://docs.docker.com/compose/install/#install-compose-on-linux-systems). For Mac følger dette med når
-man installerer Docker Desktop.
-
-Kjør opp docker containerne med
-
+Start PostgreSQL database
 ```sh
-docker-compose up -d
+docker compose -f ../../docker/postgres/docker-compose.yaml up -d
 ```
 
-Se at alle kjører med
-
+Start Kafka broker
 ```sh
-docker ps
+docker compose -f ../../docker/kafka/docker-compose.yaml up -d
 ```
 
-To containere skal kjøre: postgres og mock-oauth2-server.
+Start mocks
+```sh
+docker compose -f ../../docker/mocks/docker-compose.yaml up -d
+```
 
 ### App
 
@@ -110,7 +104,7 @@ git branch -m dev/<opprinnlig-branch>
 
 # Henvendelser
 
-Spørsmål knyttet til koden eller prosjektet kan stilles via issues her på github.
+Spørsmål knyttet til koden eller prosjektet kan stilles via issues her på GitHub.
 
 ## For NAV-ansatte
 

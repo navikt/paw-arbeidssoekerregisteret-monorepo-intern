@@ -13,7 +13,11 @@ val jvmMajorVersion: String by project
 dependencies {
     // PAW
     implementation(project(":lib:hoplite-config"))
+    implementation(project(":lib:error-handling"))
+    implementation(project(":lib:http-client-utils"))
     implementation(project(":lib:pdl-client"))
+    implementation(project(":lib:kafka"))
+    implementation(project(":domain:interne-hendelser"))
 
     // NAV
     implementation(libs.nav.common.log)
@@ -39,7 +43,6 @@ dependencies {
     implementation(libs.ktor.client.contentNegotiation)
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.cio)
-    implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.logging)
 
     // Micrometer & OTEL

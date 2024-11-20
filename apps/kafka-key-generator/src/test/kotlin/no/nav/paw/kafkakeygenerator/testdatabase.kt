@@ -1,21 +1,21 @@
 package no.nav.paw.kafkakeygenerator
 
-import no.nav.paw.kafkakeygenerator.config.DatabaseKonfigurasjon
-import no.nav.paw.kafkakeygenerator.config.dataSource
+import no.nav.paw.kafkakeygenerator.config.DatabaseConfig
+import no.nav.paw.kafkakeygenerator.database.createDataSource
 import no.nav.paw.kafkakeygenerator.database.flywayMigrate
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import javax.sql.DataSource
 
 fun initTestDatabase(): DataSource {
-    val postgres = postgreSQLContainer()
-    val dataSource = DatabaseKonfigurasjon(
-        host = postgres.host,
-        port = postgres.firstMappedPort,
-        brukernavn = postgres.username,
-        passord = postgres.password,
-        databasenavn = postgres.databaseName
-    ).dataSource()
+    val config = postgreSQLContainer().let {
+        DatabaseConfig(
+            jdbcUrl = "jdbc:postgresql://${it.host}:${it.firstMappedPort}/${it.databaseName}?user=${it.username}&password=${it.password}",
+            driverClassName = "org.postgresql.Driver",
+            autoCommit = false
+        )
+    }
+    val dataSource = createDataSource(config)
     flywayMigrate(dataSource)
     return dataSource
 }
