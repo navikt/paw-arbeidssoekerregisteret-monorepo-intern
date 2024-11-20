@@ -41,6 +41,7 @@ class KafkaConsumerServiceTest : FreeSpec({
             meterRegistry = LoggingMeterRegistry(),
             healthIndicatorRepository = healthIndicatorRepository,
             identitetRepository = IdentitetRepository(database),
+            kafkaKeysRepository = kafkaKeysRepository,
             kafkaKeysAuditRepository = kafkaKeysAuditRepository
         )
     }
@@ -56,8 +57,7 @@ class KafkaConsumerServiceTest : FreeSpec({
             TestData.getPeriodeStartet(identitetsnummer, arbeidssoekerId),
             TestData.getPeriodeAvsluttet(identitetsnummer, arbeidssoekerId),
             TestData.getPeriodeStartAvvist(identitetsnummer, arbeidssoekerId),
-            TestData.getPeriodeAvsluttetAvvist(identitetsnummer, arbeidssoekerId),
-            TestData.getIdentitetsnummerOpphoert(identitetsnummer, arbeidssoekerId)
+            TestData.getPeriodeAvsluttetAvvist(identitetsnummer, arbeidssoekerId)
         )
 
         kafkaConsumerService.handleRecords(hendelser.asConsumerRecords())

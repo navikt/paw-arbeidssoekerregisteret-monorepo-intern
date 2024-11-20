@@ -21,7 +21,6 @@ import no.nav.paw.kafkakeygenerator.config.KAFKA_TOPOLOGY_CONFIG
 import no.nav.paw.kafkakeygenerator.config.KafkaTopologyConfig
 import no.nav.paw.kafkakeygenerator.config.PDL_CLIENT_CONFIG
 import no.nav.paw.kafkakeygenerator.config.PdlClientConfig
-import no.nav.paw.kafkakeygenerator.utils.createDataSource
 import no.nav.paw.kafkakeygenerator.merge.MergeDetector
 import no.nav.paw.kafkakeygenerator.plugin.configSerialization
 import no.nav.paw.kafkakeygenerator.plugin.configureAuthentication
@@ -37,6 +36,7 @@ import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
 import no.nav.paw.kafkakeygenerator.service.KafkaConsumerService
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
 import no.nav.paw.kafkakeygenerator.service.PdlService
+import no.nav.paw.kafkakeygenerator.utils.createDataSource
 import no.nav.paw.kafkakeygenerator.utils.createPdlClient
 import no.nav.paw.pdl.PdlClient
 import org.apache.kafka.common.serialization.LongDeserializer
@@ -69,6 +69,7 @@ fun startApplication(
         healthIndicatorRepository,
         prometheusMeterRegistry,
         identitetRepository,
+        kafkaKeysRepository,
         kafkaKeysAuditRepository
     )
     val pdlService = PdlService(pdlClient)

@@ -12,8 +12,10 @@ import no.nav.paw.health.model.ReadinessHealthIndicator
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
+import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
 import no.nav.paw.kafkakeygenerator.utils.buildErrorLogger
 import no.nav.paw.kafkakeygenerator.utils.buildLogger
+import no.nav.paw.kafkakeygenerator.utils.countKafkaFailed
 import no.nav.paw.kafkakeygenerator.utils.countKafkaIgnored
 import no.nav.paw.kafkakeygenerator.utils.countKafkaInserted
 import no.nav.paw.kafkakeygenerator.utils.countKafkaProcessed
@@ -33,6 +35,7 @@ class KafkaConsumerService(
     private val healthIndicatorRepository: HealthIndicatorRepository,
     private val meterRegistry: MeterRegistry,
     private val identitetRepository: IdentitetRepository,
+    private val kafkaKeysRepository: KafkaKeysRepository,
     private val kafkaKeysAuditRepository: KafkaKeysAuditRepository,
 ) {
     private val logger = buildLogger
@@ -82,6 +85,20 @@ class KafkaConsumerService(
         fraArbeidssoekerId: ArbeidssoekerId,
         tilArbeidssoekerId: ArbeidssoekerId
     ) {
+        kafkaKeysRepository.find(fraArbeidssoekerId).let { arbeidssoekerId ->
+            if (arbeidssoekerId == null) {
+                meterRegistry.countKafkaFailed()
+                throw IllegalStateException("ArbeidssøkerId ikke funnet")
+            }
+        }
+
+        kafkaKeysRepository.find(tilArbeidssoekerId).let { arbeidssoekerId ->
+            if (arbeidssoekerId == null) {
+                meterRegistry.countKafkaFailed()
+                throw IllegalStateException("ArbeidssøkerId ikke funnet")
+            }
+        }
+
         transaction(database) {
             identitetsnummerSet.forEach { identitetsnummer ->
                 val kafkaKey = identitetRepository.find(identitetsnummer)

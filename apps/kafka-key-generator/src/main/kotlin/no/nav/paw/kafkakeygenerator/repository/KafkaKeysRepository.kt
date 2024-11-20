@@ -22,6 +22,13 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 class KafkaKeysRepository(private val database: Database) {
 
+    fun find(arbeidssoekerId: ArbeidssoekerId): ArbeidssoekerId? =
+        transaction(database) {
+            KafkaKeysTabell.selectAll()
+                .where { KafkaKeysTabell.id eq arbeidssoekerId.value }
+                .singleOrNull()?.let { ArbeidssoekerId(it[KafkaKeysTabell.id]) }
+        }
+
     fun hentSisteArbeidssoekerId(): Either<Failure, ArbeidssoekerId> =
         attempt {
             transaction(database) {

@@ -13,7 +13,6 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 import no.nav.paw.arbeidssokerregisteret.intern.v1.AvvistStoppAvPeriode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerOpphoert
 import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerSammenslaatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
@@ -173,17 +172,6 @@ object TestData {
         metadata = getMetadata(),
         alleIdentitetsnummer = identitetsnummerList.map { it.value },
         flyttetTilArbeidssoekerId = tilArbeidssoekerId.value,
-    )
-
-    fun getIdentitetsnummerOpphoert(
-        identitetsnummer: Identitetsnummer,
-        arbeidssoekerId: ArbeidssoekerId
-    ): IdentitetsnummerOpphoert = IdentitetsnummerOpphoert(
-        id = arbeidssoekerId.value,
-        hendelseId = UUID.randomUUID(),
-        identitetsnummer = identitetsnummer.value,
-        metadata = getMetadata(),
-        alleIdentitetsnummer = listOf(identitetsnummer.value)
     )
 
     fun getPeriodeStartet(

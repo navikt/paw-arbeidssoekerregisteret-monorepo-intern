@@ -21,15 +21,6 @@ class IdentitetRepository(
             }
     }
 
-    fun find(arbeidssoekerId: ArbeidssoekerId): Pair<Identitetsnummer, ArbeidssoekerId>? = transaction(database) {
-        IdentitetTabell.selectAll()
-            .where { IdentitetTabell.kafkaKey eq arbeidssoekerId.value }
-            .singleOrNull()
-            ?.let {
-                Identitetsnummer(it[IdentitetTabell.identitetsnummer]) to ArbeidssoekerId(it[IdentitetTabell.kafkaKey])
-            }
-    }
-
     fun insert(
         ident: Identitetsnummer,
         arbeidssoekerId: ArbeidssoekerId
