@@ -93,7 +93,7 @@ jib {
     from.image = "$baseImage:$jvmMajorVersion"
     to.image = "${image ?: project.name}:${project.version}"
     container {
-        jvmFlags = listOf("-XX:ActiveProcessorCount=4", "-XX:+UseZGC", "-XX:+ZGenerational")
+        jvmFlags = listOf("-XX:ActiveProcessorCount=8", "-XX:+UseZGC", "-XX:+ZGenerational")
         environment = mapOf(
             "IMAGE_WITH_VERSION" to "${image ?: project.name}:${project.version}"
         )
