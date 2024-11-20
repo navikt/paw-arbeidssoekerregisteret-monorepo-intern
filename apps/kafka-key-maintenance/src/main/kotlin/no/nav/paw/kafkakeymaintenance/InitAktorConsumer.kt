@@ -26,7 +26,7 @@ fun KafkaFactory.initAktorConsumer(
                     ConsumerConfig.CLIENT_ID_CONFIG to "kafka-key-maintenance-aktor-client-v${applicationContext.periodeConsumerVersion}",
                     ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to KafkaAvroDeserializer::class.java,
                     ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to ByteArrayDeserializer::class.java,
-                    ConsumerConfig.MAX_POLL_RECORDS_CONFIG to 1000
+                    ConsumerConfig.MAX_POLL_RECORDS_CONFIG to 2000
                 )
     )
     val reblancingListener = HwmRebalanceListener(
