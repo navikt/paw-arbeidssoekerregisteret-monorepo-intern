@@ -25,8 +25,8 @@ fun MeterRegistry.countRestApiReceived() {
     genericCounter("rest_api", "database", "received")
 }
 
-fun MeterRegistry.countRestApiFetch() {
-    genericCounter("rest_api", "database", "fetch")
+fun MeterRegistry.countRestApiFetched() {
+    genericCounter("rest_api", "database", "fetched")
 }
 
 fun MeterRegistry.countRestApiInserted() {

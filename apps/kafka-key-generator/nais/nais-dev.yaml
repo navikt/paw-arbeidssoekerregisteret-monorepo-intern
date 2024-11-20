@@ -44,6 +44,8 @@ spec:
     autoInstrumentation:
       enabled: true
       runtime: java
+  kafka:
+      pool: nav-dev
   gcp:
     sqlInstances:
       - type: POSTGRES_14

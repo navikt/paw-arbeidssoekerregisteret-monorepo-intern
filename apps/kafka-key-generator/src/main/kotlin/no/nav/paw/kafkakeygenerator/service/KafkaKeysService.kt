@@ -12,7 +12,7 @@ import no.nav.paw.kafkakeygenerator.mergedetector.vo.MergeDetected
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
 import no.nav.paw.kafkakeygenerator.utils.buildLogger
 import no.nav.paw.kafkakeygenerator.utils.countRestApiFailed
-import no.nav.paw.kafkakeygenerator.utils.countRestApiFetch
+import no.nav.paw.kafkakeygenerator.utils.countRestApiFetched
 import no.nav.paw.kafkakeygenerator.utils.countRestApiInserted
 import no.nav.paw.kafkakeygenerator.utils.countRestApiReceived
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
@@ -132,7 +132,7 @@ class KafkaKeysService(
     @WithSpan
     suspend fun hent(callId: CallId, identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> {
         logger.debug("Henter identer fra database")
-        meterRegistry.countRestApiFetch()
+        meterRegistry.countRestApiFetched()
         return kafkaKeysRepository.hent(identitet)
             .suspendingRecover(DB_NOT_FOUND) {
                 sjekkMotAliaser(callId, identitet)
