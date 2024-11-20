@@ -15,6 +15,11 @@ object TilgangsRegler: Regler {
             AuthOpplysning.IkkeAnsatt,
             vedTreff = ::skalAvises
         ),
+        IkkeAnsattOgFeilretting(
+            DomeneOpplysning.ErFeilretting,
+            AuthOpplysning.IkkeAnsatt,
+            vedTreff = ::skalAvises
+        ),
         EndreEgenBruker(
             AuthOpplysning.SammeSomInnloggetBruker,
             AuthOpplysning.IkkeAnsatt,
@@ -56,6 +61,10 @@ data object EndreEgenBruker : AuthRegelId {
 
 data object IkkeAnsattOgForhaandsgodkjentAvAnsatt : AuthRegelId {
     override val beskrivelse: String = "Ikke ansatt har satt forhaandsgodkjenningAvVeileder"
+}
+
+data object IkkeAnsattOgFeilretting : AuthRegelId {
+    override val beskrivelse: String = "Ikke ansatt har satt feilretting"
 }
 
 data object AnsattHarTilgangTilBruker : AuthRegelId {

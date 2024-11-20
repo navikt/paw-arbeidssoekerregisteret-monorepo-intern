@@ -2,7 +2,6 @@ package no.nav.paw.arbeidssokerregisteret.application
 
 import arrow.core.Either
 import arrow.core.NonEmptyList
-import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -40,10 +39,24 @@ class StartStoppRequestHandler(
         }
 
     @WithSpan
-    suspend fun avsluttArbeidssokerperiode(requestScope: RequestScope, identitetsnummer: Identitetsnummer): Either<NonEmptyList<Problem>, GrunnlagForGodkjenning> {
+    suspend fun avsluttArbeidssokerperiode(
+        requestScope: RequestScope,
+        identitetsnummer: Identitetsnummer,
+        feilretting: Feilretting?
+    ): Either<NonEmptyList<Problem>, GrunnlagForGodkjenning> {
         val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
-        val tilgangskontrollResultat = requestValidator.validerTilgang(requestScope, identitetsnummer)
-        val hendelse = stoppResultatSomHendelse(requestScope, id, identitetsnummer, tilgangskontrollResultat)
+        val tilgangskontrollResultat = requestValidator.validerTilgang(
+            requestScope = requestScope,
+            identitetsnummer = identitetsnummer,
+            feilretting = feilretting
+        )
+        val hendelse = stoppResultatSomHendelse(
+            requestScope = requestScope,
+            id = id,
+            identitetsnummer = identitetsnummer,
+            resultat = tilgangskontrollResultat,
+            feilretting = feilretting
+        )
         val record = ProducerRecord(
             hendelseTopic,
             key,

@@ -6,7 +6,7 @@ import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV2Arbeidssoke
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV2ArbeidssokerPeriodePutRequest.PeriodeTilstand
 import no.nav.paw.arbeidssokerregisteret.api.extensions.getId
 import no.nav.paw.arbeidssokerregisteret.application.StartStoppRequestHandler
-import no.nav.paw.arbeidssokerregisteret.requestHandlers
+import no.nav.paw.arbeidssokerregisteret.application.feilretting
 import no.nav.paw.arbeidssokerregisteret.requestScope
 import no.nav.paw.arbeidssokerregisteret.utils.logger
 
@@ -42,7 +42,8 @@ fun Route.arbeidssokerRoutesV2(
                     PeriodeTilstand.STOPPET ->
                         startStoppRequestHandler.avsluttArbeidssokerperiode(
                             requestScope = requestScope(),
-                            identitetsnummer = startStoppRequest.getId()
+                            identitetsnummer = startStoppRequest.getId(),
+                            feilretting = feilretting(startStoppRequest.feilretting)
                         )
                 }
                 logger.debug("Registreringsresultat: {}", resultat)

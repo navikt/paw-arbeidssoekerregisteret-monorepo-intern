@@ -16,6 +16,11 @@ sealed interface DomeneOpplysning: Opplysning {
         override val beskrivelse = "Registrering er forhåndsgodkjent av NAV-ansatt"
     }
 
+    data object ErFeilretting: DomeneOpplysning, Effect.Neutral {
+        override val id = "FEILRETTING"
+        override val beskrivelse = "Operasjonen er en feilretting"
+    }
+
     data object ErOver18Aar : DomeneOpplysning, Effect.Positive {
         override val id = "ER_OVER_18_AAR"
         override val beskrivelse = "Personen start/stopp av periode utføres på er over 18 år"

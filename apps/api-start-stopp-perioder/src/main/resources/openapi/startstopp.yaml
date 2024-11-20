@@ -113,6 +113,9 @@ paths:
                   enum:
                     - "STARTET"
                     - "STOPPET"
+                feilretting:
+                  description: "Feilretting kan kun benyttes når innloget bruker er ansatt"
+                  $ref: "#/components/schemas/Feilretting"
               required:
                 - "identitetsnummer"
                 - "periodeTilstand"
@@ -150,6 +153,23 @@ paths:
                 type: "object"
 components:
   schemas:
+    Feilretting:
+      type: "object"
+      required:
+        - "feilType"
+      properties:
+        feilType:
+          type: "string"
+          enum:
+            - "FeilTidspunkt"
+            - "Feilregistrering"
+        melding:
+          description: "Valgfri kommentar til feilretting"
+          type: "string"
+        tidspunkt:
+          description: "Tidspunkt som må brukes ved feilType=FeilTidspunkt"
+          type: "string"
+          format: "date-time"
     identitetsnummer:
       type: "string"
       pattern: "^[0-9]{11}$"
@@ -233,6 +253,7 @@ components:
         - "ER_NORSK_STATSBORGER"
         - "HAR_REGISTRERT_ADRESSE_I_EU_EOES"
         - "UKJENT_OPPLYSNING"
+        - "ER_FEILRETTING"
     ApiRegelId:
       type: "string"
       enum:

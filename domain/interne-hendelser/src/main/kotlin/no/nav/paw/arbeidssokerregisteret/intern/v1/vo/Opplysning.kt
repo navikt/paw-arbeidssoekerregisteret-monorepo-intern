@@ -38,6 +38,7 @@ enum class Opplysning {
     ER_EU_EOES_STATSBORGER,
     ER_GBR_STATSBORGER,
     ER_NORSK_STATSBORGER,
+    ER_FEILRETTING,
     @JsonEnumDefaultValue
     UKJENT_OPPLYSNING
 }

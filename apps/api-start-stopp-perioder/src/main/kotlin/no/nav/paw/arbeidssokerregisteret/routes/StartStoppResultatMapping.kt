@@ -79,6 +79,7 @@ fun opplysningTilApiOpplysning(opplysning: Opplysning): ApiOpplysning =
             DomeneOpplysning.UkjentStatusForOppholdstillatelse -> ApiOpplysning.UKJENT_STATUS_FOR_OPPHOLDSTILLATELSE
             DomeneOpplysning.ErNorskStatsborger -> ApiOpplysning.ER_NORSK_STATSBORGER
             DomeneOpplysning.HarRegistrertAdresseIEuEoes -> ApiOpplysning.HAR_REGISTRERT_ADRESSE_I_EU_EOES
+            DomeneOpplysning.ErFeilretting -> ApiOpplysning.ER_FEILRETTING
         }
 
         is AuthOpplysning -> when (opplysning) {
@@ -128,6 +129,7 @@ fun AuthRegelId.httpCode(): HttpStatusCode = when (this) {
     EndreForAnnenBruker -> HttpStatusCode.Forbidden
     IkkeAnsattOgForhaandsgodkjentAvAnsatt -> HttpStatusCode.BadRequest
     IkkeTilgang -> HttpStatusCode.Forbidden
+    IkkeAnsattOgFeilretting -> HttpStatusCode.Forbidden
 }
 
 fun DomeneRegelId.httpCode(): HttpStatusCode = when (this) {

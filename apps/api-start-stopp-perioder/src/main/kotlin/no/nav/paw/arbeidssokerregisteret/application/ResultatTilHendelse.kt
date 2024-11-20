@@ -20,7 +20,13 @@ import java.util.*
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning as HendelseOpplysning
 
 
-fun stoppResultatSomHendelse(requestScope: RequestScope, id: Long, identitetsnummer: Identitetsnummer, resultat: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>): Hendelse =
+fun stoppResultatSomHendelse(
+    requestScope: RequestScope,
+    id: Long,
+    identitetsnummer: Identitetsnummer,
+    resultat: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>,
+    feilretting: Feilretting?
+): Hendelse =
     when (resultat) {
         is Either.Left -> AvvistStoppAvPeriode(
             id = id,
@@ -39,7 +45,8 @@ fun stoppResultatSomHendelse(requestScope: RequestScope, id: Long, identitetsnum
             identitetsnummer = identitetsnummer.verdi,
             metadata = hendelseMetadata(
                 requestScope = requestScope,
-                aarsak = "Stopp av periode"
+                aarsak = feilretting.aarsak ?: "Stopp av periode",
+                tidspunktFraKilde = feilretting.tidspunktFraKilde
             ),
             opplysninger = resultat.value.opplysning.map(::mapToHendelseOpplysning).toSet(),
         )
@@ -100,11 +107,16 @@ fun opplysningerHendelse(
     )
 )
 
-fun hendelseMetadata(requestScope: RequestScope, aarsak: String): Metadata = Metadata(
+fun hendelseMetadata(
+    requestScope: RequestScope,
+    aarsak: String,
+    tidspunktFraKilde: TidspunktFraKilde? = null
+): Metadata = Metadata(
     tidspunkt = Instant.now(),
     utfoertAv = requestScope.brukerFraClaims(),
     kilde = ApplicationInfo.id,
-    aarsak = aarsak
+    aarsak = aarsak,
+    tidspunktFraKilde = tidspunktFraKilde
 )
 
 fun RequestScope.brukerFraClaims(): Bruker {

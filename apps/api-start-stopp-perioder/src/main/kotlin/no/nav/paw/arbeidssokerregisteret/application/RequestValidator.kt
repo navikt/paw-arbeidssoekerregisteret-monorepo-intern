@@ -30,15 +30,15 @@ class RequestValidator(
     fun validerTilgang(
         requestScope: RequestScope,
         identitetsnummer: Identitetsnummer,
-        erForhaandsGodkjentAvVeileder: Boolean = false
+        erForhaandsGodkjentAvVeileder: Boolean = false,
+        feilretting: Feilretting? = null
     ): Either<NonEmptyList<Problem>, GrunnlagForGodkjenning> {
         val autentiseringsFakta = requestScope.tokenXPidFakta(identitetsnummer) +
                 sjekkOmNavAnsattHarTilgang(requestScope, identitetsnummer) +
-                if (erForhaandsGodkjentAvVeileder) {
-                    setOf(DomeneOpplysning.ErForhaandsgodkjent)
-                } else {
-                    emptySet()
-                }
+                listOfNotNull(
+                    if (erForhaandsGodkjentAvVeileder) DomeneOpplysning.ErForhaandsgodkjent else null,
+                    feilretting?.let { DomeneOpplysning.ErFeilretting }
+                )
         return TilgangsRegler.evaluer(autentiseringsFakta)
     }
 
