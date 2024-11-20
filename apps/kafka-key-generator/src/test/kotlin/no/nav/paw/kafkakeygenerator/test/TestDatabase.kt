@@ -1,7 +1,7 @@
 package no.nav.paw.kafkakeygenerator.test
 
 import no.nav.paw.kafkakeygenerator.config.DatabaseConfig
-import no.nav.paw.kafkakeygenerator.database.createDataSource
+import no.nav.paw.kafkakeygenerator.utils.createDataSource
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import javax.sql.DataSource
@@ -9,7 +9,11 @@ import javax.sql.DataSource
 fun initTestDatabase(): DataSource {
     val config = postgreSQLContainer().let {
         DatabaseConfig(
-            jdbcUrl = "jdbc:postgresql://${it.host}:${it.firstMappedPort}/${it.databaseName}?user=${it.username}&password=${it.password}",
+            host = it.host,
+            port = it.firstMappedPort,
+            database = it.databaseName,
+            username = it.username,
+            password = it.password,
             driverClassName = "org.postgresql.Driver",
             autoCommit = false
         )

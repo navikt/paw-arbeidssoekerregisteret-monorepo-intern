@@ -1,4 +1,4 @@
-package no.nav.paw.kafkakeygenerator.database
+package no.nav.paw.kafkakeygenerator.utils
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource

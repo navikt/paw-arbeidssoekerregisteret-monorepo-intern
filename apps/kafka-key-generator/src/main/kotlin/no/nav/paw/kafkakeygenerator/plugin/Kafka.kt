@@ -7,8 +7,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 
 fun <K, V> Application.configureKafka(
-    consumeFunction: ((Sequence<ConsumerRecords<K, V>>) -> Unit),
-    successFunction: ((Unit) -> Unit)? = null,
+    consumeFunction: ((ConsumerRecords<K, V>) -> Unit),
+    successFunction: ((ConsumerRecords<K, V>) -> Unit)? = null,
     errorFunction: ((throwable: Throwable) -> Unit),
     kafkaConsumer: KafkaConsumer<K, V>,
     kafkaTopics: List<String>

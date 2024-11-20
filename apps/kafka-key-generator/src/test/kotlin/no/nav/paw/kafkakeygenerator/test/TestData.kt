@@ -143,7 +143,11 @@ fun MockRequestHandleScope.genererResponse(it: HttpRequestData): HttpResponseDat
     )
 }
 
-fun List<Hendelse>.asConsumerRecordsSequence(): Sequence<ConsumerRecords<Long, Hendelse>> =
+fun List<Hendelse>.asConsumerRecords(): ConsumerRecords<Long, Hendelse> =
+    this.map { TestData.getConsumerRecord(nextLong(), it) }
+        .let { TestData.getConsumerRecords(it) }
+
+fun List<Hendelse>.asConsumerSequence(): Sequence<ConsumerRecords<Long, Hendelse>> =
     this.map { TestData.getConsumerRecord(nextLong(), it) }
         .let { TestData.getConsumerRecords(it) }
         .let { sequenceOf(it) }

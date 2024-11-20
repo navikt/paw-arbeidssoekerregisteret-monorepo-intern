@@ -21,7 +21,7 @@ import no.nav.paw.kafkakeygenerator.config.KAFKA_TOPOLOGY_CONFIG
 import no.nav.paw.kafkakeygenerator.config.KafkaTopologyConfig
 import no.nav.paw.kafkakeygenerator.config.PDL_CLIENT_CONFIG
 import no.nav.paw.kafkakeygenerator.config.PdlClientConfig
-import no.nav.paw.kafkakeygenerator.database.createDataSource
+import no.nav.paw.kafkakeygenerator.utils.createDataSource
 import no.nav.paw.kafkakeygenerator.merge.MergeDetector
 import no.nav.paw.kafkakeygenerator.plugin.configSerialization
 import no.nav.paw.kafkakeygenerator.plugin.configureAuthentication

@@ -12,7 +12,7 @@ import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
 import no.nav.paw.kafkakeygenerator.test.TestData
-import no.nav.paw.kafkakeygenerator.test.asConsumerRecordsSequence
+import no.nav.paw.kafkakeygenerator.test.asConsumerRecords
 import no.nav.paw.kafkakeygenerator.test.initTestDatabase
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Failure
@@ -60,7 +60,7 @@ class KafkaConsumerServiceTest : FreeSpec({
             TestData.getIdentitetsnummerOpphoert(identitetsnummer, arbeidssoekerId)
         )
 
-        kafkaConsumerService.handleRecords(hendelser.asConsumerRecordsSequence())
+        kafkaConsumerService.handleRecords(hendelser.asConsumerRecords())
 
         val keyResult = kafkaKeysRepository.hent(identitetsnummer)
         val auditResult = kafkaKeysAuditRepository.find(identitetsnummer)
@@ -80,7 +80,7 @@ class KafkaConsumerServiceTest : FreeSpec({
         )
 
         shouldThrow<IllegalStateException> {
-            kafkaConsumerService.handleRecords(hendelser.asConsumerRecordsSequence())
+            kafkaConsumerService.handleRecords(hendelser.asConsumerRecords())
         }
 
         val keyResult = kafkaKeysRepository.hent(identitetsnummer)
@@ -110,7 +110,7 @@ class KafkaConsumerServiceTest : FreeSpec({
                     )
                 )
 
-                kafkaConsumerService.handleRecords(hendelser.asConsumerRecordsSequence())
+                kafkaConsumerService.handleRecords(hendelser.asConsumerRecords())
 
                 val keyResult1 = kafkaKeysRepository.hent(identitetsnummer1)
                 val keyResult2 = kafkaKeysRepository.hent(identitetsnummer2)

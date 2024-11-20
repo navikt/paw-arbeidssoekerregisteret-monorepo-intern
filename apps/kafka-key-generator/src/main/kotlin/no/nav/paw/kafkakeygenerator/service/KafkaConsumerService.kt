@@ -14,7 +14,6 @@ import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
 import no.nav.paw.kafkakeygenerator.utils.buildErrorLogger
 import no.nav.paw.kafkakeygenerator.utils.buildLogger
-import no.nav.paw.kafkakeygenerator.utils.countKafkaFailed
 import no.nav.paw.kafkakeygenerator.utils.countKafkaIgnored
 import no.nav.paw.kafkakeygenerator.utils.countKafkaInserted
 import no.nav.paw.kafkakeygenerator.utils.countKafkaProcessed
@@ -44,30 +43,38 @@ class KafkaConsumerService(
         .addReadinessIndicator(ReadinessHealthIndicator(HealthStatus.HEALTHY))
 
     @WithSpan
-    fun handleRecords(sequence: Sequence<ConsumerRecords<Long, Hendelse>>) {
-        sequence.forEach { records ->
-            records
-                .map { it.value() }
-                .onEach {
-                    meterRegistry.countKafkaReceived()
-                    if (it is IdentitetsnummerSammenslaatt) {
-                        logger.debug("Prosesserer hendelse av type {}", it.hendelseType)
-                        meterRegistry.countKafkaProcessed()
-                    } else {
-                        logger.debug("Ignorerer hendelse av type {}", it.hendelseType)
-                        meterRegistry.countKafkaIgnored()
-                    }
+    fun handleRecords(
+        records: ConsumerRecords<Long, Hendelse>
+    ) {
+        records
+            .onEach { record ->
+                logger.debug(
+                    "Mottok melding på topic: {}, partition: {}, offset {}",
+                    record.topic(),
+                    record.partition(),
+                    record.offset()
+                )
+            }
+            .map { it.value() }
+            .onEach { event ->
+                meterRegistry.countKafkaReceived()
+                if (event is IdentitetsnummerSammenslaatt) {
+                    logger.debug("Prosesserer hendelse av type {}", event.hendelseType)
+                    meterRegistry.countKafkaProcessed()
+                } else {
+                    logger.debug("Ignorerer hendelse av type {}", event.hendelseType)
+                    meterRegistry.countKafkaIgnored()
                 }
-                .filterIsInstance<IdentitetsnummerSammenslaatt>()
-                .forEach { hendelse ->
-                    logger.info("Mottok hendelse om sammenslåing av Identitetsnummer")
-                    val identitetsnummer = hendelse.alleIdentitetsnummer
-                        .map { Identitetsnummer(it) } + Identitetsnummer(hendelse.identitetsnummer)
-                    val fraArbeidssoekerId = ArbeidssoekerId(hendelse.id)
-                    val tilArbeidssoekerId = ArbeidssoekerId(hendelse.flyttetTilArbeidssoekerId)
-                    updateIdentiteter(HashSet(identitetsnummer), fraArbeidssoekerId, tilArbeidssoekerId)
-                }
-        }
+            }
+            .filterIsInstance<IdentitetsnummerSammenslaatt>()
+            .forEach { event ->
+                logger.info("Mottok hendelse om sammenslåing av Identitetsnummer")
+                val identitetsnummer = event.alleIdentitetsnummer
+                    .map { Identitetsnummer(it) } + Identitetsnummer(event.identitetsnummer)
+                val fraArbeidssoekerId = ArbeidssoekerId(event.id)
+                val tilArbeidssoekerId = ArbeidssoekerId(event.flyttetTilArbeidssoekerId)
+                updateIdentiteter(HashSet(identitetsnummer), fraArbeidssoekerId, tilArbeidssoekerId)
+            }
     }
 
     private fun updateIdentiteter(
@@ -76,19 +83,6 @@ class KafkaConsumerService(
         tilArbeidssoekerId: ArbeidssoekerId
     ) {
         transaction(database) {
-            identitetRepository.find(fraArbeidssoekerId).let {
-                if (it == null) {
-                    meterRegistry.countKafkaFailed()
-                    throw IllegalStateException("ArbeidssøkerId ikke funnet")
-                }
-            }
-            identitetRepository.find(tilArbeidssoekerId).let {
-                if (it == null) {
-                    meterRegistry.countKafkaFailed()
-                    throw IllegalStateException("ArbeidssøkerId ikke funnet")
-                }
-            }
-
             identitetsnummerSet.forEach { identitetsnummer ->
                 val kafkaKey = identitetRepository.find(identitetsnummer)
                 if (kafkaKey != null) {
