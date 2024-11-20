@@ -84,6 +84,7 @@ fun domeneOpplysningTilHendelseOpplysning(opplysning: DomeneOpplysning): Hendels
         DomeneOpplysning.ErNorskStatsborger -> HendelseOpplysning.ER_NORSK_STATSBORGER
         DomeneOpplysning.HarRegistrertAdresseIEuEoes -> HendelseOpplysning.HAR_REGISTRERT_ADRESSE_I_EU_EOES
         DomeneOpplysning.ErFeilretting -> HendelseOpplysning.ER_FEILRETTING
+        DomeneOpplysning.UgyldigFeilretting -> HendelseOpplysning.UGYLDIG_FEILRETTING
     }
 
 fun hendelseOpplysningTilDomeneOpplysninger(opplysning: HendelseOpplysning): DomeneOpplysning? =
@@ -125,4 +126,5 @@ fun hendelseOpplysningTilDomeneOpplysninger(opplysning: HendelseOpplysning): Dom
         HendelseOpplysning.ANSATT_TILGANG -> null
         HendelseOpplysning.IKKE_ANSATT -> null
         HendelseOpplysning.UKJENT_OPPLYSNING -> null
+        no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.UGYLDIG_FEILRETTING -> DomeneOpplysning.UgyldigFeilretting
     }

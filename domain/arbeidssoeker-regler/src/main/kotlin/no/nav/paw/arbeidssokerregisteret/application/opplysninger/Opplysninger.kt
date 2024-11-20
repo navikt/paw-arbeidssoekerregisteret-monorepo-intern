@@ -11,6 +11,11 @@ interface Opplysning: Condition {
 infix operator fun Opplysning.plus(opplysning: Opplysning): Set<Opplysning> = setOf(this, opplysning)
 sealed interface DomeneOpplysning: Opplysning {
 
+    data object UgyldigFeilretting: DomeneOpplysning, Effect.Negative {
+        override val id = "UGYLDIG_FEILRETTING"
+        override val beskrivelse = "Feilrettingen er ugyldig"
+    }
+
     data object ErForhaandsgodkjent : DomeneOpplysning, Effect.Positive {
         override val id = "FORHAANDSGODKJENT_AV_ANSATT"
         override val beskrivelse = "Registrering er forhåndsgodkjent av NAV-ansatt"

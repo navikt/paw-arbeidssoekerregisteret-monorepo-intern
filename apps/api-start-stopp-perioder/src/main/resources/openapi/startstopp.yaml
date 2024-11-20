@@ -254,6 +254,7 @@ components:
         - "HAR_REGISTRERT_ADRESSE_I_EU_EOES"
         - "UKJENT_OPPLYSNING"
         - "ER_FEILRETTING"
+        - "UGYLDIG_FEILRETTING"
     ApiRegelId:
       type: "string"
       enum:

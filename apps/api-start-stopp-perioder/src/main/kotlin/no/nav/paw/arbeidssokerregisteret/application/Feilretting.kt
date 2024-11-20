@@ -3,19 +3,20 @@ package no.nav.paw.arbeidssokerregisteret.application
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feilretting.FeilType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.TidspunktFraKilde
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feilretting as ApiFeilretting
 import java.time.Instant
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feilretting as ApiFeilretting
 
 sealed interface Feilretting
+sealed interface GyldigFeilretting: Feilretting
 
 data class Feilregistrering(
     val melding: String? = null
-): Feilretting
+): GyldigFeilretting
 
 data class FeilTidspunkt(
     val melding: String?,
     val tidspunkt: Instant
-): Feilretting
+): GyldigFeilretting
 
 data class UgyldigFeilretting(val grunn: String) : Feilretting
 

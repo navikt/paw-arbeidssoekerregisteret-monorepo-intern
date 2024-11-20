@@ -11,6 +11,7 @@ import no.nav.paw.arbeidssokerregisteret.application.*
 import no.nav.paw.arbeidssokerregisteret.application.authfaktka.*
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.*
 import no.nav.paw.arbeidssokerregisteret.application.regler.*
+import no.nav.paw.arbeidssokerregisteret.application.regler.UgyldigFeilretting
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Opplysning as ApiOpplysning
 
 
@@ -80,6 +81,7 @@ fun opplysningTilApiOpplysning(opplysning: Opplysning): ApiOpplysning =
             DomeneOpplysning.ErNorskStatsborger -> ApiOpplysning.ER_NORSK_STATSBORGER
             DomeneOpplysning.HarRegistrertAdresseIEuEoes -> ApiOpplysning.HAR_REGISTRERT_ADRESSE_I_EU_EOES
             DomeneOpplysning.ErFeilretting -> ApiOpplysning.ER_FEILRETTING
+            DomeneOpplysning.UgyldigFeilretting -> ApiOpplysning.UGYLDIG_FEILRETTING
         }
 
         is AuthOpplysning -> when (opplysning) {
@@ -130,6 +132,7 @@ fun AuthRegelId.httpCode(): HttpStatusCode = when (this) {
     IkkeAnsattOgForhaandsgodkjentAvAnsatt -> HttpStatusCode.BadRequest
     IkkeTilgang -> HttpStatusCode.Forbidden
     IkkeAnsattOgFeilretting -> HttpStatusCode.Forbidden
+    UgyldigFeilretting -> HttpStatusCode.BadRequest
 }
 
 fun DomeneRegelId.httpCode(): HttpStatusCode = when (this) {
