@@ -1,0 +1,1 @@
+CREATE index hwm_offset_idx ON hwm(kafka_offset);
