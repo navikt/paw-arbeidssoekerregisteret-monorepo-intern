@@ -12,7 +12,7 @@ import no.nav.paw.kafkakeygenerator.client.createKafkaKeyGeneratorClient
 import no.nav.paw.kafkakeymaintenance.db.DatabaseConfig
 import no.nav.paw.kafkakeymaintenance.db.dataSource
 import no.nav.paw.kafkakeymaintenance.db.migrateDatabase
-import no.nav.paw.kafkakeymaintenance.kafka.topic
+import no.nav.paw.kafkakeymaintenance.kafka.Topic
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.AktorConfig
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.DbReaderContext
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.DbReaderTask
@@ -59,7 +59,7 @@ fun main() {
         keySerializer = LongSerializer::class,
         valueSerializer = HendelseSerializer::class
     )
-    val executor = ThreadPoolExecutor(6, 6, 10L, TimeUnit.SECONDS, LinkedBlockingQueue())
+    val executor = ThreadPoolExecutor(4, 4, 10L, TimeUnit.SECONDS, LinkedBlockingQueue())
     val periodeTask = periodeConsumer.run(executor)
     val aktorTask = aktorConsumer.run(executor)
     val aktorConfig = loadNaisOrLocalConfiguration<AktorConfig>(AktorConfig.configFile)
@@ -70,7 +70,7 @@ fun main() {
         applicationContext = applicationContext,
         dbReaderContext = DbReaderContext(
             aktorConfig = aktorConfig,
-            receiver = producer::sendSync.partially1(topic(aktorConfig.hendelseloggTopic)),
+            receiver = producer::sendSync.partially1(Topic(aktorConfig.hendelseloggTopic)),
             perioder = dbPerioder(applicationContext),
             hentAlias = kafkaKeysClient::hentAlias.partially1(antallHendelsePartisjoner),
             aktorDeSerializer = kafkaFactory.kafkaAvroDeSerializer()

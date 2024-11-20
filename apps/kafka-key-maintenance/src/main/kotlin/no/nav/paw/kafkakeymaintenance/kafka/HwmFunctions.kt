@@ -43,8 +43,8 @@ fun TransactionContext.getTopicPartitionMetadata(topic: Topic, partition: Int): 
                 topic = Topic(it[HwmTable.topic]),
                 partition = it[HwmTable.partition],
                 offset = it[HwmTable.offset],
-                time = partitionTime(it[HwmTable.time]),
-                lastUpdated = partitionLastUpdated(it[HwmTable.lastUpdated])
+                time = PartitionTime(it[HwmTable.time]),
+                lastUpdated = PartitionLastUpdated(it[HwmTable.lastUpdated])
             )
         }
 

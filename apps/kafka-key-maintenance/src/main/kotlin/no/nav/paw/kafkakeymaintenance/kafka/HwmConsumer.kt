@@ -10,7 +10,6 @@ import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeymaintenance.ApplicationContext
 import no.nav.paw.kafkakeymaintenance.ErrorOccurred
 import no.nav.paw.kafkakeymaintenance.ShutdownSignal
-import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -45,29 +44,28 @@ class HwmConsumer<K, V>(
                             transaction {
                                 val txContext = applicationContext.contextFactory(this)
                                 records
-                                    .asSequence()
-                                    .filter { record ->
-                                        txContext.updateHwm(
-                                            topic = topic(record.topic()),
+                                    .forEach { record ->
+                                        val aboveHwm = txContext.updateHwm(
+                                            topic = Topic(record.topic()),
                                             partition = record.partition(),
                                             offset = record.offset(),
                                             time = Instant.ofEpochMilli(record.timestamp()),
                                             lastUpdated = Instant.now()
-                                        ).also { aboveHwm ->
-                                            Span.current().setAttribute("hwm_result", if (aboveHwm) "above_hwm" else "below_hwm")
-                                            applicationContext.meterRegistry.counter(
-                                                "paw_hwm_consumer",
-                                                Tags.of(
-                                                    Tag.of("name", name),
-                                                    Tag.of("topic", record.topic()),
-                                                    Tag.of("partition", record.partition().toString()),
-                                                    Tag.of("above_hwm", aboveHwm.toString())
-                                                )
-                                            ).increment()
+                                        )
+                                        Span.current()
+                                            .setAttribute("hwm_result", if (aboveHwm) "above_hwm" else "below_hwm")
+                                        applicationContext.meterRegistry.counter(
+                                            "paw_hwm_consumer",
+                                            Tags.of(
+                                                Tag.of("name", name),
+                                                Tag.of("topic", record.topic()),
+                                                Tag.of("partition", record.partition().toString()),
+                                                Tag.of("above_hwm", aboveHwm.toString())
+                                            )
+                                        ).increment()
+                                        if (aboveHwm) {
+                                            function.process(txContext, record)
                                         }
-                                    }
-                                    .forEach { record ->
-                                        function.process(txContext, record)
                                     }
                             }
                         }

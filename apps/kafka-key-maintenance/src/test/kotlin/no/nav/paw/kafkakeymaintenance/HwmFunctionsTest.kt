@@ -2,8 +2,6 @@ package no.nav.paw.kafkakeymaintenance
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import io.micrometer.prometheusmetrics.PrometheusConfig
-import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.kafkakeymaintenance.kafka.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.slf4j.LoggerFactory
@@ -72,8 +70,8 @@ class HwmFunctionsTest : FreeSpec({
                             topic = topicA,
                             partition = 1,
                             offset = 1,
-                            time = partitionTime(time - Duration.ofDays(1)),
-                            lastUpdated = partitionLastUpdated(lastUpdated)
+                            time = PartitionTime(time - Duration.ofDays(1)),
+                            lastUpdated = PartitionLastUpdated(lastUpdated)
                         )
                     }
                 }
@@ -157,15 +155,15 @@ class HwmFunctionsTest : FreeSpec({
                         topic = topicA,
                         partition = 0,
                         offset = 1000,
-                        time = partitionTime(time + Duration.ofSeconds(1)),
-                        lastUpdated = partitionLastUpdated(lastUpdated + Duration.ofSeconds(10))
+                        time = PartitionTime(time + Duration.ofSeconds(1)),
+                        lastUpdated = PartitionLastUpdated(lastUpdated + Duration.ofSeconds(10))
                     )
                     txCtx().getTopicPartitionMetadata(topicB, 0) shouldBe TopicPartitionMetadata(
                         topic = topicB,
                         partition = 0,
                         offset = 999,
-                        time = partitionTime(time - Duration.ofDays(1)),
-                        lastUpdated = partitionLastUpdated(lastUpdated)
+                        time = PartitionTime(time - Duration.ofDays(1)),
+                        lastUpdated = PartitionLastUpdated(lastUpdated)
                     )
                 }
             }

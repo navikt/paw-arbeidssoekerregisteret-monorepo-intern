@@ -14,7 +14,7 @@ import no.nav.paw.kafkakeymaintenance.ApplicationContext
 import no.nav.paw.kafkakeymaintenance.ErrorOccurred
 import no.nav.paw.kafkakeymaintenance.ShutdownSignal
 import no.nav.paw.kafkakeymaintenance.kafka.TransactionContext
-import no.nav.paw.kafkakeymaintenance.kafka.topic
+import no.nav.paw.kafkakeymaintenance.kafka.Topic
 import no.nav.paw.kafkakeymaintenance.kafka.txContext
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.functions.HendelseRecord
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.Data
@@ -106,7 +106,7 @@ class DbReaderTask(
         return procesAktorMelding(
             meterRegistry = applicationContext.meterRegistry,
             hentAlias = dbReaderContext.hentAlias,
-            aktorTopic = topic(dbReaderContext.aktorConfig.aktorTopic),
+            aktorTopic = Topic(dbReaderContext.aktorConfig.aktorTopic),
             perioder = dbReaderContext.perioder,
             aktorDeserializer = dbReaderContext.aktorDeSerializer,
             data = entry
