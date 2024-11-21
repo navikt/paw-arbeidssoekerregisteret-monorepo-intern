@@ -1,0 +1,1 @@
+create index identitet_kafka_key_idx on Identitet (kafka_key);
