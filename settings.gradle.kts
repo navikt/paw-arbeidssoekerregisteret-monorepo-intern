@@ -19,7 +19,6 @@ include(
     "lib:kafka-streams",
     "lib:kafka-key-generator-client",
     "lib:pdl-client",
-    "lib:aareg-client",
     "test:test-data-lib",
     "test:kafka-streams-test-functions",
     "domain:bekreftelse-interne-hendelser",
