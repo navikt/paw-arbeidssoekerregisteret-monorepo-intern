@@ -33,6 +33,12 @@ class PeriodeRadTest: FreeSpec ({
             til = Instant.now().truncatedTo(ChronoUnit.MICROS) + 2.minutes
         )
         val rad3 = rad1.copy(til = Instant.now().truncatedTo(ChronoUnit.MICROS) + 3.minutes)
+        val rad4 = periodeRad(
+            periodeId = UUID.randomUUID(),
+            identitetsnummer = rad1.identitetsnummer,
+            fra = Instant.now().truncatedTo(ChronoUnit.MICROS) + 4.minutes,
+            til = null
+        )
         "Vi kan lagre og hente $rad1" {
             transaction {
                 with(txCtx()) {
@@ -63,6 +69,15 @@ class PeriodeRadTest: FreeSpec ({
                     insertOrUpdate(rad3)
                     periodeRad(rad3.identitetsnummer) shouldBe rad3
                     periodeRad(rad1.identitetsnummer) shouldBe rad3
+                }
+            }
+        }
+        "Vi kan oppdatere $rad3 til $rad4" {
+            transaction {
+                with(txCtx()) {
+                    insertOrUpdate(rad4)
+                    periodeRad(rad4.identitetsnummer) shouldBe rad4
+                    periodeRad(rad3.identitetsnummer) shouldBe rad4
                 }
             }
         }

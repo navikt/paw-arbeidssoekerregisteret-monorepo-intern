@@ -19,11 +19,14 @@ fun TransactionContext.insertOrUpdate(periode: PeriodeRad) {
                 }
             } else {
                 PerioderTable.update(
-                    where = { (PerioderTable.version eq consumerVersion) and (PerioderTable.periodeId eq periode.periodeId) }
+                    where = { (PerioderTable.version eq consumerVersion) and
+                            (PerioderTable.identitetsnummer eq periode.identitetsnummer)
+                    }
                 ) {
                     it[identitetsnummer] = periode.identitetsnummer
                     it[fra] = periode.fra
                     it[til] = periode.til
+                    it[periodeId] = periode.periodeId
                 }
             }
         }

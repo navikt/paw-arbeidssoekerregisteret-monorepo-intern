@@ -13,5 +13,5 @@ data class PeriodeRad(
     val erAktiv: Boolean = til == null
 }
 
-fun periodeRad(periodeId: UUID, identitetsnummer: String, fra: Instant, til: Instant) = PeriodeRad(periodeId, identitetsnummer, fra, til)
+fun periodeRad(periodeId: UUID, identitetsnummer: String, fra: Instant, til: Instant?) = PeriodeRad(periodeId, identitetsnummer, fra, til)
 fun periodeRad(periode: Periode) = PeriodeRad(periode.id, periode.identitetsnummer, periode.startet.tidspunkt, periode.avsluttet?.tidspunkt)
