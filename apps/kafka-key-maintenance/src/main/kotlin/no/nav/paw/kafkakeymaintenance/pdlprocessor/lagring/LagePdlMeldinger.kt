@@ -8,9 +8,12 @@ import org.slf4j.LoggerFactory
 import java.time.Instant
 
 private val lagreAktorLogger = LoggerFactory.getLogger("lagreAktorMelding")
+private val ignorerMeldingerSendtFoer =
+    Instant.parse("2023-09-01T00:00:00.00Z").toEpochMilli()
 
 class LagreAktorMelding : HwmRunnerProcessor<String, ByteArray> {
     override fun process(txContext: TransactionContext, record: ConsumerRecord<String, ByteArray>) {
+        if (record.timestamp() < ignorerMeldingerSendtFoer) { return }
         if (record.value() == null || record.value().isEmpty()) {
             lagreAktorLogger.info(
                 "Sletter aktør: null={}, empty={}",
