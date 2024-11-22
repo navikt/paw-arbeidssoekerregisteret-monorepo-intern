@@ -9,4 +9,6 @@ class LagrePeriode: HwmRunnerProcessor<Long, Periode> {
     override fun process(txContext: TransactionContext, record: ConsumerRecord<Long, Periode>) {
         txContext.insertOrUpdate(periodeRad(record.value()))
     }
+
+    override fun ignore(record: ConsumerRecord<Long, Periode>): Boolean = false
 }

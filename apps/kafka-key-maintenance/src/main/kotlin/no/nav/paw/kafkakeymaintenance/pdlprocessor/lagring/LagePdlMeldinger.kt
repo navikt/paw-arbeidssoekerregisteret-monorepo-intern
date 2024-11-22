@@ -13,7 +13,6 @@ private val ignorerMeldingerSendtFoer =
 
 class LagreAktorMelding : HwmRunnerProcessor<String, ByteArray> {
     override fun process(txContext: TransactionContext, record: ConsumerRecord<String, ByteArray>) {
-        if (record.timestamp() < ignorerMeldingerSendtFoer) { return }
         if (record.value() == null || record.value().isEmpty()) {
             lagreAktorLogger.info(
                 "Sletter aktør: null={}, empty={}",
@@ -31,5 +30,9 @@ class LagreAktorMelding : HwmRunnerProcessor<String, ByteArray> {
                 data = record.value()
             )
         }
+    }
+
+    override fun ignore(record: ConsumerRecord<String, ByteArray>): Boolean {
+        return record.timestamp() < ignorerMeldingerSendtFoer
     }
 }

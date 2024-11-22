@@ -45,7 +45,8 @@ class HwmConsumer<K, V>(
                                 val txContext = applicationContext.contextFactory(this)
                                 records
                                     .forEach { record ->
-                                        val aboveHwm = txContext.updateHwm(
+                                        val ignore = function.ignore(record)
+                                        val aboveHwm = !ignore && txContext.updateHwm(
                                             topic = Topic(record.topic()),
                                             partition = record.partition(),
                                             offset = record.offset(),
@@ -54,13 +55,15 @@ class HwmConsumer<K, V>(
                                         )
                                         Span.current()
                                             .setAttribute("hwm_result", if (aboveHwm) "above_hwm" else "below_hwm")
+                                            .setAttribute("hwm_ignore", ignore)
                                         applicationContext.meterRegistry.counter(
-                                            "paw_hwm_consumer",
+                                            "paw_hwm_consumer_v2",
                                             Tags.of(
                                                 Tag.of("name", name),
                                                 Tag.of("topic", record.topic()),
                                                 Tag.of("partition", record.partition().toString()),
-                                                Tag.of("above_hwm", aboveHwm.toString())
+                                                Tag.of("above_hwm", aboveHwm.toString()),
+                                                Tag.of("ignore", ignore.toString())
                                             )
                                         ).increment()
                                         if (aboveHwm) {
