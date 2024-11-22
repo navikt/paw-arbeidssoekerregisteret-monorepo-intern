@@ -13,10 +13,10 @@ spec:
     max: 1
   resources:
     limits:
-      memory: 4096Mi
+      memory: 1024Mi
     requests:
-      cpu: 1000m
-      memory: 4096Mi
+      cpu: 25m
+      memory: 256Mi
   azure:
     application:
       enabled: true
@@ -44,7 +44,7 @@ spec:
   gcp:
     sqlInstances:
       - type: POSTGRES_16
-        tier: db-custom-2-5120
+        tier: db-custom-1-5120
         databases:
           - name: pawkafkakeysmaintenance
   accessPolicy:
