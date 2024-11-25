@@ -1,6 +1,7 @@
 package no.nav.paw.kafkakeygenerator.repository
 
 import no.nav.paw.kafkakeygenerator.database.KafkaKeysAuditTable
+import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Audit
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import org.jetbrains.exposed.sql.Database
@@ -19,6 +20,7 @@ class KafkaKeysAuditRepository(
             .map {
                 Audit(
                     identitetsnummer = Identitetsnummer(it[KafkaKeysAuditTable.identitetsnummer]),
+                    tidligereArbeidssoekerId = ArbeidssoekerId(it[KafkaKeysAuditTable.tidligereKafkaKey]),
                     identitetStatus = it[KafkaKeysAuditTable.status],
                     detaljer = it[KafkaKeysAuditTable.detaljer],
                     tidspunkt = it[KafkaKeysAuditTable.tidspunkt]
@@ -29,6 +31,7 @@ class KafkaKeysAuditRepository(
     fun insert(audit: Audit): Int = transaction(database) {
         KafkaKeysAuditTable.insert {
             it[identitetsnummer] = audit.identitetsnummer.value
+            it[tidligereKafkaKey] = audit.tidligereArbeidssoekerId.value
             it[status] = audit.identitetStatus
             it[detaljer] = audit.detaljer
             it[tidspunkt] = audit.tidspunkt

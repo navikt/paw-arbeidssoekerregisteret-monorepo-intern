@@ -121,7 +121,12 @@ class KafkaConsumerService(
         if (eksisterendeArbeidssoekerId == tilArbeidssoekerId) {
             logger.info("Identitetsnummer er allerede linket til korrekt ArbeidsøkerId")
             meterRegistry.countKafkaVerified()
-            val audit = Audit(identitetsnummer, IdentitetStatus.VERIFISERT, "Ingen endringer")
+            val audit = Audit(
+                identitetsnummer = identitetsnummer,
+                tidligereArbeidssoekerId = fraArbeidssoekerId,
+                identitetStatus = IdentitetStatus.VERIFISERT,
+                detaljer = "Ingen endringer"
+            )
             kafkaKeysAuditRepository.insert(audit)
         } else {
             logger.info("Identitetsnummer oppdateres med annen ArbeidsøkerId")
@@ -129,9 +134,10 @@ class KafkaConsumerService(
             val count = identitetRepository.update(identitetsnummer, tilArbeidssoekerId)
             if (count != 0) {
                 val audit = Audit(
-                    identitetsnummer,
-                    IdentitetStatus.OPPDATERT,
-                    "Bytte av arbeidsøkerId fra ${fraArbeidssoekerId.value} til ${tilArbeidssoekerId.value}"
+                    identitetsnummer = identitetsnummer,
+                    tidligereArbeidssoekerId = fraArbeidssoekerId,
+                    identitetStatus = IdentitetStatus.OPPDATERT,
+                    detaljer = "Bytte av arbeidsøkerId fra ${fraArbeidssoekerId.value} til ${tilArbeidssoekerId.value}"
                 )
                 kafkaKeysAuditRepository.insert(audit)
             } else {
@@ -151,6 +157,7 @@ class KafkaConsumerService(
         if (count != 0) {
             val audit = Audit(
                 identitetsnummer = identitetsnummer,
+                tidligereArbeidssoekerId = tilArbeidssoekerId,
                 identitetStatus = IdentitetStatus.OPPRETTET,
                 detaljer = "Opprettet ident for arbeidsøkerId ${tilArbeidssoekerId.value}"
             )
