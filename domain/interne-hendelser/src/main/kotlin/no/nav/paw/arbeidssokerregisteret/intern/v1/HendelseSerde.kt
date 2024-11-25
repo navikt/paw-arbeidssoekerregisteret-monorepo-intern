@@ -1,15 +1,10 @@
 package no.nav.paw.arbeidssokerregisteret.intern.v1
 
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.fasterxml.jackson.module.kotlin.readValue
-import no.nav.paw.arbeidssokerregisteret.intern.v1.*
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
@@ -80,5 +75,6 @@ fun eventTypeToClass(type: String?): KClass<out Hendelse> =
         opplysningerOmArbeidssoekerHendelseType -> OpplysningerOmArbeidssoekerMottatt::class
         identitetsnummerOpphoertHendelseType -> IdentitetsnummerOpphoert::class
         identitetsnummerSammenslaattHendelseType -> IdentitetsnummerSammenslaatt::class
+        arbeidssoekerIdFlettetInn -> ArbeidssoekerIdFlettetInn::class
         else -> throw IllegalArgumentException("Ukjent hendelse type: '$type'")
     }

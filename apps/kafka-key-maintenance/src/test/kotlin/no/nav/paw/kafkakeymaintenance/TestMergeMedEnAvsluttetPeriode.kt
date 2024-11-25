@@ -3,11 +3,8 @@ package no.nav.paw.kafkakeymaintenance
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.types.shouldBeInstanceOf
+import no.nav.paw.arbeidssokerregisteret.intern.v1.ArbeidssoekerIdFlettetInn
 import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerSammenslaatt
-import no.nav.paw.kafkakeymaintenance.pdlprocessor.supressionDelay
-import no.nav.paw.test.minutes
-import java.time.Instant.parse
 
 class TestMergeMedEnAvsluttetPeriode : FreeSpec({
     with(ApplicationTestContext()) {
@@ -31,13 +28,18 @@ class TestMergeMedEnAvsluttetPeriode : FreeSpec({
                     id(identifikasjonsnummer = person2, gjeldende = false)
                 )
             ) should {
-                it.size shouldBe 1
-                it.first() should { (key, hendelse) ->
+                it.size shouldBe 2
+                it.avType<IdentitetsnummerSammenslaatt>() should { (key, hendelse) ->
                     key shouldBe 0L
                     hendelse.identitetsnummer shouldBe person1
-                    hendelse.shouldBeInstanceOf<IdentitetsnummerSammenslaatt>()
                     hendelse.flyttetTilArbeidssoekerId shouldBe 1L
                     hendelse.alleIdentitetsnummer shouldBe listOf(person1)
+                }
+                it.avType<ArbeidssoekerIdFlettetInn>() should { (key, hendelse) ->
+                    key shouldBe 1L
+                    hendelse.identitetsnummer shouldBe person2
+                    hendelse.kilde.arbeidssoekerId shouldBe 0L
+                    hendelse.kilde.identitetsnummer shouldBe setOf(person1)
                 }
             }
         }

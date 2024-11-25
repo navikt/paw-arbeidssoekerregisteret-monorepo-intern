@@ -89,6 +89,13 @@ class ApplicationTestContext(
         alias.clear()
     }
 
+    fun addAlias(identitetsnummerOgArbeidssoekerId: Pair<String, Long>) {
+        addAlias(
+            identitetsnummerOgArbeidssoekerId.first,
+            alias(identitetsnummerOgArbeidssoekerId.first, identitetsnummerOgArbeidssoekerId.second)
+        )
+    }
+
     fun addAlias(identitetsnummer: String, vararg alias: Alias) {
         this.alias.compute(identitetsnummer) { _, value ->
             (value ?: emptyList()) + alias
@@ -98,6 +105,9 @@ class ApplicationTestContext(
     fun addPeriode(vararg periode: PeriodeRad) {
         periode.forEach { perioder[it.identitetsnummer] = it }
     }
+
+    fun Pair<String, Long>.identitetsnummer() = first
+    fun Pair<String, Long>.arbeidssoekerId() = second
 
 }
 

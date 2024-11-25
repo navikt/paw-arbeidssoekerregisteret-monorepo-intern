@@ -14,6 +14,7 @@ fun genererAutomatiskIdOppdatering(avvik: AvviksMelding, periodeRad: PeriodeRad)
             oppdatertData = IdMap(
                 gjeldeneIdentitetsnummer = avvik.gjeldeneIdentitetsnummer,
                 arbeidsoekerId = alias.arbeidsoekerId,
+                identitetsnummer = alias.identitetsnummer,
                 recordKey = alias.recordKey,
                 partisjon = alias.partition,
                 identiteter = avvik.lokaleAliasSomSkalPekePaaPdlPerson()
@@ -33,13 +34,14 @@ fun genererAutomatiskIdOppdatering(avvik: AvviksMelding): IdOppdatering {
             frieIdentiteter = frieIdentiteter
         )
     } else {
-        val data = identerSomSkalPekePaaPdlPerson.maxBy { it.arbeidsoekerId }
+        val alias = identerSomSkalPekePaaPdlPerson.maxBy { it.arbeidsoekerId }
         AutomatiskIdOppdatering(
             oppdatertData = IdMap(
                 gjeldeneIdentitetsnummer = avvik.gjeldeneIdentitetsnummer,
-                arbeidsoekerId = data.arbeidsoekerId,
-                recordKey = data.recordKey,
-                partisjon = data.partition,
+                arbeidsoekerId = alias.arbeidsoekerId,
+                identitetsnummer = alias.identitetsnummer,
+                recordKey = alias.recordKey,
+                partisjon = alias.partition,
                 identiteter = identerSomSkalPekePaaPdlPerson
             ),
             frieIdentiteter = frieIdentiteter

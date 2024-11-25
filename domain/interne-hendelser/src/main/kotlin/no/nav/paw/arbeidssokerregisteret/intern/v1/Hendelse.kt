@@ -9,6 +9,7 @@ const val avvistStoppAvPeriodeHendelseType = "intent.v1.avvist_stopp_av_periode"
 const val opplysningerOmArbeidssoekerHendelseType = "intern.v1.opplysninger_om_arbeidssoeker"
 const val identitetsnummerOpphoertHendelseType = "intern.v1.identitetsnummer_opphoert"
 const val identitetsnummerSammenslaattHendelseType = "intern.v1.identitetsnummer_sammenslaatt"
+const val arbeidssoekerIdFlettetInn = "intern.v1.arbeidssoeker_id_flettet_inn"
 
 sealed interface Hendelse : HarIdentitetsnummer, HarMetadata {
     val id: Long

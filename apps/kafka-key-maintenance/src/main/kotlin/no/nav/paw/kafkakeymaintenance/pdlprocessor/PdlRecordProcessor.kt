@@ -68,7 +68,7 @@ fun procesAktorMelding(
     perioder: Perioder,
     aktor: Aktor,
     metadata: Metadata
-) = (hentData(hentAlias, aktor)
+) = hentData(hentAlias, aktor)
     .takeIf(::harAvvik)
     ?.let(::genererAvviksMelding)
     ?.let(perioder::hentPerioder)
@@ -93,7 +93,7 @@ fun procesAktorMelding(
     }
     ?.let(::genererIdOppdatering)
     ?.let(::genererHendelser.partially1(metadata))
-    ?: emptyList())
+    ?: emptyList()
 
 fun Int?.toBucket(): String =
     when {

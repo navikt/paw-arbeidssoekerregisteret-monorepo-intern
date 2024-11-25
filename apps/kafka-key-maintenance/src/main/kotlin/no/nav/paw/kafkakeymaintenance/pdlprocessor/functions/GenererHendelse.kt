@@ -1,7 +1,9 @@
 package no.nav.paw.kafkakeymaintenance.pdlprocessor.functions
 
+import no.nav.paw.arbeidssokerregisteret.intern.v1.ArbeidssoekerIdFlettetInn
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerSammenslaatt
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Kilde
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
 import no.nav.paw.kafkakeymaintenance.vo.AutomatiskIdOppdatering
 import no.nav.paw.kafkakeymaintenance.vo.IdMap
@@ -28,7 +30,7 @@ fun genererHendelse(metadata: Metadata, idMap: IdMap): List<HendelseRecord<Hende
     idMap.identiteter
         .filter { it.arbeidsoekerId != idMap.arbeidsoekerId }
         .groupBy { it.arbeidsoekerId }
-        .map { (arbeidsoekerId, alias) ->
+        .flatMap { (arbeidsoekerId, alias) ->
             val identiteter = alias.map { it.identitetsnummer }
             val hendelse = IdentitetsnummerSammenslaatt(
                 id = arbeidsoekerId,
@@ -38,5 +40,18 @@ fun genererHendelse(metadata: Metadata, idMap: IdMap): List<HendelseRecord<Hende
                 alleIdentitetsnummer = identiteter,
                 flyttetTilArbeidssoekerId = idMap.arbeidsoekerId
             )
-            HendelseRecord(alias.first().recordKey, hendelse)
+            val infoHendelse = ArbeidssoekerIdFlettetInn(
+                identitetsnummer = idMap.identitetsnummer,
+                id = idMap.arbeidsoekerId,
+                hendelseId = UUID.randomUUID(),
+                metadata = metadata,
+                kilde = Kilde(
+                    arbeidssoekerId = arbeidsoekerId,
+                    identitetsnummer = identiteter.toSet()
+                )
+            )
+            listOf(
+                HendelseRecord(alias.first().recordKey, hendelse),
+                HendelseRecord(idMap.recordKey, infoHendelse)
+            )
         }
