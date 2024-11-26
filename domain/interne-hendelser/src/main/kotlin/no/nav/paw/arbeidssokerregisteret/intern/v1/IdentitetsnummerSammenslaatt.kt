@@ -11,5 +11,8 @@ data class IdentitetsnummerSammenslaatt(
     val alleIdentitetsnummer: List<String>,
     val flyttetTilArbeidssoekerId: Long
 ): Hendelse {
+    init {
+        require(identitetsnummer in alleIdentitetsnummer) { "IdentitetsnummerSammenslaatt: identitetsnummer må være en av alleIdentitetsnummer" }
+    }
     override val hendelseType: String = identitetsnummerSammenslaattHendelseType
 }
