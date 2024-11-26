@@ -9,20 +9,24 @@ import no.nav.paw.kafkakeymaintenance.vo.AutomatiskIdOppdatering
 import no.nav.paw.kafkakeymaintenance.vo.IdMap
 import no.nav.paw.kafkakeymaintenance.vo.IdOppdatering
 import no.nav.paw.kafkakeymaintenance.vo.ManuellIdOppdatering
+import org.slf4j.LoggerFactory
 import java.util.*
 
 data class HendelseRecord<V: Hendelse>(
     val key: Long,
     val hendelse: V
 )
-
+private val logger = LoggerFactory.getLogger("id.oppdatering.manuell")
 fun genererHendelser(metadata: Metadata, idOppdatering: IdOppdatering): List<HendelseRecord<Hendelse>> {
     return when (idOppdatering) {
         is AutomatiskIdOppdatering -> {
             idOppdatering.oppdatertData?.let { genererHendelse(metadata, it) } ?: emptyList()
         }
 
-        is ManuellIdOppdatering -> emptyList()
+        is ManuellIdOppdatering -> {
+            logger.warn("Manuell id oppdatering oppdaget")
+            emptyList()
+        }
     }
 }
 
