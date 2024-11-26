@@ -25,5 +25,7 @@
     <logger name="org.apache.kafka" level="INFO" />
     <logger name="io.confluent" level="INFO" />
     <logger name="no.nav" level="INFO" />
+    <logger name="avvik.data" level="DEBUG" />
+    <logger name="avvik.generer_automatisk_id_oppdatering" level="DEBUG" />
     <logger name="no.nav.paw.pdl.PdlClient" level="WARN"/>
 </configuration>

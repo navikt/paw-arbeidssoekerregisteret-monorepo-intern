@@ -5,7 +5,9 @@ import no.nav.paw.kafkakeymaintenance.vo.IdOppdatering
 import no.nav.paw.kafkakeymaintenance.perioder.PeriodeRad
 import no.nav.paw.kafkakeymaintenance.vo.AvviksMelding
 import no.nav.paw.kafkakeymaintenance.vo.IdMap
+import org.slf4j.LoggerFactory
 
+private val avviksMeldingerLogger = LoggerFactory.getLogger("avvik.generer_automatisk_id_oppdatering")
 fun genererAutomatiskIdOppdatering(avvik: AvviksMelding, periodeRad: PeriodeRad): IdOppdatering {
     requireNotNull(avvik.lokaleAlias.find { it.identitetsnummer == periodeRad.identitetsnummer }) {
         "Intern logiskfeil, lokal data for identietetsnummer mangler"
@@ -20,7 +22,13 @@ fun genererAutomatiskIdOppdatering(avvik: AvviksMelding, periodeRad: PeriodeRad)
                 identiteter = avvik.lokaleAliasSomSkalPekePaaPdlPerson()
             ),
             frieIdentiteter = avvik.lokaleAliasSomIkkeSkalPekePaaPdlPerson()
-        )
+        ).also {
+            avviksMeldingerLogger.debug(
+                "Generert automatisk id oppdatering: alias som skal peke på pdl person: {}, frie identiteter: {}",
+                it.oppdatertData?.identiteter?.size,
+                it.frieIdentiteter.size
+            )
+        }
     }
 
 }
