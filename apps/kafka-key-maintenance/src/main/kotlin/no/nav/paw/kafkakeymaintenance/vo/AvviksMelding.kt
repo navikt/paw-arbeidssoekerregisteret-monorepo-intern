@@ -11,7 +11,7 @@ fun genererAvviksMelding(data: Data): AvviksMelding {
             .map { it.idnummer }
             .firstOrNull(),
         pdlIdentitetsnummer = data.aktor.identifikatorer.map { it.idnummer },
-        lokaleAlias = data.alias.flatMap { it.kobliner }
+        lokaleAlias = data.alias.flatMap { it.koblinger }
     )
 }
 

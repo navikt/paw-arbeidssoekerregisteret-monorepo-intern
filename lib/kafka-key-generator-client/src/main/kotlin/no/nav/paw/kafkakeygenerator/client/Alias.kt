@@ -12,10 +12,10 @@ data class AliasResponse(
 
 data class LokaleAlias(
     val identitetsnummer: String,
-    val kobliner: List<Alias>
+    val koblinger: List<Alias>
 )
 
-data class Alias(
+data class Alias (
     val identitetsnummer: String,
     val arbeidsoekerId: Long,
     val recordKey: Long,

@@ -14,7 +14,7 @@ data class AliasResponse(
 
 data class LokaleAlias(
     val identitetsnummer: String,
-    val kobliner: List<Alias>
+    val koblinger: List<Alias>
 )
 
 data class Alias(

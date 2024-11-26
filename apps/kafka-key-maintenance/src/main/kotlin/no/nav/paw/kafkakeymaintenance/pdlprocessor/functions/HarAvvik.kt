@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory
 val avviksDataLogger = LoggerFactory.getLogger("avvik.data")
 fun harAvvik(data: Data): Boolean =
     (data.alias
-        .flatMap { it.kobliner }
+        .flatMap { it.koblinger }
         .map { it.arbeidsoekerId }
         .distinct().size > 1)
         .also { harAvvik ->

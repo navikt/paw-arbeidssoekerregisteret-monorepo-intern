@@ -9,7 +9,6 @@ import no.nav.paw.kafkakeygenerator.mergedetector.hentLagretData
 import no.nav.paw.kafkakeygenerator.mergedetector.vo.MergeDetected
 import no.nav.paw.kafkakeygenerator.pdl.PdlIdentitesTjeneste
 import no.nav.paw.kafkakeygenerator.vo.*
-import org.apache.kafka.clients.producer.internals.BuiltInPartitioner
 import org.apache.kafka.clients.producer.internals.BuiltInPartitioner.partitionForKey
 import org.apache.kafka.common.serialization.Serdes
 
@@ -48,7 +47,7 @@ class Applikasjon(
             }.map { aliases ->
                 LokaleAlias(
                     identitetsnummer = identitet.value,
-                    kobliner = aliases
+                    koblinger = aliases
                 )
             }
     }
