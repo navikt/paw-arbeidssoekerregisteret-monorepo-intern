@@ -73,6 +73,8 @@ spec:
           namespace: paw
         - application: arbeidssoekerregisteret-for-personbruker
           namespace: paw
+        - application: aia-backend
+          namespace: paw
     outbound:
       rules:
         - application: poao-tilgang
