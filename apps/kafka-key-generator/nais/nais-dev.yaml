@@ -10,6 +10,7 @@ spec:
   port: 8080
   ingresses:
     - https://record-key-arbeidssoekerregisteret.intern.dev.nav.no/api/v1/record-key
+    - https://record-key-arbeidssoekerregisteret.intern.dev.nav.no/docs/record-key
   replicas:
     min: 2
     max: 2
