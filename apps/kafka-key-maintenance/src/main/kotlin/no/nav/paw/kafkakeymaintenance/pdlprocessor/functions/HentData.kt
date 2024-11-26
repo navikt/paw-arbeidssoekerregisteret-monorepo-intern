@@ -10,7 +10,6 @@ fun hentData(
     aktor: Aktor,
 ): Data =
     aktor.identifikatorer
-        .filter { it.type == Type.FOLKEREGISTERIDENT }
         .map { it.idnummer }
         .let(hentAlias)
         .let { Data(aktor, it) }

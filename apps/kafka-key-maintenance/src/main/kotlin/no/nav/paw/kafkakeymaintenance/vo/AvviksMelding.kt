@@ -4,15 +4,13 @@ import no.nav.paw.kafkakeygenerator.client.Alias
 import no.nav.person.pdl.aktor.v2.Type
 
 fun genererAvviksMelding(data: Data): AvviksMelding {
-    val fregIder = data.aktor
-        .identifikatorer
-        .filter { it.type == Type.FOLKEREGISTERIDENT }
     return AvviksMelding(
-        gjeldeneIdentitetsnummer = fregIder
+        gjeldeneIdentitetsnummer = data.aktor.identifikatorer
             .filter { it.gjeldende }
+            .filter { it.type == Type.FOLKEREGISTERIDENT }
             .map { it.idnummer }
             .firstOrNull(),
-        pdlIdentitetsnummer = fregIder.map { it.idnummer },
+        pdlIdentitetsnummer = data.aktor.identifikatorer.map { it.idnummer },
         lokaleAlias = data.alias.flatMap { it.kobliner }
     )
 }
