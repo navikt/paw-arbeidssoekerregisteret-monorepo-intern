@@ -10,6 +10,7 @@ const val opplysningerOmArbeidssoekerHendelseType = "intern.v1.opplysninger_om_a
 const val identitetsnummerOpphoertHendelseType = "intern.v1.identitetsnummer_opphoert"
 const val identitetsnummerSammenslaattHendelseType = "intern.v1.identitetsnummer_sammenslaatt"
 const val arbeidssoekerIdFlettetInn = "intern.v1.arbeidssoeker_id_flettet_inn"
+const val automatiskIdMergeIkkeMulig = "intern.v1.automatisk_id_merge_ikke_mulig"
 
 sealed interface Hendelse : HarIdentitetsnummer, HarMetadata {
     val id: Long

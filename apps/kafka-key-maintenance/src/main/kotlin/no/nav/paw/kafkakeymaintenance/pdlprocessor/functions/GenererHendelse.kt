@@ -1,10 +1,8 @@
 package no.nav.paw.kafkakeymaintenance.pdlprocessor.functions
 
-import no.nav.paw.arbeidssokerregisteret.intern.v1.ArbeidssoekerIdFlettetInn
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerSammenslaatt
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Kilde
+import no.nav.paw.arbeidssokerregisteret.intern.v1.*
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
+import no.nav.paw.kafkakeymaintenance.perioder.PeriodeRad
 import no.nav.paw.kafkakeymaintenance.vo.AutomatiskIdOppdatering
 import no.nav.paw.kafkakeymaintenance.vo.IdMap
 import no.nav.paw.kafkakeymaintenance.vo.IdOppdatering
@@ -59,3 +57,35 @@ fun genererHendelse(metadata: Metadata, idMap: IdMap): List<HendelseRecord<Hende
                 HendelseRecord(idMap.recordKey, infoHendelse)
             )
         }
+fun genererHendelse(metadata: Metadata, manuellIdOppdatering: ManuellIdOppdatering): List<Hendelse> {
+    return manuellIdOppdatering.lokaleAlias.map { alias ->
+        AutomatiskIdMergeIkkeMulig(
+            identitetsnummer = alias.identitetsnummer,
+            id = alias.arbeidsoekerId,
+            hendelseId = UUID.randomUUID(),
+            metadata = metadata,
+            gjeldeneIdentitetsnummer = manuellIdOppdatering.gjeldeneIdentitetsnummer,
+            pdlIdentitetsnummer = manuellIdOppdatering.pdlIdentitetsnummer,
+            lokaleAlias = manuellIdOppdatering.lokaleAlias.map(::toDomeneAlias),
+            perioder = manuellIdOppdatering.perioder.map(::tilDomenePerioderad)
+        )
+    }
+}
+
+fun tilDomenePerioderad(periodeRad: PeriodeRad): no.nav.paw.arbeidssokerregisteret.intern.v1.PeriodeRad {
+    return no.nav.paw.arbeidssokerregisteret.intern.v1.PeriodeRad(
+        periodeId = periodeRad.periodeId,
+        identitetsnummer = periodeRad.identitetsnummer,
+        fra = periodeRad.fra,
+        til = periodeRad.til
+    )
+}
+
+fun toDomeneAlias(alias: no.nav.paw.kafkakeygenerator.client.Alias): Alias {
+    return Alias(
+        identitetsnummer = alias.identitetsnummer,
+        arbeidsoekerId = alias.arbeidsoekerId,
+        recordKey = alias.recordKey,
+        partition = alias.partition
+    )
+}

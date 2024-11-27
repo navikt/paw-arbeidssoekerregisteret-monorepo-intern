@@ -76,5 +76,6 @@ fun eventTypeToClass(type: String?): KClass<out Hendelse> =
         identitetsnummerOpphoertHendelseType -> IdentitetsnummerOpphoert::class
         identitetsnummerSammenslaattHendelseType -> IdentitetsnummerSammenslaatt::class
         arbeidssoekerIdFlettetInn -> ArbeidssoekerIdFlettetInn::class
+        automatiskIdMergeIkkeMulig -> AutomatiskIdMergeIkkeMulig::class
         else -> throw IllegalArgumentException("Ukjent hendelse type: '$type'")
     }
