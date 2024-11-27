@@ -129,15 +129,17 @@ class KafkaConsumerService(
             )
             kafkaKeysAuditRepository.insert(audit)
         } else {
+            // TODO: Skal vi kjøre noe om fraArbeidssoekerId != eksisterendeArbeidssoekerId
+
             logger.info("Identitetsnummer oppdateres med annen ArbeidsøkerId")
             meterRegistry.countKafkaUpdated()
             val count = identitetRepository.update(identitetsnummer, tilArbeidssoekerId)
             if (count != 0) {
                 val audit = Audit(
                     identitetsnummer = identitetsnummer,
-                    tidligereArbeidssoekerId = fraArbeidssoekerId,
+                    tidligereArbeidssoekerId = eksisterendeArbeidssoekerId,
                     identitetStatus = IdentitetStatus.OPPDATERT,
-                    detaljer = "Bytte av arbeidsøkerId fra ${fraArbeidssoekerId.value} til ${tilArbeidssoekerId.value}"
+                    detaljer = "Bytte av arbeidsøkerId fra ${eksisterendeArbeidssoekerId.value} til ${tilArbeidssoekerId.value}"
                 )
                 kafkaKeysAuditRepository.insert(audit)
             } else {
