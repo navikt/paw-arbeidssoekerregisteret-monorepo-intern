@@ -23,7 +23,7 @@ fun genererHendelser(metadata: Metadata, idOppdatering: IdOppdatering): List<Hen
 
         is ManuellIdOppdatering -> {
             logger.warn("Manuell id oppdatering oppdaget")
-            emptyList()
+            genererHendelse(metadata, idOppdatering)
         }
     }
 }
@@ -57,7 +57,8 @@ fun genererHendelse(metadata: Metadata, idMap: IdMap): List<HendelseRecord<Hende
                 HendelseRecord(idMap.recordKey, infoHendelse)
             )
         }
-fun genererHendelse(metadata: Metadata, manuellIdOppdatering: ManuellIdOppdatering): List<Hendelse> {
+
+fun genererHendelse(metadata: Metadata, manuellIdOppdatering: ManuellIdOppdatering): List<HendelseRecord<Hendelse>> {
     return manuellIdOppdatering.lokaleAlias.map { alias ->
         AutomatiskIdMergeIkkeMulig(
             identitetsnummer = alias.identitetsnummer,
@@ -68,7 +69,7 @@ fun genererHendelse(metadata: Metadata, manuellIdOppdatering: ManuellIdOppdateri
             pdlIdentitetsnummer = manuellIdOppdatering.pdlIdentitetsnummer,
             lokaleAlias = manuellIdOppdatering.lokaleAlias.map(::toDomeneAlias),
             perioder = manuellIdOppdatering.perioder.map(::tilDomenePerioderad)
-        )
+        ).let { HendelseRecord(alias.recordKey, it) }
     }
 }
 
