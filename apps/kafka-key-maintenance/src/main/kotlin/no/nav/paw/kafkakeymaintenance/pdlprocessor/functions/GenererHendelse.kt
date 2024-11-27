@@ -35,13 +35,13 @@ fun genererHendelse(metadata: Metadata, idMap: IdMap): List<HendelseRecord<Hende
         .filter { it.arbeidsoekerId != idMap.arbeidsoekerId }
         .groupBy { it.arbeidsoekerId }
         .flatMap { (arbeidsoekerId, alias) ->
-            val identiteter = alias.map { it.identitetsnummer }
+            val identiteter = alias.map { it.identitetsnummer }.toSet()
             val hendelse = IdentitetsnummerSammenslaatt(
                 id = arbeidsoekerId,
                 hendelseId = UUID.randomUUID(),
                 identitetsnummer = identiteter.first(),
                 metadata = metadata,
-                alleIdentitetsnummer = identiteter,
+                flyttedeIdentitetsnumre = identiteter,
                 flyttetTilArbeidssoekerId = idMap.arbeidsoekerId
             )
             val infoHendelse = ArbeidssoekerIdFlettetInn(

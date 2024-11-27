@@ -312,7 +312,7 @@ class ApplikasjonsTest : FreeSpec({
                     "unit-test",
                     "tester"
                 ),
-                alleIdentitetsnummer = listOf(identitetnummer, "12345678902", "12345678903"),
+                flyttedeIdentitetsnumre = setOf(identitetnummer, "12345678902", "12345678903"),
                 flyttetTilArbeidssoekerId = 2L
             )
             eventlogTopic.pipeInput(key, identitetsnummerSammenslaatt)
@@ -355,7 +355,7 @@ class ApplikasjonsTest : FreeSpec({
                     "unit-test",
                     "tester"
                 ),
-                alleIdentitetsnummer = listOf(identitetnummer, "12345678902", "12345678903"),
+                flyttedeIdentitetsnumre = setOf(identitetnummer, "12345678902", "12345678903"),
                 flyttetTilArbeidssoekerId = 2L
             )
             eventlogTopic.pipeInput(key, identitetsnummerSammenslaatt)

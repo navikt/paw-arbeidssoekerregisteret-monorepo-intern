@@ -42,7 +42,7 @@ fun FunctionContext<TilstandV1?, Long>.identitetsnummerSammenslaattAvsluttPeriod
                 gjeldenePeriode = null,
                 forrigePeriode = stoppetPeriode,
                 gjeldeneIdentitetsnummer = hendelse.identitetsnummer,
-                alleIdentitetsnummer = (tilstand.alleIdentitetsnummer + hendelse.alleIdentitetsnummer + hendelse.identitetsnummer).toSet(),
+                alleIdentitetsnummer = (tilstand.alleIdentitetsnummer + hendelse.flyttedeIdentitetsnumre + hendelse.identitetsnummer).toSet(),
                 hendelseScope = scope
             ),
             nyPeriodeTilstand = Periode(

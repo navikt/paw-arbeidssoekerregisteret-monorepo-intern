@@ -30,7 +30,7 @@ class TestMergeIngenPerioder : FreeSpec({
                     key shouldBe 0L
                     hendelse.identitetsnummer shouldBe person1
                     hendelse.flyttetTilArbeidssoekerId shouldBe 1L
-                    hendelse.alleIdentitetsnummer shouldBe listOf(person1)
+                    hendelse.flyttedeIdentitetsnumre shouldBe listOf(person1)
                 }
                 it.avType<ArbeidssoekerIdFlettetInn>() should { (key, hendelse) ->
                     key shouldBe 1L

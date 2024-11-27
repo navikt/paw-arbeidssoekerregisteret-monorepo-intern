@@ -55,7 +55,7 @@ class TestMergeMedFlereAvsluttedePerioder : FreeSpec({
                     hendelse.identitetsnummer shouldBe person1.identitetsnummer()
                     hendelse.shouldBeInstanceOf<IdentitetsnummerSammenslaatt>()
                     hendelse.flyttetTilArbeidssoekerId shouldBe person3.arbeidssoekerId()
-                    hendelse.alleIdentitetsnummer shouldContainExactlyInAnyOrder listOf(person1.identitetsnummer(), person4.identitetsnummer())
+                    hendelse.flyttedeIdentitetsnumre shouldContainExactlyInAnyOrder listOf(person1.identitetsnummer(), person4.identitetsnummer())
                 }
                 hendelser.find { (_, hendelse) -> hendelse is ArbeidssoekerIdFlettetInn && hendelse.kilde.arbeidssoekerId == person1.arbeidssoekerId() }
                     .shouldNotBeNull() should { (_, hendelse) ->
@@ -72,7 +72,7 @@ class TestMergeMedFlereAvsluttedePerioder : FreeSpec({
                     hendelse.identitetsnummer shouldBe person2.identitetsnummer()
                     hendelse.shouldBeInstanceOf<IdentitetsnummerSammenslaatt>()
                     hendelse.flyttetTilArbeidssoekerId shouldBe person3.arbeidssoekerId()
-                    hendelse.alleIdentitetsnummer shouldBe listOf(person2.identitetsnummer())
+                    hendelse.flyttedeIdentitetsnumre shouldBe listOf(person2.identitetsnummer())
                 }
                 hendelser.find { (_, hendelse) -> hendelse is ArbeidssoekerIdFlettetInn && hendelse.kilde.arbeidssoekerId == person2.arbeidssoekerId() }
                     .shouldNotBeNull() should { (_, hendelse) ->

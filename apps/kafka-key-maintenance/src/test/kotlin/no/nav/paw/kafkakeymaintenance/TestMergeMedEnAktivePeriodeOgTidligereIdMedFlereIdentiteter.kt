@@ -43,7 +43,7 @@ class TestMergeMedEnAktivePeriodeOgTidligereIdMedFlereIdentiteter : FreeSpec({
                     key shouldBe 1L
                     hendelse.identitetsnummer shouldBeIn  setOf(person2.identitetsnummer(), person3.identitetsnummer())
                     hendelse.flyttetTilArbeidssoekerId shouldBe 0L
-                    hendelse.alleIdentitetsnummer shouldContainExactlyInAnyOrder listOf(
+                    hendelse.flyttedeIdentitetsnumre shouldContainExactlyInAnyOrder listOf(
                         person2.identitetsnummer(), person3.identitetsnummer(), aktorId
                     )
                 }
