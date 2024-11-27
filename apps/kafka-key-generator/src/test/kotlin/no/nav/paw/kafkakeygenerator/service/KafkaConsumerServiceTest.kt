@@ -91,10 +91,63 @@ class KafkaConsumerServiceTest : FreeSpec({
         auditResult shouldHaveSize 0
     }
 
-    "Skal oppdatere arbeidssøkerId for identitetsnummer" {
+    "Skal håndtere at det er konflikt mellom arbeidssøkerId i hendelse og database" {
         val identitetsnummer1 = Identitetsnummer("03017012345")
         val identitetsnummer2 = Identitetsnummer("04017012345")
         val identitetsnummer3 = Identitetsnummer("05017012345")
+
+        val opprettResult1 = kafkaKeysRepository.opprett(identitetsnummer1)
+        opprettResult1.onLeft { it shouldBe null }
+        opprettResult1.onRight { fraArbeidssoekerId ->
+            val opprettResult2 = kafkaKeysRepository.opprett(identitetsnummer2)
+            opprettResult2.onLeft { it shouldBe null }
+            opprettResult2.onRight { tilArbeidssoekerId ->
+                val opprettResult3 = kafkaKeysRepository.opprett(identitetsnummer3)
+                opprettResult3.onLeft { it shouldBe null }
+                opprettResult3.onRight { eksisterendeArbeidssoekerId ->
+                    val hendelser: List<Hendelse> = listOf(
+                        TestData.getIdentitetsnummerSammenslaatt(
+                            listOf(identitetsnummer2, identitetsnummer3),
+                            fraArbeidssoekerId,
+                            tilArbeidssoekerId
+                        )
+                    )
+
+                    kafkaConsumerService.handleRecords(hendelser.asConsumerRecords())
+
+                    val keyResult1 = kafkaKeysRepository.hent(identitetsnummer1)
+                    val keyResult2 = kafkaKeysRepository.hent(identitetsnummer2)
+                    val keyResult3 = kafkaKeysRepository.hent(identitetsnummer3)
+                    val auditResult1 = kafkaKeysAuditRepository.findByIdentitetsnummer(identitetsnummer1)
+                    val auditResult2 = kafkaKeysAuditRepository.findByIdentitetsnummer(identitetsnummer2)
+                    val auditResult3 = kafkaKeysAuditRepository.findByIdentitetsnummer(identitetsnummer3)
+
+                    keyResult1.onLeft { it shouldBe null }
+                    keyResult2.onLeft { it shouldBe null }
+                    keyResult3.onLeft { it shouldBe null }
+                    keyResult1.onRight { it shouldBe fraArbeidssoekerId }
+                    keyResult2.onRight { it shouldBe tilArbeidssoekerId }
+                    keyResult3.onRight { it shouldBe eksisterendeArbeidssoekerId }
+                    auditResult1 shouldHaveSize 0
+                    auditResult2 shouldHaveSize 1
+                    auditResult3 shouldHaveSize 1
+                    val audit2 = auditResult2.first()
+                    val audit3 = auditResult3.first()
+                    audit2.identitetsnummer shouldBe identitetsnummer2
+                    audit2.identitetStatus shouldBe IdentitetStatus.VERIFISERT
+                    audit2.tidligereArbeidssoekerId shouldBe fraArbeidssoekerId
+                    audit3.identitetsnummer shouldBe identitetsnummer3
+                    audit3.identitetStatus shouldBe IdentitetStatus.KONFLIKT
+                    audit3.tidligereArbeidssoekerId shouldBe fraArbeidssoekerId
+                }
+            }
+        }
+    }
+
+    "Skal oppdatere arbeidssøkerId for identitetsnummer" {
+        val identitetsnummer1 = Identitetsnummer("06017012345")
+        val identitetsnummer2 = Identitetsnummer("07017012345")
+        val identitetsnummer3 = Identitetsnummer("08017012345")
 
         val opprettResult1 = kafkaKeysRepository.opprett(identitetsnummer1)
         opprettResult1.onLeft { it shouldBe null }
@@ -133,10 +186,13 @@ class KafkaConsumerServiceTest : FreeSpec({
                 val audit3 = auditResult3.first()
                 audit1.identitetsnummer shouldBe identitetsnummer1
                 audit1.identitetStatus shouldBe IdentitetStatus.VERIFISERT
+                audit1.tidligereArbeidssoekerId shouldBe fraArbeidssoekerId
                 audit2.identitetsnummer shouldBe identitetsnummer2
                 audit2.identitetStatus shouldBe IdentitetStatus.OPPDATERT
+                audit2.tidligereArbeidssoekerId shouldBe fraArbeidssoekerId
                 audit3.identitetsnummer shouldBe identitetsnummer3
                 audit3.identitetStatus shouldBe IdentitetStatus.OPPRETTET
+                audit3.tidligereArbeidssoekerId shouldBe tilArbeidssoekerId
             }
         }
     }
