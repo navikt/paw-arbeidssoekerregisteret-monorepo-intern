@@ -64,3 +64,26 @@ fun MeterRegistry.countKafkaVerified() {
 fun MeterRegistry.countKafkaFailed() {
     genericCounter("kafka", "database", "failed")
 }
+
+fun <T : Number> MeterRegistry.genericGauge(
+    number: T,
+    source: String,
+    target: String,
+    action: String
+) {
+    gauge(
+        "${METRIC_PREFIX}_antall_hendelser",
+        Tags.of(
+            Tag.of("source", source),
+            Tag.of("target", target),
+            Tag.of("action", action)
+        ),
+        number
+    )
+}
+
+fun <T : Number> MeterRegistry.kafkaConflictGauge(
+    number: T
+) {
+    genericGauge(number, "kafka", "database", "conflict")
+}

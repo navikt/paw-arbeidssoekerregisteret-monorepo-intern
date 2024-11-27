@@ -22,6 +22,7 @@ import no.nav.paw.kafkakeygenerator.utils.countKafkaProcessed
 import no.nav.paw.kafkakeygenerator.utils.countKafkaReceived
 import no.nav.paw.kafkakeygenerator.utils.countKafkaUpdated
 import no.nav.paw.kafkakeygenerator.utils.countKafkaVerified
+import no.nav.paw.kafkakeygenerator.utils.kafkaConflictGauge
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Audit
 import no.nav.paw.kafkakeygenerator.vo.IdentitetStatus
@@ -128,13 +129,11 @@ class KafkaConsumerService(
                 detaljer = "Ingen endringer"
             )
             kafkaKeysAuditRepository.insert(audit)
-        } else {
-            // TODO: Skal vi kjøre noe om fraArbeidssoekerId != eksisterendeArbeidssoekerId
-
+        } else if (eksisterendeArbeidssoekerId == fraArbeidssoekerId) {
             logger.info("Identitetsnummer oppdateres med annen ArbeidsøkerId")
-            meterRegistry.countKafkaUpdated()
             val count = identitetRepository.update(identitetsnummer, tilArbeidssoekerId)
             if (count != 0) {
+                meterRegistry.countKafkaUpdated()
                 val audit = Audit(
                     identitetsnummer = identitetsnummer,
                     tidligereArbeidssoekerId = eksisterendeArbeidssoekerId,
@@ -144,7 +143,27 @@ class KafkaConsumerService(
                 kafkaKeysAuditRepository.insert(audit)
             } else {
                 logger.warn("Oppdatering førte ikke til noen endringer i databasen")
+                meterRegistry.countKafkaFailed()
+                val audit = Audit(
+                    identitetsnummer = identitetsnummer,
+                    tidligereArbeidssoekerId = eksisterendeArbeidssoekerId,
+                    identitetStatus = IdentitetStatus.IKKE_OPPDATERT,
+                    detaljer = "Kunne ikke bytte arbeidsøkerId fra ${eksisterendeArbeidssoekerId.value} til ${tilArbeidssoekerId.value}"
+                )
+                kafkaKeysAuditRepository.insert(audit)
             }
+        } else {
+            logger.error("Eksisterende ArbeidssøkerId stemmer ikke med hendelse")
+            meterRegistry.countKafkaFailed()
+            val audit = Audit(
+                identitetsnummer = identitetsnummer,
+                tidligereArbeidssoekerId = fraArbeidssoekerId,
+                identitetStatus = IdentitetStatus.KONFLIKT,
+                detaljer = "Eksisterende arbeidsøkerId ${eksisterendeArbeidssoekerId.value} stemmer ikke med arbeidsøkerId fra hendelse ${fraArbeidssoekerId.value}"
+            )
+            kafkaKeysAuditRepository.insert(audit)
+            val conflicts = kafkaKeysAuditRepository.findByStatus(IdentitetStatus.KONFLIKT)
+            meterRegistry.kafkaConflictGauge(conflicts.size)
         }
     }
 
@@ -154,9 +173,9 @@ class KafkaConsumerService(
         tilArbeidssoekerId: ArbeidssoekerId
     ) {
         logger.info("Identitetsnummer opprettes med eksisterende ArbeidsøkerId")
-        meterRegistry.countKafkaInserted()
         val count = identitetRepository.insert(identitetsnummer, tilArbeidssoekerId)
         if (count != 0) {
+            meterRegistry.countKafkaInserted()
             val audit = Audit(
                 identitetsnummer = identitetsnummer,
                 tidligereArbeidssoekerId = tilArbeidssoekerId,
@@ -166,6 +185,14 @@ class KafkaConsumerService(
             kafkaKeysAuditRepository.insert(audit)
         } else {
             logger.warn("Opprettelse førte ikke til noen endringer i databasen")
+            meterRegistry.countKafkaFailed()
+            val audit = Audit(
+                identitetsnummer = identitetsnummer,
+                tidligereArbeidssoekerId = tilArbeidssoekerId,
+                identitetStatus = IdentitetStatus.IKKE_OPPRETTET,
+                detaljer = "Kunne ikke opprette ident for arbeidsøkerId ${tilArbeidssoekerId.value}"
+            )
+            kafkaKeysAuditRepository.insert(audit)
         }
     }
 

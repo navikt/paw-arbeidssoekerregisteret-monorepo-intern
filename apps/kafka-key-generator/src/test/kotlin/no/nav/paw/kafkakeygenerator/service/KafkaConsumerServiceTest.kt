@@ -63,7 +63,7 @@ class KafkaConsumerServiceTest : FreeSpec({
         kafkaConsumerService.handleRecords(hendelser.asConsumerRecords())
 
         val keyResult = kafkaKeysRepository.hent(identitetsnummer)
-        val auditResult = kafkaKeysAuditRepository.find(identitetsnummer)
+        val auditResult = kafkaKeysAuditRepository.findByIdentitetsnummer(identitetsnummer)
 
         keyResult.onLeft { it shouldBe Failure("database", FailureCode.DB_NOT_FOUND) }
         keyResult.onRight { it shouldBe null }
@@ -84,7 +84,7 @@ class KafkaConsumerServiceTest : FreeSpec({
         }
 
         val keyResult = kafkaKeysRepository.hent(identitetsnummer)
-        val auditResult = kafkaKeysAuditRepository.find(identitetsnummer)
+        val auditResult = kafkaKeysAuditRepository.findByIdentitetsnummer(identitetsnummer)
 
         keyResult.onLeft { it shouldBe Failure("database", FailureCode.DB_NOT_FOUND) }
         keyResult.onRight { it shouldBe null }
@@ -115,9 +115,9 @@ class KafkaConsumerServiceTest : FreeSpec({
                 val keyResult1 = kafkaKeysRepository.hent(identitetsnummer1)
                 val keyResult2 = kafkaKeysRepository.hent(identitetsnummer2)
                 val keyResult3 = kafkaKeysRepository.hent(identitetsnummer3)
-                val auditResult1 = kafkaKeysAuditRepository.find(identitetsnummer1)
-                val auditResult2 = kafkaKeysAuditRepository.find(identitetsnummer2)
-                val auditResult3 = kafkaKeysAuditRepository.find(identitetsnummer3)
+                val auditResult1 = kafkaKeysAuditRepository.findByIdentitetsnummer(identitetsnummer1)
+                val auditResult2 = kafkaKeysAuditRepository.findByIdentitetsnummer(identitetsnummer2)
+                val auditResult3 = kafkaKeysAuditRepository.findByIdentitetsnummer(identitetsnummer3)
 
                 keyResult1.onLeft { it shouldBe null }
                 keyResult2.onLeft { it shouldBe null }
