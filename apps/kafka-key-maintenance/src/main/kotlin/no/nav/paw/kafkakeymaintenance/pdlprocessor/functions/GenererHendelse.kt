@@ -59,7 +59,9 @@ fun genererHendelse(metadata: Metadata, idMap: IdMap): List<HendelseRecord<Hende
         }
 
 fun genererHendelse(metadata: Metadata, manuellIdOppdatering: ManuellIdOppdatering): List<HendelseRecord<Hendelse>> {
-    return manuellIdOppdatering.lokaleAlias.map { alias ->
+    return manuellIdOppdatering.lokaleAlias
+        .distinctBy { it.arbeidsoekerId }
+        .map { alias ->
         AutomatiskIdMergeIkkeMulig(
             identitetsnummer = alias.identitetsnummer,
             id = alias.arbeidsoekerId,
