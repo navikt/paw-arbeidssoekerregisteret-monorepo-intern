@@ -73,7 +73,7 @@ class KafkaConsumerService(
             .filterIsInstance<IdentitetsnummerSammenslaatt>()
             .forEach { event ->
                 logger.info("Mottok hendelse om sammenslåing av Identitetsnummer")
-                val identitetsnummer = event.alleIdentitetsnummer
+                val identitetsnummer = event.flyttedeIdentitetsnumre
                     .map { Identitetsnummer(it) } + Identitetsnummer(event.identitetsnummer)
                 val fraArbeidssoekerId = ArbeidssoekerId(event.id)
                 val tilArbeidssoekerId = ArbeidssoekerId(event.flyttetTilArbeidssoekerId)

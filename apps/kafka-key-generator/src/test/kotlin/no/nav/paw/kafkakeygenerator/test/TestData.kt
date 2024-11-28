@@ -9,11 +9,13 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.TextContent
 import io.ktor.http.headersOf
+import no.nav.paw.arbeidssokerregisteret.intern.v1.ArbeidssoekerIdFlettetInn
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 import no.nav.paw.arbeidssokerregisteret.intern.v1.AvvistStoppAvPeriode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerSammenslaatt
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Kilde
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
@@ -146,11 +148,6 @@ fun List<Hendelse>.asConsumerRecords(): ConsumerRecords<Long, Hendelse> =
     this.map { TestData.getConsumerRecord(nextLong(), it) }
         .let { TestData.getConsumerRecords(it) }
 
-fun List<Hendelse>.asConsumerSequence(): Sequence<ConsumerRecords<Long, Hendelse>> =
-    this.map { TestData.getConsumerRecord(nextLong(), it) }
-        .let { TestData.getConsumerRecords(it) }
-        .let { sequenceOf(it) }
-
 object TestData {
 
     fun getMetadata(): Metadata =
@@ -160,19 +157,6 @@ object TestData {
             kilde = "paw",
             aarsak = "test"
         )
-
-    fun getIdentitetsnummerSammenslaatt(
-        identitetsnummerList: List<Identitetsnummer>,
-        fraArbeidssoekerId: ArbeidssoekerId,
-        tilArbeidssoekerId: ArbeidssoekerId
-    ): IdentitetsnummerSammenslaatt = IdentitetsnummerSammenslaatt(
-        id = fraArbeidssoekerId.value,
-        hendelseId = UUID.randomUUID(),
-        identitetsnummer = identitetsnummerList.first().value,
-        metadata = getMetadata(),
-        alleIdentitetsnummer = identitetsnummerList.map { it.value },
-        flyttetTilArbeidssoekerId = tilArbeidssoekerId.value,
-    )
 
     fun getPeriodeStartet(
         identitetsnummer: Identitetsnummer,
@@ -214,11 +198,36 @@ object TestData {
         metadata = getMetadata()
     )
 
+    fun getIdentitetsnummerSammenslaatt(
+        identitetsnummerList: List<Identitetsnummer>,
+        fraArbeidssoekerId: ArbeidssoekerId,
+        tilArbeidssoekerId: ArbeidssoekerId
+    ): IdentitetsnummerSammenslaatt = IdentitetsnummerSammenslaatt(
+        hendelseId = UUID.randomUUID(),
+        id = fraArbeidssoekerId.value,
+        identitetsnummer = identitetsnummerList.first().value,
+        metadata = getMetadata(),
+        flyttedeIdentitetsnumre = HashSet(identitetsnummerList.map { it.value }),
+        flyttetTilArbeidssoekerId = tilArbeidssoekerId.value
+    )
+
+    fun getArbeidssoekerIdFlettetInn(
+        identitetsnummerList: List<Identitetsnummer>,
+        tilArbeidssoekerId: ArbeidssoekerId,
+        fraArbeidssoekerId: ArbeidssoekerId
+    ): ArbeidssoekerIdFlettetInn = ArbeidssoekerIdFlettetInn(
+        hendelseId = UUID.randomUUID(),
+        id = tilArbeidssoekerId.value,
+        identitetsnummer = identitetsnummerList.first().value,
+        metadata = getMetadata(),
+        kilde = Kilde(
+            identitetsnummer = HashSet(identitetsnummerList.map { it.value }),
+            arbeidssoekerId = fraArbeidssoekerId.value
+        )
+    )
+
     fun <K, V> getConsumerRecord(key: K, value: V): ConsumerRecord<K, V> =
         ConsumerRecord("topic", 1, 1, key, value)
-
-    fun <K, V> getConsumerRecords(vararg records: ConsumerRecord<K, V>): ConsumerRecords<K, V> =
-        getConsumerRecords(records.asList())
 
     fun <K, V> getConsumerRecords(records: List<ConsumerRecord<K, V>>): ConsumerRecords<K, V> =
         ConsumerRecords(mapOf(TopicPartition("topic", 1) to records))

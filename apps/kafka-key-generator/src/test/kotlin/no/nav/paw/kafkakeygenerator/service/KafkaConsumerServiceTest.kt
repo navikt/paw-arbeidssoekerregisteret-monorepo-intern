@@ -51,19 +51,26 @@ class KafkaConsumerServiceTest : FreeSpec({
     }
 
     "Skal ignorere hendelse av irrelevant type" {
-        val identitetsnummer = Identitetsnummer("01017012345")
-        val arbeidssoekerId = ArbeidssoekerId(1)
+        val identitetsnummer1 = Identitetsnummer("01017012345")
+        val identitetsnummer2 = Identitetsnummer("02017012345")
+        val arbeidssoekerId1 = ArbeidssoekerId(1)
+        val arbeidssoekerId2 = ArbeidssoekerId(2)
         val hendelser: List<Hendelse> = listOf(
-            TestData.getPeriodeStartet(identitetsnummer, arbeidssoekerId),
-            TestData.getPeriodeAvsluttet(identitetsnummer, arbeidssoekerId),
-            TestData.getPeriodeStartAvvist(identitetsnummer, arbeidssoekerId),
-            TestData.getPeriodeAvsluttetAvvist(identitetsnummer, arbeidssoekerId)
+            TestData.getPeriodeStartet(identitetsnummer1, arbeidssoekerId1),
+            TestData.getPeriodeAvsluttet(identitetsnummer1, arbeidssoekerId1),
+            TestData.getPeriodeStartAvvist(identitetsnummer1, arbeidssoekerId1),
+            TestData.getPeriodeAvsluttetAvvist(identitetsnummer1, arbeidssoekerId1),
+            TestData.getArbeidssoekerIdFlettetInn(
+                listOf(identitetsnummer1, identitetsnummer2),
+                arbeidssoekerId1,
+                arbeidssoekerId2
+            )
         )
 
         kafkaConsumerService.handleRecords(hendelser.asConsumerRecords())
 
-        val keyResult = kafkaKeysRepository.hent(identitetsnummer)
-        val auditResult = kafkaKeysAuditRepository.findByIdentitetsnummer(identitetsnummer)
+        val keyResult = kafkaKeysRepository.hent(identitetsnummer1)
+        val auditResult = kafkaKeysAuditRepository.findByIdentitetsnummer(identitetsnummer1)
 
         keyResult.onLeft { it shouldBe Failure("database", FailureCode.DB_NOT_FOUND) }
         keyResult.onRight { it shouldBe null }
@@ -71,9 +78,9 @@ class KafkaConsumerServiceTest : FreeSpec({
     }
 
     "Skal ignorere hendelse for ukjent identitetsnummer" {
-        val identitetsnummer = Identitetsnummer("02017012345")
-        val fraArbeidssoekerId = ArbeidssoekerId(2)
-        val tilArbeidssoekerId = ArbeidssoekerId(3)
+        val identitetsnummer = Identitetsnummer("03017012345")
+        val fraArbeidssoekerId = ArbeidssoekerId(3)
+        val tilArbeidssoekerId = ArbeidssoekerId(4)
 
         val hendelser: List<Hendelse> = listOf(
             TestData.getIdentitetsnummerSammenslaatt(listOf(identitetsnummer), fraArbeidssoekerId, tilArbeidssoekerId)
@@ -92,9 +99,9 @@ class KafkaConsumerServiceTest : FreeSpec({
     }
 
     "Skal håndtere at det er konflikt mellom arbeidssøkerId i hendelse og database" {
-        val identitetsnummer1 = Identitetsnummer("03017012345")
-        val identitetsnummer2 = Identitetsnummer("04017012345")
-        val identitetsnummer3 = Identitetsnummer("05017012345")
+        val identitetsnummer1 = Identitetsnummer("04017012345")
+        val identitetsnummer2 = Identitetsnummer("05017012345")
+        val identitetsnummer3 = Identitetsnummer("06017012345")
 
         val opprettResult1 = kafkaKeysRepository.opprett(identitetsnummer1)
         opprettResult1.onLeft { it shouldBe null }
@@ -145,9 +152,9 @@ class KafkaConsumerServiceTest : FreeSpec({
     }
 
     "Skal oppdatere arbeidssøkerId for identitetsnummer" {
-        val identitetsnummer1 = Identitetsnummer("06017012345")
-        val identitetsnummer2 = Identitetsnummer("07017012345")
-        val identitetsnummer3 = Identitetsnummer("08017012345")
+        val identitetsnummer1 = Identitetsnummer("07017012345")
+        val identitetsnummer2 = Identitetsnummer("08017012345")
+        val identitetsnummer3 = Identitetsnummer("09017012345")
 
         val opprettResult1 = kafkaKeysRepository.opprett(identitetsnummer1)
         opprettResult1.onLeft { it shouldBe null }
