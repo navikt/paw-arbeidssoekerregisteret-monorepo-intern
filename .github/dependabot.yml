@@ -9,6 +9,9 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    ignore:
+      - dependency-name: "org.apache.kafka.*"
+        versions: '>= 4'
     groups:
       opentelemetry:
         patterns:
@@ -21,13 +24,6 @@ updates:
           - "org.apache.kafka"
           - "io.confluent"
           - "org.apache.avro"
-        ignore:
-          - dependency-name: "org.apache.kafka:kafka-clients"
-            versions: '>= 4'
-          - dependency-name: "org.apache.kafka:kafka-streams"
-            versions: '>= 4'
-          - dependency-name: "org.apache.kafka:kafka-streams-test-utils"
-            versions: '>= 4'
       nav:
         patterns:
           - "no.nav"
