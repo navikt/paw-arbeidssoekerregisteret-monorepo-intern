@@ -78,16 +78,25 @@ fun procesAktorMelding(
             .setAttribute("aktive_perioder", perioder.filter { p -> p.erAktiv }.size.toLong())
     }
     .also { avvikOgPerioder ->
+        val lengstAktive = avvikOgPerioder?.perioder?.filter { it.erAktiv }?.minByOrNull { it.fra }
+        val sisteStopp = avvikOgPerioder?.perioder?.filter { !it.erAktiv }?.maxByOrNull { it.til ?: Instant.MIN }?.til
+        val overlapp = lengstAktive != null &&
+                sisteStopp != null &&
+                lengstAktive.fra.isBefore(sisteStopp)
         meterRegistry
             .counter(
-                "paw_kafka_key_maintenance_aktor_consumer_v1",
+                "paw_kafka_key_maintenance_aktor_consumer_v2",
                 listOf(
                     Tag.of("avvik", (avvikOgPerioder != null).toString()),
+                    Tag.of("avslutt_etter_start", overlapp.toString()),
                     Tag.of("perioder", avvikOgPerioder?.perioder?.size.toBucket()),
                     Tag.of("aktive_perioder", avvikOgPerioder?.perioder?.filter { p -> p.erAktiv }?.size.toBucket()),
                     Tag.of("lokale_alias", avvikOgPerioder?.avviksMelding?.lokaleAlias?.size.toBucket()),
                     Tag.of("pdl_identiteter", avvikOgPerioder?.avviksMelding?.pdlIdentitetsnummer?.size.toBucket()),
-                    Tag.of("frie_identer", avvikOgPerioder?.avviksMelding?.lokaleAliasSomIkkeSkalPekePaaPdlPerson()?.size.toBucket())
+                    Tag.of(
+                        "frie_identer",
+                        avvikOgPerioder?.avviksMelding?.lokaleAliasSomIkkeSkalPekePaaPdlPerson()?.size.toBucket()
+                    )
                 )
             ).increment()
     }
