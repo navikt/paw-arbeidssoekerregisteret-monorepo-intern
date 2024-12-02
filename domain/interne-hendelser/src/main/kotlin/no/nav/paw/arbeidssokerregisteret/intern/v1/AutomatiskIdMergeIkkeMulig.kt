@@ -10,9 +10,9 @@ class AutomatiskIdMergeIkkeMulig(
     override val hendelseId: UUID,
     override val metadata: Metadata,
     val gjeldeneIdentitetsnummer: String?,
-    val pdlIdentitetsnummer: List<String>,
-    val lokaleAlias: List<Alias>,
-    val perioder: List<PeriodeRad>
+    val pdlIdentitetsnummer: Set<String>,
+    val lokaleAlias: Set<Alias>,
+    val perioder: Set<PeriodeRad>
 ) : Hendelse {
     override val hendelseType: String = automatiskIdMergeIkkeMulig
 }

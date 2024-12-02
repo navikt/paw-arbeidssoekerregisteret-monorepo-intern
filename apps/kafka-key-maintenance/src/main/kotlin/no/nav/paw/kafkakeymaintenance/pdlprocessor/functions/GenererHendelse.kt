@@ -68,9 +68,9 @@ fun genererHendelse(metadata: Metadata, manuellIdOppdatering: ManuellIdOppdateri
             hendelseId = UUID.randomUUID(),
             metadata = metadata,
             gjeldeneIdentitetsnummer = manuellIdOppdatering.gjeldeneIdentitetsnummer,
-            pdlIdentitetsnummer = manuellIdOppdatering.pdlIdentitetsnummer,
-            lokaleAlias = manuellIdOppdatering.lokaleAlias.map(::toDomeneAlias),
-            perioder = manuellIdOppdatering.perioder.map(::tilDomenePerioderad)
+            pdlIdentitetsnummer = manuellIdOppdatering.pdlIdentitetsnummer.toSet(),
+            lokaleAlias = manuellIdOppdatering.lokaleAlias.map(::toDomeneAlias).toSet(),
+            perioder = manuellIdOppdatering.perioder.map(::tilDomenePerioderad).toSet()
         ).let { HendelseRecord(alias.recordKey, it) }
     }
 }
