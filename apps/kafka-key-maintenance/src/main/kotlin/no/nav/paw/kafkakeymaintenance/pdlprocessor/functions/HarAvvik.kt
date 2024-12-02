@@ -11,5 +11,5 @@ fun harAvvik(data: Data): Boolean =
         .map { it.arbeidsoekerId }
         .distinct().size > 1)
         .also { harAvvik ->
-            avviksDataLogger.debug("Har avvik: {}}, data: {}}", harAvvik, data.debugString())
+            avviksDataLogger.debug("Har avvik: {}, data: {}", harAvvik, data.debugString())
         }

@@ -89,10 +89,14 @@ fun <K, V> kafkaConsumerPlugin(): ApplicationPlugin<KafkaConsumerPluginConfig<K,
                         consumeFunction(records)
                         successFunction(records)
                     } catch (throwable: Throwable) {
+                        kafkaConsumer.unsubscribe()
+                        kafkaConsumer.close(closeTimeout)
+                        shutdownFlag.set(true)
                         errorFunction(throwable)
                     }
                 }
                 logger.info("Kafka Consumer avsluttet")
+                consumeJob?.cancel()
             }
         }
     }

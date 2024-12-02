@@ -200,7 +200,7 @@ class KafkaConsumerService(
     fun handleException(throwable: Throwable) {
         errorLogger.error("Kafka Consumer avslutter etter feil", throwable)
         Span.current().setStatus(StatusCode.ERROR)
-        livenessIndicator.setUnhealthy()
-        readinessIndicator.setUnhealthy()
+        // livenessIndicator.setUnhealthy() TODO: Disabler for å unngå å ta ned appen
+        // readinessIndicator.setUnhealthy()
     }
 }
