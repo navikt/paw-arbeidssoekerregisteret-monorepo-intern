@@ -12,9 +12,9 @@ spec:
     - name: CORS_ALLOW_ORIGINS
       value: "www.intern.nav.no"
     - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_TOPIC
-      value: "paw.arbeidssoker-bekreftelse-v1"
+      value: "paw.arbeidssoker-bekreftelse-beta-v1"
     - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_HENDELSESLOGG_TOPIC
-      value: "paw.arbeidssoker-bekreftelse-hendelseslogg-v1"
+      value: "paw.arbeidssoker-bekreftelse-hendelseslogg-beta-v1"
     - name: KAFKA_KEYS_SCOPE
       value: "api://prod-gcp.paw.paw-kafka-key-generator/.default"
   replicas:

@@ -63,13 +63,13 @@ spec:
           - host: pdl-api.dev-fss-pub.nais.io
       inbound:
         rules:
-          - application: paw-arbeidssokerregisteret-api-inngang
-          - application: paw-arbeidssoekerregisteret-utgang-formidlingsgruppe
-          - application: paw-arbeidssoekerregisteret-utgang-pdl
+          - application: paw-brukerstotte
+          - application: paw-kafka-key-maintenance
           - application: paw-microfrontend-toggler
+          - application: paw-arbeidssokerregisteret-api-inngang
+          - application: paw-arbeidssoekerregisteret-utgang-pdl
+          - application: paw-arbeidssoekerregisteret-utgang-formidlingsgruppe
           - application: paw-arbeidssoekerregisteret-hendelselogg-backup
           - application: paw-arbeidssoekerregisteret-api-bekreftelse
           - application: paw-arbeidssoekerregisteret-bekreftelse-tjeneste
           - application: paw-arbeidssoekerregisteret-bekreftelse-min-side-varsler
-          - application: paw-brukerstotte
-          - application: paw-kafka-key-maintenance
