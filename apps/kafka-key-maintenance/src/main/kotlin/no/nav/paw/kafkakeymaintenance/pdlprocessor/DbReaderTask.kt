@@ -1,7 +1,11 @@
 package no.nav.paw.kafkakeymaintenance.pdlprocessor
 
 import io.opentelemetry.api.GlobalOpenTelemetry
-import io.opentelemetry.api.trace.*
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanContext
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.api.trace.TraceFlags
+import io.opentelemetry.api.trace.TraceState
 import io.opentelemetry.context.Context
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
@@ -13,8 +17,8 @@ import no.nav.paw.kafkakeygenerator.client.LokaleAlias
 import no.nav.paw.kafkakeymaintenance.ApplicationContext
 import no.nav.paw.kafkakeymaintenance.ErrorOccurred
 import no.nav.paw.kafkakeymaintenance.ShutdownSignal
-import no.nav.paw.kafkakeymaintenance.kafka.TransactionContext
 import no.nav.paw.kafkakeymaintenance.kafka.Topic
+import no.nav.paw.kafkakeymaintenance.kafka.TransactionContext
 import no.nav.paw.kafkakeymaintenance.kafka.txContext
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.functions.HendelseRecord
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.Data
@@ -94,7 +98,8 @@ class DbReaderTask(
                 }
                 .count()
             if (batch.isEmpty()) {
-                applicationContext.logger.info("Ingen meldinger klare for prosessering, venter ${dbReaderContext.aktorConfig.interval}")
+                val sleepUntil = Instant.now().plus(dbReaderContext.aktorConfig.interval)
+                applicationContext.logger.info("Ingen meldinger klare for prosessering, venter til $sleepUntil (+ ${dbReaderContext.aktorConfig.interval})")
                 Thread.sleep(dbReaderContext.aktorConfig.interval.toMillis())
             } else {
                 applicationContext.logger.info("Genererte {} hendelser fra {} meldinger", count, batch.size)

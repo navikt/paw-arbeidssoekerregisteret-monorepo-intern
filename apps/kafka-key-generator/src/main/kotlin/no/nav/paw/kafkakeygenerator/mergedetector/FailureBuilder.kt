@@ -1,7 +1,7 @@
 package no.nav.paw.kafkakeygenerator.mergedetector
 
-import no.nav.paw.kafkakeygenerator.Failure
-import no.nav.paw.kafkakeygenerator.FailureCode
+import no.nav.paw.kafkakeygenerator.vo.Failure
+import no.nav.paw.kafkakeygenerator.vo.FailureCode
 
 fun failure(code: FailureCode) : Failure =
     Failure(

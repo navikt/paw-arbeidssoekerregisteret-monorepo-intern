@@ -6,7 +6,6 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.http.HttpStatusCode.Companion.OK
-import no.nav.paw.kafkakeygenerator.*
 import no.nav.paw.kafkakeygenerator.api.recordkey.FailureResponseV1
 import no.nav.paw.kafkakeygenerator.api.recordkey.Feilkode
 import no.nav.paw.kafkakeygenerator.api.recordkey.RecordKeyLookupResponseV1
@@ -14,7 +13,12 @@ import no.nav.paw.kafkakeygenerator.api.recordkey.recordKeyLookupResponseV1
 import no.nav.paw.kafkakeygenerator.api.v2.publicTopicKeyFunction
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.CallId
+import no.nav.paw.kafkakeygenerator.vo.Either
+import no.nav.paw.kafkakeygenerator.vo.Failure
+import no.nav.paw.kafkakeygenerator.vo.FailureCode
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.vo.left
+import no.nav.paw.kafkakeygenerator.vo.right
 import org.slf4j.LoggerFactory
 
 class GetRecordKeyTest : FreeSpec({

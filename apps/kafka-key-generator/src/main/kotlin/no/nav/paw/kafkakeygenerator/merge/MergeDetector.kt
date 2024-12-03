@@ -2,19 +2,25 @@ package no.nav.paw.kafkakeygenerator.merge
 
 import no.nav.paw.kafkakeygenerator.*
 import no.nav.paw.kafkakeygenerator.mergedetector.vo.MergeDetected
-import no.nav.paw.kafkakeygenerator.pdl.PdlIdentitesTjeneste
+import no.nav.paw.kafkakeygenerator.service.PdlService
+import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.vo.Either
+import no.nav.paw.kafkakeygenerator.vo.Failure
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.vo.Left
+import no.nav.paw.kafkakeygenerator.vo.Right
+import no.nav.paw.kafkakeygenerator.vo.right
 import no.nav.paw.pdl.graphql.generated.hentidenter.IdentInformasjon
 import org.slf4j.LoggerFactory
 
 class MergeDetector(
-    private val pdlIdentitesTjeneste: PdlIdentitesTjeneste,
-    private val kafkaKeys: KafkaKeys
+    private val pdlService: PdlService,
+    private val kafkaKeysRepository: KafkaKeysRepository
 ) {
     private val logger = LoggerFactory.getLogger("MergeDetector")
     private val hentEllerNull: (Identitetsnummer) -> ArbeidssoekerId? = { id ->
-        kafkaKeys.hent(id)
+        kafkaKeysRepository.hent(id)
             .fold(
                 { null},
                 { it }
@@ -23,7 +29,7 @@ class MergeDetector(
 
     suspend fun findMerges(batchSize: Int): Either<Failure, Long> {
         require(batchSize > 0) { "Batch size must be greater than 0" }
-        return kafkaKeys.hentSisteArbeidssoekerId()
+        return kafkaKeysRepository.hentSisteArbeidssoekerId()
             .map { it.value }
             .suspendingFlatMap { max ->
                 processRange(
@@ -51,10 +57,10 @@ class MergeDetector(
                 if (currentPos >= stopAt) {
                     results
                 } else {
-                    val storedData = kafkaKeys.hent(currentPos, maxSize)
+                    val storedData = kafkaKeysRepository.hent(currentPos, maxSize)
                     val detected = storedData
                         .suspendingFlatMap {
-                            pdlIdentitesTjeneste.hentIdenter(it.keys.toList())
+                            pdlService.hentIdenter(it.keys.toList())
                         }
                         .map { pdl -> detectMerges(hentEllerNull, pdl) }
                         .map(Sequence<MergeDetected>::count)

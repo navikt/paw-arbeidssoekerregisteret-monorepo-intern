@@ -1,61 +1,85 @@
 {
-  "interactiveLogin": true,
-  "httpServer": "NettyWrapper",
-  "tokenCallbacks": [
-    {
-      "issuerId": "idporten",
-      "tokenExpiry": 3600,
-      "requestMappings": [
+    "interactiveLogin": true,
+    "httpServer": "NettyWrapper",
+    "tokenCallbacks": [
         {
-          "requestParam": "client_id",
-          "match": "paw-arbeidssoekerregisteret-api-bekreftelse",
-          "claims": {
-            "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
-            "aud": [
-              "paw-arbeidssoekerregisteret-api-bekreftelse"
-            ],
-            "pid": "17830348441",
-            "acr": "idporten-loa-high"
-          }
-        }
-      ]
-    },
-    {
-      "issuerId": "tokenx",
-      "tokenExpiry": 3600,
-      "requestMappings": [
+            "issuerId": "idporten",
+            "tokenExpiry": 3600,
+            "requestMappings": [
+                {
+                    "requestParam": "client_id",
+                    "match": "paw-arbeidssoekerregisteret-api-bekreftelse",
+                    "claims": {
+                        "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
+                        "aud": [
+                            "paw-arbeidssoekerregisteret-api-bekreftelse"
+                        ],
+                        "pid": "17830348441",
+                        "acr": "idporten-loa-high"
+                    }
+                }
+            ]
+        },
         {
-          "requestParam": "client_id",
-          "match": "paw-arbeidssoekerregisteret-api-bekreftelse",
-          "claims": {
-            "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
-            "aud": [
-              "paw-arbeidssoekerregisteret-api-bekreftelse"
-            ],
-            "pid": "17830348441",
-            "acr": "idporten-loa-high"
-          }
-        }
-      ]
-    },
-    {
-      "issuerId": "azure",
-      "tokenExpiry": 3600,
-      "requestMappings": [
+            "issuerId": "tokenx",
+            "tokenExpiry": 3600,
+            "requestMappings": [
+                {
+                    "requestParam": "client_id",
+                    "match": "paw-kafka-key-generator",
+                    "claims": {
+                        "sub": "admin@paw-kafka-key-generator",
+                        "aud": [
+                            "paw-kafka-key-generator"
+                        ],
+                        "pid": "01017012345",
+                        "acr": "idporten-loa-high"
+                    }
+                },
+                {
+                    "requestParam": "client_id",
+                    "match": "paw-arbeidssoekerregisteret-api-bekreftelse",
+                    "claims": {
+                        "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
+                        "aud": [
+                            "paw-arbeidssoekerregisteret-api-bekreftelse"
+                        ],
+                        "pid": "01017012345",
+                        "acr": "idporten-loa-high"
+                    }
+                }
+            ]
+        },
         {
-          "requestParam": "client_id",
-          "match": "paw-arbeidssoekerregisteret-api-bekreftelse",
-          "claims": {
-            "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
-            "aud": [
-              "paw-arbeidssoekerregisteret-api-bekreftelse"
-            ],
-            "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
-            "name": "Nav Navesen",
-            "NAVident": "12345"
-          }
+            "issuerId": "azure",
+            "tokenExpiry": 3600,
+            "requestMappings": [
+                {
+                    "requestParam": "client_id",
+                    "match": "paw-kafka-key-generator",
+                    "claims": {
+                        "sub": "admin@paw-kafka-key-generator",
+                        "aud": [
+                            "paw-kafka-key-generator"
+                        ],
+                        "pid": "01017012345",
+                        "acr": "idporten-loa-high"
+                    }
+                },
+                {
+                    "requestParam": "client_id",
+                    "match": "paw-arbeidssoekerregisteret-api-bekreftelse",
+                    "claims": {
+                        "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
+                        "aud": [
+                            "paw-arbeidssoekerregisteret-api-bekreftelse"
+                        ],
+                        "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
+                        "name": "Nav Navesen",
+                        "NAVident": "NAV12345"
+                    }
+                }
+            ]
         }
-      ]
-    }
-  ]
+    ]
 }

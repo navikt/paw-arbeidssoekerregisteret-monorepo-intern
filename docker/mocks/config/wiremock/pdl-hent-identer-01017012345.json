@@ -1,0 +1,30 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/pdl",
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$.variables[?(@.ident == '01017012345')]"
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "data": {
+        "hentIdenter": {
+          "identer": [
+            {
+              "ident": "01017012345",
+              "gruppe": "FOLKEREGISTERIDENT",
+              "historisk": false
+            }
+          ]
+        }
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

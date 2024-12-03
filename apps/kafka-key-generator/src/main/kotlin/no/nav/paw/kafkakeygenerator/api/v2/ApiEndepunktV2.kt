@@ -10,11 +10,11 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.pipeline.*
 import io.opentelemetry.instrumentation.annotations.WithSpan
-import no.nav.paw.kafkakeygenerator.Applikasjon
-import no.nav.paw.kafkakeygenerator.FailureCode
-import no.nav.paw.kafkakeygenerator.Left
-import no.nav.paw.kafkakeygenerator.Right
-import no.nav.paw.kafkakeygenerator.config.Autentiseringskonfigurasjon
+import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
+import no.nav.paw.kafkakeygenerator.vo.FailureCode
+import no.nav.paw.kafkakeygenerator.vo.Left
+import no.nav.paw.kafkakeygenerator.vo.Right
+import no.nav.paw.kafkakeygenerator.config.AuthenticationConfig
 import no.nav.paw.kafkakeygenerator.vo.CallId
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import org.slf4j.Logger
@@ -22,30 +22,30 @@ import org.slf4j.LoggerFactory
 import java.util.*
 
 fun Routing.konfigurerApiV2(
-    autentiseringKonfigurasjon: Autentiseringskonfigurasjon,
-    applikasjon: Applikasjon
+    authenticationConfig: AuthenticationConfig,
+    kafkaKeysService: KafkaKeysService
 ) {
     val logger = LoggerFactory.getLogger("api")
-    authenticate(autentiseringKonfigurasjon.kafkaKeyApiAuthProvider) {
+    authenticate(authenticationConfig.kafkaKeyApiAuthProvider) {
         post("/api/v2/hentEllerOpprett") {
-            hentEllerOpprett(applikasjon, logger)
+            hentEllerOpprett(kafkaKeysService, logger)
         }
         post("/api/v2/info") {
-            hentInfo(applikasjon, logger)
+            hentInfo(kafkaKeysService, logger)
         }
         post("/api/v2/lokalInfo") {
-            hentLokalInfo(applikasjon, logger)
+            hentLokalInfo(kafkaKeysService, logger)
         }
     }
 }
 
 @WithSpan
 suspend fun PipelineContext<Unit, ApplicationCall>.hentLokalInfo(
-    applikasjon: Applikasjon,
+    kafkaKeysService: KafkaKeysService,
     logger: Logger
 ) {
     val request = call.receive<AliasRequest>()
-    when (val resultat = applikasjon.hentLokaleAlias(request.antallPartisjoner, request.identer)) {
+    when (val resultat = kafkaKeysService.hentLokaleAlias(request.antallPartisjoner, request.identer)) {
         is Right -> call.respond(
             OK, AliasResponse(
                 alias = resultat.right
@@ -63,14 +63,14 @@ suspend fun PipelineContext<Unit, ApplicationCall>.hentLokalInfo(
 
 @WithSpan
 suspend fun PipelineContext<Unit, ApplicationCall>.hentInfo(
-    applikasjon: Applikasjon,
+    kafkaKeysService: KafkaKeysService,
     logger: Logger
 ) {
     val callId = call.request.headers["traceparent"]
         ?.let { CallId(it) }
         ?: CallId(UUID.randomUUID().toString())
     val request = call.receive<RequestV2>()
-    when (val resultat = applikasjon.validerLagretData(callId, Identitetsnummer(request.ident))) {
+    when (val resultat = kafkaKeysService.validerLagretData(callId, Identitetsnummer(request.ident))) {
         is Left -> call.respond(
             status = InternalServerError,
             message = resultat.left.code.name
@@ -81,14 +81,14 @@ suspend fun PipelineContext<Unit, ApplicationCall>.hentInfo(
 
 @WithSpan
 private suspend fun PipelineContext<Unit, ApplicationCall>.hentEllerOpprett(
-    applikasjon: Applikasjon,
+    kafkaKeysService: KafkaKeysService,
     logger: Logger
 ) {
     val callId = call.request.headers["traceparent"]
         ?.let { CallId(it) }
         ?: CallId(UUID.randomUUID().toString())
     val request = call.receive<RequestV2>()
-    when (val resultat = applikasjon.hentEllerOpprett(callId, Identitetsnummer(request.ident))) {
+    when (val resultat = kafkaKeysService.hentEllerOpprett(callId, Identitetsnummer(request.ident))) {
         is Right -> {
             call.respond(
                 OK, responseV2(

@@ -8,6 +8,17 @@ metadata:
 spec:
   image: {{ image }}
   port: 8080
+  env:
+    - name: PDL_URL
+      value: "https://pdl-api.dev-fss-pub.nais.io/graphql"
+    - name: PDL_SCOPE
+      value: "api://dev-fss.pdl.pdl-api/.default"
+    - name: PDL_TEMA
+      value: "OPP"
+    - name: KAFKA_CONSUMER_GROUP_ID
+      value: "paw-kafka-key-generator-v1"
+    - name: KAFKA_TOPIC_PAW_ARBEIDSSOKER_HENDELSESLOGG
+      value: "paw.arbeidssoker-hendelseslogg-v1"
   ingresses:
     - https://record-key-arbeidssoekerregisteret.intern.dev.nav.no/api/v1/record-key
     - https://record-key-arbeidssoekerregisteret.intern.dev.nav.no/docs/record-key
@@ -33,6 +44,8 @@ spec:
     autoInstrumentation:
       enabled: true
       runtime: java
+  kafka:
+      pool: nav-dev
   gcp:
     sqlInstances:
       - type: POSTGRES_14
