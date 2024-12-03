@@ -18,7 +18,7 @@ spec:
     - name: KAFKA_CONSUMER_GROUP_ID
       value: "paw-kafka-key-generator-v1"
     - name: KAFKA_TOPIC_PAW_ARBEIDSSOKER_HENDELSESLOGG
-      value: "paw.arbeidssoker-hendelseslogg-idmerge-beta"
+      value: "paw.arbeidssoker-hendelseslogg-v1"
   ingresses:
     - https://record-key-arbeidssoekerregisteret.intern.dev.nav.no/api/v1/record-key
     - https://record-key-arbeidssoekerregisteret.intern.dev.nav.no/docs/record-key
