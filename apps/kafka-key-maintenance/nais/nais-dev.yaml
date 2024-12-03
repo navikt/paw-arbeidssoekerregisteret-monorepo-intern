@@ -22,7 +22,7 @@ spec:
       enabled: true
   env:
     - name: HENDELSELOGG_TOPIC
-      value: paw.arbeidssoker-hendelseslogg-idmerge-beta
+      value: paw.arbeidssoker-hendelseslogg-v1
     - name: KAFKA_KEYS_SCOPE
       value: "api://dev-gcp.paw.paw-kafka-key-generator/.default"
   liveness:
