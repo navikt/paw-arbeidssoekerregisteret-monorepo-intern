@@ -203,11 +203,20 @@ components:
           example: "Startet"
         metadata:
           $ref: "#/components/schemas/HendelseMetadata"
+        kafkaPartition:
+          type: "integer"
+          format: "int32"
+          description: "Kafka partition"
+          example: 1
         kafkaOffset:
           type: "integer"
           format: "int64"
           description: "Kafka offset"
           example: 123234
+        merged:
+          type: "boolean"
+          description: "Hendelsen stammer opprinnelig fra en annen arbeidssøker id"
+          example: true
         api:
           type: "boolean"
           description: "Hendelsen finnes i API, bare inkludert dersom relevant"

@@ -7,6 +7,7 @@ import arrow.core.raise.either
 import arrow.core.right
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.*
 import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.ArbeidssoekerperiodeResponse
+import no.nav.paw.arbeidssoekerregisteret.backup.database.readAllNestedRecordsForId
 import no.nav.paw.arbeidssoekerregisteret.backup.database.readAllRecordsForId
 import no.nav.paw.arbeidssoekerregisteret.backup.database.txContext
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
@@ -32,9 +33,9 @@ class BrukerstoetteService(
     private val apiOppslagLogger = LoggerFactory.getLogger("api_oppslag_logger")
     private val txCtx = txContext(applicationContext)
     suspend fun hentDetaljer(identitetsnummer: String): DetaljerResponse? {
-        val (id, _) = kafkaKeysClient.getIdAndKey(identitetsnummer)
+        val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer)
         val hendelser = transaction {
-            txCtx().readAllRecordsForId(hendelseDeserializer, id)
+            txCtx().readAllNestedRecordsForId(hendelseDeserializer, id)
         }
         if (hendelser.isEmpty()) {
             return null
@@ -54,9 +55,9 @@ class BrukerstoetteService(
                     { it }
                 )
 
-            val partition = hendelser.firstOrNull()?.partition
+            val partition = hendelser.filterNot { it.merged }.firstOrNull()?.partition
             return DetaljerResponse(
-                recordKey = hendelser.first().recordKey,
+                recordKey = key,
                 kafkaPartition = partition,
                 historikk = innkommendeHendelse.map { snapshot ->
                     snapshot.copy(
@@ -64,7 +65,7 @@ class BrukerstoetteService(
                         gjeldeneTilstand = snapshot.gjeldeneTilstand?.let { enrich(it, fraOppslagsApi) }
                     )
                 },
-                arbeidssoekerId = hendelser.first().arbeidssoekerId,
+                arbeidssoekerId = id,
                 gjeldeneTilstand = sistePeriode?.let { enrich(it, fraOppslagsApi) }
             )
         }
@@ -124,6 +125,7 @@ data class ApiData(
 
 fun sistePeriode(hendelser: List<StoredData>): Tilstand? =
     hendelser
+        .filterNot { it.merged }
         .sortedBy { it.offset }
         .fold(null as Tilstand?, ::beregnTilstand)
 
@@ -135,6 +137,9 @@ fun historiskeTilstander(hendelser: List<StoredData>): Iterable<Snapshot> =
             hendelse = Hendelse(
                 hendelseId = hendelse.data.hendelseId,
                 hendelseType = hendelse.data.hendelseType,
+                merged = hendelse.merged,
+                kafkaPartition = hendelse.partition,
+                kafkaOffset = hendelse.offset,
                 metadata = HendelseMetadata(
                     tidspunkt = hendelse.data.metadata.tidspunkt,
                     utfoertAv = HendelseMetadataUtfoertAv(
@@ -150,7 +155,6 @@ fun historiskeTilstander(hendelser: List<StoredData>): Iterable<Snapshot> =
                         )
                     },
                 ),
-                kafkaOffset = hendelse.offset,
                 data = hendelse.data,
                 api = null
             ),

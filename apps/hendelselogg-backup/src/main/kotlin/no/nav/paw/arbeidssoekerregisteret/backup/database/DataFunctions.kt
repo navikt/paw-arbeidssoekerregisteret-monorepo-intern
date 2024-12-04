@@ -3,6 +3,7 @@ package no.nav.paw.arbeidssoekerregisteret.backup.database
 import no.nav.paw.arbeidssoekerregisteret.backup.database.HendelseTable.recordKey
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.StoredData
+import no.nav.paw.arbeidssokerregisteret.intern.v1.ArbeidssoekerIdFlettetInn
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerializer
@@ -40,11 +41,32 @@ fun TransactionContext.readRecord(hendelseDeserializer: HendelseDeserializer, pa
                 recordKey = it[recordKey],
                 arbeidssoekerId = it[HendelseTable.arbeidssoekerId],
                 traceparent = it[HendelseTable.traceparent],
-                data = hendelseDeserializer.deserializeFromString(it[HendelseTable.data])
+                data = hendelseDeserializer.deserializeFromString(it[HendelseTable.data]),
+                merged = false
             )
         }
 
-fun TransactionContext.readAllRecordsForId(hendelseDeserializer: HendelseDeserializer, arbeidssoekerId: Long): List<StoredData> =
+fun TransactionContext.readAllNestedRecordsForId(
+    hendelseDeserializer: HendelseDeserializer,
+    arbeidssoekerId: Long,
+    merged: Boolean = false
+): List<StoredData> {
+    val tmp = readAllRecordsForId(hendelseDeserializer = hendelseDeserializer, arbeidssoekerId = arbeidssoekerId, merged = merged)
+    return tmp.asSequence()
+        .map(StoredData::data)
+        .filterIsInstance<ArbeidssoekerIdFlettetInn>()
+        .map { it.kilde.arbeidssoekerId }
+        .distinct()
+        .flatMap { readAllNestedRecordsForId(hendelseDeserializer = hendelseDeserializer, arbeidssoekerId = it, merged = true) }.toList()
+        .plus(tmp)
+        .sortedBy { it.data.metadata.tidspunkt }
+}
+
+fun TransactionContext.readAllRecordsForId(
+    hendelseDeserializer: HendelseDeserializer,
+    arbeidssoekerId: Long,
+    merged: Boolean = false
+): List<StoredData> =
     HendelseTable
         .selectAll()
         .where {
@@ -58,7 +80,8 @@ fun TransactionContext.readAllRecordsForId(hendelseDeserializer: HendelseDeseria
                 recordKey = it[recordKey],
                 arbeidssoekerId = it[HendelseTable.arbeidssoekerId],
                 traceparent = it[HendelseTable.traceparent],
-                data = hendelseDeserializer.deserializeFromString(it[HendelseTable.data])
+                data = hendelseDeserializer.deserializeFromString(it[HendelseTable.data]),
+                merged = merged
             )
         }
 
@@ -76,7 +99,8 @@ fun Transaction.getOneRecordForId(hendelseDeserializer: HendelseDeserializer, id
                                 recordKey = rs.getLong(HendelseTable.recordKey.name),
                                 arbeidssoekerId = rs.getLong(HendelseTable.arbeidssoekerId.name),
                                 data = hendelseDeserializer.deserializeFromString(rs.getString(HendelseTable.data.name)),
-                                traceparent = rs.getString(HendelseTable.traceparent.name)
+                                traceparent = rs.getString(HendelseTable.traceparent.name),
+                                merged = false
                             )
                         )
                     }

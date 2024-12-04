@@ -8,5 +8,6 @@ data class StoredData(
     val recordKey: Long,
     val arbeidssoekerId: Long,
     val traceparent: String?,
-    val data: Hendelse
+    val data: Hendelse,
+    val merged: Boolean
 )

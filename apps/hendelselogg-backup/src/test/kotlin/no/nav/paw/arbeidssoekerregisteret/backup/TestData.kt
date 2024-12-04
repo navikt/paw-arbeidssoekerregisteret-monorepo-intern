@@ -114,20 +114,24 @@ fun Hendelse.storedData(
     offset: Long = 1,
     recordKey: Long = 1,
     arbeidssoekerId: Long = 1,
-    traceparent: String = "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01"
+    traceparent: String = "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01",
+    merged: Boolean = false
 ) = StoredData(
     partition = 1,
     offset = 1,
     recordKey = 1,
     arbeidssoekerId = 1,
     traceparent = traceparent,
-    data = this
+    data = this,
+    merged = merged
 )
 
 fun StoredData.apiHendelse(): no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Hendelse =
     no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Hendelse(
         hendelseId = data.hendelseId,
         hendelseType = data.hendelseType,
+        merged = merged,
+        kafkaPartition = partition,
         metadata = HendelseMetadata(
             tidspunkt = data.metadata.tidspunkt,
             utfoertAv = HendelseMetadataUtfoertAv(
