@@ -14,5 +14,6 @@ class KafkaConsumerExceptionHandler(
         errorLogger.error("Kafka Consumer opplevde en uhåndterbar feil", throwable)
         livenessIndicator.setUnhealthy()
         readinessIndicator.setUnhealthy()
+        throw throwable
     }
 }

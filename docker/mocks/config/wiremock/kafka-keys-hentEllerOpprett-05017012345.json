@@ -1,0 +1,21 @@
+{
+    "request": {
+        "method": "POST",
+        "urlPathPattern": "/api/v2/hentEllerOpprett",
+        "bodyPatterns": [
+            {
+                "matchesJsonPath": "$[?(@.ident == '05017012345')]"
+            }
+        ]
+    },
+    "response": {
+        "status": 200,
+        "jsonBody": {
+            "id": 10004,
+            "key": -10004
+        },
+        "headers": {
+            "Content-Type": "application/json"
+        }
+    }
+}

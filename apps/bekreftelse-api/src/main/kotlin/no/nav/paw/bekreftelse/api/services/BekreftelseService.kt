@@ -35,6 +35,7 @@ import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.security.authentication.model.Bruker
 import no.nav.paw.security.authentication.model.Identitetsnummer
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class BekreftelseService(
@@ -98,31 +99,34 @@ class BekreftelseService(
         }
     }
 
+    @WithSpan(value = "processBekreftelseHendelser")
+    fun processBekreftelseHendelser(records: ConsumerRecords<Long, BekreftelseHendelse>) {
+        transaction {
+            records.forEach(::processBekreftelseHendelse)
+        }
+    }
+
     @WithSpan(value = "processBekreftelseHendelse")
     fun processBekreftelseHendelse(record: ConsumerRecord<Long, BekreftelseHendelse>) {
-        transaction {
-            val hendelse = record.value()
+        val hendelse = record.value()
+        meterRegistry.receiveBekreftelseHendelseCounter(hendelse.hendelseType)
+        logger.debug("Mottok hendelse av type {}", hendelse.hendelseType)
 
-            meterRegistry.receiveBekreftelseHendelseCounter(hendelse.hendelseType)
+        when (hendelse) {
+            is BekreftelseTilgjengelig -> {
+                processBekreftelseTilgjengelig(record.partition(), record.offset(), record.key(), hendelse)
+            }
 
-            logger.debug("Mottok hendelse av type {}", hendelse.hendelseType)
+            is BekreftelseMeldingMottatt -> {
+                processBekreftelseMeldingMottatt(hendelse)
+            }
 
-            when (hendelse) {
-                is BekreftelseTilgjengelig -> {
-                    processBekreftelseTilgjengelig(record.partition(), record.offset(), record.key(), hendelse)
-                }
+            is PeriodeAvsluttet -> {
+                processPeriodeAvsluttet(hendelse)
+            }
 
-                is BekreftelseMeldingMottatt -> {
-                    processBekreftelseMeldingMottatt(hendelse)
-                }
-
-                is PeriodeAvsluttet -> {
-                    processPeriodeAvsluttet(hendelse)
-                }
-
-                else -> {
-                    processAnnenHendelse(hendelse)
-                }
+            else -> {
+                processAnnenHendelse(hendelse)
             }
         }
     }

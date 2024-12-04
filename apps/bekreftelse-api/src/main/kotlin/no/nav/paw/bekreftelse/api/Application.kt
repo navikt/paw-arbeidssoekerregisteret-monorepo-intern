@@ -30,7 +30,7 @@ fun main() {
     with(applicationContext.serverConfig) {
         logger.info("Starter $appName med hostname $host og port $port")
 
-        embeddedServer(Netty, port = port) {
+        embeddedServer(factory = Netty, port = port) {
             module(applicationContext)
         }.apply {
             addShutdownHook {

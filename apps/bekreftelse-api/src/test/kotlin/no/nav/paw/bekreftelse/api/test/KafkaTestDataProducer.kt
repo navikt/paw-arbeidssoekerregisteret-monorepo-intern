@@ -40,17 +40,15 @@ fun main() {
         gjelderTil = Instant.now().plus(Duration.ofDays(14)),
     )
 
-    sendHendelse(kafkaProducer, topic, key, value)
+    kafkaProducer.sendBlocking(topic, key, value)
 }
 
-fun sendHendelse(
-    producer: Producer<Long, BekreftelseHendelse>,
+fun Producer<Long, BekreftelseHendelse>.sendBlocking(
     topic: String,
     key: Long,
     value: BekreftelseHendelse
-) =
-    runBlocking {
-        launch {
-            producer.sendDeferred(ProducerRecord(topic, key, value)).await()
-        }
+) = runBlocking {
+    launch {
+        sendDeferred(ProducerRecord(topic, key, value)).await()
     }
+}
