@@ -1,0 +1,86 @@
+openapi: "3.0.3"
+info:
+  title: "Tilgangskontroll"
+  description: "Løsning for å sjekke om en Nav ansatt har tilgang til en bruker"
+  version: "1.0.0"
+servers:
+  - url: "https://tilgangskontroll-arbeidssoekerregisteret.intern.nav.no"
+    description: "Production"
+  - url: "https://tilgangskontroll-arbeidssoekerregisteret.intern.dev.nav.no"
+    description: "Development"
+paths:
+  /api/v1/tilgangskontroll:
+    put:
+      description: "Sjekker om en Nav ansatt har tilgang til en bruker"
+      parameters:
+        - name: "traceparent"
+          in: "header"
+          required: false
+          description: "https://www.w3.org/TR/trace-context/#traceparent-header-field-values"
+          schema:
+            type: "string"
+            format: "traceparent"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TilgangskontrollRequestV1"
+        required: true
+      responses:
+        "200":
+          description: "OK, ansatt har tilgang"
+        "403":
+          description: "Forbidden, ansatt har ikke tilgang"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeilV1"
+        "400":
+          description: "Bad Request"
+          headers:
+            x-trace-id:
+              description: "Trace id"
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeilV1"
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeilV1"
+        "503":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeilV1"
+components:
+  schemas:
+    Identitetsnummer:
+      type: "string"
+      pattern: "^[0-9]{11}$"
+      description: "Fødselsnummer eller D-nummer"
+    NavIdent:
+      type: "string"
+      description: "Nav ident"
+    TilgangskontrollRequestV1:
+      type: "object"
+      properties:
+        identitetsnummer:
+          $ref: "#/components/schemas/Identitetsnummer"
+        navIdent:
+          $ref: "#/components/schemas/NavIdent"
+      required:
+        - "identitetsnummer"
+        - "navIdent"
+    FeilV1:
+      type: "object"
+      properties:
+        melding:
+          type: "string"
+      required:
+        - "melding"

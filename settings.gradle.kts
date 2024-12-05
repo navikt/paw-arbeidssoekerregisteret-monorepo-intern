@@ -41,6 +41,7 @@ include(
     "apps:bekreftelse-api",
     "apps:bekreftelse-min-side-oppgaver",
     "apps:bekreftelse-utgang",
+    "apps:tilgangskontroll",
 )
 
 dependencyResolutionManagement {
