@@ -1,0 +1,7 @@
+package no.nav.paw.tilgangskontroll.poaotilgang.api
+
+enum class PolicyId {
+    NAV_ANSATT_NAV_IDENT_SKRIVETILGANG_TIL_EKSTERN_BRUKER_V1,
+    NAV_ANSATT_NAV_IDENT_LESETILGANG_TIL_EKSTERN_BRUKER_V1,
+    NAV_ANSATT_TILGANG_TIL_EKSTERN_BRUKER_V2,
+}
