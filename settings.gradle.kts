@@ -15,6 +15,7 @@ include(
     "lib:error-handling",
     "lib:security",
     "lib:http-client-utils",
+    "lib:http-client-utils-ktorv3",
     "lib:kafka",
     "lib:kafka-streams",
     "lib:kafka-key-generator-client",

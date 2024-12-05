@@ -1,0 +1,2 @@
+clientId = "${AZURE_APP_CLIENT_ID}"
+tokenEndpointUrl = "${AZURE_OPENID_CONFIG_TOKEN_ENDPOINT}"

@@ -15,7 +15,7 @@ val image: String? by project
 
 dependencies {
     implementation(project(":lib:hoplite-config"))
-    implementation(project(":lib:http-client-utils"))
+    implementation(project(":lib:http-client-utils-ktorv3"))
 
 
     implementation(libs.arrow.core.core)
