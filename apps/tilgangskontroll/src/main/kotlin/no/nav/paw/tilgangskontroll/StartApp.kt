@@ -7,8 +7,11 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import org.slf4j.LoggerFactory
 
+private val logger = LoggerFactory.getLogger("tilgangskontroll")
 fun main() {
+    logger.info("Starter tilgangskontroll...")
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     embeddedServer(Netty, port = 8080) {
         routing {
@@ -23,4 +26,5 @@ fun main() {
             }
         }
     }.start(wait = true)
+    logger.info("Avslutter tilgangskontroll...")
 }
