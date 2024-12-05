@@ -1,5 +1,6 @@
 package no.nav.paw.error.handler
 
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.plugins.BadRequestException
 import io.ktor.server.plugins.ContentTransformationException
@@ -9,28 +10,34 @@ import io.ktor.server.request.uri
 import io.ktor.server.response.respond
 import no.nav.paw.error.exception.ClientResponseException
 import no.nav.paw.error.exception.ServerResponseException
+import no.nav.paw.error.model.ErrorType
 import no.nav.paw.error.model.ProblemDetails
-import no.nav.paw.error.model.build400Error
-import no.nav.paw.error.model.build500Error
-import no.nav.paw.error.model.buildError
+import no.nav.paw.error.model.ProblemDetailsBuilder
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 
 private val logger: Logger = LoggerFactory.getLogger("no.nav.paw.logger.error.http")
 private const val MDC_ERROR_ID_KEY = "x_error_id"
-private const val MDC_ERROR_CODE_KEY = "x_error_code"
+private const val MDC_ERROR_TYPE_KEY = "x_error_type"
+private const val MDC_EXCEPTION_KEY = "exception"
 
 suspend fun ApplicationCall.handleException(
     throwable: Throwable,
     resolver: (throwable: Throwable) -> ProblemDetails? = { null }
 ) {
     val problemDetails = resolveProblemDetails(request, throwable, resolver)
+
     MDC.put(MDC_ERROR_ID_KEY, problemDetails.id.toString())
-    MDC.put(MDC_ERROR_CODE_KEY, problemDetails.code)
+    MDC.put(MDC_ERROR_TYPE_KEY, problemDetails.type.toString())
+    MDC.put(MDC_EXCEPTION_KEY, throwable.javaClass.canonicalName)
+
     logger.error(problemDetails.detail, throwable)
+
     MDC.remove(MDC_ERROR_ID_KEY)
-    MDC.remove(MDC_ERROR_CODE_KEY)
+    MDC.remove(MDC_ERROR_TYPE_KEY)
+    MDC.remove(MDC_EXCEPTION_KEY)
+
     respond(problemDetails.status, problemDetails)
 }
 
@@ -46,53 +53,55 @@ fun resolveProblemDetails(
 
     when (throwable) {
         is BadRequestException -> {
-            return build400Error(
-                code = "PAW_KUNNE_IKKE_TOLKE_FORESPOERSEL",
-                detail = "Kunne ikke tolke forespørsel",
-                instance = request.uri
-            )
+            return ProblemDetailsBuilder.builder()
+                .type(ErrorType.domain("http").error("kunne-ikke-tolke-forespoersel").build())
+                .status(HttpStatusCode.BadRequest)
+                .detail("Kunne ikke tolke forespørsel")
+                .instance(request.uri)
+                .build()
         }
 
         is ContentTransformationException -> {
-            return build400Error(
-                code = "PAW_KUNNE_IKKE_TOLKE_INNHOLD",
-                detail = "Kunne ikke tolke innhold i forespørsel",
-                instance = request.uri
-            )
+            return ProblemDetailsBuilder.builder()
+                .type(ErrorType.domain("http").error("kunne-ikke-tolke-innhold").build())
+                .status(HttpStatusCode.BadRequest)
+                .detail("Kunne ikke tolke innhold i forespørsel")
+                .instance(request.uri)
+                .build()
         }
 
         is RequestAlreadyConsumedException -> {
-            return build500Error(
-                code = "PAW_FORESPOERSEL_ALLEREDE_MOTTATT",
-                detail = "Forespørsel er allerede mottatt. Dette er en kodefeil",
-                instance = request.uri
-            )
+            return ProblemDetailsBuilder.builder()
+                .type(ErrorType.domain("http").error("forespoersel-allerede-mottatt").build())
+                .status(HttpStatusCode.InternalServerError)
+                .detail("Forespørsel er allerede mottatt. Dette er en kodefeil")
+                .instance(request.uri)
+                .build()
         }
 
         is ServerResponseException -> {
-            return buildError(
-                code = throwable.code,
-                detail = throwable.message,
-                status = throwable.status,
-                instance = request.uri
-            )
+            return ProblemDetailsBuilder.builder()
+                .type(throwable.type)
+                .status(throwable.status)
+                .detail(throwable.message)
+                .instance(request.uri)
+                .build()
         }
 
         is ClientResponseException -> {
-            return buildError(
-                code = throwable.code,
-                detail = throwable.message,
-                status = throwable.status,
-                instance = request.uri
-            )
+            return ProblemDetailsBuilder.builder()
+                .type(throwable.type)
+                .status(throwable.status)
+                .detail(throwable.message)
+                .instance(request.uri)
+                .build()
         }
 
         else -> {
-            return build500Error(
-                code = "PAW_UKJENT_FEIL",
-                detail = "Forespørsel feilet med ukjent feil",
-                instance = request.uri
-            )
+            return ProblemDetailsBuilder.builder()
+                .detail("Forespørsel feilet med ukjent feil")
+                .instance(request.uri)
+                .build()
         }
     }
 }

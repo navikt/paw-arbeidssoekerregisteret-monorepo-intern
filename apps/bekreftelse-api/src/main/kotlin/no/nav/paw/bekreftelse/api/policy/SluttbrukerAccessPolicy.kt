@@ -20,7 +20,7 @@ class SluttbrukerAccessPolicy(
             is Sluttbruker -> {
                 // TODO Håndtere verge
                 if (identitetsnummer != null && identitetsnummer != bruker.ident) {
-                    return Deny("Sluttbruke kan ikke hente data for annen bruker")
+                    return Deny("Sluttbruker har ikke tilgang til data for annen bruker")
                 }
                 return Permit("Sluttbruker har tilgang")
             }

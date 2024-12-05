@@ -1,6 +1,6 @@
 package no.nav.paw.security.authorization.exception
 
-import no.nav.paw.error.exception.AuthorizationException
+import no.nav.paw.error.model.ErrorType
 
 class IngenTilgangException(message: String) :
-    AuthorizationException("PAW_INGEN_TILGANG", message)
+    AuthorizationException(ErrorType.domain("security").error("ingen-tilgang").build(), message)

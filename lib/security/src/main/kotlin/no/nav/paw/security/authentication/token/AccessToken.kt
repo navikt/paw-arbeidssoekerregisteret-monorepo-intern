@@ -1,6 +1,6 @@
 package no.nav.paw.security.authentication.token
 
-import no.nav.paw.security.authentication.exception.UgyldigBearerTokenException
+import no.nav.paw.security.authorization.exception.UgyldigBearerTokenException
 import no.nav.paw.security.authentication.model.Identitetsnummer
 import no.nav.security.token.support.core.context.TokenValidationContext
 import no.nav.security.token.support.core.jwt.JwtToken

@@ -7,7 +7,7 @@ import io.ktor.server.application.hooks.MonitoringEvent
 import io.ktor.server.application.install
 import io.ktor.server.application.log
 import io.ktor.util.KtorDsl
-import no.nav.paw.bekreftelse.api.model.BekreftelseRow
+import no.nav.paw.bekreftelse.api.models.BekreftelseRow
 import no.nav.paw.bekreftelse.api.plugins.custom.FlywayMigrationCompleted
 import no.nav.paw.bekreftelse.api.repository.BekreftelseRepository
 import no.nav.paw.bekreftelse.api.test.TestData

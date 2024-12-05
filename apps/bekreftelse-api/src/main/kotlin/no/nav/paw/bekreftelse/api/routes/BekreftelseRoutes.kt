@@ -9,8 +9,8 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import no.nav.paw.bekreftelse.api.context.ApplicationContext
-import no.nav.paw.bekreftelse.api.model.MottaBekreftelseRequest
-import no.nav.paw.bekreftelse.api.model.TilgjengeligeBekreftelserRequest
+import no.nav.paw.bekreftelse.api.models.MottaBekreftelseRequest
+import no.nav.paw.bekreftelse.api.models.TilgjengeligeBekreftelserRequest
 import no.nav.paw.bekreftelse.api.utils.hentSluttbrukerIdentitet
 import no.nav.paw.security.authentication.model.asIdentitetsnummer
 import no.nav.paw.security.authentication.token.AzureAd

@@ -1,10 +1,11 @@
 package no.nav.paw.error.exception
 
 import io.ktor.http.HttpStatusCode
+import java.net.URI
 
 open class ClientResponseException(
     val status: HttpStatusCode,
-    override val code: String,
+    override val type: URI,
     override val message: String,
     override val cause: Throwable? = null
-) : ErrorCodeAwareException(code, message, cause)
+) : ErrorTypeAwareException(type, message, cause)

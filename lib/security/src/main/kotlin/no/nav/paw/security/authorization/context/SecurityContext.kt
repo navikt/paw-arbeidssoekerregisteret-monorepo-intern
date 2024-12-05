@@ -1,7 +1,7 @@
 package no.nav.paw.security.authorization.context
 
 import no.nav.paw.security.authentication.exception.BearerTokenManglerException
-import no.nav.paw.security.authentication.exception.UgyldigBearerTokenException
+import no.nav.paw.security.authorization.exception.UgyldigBearerTokenException
 import no.nav.paw.security.authentication.model.Bruker
 import no.nav.paw.security.authentication.model.M2MToken
 import no.nav.paw.security.authentication.model.NavAnsatt

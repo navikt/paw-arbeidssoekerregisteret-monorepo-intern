@@ -11,6 +11,7 @@ servers:
 paths:
   /api/v1/tilgjengelige-bekreftelser:
     get:
+      operationId: getTilgjengeligBekreftelser
       description: "Endepunkt for å hende tilgjengelige bekreftelser for innlogget sluttbruker"
       parameters:
         - name: "traceparent"
@@ -34,6 +35,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
     post:
+      operationId: postTilgjengeligBekreftelser
       description: "Endepunkt for å hende tilgjengelige bekreftelser for en arbeidssøker"
       parameters:
         - name: "traceparent"
@@ -56,6 +58,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TilgjengeligBekreftelserResponse"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
         "403":
           description: "Forbidden"
           content:
@@ -64,6 +72,7 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
   /api/v1/bekreftelse:
     post:
+      operationId: postMottaBekreftelse
       description: "Endepunkt for å registrere en bekreftelse for en arbeidssøker"
       parameters:
         - name: "traceparent"
@@ -77,11 +86,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/BekreftelseRequest"
+              $ref: "#/components/schemas/MottaBekreftelseRequest"
         required: true
       responses:
         "200":
           description: "OK"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
         "403":
           description: "Forbidden"
           content:
@@ -90,6 +105,7 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
   /internal/isAlive:
     get:
+      operationId: getIsAlive
       description: "Service is alive probe"
       responses:
         "503":
@@ -106,6 +122,7 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
   /internal/isReady:
     get:
+      operationId: getIsReady
       description: "Service is ready probe"
       responses:
         "503":
@@ -122,6 +139,7 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
   /internal/metrics:
     get:
+      operationId: getMetrics
       description: "Prometheus metrics"
       responses:
         "200":
@@ -137,8 +155,6 @@ components:
       properties:
         identitetsnummer:
           type: "string"
-      required:
-        - "identitetsnummer"
       example:
         identitetsnummer: "01017012345"
     TilgjengeligBekreftelserResponse:
@@ -170,7 +186,7 @@ components:
         bekreftelseId: "ec6b5a10-b67c-42c1-b6e7-a642c36bd78e"
         gjelderFra: "2020-01-01T11:22:33.444Z"
         gjelderTil: "2020-02-02T11:22:33.444Z"
-    BekreftelseRequest:
+    MottaBekreftelseRequest:
       type: "object"
       properties:
         identitetsnummer:
@@ -183,7 +199,6 @@ components:
         vilFortsetteSomArbeidssoeker:
           type: "boolean"
       required:
-        - "identitetsnummer"
         - "bekreftelseId"
         - "harJobbetIDennePerioden"
         - "vilFortsetteSomArbeidssoeker"
@@ -195,31 +210,33 @@ components:
     ProblemDetails:
       type: object
       properties:
+        id:
+          type: "string"
+          format: "uuid"
         type:
           type: "string"
-        code:
-          type: "string"
+          format: "uri"
+        status:
+          type: "integer"
         title:
           type: "string"
-        status:
-          type: "number"
         detail:
           type: "string"
         instance:
           type: "string"
       required:
+        - id
         - type
-        - code
-        - title
         - status
+        - title
         - detail
         - instance
       example:
-        type: "about:blank"
-        code: "BRUKER_HAR_IKKE_TILGANG"
-        title: "Forbidden"
+        id: "3cd944fb-6187-41a8-91b2-b172f2baf890"
+        type: "urn:paw:sikkerhet:bruker-har-ikke-tilgang"
         status: 403
-        detail: "Access denied"
+        title: "Forbidden"
+        detail: "Bruker har ikke tilgang"
         instance: "/api/endpoint"
     HealthStatus:
       type: "string"

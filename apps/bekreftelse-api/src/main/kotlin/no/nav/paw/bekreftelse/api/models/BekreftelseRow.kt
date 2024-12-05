@@ -1,4 +1,4 @@
-package no.nav.paw.bekreftelse.api.model
+package no.nav.paw.bekreftelse.api.models
 
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import org.jetbrains.exposed.sql.ResultRow

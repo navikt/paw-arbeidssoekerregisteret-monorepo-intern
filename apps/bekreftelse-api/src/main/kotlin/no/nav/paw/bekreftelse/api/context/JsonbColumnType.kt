@@ -1,6 +1,6 @@
 package no.nav.paw.bekreftelse.api.context
 
-import no.nav.paw.bekreftelse.api.model.BekreftelserTable.registerColumn
+import no.nav.paw.bekreftelse.api.models.BekreftelserTable.registerColumn
 import org.jetbrains.exposed.sql.IColumnType
 import org.postgresql.util.PGobject
 

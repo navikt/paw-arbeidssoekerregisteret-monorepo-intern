@@ -16,8 +16,8 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.runs
 import io.mockk.verify
-import no.nav.paw.bekreftelse.api.model.TilgjengeligBekreftelserResponse
-import no.nav.paw.bekreftelse.api.model.TilgjengeligeBekreftelserRequest
+import no.nav.paw.bekreftelse.api.models.TilgjengeligBekreftelserResponse
+import no.nav.paw.bekreftelse.api.models.TilgjengeligeBekreftelserRequest
 import no.nav.paw.bekreftelse.api.test.ApplicationTestContext
 import no.nav.paw.bekreftelse.api.test.TestData
 import no.nav.paw.bekreftelse.api.test.issueAzureToken
@@ -26,6 +26,8 @@ import no.nav.paw.bekreftelse.api.test.setJsonBody
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.error.model.ProblemDetails
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
+import no.nav.paw.security.authorization.exception.IngenTilgangException
+import no.nav.paw.security.authorization.exception.UgyldigBearerTokenException
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput
 import no.nav.poao_tilgang.client.api.ApiResult
@@ -99,7 +101,7 @@ class BekreftelseRoutesTest : FreeSpec({
                     response.status shouldBe HttpStatusCode.Forbidden
                     val body = response.body<ProblemDetails>()
                     body.status shouldBe HttpStatusCode.Forbidden
-                    body.code shouldBe "PAW_UGYLDIG_BEARER_TOKEN"
+                    body.type shouldBe UgyldigBearerTokenException("").type
                 }
             }
         }
@@ -126,7 +128,7 @@ class BekreftelseRoutesTest : FreeSpec({
                     response.status shouldBe HttpStatusCode.Forbidden
                     val body = response.body<ProblemDetails>()
                     body.status shouldBe HttpStatusCode.Forbidden
-                    body.code shouldBe "PAW_UGYLDIG_BEARER_TOKEN"
+                    body.type shouldBe UgyldigBearerTokenException("").type
                 }
             }
 
@@ -147,7 +149,7 @@ class BekreftelseRoutesTest : FreeSpec({
                     response.status shouldBe HttpStatusCode.Forbidden
                     val body = response.body<ProblemDetails>()
                     body.status shouldBe HttpStatusCode.Forbidden
-                    body.code shouldBe "PAW_INGEN_TILGANG"
+                    body.type shouldBe IngenTilgangException("").type
                 }
             }
 
@@ -243,7 +245,7 @@ class BekreftelseRoutesTest : FreeSpec({
                     response.status shouldBe HttpStatusCode.Forbidden
                     val body = response.body<ProblemDetails>()
                     body.status shouldBe HttpStatusCode.Forbidden
-                    body.code shouldBe "PAW_INGEN_TILGANG"
+                    body.type shouldBe IngenTilgangException("").type
                 }
             }
 
@@ -329,7 +331,7 @@ class BekreftelseRoutesTest : FreeSpec({
                     response.status shouldBe HttpStatusCode.Forbidden
                     val body = response.body<ProblemDetails>()
                     body.status shouldBe HttpStatusCode.Forbidden
-                    body.code shouldBe "PAW_INGEN_TILGANG"
+                    body.type shouldBe IngenTilgangException("").type
                 }
             }
 
@@ -348,7 +350,7 @@ class BekreftelseRoutesTest : FreeSpec({
                     response.status shouldBe HttpStatusCode.Forbidden
                     val body = response.body<ProblemDetails>()
                     body.status shouldBe HttpStatusCode.Forbidden
-                    body.code shouldBe "PAW_INGEN_TILGANG"
+                    body.type shouldBe IngenTilgangException("").type
                 }
             }
 
@@ -373,7 +375,7 @@ class BekreftelseRoutesTest : FreeSpec({
                     response.status shouldBe HttpStatusCode.Forbidden
                     val body = response.body<ProblemDetails>()
                     body.status shouldBe HttpStatusCode.Forbidden
-                    body.code shouldBe "PAW_INGEN_TILGANG"
+                    body.type shouldBe IngenTilgangException("").type
                 }
 
                 coVerify { kafkaKeysClientMock.getIdAndKey(any<String>()) }
