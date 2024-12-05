@@ -65,7 +65,7 @@ java {
 }
 
 application {
-    mainClass.set("no.nav.paw.arbeidssokerregisteret.ApplicationKt")
+    mainClass.set("no.nav.paw.tilgangskontroll.StartAppKt")
 }
 
 tasks.withType(Jar::class) {
