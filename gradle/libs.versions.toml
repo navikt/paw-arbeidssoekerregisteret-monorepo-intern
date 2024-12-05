@@ -1,5 +1,5 @@
 [versions]
-noNavSecurityVersion = "5.0.11"
+noNavSecurityVersion = "5.0.13"
 noNavSecurityMockOauth2ServerVersion = "2.1.10"
 noNavCommonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
 navPoaoTilgangClientVersion = "2024.04.29_13.59-a0ddddd36ac9"
@@ -128,6 +128,7 @@ nav-common-log = { group = "no.nav.common", name = "log", version.ref = "noNavCo
 nav-common-auditLog = { group = "no.nav.common", name = "audit-log", version.ref = "noNavCommonVersion" }
 nav-security-tokenClientCore = { group = "no.nav.security", name = "token-client-core", version.ref = "noNavSecurityVersion" }
 nav-security-tokenValidationKtorV2 = { group = "no.nav.security", name = "token-validation-ktor-v2", version.ref = "noNavSecurityVersion" }
+nav-security-tokenValidationKtorV3 = { group = "no.nav.security", name = "token-validation-ktor-v3", version.ref = "noNavSecurityVersion" }
 nav-security-mockOauth2Server = { group = "no.nav.security", name = "mock-oauth2-server", version.ref = "noNavSecurityMockOauth2ServerVersion" }
 nav-poao-tilgangClient = { group = "no.nav.poao-tilgang", name = "client", version.ref = "navPoaoTilgangClientVersion" }
 nav-paw-schema-main = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "main-avro-schema", version.ref = "arbeidssokerregisteretVersion" }
