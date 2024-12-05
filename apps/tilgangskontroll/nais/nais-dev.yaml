@@ -1,0 +1,48 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  name: paw-tilgangskontroll
+  namespace: paw
+  labels:
+    team: paw
+spec:
+  image: {{ image }}
+  port: 8080
+  resources:
+    limits:
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  tokenx:
+    enabled: true
+  azure:
+    application:
+      enabled: true
+      allowAllUsers: true
+      claims:
+        extra:
+          - NAVident
+  env:
+  replicas:
+    min: 1
+    max: 1
+  liveness:
+    path: /internal/isAlive
+    initialDelay: 10
+  readiness:
+    path: /internal/isReady
+    initialDelay: 10
+  prometheus:
+    enabled: true
+    path: /internal/metrics
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
+  accessPolicy:
+    inbound:
+      rules:
+    outbound:
+      rules:
+      external:

@@ -24,7 +24,7 @@ dependencies {
     implementation(libs.opentelemetry.annotations)
     implementation(libs.hoplite.core)
     implementation(libs.hoplite.toml)
-    implementation(libs.nav.security.tokenValidationKtorV2)
+    implementation(libs.nav.security.tokenValidationKtorV3)
     implementation(libs.nav.security.tokenClientCore)
     implementation(libs.nav.common.tokenClient)
     implementation(libs.nav.common.auditLog)
