@@ -36,7 +36,3 @@ spec:
   prometheus:
     enabled: true
     path: /internal/metrics
-  observability:
-    autoInstrumentation:
-      enabled: true
-      runtime: java
