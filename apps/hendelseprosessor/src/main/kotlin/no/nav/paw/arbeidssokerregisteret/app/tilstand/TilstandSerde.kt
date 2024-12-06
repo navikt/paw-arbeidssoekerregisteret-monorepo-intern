@@ -39,7 +39,7 @@ class TilstandDeserializer(private val objectMapper: ObjectMapper): Deserializer
         val node = objectMapper.readTree(data)
         return when (val classVersion = node.get("classVersion")?.asText()) {
             TilstandV1.classVersion -> objectMapper.readValue<TilstandV1>(node.traverse())
-            else -> throw IllegalArgumentException("Ukjent version av intern tilstandsklasse: '$classVersion'")
+            else -> throw IllegalArgumentException("Ukjent version av intern tilstandsklasse: '$classVersion', bytes=${data.size}")
         }
     }
 }
