@@ -39,10 +39,11 @@ class TilstandSerializer(private val objectMapper: ObjectMapper): Serializer<Til
 
 class TilstandDeserializer(private val objectMapper: ObjectMapper): Deserializer<TilstandV1> {
     override fun deserialize(topic: String?, data: ByteArray?): TilstandV1? {
-        if (data == null) return null
+        if (data == null || String(data).equals("null", ignoreCase = true)) {
+            return null
+        }
         val node = objectMapper.readTree(data)
         return when (val classVersion = node.get("classVersion")?.asText()) {
-            "null" -> null
             TilstandV1.classVersion -> objectMapper.readValue<TilstandV1>(node.traverse())
             else -> throw IllegalArgumentException("Ukjent version av intern tilstandsklasse: '$classVersion', bytes=${data.size}")
         }
