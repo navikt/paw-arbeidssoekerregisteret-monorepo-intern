@@ -81,7 +81,7 @@ fun main() {
         streamStateSupplier = kafkaStreams::state,
         contentSupplier = {
             stateStore().all().asSequence()
-                .map { it.value }
+                .mapNotNull { it.value }
         },
         mapper = ::withMetricsInfoMapper
     )
