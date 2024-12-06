@@ -44,7 +44,9 @@ class ResultatLagrer(
         record: Record<Long, InternTilstandOgApiTilstander>
     ) {
         val tilstandMedMetadata = record.value().tilstand
-        db.put(record.value().id, tilstandMedMetadata)
+        if (tilstandMedMetadata != null) {
+            db.put(record.value().id, tilstandMedMetadata)
+        }
         ctx.forward(record)
     }
 

@@ -28,8 +28,12 @@ class TilstandSerde : Serde<TilstandV1> {
 }
 
 class TilstandSerializer(private val objectMapper: ObjectMapper): Serializer<TilstandV1> {
-    override fun serialize(topic: String?, data: TilstandV1?): ByteArray {
-        return objectMapper.writeValueAsBytes(data)
+    override fun serialize(topic: String?, data: TilstandV1?): ByteArray? {
+        return if (data == null) {
+            null
+        } else {
+            objectMapper.writeValueAsBytes(data)
+        }
     }
 }
 
@@ -38,6 +42,7 @@ class TilstandDeserializer(private val objectMapper: ObjectMapper): Deserializer
         if (data == null) return null
         val node = objectMapper.readTree(data)
         return when (val classVersion = node.get("classVersion")?.asText()) {
+            "null" -> null
             TilstandV1.classVersion -> objectMapper.readValue<TilstandV1>(node.traverse())
             else -> throw IllegalArgumentException("Ukjent version av intern tilstandsklasse: '$classVersion', bytes=${data.size}")
         }
