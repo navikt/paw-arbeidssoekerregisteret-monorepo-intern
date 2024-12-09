@@ -8,6 +8,7 @@ import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.state.KeyValueStore
 import org.slf4j.LoggerFactory
 import java.time.Duration
+import java.time.Instant
 
 private val tilstandsoppryddingLogger = LoggerFactory.getLogger("Tilstandsopprydding")
 
@@ -18,13 +19,22 @@ fun tilstandsopprydding(
 ): Cancellable = ctx.schedule(interval, PunctuationType.WALL_CLOCK_TIME) {
     stateStore.all().use { tilstander ->
         tilstander.asSequence()
-            .filter { it.value == null || it.value.toString() == "null"}
+            .filter { it.value.skalSlettes() }
             .onEach { tilstand ->
-                tilstandsoppryddingLogger.info("Sletter tilstand med key:{} value:{}", tilstand.key, tilstand.value)
+                tilstandsoppryddingLogger.info("Sletter tilstand med key:{}", tilstand.key)
                 stateStore.delete(tilstand.key)
             }
-            .count().also { count ->
-                tilstandsoppryddingLogger.info("Fant {} null tilstander", count)
+            .count().let { count ->
+                tilstandsoppryddingLogger.info("Fant {} tilstander med avsluttet perioder eldre enn 6 måneder", count)
             }
+
     }
 }
+
+fun TilstandV1?.skalSlettes(): Boolean =
+   (this == null || this.toString() == "null")
+           || (this.gjeldenePeriode?.avsluttet != null && this.gjeldenePeriode.avsluttet.tidspunkt.erEldreEnn6maaneder())
+
+
+fun Instant.erEldreEnn6maaneder(): Boolean = isBefore(Instant.now().minus(Duration.ofDays(180)))
+
