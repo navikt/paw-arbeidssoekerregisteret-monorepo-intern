@@ -10,6 +10,7 @@ import org.apache.kafka.streams.processor.api.Processor
 import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
 import org.apache.kafka.streams.state.KeyValueStore
+import java.time.Duration
 import kotlin.jvm.optionals.getOrNull
 
 
@@ -24,13 +25,18 @@ class TilstandsLaster(
     private val tilstandDbNavn: String
 ) : Processor<Long, StreamHendelse, Long, InternTilstandOgHendelse> {
 
-    private var tilstandsDb: KeyValueStore<Long, TilstandV1>? = null
+    private var tilstandsDb: KeyValueStore<Long, TilstandV1?>? = null
     private var context: ProcessorContext<Long, InternTilstandOgHendelse>? = null
 
     override fun init(context: ProcessorContext<Long, InternTilstandOgHendelse>?) {
         super.init(context)
         this.context = context
         tilstandsDb = context?.getStateStore(tilstandDbNavn)
+        tilstandsopprydding(
+            requireNotNull(context) { "Context er ikke initialisert" },
+            requireNotNull(tilstandsDb){ "TilstandsDb er ikke initialisert" },
+            Duration.ofMinutes(30)
+        )
     }
 
     override fun process(record: Record<Long, StreamHendelse>?) {
@@ -44,7 +50,7 @@ class TilstandsLaster(
 
     private fun process(
         ctx: ProcessorContext<Long, InternTilstandOgHendelse>,
-        db: KeyValueStore<Long, TilstandV1>,
+        db: KeyValueStore<Long, TilstandV1?>,
         record: Record<Long, StreamHendelse>
     ) {
         val tilstand: TilstandV1? = db.get(record.value().id)
