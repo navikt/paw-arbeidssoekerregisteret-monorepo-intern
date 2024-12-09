@@ -21,6 +21,7 @@ import org.apache.kafka.streams.TopologyTestDriver
 import java.time.Duration
 import java.time.Instant
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 class TilstandsoppryddingTest : StringSpec({
@@ -88,7 +89,7 @@ fun opprettTestPeriode(avsluttet: Boolean) =
 
 fun opprettTestMetadata(tidspunkt: Instant) =
     Metadata(
-        tidspunkt = tidspunkt,
+        tidspunkt = tidspunkt.truncatedTo(ChronoUnit.MICROS),
         utfoertAv = Bruker(
             type = BrukerType.UDEFINERT,
             id = "12345678901",
