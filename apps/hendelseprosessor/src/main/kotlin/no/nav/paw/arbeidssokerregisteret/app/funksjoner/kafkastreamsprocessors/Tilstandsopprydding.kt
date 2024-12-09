@@ -18,15 +18,13 @@ fun tilstandsopprydding(
 ): Cancellable = ctx.schedule(interval, PunctuationType.WALL_CLOCK_TIME) {
     stateStore.all().use { tilstander ->
         tilstander.asSequence()
-            .toList()
             .filter { it.value == null || it.value.toString() == "null"}
-            .also { filtrerteTilstander ->
-                val count = filtrerteTilstander.count()
-                tilstandsoppryddingLogger.info("Fant {} null tilstander", count)
-            }
-            .forEach { tilstand ->
+            .onEach { tilstand ->
                 tilstandsoppryddingLogger.info("Sletter tilstand med key:{} value:{}", tilstand.key, tilstand.value)
                 stateStore.delete(tilstand.key)
+            }
+            .count().also { count ->
+                tilstandsoppryddingLogger.info("Fant {} null tilstander", count)
             }
     }
 }
