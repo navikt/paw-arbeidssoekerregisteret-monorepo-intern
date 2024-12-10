@@ -29,15 +29,18 @@ fun tilstandsopprydding(
                 }
             }
             .count().let { count ->
-                tilstandsoppryddingLogger.info("Fant {} tilstander som er null eller avsluttet perioder eldre enn 6 måneder", count)
+                tilstandsoppryddingLogger.info(
+                    "Fant {} tilstander som er null eller avsluttet perioder eldre enn 6 måneder",
+                    count
+                )
             }
 
     }
 }
 
 fun TilstandV1?.skalSlettes(): Boolean =
-   (this == null || this.toString() == "null")
-           || (this.gjeldenePeriode?.avsluttet != null && this.gjeldenePeriode.avsluttet.tidspunkt.erEldreEnn6maaneder())
+    (this == null || this.toString() == "null")
+            || (this.gjeldenePeriode == null && this.forrigePeriode?.avsluttet?.tidspunkt?.erEldreEnn6maaneder() ?: false)
 
 
 fun Instant.erEldreEnn6maaneder(): Boolean = isBefore(Instant.now().minus(Duration.ofDays(180)))

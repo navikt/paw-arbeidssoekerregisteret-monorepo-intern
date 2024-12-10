@@ -43,33 +43,33 @@ class TilstandsoppryddingTest : StringSpec({
     val stateStore = testDriver.getKeyValueStore<Long, TilstandV1?>(dbNavn)
 
     "Om TilstandV1 inneholder avsluttet periode eldre enn 6 måneder skal den fjernes av Tilstandsopprydding" {
-        val testTilstand = opprettTilstandV1(opprettTestPeriode(true))
+        val testTilstand = opprettTilstandV1(true)
         stateStore.put(1234L, testTilstand)
-        testDriver.advanceWallClockTime(Duration.ofDays(1))
+        testDriver.advanceWallClockTime(Duration.ofMinutes(30))
         val currentState = stateStore.get(1234L)
         currentState shouldBe null
     }
     "Om TilstandV1 ikke inneholder avsluttet periode eldre enn 6 måneder skal den ikke fjernes av Tilstandsopprydding" {
-        val testTilstand = opprettTilstandV1(opprettTestPeriode(false))
+        val testTilstand = opprettTilstandV1(false)
         stateStore.put(1235L, testTilstand)
-        testDriver.advanceWallClockTime(Duration.ofDays(1))
+        testDriver.advanceWallClockTime(Duration.ofMinutes(30))
         val currentState = stateStore.get(1235L)
         currentState shouldBe testTilstand
     }
     "SkalSlettes() skal returnere true om avsluttet periode er eldre enn 6 måneder" {
-        val testTilstand = opprettTilstandV1(opprettTestPeriode(true))
+        val testTilstand = opprettTilstandV1(true)
         testTilstand.skalSlettes() shouldBe true
 
         val testTilstand2: TilstandV1? = null
         testTilstand2.skalSlettes() shouldBe true
     }
     "SkalSlettes skal returnere false om periode ikke er avsluttet" {
-        val testTilstand = opprettTilstandV1(opprettTestPeriode(false))
+        val testTilstand = opprettTilstandV1(false)
         testTilstand.skalSlettes() shouldBe false
     }
 })
 
-fun opprettTilstandV1(periode: Periode) =
+fun opprettTilstandV1(avsluttet: Boolean) =
     TilstandV1(
         hendelseScope = HendelseScope(
            key = 1234L,
@@ -77,11 +77,11 @@ fun opprettTilstandV1(periode: Periode) =
             partition = 0,
             offset = 0,
         ),
-        gjeldeneTilstand = GjeldeneTilstand.AVSLUTTET,
+        gjeldeneTilstand = if (avsluttet) GjeldeneTilstand.AVSLUTTET else GjeldeneTilstand.STARTET,
         gjeldeneIdentitetsnummer = "12345678901",
         alleIdentitetsnummer = setOf("12345678901"),
-        gjeldenePeriode = periode,
-        forrigePeriode = periode,
+        gjeldenePeriode = if (avsluttet) null else opprettTestPeriode(false),
+        forrigePeriode = if (avsluttet) opprettTestPeriode(true) else null,
         sisteOpplysningerOmArbeidssoeker = null,
         forrigeOpplysningerOmArbeidssoeker = null
     )
