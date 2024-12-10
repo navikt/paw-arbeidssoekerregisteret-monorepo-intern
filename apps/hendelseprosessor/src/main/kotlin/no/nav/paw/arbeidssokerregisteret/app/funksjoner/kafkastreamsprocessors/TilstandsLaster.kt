@@ -11,8 +11,10 @@ import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
 import org.apache.kafka.streams.state.KeyValueStore
 import java.time.Duration
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.jvm.optionals.getOrNull
 
+val keepGoing = AtomicBoolean(true)
 
 fun KStream<Long, StreamHendelse>.lastInternTilstand(
     tilstandDbNavn: String
@@ -29,13 +31,15 @@ class TilstandsLaster(
     private var context: ProcessorContext<Long, InternTilstandOgHendelse>? = null
 
     override fun init(context: ProcessorContext<Long, InternTilstandOgHendelse>?) {
+        keepGoing.set(true)
         super.init(context)
         this.context = context
         tilstandsDb = context?.getStateStore(tilstandDbNavn)
         tilstandsopprydding(
             requireNotNull(context) { "Context er ikke initialisert" },
             requireNotNull(tilstandsDb){ "TilstandsDb er ikke initialisert" },
-            Duration.ofDays(1)
+            Duration.ofDays(1),
+            keepGoing
         )
     }
 
@@ -74,6 +78,7 @@ class TilstandsLaster(
     }
 
     override fun close() {
+        keepGoing.set(false)
         super.close()
         tilstandsDb?.close()
         tilstandsDb = null

@@ -9,16 +9,18 @@ import org.apache.kafka.streams.state.KeyValueStore
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Instant
+import java.util.concurrent.atomic.AtomicBoolean
 
 private val tilstandsoppryddingLogger = LoggerFactory.getLogger("Tilstandsopprydding")
 
 fun tilstandsopprydding(
     ctx: ProcessorContext<Long, InternTilstandOgHendelse>,
     stateStore: KeyValueStore<Long, TilstandV1?>,
-    interval: Duration
+    interval: Duration,
+    keepGoing: AtomicBoolean,
 ): Cancellable = ctx.schedule(interval, PunctuationType.WALL_CLOCK_TIME) {
     stateStore.all().use { tilstander ->
-        tilstander.asSequence()
+        tilstander.asSequence().takeWhile { keepGoing.get() }
             .filter { it.value.skalSlettes() }
             .onEach { tilstand ->
                 try {
