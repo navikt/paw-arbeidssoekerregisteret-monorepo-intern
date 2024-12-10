@@ -14,8 +14,6 @@ import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.jvm.optionals.getOrNull
 
-
-
 fun KStream<Long, StreamHendelse>.lastInternTilstand(
     tilstandDbNavn: String
 ): KStream<Long, InternTilstandOgHendelse> {
