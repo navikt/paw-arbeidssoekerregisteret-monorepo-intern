@@ -45,15 +45,15 @@ class TilstandsoppryddingTest : StringSpec({
     "Om TilstandV1 inneholder avsluttet periode eldre enn 6 måneder skal den fjernes av Tilstandsopprydding" {
         val testTilstand = opprettTilstandV1(true)
         stateStore.put(1234L, testTilstand)
-        testDriver.advanceWallClockTime(Duration.ofMinutes(30))
+        testDriver.advanceWallClockTime(Duration.ofDays(1))
         val currentState = stateStore.get(1234L)
         currentState shouldBe null
     }
     "Om TilstandV1 ikke inneholder avsluttet periode eldre enn 6 måneder skal den ikke fjernes av Tilstandsopprydding" {
         val testTilstand = opprettTilstandV1(false)
-        stateStore.put(1235L, testTilstand)
-        testDriver.advanceWallClockTime(Duration.ofMinutes(30))
-        val currentState = stateStore.get(1235L)
+        stateStore.put(1234L, testTilstand)
+        testDriver.advanceWallClockTime(Duration.ofDays(1))
+        val currentState = stateStore.get(1234L)
         currentState shouldBe testTilstand
     }
     "SkalSlettes() skal returnere true om avsluttet periode er eldre enn 6 måneder" {

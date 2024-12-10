@@ -35,7 +35,7 @@ class TilstandsLaster(
         tilstandsopprydding(
             requireNotNull(context) { "Context er ikke initialisert" },
             requireNotNull(tilstandsDb){ "TilstandsDb er ikke initialisert" },
-            Duration.ofMinutes(30)
+            Duration.ofDays(1)
         )
     }
 
