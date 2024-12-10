@@ -14,7 +14,7 @@ import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.jvm.optionals.getOrNull
 
-val keepGoing = AtomicBoolean(true)
+private val keepGoing = AtomicBoolean(true)
 
 fun KStream<Long, StreamHendelse>.lastInternTilstand(
     tilstandDbNavn: String
