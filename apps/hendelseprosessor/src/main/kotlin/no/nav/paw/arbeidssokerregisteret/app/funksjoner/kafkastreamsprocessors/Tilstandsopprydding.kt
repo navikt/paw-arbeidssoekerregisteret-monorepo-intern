@@ -21,11 +21,15 @@ fun tilstandsopprydding(
         tilstander.asSequence()
             .filter { it.value.skalSlettes() }
             .onEach { tilstand ->
-                tilstandsoppryddingLogger.info("Sletter tilstand med key:{}", tilstand.key)
-                stateStore.delete(tilstand.key)
+                try {
+                    stateStore.delete(tilstand.key)
+                    tilstandsoppryddingLogger.info("Slettet tilstand med key:{}", tilstand.key)
+                } catch (e: Exception) {
+                    tilstandsoppryddingLogger.error("Feil ved sletting av tilstand med key:{}", tilstand.key, e)
+                }
             }
             .count().let { count ->
-                tilstandsoppryddingLogger.info("Fant {} tilstander med avsluttet perioder eldre enn 6 måneder", count)
+                tilstandsoppryddingLogger.info("Fant {} tilstander som er null eller avsluttet perioder eldre enn 6 måneder", count)
             }
 
     }
