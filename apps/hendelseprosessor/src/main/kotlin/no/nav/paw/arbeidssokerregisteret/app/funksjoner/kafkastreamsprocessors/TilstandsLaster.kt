@@ -14,7 +14,7 @@ import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.jvm.optionals.getOrNull
 
-private val keepGoing = AtomicBoolean(true)
+
 
 fun KStream<Long, StreamHendelse>.lastInternTilstand(
     tilstandDbNavn: String
@@ -26,7 +26,7 @@ fun KStream<Long, StreamHendelse>.lastInternTilstand(
 class TilstandsLaster(
     private val tilstandDbNavn: String
 ) : Processor<Long, StreamHendelse, Long, InternTilstandOgHendelse> {
-
+    private val keepGoing = AtomicBoolean(true)
     private var tilstandsDb: KeyValueStore<Long, TilstandV1?>? = null
     private var context: ProcessorContext<Long, InternTilstandOgHendelse>? = null
 
