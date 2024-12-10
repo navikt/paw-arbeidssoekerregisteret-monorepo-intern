@@ -2,35 +2,47 @@ package no.nav.paw.health.model
 
 import java.util.concurrent.atomic.AtomicReference
 
-enum class HealthStatus(val value: String, val priority: Int) {
-    UNKNOWN("UNKNOWN", 10),
-    HEALTHY("HEALTHY", 5),
-    UNHEALTHY("UNHEALTHY", 1),
+enum class HealthStatus(val value: String) {
+    UNKNOWN("UNKNOWN"),
+    HEALTHY("HEALTHY"),
+    UNHEALTHY("UNHEALTHY"),
 }
 
-open class HealthIndicator(initialStatus: HealthStatus) {
+interface HealthIndicator {
+    fun getStatus(): HealthStatus
+}
+
+interface MutableHealthIndicator : HealthIndicator {
+    fun setUnknown();
+
+    fun setHealthy();
+
+    fun setUnhealthy();
+}
+
+open class DefaultHealthIndicator(initialStatus: HealthStatus) : MutableHealthIndicator {
 
     private val status = AtomicReference(initialStatus)
 
-    fun setUnknown() {
+    override fun setUnknown() {
         status.set(HealthStatus.UNKNOWN)
     }
 
-    fun setHealthy() {
+    override fun setHealthy() {
         status.set(HealthStatus.HEALTHY)
     }
 
-    fun setUnhealthy() {
+    override fun setUnhealthy() {
         status.set(HealthStatus.UNHEALTHY)
     }
 
-    fun getStatus(): HealthStatus {
+    override fun getStatus(): HealthStatus {
         return status.get()
     }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        other as HealthIndicator
+        if (other !is DefaultHealthIndicator) return false
         return status == other.status
     }
 
@@ -41,9 +53,20 @@ open class HealthIndicator(initialStatus: HealthStatus) {
 
 typealias HealthIndicatorList = MutableList<HealthIndicator>
 
-fun HealthIndicatorList.getAggregatedStatus(): HealthStatus =
-    map(HealthIndicator::getStatus)
-        .minByOrNull(HealthStatus::priority) ?: HealthStatus.UNKNOWN
+fun HealthIndicatorList.getAggregatedStatus(): HealthStatus {
+    return if (this.isEmpty()) {
+        HealthStatus.HEALTHY // Default til healthy
+    } else if (this.all { it.getStatus() == HealthStatus.HEALTHY }) {
+        HealthStatus.HEALTHY
+    } else if (this.any { it.getStatus() == HealthStatus.UNHEALTHY }) {
+        HealthStatus.UNHEALTHY
+    } else {
+        HealthStatus.UNKNOWN
+    }
+}
 
-class ReadinessHealthIndicator(initialStatus: HealthStatus = HealthStatus.UNKNOWN) : HealthIndicator(initialStatus)
-class LivenessHealthIndicator(initialStatus: HealthStatus = HealthStatus.HEALTHY) : HealthIndicator(initialStatus)
+class ReadinessHealthIndicator(initialStatus: HealthStatus = HealthStatus.UNKNOWN) :
+    DefaultHealthIndicator(initialStatus)
+
+class LivenessHealthIndicator(initialStatus: HealthStatus = HealthStatus.HEALTHY) :
+    DefaultHealthIndicator(initialStatus)

@@ -45,10 +45,10 @@ class HealthRoutesTest : FreeSpec({
             val livenessResponse1 = client.get("/internal/isAlive")
             val readinessResponse1 = client.get("/internal/isReady")
 
-            livenessResponse1.status shouldBe HttpStatusCode.ServiceUnavailable
-            livenessResponse1.body<String>() shouldBe HealthStatus.UNKNOWN.value
-            readinessResponse1.status shouldBe HttpStatusCode.ServiceUnavailable
-            readinessResponse1.body<String>() shouldBe HealthStatus.UNKNOWN.value
+            livenessResponse1.status shouldBe HttpStatusCode.OK
+            livenessResponse1.body<String>() shouldBe HealthStatus.HEALTHY.value
+            readinessResponse1.status shouldBe HttpStatusCode.OK
+            readinessResponse1.body<String>() shouldBe HealthStatus.HEALTHY.value
 
             val liveness1 = healthIndicatorRepository.addLivenessIndicator(LivenessHealthIndicator())
             val liveness2 = healthIndicatorRepository.addLivenessIndicator(LivenessHealthIndicator())

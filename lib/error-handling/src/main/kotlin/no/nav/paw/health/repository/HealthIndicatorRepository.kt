@@ -1,20 +1,19 @@
 package no.nav.paw.health.repository
 
+import no.nav.paw.health.model.HealthIndicator
 import no.nav.paw.health.model.HealthIndicatorList
-import no.nav.paw.health.model.LivenessHealthIndicator
-import no.nav.paw.health.model.ReadinessHealthIndicator
 
 class HealthIndicatorRepository {
 
     private val readinessIndicators: HealthIndicatorList = mutableListOf()
     private val livenessIndicators: HealthIndicatorList = mutableListOf()
 
-    fun addReadinessIndicator(healthIndicator: ReadinessHealthIndicator): ReadinessHealthIndicator {
+    fun <T : HealthIndicator> addReadinessIndicator(healthIndicator: T): T {
         readinessIndicators.add(healthIndicator)
         return healthIndicator
     }
 
-    fun addLivenessIndicator(healthIndicator: LivenessHealthIndicator): LivenessHealthIndicator {
+    fun <T : HealthIndicator> addLivenessIndicator(healthIndicator: T): T {
         livenessIndicators.add(healthIndicator)
         return healthIndicator
     }

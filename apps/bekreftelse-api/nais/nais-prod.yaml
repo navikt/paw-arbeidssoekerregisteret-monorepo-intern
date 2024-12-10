@@ -65,10 +65,6 @@ spec:
   accessPolicy:
     inbound:
       rules:
-        - application: tokenx-token-generator
-          namespace: aura
-        - application: azure-token-generator
-          namespace: aura
         - application: arbeidssokerregistrering-for-veileder
           namespace: paw
         - application: arbeidssoekerregisteret-for-personbruker
