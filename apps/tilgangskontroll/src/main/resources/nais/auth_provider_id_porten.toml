@@ -1,0 +1,5 @@
+name = "idporten"
+clientId = "${IDPORTEN_CLIENT_ID}"
+discoveryUrl = "${IDPORTEN_WELL_KNOWN_URL}
+[authProviders.claims]
+  map = ["acr=idporten-loa-high"]

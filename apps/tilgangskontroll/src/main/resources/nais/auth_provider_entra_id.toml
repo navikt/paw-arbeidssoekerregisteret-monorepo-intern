@@ -1,0 +1,5 @@
+name = "azure"
+clientId = "${AZURE_APP_CLIENT_ID}"
+discoveryUrl = "${AZURE_APP_WELL_KNOWN_URL}"
+[authProviders.claims]
+  map = ["NAVident"]

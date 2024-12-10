@@ -10,7 +10,7 @@ servers:
     description: "Development"
 paths:
   /api/v1/tilgangskontroll:
-    put:
+    post:
       description: "Sjekker om en Nav ansatt har tilgang til en bruker"
       parameters:
         - name: "traceparent"
@@ -28,13 +28,11 @@ paths:
         required: true
       responses:
         "200":
-          description: "OK, ansatt har tilgang"
-        "403":
-          description: "Forbidden, ansatt har ikke tilgang"
+          description: "OK"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/FeilV1"
+                $ref: "#/components/schemas/TilgangskontrollResponseV1"
         "400":
           description: "Bad Request"
           headers:
@@ -64,19 +62,34 @@ components:
       type: "string"
       pattern: "^[0-9]{11}$"
       description: "Fødselsnummer eller D-nummer"
-    NavIdent:
+    EntraId:
       type: "string"
-      description: "Nav ident"
+      format: "uuid"
+      description: "Nav ansatt id"
     TilgangskontrollRequestV1:
       type: "object"
       properties:
         identitetsnummer:
           $ref: "#/components/schemas/Identitetsnummer"
-        navIdent:
-          $ref: "#/components/schemas/NavIdent"
+        navAnsattId:
+          $ref: "#/components/schemas/EntraId"
+        tilgang:
+          type: "string"
+          enum:
+            - "LESE"
+            - "SKRIVE"
+            - "LESE_SKRIVE"
       required:
         - "identitetsnummer"
-        - "navIdent"
+        - "navAnsattId"
+        - "tilgang"
+    TilgangskontrollResponseV1:
+      type: "object"
+      properties:
+        harTilgang:
+          type: "boolean"
+      required:
+        - "harTilgang"
     FeilV1:
       type: "object"
       properties:

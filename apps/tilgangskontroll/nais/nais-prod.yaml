@@ -14,8 +14,6 @@ spec:
     requests:
       cpu: 10m
       memory: 64Mi
-  tokenx:
-    enabled: true
   azure:
     application:
       enabled: true
