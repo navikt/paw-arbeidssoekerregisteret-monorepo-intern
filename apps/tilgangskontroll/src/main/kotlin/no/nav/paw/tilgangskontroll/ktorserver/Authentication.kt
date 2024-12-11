@@ -8,12 +8,17 @@ import no.nav.security.token.support.v3.TokenSupportConfig
 import no.nav.security.token.support.v3.tokenValidationSupport
 
 fun Application.configureAuthentication(authProviders: AuthProviders) {
-    val ktorConfig = environment.config
     install(Authentication) {
         authProviders.forEach { provider ->
             tokenValidationSupport(
                 name = provider.name,
-                config = ktorConfig,
+                config = TokenSupportConfig(
+                    IssuerConfig(
+                        name = provider.name,
+                        discoveryUrl = provider.discoveryUrl,
+                        acceptedAudience = listOf(provider.clientId)
+                    )
+                ),
                 requiredClaims = RequiredClaims(
                     issuer = provider.name,
                     claimMap = provider.claims.map.toTypedArray(),

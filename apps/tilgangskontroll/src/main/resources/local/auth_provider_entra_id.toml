@@ -1,0 +1,5 @@
+name = "azure"
+clientId = "client_id"
+discoveryUrl = "https://well.known.url.local"
+[claims]
+  map = ["NAVident"]

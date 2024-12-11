@@ -1,0 +1,2 @@
+url = "http://poao-tilgang.poao.svc.cluster.local"
+scope = "api://local.poao.poao-tilgang/.default"
