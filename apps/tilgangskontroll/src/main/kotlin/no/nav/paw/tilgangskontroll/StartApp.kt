@@ -67,7 +67,7 @@ fun main() {
             get("/internal/metrics") {
                 call.respondText(prometheusMeterRegistry.scrape())
             }
-            authenticate(AuthProvider.TokenX.name) {
+            authenticate(AuthProvider.EntraId.name) {
                 post("/api/v1/tilgang") {
                     val request: TilgangskontrollRequestV1 = call.receive<TilgangskontrollRequestV1>()
                     val validertTilgangskontrollRequest = request.valider()
