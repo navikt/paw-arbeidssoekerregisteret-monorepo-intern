@@ -1,16 +1,12 @@
 package no.nav.paw.tilgangskontroll
 
 import io.ktor.server.application.install
-import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.authenticate
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.metrics.micrometer.MicrometerMetrics
 import io.ktor.server.netty.Netty
-import io.ktor.server.request.receive
-import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
-import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmInfoMetrics
@@ -22,16 +18,14 @@ import no.nav.paw.client.config.AzureAdM2MConfig
 import no.nav.paw.client.factory.createAzureAdM2MTokenClient
 import no.nav.paw.client.factory.createHttpClient
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
-import no.nav.paw.tilgangskontroll.api.models.TilgangskontrollRequestV1
-import no.nav.paw.tilgangskontroll.api.models.TilgangskontrollResponseV1
-import no.nav.paw.tilgangskontroll.api.validering.valider
 import no.nav.paw.tilgangskontroll.ktorserver.AuthProvider
 import no.nav.paw.tilgangskontroll.ktorserver.authProvidersOf
 import no.nav.paw.tilgangskontroll.ktorserver.configureAuthentication
+import no.nav.paw.tilgangskontroll.ktorserver.installContentNegotiation
+import no.nav.paw.tilgangskontroll.ktorserver.installStatusPage
 import no.nav.paw.tilgangskontroll.poaotilgang.PoaoConfig
 import no.nav.paw.tilgangskontroll.poaotilgang.initPoaobackend
-import no.nav.security.token.support.v3.RequiredClaims
-import no.nav.security.token.support.v3.tokenValidationSupport
+import no.nav.paw.tilgangskontroll.routes.apiV1Tilgang
 import org.slf4j.LoggerFactory
 
 private val logger = LoggerFactory.getLogger("tilgangskontroll")
@@ -56,6 +50,8 @@ fun main() {
                 JvmInfoMetrics()
             )
         }
+        installContentNegotiation()
+        installStatusPage()
         configureAuthentication(authProviders)
         routing {
             get("/internal/isAlive") {
@@ -68,16 +64,7 @@ fun main() {
                 call.respondText(prometheusMeterRegistry.scrape())
             }
             authenticate(AuthProvider.EntraId.name) {
-                post("/api/v1/tilgang") {
-                    val request: TilgangskontrollRequestV1 = call.receive<TilgangskontrollRequestV1>()
-                    val validertTilgangskontrollRequest = request.valider()
-                    val harTilgang = service.harAnsattTilgangTilPerson(
-                        navIdent = validertTilgangskontrollRequest.navAnsatt,
-                        identitetsnummer = validertTilgangskontrollRequest.person,
-                        tilgang = validertTilgangskontrollRequest.tilgang
-                    )
-                    call.respond(TilgangskontrollResponseV1(harTilgang = harTilgang))
-                }
+                apiV1Tilgang(service)
             }
         }
     }.start(wait = true)

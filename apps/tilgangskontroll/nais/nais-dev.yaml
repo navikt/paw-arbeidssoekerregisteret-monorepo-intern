@@ -34,3 +34,8 @@ spec:
   prometheus:
     enabled: true
     path: /internal/metrics
+  accessPolicy:
+    outbound:
+      rules:
+        - application: poao-tilgang
+          namespace: poao
