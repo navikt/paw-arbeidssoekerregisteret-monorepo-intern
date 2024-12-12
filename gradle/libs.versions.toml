@@ -30,7 +30,7 @@ hikariVersion = "6.2.1"
 kotlinxCoroutinesVersion = "1.9.0"
 kotlinxSerializationJsonVersion = "1.7.3"
 ktorVersion = "2.3.12"
-ktor3Version = "3.0.1"
+ktor3Version = "3.0.2"
 
 [libraries]
 coroutinesCore = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutinesVersion" }
@@ -81,7 +81,7 @@ ktor3-server-openapi = { group = "io.ktor", name = "ktor-server-openapi", versio
 ktor3-server-netty = { group = "io.ktor", name = "ktor-server-netty", version.ref = "ktor3Version" }
 ktor3-server-auth = { group = "io.ktor", name = "ktor-server-auth", version.ref = "ktor3Version" }
 ktor3-server-metricsMicrometer = { group = "io.ktor", name = "ktor-server-metrics-micrometer", version.ref = "ktor3Version" }
-ktor3-server-testJvm = { group = "io.ktor", name = "ktor-server-tests-jvm", version.ref = "ktor3Version" }
+ktor3-server-test-host = { group = "io.ktor", name = "ktor-server-test-host", version.ref = "ktor3Version" }
 ktor3-serialization-core = { group = "io.ktor", name = "ktor-serialization", version.ref = "ktor3Version" }
 ktor3-serialization-jvm = { group = "io.ktor", name = "ktor-serialization-jvm", version.ref = "ktor3Version" }
 ktor3-serialization-jackson = { group = "io.ktor", name = "ktor-serialization-jackson", version.ref = "ktor3Version" }

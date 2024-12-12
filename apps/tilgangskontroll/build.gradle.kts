@@ -44,7 +44,7 @@ dependencies {
     implementation(libs.jackson.datatypeJsr310)
     implementation(libs.ktor3.server.coreJvm)
     implementation(libs.ktor3.server.openapi)
-    testImplementation(libs.ktor.server.testJvm)
+    testImplementation(libs.ktor3.server.test.host)
     testImplementation(libs.test.junit5.runner)
     testImplementation(libs.test.kotest.assertionsCore)
     testImplementation(libs.test.mockOauth2Server)

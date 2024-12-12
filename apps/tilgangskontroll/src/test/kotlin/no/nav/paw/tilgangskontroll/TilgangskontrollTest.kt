@@ -8,12 +8,15 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.ktor.client.call.body
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.bearerAuth
+import io.ktor.client.request.headers
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.append
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.auth.authenticate
@@ -55,12 +58,12 @@ class TilgangskontrollTest: FreeSpec({
         }
     }
 
-    "Verifiser applikasjonsflyt".config(enabled = false) {
+    "Verifiser applikasjonsflyt".config(enabled = true) {
         val ansatt = NavAnsatt(UUID.randomUUID(), "Z123")
         val person = Identitetsnummer("12345678901")
         val token = mockOAuthServer.ansattToken(ansatt)
         map[Triple(EntraId(ansatt.azureId), person, Tilgang.LESE)] = true
-        map[Triple(EntraId(ansatt.azureId), person, Tilgang.SKRIVE)] = true
+        map[Triple(EntraId(ansatt.azureId), person, Tilgang.SKRIVE)] = false
         testApplication {
             application {
                 configureAuthentication(mockOAuthServer, AuthProvider.EntraId)
@@ -75,6 +78,9 @@ class TilgangskontrollTest: FreeSpec({
             val client = createClient {
                 defaultRequest {
                     bearerAuth(token.serialize())
+                    headers {
+                        append(HttpHeaders.ContentType, ContentType.Application.Json)
+                    }
                 }
                 install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
                     jackson {
