@@ -21,7 +21,7 @@ data class ProblemDetails(
     val detail: String? = null,
     val instance: String,
     val timestamp: Instant = Instant.now()
-)
+): Response<Nothing>
 
 class ProblemDetailsBuilder private constructor(
     var type: URI = ErrorType.default().build(),

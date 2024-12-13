@@ -1,0 +1,2 @@
+uri = "http://paw-tilgangskontroll"
+scope = "${TILGANGSKONTROLL_SCOPE}"

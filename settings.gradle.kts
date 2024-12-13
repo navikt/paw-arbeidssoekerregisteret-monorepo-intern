@@ -21,6 +21,8 @@ include(
     "lib:kafka-key-generator-client",
     "lib:pdl-client",
     "lib:aareg-client",
+    "lib:tilgangskontroll-client",
+    "lib:common-model",
     "test:test-data-lib",
     "test:kafka-streams-test-functions",
     "domain:bekreftelse-interne-hendelser",
