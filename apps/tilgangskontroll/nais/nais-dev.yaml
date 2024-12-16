@@ -16,6 +16,10 @@ spec:
       memory: 256Mi
   secureLogs:
     enabled: true
+  observability:
+    logging:
+      destinations:
+        - id: loki
   azure:
     application:
       enabled: true
