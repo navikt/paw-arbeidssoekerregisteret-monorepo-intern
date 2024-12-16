@@ -8,7 +8,7 @@ import io.ktor.server.application.ApplicationStopping
 import io.ktor.server.application.createApplicationPlugin
 import io.ktor.server.application.hooks.MonitoringEvent
 import io.ktor.server.application.log
-import io.ktor.util.KtorDsl
+import io.ktor.utils.io.KtorDsl
 import org.jetbrains.exposed.sql.Database
 import javax.sql.DataSource
 
@@ -31,7 +31,7 @@ val DataSourcePlugin: ApplicationPlugin<DataSourcePluginConfig> =
         on(MonitoringEvent(ApplicationStarted)) { application ->
             application.log.info("Initializing data source")
             Database.connect(dataSource)
-            application.environment.monitor.raise(DataSourceReady, application)
+            application.monitor.raise(DataSourceReady, application)
         }
 
         on(MonitoringEvent(ApplicationStopping)) { application ->

@@ -1,7 +1,6 @@
 package no.nav.paw.security.authorization.interceptor
 
-import io.ktor.server.application.ApplicationCall
-import io.ktor.util.pipeline.PipelineContext
+import io.ktor.server.routing.RoutingContext
 import no.nav.paw.security.authorization.context.AuthorizationContext
 import no.nav.paw.security.authorization.context.resolveRequestContext
 import no.nav.paw.security.authorization.context.resolveSecurityContext
@@ -11,11 +10,11 @@ import org.slf4j.LoggerFactory
 
 private val logger = LoggerFactory.getLogger("no.nav.paw.logger.security.authorization")
 
-suspend fun PipelineContext<Unit, ApplicationCall>.authorize(
+suspend fun RoutingContext.authorize(
     action: Action,
     accessPolicies: List<AccessPolicy> = emptyList(),
-    body: suspend PipelineContext<Unit, ApplicationCall>.(AuthorizationContext) -> Unit
-): PipelineContext<Unit, ApplicationCall> {
+    body: suspend RoutingContext.(AuthorizationContext) -> Unit
+): RoutingContext {
     logger.debug("Kjører autorisasjon")
     val requestContext = resolveRequestContext()
     val securityContext = requestContext.resolveSecurityContext()

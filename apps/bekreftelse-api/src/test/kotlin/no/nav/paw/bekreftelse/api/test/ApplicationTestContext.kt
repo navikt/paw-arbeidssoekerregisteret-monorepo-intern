@@ -33,13 +33,8 @@ import no.nav.paw.health.model.LivenessHealthIndicator
 import no.nav.paw.health.model.ReadinessHealthIndicator
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
-import no.nav.paw.security.authentication.config.AuthProvider
-import no.nav.paw.security.authentication.config.AuthProviderClaims
 import no.nav.paw.security.authentication.config.SECURITY_CONFIG
 import no.nav.paw.security.authentication.config.SecurityConfig
-import no.nav.paw.security.authentication.token.AzureAd
-import no.nav.paw.security.authentication.token.IdPorten
-import no.nav.paw.security.authentication.token.TokenX
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import org.apache.kafka.clients.consumer.KafkaConsumer
