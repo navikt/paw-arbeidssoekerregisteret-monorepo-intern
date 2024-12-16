@@ -27,9 +27,13 @@ import no.nav.paw.tilgangskontroll.poaotilgang.PoaoConfig
 import no.nav.paw.tilgangskontroll.poaotilgang.initPoaobackend
 import no.nav.paw.tilgangskontroll.routes.apiV1Tilgang
 import org.slf4j.LoggerFactory
+import org.slf4j.MarkerFactory
 
 private val logger = LoggerFactory.getLogger("tilgangskontroll")
 fun main() {
+    val secureLogger = LoggerFactory.getLogger("tjenestekall")
+    val secureMarker = MarkerFactory.getMarker("SECURE_LOG")
+    secureLogger.info(secureMarker, "Starter tilgangskontroll med sikker logging...")
     logger.info("Starter tilgangskontroll...")
     val azureM2MClientConfig = loadNaisOrLocalConfiguration<AzureAdM2MConfig>(AZURE_M2M_CONFIG)
     val authProviders = authProvidersOf(AuthProvider.EntraId)
