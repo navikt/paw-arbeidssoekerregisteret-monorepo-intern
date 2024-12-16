@@ -19,6 +19,8 @@ import no.nav.paw.model.EntraId
 import no.nav.paw.model.Identitetsnummer
 import no.nav.paw.tilgangskontroll.server.models.TilgangskontrollRequestV1
 import no.nav.paw.error.model.Response
+import no.nav.paw.error.model.map
+import no.nav.paw.tilgangskontroll.server.models.TilgangskontrollResponseV1
 import java.util.*
 
 interface TilgangsTjenesteForAnsatte {
@@ -40,7 +42,7 @@ private class TilgangsTjenesteForAnsatteImpl(
     config: TilgangskontrollClientConfig,
     tokenPrivder: (String) -> String
 ) : TilgangsTjenesteForAnsatte {
-    private val apiTilgangV1 = config.apiTilgangV1().toURL()
+    private val apiTilgangV1 = config.apiTilgangV1()
     private val tokenProvider = { tokenPrivder(config.scope) }
 
     override suspend fun harAnsattTilgangTilPerson(
@@ -48,7 +50,7 @@ private class TilgangsTjenesteForAnsatteImpl(
         identitetsnummer: Identitetsnummer,
         tilgang: Tilgang
     ): Response<Boolean> {
-        val response = httpClient.post(apiTilgangV1) {
+        val response = httpClient.post(apiTilgangV1.toString()) {
             bearerAuth(tokenProvider())
             contentType(ContentType.Application.Json)
             setBody(TilgangskontrollRequestV1(
@@ -57,7 +59,8 @@ private class TilgangsTjenesteForAnsatteImpl(
                 tilgang = tilgang.toApi()
             ))
         }
-        return mapResponse(response)
+        return mapResponse<TilgangskontrollResponseV1>(response)
+            .map { it.harTilgang }
     }
 }
 

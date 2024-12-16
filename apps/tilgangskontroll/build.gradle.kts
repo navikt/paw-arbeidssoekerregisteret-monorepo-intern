@@ -49,6 +49,7 @@ dependencies {
     testImplementation(libs.test.kotest.assertionsCore)
     testImplementation(libs.test.mockOauth2Server)
     testImplementation(libs.test.mockk.core)
+    testImplementation(project(":lib:tilgangskontroll-client"))
 }
 sourceSets {
     main {

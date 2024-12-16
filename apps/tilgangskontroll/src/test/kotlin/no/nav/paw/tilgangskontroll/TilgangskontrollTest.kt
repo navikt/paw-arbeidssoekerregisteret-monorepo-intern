@@ -7,6 +7,7 @@ import io.kotest.common.runBlocking
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.ktor.client.call.body
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.bearerAuth
@@ -23,8 +24,11 @@ import io.ktor.server.auth.authenticate
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.testApplication
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
+import no.nav.paw.error.model.Data
 import no.nav.paw.tilgangskontroll.api.models.TilgangskontrollRequestV1
 import no.nav.paw.tilgangskontroll.api.models.TilgangskontrollResponseV1
+import no.nav.paw.tilgangskontroll.client.TilgangskontrollClientConfig
+import no.nav.paw.tilgangskontroll.client.tilgangsTjenesteForAnsatte
 import no.nav.paw.tilgangskontroll.ktorserver.AuthProvider
 import no.nav.paw.tilgangskontroll.ktorserver.AuthProviderConfig
 import no.nav.paw.tilgangskontroll.ktorserver.AuthProviders
@@ -48,15 +52,7 @@ class TilgangskontrollTest: FreeSpec({
         mockOAuthServer.shutdown()
     }
     val map = ConcurrentHashMap<Triple<EntraId, Identitetsnummer, Tilgang>, Boolean>()
-    val service = object: TilgangsTjenesteForAnsatte {
-        override suspend fun harAnsattTilgangTilPerson(
-            navIdent: EntraId,
-            identitetsnummer: Identitetsnummer,
-            tilgang: Tilgang
-        ): Boolean {
-            return map[Triple(navIdent, identitetsnummer, tilgang)] ?: false
-        }
-    }
+    val service = tilgangsTjenesteMock(map)
 
     "Verifiser applikasjonsflyt".config(enabled = true) {
         val ansatt = NavAnsatt(UUID.randomUUID(), "Z123")
@@ -76,12 +72,6 @@ class TilgangskontrollTest: FreeSpec({
                 }
             }
             val client = createClient {
-                defaultRequest {
-                    bearerAuth(token.serialize())
-                    headers {
-                        append(HttpHeaders.ContentType, ContentType.Application.Json)
-                    }
-                }
                 install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
                     jackson {
                         registerKotlinModule()
@@ -89,32 +79,45 @@ class TilgangskontrollTest: FreeSpec({
                     }
                 }
             }
-            client.post("/api/v1/tilgang") {
-                setBody(TilgangskontrollRequestV1(
-                    identitetsnummer = person.value,
-                    navAnsattId = ansatt.azureId,
-                    tilgang = TilgangskontrollRequestV1.Tilgang.LESE
-                ))
-            } should { response ->
-                response.status shouldBe HttpStatusCode.OK
-                val body = runBlocking { response.body<TilgangskontrollResponseV1>() }
-                body.harTilgang shouldBe true
+            val tilgangskontrollKlient = tilgangsTjenesteForAnsatte(
+                httpClient = client,
+                config = TilgangskontrollClientConfig(
+                    uri = "",
+                    scope = "MOCK"
+                ),
+                tokenProvider = { token.serialize() }
+            )
+            tilgangskontrollKlient.harAnsattTilgangTilPerson(
+                navIdent = no.nav.paw.model.EntraId(ansatt.azureId),
+                identitetsnummer = no.nav.paw.model.Identitetsnummer(person.value),
+                tilgang = no.nav.paw.tilgangskontroll.client.Tilgang.LESE
+            ) should { response ->
+                response.shouldBeInstanceOf<Data<Boolean>>()
+                response.data shouldBe true
             }
-            client.post("/api/v1/tilgang") {
-                setBody(TilgangskontrollRequestV1(
-                    identitetsnummer = person.value,
-                    navAnsattId = ansatt.azureId,
-                    tilgang = TilgangskontrollRequestV1.Tilgang.SKRIVE
-                ))
-            } should { response ->
-                response.status shouldBe HttpStatusCode.OK
-                val body = runBlocking { response.body<TilgangskontrollResponseV1>() }
-                body.harTilgang shouldBe false
+            tilgangskontrollKlient.harAnsattTilgangTilPerson(
+                navIdent = no.nav.paw.model.EntraId(ansatt.azureId),
+                identitetsnummer = no.nav.paw.model.Identitetsnummer(person.value),
+                tilgang = no.nav.paw.tilgangskontroll.client.Tilgang.SKRIVE
+            ) should { response ->
+                response.shouldBeInstanceOf<Data<Boolean>>()
+                response.data shouldBe false
             }
         }
     }
 
 })
+
+private fun tilgangsTjenesteMock(map: ConcurrentHashMap<Triple<EntraId, Identitetsnummer, Tilgang>, Boolean>) =
+    object : TilgangsTjenesteForAnsatte {
+        override suspend fun harAnsattTilgangTilPerson(
+            navIdent: EntraId,
+            identitetsnummer: Identitetsnummer,
+            tilgang: Tilgang
+        ): Boolean {
+            return map[Triple(navIdent, identitetsnummer, tilgang)] ?: false
+        }
+    }
 
 
 fun Application.configureAuthentication(
