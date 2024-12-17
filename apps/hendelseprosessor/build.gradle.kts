@@ -5,8 +5,9 @@ plugins {
     id("com.google.cloud.tools.jib")
     application
 }
-val jvmVersion = JavaVersion.VERSION_21
+val jvmMajorVersion: String by project
 val image: String? by project
+val baseImage: String by project
 
 dependencies {
     implementation(project(":domain:interne-hendelser"))
@@ -36,7 +37,7 @@ dependencies {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(jvmVersion.majorVersion)
+        languageVersion = JavaLanguageVersion.of(jvmMajorVersion)
     }
 }
 
@@ -45,7 +46,7 @@ application {
 }
 
 jib {
-    from.image = "ghcr.io/navikt/baseimages/temurin:${jvmVersion.majorVersion}"
+    from.image = "$baseImage:$jvmMajorVersion"
     to.image = "${image ?: rootProject.name }:${project.version}"
 }
 
