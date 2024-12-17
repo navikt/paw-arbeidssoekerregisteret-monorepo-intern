@@ -73,7 +73,7 @@ application {
 }
 
 jib {
-    from.image = "ghcr.io/navikt/baseimages/temurin:${jvmMajorVersion}"
+    from.image = "$baseImage:$jvmMajorVersion"
     val actualImage = "${image ?: rootProject.name}:${project.version}"
     to.image = actualImage
     container {
