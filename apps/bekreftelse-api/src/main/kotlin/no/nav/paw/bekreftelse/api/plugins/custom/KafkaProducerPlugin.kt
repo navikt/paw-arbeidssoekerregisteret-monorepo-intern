@@ -5,7 +5,7 @@ import io.ktor.server.application.ApplicationStopping
 import io.ktor.server.application.createApplicationPlugin
 import io.ktor.server.application.hooks.MonitoringEvent
 import io.ktor.server.application.log
-import io.ktor.util.KtorDsl
+import io.ktor.utils.io.KtorDsl
 import org.apache.kafka.clients.producer.Producer
 import java.time.Duration
 

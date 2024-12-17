@@ -6,7 +6,7 @@ import io.ktor.server.application.ApplicationPlugin
 import io.ktor.server.application.createApplicationPlugin
 import io.ktor.server.application.hooks.MonitoringEvent
 import io.ktor.server.application.log
-import io.ktor.util.KtorDsl
+import io.ktor.utils.io.KtorDsl
 import org.flywaydb.core.Flyway
 import javax.sql.DataSource
 
@@ -36,6 +36,6 @@ val FlywayPlugin: ApplicationPlugin<FlywayPluginConfig> =
         on(MonitoringEvent(DataSourceReady)) { application ->
             application.log.info("Running database migration")
             flyway.migrate()
-            application.environment.monitor.raise(FlywayMigrationCompleted, application)
+            application.monitor.raise(FlywayMigrationCompleted, application)
         }
     }

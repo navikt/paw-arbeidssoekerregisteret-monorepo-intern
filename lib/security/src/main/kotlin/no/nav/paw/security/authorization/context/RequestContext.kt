@@ -1,12 +1,10 @@
 package no.nav.paw.security.authorization.context
 
 import io.ktor.http.HttpHeaders
-import io.ktor.server.application.ApplicationCall
-import io.ktor.server.application.call
 import io.ktor.server.auth.principal
 import io.ktor.server.request.ApplicationRequest
-import io.ktor.util.pipeline.PipelineContext
-import no.nav.security.token.support.v2.TokenValidationContextPrincipal
+import io.ktor.server.routing.RoutingContext
+import no.nav.security.token.support.v3.TokenValidationContextPrincipal
 
 sealed class NavHeader(val name: String)
 
@@ -29,7 +27,7 @@ data class RequestContext(
     val principal: TokenValidationContextPrincipal?
 )
 
-fun PipelineContext<Unit, ApplicationCall>.resolveRequestContext(): RequestContext {
+fun RoutingContext.resolveRequestContext(): RequestContext {
     return RequestContext(
         request = call.request,
         headers = resolveRequestHeaders(),
@@ -37,7 +35,7 @@ fun PipelineContext<Unit, ApplicationCall>.resolveRequestContext(): RequestConte
     )
 }
 
-fun PipelineContext<Unit, ApplicationCall>.resolveRequestHeaders(): RequestHeaders {
+fun RoutingContext.resolveRequestHeaders(): RequestHeaders {
     return RequestHeaders(
         authorization = call.request.headers[HttpHeaders.Authorization],
         traceParent = call.request.headers[TraceParent.name],
