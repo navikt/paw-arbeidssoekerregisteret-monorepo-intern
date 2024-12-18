@@ -18,22 +18,22 @@ dependencies {
     implementation(project(":lib:kafka"))
     implementation(project(":lib:kafka-streams"))
     implementation(project(":lib:hoplite-config"))
-    implementation(project(":lib:kafka-key-generator-client"))
-    implementation(project(":lib:error-handling"))
+    implementation(project(":lib:kafka-key-generator-client-ktor3"))
+    implementation(project(":lib:error-handling-ktor3"))
     implementation(kotlin("reflect"))
 
     implementation(libs.arrow.core.core)
-    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
-    implementation(libs.ktor.server.cors)
-    implementation(libs.ktor.server.swagger)
-    implementation(libs.ktor.server.callId)
-    implementation(libs.ktor.server.statusPages)
-    implementation(libs.ktor.server.contentNegotiation)
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.contentNegotiation)
-    implementation(libs.ktor.serialization.jvm)
-    implementation(libs.ktor.serialization.jackson)
-    implementation(libs.nav.security.tokenValidationKtorV2)
+    implementation(libs.bundles.ktor3ServerWithNettyAndMicrometer)
+    implementation(libs.ktor3.server.cors)
+    implementation(libs.ktor3.server.swagger)
+    implementation(libs.ktor3.server.callId)
+    implementation(libs.ktor3.server.statusPages)
+    implementation(libs.ktor3.server.contentNegotiation)
+    implementation(libs.ktor3.client.core)
+    implementation(libs.ktor3.client.contentNegotiation)
+    implementation(libs.ktor3.serialization.jvm)
+    implementation(libs.ktor3.serialization.jackson)
+    implementation(libs.nav.security.tokenValidationKtorV3)
     implementation(libs.nav.common.tokenClient)
     implementation(libs.nav.common.tokenClient)
     implementation(libs.nav.common.auditLog)
@@ -68,7 +68,7 @@ dependencies {
     testImplementation(libs.test.mockk.core)
     testImplementation(libs.test.testContainers.core)
     testImplementation(libs.test.testContainers.postgresql)
-    testImplementation(libs.ktor.server.testJvm)
+    testImplementation(libs.ktor3.server.test.host)
     testImplementation(libs.kafka.streams.test)
     testImplementation(project(":test:kafka-streams-test-functions"))
 }
@@ -80,7 +80,7 @@ java {
 }
 
 application {
-    mainClass.set("no.nav.paw.arbeidssokerregisteret.backup.StartAppKt")
+    mainClass.set("no.nav.paw.kafkakeymaintenance.AppStartupKt")
 }
 
 tasks.withType<KotlinCompile>().configureEach {

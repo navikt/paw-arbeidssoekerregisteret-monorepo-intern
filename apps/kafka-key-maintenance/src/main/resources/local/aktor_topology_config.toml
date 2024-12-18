@@ -1,0 +1,4 @@
+aktorTopic = "pdl.aktor-v2"
+hendelseloggTopic = "eventlog"
+supressionDelayMS = 3600000
+intervalMS = 900000
