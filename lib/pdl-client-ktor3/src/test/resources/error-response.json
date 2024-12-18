@@ -1,0 +1,14 @@
+{
+  "data": null,
+  "errors": [
+    {
+      "message": "error message",
+      "locations": null,
+      "path": null,
+      "extensions": {
+        "code": null,
+        "classification": "Error"
+      }
+    }
+  ]
+}

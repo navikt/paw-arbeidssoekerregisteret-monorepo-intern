@@ -23,14 +23,14 @@ dependencies {
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:kafka"))
     implementation(project(":lib:kafka-streams"))
-    implementation(project(":lib:kafka-key-generator-client"))
-    implementation(project(":lib:pdl-client"))
+    implementation(project(":lib:kafka-key-generator-client-ktor3"))
+    implementation(project(":lib:pdl-client-ktor3"))
 
     api(libs.arrow.core.core)
 
     implementation(libs.kafka.streams.core)
 
-    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.bundles.ktor3ServerWithNettyAndMicrometer)
     implementation(libs.micrometer.registryPrometheus)
 
     implementation(libs.logbackClassic)
@@ -44,14 +44,14 @@ dependencies {
     implementation(libs.avro.core)
 
     implementation(libs.jackson.datatypeJsr310)
-    implementation(libs.ktor.serialization.jackson)
-    implementation(libs.ktor.serialization.jvm)
+    implementation(libs.ktor3.serialization.jackson)
+    implementation(libs.ktor3.serialization.jvm)
 
-    implementation(libs.ktor.client.contentNegotiation)
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor3.client.contentNegotiation)
+    implementation(libs.ktor3.client.core)
+    implementation(libs.ktor3.client.cio)
 
-    testImplementation(libs.ktor.server.testJvm)
+    testImplementation(libs.ktor3.server.test.host)
     testImplementation(libs.test.junit5.runner)
     testImplementation(libs.test.kotest.assertionsCore)
     testImplementation(libs.test.testContainers.core)

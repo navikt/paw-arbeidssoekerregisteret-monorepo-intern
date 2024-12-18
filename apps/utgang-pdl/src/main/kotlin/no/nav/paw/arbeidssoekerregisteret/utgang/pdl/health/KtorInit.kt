@@ -1,11 +1,11 @@
 package no.nav.paw.arbeidssoekerregisteret.utgang.pdl.health
 
-import io.ktor.server.application.call
 import io.ktor.server.application.install
-import io.ktor.server.engine.ApplicationEngine
+import io.ktor.server.engine.EmbeddedServer
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.metrics.micrometer.MicrometerMetrics
 import io.ktor.server.netty.Netty
+import io.ktor.server.netty.NettyApplicationEngine
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
@@ -19,7 +19,7 @@ fun initKtor(
     kafkaStreamsMetrics: KafkaStreamsMetrics,
     prometheusRegistry: PrometheusMeterRegistry,
     health: Health
-): ApplicationEngine {
+): EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration> {
     return embeddedServer(Netty, port = 8080) {
         install(MicrometerMetrics) {
             registry = prometheusRegistry

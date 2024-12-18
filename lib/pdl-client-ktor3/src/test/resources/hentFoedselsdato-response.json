@@ -1,0 +1,12 @@
+{
+  "data": {
+    "hentPerson": {
+      "foedselsdato": [
+        {
+          "foedselsdato": "1986-11-26",
+          "foedselsaar": 1986
+        }
+      ]
+    }
+  }
+}

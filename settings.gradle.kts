@@ -22,6 +22,7 @@ include(
     "lib:kafka-key-generator-client",
     "lib:kafka-key-generator-client-ktor3",
     "lib:pdl-client",
+    "lib:pdl-client-ktor3",
     "lib:aareg-client",
     "lib:tilgangskontroll-client",
     "lib:common-model",
