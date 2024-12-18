@@ -13,19 +13,19 @@ val image: String? by project
 dependencies {
     // Project
     implementation(project(":lib:hoplite-config"))
-    implementation(project(":lib:error-handling"))
+    implementation(project(":lib:error-handling-ktor3"))
     implementation(project(":lib:kafka-streams"))
-    implementation(project(":lib:kafka-key-generator-client"))
+    implementation(project(":lib:kafka-key-generator-client-ktor3"))
     implementation(project(":domain:main-avro-schema"))
     implementation(project(":domain:bekreftelse-interne-hendelser"))
     implementation(project(":domain:interne-hendelser"))
 
     // Server
-    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.bundles.ktor3ServerWithNettyAndMicrometer)
 
     // Serialization
-    implementation(libs.ktor.serialization.jackson)
-    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.ktor3.serialization.jackson)
+    implementation(libs.ktor3.serialization.kotlinx.json)
     implementation(libs.jackson.datatypeJsr310)
 
     // Tooling
@@ -46,7 +46,7 @@ dependencies {
     implementation(libs.avro.kafkaStreamsSerde)
 
     // Testing
-    testImplementation(libs.ktor.server.testJvm)
+    testImplementation(libs.ktor3.server.test.host)
     testImplementation(libs.kafka.streams.test)
     testImplementation(libs.bundles.testLibsWithUnitTesting)
     testImplementation(project(":test:test-data-lib"))
