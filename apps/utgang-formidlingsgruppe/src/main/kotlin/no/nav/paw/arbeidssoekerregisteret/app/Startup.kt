@@ -5,8 +5,8 @@ import io.micrometer.core.instrument.binder.kafka.KafkaStreamsMetrics
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import kotlinx.coroutines.runBlocking
+import no.nav.paw.arbeidssoekerregisteret.app.helse.initKtor
 import no.nav.paw.arbeidssokerregisteret.app.helse.Helse
-import no.nav.paw.arbeidssokerregisteret.app.helse.initKtor
 import no.nav.paw.config.env.ProdGcp
 import no.nav.paw.config.env.RuntimeEnvironment
 import no.nav.paw.config.env.currentRuntimeEnvironment

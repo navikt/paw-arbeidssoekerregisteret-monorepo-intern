@@ -16,7 +16,7 @@ val schema by configurations.creating {
 }
 
 dependencies {
-    implementation(project(":lib:kafka-key-generator-client"))
+    implementation(project(":lib:kafka-key-generator-client-ktor3"))
     implementation(project(":domain:main-avro-schema"))
     implementation(project(":domain:interne-hendelser"))
     implementation(project(":domain:arbeidssoekerregisteret-kotlin"))
@@ -25,10 +25,10 @@ dependencies {
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:kafka-streams"))
 
-    implementation(libs.ktor.server.netty)
-    implementation(libs.ktor.server.core)
-    implementation(libs.ktor.server.coreJvm)
-    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.ktor3.server.netty)
+    implementation(libs.ktor3.server.core)
+    implementation(libs.ktor3.server.coreJvm)
+    implementation(libs.bundles.ktor3ServerWithNettyAndMicrometer)
     implementation(libs.micrometer.registryPrometheus)
 
     implementation(libs.logbackClassic)

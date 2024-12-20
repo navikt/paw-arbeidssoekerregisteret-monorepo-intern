@@ -1,4 +1,4 @@
-package no.nav.paw.arbeidssokerregisteret.app.helse
+package no.nav.paw.arbeidssoekerregisteret.app.helse
 
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -11,12 +11,13 @@ import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
 import io.micrometer.core.instrument.binder.kafka.KafkaStreamsMetrics
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import no.nav.paw.arbeidssokerregisteret.app.helse.Helse
 
 fun initKtor(
     kafkaStreamsMetrics: KafkaStreamsMetrics,
     prometheusRegistry: PrometheusMeterRegistry,
     helse: Helse
-): ApplicationEngine {
+): EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration> {
     return embeddedServer(Netty, port = 8080) {
         install(MicrometerMetrics) {
             registry = prometheusRegistry
