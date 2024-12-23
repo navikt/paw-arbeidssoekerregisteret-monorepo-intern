@@ -1,11 +1,9 @@
 package no.nav.paw.kafkakeygenerator.api.recordkey
 
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.util.pipeline.*
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.kafkakeygenerator.api.recordkey.functions.recordKey
 import no.nav.paw.kafkakeygenerator.config.AuthenticationConfig
@@ -29,7 +27,7 @@ fun Routing.configureRecordKeyApi(
 }
 
 @WithSpan
-private suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest(
+private suspend fun RoutingContext.handleRequest(
     kafkaKeysService: KafkaKeysService,
     logger: Logger
 ) {

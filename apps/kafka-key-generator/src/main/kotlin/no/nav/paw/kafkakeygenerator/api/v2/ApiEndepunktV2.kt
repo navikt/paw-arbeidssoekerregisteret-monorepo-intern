@@ -3,12 +3,10 @@ package no.nav.paw.kafkakeygenerator.api.v2
 import io.ktor.http.*
 import io.ktor.http.HttpStatusCode.Companion.InternalServerError
 import io.ktor.http.HttpStatusCode.Companion.OK
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.util.pipeline.*
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
 import no.nav.paw.kafkakeygenerator.vo.FailureCode
@@ -40,7 +38,7 @@ fun Routing.konfigurerApiV2(
 }
 
 @WithSpan
-suspend fun PipelineContext<Unit, ApplicationCall>.hentLokalInfo(
+suspend fun RoutingContext.hentLokalInfo(
     kafkaKeysService: KafkaKeysService,
     logger: Logger
 ) {
@@ -62,7 +60,7 @@ suspend fun PipelineContext<Unit, ApplicationCall>.hentLokalInfo(
 }
 
 @WithSpan
-suspend fun PipelineContext<Unit, ApplicationCall>.hentInfo(
+suspend fun RoutingContext.hentInfo(
     kafkaKeysService: KafkaKeysService,
     logger: Logger
 ) {
@@ -80,7 +78,7 @@ suspend fun PipelineContext<Unit, ApplicationCall>.hentInfo(
 }
 
 @WithSpan
-private suspend fun PipelineContext<Unit, ApplicationCall>.hentEllerOpprett(
+private suspend fun RoutingContext.hentEllerOpprett(
     kafkaKeysService: KafkaKeysService,
     logger: Logger
 ) {

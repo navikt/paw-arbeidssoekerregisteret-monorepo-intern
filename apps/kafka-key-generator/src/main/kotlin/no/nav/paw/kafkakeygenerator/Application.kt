@@ -1,5 +1,6 @@
 package no.nav.paw.kafkakeygenerator
 
+import io.ktor.server.engine.EngineConnectorBuilder
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.micrometer.core.instrument.binder.kafka.KafkaClientMetrics
@@ -94,12 +95,14 @@ fun startApplication(
     )
 
     embeddedServer(
-        factory = Netty,
-        port = 8080,
+        Netty,
         configure = {
             connectionGroupSize = 8
             workerGroupSize = 8
             callGroupSize = 16
+            connectors.add(EngineConnectorBuilder().apply {
+                port = 8080
+            })
         }
     ) {
         configSerialization()
