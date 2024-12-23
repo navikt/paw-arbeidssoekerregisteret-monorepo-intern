@@ -22,6 +22,7 @@ fun tilstandsopprydding(
     stateStore.all().use { tilstander ->
         tilstander.asSequence().takeWhile { keepGoing.get() }
             .filter { it.value.skalSlettes() }
+            .take(10000)
             .onEach { tilstand ->
                 try {
                     stateStore.delete(tilstand.key)
