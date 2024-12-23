@@ -69,7 +69,7 @@ fun <K, V> kafkaConsumerPlugin(): ApplicationPlugin<KafkaConsumerPluginConfig<K,
         on(MonitoringEvent(ApplicationStarted)) { application ->
             logger.info("Kafka Consumer klargjøres")
             kafkaConsumer.subscribe(kafkaTopics, rebalanceListener)
-            application.environment.monitor.raise(KafkaConsumerReady, application)
+            application.monitor.raise(KafkaConsumerReady, application)
         }
 
         on(MonitoringEvent(ApplicationStopping)) { _ ->
