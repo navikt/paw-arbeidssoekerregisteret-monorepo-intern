@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm")
@@ -13,9 +12,9 @@ val jvmMajorVersion: String by project
 dependencies {
     // PAW
     implementation(project(":lib:hoplite-config"))
-    implementation(project(":lib:error-handling"))
-    implementation(project(":lib:http-client-utils"))
-    implementation(project(":lib:pdl-client"))
+    implementation(project(":lib:error-handling-ktor3"))
+    implementation(project(":lib:http-client-utils-ktorv3"))
+    implementation(project(":lib:pdl-client-ktor3"))
     implementation(project(":lib:kafka"))
     implementation(project(":domain:interne-hendelser"))
 
@@ -23,27 +22,27 @@ dependencies {
     implementation(libs.nav.common.log)
     implementation(libs.nav.common.tokenClient)
     implementation(libs.nav.security.tokenClientCore)
-    implementation(libs.nav.security.tokenValidationKtorV2)
+    implementation(libs.nav.security.tokenValidationKtorV3)
 
     // Kafka (for å beregne partisjonsnummer)
     implementation(libs.kafka.clients)
 
     // Ktor
-    implementation(libs.ktor.serialization.jackson)
+    implementation(libs.ktor3.serialization.jackson)
 
     // Ktor Server
-    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
-    implementation(libs.ktor.server.cors)
-    implementation(libs.ktor.server.swagger)
-    implementation(libs.ktor.server.callId)
-    implementation(libs.ktor.server.statusPages)
-    implementation(libs.ktor.server.contentNegotiation)
+    implementation(libs.bundles.ktor3ServerWithNettyAndMicrometer)
+    implementation(libs.ktor3.server.cors)
+    implementation(libs.ktor3.server.swagger)
+    implementation(libs.ktor3.server.callId)
+    implementation(libs.ktor3.server.statusPages)
+    implementation(libs.ktor3.server.contentNegotiation)
 
     // Ktor Client
-    implementation(libs.ktor.client.contentNegotiation)
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.cio)
-    implementation(libs.ktor.client.logging)
+    implementation(libs.ktor3.client.contentNegotiation)
+    implementation(libs.ktor3.client.core)
+    implementation(libs.ktor3.client.cio)
+    implementation(libs.ktor3.client.logging)
 
     // Micrometer & OTEL
     implementation(libs.micrometer.registryPrometheus)
@@ -73,8 +72,8 @@ dependencies {
     testImplementation(libs.bundles.testLibsWithUnitTesting)
     testImplementation(libs.test.testContainers.core)
     testImplementation(libs.test.testContainers.postgresql)
-    testImplementation(libs.ktor.server.testJvm)
-    testImplementation(libs.ktor.client.mock)
+    testImplementation(libs.ktor3.server.test.host)
+    testImplementation(libs.ktor3.client.mock)
 }
 
 java {

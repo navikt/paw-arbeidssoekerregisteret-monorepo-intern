@@ -8,7 +8,7 @@ import io.ktor.server.application.ApplicationStopping
 import io.ktor.server.application.createApplicationPlugin
 import io.ktor.server.application.hooks.MonitoringEvent
 import io.ktor.server.application.log
-import io.ktor.util.KtorDsl
+import io.ktor.utils.io.KtorDsl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -69,7 +69,7 @@ fun <K, V> kafkaConsumerPlugin(): ApplicationPlugin<KafkaConsumerPluginConfig<K,
         on(MonitoringEvent(ApplicationStarted)) { application ->
             logger.info("Kafka Consumer klargjøres")
             kafkaConsumer.subscribe(kafkaTopics, rebalanceListener)
-            application.environment.monitor.raise(KafkaConsumerReady, application)
+            application.monitor.raise(KafkaConsumerReady, application)
         }
 
         on(MonitoringEvent(ApplicationStopping)) { _ ->
