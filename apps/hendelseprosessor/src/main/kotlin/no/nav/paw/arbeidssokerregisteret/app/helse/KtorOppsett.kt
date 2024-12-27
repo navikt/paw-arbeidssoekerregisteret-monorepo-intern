@@ -16,7 +16,7 @@ fun initKtor(
     kafkaStreamsMetrics: KafkaStreamsMetrics,
     prometheusRegistry: PrometheusMeterRegistry,
     helse: Helse
-): ApplicationEngine {
+): EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration> {
     return embeddedServer(Netty, port = 8080) {
         install(MicrometerMetrics) {
             registry = prometheusRegistry

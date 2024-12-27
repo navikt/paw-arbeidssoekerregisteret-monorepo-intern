@@ -1,14 +1,13 @@
 [streamKonfigurasjon]
 tilstandsDatabase = "tilstand"
 applikasjonsId = "appId"
-eventlogTopic = "eventlog"
-periodeTopic = "periode"
-opplysningerOmArbeidssoekerTopic = "opplysninger-om-arbeidssoeker"
+eventlogTopic = "hendelselogg-v1"
+periodeTopic = "periode-v1"
+opplysningerOmArbeidssoekerTopic = "opplysninger-om-arbeidssoeker-v1"
 
 [serverKonfigurasjon]
 autentisering = "PLAIN"
 kafkaBrokers = "localhost:9092"
-kafkaSchemaRegistry = "http://localhost:8082"
 
 [schemaRegistryKonfigurasjon]
 url = "http://localhost:8082"
