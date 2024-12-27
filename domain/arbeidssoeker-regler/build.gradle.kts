@@ -13,7 +13,7 @@ dependencies {
     implementation(project(":domain:interne-hendelser"))
     api(libs.micrometer.registryPrometheus)
     api(libs.arrow.core.core)
-    testImplementation(libs.ktor.server.testJvm)
+    testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.test.junit5.runner)
     testImplementation(libs.test.kotest.assertionsCore)
     testImplementation(libs.test.testContainers.core)

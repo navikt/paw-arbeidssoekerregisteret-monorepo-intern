@@ -13,7 +13,7 @@ dependencies {
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:kafka-streams"))
     implementation(project(":domain:bekreftelse-interne-hendelser"))
-    implementation(project(":lib:error-handling-ktor3"))
+    implementation(project(":lib:error-handling"))
     implementation(project(":domain:main-avro-schema"))
     implementation(libs.jackson.datatypeJsr310)
     implementation(libs.jackson.kotlin)
@@ -26,12 +26,12 @@ dependencies {
     implementation(libs.kafka.streams.core)
     implementation(libs.avro.core)
     implementation(libs.avro.kafkaStreamsSerde)
-    implementation(libs.bundles.ktor3ServerWithNettyAndMicrometer)
+    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
     implementation(libs.micrometer.registryPrometheus)
     implementation("no.nav.tms.varsel:kotlin-builder:1.1.0")
     testImplementation(libs.kafka.streams.test)
     testImplementation(libs.bundles.testLibsWithUnitTesting)
-    testImplementation(project(":lib:kafka-key-generator-client-ktor3"))
+    testImplementation(project(":lib:kafka-key-generator-client"))
     testImplementation(project(":test:test-data-lib"))
 }
 

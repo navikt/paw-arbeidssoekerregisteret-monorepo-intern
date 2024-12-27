@@ -12,29 +12,29 @@ val image: String? by project
 dependencies {
     // Project
     implementation(project(":lib:hoplite-config"))
-    implementation(project(":lib:error-handling-ktor3"))
+    implementation(project(":lib:error-handling"))
     implementation(project(":lib:security"))
     implementation(project(":lib:kafka-streams"))
-    implementation(project(":lib:kafka-key-generator-client-ktor3"))
+    implementation(project(":lib:kafka-key-generator-client"))
     implementation(project(":domain:bekreftelse-interne-hendelser"))
     implementation(project(":domain:bekreftelsesmelding-avro-schema"))
 
     // Server
-    implementation(libs.bundles.ktor3ServerWithNettyAndMicrometer)
-    implementation(libs.ktor3.server.contentNegotiation)
-    implementation(libs.ktor3.server.statusPages)
-    implementation(libs.ktor3.server.cors)
-    implementation(libs.ktor3.server.callId)
-    implementation(libs.ktor3.server.auth)
+    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.ktor.server.contentNegotiation)
+    implementation(libs.ktor.server.statusPages)
+    implementation(libs.ktor.server.cors)
+    implementation(libs.ktor.server.callId)
+    implementation(libs.ktor.server.auth)
 
     // Client
-    implementation(libs.ktor3.client.core)
-    implementation(libs.ktor3.client.cio)
-    implementation(libs.ktor3.client.contentNegotiation)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.contentNegotiation)
 
     // Serialization
-    implementation(libs.ktor3.serialization.jackson)
-    implementation(libs.ktor3.serialization.kotlinx.json)
+    implementation(libs.ktor.serialization.jackson)
+    implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.jackson.datatypeJsr310)
 
     // Authentication
@@ -44,8 +44,8 @@ dependencies {
     implementation(libs.nav.poao.tilgangClient)
 
     // Documentation
-    implementation(libs.ktor3.server.openapi)
-    implementation(libs.ktor3.server.swagger)
+    implementation(libs.ktor.server.openapi)
+    implementation(libs.ktor.server.swagger)
 
     // Logging
     implementation(libs.logbackClassic)
@@ -71,8 +71,8 @@ dependencies {
     implementation(libs.avro.kafkaStreamsSerde)
 
     // Test
-    testImplementation(libs.ktor3.server.test.host)
-    testImplementation(libs.ktor3.client.mock)
+    testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.ktor.client.mock)
     testImplementation(libs.bundles.testLibsWithUnitTesting)
     testImplementation(libs.test.mockOauth2Server)
     testImplementation(libs.test.testContainers.postgresql)

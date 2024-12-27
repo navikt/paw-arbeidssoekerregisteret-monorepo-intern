@@ -25,10 +25,10 @@ dependencies {
     implementation(libs.avro.kafkaStreamsSerde)
 
     implementation(libs.micrometer.registryPrometheus)
-    implementation(libs.ktor3.server.core)
-    implementation(libs.bundles.ktor3ServerWithNettyAndMicrometer)
-    implementation(libs.ktor3.server.netty)
-    implementation(libs.ktor3.server.coreJvm)
+    implementation(libs.ktor.server.core)
+    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.ktor.server.netty)
+    implementation(libs.ktor.server.coreJvm)
 
     testImplementation(libs.test.junit5.runner)
     testImplementation(libs.kafka.streams.test)

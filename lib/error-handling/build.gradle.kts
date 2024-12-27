@@ -10,7 +10,7 @@ dependencies {
 
     //Test
     testImplementation(libs.bundles.testLibsWithUnitTesting)
-    testImplementation(libs.ktor.server.testJvm)
+    testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.server.contentNegotiation)
     testImplementation(libs.ktor.server.statusPages)
     testImplementation(libs.ktor.serialization.jackson)
