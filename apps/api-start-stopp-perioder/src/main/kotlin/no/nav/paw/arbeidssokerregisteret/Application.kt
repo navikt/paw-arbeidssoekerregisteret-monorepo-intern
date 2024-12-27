@@ -39,12 +39,14 @@ fun main() {
     )
     val server = embeddedServer(
         factory = Netty,
-        port = 8080,
         configure = {
             connectionGroupSize = 8
             workerGroupSize = 8
             callGroupSize = 16
-        }
+            connectors.add(EngineConnectorBuilder().apply {
+                port = 8080
+            })
+        },
     ) {
         module(
             registry = registry,

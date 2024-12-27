@@ -3,9 +3,8 @@ package no.nav.paw.arbeidssokerregisteret.routes
 import arrow.core.Either
 import arrow.core.NonEmptyList
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.response.*
-import io.ktor.util.pipeline.*
+import io.ktor.server.routing.RoutingContext
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.*
 import no.nav.paw.arbeidssokerregisteret.application.*
 import no.nav.paw.arbeidssokerregisteret.application.authfaktka.*
@@ -17,13 +16,13 @@ import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Opplysning as Ap
 
 const val feilmeldingVedAvvist = "Avvist, se 'aarsakTilAvvisning' for detaljer"
 
-suspend fun PipelineContext<Unit, ApplicationCall>.respondWithV2(resultat: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>) =
+suspend fun RoutingContext.respondWithV2(resultat: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>) =
     when (resultat) {
         is Either.Left -> respondWithErrorV2(resultat.value)
         is Either.Right -> call.respond(HttpStatusCode.NoContent)
     }
 
-suspend fun PipelineContext<Unit, ApplicationCall>.respondWithErrorV2(problemer: NonEmptyList<Problem>) {
+suspend fun RoutingContext.respondWithErrorV2(problemer: NonEmptyList<Problem>) {
     val (httpCode, feilkode) = problemer
         .firstOrNull { it.regel.id is AuthRegelId }
         ?.let { it.httpCode() to FeilV2.FeilKode.IKKE_TILGANG }

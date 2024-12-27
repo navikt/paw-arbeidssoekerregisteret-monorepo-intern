@@ -4,6 +4,8 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.Application
+import io.ktor.server.routing.routing
 import io.ktor.server.testing.testApplication
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
@@ -12,8 +14,8 @@ class HealthRoutesTest : FunSpec({
     context("health routes") {
         test("should respond with 200 OK") {
             testApplication {
-                routing {
-                    healthRoutes(PrometheusMeterRegistry(PrometheusConfig.DEFAULT))
+                application {
+                    installRouting()
                 }
 
                 val isAliveResponse = client.get("/internal/isAlive")
@@ -28,3 +30,9 @@ class HealthRoutesTest : FunSpec({
         }
     }
 })
+
+fun Application.installRouting() {
+    routing {
+        healthRoutes(PrometheusMeterRegistry(PrometheusConfig.DEFAULT))
+    }
+}

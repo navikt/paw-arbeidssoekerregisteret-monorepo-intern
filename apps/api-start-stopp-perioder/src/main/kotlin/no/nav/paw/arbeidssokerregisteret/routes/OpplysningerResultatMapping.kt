@@ -2,12 +2,11 @@ package no.nav.paw.arbeidssokerregisteret.routes
 
 import arrow.core.Either
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.response.*
-import io.ktor.util.pipeline.*
+import io.ktor.server.routing.RoutingContext
 import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.Feil
 
-suspend fun PipelineContext<Unit, ApplicationCall>.respondWith(resultat: Either<Feil, Unit>) =
+suspend fun RoutingContext.respondWith(resultat: Either<Feil, Unit>) =
     when (resultat) {
         is Either.Left -> call.respond(resultat.value.feilKode.httpStatusCode(), )
         is Either.Right -> call.respond(HttpStatusCode.Accepted)
