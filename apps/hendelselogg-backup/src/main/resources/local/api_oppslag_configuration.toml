@@ -1,0 +1,5 @@
+baseUrl="http://paw-arbeidssoekerregisteret-api-oppslag"
+scope="api://test.test.api-oppslag/.default"
+perioderPath="/api/v1/veileder/arbeidssoekerperioder"
+opplysningerPath="/api/v1/veileder/opplysninger-om-arbeidssoeker"
+profileringPath="/api/v1/veileder/profilering"

@@ -1,4 +1,4 @@
 name = "azure"
-discoveryUrl = "discovery"
+discoveryUrl = "http://localhost:8081/azure/.well-known/openid-configuration
 tokenEndpointUrl = "localhost"
 clientId = "clientId"

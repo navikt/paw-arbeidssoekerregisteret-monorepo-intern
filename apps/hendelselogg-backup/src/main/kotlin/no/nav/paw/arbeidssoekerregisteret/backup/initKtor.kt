@@ -10,7 +10,7 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import io.ktor.server.plugins.callloging.*
+import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.swagger.*
 import io.ktor.server.request.*
@@ -25,10 +25,10 @@ import no.nav.paw.arbeidssoekerregisteret.backup.health.configureHealthRoutes
 import no.nav.paw.arbeidssoekerregisteret.backup.health.installMetrics
 import no.nav.paw.config.env.ProdGcp
 import no.nav.paw.config.env.currentRuntimeEnvironment
-import no.nav.security.token.support.v2.IssuerConfig
-import no.nav.security.token.support.v2.TokenSupportConfig
-import no.nav.security.token.support.v2.TokenValidationContextPrincipal
-import no.nav.security.token.support.v2.tokenValidationSupport
+import no.nav.security.token.support.v3.IssuerConfig
+import no.nav.security.token.support.v3.TokenSupportConfig
+import no.nav.security.token.support.v3.TokenValidationContextPrincipal
+import no.nav.security.token.support.v3.tokenValidationSupport
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 
