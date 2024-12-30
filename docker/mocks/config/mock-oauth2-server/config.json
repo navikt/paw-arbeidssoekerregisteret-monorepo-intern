@@ -80,6 +80,20 @@
                     }
                 }
             ]
+        },
+        {
+            "issuerId": "default",
+            "tokenExpiry": 15780000,
+            "requestMappings": [
+                {
+                    "requestParam": "scope",
+                    "match": "openid somescope",
+                    "claims": {
+                        "sub": "admin@paw-arbeidssokerregisteret-utgang-pdl",
+                        "aud": ["paw-arbeidssokerregisteret-api-utgang-pdl"]
+                    }
+                }
+            ]
         }
     ]
 }
