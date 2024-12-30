@@ -1,9 +1,9 @@
 [streamKonfigurasjon]
 tilstandsDatabase = "tilstand"
 applikasjonsId = "appId"
-eventlogTopic = "hendelselogg-v1"
-periodeTopic = "periode-v1"
-opplysningerOmArbeidssoekerTopic = "opplysninger-om-arbeidssoeker-v1"
+eventlogTopic = "paw.arbeidssoker-hendelseslogg-v1"
+periodeTopic = "paw.arbeidssokerperioder-v1"
+opplysningerOmArbeidssoekerTopic = "paw.opplysninger-om-arbeidssoeker-v1"
 
 [serverKonfigurasjon]
 autentisering = "PLAIN"
