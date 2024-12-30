@@ -1,4 +1,4 @@
-name = "appdb"
+name = "pawkafkakeymaintenance"
 host = "localhost"
 port = 5432
 username = "admin"
