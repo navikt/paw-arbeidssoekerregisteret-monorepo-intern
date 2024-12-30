@@ -92,6 +92,14 @@
                         "sub": "admin@paw-arbeidssokerregisteret-utgang-pdl",
                         "aud": ["paw-arbeidssokerregisteret-api-utgang-pdl"]
                     }
+                },
+                {
+                    "requestParam": "scope",
+                    "match": "openid somescope",
+                    "claims": {
+                        "sub": "admin@paw-arbeidssokerregisteret-api-inngang",
+                        "aud": ["paw-arbeidssokerregisteret-api-inngang"]
+                    }
                 }
             ]
         }

@@ -1,6 +1,6 @@
 eventLogTopic: paw.arbeidssoker-hendelseslogg-v1
 poaoTilgangClientConfig:
-  url: http://localhost:8090/poao-tilgang
+  url: http://localhost:8090/poao-tilgang/api/v1/policy/evaluate
   scope: api://test.test.poao-tilgang/.default
 pdlClientConfig:
   url: http://localhost:8090/pdl
