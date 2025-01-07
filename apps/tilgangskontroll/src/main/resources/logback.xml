@@ -41,4 +41,7 @@
     </if>
 
     <include resource="no/nav/common/audit_log/logback-naudit.xml"/>
+
+    <logger name="tjenestekall" level="TRACE"/>
+
 </configuration>

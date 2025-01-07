@@ -3,21 +3,10 @@ package no.nav.paw.tilgangskontroll
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.nimbusds.jwt.SignedJWT
-import io.kotest.common.runBlocking
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import io.ktor.client.call.body
-import io.ktor.client.plugins.defaultRequest
-import io.ktor.client.request.bearerAuth
-import io.ktor.client.request.headers
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.append
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.auth.authenticate
@@ -25,8 +14,6 @@ import io.ktor.server.routing.routing
 import io.ktor.server.testing.testApplication
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.error.model.Data
-import no.nav.paw.tilgangskontroll.api.models.TilgangskontrollRequestV1
-import no.nav.paw.tilgangskontroll.api.models.TilgangskontrollResponseV1
 import no.nav.paw.tilgangskontroll.client.TilgangskontrollClientConfig
 import no.nav.paw.tilgangskontroll.client.tilgangsTjenesteForAnsatte
 import no.nav.paw.tilgangskontroll.ktorserver.AuthProvider
@@ -117,7 +104,7 @@ private fun tilgangsTjenesteMock(map: ConcurrentHashMap<Triple<EntraId, Identite
         ): Boolean {
             return map[Triple(navIdent, identitetsnummer, tilgang)] ?: false
         }
-    }
+    }.withSecureLogging(secureLogger, secureMarker)
 
 
 fun Application.configureAuthentication(
