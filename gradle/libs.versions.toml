@@ -1,5 +1,5 @@
 [versions]
-noNavSecurityVersion = "5.0.13"
+noNavSecurityVersion = "5.0.14"
 noNavSecurityMockOauth2ServerVersion = "2.1.10"
 noNavCommonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
 navPoaoTilgangClientVersion = "2024.04.29_13.59-a0ddddd36ac9"
@@ -28,7 +28,7 @@ postgresDriverVersion = "42.7.4"
 flywayVersion = "11.1.0"
 hikariVersion = "6.2.1"
 kotlinxCoroutinesVersion = "1.9.0"
-kotlinxSerializationJsonVersion = "1.7.3"
+kotlinxSerializationJsonVersion = "1.8.0"
 ktorVersion = "3.0.3"
 
 [libraries]
