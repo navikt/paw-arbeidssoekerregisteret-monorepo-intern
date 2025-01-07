@@ -28,7 +28,7 @@ postgresDriverVersion = "42.7.4"
 flywayVersion = "11.1.0"
 hikariVersion = "6.2.1"
 kotlinxCoroutinesVersion = "1.9.0"
-kotlinxSerializationJsonVersion = "1.7.3"
+kotlinxSerializationJsonVersion = "1.8.0"
 ktorVersion = "3.0.3"
 
 [libraries]
