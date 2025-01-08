@@ -8,15 +8,14 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.jackson
-import io.ktor.server.application.ApplicationCall
 import io.ktor.server.plugins.BadRequestException
-import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.routing.IgnoreTrailingSlash
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.testApplication
 import no.nav.paw.error.model.ErrorType
 import no.nav.paw.error.model.ProblemDetails
+import no.nav.paw.error.plugin.ErrorHandlingPlugin
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.server.application.install as serverInstall
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation as ServerContentNegotiation
@@ -26,11 +25,7 @@ class HttpExceptionHandlerTest : FreeSpec({
         testApplication {
             application {
                 serverInstall(IgnoreTrailingSlash)
-                serverInstall(StatusPages) {
-                    exception<Throwable> { call: ApplicationCall, cause: Throwable ->
-                        call.handleException(cause)
-                    }
-                }
+                serverInstall(ErrorHandlingPlugin)
                 serverInstall(ServerContentNegotiation) {
                     jackson {
                         registerModule(JavaTimeModule())
