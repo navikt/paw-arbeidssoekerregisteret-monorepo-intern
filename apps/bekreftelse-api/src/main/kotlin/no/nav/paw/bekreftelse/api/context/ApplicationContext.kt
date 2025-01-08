@@ -1,11 +1,10 @@
 package no.nav.paw.bekreftelse.api.context
 
+import io.ktor.client.HttpClient
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.bekreftelse.api.config.APPLICATION_CONFIG
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
-import no.nav.paw.bekreftelse.api.config.ClientConfig
-import no.nav.paw.bekreftelse.api.config.POAO_TILGANG_CLIENT_CONFIG
 import no.nav.paw.bekreftelse.api.config.SERVER_CONFIG
 import no.nav.paw.bekreftelse.api.config.ServerConfig
 import no.nav.paw.bekreftelse.api.handler.KafkaConsumerExceptionHandler
@@ -35,8 +34,9 @@ import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.kafkakeygenerator.client.kafkaKeysClient
 import no.nav.paw.security.authentication.config.SECURITY_CONFIG
 import no.nav.paw.security.authentication.config.SecurityConfig
-import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
-import no.nav.poao_tilgang.client.PoaoTilgangHttpClient
+import no.nav.paw.tilgangskontroll.client.TILGANGSKONTROLL_CLIENT_CONFIG
+import no.nav.paw.tilgangskontroll.client.TilgangskontrollClientConfig
+import no.nav.paw.tilgangskontroll.client.tilgangsTjenesteForAnsatte
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.common.serialization.LongDeserializer
@@ -55,7 +55,7 @@ data class ApplicationContext(
     val bekreftelseKafkaConsumer: KafkaConsumer<Long, BekreftelseHendelse>,
     val kafkaConsumerExceptionHandler: KafkaConsumerExceptionHandler,
     val authorizationService: AuthorizationService,
-    val bekreftelseService: BekreftelseService
+    val bekreftelseService: BekreftelseService,
 ) {
     companion object {
         fun create(): ApplicationContext {
@@ -65,7 +65,7 @@ data class ApplicationContext(
             val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG_WITH_SCHEME_REG)
             val azureM2MConfig = loadNaisOrLocalConfiguration<AzureM2MConfig>(AZURE_M2M_CONFIG)
             val kafkaKeysClientConfig = loadNaisOrLocalConfiguration<KafkaKeyConfig>(KAFKA_KEY_GENERATOR_CLIENT_CONFIG)
-            val poaoTilgangClientConfig = loadNaisOrLocalConfiguration<ClientConfig>(POAO_TILGANG_CLIENT_CONFIG)
+            val tilgangskontrollClientConfig = loadNaisOrLocalConfiguration<TilgangskontrollClientConfig>(TILGANGSKONTROLL_CLIENT_CONFIG)
 
             val dataSource = createDataSource(applicationConfig.database)
 
@@ -79,14 +79,13 @@ data class ApplicationContext(
 
             val healthIndicatorRepository = HealthIndicatorRepository()
 
-            val poaoTilgangClient = PoaoTilgangCachedClient(
-                PoaoTilgangHttpClient(
-                    baseUrl = poaoTilgangClientConfig.url,
-                    { azureM2MTokenClient.createMachineToMachineToken(poaoTilgangClientConfig.scope) }
-                )
+            val tilgangskontrollClient = tilgangsTjenesteForAnsatte(
+                httpClient = HttpClient(),
+                config = tilgangskontrollClientConfig,
+                tokenProvider = { azureM2MTokenClient.createMachineToMachineToken(tilgangskontrollClientConfig.scope) }
             )
 
-            val authorizationService = AuthorizationService(serverConfig, poaoTilgangClient)
+            val authorizationService = AuthorizationService(serverConfig, tilgangskontrollClient)
 
             val kafkaConsumerExceptionHandler = KafkaConsumerExceptionHandler(
                 healthIndicatorRepository.addLivenessIndicator(LivenessHealthIndicator(HealthStatus.HEALTHY)),

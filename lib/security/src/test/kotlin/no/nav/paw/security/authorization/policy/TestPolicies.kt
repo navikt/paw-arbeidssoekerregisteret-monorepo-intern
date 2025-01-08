@@ -8,14 +8,14 @@ import no.nav.paw.security.authorization.model.Permit
 
 class TestPermitPolicy : AccessPolicy {
 
-    override fun hasAccess(action: Action, securityContext: SecurityContext): AccessDecision {
+    override suspend fun hasAccess(action: Action, securityContext: SecurityContext): AccessDecision {
         return Permit("FULL STEAM AHEAD!")
     }
 }
 
 class TestDenyPolicy : AccessPolicy {
 
-    override fun hasAccess(action: Action, securityContext: SecurityContext): AccessDecision {
+    override suspend fun hasAccess(action: Action, securityContext: SecurityContext): AccessDecision {
         return Deny("YOU SHALL NOT PASS!")
     }
 }

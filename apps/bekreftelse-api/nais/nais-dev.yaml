@@ -17,6 +17,8 @@ spec:
       value: "paw.arbeidssoker-bekreftelse-hendelseslogg-beta-v2"
     - name: KAFKA_KEYS_SCOPE
       value: "api://dev-gcp.paw.paw-kafka-key-generator/.default"
+    - name: TILGANGSKONTROLL_SCOPE
+      value: "api://dev-gcp.paw.paw-tilgangskontroll/.defaul"
   replicas:
     min: 2
     max: 2

@@ -2,7 +2,9 @@ package no.nav.paw.tilgangskontroll.client
 
 import java.net.URI
 
-class TilgangskontrollClientConfig(
+const val TILGANGSKONTROLL_CLIENT_CONFIG = "tilgangskontroll_client_config.toml"
+
+data class TilgangskontrollClientConfig(
     val uri: String,
     val scope: String
 )

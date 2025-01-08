@@ -13,7 +13,7 @@ class SluttbrukerAccessPolicy(
     private val identitetsnummer: Identitetsnummer?
 ) : AccessPolicy {
 
-    override fun hasAccess(action: Action, securityContext: SecurityContext): AccessDecision {
+    override suspend fun hasAccess(action: Action, securityContext: SecurityContext): AccessDecision {
         val (bruker, _) = securityContext
 
         when (bruker) {

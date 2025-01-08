@@ -7,9 +7,9 @@ import no.nav.paw.security.authorization.model.Action
 import no.nav.paw.security.authorization.model.Decision
 
 interface AccessPolicy {
-    fun hasAccess(action: Action, securityContext: SecurityContext): AccessDecision
+    suspend fun hasAccess(action: Action, securityContext: SecurityContext): AccessDecision
 
-    fun checkAccess(action: Action, securityContext: SecurityContext) {
+    suspend fun checkAccess(action: Action, securityContext: SecurityContext) {
         val accessDecision = hasAccess(action, securityContext)
         if (accessDecision.decision == Decision.DENY) {
             throw IngenTilgangException(accessDecision.description)

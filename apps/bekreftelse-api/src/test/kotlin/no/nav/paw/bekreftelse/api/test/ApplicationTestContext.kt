@@ -35,7 +35,7 @@ import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.security.authentication.config.SECURITY_CONFIG
 import no.nav.paw.security.authentication.config.SecurityConfig
-import no.nav.poao_tilgang.client.PoaoTilgangClient
+import no.nav.paw.tilgangskontroll.client.TilgangsTjenesteForAnsatte
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.Producer
@@ -51,7 +51,7 @@ class ApplicationTestContext {
     val dataSource = createTestDataSource()
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val kafkaKeysClientMock = mockk<KafkaKeysClient>()
-    val poaoTilgangClientMock = mockk<PoaoTilgangClient>()
+    val tilgangskontrollClientMock = mockk<TilgangsTjenesteForAnsatte>()
     val kafkaProducerMock = mockk<Producer<Long, Bekreftelse>>()
     val bekreftelseKafkaProducerMock = mockk<BekreftelseKafkaProducer>()
     val kafkaConsumerMock = mockk<KafkaConsumer<Long, BekreftelseHendelse>>()
@@ -59,7 +59,7 @@ class ApplicationTestContext {
         LivenessHealthIndicator(),
         ReadinessHealthIndicator()
     )
-    val authorizationService = AuthorizationService(serverConfig, poaoTilgangClientMock)
+    val authorizationService = AuthorizationService(serverConfig, tilgangskontrollClientMock)
     val bekreftelseRepository = BekreftelseRepository()
     val bekreftelseServiceMock = mockk<BekreftelseService>()
     val bekreftelseService = BekreftelseService(

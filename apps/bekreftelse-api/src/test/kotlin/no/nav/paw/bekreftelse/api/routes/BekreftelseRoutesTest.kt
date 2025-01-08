@@ -24,13 +24,12 @@ import no.nav.paw.bekreftelse.api.test.issueAzureToken
 import no.nav.paw.bekreftelse.api.test.issueTokenXToken
 import no.nav.paw.bekreftelse.api.test.setJsonBody
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
+import no.nav.paw.error.model.Data
 import no.nav.paw.error.model.ProblemDetails
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
 import no.nav.paw.security.authorization.exception.IngenTilgangException
 import no.nav.paw.security.authorization.exception.UgyldigBearerTokenException
-import no.nav.poao_tilgang.client.Decision
-import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput
-import no.nav.poao_tilgang.client.api.ApiResult
+
 
 class BekreftelseRoutesTest : FreeSpec({
     with(ApplicationTestContext()) {
@@ -42,7 +41,7 @@ class BekreftelseRoutesTest : FreeSpec({
         afterSpec {
             confirmVerified(
                 kafkaKeysClientMock,
-                poaoTilgangClientMock,
+                tilgangskontrollClientMock,
                 bekreftelseKafkaProducerMock,
                 kafkaProducerMock,
                 kafkaConsumerMock,
@@ -356,10 +355,7 @@ class BekreftelseRoutesTest : FreeSpec({
 
             "Skal få 403 Forbidden ved POST-request men uten POAO tilgang" {
                 coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(1, 1)
-                every { poaoTilgangClientMock.evaluatePolicy(any<NavAnsattTilgangTilEksternBrukerPolicyInput>()) } returns ApiResult(
-                    throwable = null,
-                    result = Decision.Deny("You shall not pass!", "Balrogs suck")
-                )
+                coEvery { tilgangskontrollClientMock.harAnsattTilgangTilPerson(any(), any(), any()) } returns Data(false)
 
                 testApplication {
                     configureTestApplication(bekreftelseServiceMock)
@@ -379,7 +375,7 @@ class BekreftelseRoutesTest : FreeSpec({
                 }
 
                 coVerify { kafkaKeysClientMock.getIdAndKey(any<String>()) }
-                verify { poaoTilgangClientMock.evaluatePolicy(any<NavAnsattTilgangTilEksternBrukerPolicyInput>()) }
+                coVerify { tilgangskontrollClientMock.harAnsattTilgangTilPerson(any(), any(), any()) }
             }
 
             "Skal hente tilgjengelige bekreftelser" {
@@ -387,10 +383,7 @@ class BekreftelseRoutesTest : FreeSpec({
                     TestData.arbeidssoekerId5,
                     TestData.kafkaKey5
                 )
-                every { poaoTilgangClientMock.evaluatePolicy(any<NavAnsattTilgangTilEksternBrukerPolicyInput>()) } returns ApiResult(
-                    throwable = null,
-                    result = Decision.Permit
-                )
+                coEvery { tilgangskontrollClientMock.harAnsattTilgangTilPerson(any(), any(), any()) } returns Data(true)
                 val opprettTestData = TestData(
                     bereftelseRows = TestData.nyBekreftelseRows(
                         arbeidssoekerId = TestData.arbeidssoekerId5,
@@ -420,7 +413,7 @@ class BekreftelseRoutesTest : FreeSpec({
                 }
 
                 coVerify { kafkaKeysClientMock.getIdAndKey(any<String>()) }
-                verify { poaoTilgangClientMock.evaluatePolicy(any<NavAnsattTilgangTilEksternBrukerPolicyInput>()) }
+                coVerify { tilgangskontrollClientMock.harAnsattTilgangTilPerson(any(), any(), any()) }
             }
 
             "Skal motta bekreftelse" {
@@ -428,10 +421,7 @@ class BekreftelseRoutesTest : FreeSpec({
                     TestData.arbeidssoekerId6,
                     TestData.kafkaKey6
                 )
-                every { poaoTilgangClientMock.evaluatePolicy(any<NavAnsattTilgangTilEksternBrukerPolicyInput>()) } returns ApiResult(
-                    throwable = null,
-                    result = Decision.Permit
-                )
+                coEvery { tilgangskontrollClientMock.harAnsattTilgangTilPerson(any(), any(), any()) } returns Data(true)
                 every { bekreftelseKafkaProducerMock.produceMessage(any<Long>(), any<Bekreftelse>()) } just runs
                 val opprettTestData = TestData(
                     bereftelseRows = TestData.nyBekreftelseRows(
@@ -462,7 +452,7 @@ class BekreftelseRoutesTest : FreeSpec({
                 }
 
                 coVerify { kafkaKeysClientMock.getIdAndKey(any<String>()) }
-                verify { poaoTilgangClientMock.evaluatePolicy(any<NavAnsattTilgangTilEksternBrukerPolicyInput>()) }
+                coVerify { tilgangskontrollClientMock.harAnsattTilgangTilPerson(any(), any(), any()) }
                 verify { bekreftelseKafkaProducerMock.produceMessage(any<Long>(), any<Bekreftelse>()) }
             }
         }

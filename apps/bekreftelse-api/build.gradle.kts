@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":lib:security"))
     implementation(project(":lib:kafka-streams"))
     implementation(project(":lib:kafka-key-generator-client"))
+    implementation(project(":lib:tilgangskontroll-client"))
     implementation(project(":domain:bekreftelse-interne-hendelser"))
     implementation(project(":domain:bekreftelsesmelding-avro-schema"))
 
@@ -39,9 +40,6 @@ dependencies {
 
     // Authentication
     implementation(libs.nav.security.tokenValidationKtorV3)
-
-    // Authorization
-    implementation(libs.nav.poao.tilgangClient)
 
     // Documentation
     implementation(libs.ktor.server.openapi)

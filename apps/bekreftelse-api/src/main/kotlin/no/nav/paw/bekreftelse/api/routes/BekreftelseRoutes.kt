@@ -28,6 +28,7 @@ fun Route.bekreftelseRoutes(applicationContext: ApplicationContext) {
         autentisering(IdPorten, TokenX, AzureAd) {
             get("/tilgjengelige-bekreftelser") {
                 val accessPolicies = authorizationService.accessPolicies()
+
                 autorisering(Action.READ, accessPolicies) {
                     val bruker = call.bruker<Bruker<*>>()
                     val identitetsnummer = bruker.hentSluttbrukerIdentitet()
