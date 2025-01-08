@@ -23,8 +23,8 @@ import no.nav.paw.tilgangskontroll.ktorserver.configureAuthentication
 import no.nav.paw.tilgangskontroll.ktorserver.installContentNegotiation
 import no.nav.paw.tilgangskontroll.ktorserver.installStatusPage
 import no.nav.paw.tilgangskontroll.routes.apiV1Tilgang
-import no.nav.paw.tilgangskontroll.vo.EntraId
 import no.nav.paw.tilgangskontroll.vo.Identitetsnummer
+import no.nav.paw.tilgangskontroll.vo.NavIdent
 import no.nav.paw.tilgangskontroll.vo.Tilgang
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import java.util.*
@@ -38,15 +38,15 @@ class TilgangskontrollTest: FreeSpec({
     afterSpec {
         mockOAuthServer.shutdown()
     }
-    val map = ConcurrentHashMap<Triple<EntraId, Identitetsnummer, Tilgang>, Boolean>()
+    val map = ConcurrentHashMap<Triple<NavIdent, Identitetsnummer, Tilgang>, Boolean>()
     val service = tilgangsTjenesteMock(map)
 
     "Verifiser applikasjonsflyt".config(enabled = true) {
         val ansatt = NavAnsatt(UUID.randomUUID(), "Z123")
         val person = Identitetsnummer("12345678901")
         val token = mockOAuthServer.ansattToken(ansatt)
-        map[Triple(EntraId(ansatt.azureId), person, Tilgang.LESE)] = true
-        map[Triple(EntraId(ansatt.azureId), person, Tilgang.SKRIVE)] = false
+        map[Triple(NavIdent(ansatt.ident), person, Tilgang.LESE)] = true
+        map[Triple(NavIdent(ansatt.ident), person, Tilgang.SKRIVE)] = false
         testApplication {
             application {
                 configureAuthentication(mockOAuthServer, AuthProvider.EntraId)
@@ -75,7 +75,7 @@ class TilgangskontrollTest: FreeSpec({
                 tokenProvider = { token.serialize() }
             )
             tilgangskontrollKlient.harAnsattTilgangTilPerson(
-                navIdent = no.nav.paw.model.EntraId(ansatt.azureId),
+                navIdent = no.nav.paw.model.NavIdent(ansatt.ident),
                 identitetsnummer = no.nav.paw.model.Identitetsnummer(person.value),
                 tilgang = no.nav.paw.tilgangskontroll.client.Tilgang.LESE
             ) should { response ->
@@ -83,7 +83,7 @@ class TilgangskontrollTest: FreeSpec({
                 response.data shouldBe true
             }
             tilgangskontrollKlient.harAnsattTilgangTilPerson(
-                navIdent = no.nav.paw.model.EntraId(ansatt.azureId),
+                navIdent = no.nav.paw.model.NavIdent(ansatt.ident),
                 identitetsnummer = no.nav.paw.model.Identitetsnummer(person.value),
                 tilgang = no.nav.paw.tilgangskontroll.client.Tilgang.SKRIVE
             ) should { response ->
@@ -95,10 +95,10 @@ class TilgangskontrollTest: FreeSpec({
 
 })
 
-private fun tilgangsTjenesteMock(map: ConcurrentHashMap<Triple<EntraId, Identitetsnummer, Tilgang>, Boolean>) =
+private fun tilgangsTjenesteMock(map: ConcurrentHashMap<Triple<NavIdent, Identitetsnummer, Tilgang>, Boolean>) =
     object : TilgangsTjenesteForAnsatte {
         override suspend fun harAnsattTilgangTilPerson(
-            navIdent: EntraId,
+            navIdent: NavIdent,
             identitetsnummer: Identitetsnummer,
             tilgang: Tilgang
         ): Boolean {

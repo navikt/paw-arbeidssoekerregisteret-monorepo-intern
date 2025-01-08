@@ -15,7 +15,7 @@ import io.ktor.http.isSuccess
 import no.nav.paw.error.model.Data
 import no.nav.paw.error.model.ErrorType
 import no.nav.paw.error.model.ProblemDetails
-import no.nav.paw.model.EntraId
+import no.nav.paw.model.NavIdent
 import no.nav.paw.model.Identitetsnummer
 import no.nav.paw.tilgangskontroll.server.models.TilgangskontrollRequestV1
 import no.nav.paw.error.model.Response
@@ -25,7 +25,7 @@ import java.util.*
 
 interface TilgangsTjenesteForAnsatte {
     suspend fun harAnsattTilgangTilPerson(
-        navIdent: EntraId,
+        navIdent: NavIdent,
         identitetsnummer: Identitetsnummer,
         tilgang: Tilgang
     ): Response<Boolean>
@@ -46,7 +46,7 @@ private class TilgangsTjenesteForAnsatteImpl(
     private val tokenProvider = { tokenPrivder(config.scope) }
 
     override suspend fun harAnsattTilgangTilPerson(
-        navIdent: EntraId,
+        navIdent: NavIdent,
         identitetsnummer: Identitetsnummer,
         tilgang: Tilgang
     ): Response<Boolean> {

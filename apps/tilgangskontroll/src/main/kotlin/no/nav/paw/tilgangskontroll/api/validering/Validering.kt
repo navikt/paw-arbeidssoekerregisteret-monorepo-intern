@@ -5,9 +5,8 @@ import no.nav.paw.error.exception.ServerResponseException
 import no.nav.paw.error.model.ErrorType
 import no.nav.paw.tilgangskontroll.api.models.TilgangskontrollRequestV1
 import no.nav.paw.tilgangskontroll.vo.Identitetsnummer
-import no.nav.paw.tilgangskontroll.vo.EntraId
+import no.nav.paw.tilgangskontroll.vo.NavIdent
 import no.nav.paw.tilgangskontroll.vo.Tilgang
-import java.net.URI
 
 fun TilgangskontrollRequestV1?.valider(): ValidertTilgangskontrollRequest {
     try {
@@ -23,7 +22,7 @@ fun TilgangskontrollRequestV1?.valider(): ValidertTilgangskontrollRequest {
     }
     return ValidertTilgangskontrollRequest(
         person = Identitetsnummer(identitetsnummer),
-        navAnsatt = EntraId(navAnsattId),
+        navAnsatt = NavIdent(navAnsattId),
         tilgang = Tilgang.valueOf(tilgang.name)
     )
 }
@@ -31,6 +30,6 @@ fun TilgangskontrollRequestV1?.valider(): ValidertTilgangskontrollRequest {
 @JvmRecord
 data class ValidertTilgangskontrollRequest(
     val person: Identitetsnummer,
-    val navAnsatt: EntraId,
+    val navAnsatt: NavIdent,
     val tilgang: Tilgang
 )

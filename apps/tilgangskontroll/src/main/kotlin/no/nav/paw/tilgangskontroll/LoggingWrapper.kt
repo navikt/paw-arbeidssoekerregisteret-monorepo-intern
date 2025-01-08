@@ -1,7 +1,7 @@
 package no.nav.paw.tilgangskontroll
 
-import no.nav.paw.tilgangskontroll.vo.EntraId
 import no.nav.paw.tilgangskontroll.vo.Identitetsnummer
+import no.nav.paw.tilgangskontroll.vo.NavIdent
 import no.nav.paw.tilgangskontroll.vo.Tilgang
 import org.slf4j.Logger
 import org.slf4j.Marker
@@ -16,7 +16,7 @@ class LoggingWrapper(
     private val backend: TilgangsTjenesteForAnsatte
 ): TilgangsTjenesteForAnsatte {
     override suspend fun harAnsattTilgangTilPerson(
-        navIdent: EntraId,
+        navIdent: NavIdent,
         identitetsnummer: Identitetsnummer,
         tilgang: Tilgang
     ): Boolean {

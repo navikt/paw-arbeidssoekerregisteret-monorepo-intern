@@ -11,10 +11,10 @@ import no.nav.paw.tilgangskontroll.RemoteHttpException
 import no.nav.paw.tilgangskontroll.TilgangsTjenesteForAnsatte
 import no.nav.paw.tilgangskontroll.poaotilgang.api.DecisionType
 import no.nav.paw.tilgangskontroll.poaotilgang.api.EvaluatePoliciesResponse
-import no.nav.paw.tilgangskontroll.poaotilgang.api.navAnsattTilgangTilEksternBrukerPolicyInputV2Dto
+import no.nav.paw.tilgangskontroll.poaotilgang.api.navAnsattTilgangTilEksternBrukerPolicyInputV1Dto
 import no.nav.paw.tilgangskontroll.poaotilgang.api.toEvaluatePoliciesRequest
 import no.nav.paw.tilgangskontroll.vo.Identitetsnummer
-import no.nav.paw.tilgangskontroll.vo.EntraId
+import no.nav.paw.tilgangskontroll.vo.NavIdent
 import no.nav.paw.tilgangskontroll.vo.Tilgang
 import java.net.URI
 
@@ -28,7 +28,7 @@ class PoaoTilgangsTjeneste(
     private val v1PolicyEvalUri = poaTilgangUrl.resolve(V1_POLICY_EVEAL_PATH)
 
     override suspend fun harAnsattTilgangTilPerson(
-        navIdent: EntraId,
+        navIdent: NavIdent,
         identitetsnummer: Identitetsnummer,
         tilgang: Tilgang
     ): Boolean =
@@ -38,7 +38,7 @@ class PoaoTilgangsTjeneste(
                 append("Authorization", "Bearer ${poaoToken()}")
             }
             setBody(
-                navAnsattTilgangTilEksternBrukerPolicyInputV2Dto(
+                navAnsattTilgangTilEksternBrukerPolicyInputV1Dto(
                     navIdent = navIdent,
                     identitetsnummer = identitetsnummer,
                     tilgang = tilgang

@@ -1,38 +1,40 @@
 package no.nav.paw.tilgangskontroll.poaotilgang.api
 
 import no.nav.paw.tilgangskontroll.vo.Identitetsnummer
-import no.nav.paw.tilgangskontroll.vo.EntraId
+import no.nav.paw.tilgangskontroll.vo.NavIdent
 import no.nav.paw.tilgangskontroll.vo.Tilgang
-import java.util.UUID
+import java.util.*
 
-data class NavAnsattTilgangTilEksternBrukerPolicyInputV2Dto(
-    val navAnsattAzureId: UUID,
-    val tilgangType: TilgangType,
+data class NavAnsattNavIdentTilgangTilEksternBrukerPolicyInputV1Dto(
+    val navIdent: String,
     val norskIdent: String
 ): PolicyInput
 
-fun navAnsattTilgangTilEksternBrukerPolicyInputV2Dto(
-    navIdent: EntraId,
+fun navAnsattTilgangTilEksternBrukerPolicyInputV1Dto(
+    navIdent: NavIdent,
     identitetsnummer: Identitetsnummer,
     tilgang: Tilgang
-): List<PolicyEvaluationRequestDto<NavAnsattTilgangTilEksternBrukerPolicyInputV2Dto>> {
-    return tilgang.tilEksternTilgangType
-        .map { tilgangType ->
+): List<PolicyEvaluationRequestDto<PolicyInput>> {
+    return tilgang
+        .tilEksternPolicyId
+        .map { policyId ->
             PolicyEvaluationRequestDto(
                 requestId = UUID.randomUUID(),
-                policyInput = NavAnsattTilgangTilEksternBrukerPolicyInputV2Dto(
-                    navAnsattAzureId = navIdent.value,
-                    norskIdent = identitetsnummer.value,
-                    tilgangType = tilgangType
+                policyInput = NavAnsattNavIdentTilgangTilEksternBrukerPolicyInputV1Dto(
+                    navIdent = navIdent.value,
+                    norskIdent = identitetsnummer.value
                 ),
-                policyId = PolicyId.NAV_ANSATT_TILGANG_TIL_EKSTERN_BRUKER_V2
+                policyId = policyId
             )
         }
 }
 
-val Tilgang.tilEksternTilgangType: Set<TilgangType>
+val Tilgang.tilEksternPolicyId: Set<PolicyId>
     get() = when (this) {
-        Tilgang.LESE -> setOf(TilgangType.LESE)
-        Tilgang.SKRIVE -> setOf(TilgangType.SKRIVE)
-        Tilgang.LESE_SKRIVE -> setOf(TilgangType.LESE, TilgangType.SKRIVE)
+        Tilgang.LESE -> setOf(PolicyId.NAV_ANSATT_NAV_IDENT_LESETILGANG_TIL_EKSTERN_BRUKER_V1)
+        Tilgang.SKRIVE -> setOf(PolicyId.NAV_ANSATT_NAV_IDENT_SKRIVETILGANG_TIL_EKSTERN_BRUKER_V1)
+        Tilgang.LESE_SKRIVE -> setOf(
+            PolicyId.NAV_ANSATT_NAV_IDENT_LESETILGANG_TIL_EKSTERN_BRUKER_V1,
+            PolicyId.NAV_ANSATT_NAV_IDENT_SKRIVETILGANG_TIL_EKSTERN_BRUKER_V1
+        )
     }

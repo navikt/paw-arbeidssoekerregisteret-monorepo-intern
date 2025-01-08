@@ -62,9 +62,8 @@ components:
       type: "string"
       pattern: "^[0-9]{11}$"
       description: "Fødselsnummer eller D-nummer"
-    EntraId:
+    NavIdent:
       type: "string"
-      format: "uuid"
       description: "Nav ansatt id"
     TilgangskontrollRequestV1:
       type: "object"
@@ -72,7 +71,7 @@ components:
         identitetsnummer:
           $ref: "#/components/schemas/Identitetsnummer"
         navAnsattId:
-          $ref: "#/components/schemas/EntraId"
+          $ref: "#/components/schemas/NavIdent"
         tilgang:
           type: "string"
           enum:
