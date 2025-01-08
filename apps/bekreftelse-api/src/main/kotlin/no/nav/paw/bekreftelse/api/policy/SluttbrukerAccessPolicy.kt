@@ -1,8 +1,8 @@
 package no.nav.paw.bekreftelse.api.policy
 
 import no.nav.paw.security.authentication.model.Identitetsnummer
+import no.nav.paw.security.authentication.model.SecurityContext
 import no.nav.paw.security.authentication.model.Sluttbruker
-import no.nav.paw.security.authorization.context.AuthorizationContext
 import no.nav.paw.security.authorization.model.AccessDecision
 import no.nav.paw.security.authorization.model.Action
 import no.nav.paw.security.authorization.model.Deny
@@ -13,8 +13,8 @@ class SluttbrukerAccessPolicy(
     private val identitetsnummer: Identitetsnummer?
 ) : AccessPolicy {
 
-    override fun hasAccess(action: Action, context: AuthorizationContext): AccessDecision {
-        val (bruker, _) = context.securityContext
+    override fun hasAccess(action: Action, securityContext: SecurityContext): AccessDecision {
+        val (bruker, _) = securityContext
 
         when (bruker) {
             is Sluttbruker -> {

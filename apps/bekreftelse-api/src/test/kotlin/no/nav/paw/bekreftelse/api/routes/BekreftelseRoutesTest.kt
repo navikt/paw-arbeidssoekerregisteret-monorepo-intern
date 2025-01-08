@@ -55,18 +55,18 @@ class BekreftelseRoutesTest : FreeSpec({
          * FELLES TESTER
          */
         "Test suite for felleslogikk" - {
-            "Skal få 401 ved manglende Bearer Token" {
+            "Skal få 403 Forbidden ved manglende Bearer Token" {
                 testApplication {
                     configureTestApplication(bekreftelseServiceMock)
                     val client = configureTestClient()
 
                     val response = client.get("/api/v1/tilgjengelige-bekreftelser")
 
-                    response.status shouldBe HttpStatusCode.Unauthorized
+                    response.status shouldBe HttpStatusCode.Forbidden
                 }
             }
 
-            "Skal få 401 ved token utstedt av ukjent issuer" {
+            "Skal få 403 Forbidden ved token utstedt av ukjent issuer" {
                 testApplication {
                     configureTestApplication(bekreftelseServiceMock)
                     val client = configureTestClient()
@@ -83,11 +83,11 @@ class BekreftelseRoutesTest : FreeSpec({
                         bearerAuth(token.serialize())
                     }
 
-                    response.status shouldBe HttpStatusCode.Unauthorized
+                    response.status shouldBe HttpStatusCode.Forbidden
                 }
             }
 
-            "Skal få 403 ved token uten noen claims" {
+            "Skal få 403 Forbidden ved token uten noen claims" {
                 testApplication {
                     configureTestApplication(bekreftelseServiceMock)
                     val client = configureTestClient()

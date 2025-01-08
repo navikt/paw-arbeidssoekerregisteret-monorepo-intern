@@ -3,11 +3,11 @@ package no.nav.paw.bekreftelse.api.policy
 import no.nav.paw.bekreftelse.api.config.ServerConfig
 import no.nav.paw.bekreftelse.api.utils.audit
 import no.nav.paw.bekreftelse.api.utils.buildAuditLogger
+import no.nav.paw.security.authentication.model.Anonym
 import no.nav.paw.security.authentication.model.Identitetsnummer
-import no.nav.paw.security.authentication.model.M2MToken
 import no.nav.paw.security.authentication.model.NavAnsatt
+import no.nav.paw.security.authentication.model.SecurityContext
 import no.nav.paw.security.authentication.model.Sluttbruker
-import no.nav.paw.security.authorization.context.AuthorizationContext
 import no.nav.paw.security.authorization.model.AccessDecision
 import no.nav.paw.security.authorization.model.Action
 import no.nav.paw.security.authorization.model.Deny
@@ -33,9 +33,9 @@ class PoaoTilgangAccessPolicy(
     private val logger = LoggerFactory.getLogger("no.nav.paw.logger.security.authorization")
     private val auditLogger: Logger = buildAuditLogger
 
-    override fun hasAccess(action: Action, context: AuthorizationContext): AccessDecision {
+    override fun hasAccess(action: Action, securityContext: SecurityContext): AccessDecision {
         val tilgangType = action.asTilgangType()
-        val (bruker, _) = context.securityContext
+        val (bruker, _) = securityContext
 
         when (bruker) {
             is Sluttbruker -> {
@@ -73,7 +73,7 @@ class PoaoTilgangAccessPolicy(
                 }
             }
 
-            is M2MToken -> {
+            is Anonym -> {
                 if (identitetsnummer != null) {
                     return Permit("M2M-token har $tilgangType-tilgang til sluttbruker")
                 }

@@ -2,7 +2,7 @@ package no.nav.paw.bekreftelse.api.utils
 
 import no.nav.paw.security.authentication.model.Bruker
 import no.nav.paw.security.authentication.model.Identitetsnummer
-import no.nav.paw.security.authentication.model.M2MToken
+import no.nav.paw.security.authentication.model.Anonym
 import no.nav.paw.security.authentication.model.NavAnsatt
 import no.nav.paw.security.authentication.model.Sluttbruker
 import no.nav.paw.security.authentication.model.asIdentitetsnummer
@@ -25,8 +25,8 @@ fun Bruker<*>.hentSluttbrukerIdentitet(identitetsnummer: String?): Identitetsnum
         is NavAnsatt -> identitetsnummer?.asIdentitetsnummer()
             ?: throw IngenTilgangException("Veileder må sende med identitetsnummer for sluttbruker")
 
-        is M2MToken -> identitetsnummer?.asIdentitetsnummer()
-            ?: throw IngenTilgangException("M2M må sende med identitetsnummer for sluttbruker")
+        is Anonym -> identitetsnummer?.asIdentitetsnummer()
+            ?: throw IngenTilgangException("Anonym må sende med identitetsnummer for sluttbruker")
 
         else -> throw IngenTilgangException("Endepunkt kan ikke benyttes av ukjent brukergruppe")
     }

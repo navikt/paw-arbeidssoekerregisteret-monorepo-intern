@@ -1,24 +1,24 @@
 [[authProviders]]
 name = "idporten"
-clientId = "paw-arbeidssoekerregisteret-api-bekreftelse"
+audiences = ["paw-arbeidssoekerregisteret-api-bekreftelse"]
 discoveryUrl = "http://localhost:8081/idporten/.well-known/openid-configuration"
 
-    [authProviders.claims]
-    map = ["acr=idporten-loa-high"]
+    [authProviders.requiredClaims]
+    claims = ["acr=idporten-loa-high"]
 
 [[authProviders]]
 name = "tokenx"
-clientId = "paw-arbeidssoekerregisteret-api-bekreftelse"
+audiences = ["paw-arbeidssoekerregisteret-api-bekreftelse"]
 discoveryUrl = "http://localhost:8081/tokenx/.well-known/openid-configuration"
 
-    [authProviders.claims]
-    map = ["acr=Level4", "acr=idporten-loa-high"]
+    [authProviders.requiredClaims]
+    claims = ["acr=Level4", "acr=idporten-loa-high"]
     combineWithOr = true
 
 [[authProviders]]
 name = "azure"
-clientId = "paw-arbeidssoekerregisteret-api-bekreftelse"
+audiences = ["paw-arbeidssoekerregisteret-api-bekreftelse"]
 discoveryUrl = "http://localhost:8081/azure/.well-known/openid-configuration"
 
-    [authProviders.claims]
-    map = ["NAVident"]
+    [authProviders.requiredClaims]
+    claims = ["NAVident"]

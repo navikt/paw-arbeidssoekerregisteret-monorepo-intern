@@ -1,24 +1,24 @@
 [[authProviders]]
 name = "idporten"
-clientId = "${IDPORTEN_CLIENT_ID}"
+audiences = ["${IDPORTEN_CLIENT_ID}"]
 discoveryUrl = "${IDPORTEN_WELL_KNOWN_URL}
 
-    [authProviders.claims]
-    map = ["acr=idporten-loa-high"]
+    [authProviders.requiredClaims]
+    claims = ["acr=idporten-loa-high"]
 
 [[authProviders]]
 name = "tokenx"
-clientId = "${TOKEN_X_CLIENT_ID}"
+audiences = ["${TOKEN_X_CLIENT_ID}"]
 discoveryUrl = "${TOKEN_X_WELL_KNOWN_URL}"
 
-    [authProviders.claims]
-    map = ["acr=Level4", "acr=idporten-loa-high"]
+    [authProviders.requiredClaims]
+    claims = ["acr=Level4", "acr=idporten-loa-high"]
     combineWithOr = true
 
 [[authProviders]]
 name = "azure"
-clientId = "${AZURE_APP_CLIENT_ID}"
+audiences = ["${AZURE_APP_CLIENT_ID}"]
 discoveryUrl = "${AZURE_APP_WELL_KNOWN_URL}"
 
-    [authProviders.claims]
-    map = ["NAVident"]
+    [authProviders.requiredClaims]
+    claims = ["NAVident"]

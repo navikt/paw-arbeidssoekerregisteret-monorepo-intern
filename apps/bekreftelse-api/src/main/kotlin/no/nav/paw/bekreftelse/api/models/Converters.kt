@@ -7,7 +7,7 @@ import no.nav.paw.bekreftelse.melding.v1.vo.BrukerType
 import no.nav.paw.bekreftelse.melding.v1.vo.Metadata
 import no.nav.paw.bekreftelse.melding.v1.vo.Svar
 import no.nav.paw.security.authentication.model.Bruker
-import no.nav.paw.security.authentication.model.M2MToken
+import no.nav.paw.security.authentication.model.Anonym
 import no.nav.paw.security.authentication.model.NavAnsatt
 import no.nav.paw.security.authentication.model.Sluttbruker
 import no.nav.paw.security.authorization.exception.IngenTilgangException
@@ -17,7 +17,7 @@ fun Bruker<*>.asBekreftelseBruker(): no.nav.paw.bekreftelse.melding.v1.vo.Bruker
     return when (this) {
         is Sluttbruker -> no.nav.paw.bekreftelse.melding.v1.vo.Bruker(BrukerType.SLUTTBRUKER, ident.verdi)
         is NavAnsatt -> no.nav.paw.bekreftelse.melding.v1.vo.Bruker(BrukerType.VEILEDER, ident)
-        is M2MToken -> no.nav.paw.bekreftelse.melding.v1.vo.Bruker(BrukerType.SYSTEM, ident)
+        is Anonym -> no.nav.paw.bekreftelse.melding.v1.vo.Bruker(BrukerType.SYSTEM, ident)
         else -> throw IngenTilgangException("Ukjent brukergruppe")
     }
 }

@@ -3,24 +3,18 @@ package no.nav.paw.bekreftelse.api.plugins
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.server.application.Application
-import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.install
 import io.ktor.server.plugins.cors.routing.CORS
-import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.routing.IgnoreTrailingSlash
 import no.nav.paw.bekreftelse.api.config.AutorisasjonConfig
 import no.nav.paw.bekreftelse.api.context.ApplicationContext
 import no.nav.paw.config.env.Local
 import no.nav.paw.config.env.Nais
-import no.nav.paw.error.handler.handleException
+import no.nav.paw.error.plugin.ErrorHandlingPlugin
 
 fun Application.configureHTTP(applicationContext: ApplicationContext) {
     install(IgnoreTrailingSlash)
-    install(StatusPages) {
-        exception<Throwable> { call: ApplicationCall, cause: Throwable ->
-            call.handleException(cause)
-        }
-    }
+    install(ErrorHandlingPlugin)
     install(CORS) {
         val origins = applicationContext.applicationConfig.autorisasjon.getCorsAllowOrigins()
 

@@ -2,10 +2,10 @@ package no.nav.paw.bekreftelse.api.test
 
 import com.nimbusds.jwt.SignedJWT
 import no.nav.paw.security.authentication.config.AuthProvider
-import no.nav.paw.security.authentication.config.AuthProviderClaims
-import no.nav.paw.security.authentication.token.AzureAd
-import no.nav.paw.security.authentication.token.IdPorten
-import no.nav.paw.security.authentication.token.TokenX
+import no.nav.paw.security.authentication.config.AuthProviderRequiredClaims
+import no.nav.paw.security.authentication.model.AzureAd
+import no.nav.paw.security.authentication.model.IdPorten
+import no.nav.paw.security.authentication.model.TokenX
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import java.util.*
 
@@ -52,21 +52,21 @@ fun MockOAuth2Server.createAuthProviders(): List<AuthProvider> {
     return listOf(
         AuthProvider(
             name = IdPorten.name,
-            clientId = "default",
+            audiences = listOf("default"),
             discoveryUrl = wellKnownUrl,
-            claims = AuthProviderClaims(listOf("acr=idporten-loa-high"))
+            requiredClaims = AuthProviderRequiredClaims(listOf("acr=idporten-loa-high"))
         ),
         AuthProvider(
             name = TokenX.name,
-            clientId = "default",
+            audiences = listOf("default"),
             discoveryUrl = wellKnownUrl,
-            claims = AuthProviderClaims(listOf("acr=Level4", "acr=idporten-loa-high"), true)
+            requiredClaims = AuthProviderRequiredClaims(listOf("acr=Level4", "acr=idporten-loa-high"), true)
         ),
         AuthProvider(
             name = AzureAd.name,
-            clientId = "default",
+            audiences = listOf("default"),
             discoveryUrl = wellKnownUrl,
-            claims = AuthProviderClaims(listOf("NAVident"))
+            requiredClaims = AuthProviderRequiredClaims(listOf("NAVident"))
         )
     )
 }

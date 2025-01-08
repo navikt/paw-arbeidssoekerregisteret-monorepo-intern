@@ -23,24 +23,24 @@ class RouteAuthorizationTest : FreeSpec({
             mockOAuth2Server.shutdown()
         }
 
-        "Skal få 401 Unauthorized uten Bearer Token header" {
+        "Skal få 403 Forbidden uten Bearer Token header" {
             testApplication {
                 application {
-                    configureApplication()
+                    configureTestApplication()
                 }
 
                 val testClient = configureTestClient()
 
-                val response = testClient.get("/api/dummy")
+                val response = testClient.get("/api/tokenx")
 
-                response.status shouldBe HttpStatusCode.Unauthorized
+                response.status shouldBe HttpStatusCode.Forbidden
             }
         }
 
         "Skal få 403 Forbidden ved en DENY policy" {
             testApplication {
                 application {
-                    configureApplication(
+                    configureTestApplication(
                         listOf(
                             TestPermitPolicy(),
                             TestDenyPolicy()
@@ -50,11 +50,31 @@ class RouteAuthorizationTest : FreeSpec({
 
                 val testClient = configureTestClient()
 
-                val response = testClient.get("/api/dummy") {
-                    bearerAuth(mockOAuth2Server.issueTokenXToken(pid = "01017012345"))
+                val response = testClient.get("/api/tokenx") {
+                    bearerAuth(mockOAuth2Server.issueTokenXToken())
                 }
 
                 response.status shouldBe HttpStatusCode.Forbidden
+            }
+        }
+
+        "Skal få 200 OK ved en PERMIT policy" {
+            testApplication {
+                application {
+                    configureTestApplication(
+                        listOf(
+                            TestPermitPolicy()
+                        )
+                    )
+                }
+
+                val testClient = configureTestClient()
+
+                val response = testClient.get("/api/tokenx") {
+                    bearerAuth(mockOAuth2Server.issueTokenXToken())
+                }
+
+                response.status shouldBe HttpStatusCode.OK
             }
         }
     }
