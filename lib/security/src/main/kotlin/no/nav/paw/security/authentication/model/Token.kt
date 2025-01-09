@@ -7,4 +7,5 @@ data object AzureAdToken : Token(AzureAd, listOf(OID, Name, NavIdent, Roles))
 data object IdPortenToken : Token(IdPorten, listOf(PID))
 data object MaskinPortenToken : Token(MaskinPorten, emptyList())
 
-fun getValidTokens(): List<Token> = listOf(TokenXToken, AzureAdToken, IdPortenToken, MaskinPortenToken)
+private val validTokens = listOf(TokenXToken, AzureAdToken, IdPortenToken, MaskinPortenToken)
+fun getValidTokens(): List<Token> = validTokens
