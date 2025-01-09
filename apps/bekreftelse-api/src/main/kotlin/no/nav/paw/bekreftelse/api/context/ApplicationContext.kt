@@ -1,6 +1,7 @@
 package no.nav.paw.bekreftelse.api.context
 
 import io.ktor.client.HttpClient
+import io.ktor.serialization.jackson.jackson
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.bekreftelse.api.config.APPLICATION_CONFIG
@@ -42,6 +43,7 @@ import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.common.serialization.LongDeserializer
 import org.apache.kafka.common.serialization.LongSerializer
 import javax.sql.DataSource
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 
 data class ApplicationContext(
     val serverConfig: ServerConfig,
@@ -80,7 +82,11 @@ data class ApplicationContext(
             val healthIndicatorRepository = HealthIndicatorRepository()
 
             val tilgangskontrollClient = tilgangsTjenesteForAnsatte(
-                httpClient = HttpClient(),
+                httpClient = HttpClient {
+                    install(ContentNegotiation) {
+                        jackson()
+                    }
+                },
                 config = tilgangskontrollClientConfig,
                 tokenProvider = { azureM2MTokenClient.createMachineToMachineToken(tilgangskontrollClientConfig.scope) }
             )
