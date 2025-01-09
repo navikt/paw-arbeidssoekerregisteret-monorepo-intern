@@ -25,10 +25,9 @@ private fun Action.asTilgang(): Tilgang = when (this) {
     Action.WRITE -> Tilgang.SKRIVE
 }
 
-
 class TilgangskontrollAccessPolicy(
     private val serverConfig: ServerConfig,
-    private val tilgangskontrolClient: TilgangsTjenesteForAnsatte,
+    private val tilgangskontrollClient: TilgangsTjenesteForAnsatte,
     private val identitetsnummer: Identitetsnummer?
 ) : AccessPolicy {
 
@@ -50,27 +49,24 @@ class TilgangskontrollAccessPolicy(
                     return Deny("Veileder må sende med identitetsnummer for sluttbruker")
                 }
 
-                val harTilgang = tilgangskontrolClient.harAnsattTilgangTilPerson(
+                val harTilgang = tilgangskontrollClient.harAnsattTilgangTilPerson(
                     NavIdent(bruker.ident),
                     no.nav.paw.model.Identitetsnummer(identitetsnummer.verdi),
                     tilgangType
                 ).getOrThrow()
 
-                return when (harTilgang) {
-                    false -> {
-                        Deny("NAV-ansatt har ikke $tilgangType-tilgang til sluttbruker")
-                    }
-                    true -> {
-                        logger.debug("NAV-ansatt har benyttet {}-tilgang til informasjon om sluttbruker", tilgangType)
-                        auditLogger.audit(
-                            runtimeEnvironment = serverConfig.runtimeEnvironment,
-                            aktorIdent = bruker.ident,
-                            sluttbrukerIdent = identitetsnummer.verdi,
-                            action = action,
-                            melding = "NAV-ansatt har benyttet $tilgangType-tilgang til informasjon om sluttbruker"
-                        )
-                        Permit("Veileder har $tilgangType-tilgang til sluttbruker")
-                    }
+                return if (harTilgang) {
+                    logger.debug("NAV-ansatt har benyttet {}-tilgang til informasjon om sluttbruker", tilgangType)
+                    auditLogger.audit(
+                        runtimeEnvironment = serverConfig.runtimeEnvironment,
+                        aktorIdent = bruker.ident,
+                        sluttbrukerIdent = identitetsnummer.verdi,
+                        action = action,
+                        melding = "NAV-ansatt har benyttet $tilgangType-tilgang til informasjon om sluttbruker"
+                    )
+                    Permit("Veileder har $tilgangType-tilgang til sluttbruker")
+                } else {
+                    Deny("NAV-ansatt har ikke $tilgangType-tilgang til sluttbruker")
                 }
             }
 
