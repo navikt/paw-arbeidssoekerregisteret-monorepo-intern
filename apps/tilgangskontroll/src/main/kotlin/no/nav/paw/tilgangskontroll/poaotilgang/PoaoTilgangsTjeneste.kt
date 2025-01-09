@@ -2,8 +2,11 @@ package no.nav.paw.tilgangskontroll.poaotilgang
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 import io.ktor.http.headers
 import io.ktor.http.isSuccess
 import io.ktor.http.takeFrom
@@ -34,10 +37,8 @@ class PoaoTilgangsTjeneste(
     ): Boolean =
         httpClient.post {
             url { takeFrom(v1PolicyEvalUri) }
-            headers {
-                append("Authorization", "Bearer ${poaoToken()}")
-                append("Content-Type", "application/json")
-            }
+            contentType(ContentType.Application.Json)
+            bearerAuth(poaoToken())
             setBody(
                 navAnsattTilgangTilEksternBrukerPolicyInputV1Dto(
                     navIdent = navIdent,
