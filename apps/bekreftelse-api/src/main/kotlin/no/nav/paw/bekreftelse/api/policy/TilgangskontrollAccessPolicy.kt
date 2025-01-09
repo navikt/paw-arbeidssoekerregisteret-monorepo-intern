@@ -7,7 +7,7 @@ import no.nav.paw.error.model.getOrThrow
 import no.nav.paw.error.model.map
 import no.nav.paw.model.NavIdent
 import no.nav.paw.security.authentication.model.Anonym
-import no.nav.paw.security.authentication.model.Identitetsnummer
+import no.nav.paw.model.Identitetsnummer
 import no.nav.paw.security.authentication.model.NavAnsatt
 import no.nav.paw.security.authentication.model.SecurityContext
 import no.nav.paw.security.authentication.model.Sluttbruker
@@ -49,7 +49,7 @@ class TilgangskontrollAccessPolicy(
                     val tilgang = action.asTilgang()
                     tilgangskontrollClient.harAnsattTilgangTilPerson(
                         navIdent = NavIdent(bruker.ident),
-                        identitetsnummer = no.nav.paw.model.Identitetsnummer(identitetsnummer.verdi),
+                        identitetsnummer = identitetsnummer,
                         tilgang = tilgang
                     ).map { harTilgang ->
                         if (harTilgang) {

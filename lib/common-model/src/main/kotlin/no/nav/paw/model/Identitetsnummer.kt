@@ -1,8 +1,10 @@
 package no.nav.paw.model
 
 @JvmInline
-value class Identitetsnummer(val value: String) {
+value class Identitetsnummer(val verdi: String) {
     override fun toString(): String {
-        return "***********"
+        return "*".repeat(verdi.length)
     }
 }
+
+fun String.asIdentitetsnummer(): Identitetsnummer = Identitetsnummer(this)

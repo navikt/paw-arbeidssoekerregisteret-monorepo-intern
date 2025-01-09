@@ -1,11 +1,11 @@
 package no.nav.paw.bekreftelse.api.utils
 
 import no.nav.paw.security.authentication.model.Bruker
-import no.nav.paw.security.authentication.model.Identitetsnummer
+import no.nav.paw.model.Identitetsnummer
 import no.nav.paw.security.authentication.model.Anonym
 import no.nav.paw.security.authentication.model.NavAnsatt
 import no.nav.paw.security.authentication.model.Sluttbruker
-import no.nav.paw.security.authentication.model.asIdentitetsnummer
+import no.nav.paw.model.asIdentitetsnummer
 import no.nav.paw.security.authorization.exception.IngenTilgangException
 
 fun Bruker<*>.hentSluttbrukerIdentitet(): Identitetsnummer {

@@ -15,7 +15,7 @@ import no.nav.paw.security.authentication.model.AzureAd
 import no.nav.paw.security.authentication.model.Bruker
 import no.nav.paw.security.authentication.model.IdPorten
 import no.nav.paw.security.authentication.model.TokenX
-import no.nav.paw.security.authentication.model.asIdentitetsnummer
+import no.nav.paw.model.asIdentitetsnummer
 import no.nav.paw.security.authentication.model.bruker
 import no.nav.paw.security.authorization.interceptor.autorisering
 import no.nav.paw.security.authorization.model.Action

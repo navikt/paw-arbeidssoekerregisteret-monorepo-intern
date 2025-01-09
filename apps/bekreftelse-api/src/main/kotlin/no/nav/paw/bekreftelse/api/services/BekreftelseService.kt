@@ -33,7 +33,7 @@ import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.config.env.appImageOrDefaultForLocal
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.security.authentication.model.Bruker
-import no.nav.paw.security.authentication.model.Identitetsnummer
+import no.nav.paw.model.Identitetsnummer
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.jetbrains.exposed.sql.transactions.transaction

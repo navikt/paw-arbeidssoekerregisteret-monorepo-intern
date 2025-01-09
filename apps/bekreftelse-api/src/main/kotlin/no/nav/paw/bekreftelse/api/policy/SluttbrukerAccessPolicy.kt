@@ -1,6 +1,6 @@
 package no.nav.paw.bekreftelse.api.policy
 
-import no.nav.paw.security.authentication.model.Identitetsnummer
+import no.nav.paw.model.Identitetsnummer
 import no.nav.paw.security.authentication.model.SecurityContext
 import no.nav.paw.security.authentication.model.Sluttbruker
 import no.nav.paw.security.authorization.model.AccessDecision
