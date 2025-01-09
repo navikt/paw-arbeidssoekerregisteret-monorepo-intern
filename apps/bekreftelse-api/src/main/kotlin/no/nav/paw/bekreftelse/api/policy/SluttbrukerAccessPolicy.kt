@@ -14,19 +14,18 @@ class SluttbrukerAccessPolicy(
 ) : AccessPolicy {
 
     override suspend fun hasAccess(action: Action, securityContext: SecurityContext): AccessDecision {
-        val (bruker, _) = securityContext
-
-        when (bruker) {
+        return when (val bruker = securityContext.bruker) {
             is Sluttbruker -> {
                 // TODO Håndtere verge
                 if (identitetsnummer != null && identitetsnummer != bruker.ident) {
-                    return Deny("Sluttbruker har ikke tilgang til data for annen bruker")
+                    Deny("Sluttbruker har ikke tilgang til data for annen bruker")
+                } else {
+                    Permit("Sluttbruker har tilgang")
                 }
-                return Permit("Sluttbruker har tilgang")
             }
 
             else -> {
-                return Permit("Ikke sluttbruker")
+                Permit("Ikke sluttbruker")
             }
         }
     }
