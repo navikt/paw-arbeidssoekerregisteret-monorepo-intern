@@ -86,3 +86,4 @@ spec:
           namespace: poao
         - application: paw-kafka-key-generator
           namespace: paw
+        - application: paw-tilgangskontroll

@@ -44,6 +44,9 @@ spec:
     enabled: true
     path: /internal/metrics
   accessPolicy:
+    inbound:
+      rules:
+        - application: paw-arbeidssoekerregisteret-api-bekreftelse
     outbound:
       rules:
         - application: poao-tilgang
