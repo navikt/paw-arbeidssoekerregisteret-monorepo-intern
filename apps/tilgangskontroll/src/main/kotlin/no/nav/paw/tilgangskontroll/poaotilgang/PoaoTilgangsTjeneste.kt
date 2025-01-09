@@ -36,6 +36,7 @@ class PoaoTilgangsTjeneste(
             url { takeFrom(v1PolicyEvalUri) }
             headers {
                 append("Authorization", "Bearer ${poaoToken()}")
+                append("Content-Type", "application/json")
             }
             setBody(
                 navAnsattTilgangTilEksternBrukerPolicyInputV1Dto(
