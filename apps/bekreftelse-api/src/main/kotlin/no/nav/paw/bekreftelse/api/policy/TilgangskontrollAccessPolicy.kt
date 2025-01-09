@@ -4,6 +4,7 @@ import no.nav.paw.bekreftelse.api.config.ServerConfig
 import no.nav.paw.bekreftelse.api.utils.audit
 import no.nav.paw.bekreftelse.api.utils.buildAuditLogger
 import no.nav.paw.error.model.getOrThrow
+import no.nav.paw.error.model.map
 import no.nav.paw.model.NavIdent
 import no.nav.paw.security.authentication.model.Anonym
 import no.nav.paw.security.authentication.model.Identitetsnummer
@@ -35,50 +36,46 @@ class TilgangskontrollAccessPolicy(
     private val auditLogger: Logger = buildAuditLogger
 
     override suspend fun hasAccess(action: Action, securityContext: SecurityContext): AccessDecision {
-        val tilgangType = action.asTilgang()
-        val (bruker, _) = securityContext
-
-        when (bruker) {
+        return when (val bruker = securityContext.bruker) {
             is Sluttbruker -> {
                 logger.debug("Ingen tilgangssjekk for sluttbruker")
-                return Permit("Sluttbruker har $tilgangType-tilgang")
+                Permit("Sluttbruker har $action-tilgang")
             }
 
             is NavAnsatt -> {
                 if (identitetsnummer == null) {
-                    return Deny("Veileder må sende med identitetsnummer for sluttbruker")
-                }
-
-                val harTilgang = tilgangskontrollClient.harAnsattTilgangTilPerson(
-                    NavIdent(bruker.ident),
-                    no.nav.paw.model.Identitetsnummer(identitetsnummer.verdi),
-                    tilgangType
-                ).getOrThrow()
-
-                return if (harTilgang) {
-                    logger.debug("NAV-ansatt har benyttet {}-tilgang til informasjon om sluttbruker", tilgangType)
-                    auditLogger.audit(
-                        runtimeEnvironment = serverConfig.runtimeEnvironment,
-                        aktorIdent = bruker.ident,
-                        sluttbrukerIdent = identitetsnummer.verdi,
-                        action = action,
-                        melding = "NAV-ansatt har benyttet $tilgangType-tilgang til informasjon om sluttbruker"
-                    )
-                    Permit("Veileder har $tilgangType-tilgang til sluttbruker")
+                    Deny("Veileder må sende med identitetsnummer for sluttbruker")
                 } else {
-                    Deny("NAV-ansatt har ikke $tilgangType-tilgang til sluttbruker")
+                    val tilgang = action.asTilgang()
+                    tilgangskontrollClient.harAnsattTilgangTilPerson(
+                        navIdent = NavIdent(bruker.ident),
+                        identitetsnummer = no.nav.paw.model.Identitetsnummer(identitetsnummer.verdi),
+                        tilgang = tilgang
+                    ).map { harTilgang ->
+                        if (harTilgang) {
+                            logger.debug("NAV-ansatt har benyttet {}-tilgang til informasjon om sluttbruker", tilgang)
+                            auditLogger.audit(
+                                runtimeEnvironment = serverConfig.runtimeEnvironment,
+                                aktorIdent = bruker.ident,
+                                sluttbrukerIdent = identitetsnummer.verdi,
+                                action = action,
+                                melding = "NAV-ansatt har benyttet $tilgang-tilgang til informasjon om sluttbruker"
+                            )
+                            Permit("Veileder har $tilgang-tilgang til sluttbruker")
+                        }
+                        else {
+                            Deny("NAV-ansatt har ikke $tilgang-tilgang til sluttbruker")
+                        }
+                    }.getOrThrow()
                 }
             }
 
             is Anonym -> {
                 if (identitetsnummer != null) {
-                    return Permit("M2M-token har $tilgangType-tilgang til sluttbruker")
+                    return Permit("M2M-token har $action-tilgang til sluttbruker")
+                } else {
+                    Deny("M2M-token må sende med identitetsnummer for sluttbruker")
                 }
-                return Deny("M2M-token må sende med identitetsnummer for sluttbruker")
-            }
-
-            else -> {
-                return Deny("Ukjent brukergruppe")
             }
         }
     }
