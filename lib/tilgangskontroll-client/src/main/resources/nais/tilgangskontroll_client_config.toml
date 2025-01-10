@@ -1,2 +1,2 @@
 uri = "http://paw-tilgangskontroll"
-scope = "${TILGANGSKONTROLL_SCOPE}"
+scope = "api://${NAIS_CLUSTER_NAME}.paw.paw-tilgangskontroll/.default"

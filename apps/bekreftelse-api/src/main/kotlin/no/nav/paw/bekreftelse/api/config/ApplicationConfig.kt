@@ -3,7 +3,6 @@ package no.nav.paw.bekreftelse.api.config
 import java.time.Duration
 
 const val APPLICATION_CONFIG = "application_config.toml"
-const val POAO_TILGANG_CLIENT_CONFIG = "poao_tilgang_client_config.toml"
 
 data class ApplicationConfig(
     val autorisasjon: AutorisasjonConfig,
@@ -33,9 +32,4 @@ data class DatabaseConfig(
     val connectionTimeout: Duration = Duration.ofSeconds(30),
     val idleTimeout: Duration = Duration.ofMinutes(10),
     val maxLifetime: Duration = Duration.ofMinutes(30)
-)
-
-data class ClientConfig(
-    val url: String,
-    val scope: String
 )
