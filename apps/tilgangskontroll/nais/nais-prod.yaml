@@ -10,10 +10,19 @@ spec:
   port: 8080
   resources:
     limits:
-      memory: 128Mi
+      memory: 512Mi
     requests:
       cpu: 10m
-      memory: 64Mi
+      memory: 256Mi
+  secureLogs:
+    enabled: true
+  observability:
+    logging:
+      destinations:
+        - id: loki
+    autoInstrumentation:
+      enabled: true
+      runtime: java
   azure:
     application:
       enabled: true
@@ -23,8 +32,8 @@ spec:
           - NAVident
   env:
   replicas:
-    min: 1
-    max: 1
+    min: 2
+    max: 2
   liveness:
     path: /internal/isAlive
     initialDelay: 10
@@ -34,13 +43,11 @@ spec:
   prometheus:
     enabled: true
     path: /internal/metrics
-  observability:
-    autoInstrumentation:
-      enabled: true
-      runtime: java
   accessPolicy:
     inbound:
       rules:
+        - application: paw-arbeidssoekerregisteret-api-bekreftelse
     outbound:
       rules:
-      external:
+        - application: poao-tilgang
+          namespace: poao
