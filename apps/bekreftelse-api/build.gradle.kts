@@ -142,7 +142,6 @@ openApiGenerate {
 }
 
 jib {
-    from.image = "$baseImage:$jvmMajorVersion"
     to.image = "${image ?: project.name}:${project.version}"
     container {
         environment = mapOf(
