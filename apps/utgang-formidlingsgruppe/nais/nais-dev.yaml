@@ -39,10 +39,10 @@ spec:
     streams: true
   resources:
     limits:
-      memory: 768Mi
+      memory: 1024Mi
     requests:
-      memory: 384Mi
-      cpu: 100m
+      memory: 512Mi
+      cpu: 25m
   accessPolicy:
     outbound:
       rules:
