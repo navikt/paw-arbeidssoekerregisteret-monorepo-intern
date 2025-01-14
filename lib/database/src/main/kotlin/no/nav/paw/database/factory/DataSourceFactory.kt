@@ -9,7 +9,9 @@ fun createHikariDataSource(databaseConfig: DatabaseConfig): HikariDataSource =
         HikariConfig().apply {
             jdbcUrl = databaseConfig.url
             maximumPoolSize = databaseConfig.maximumPoolSize
+            isAutoCommit = databaseConfig.autoCommit
             connectionTimeout = databaseConfig.connectionTimeout.toMillis()
+            idleTimeout = databaseConfig.idleTimeout.toMillis()
             maxLifetime = databaseConfig.maxLifetime.toMillis()
         }
     )
