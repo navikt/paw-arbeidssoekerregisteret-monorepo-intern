@@ -14,6 +14,8 @@ include(
     "lib:hoplite-config",
     "lib:error-handling",
     "lib:security",
+    "lib:database",
+    "lib:scheduling",
     "lib:http-client-utils",
     "lib:kafka",
     "lib:kafka-streams",
