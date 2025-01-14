@@ -44,6 +44,7 @@ include(
     "apps:bekreftelse-min-side-oppgaver",
     "apps:bekreftelse-utgang",
     "apps:tilgangskontroll",
+    "apps:meldekort-adapter",
 )
 
 dependencyResolutionManagement {

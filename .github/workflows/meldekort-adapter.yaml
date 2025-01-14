@@ -1,0 +1,104 @@
+name: Meldekort Adapter
+
+on:
+  push:
+    branches:
+      - main
+      - dev/*
+    paths:
+      - 'apps/medlekort-adapter/**'
+      - 'lib/**'
+      - 'domain/**'
+      - '.github/workflows/meldekort-adapter.yaml'
+      - 'gradle/**'
+      - 'settings.gradle.kts'
+      - 'gradle.properties'
+      - 'gradlew'
+      - 'gradlew.bat'
+
+env:
+  IMAGE: europe-north1-docker.pkg.dev/${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}/paw/paw-meldekort-adapter
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: temurin
+          cache: gradle
+      - name: Set module
+        run: echo "MODULE=meldekort-adapter" >> $GITHUB_ENV
+      - name: Set version
+        run: echo "VERSION=$(date +'%y.%m.%d').${{ github.run_number }}-${{ github.run_attempt }}" >> $GITHUB_ENV
+      - name: Login GAR
+        uses: nais/login@v0
+        with:
+          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
+          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+          team: paw
+      - name: Build and push image and artifacts with Gradle
+        id: docker-build-push
+        working-directory: ./
+        run: |
+          echo "image=${{ env.IMAGE }}:${{ env.VERSION }}" >> $GITHUB_OUTPUT
+          echo -Pversion=${{ env.VERSION }} -Pimage=${{ env.IMAGE }} :apps:${{ env.MODULE }}:build :apps:${{ env.MODULE }}:jib
+          ./gradlew -Pversion=${{ env.VERSION }} -Pimage=${{ env.IMAGE }} :apps:${{ env.MODULE }}:build :apps:${{ env.MODULE }}:jib
+          echo "DIGEST=$(cat apps/${{ env.MODULE }}/build/jib-image.digest)" >> $GITHUB_ENV
+        env:
+          ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
+      - name: Attest and sign image
+        uses: nais/attest-sign@v1.5.8
+        with:
+          image_ref: ${{ env.IMAGE }}@${{ env.DIGEST }}
+
+  deploy-dev:
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/dev')
+    name: Deploy to dev-gcp
+    needs:
+      - build
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Deploy to GCP
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: dev-gcp
+          RESOURCE: apps/meldekort-adapter/nais/nais-dev.yaml
+          VAR: image=${{ needs.build.outputs.image }},kafka=nav-dev
+
+  deploy-prod:
+    if: github.ref == 'refs/heads/main'
+    name: Deploy to prod-gcp
+    needs:
+      - build
+      - deploy-dev
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Deploy to GCP
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          TEAM: paw
+          CLUSTER: prod-gcp
+          RESOURCE: apps/meldekort-adapter/nais/nais-prod.yaml
+          VAR: image=${{ needs.build.outputs.image }},kafka=nav-prod
