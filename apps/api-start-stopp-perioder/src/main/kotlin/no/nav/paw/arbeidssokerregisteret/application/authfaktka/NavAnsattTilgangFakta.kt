@@ -8,7 +8,7 @@ import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.domain.navAnsatt
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 
-fun navAnsattTilgangFakta(
+suspend fun navAnsattTilgangFakta(
     autorisasjonService: AutorisasjonService,
     requestScope: RequestScope,
     identitetsnummer: Identitetsnummer

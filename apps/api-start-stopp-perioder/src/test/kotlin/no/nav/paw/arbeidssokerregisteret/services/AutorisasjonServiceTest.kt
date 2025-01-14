@@ -2,7 +2,7 @@ package no.nav.paw.arbeidssokerregisteret.services
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.paw.arbeidssokerregisteret.RequestScope
 import no.nav.paw.arbeidssokerregisteret.TestData
@@ -11,24 +11,20 @@ import no.nav.paw.arbeidssokerregisteret.application.authfaktka.navAnsattTilgang
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.utils.ResolvedClaims
 import no.nav.paw.arbeidssokerregisteret.utils.TokenXPID
-import no.nav.poao_tilgang.client.Decision
-import no.nav.poao_tilgang.client.PoaoTilgangHttpClient
-import no.nav.poao_tilgang.client.api.ApiResult
+import no.nav.paw.error.model.Data
+import no.nav.paw.tilgangskontroll.client.TilgangsTjenesteForAnsatte
 
 class AutorisasjonServiceTest : FreeSpec({
     "verifiserVeilederTilgangTilBruker should return true if access is granted" {
-        val poaoTilgangHttpClient = mockk<PoaoTilgangHttpClient>()
-        val autorisasjonService = AutorisasjonService(poaoTilgangHttpClient)
+        val tilgangsTjenesteForAnsatte = mockk<TilgangsTjenesteForAnsatte>()
+        val autorisasjonService = AutorisasjonService(tilgangsTjenesteForAnsatte)
 
         val navAnsatt = TestData.navAnsatt
         val foedselsnummer = TestData.foedselsnummer
 
-        every {
-            poaoTilgangHttpClient.evaluatePolicy(any())
-        } returns ApiResult(
-            throwable = null,
-            result = Decision.Permit
-        )
+        coEvery {
+            tilgangsTjenesteForAnsatte.harAnsattTilgangTilPerson(any(), any(), any())
+        } returns Data(true)
 
         val result = autorisasjonService.verifiserVeilederTilgangTilBruker(navAnsatt, foedselsnummer)
 
@@ -36,18 +32,15 @@ class AutorisasjonServiceTest : FreeSpec({
     }
 
     "verifiserVeilederTilgangTilBruker should return false if access is denied" {
-        val poaoTilgangHttpClient = mockk<PoaoTilgangHttpClient>()
-        val autorisasjonService = AutorisasjonService(poaoTilgangHttpClient)
+        val tilgangsTjenesteForAnsatte = mockk<TilgangsTjenesteForAnsatte>()
+        val autorisasjonService = AutorisasjonService(tilgangsTjenesteForAnsatte)
 
         val navAnsatt = TestData.navAnsatt
         val foedselsnummer = TestData.foedselsnummer
 
-        every {
-            poaoTilgangHttpClient.evaluatePolicy(any())
-        } returns ApiResult(
-            throwable = null,
-            result = Decision.Deny("", "")
-        )
+        coEvery {
+            tilgangsTjenesteForAnsatte.harAnsattTilgangTilPerson(any(), any(), any())
+        } returns Data(false)
 
         val result = autorisasjonService.verifiserVeilederTilgangTilBruker(navAnsatt, foedselsnummer)
 

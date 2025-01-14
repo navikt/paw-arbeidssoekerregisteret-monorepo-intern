@@ -27,7 +27,7 @@ class RequestValidator(
     private val sjekkOmNavAnsattHarTilgang = ::navAnsattTilgangFakta.partially1(autorisasjonService)
 
     @WithSpan
-    fun validerTilgang(
+    suspend fun validerTilgang(
         requestScope: RequestScope,
         identitetsnummer: Identitetsnummer,
         erForhaandsGodkjentAvVeileder: Boolean = false,

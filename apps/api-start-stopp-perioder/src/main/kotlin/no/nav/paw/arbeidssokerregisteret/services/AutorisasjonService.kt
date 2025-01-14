@@ -5,24 +5,22 @@ import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
 import no.nav.paw.arbeidssokerregisteret.utils.auditLogMessage
 import no.nav.paw.arbeidssokerregisteret.utils.autitLogger
 import no.nav.paw.arbeidssokerregisteret.utils.logger
-import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput
-import no.nav.poao_tilgang.client.PoaoTilgangHttpClient
-import no.nav.poao_tilgang.client.TilgangType
+import no.nav.paw.error.model.getOrThrow
+import no.nav.paw.model.NavIdent
+import no.nav.paw.tilgangskontroll.client.Tilgang
+import no.nav.paw.tilgangskontroll.client.TilgangsTjenesteForAnsatte
 
 class AutorisasjonService(
-    private val poaoTilgangHttpClient: PoaoTilgangHttpClient
+    private val tilgangsTjenesteForAnsatte: TilgangsTjenesteForAnsatte
 ) {
-    fun verifiserVeilederTilgangTilBruker(navAnsatt: NavAnsatt, identitetsnummer: Identitetsnummer): Boolean {
+    suspend fun verifiserVeilederTilgangTilBruker(navAnsatt: NavAnsatt, identitetsnummer: Identitetsnummer): Boolean {
         logger.info("NAV-ansatt forsøker å hente informasjon om bruker: $identitetsnummer")
 
-        val harNavAnsattTilgang = poaoTilgangHttpClient.evaluatePolicy(
-            NavAnsattTilgangTilEksternBrukerPolicyInput(
-                navAnsatt.azureId,
-                TilgangType.SKRIVE,
-                identitetsnummer.verdi
-            )
+        val harNavAnsattTilgang = tilgangsTjenesteForAnsatte.harAnsattTilgangTilPerson(
+            navIdent = NavIdent(navAnsatt.ident),
+            identitetsnummer = no.nav.paw.model.Identitetsnummer(identitetsnummer.verdi),
+            tilgang = Tilgang.SKRIVE
         ).getOrThrow()
-            .isPermit
 
         if (!harNavAnsattTilgang) {
             logger.warn("NAV-ansatt har ikke tilgang til bruker: $identitetsnummer (v/poao-tilgang)")

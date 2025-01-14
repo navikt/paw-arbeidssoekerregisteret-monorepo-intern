@@ -141,7 +141,7 @@ fun Pair<String, String?>?.opphold(): List<Opphold> = list()
     }
 
 fun AutorisasjonService.setHarTilgangTilBruker(ansatt: NavAnsatt, bruker: String, tilgang: Boolean) {
-    every { verifiserVeilederTilgangTilBruker(ansatt, Identitetsnummer(bruker)) } returns tilgang
+    coEvery { verifiserVeilederTilgangTilBruker(ansatt, Identitetsnummer(bruker)) } returns tilgang
 }
 
 fun PersonInfoService.setPersonInfo(identitetsnummer: String, person: Person?) {
