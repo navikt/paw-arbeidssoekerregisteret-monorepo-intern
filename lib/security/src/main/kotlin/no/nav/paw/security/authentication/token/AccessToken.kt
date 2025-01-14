@@ -5,7 +5,7 @@ import no.nav.paw.security.authentication.model.Issuer
 import no.nav.paw.security.authentication.model.ListClaim
 import no.nav.paw.security.authentication.model.Roles
 import no.nav.paw.security.authentication.model.Token
-import no.nav.paw.security.authentication.model.getValidTokens
+import no.nav.paw.security.authentication.model.validTokens
 import no.nav.security.token.support.core.context.TokenValidationContext
 import no.nav.security.token.support.core.jwt.JwtToken
 
@@ -20,18 +20,18 @@ data class AccessToken(
 }
 
 fun TokenValidationContext.resolveTokens(): List<AccessToken> {
-    return getValidTokens()
-        .mapNotNull { resolveToken ->
-            getJwtToken(resolveToken.issuer.name)?.let { resolveToken to it }
+    return validTokens
+        .mapNotNull { token ->
+            getJwtToken(token.issuer.name)?.let { token to it }
         }
-        .map { (resolveToken, jwtToken) ->
-            val claims = jwtToken.resolveClaims(resolveToken)
-            AccessToken(jwtToken.encodedToken, resolveToken.issuer, claims)
+        .map { (token, jwt) ->
+            val claims = jwt.resolveClaims(token)
+            AccessToken(jwt.encodedToken, token.issuer, claims)
         }
 }
 
-private fun JwtToken.resolveClaims(resolveToken: Token): Claims {
-    val claims = resolveToken.claims
+private fun JwtToken.resolveClaims(token: Token): Claims {
+    val claims = token.claims
         .mapNotNull { claim ->
             when (claim) {
                 is ListClaim<*> -> {

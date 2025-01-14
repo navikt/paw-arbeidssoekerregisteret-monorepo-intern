@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     api(project(":lib:kafka"))
+    compileOnly(libs.ktor.server.core)
     implementation(libs.kafka.clients)
     implementation(libs.kafka.streams.core)
     implementation(libs.avro.kafkaStreamsSerde)
