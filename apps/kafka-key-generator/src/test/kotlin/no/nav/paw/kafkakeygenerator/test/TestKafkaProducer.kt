@@ -3,9 +3,9 @@ package no.nav.paw.kafkakeygenerator.test
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerializer
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
-import no.nav.paw.config.kafka.KAFKA_CONFIG
-import no.nav.paw.config.kafka.KafkaConfig
-import no.nav.paw.config.kafka.KafkaFactory
+import no.nav.paw.kafka.config.KAFKA_CONFIG
+import no.nav.paw.kafka.config.KafkaConfig
+import no.nav.paw.kafka.factory.KafkaFactory
 import no.nav.paw.kafkakeygenerator.config.KAFKA_TOPOLOGY_CONFIG
 import no.nav.paw.kafkakeygenerator.config.KafkaTopologyConfig
 import no.nav.paw.kafkakeygenerator.utils.buildApplicationLogger

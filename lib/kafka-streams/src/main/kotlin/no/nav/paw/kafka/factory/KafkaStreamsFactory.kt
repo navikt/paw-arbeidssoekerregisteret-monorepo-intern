@@ -1,12 +1,12 @@
-package no.nav.paw.config.kafka.streams
+package no.nav.paw.kafka.factory
 
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClientConfig
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
-import no.nav.paw.config.kafka.KafkaAuthenticationConfig
-import no.nav.paw.config.kafka.KafkaConfig
-import no.nav.paw.config.kafka.KafkaSchemaRegistryConfig
+import no.nav.paw.kafka.config.KafkaAuthenticationConfig
+import no.nav.paw.kafka.config.KafkaConfig
+import no.nav.paw.kafka.config.KafkaSchemaRegistryConfig
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.common.config.SslConfigs

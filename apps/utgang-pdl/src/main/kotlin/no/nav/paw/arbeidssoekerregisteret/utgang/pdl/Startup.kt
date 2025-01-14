@@ -10,9 +10,9 @@ import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.health.initKtor
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.appTopology
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseStateSerde
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
-import no.nav.paw.config.kafka.KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG
-import no.nav.paw.config.kafka.KafkaConfig
-import no.nav.paw.config.kafka.streams.KafkaStreamsFactory
+import no.nav.paw.kafka.config.KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG
+import no.nav.paw.kafka.config.KafkaConfig
+import no.nav.paw.kafka.factory.KafkaStreamsFactory
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder

@@ -20,9 +20,9 @@ import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutesV2
 import no.nav.paw.arbeidssokerregisteret.routes.healthRoutes
 import no.nav.paw.arbeidssokerregisteret.routes.swaggerRoutes
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
-import no.nav.paw.config.kafka.KAFKA_CONFIG
-import no.nav.paw.config.kafka.KafkaConfig
-import no.nav.paw.config.kafka.KafkaFactory
+import no.nav.paw.kafka.config.KAFKA_CONFIG
+import no.nav.paw.kafka.config.KafkaConfig
+import no.nav.paw.kafka.factory.KafkaFactory
 import org.slf4j.LoggerFactory
 
 fun main() {

@@ -5,8 +5,8 @@ import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerializer
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
-import no.nav.paw.config.kafka.KAFKA_CONFIG_WITH_SCHEME_REG
-import no.nav.paw.config.kafka.KafkaFactory
+import no.nav.paw.kafka.config.KAFKA_CONFIG_WITH_SCHEME_REG
+import no.nav.paw.kafka.factory.KafkaFactory
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.client.createKafkaKeyGeneratorClient
 import no.nav.paw.kafkakeymaintenance.db.DatabaseConfig

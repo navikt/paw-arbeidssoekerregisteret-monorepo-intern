@@ -1,20 +1,17 @@
 package no.nav.paw.arbeidssoekerregisteret.backup
 
 import io.micrometer.core.instrument.Tag
-import io.micrometer.core.instrument.Tags
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.backup.database.*
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
-import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerializer
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
-import no.nav.paw.config.kafka.KAFKA_CONFIG
-import no.nav.paw.config.kafka.KafkaConfig
-import no.nav.paw.config.kafka.KafkaFactory
+import no.nav.paw.kafka.config.KAFKA_CONFIG
+import no.nav.paw.kafka.config.KafkaConfig
+import no.nav.paw.kafka.factory.KafkaFactory
 import org.apache.kafka.clients.consumer.Consumer
-import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.LongDeserializer
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Transaction

@@ -11,7 +11,7 @@ import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerializer
-import no.nav.paw.config.kafka.asSequence
+import no.nav.paw.kafka.consumer.asSequence
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.slf4j.LoggerFactory

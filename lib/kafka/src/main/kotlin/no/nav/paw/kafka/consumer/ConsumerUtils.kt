@@ -1,8 +1,7 @@
-package no.nav.paw.config.kafka
+package no.nav.paw.kafka.consumer
 
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerRecords
-import org.apache.kafka.clients.consumer.KafkaConsumer
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
 

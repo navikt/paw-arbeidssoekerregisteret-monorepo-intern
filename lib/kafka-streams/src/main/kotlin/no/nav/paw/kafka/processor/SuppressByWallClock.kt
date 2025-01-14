@@ -1,4 +1,4 @@
-package no.nav.paw.config.kafka.streams
+package no.nav.paw.kafka.processor
 
 import io.opentelemetry.api.trace.Span
 import org.apache.kafka.common.header.internals.RecordHeader

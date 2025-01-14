@@ -1,8 +1,8 @@
 package no.nav.paw.kafkakeymaintenance
 
 import io.confluent.kafka.serializers.KafkaAvroDeserializer
-import no.nav.paw.config.kafka.KafkaFactory
-import no.nav.paw.config.kafka.plus
+import no.nav.paw.kafka.factory.KafkaFactory
+import no.nav.paw.kafka.factory.plus
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeymaintenance.kafka.*
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.LagreAktorMelding

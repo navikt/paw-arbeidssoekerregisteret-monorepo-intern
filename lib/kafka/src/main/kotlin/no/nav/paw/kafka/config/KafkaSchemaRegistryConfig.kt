@@ -1,4 +1,4 @@
-package no.nav.paw.config.kafka
+package no.nav.paw.kafka.config
 
 data class KafkaSchemaRegistryConfig(
     val url: String,

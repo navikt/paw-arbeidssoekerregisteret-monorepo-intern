@@ -21,9 +21,9 @@ import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.vo.InternT
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.vo.StateStoreName
 import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
-import no.nav.paw.config.kafka.KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG
-import no.nav.paw.config.kafka.KafkaConfig
-import no.nav.paw.config.kafka.streams.KafkaStreamsFactory
+import no.nav.paw.kafka.config.KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG
+import no.nav.paw.kafka.config.KafkaConfig
+import no.nav.paw.kafka.factory.KafkaStreamsFactory
 import no.nav.paw.error.handler.withApplicationTerminatingExceptionHandler
 import no.nav.paw.health.listener.withHealthIndicatorStateListener
 import no.nav.paw.health.model.HealthStatus

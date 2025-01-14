@@ -2,7 +2,7 @@ package no.nav.paw.bekreftelseutgang.config
 
 import no.nav.paw.config.env.RuntimeEnvironment
 import no.nav.paw.config.env.currentRuntimeEnvironment
-import no.nav.paw.config.kafka.KafkaConfig
+import no.nav.paw.kafka.config.KafkaConfig
 import no.nav.paw.kafkakeygenerator.auth.AzureM2MConfig
 import no.nav.paw.kafkakeygenerator.client.KafkaKeyConfig
 import java.net.InetAddress

@@ -19,9 +19,9 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseDeserializer
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
-import no.nav.paw.config.kafka.KAFKA_CONFIG_WITH_SCHEME_REG
-import no.nav.paw.config.kafka.KafkaConfig
-import no.nav.paw.config.kafka.KafkaFactory
+import no.nav.paw.kafka.config.KAFKA_CONFIG_WITH_SCHEME_REG
+import no.nav.paw.kafka.config.KafkaConfig
+import no.nav.paw.kafka.factory.KafkaFactory
 import no.nav.paw.health.model.HealthStatus
 import no.nav.paw.health.model.LivenessHealthIndicator
 import no.nav.paw.health.model.ReadinessHealthIndicator

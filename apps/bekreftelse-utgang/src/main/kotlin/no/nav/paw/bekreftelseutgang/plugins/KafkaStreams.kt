@@ -9,7 +9,7 @@ import io.ktor.server.application.hooks.MonitoringEvent
 import io.ktor.server.application.log
 import io.ktor.utils.io.KtorDsl
 import no.nav.paw.bekreftelseutgang.context.ApplicationContext
-import no.nav.paw.config.kafka.streams.KafkaStreamsFactory
+import no.nav.paw.kafka.factory.KafkaStreamsFactory
 import no.nav.paw.error.handler.withApplicationTerminatingExceptionHandler
 import no.nav.paw.health.listener.withHealthIndicatorStateListener
 import no.nav.paw.health.model.LivenessHealthIndicator

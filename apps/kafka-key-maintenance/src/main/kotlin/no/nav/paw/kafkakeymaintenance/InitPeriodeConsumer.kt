@@ -1,7 +1,7 @@
 package no.nav.paw.kafkakeymaintenance
 
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
-import no.nav.paw.config.kafka.KafkaFactory
+import no.nav.paw.kafka.factory.KafkaFactory
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeymaintenance.kafka.*
 import no.nav.paw.kafkakeymaintenance.perioder.LagrePeriode

@@ -11,7 +11,7 @@ import no.nav.paw.bekreftelse.paavegneav.v1.vo.Stopp
 import no.nav.paw.bekreftelsetjeneste.paavegneav.*
 import no.nav.paw.bekreftelsetjeneste.config.KafkaTopologyConfig
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
-import no.nav.paw.config.kafka.streams.mapNonNull
+import no.nav.paw.kafka.processor.mapNonNull
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.Produced

@@ -6,9 +6,9 @@ import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.vo.InternT
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.vo.StateStoreName
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
-import no.nav.paw.config.kafka.streams.genericProcess
-import no.nav.paw.config.kafka.streams.mapKeyAndValue
-import no.nav.paw.config.kafka.streams.mapWithContext
+import no.nav.paw.kafka.processor.genericProcess
+import no.nav.paw.kafka.processor.mapKeyAndValue
+import no.nav.paw.kafka.processor.mapWithContext
 import no.nav.paw.kafka.streams.record.component1
 import no.nav.paw.kafka.streams.record.component2
 import org.apache.kafka.common.serialization.Serdes

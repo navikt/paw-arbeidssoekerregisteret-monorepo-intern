@@ -11,8 +11,8 @@ import no.nav.paw.bekreftelse.internehendelser.*
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternBekreftelsePaaVegneAvStartet
-import no.nav.paw.config.kafka.streams.Punctuation
-import no.nav.paw.config.kafka.streams.genericProcess
+import no.nav.paw.kafka.processor.Punctuation
+import no.nav.paw.kafka.processor.genericProcess
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.Produced

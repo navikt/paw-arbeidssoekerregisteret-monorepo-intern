@@ -1,7 +1,10 @@
-package no.nav.paw.config.kafka
+package no.nav.paw.kafka.factory
 
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
+import no.nav.paw.kafka.config.KafkaAuthenticationConfig
+import no.nav.paw.kafka.config.KafkaConfig
+import no.nav.paw.kafka.config.KafkaSchemaRegistryConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.Serdes

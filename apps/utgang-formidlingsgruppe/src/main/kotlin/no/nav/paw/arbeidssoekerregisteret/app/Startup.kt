@@ -11,13 +11,13 @@ import no.nav.paw.config.env.ProdGcp
 import no.nav.paw.config.env.RuntimeEnvironment
 import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
-import no.nav.paw.config.kafka.KafkaConfig
-import no.nav.paw.config.kafka.streams.KafkaStreamsFactory
+import no.nav.paw.kafka.config.KafkaConfig
+import no.nav.paw.kafka.factory.KafkaStreamsFactory
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.state.Stores
 import org.slf4j.LoggerFactory
-import no.nav.paw.config.kafka.KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG
+import no.nav.paw.kafka.config.KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
 import no.nav.paw.kafkakeygenerator.client.createKafkaKeyGeneratorClient
 import org.apache.kafka.streams.KafkaStreams

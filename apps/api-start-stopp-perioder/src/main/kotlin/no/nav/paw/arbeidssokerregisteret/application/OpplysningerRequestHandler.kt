@@ -8,7 +8,7 @@ import no.nav.paw.arbeidssokerregisteret.RequestScope
 import no.nav.paw.arbeidssokerregisteret.api.extensions.getId
 import no.nav.paw.arbeidssokerregisteret.domain.http.validering.validerOpplysninger
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.config.kafka.sendDeferred
+import no.nav.paw.kafka.producer.sendDeferred
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord

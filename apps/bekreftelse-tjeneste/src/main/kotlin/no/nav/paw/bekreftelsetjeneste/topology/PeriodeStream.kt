@@ -7,8 +7,8 @@ import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.opprettBekreftelseTilstand
-import no.nav.paw.config.kafka.streams.genericProcess
-import no.nav.paw.config.kafka.streams.mapWithContext
+import no.nav.paw.kafka.processor.genericProcess
+import no.nav.paw.kafka.processor.mapWithContext
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder

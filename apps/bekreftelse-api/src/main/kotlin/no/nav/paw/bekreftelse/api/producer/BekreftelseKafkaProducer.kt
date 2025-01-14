@@ -4,7 +4,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.utils.buildLogger
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
-import no.nav.paw.config.kafka.sendDeferred
+import no.nav.paw.kafka.producer.sendDeferred
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
 

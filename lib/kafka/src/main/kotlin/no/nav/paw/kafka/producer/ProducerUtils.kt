@@ -1,4 +1,4 @@
-package no.nav.paw.config.kafka
+package no.nav.paw.kafka.producer
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred

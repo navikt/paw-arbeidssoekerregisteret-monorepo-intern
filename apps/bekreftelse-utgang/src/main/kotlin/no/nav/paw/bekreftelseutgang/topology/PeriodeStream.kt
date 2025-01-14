@@ -8,7 +8,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
 import no.nav.paw.bekreftelseutgang.tilstand.InternTilstand
 import no.nav.paw.bekreftelseutgang.tilstand.StateStore
 import no.nav.paw.bekreftelseutgang.tilstand.generateAvsluttetEventIfStateIsComplete
-import no.nav.paw.config.kafka.streams.mapNonNull
+import no.nav.paw.kafka.processor.mapNonNull
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.kstream.Produced
 
