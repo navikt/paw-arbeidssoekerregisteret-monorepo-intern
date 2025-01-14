@@ -48,7 +48,6 @@ dependencies {
     implementation(libs.micrometer.registryPrometheus)
     implementation(libs.opentelemetry.api)
     implementation(libs.opentelemetry.annotations)
-    implementation(libs.opentelemetry.ktor)
 
     // Database
     implementation(libs.exposed.core)

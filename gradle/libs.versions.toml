@@ -22,7 +22,6 @@ testContainersVersion = "1.20.4"
 micrometerVersion = "1.14.2"
 otelTargetSdkVersion = "1.45.0"
 otelInstrumentationVersion = "2.10.0"
-otelInstrumentationKtorVersion = "2.10.0-alpha"
 coroutinesVersion = "1.9.0"
 postgresDriverVersion = "42.7.4"
 flywayVersion = "11.1.1"
@@ -64,7 +63,6 @@ ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serializatio
 ktor-server-test-host = { group = "io.ktor", name = "ktor-server-test-host", version.ref = "ktorVersion" }
 
 opentelemetry-api = { group = "io.opentelemetry", name = "opentelemetry-api", version.ref = "otelTargetSdkVersion" }
-opentelemetry-ktor = { group = "io.opentelemetry.instrumentation", name = "opentelemetry-ktor-2.0", version.ref = "otelInstrumentationKtorVersion" }
 opentelemetry-annotations = { group = "io.opentelemetry.instrumentation", name = "opentelemetry-instrumentation-annotations", version.ref = "otelInstrumentationVersion" }
 opentelemetry-sdk = { group = "io.opentelemetry", name = "opentelemetry-sdk", version.ref = "otelTargetSdkVersion" }
 micrometerCore = { group = "io.micrometer", name = "micrometer-core", version.ref = "micrometerVersion" }
