@@ -53,10 +53,10 @@ spec:
   prometheus:
     enabled: true
     path: /internal/metrics
-  observability:
-    autoInstrumentation:
-      enabled: true
-      runtime: java
+#  observability:
+#    autoInstrumentation:
+#      enabled: true
+#      runtime: java
   kafka:
     pool: nav-dev
   accessPolicy:
