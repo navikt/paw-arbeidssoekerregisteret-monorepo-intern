@@ -48,6 +48,7 @@ spec:
       rules:
         - application: aia-backend
         - application: paw-arbeidssoekerregisteret-api-bekreftelse
+        - application: paw-arbeidssoekerregisteret-api-oppslag
     outbound:
       rules:
         - application: poao-tilgang
