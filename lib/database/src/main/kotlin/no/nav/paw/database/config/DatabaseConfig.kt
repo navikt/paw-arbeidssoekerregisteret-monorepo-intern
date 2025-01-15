@@ -5,13 +5,13 @@ import java.time.Duration
 const val DATABASE_CONFIG = "database_config.toml"
 
 data class DatabaseConfig(
-    val jdbcUrl: String?,
-    val url: String?,
-    val host: String?,
-    val port: Int?,
-    val username: String?,
-    val password: String?,
-    val database: String?,
+    val jdbcUrl: String? = null,
+    val url: String? = null,
+    val host: String? = null,
+    val port: Int? = null,
+    val username: String? = null,
+    val password: String? = null,
+    val database: String? = null,
     val autoCommit: Boolean = true,
     val maximumPoolSize: Int = 3,
     val connectionTimeout: Duration = Duration.ofSeconds(30),

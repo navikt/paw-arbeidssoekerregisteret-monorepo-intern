@@ -38,8 +38,5 @@ docker compose -f ./mocks/docker-compose.yaml rm -s -v -f
 docker volume rm postgres
 ```
 ```bash
-docker volume rm kafka-data kafka-secrets schema-registry-secrets
-```
-```bash
-docker compose -f ./mocks/docker-compose.yaml rm -s -v -f
+docker volume rm kafka-data kafka-secrets kafka-init-data kafka-init-secrets schema-registry-secrets
 ```
