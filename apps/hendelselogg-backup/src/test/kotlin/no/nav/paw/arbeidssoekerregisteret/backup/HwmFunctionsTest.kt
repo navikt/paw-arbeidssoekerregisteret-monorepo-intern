@@ -1,11 +1,14 @@
 package no.nav.paw.arbeidssoekerregisteret.backup
 
-import arrow.core.partially1
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import no.nav.paw.arbeidssoekerregisteret.backup.database.*
+import no.nav.paw.arbeidssoekerregisteret.backup.database.getAllHwms
+import no.nav.paw.arbeidssoekerregisteret.backup.database.getHwm
+import no.nav.paw.arbeidssoekerregisteret.backup.database.initHwm
+import no.nav.paw.arbeidssoekerregisteret.backup.database.txContext
+import no.nav.paw.arbeidssoekerregisteret.backup.database.updateHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import org.jetbrains.exposed.sql.transactions.transaction

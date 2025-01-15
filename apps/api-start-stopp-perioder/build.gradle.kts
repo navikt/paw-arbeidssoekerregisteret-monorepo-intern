@@ -24,6 +24,8 @@ dependencies {
     implementation(project(":lib:pdl-client"))
     implementation(project(":lib:tilgangskontroll-client"))
     implementation(project(":domain:arbeidssoeker-regler"))
+    implementation(libs.arrow.functions)
+    implementation(libs.arrow.integration.jackson)
     implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
     implementation(libs.micrometer.registryPrometheus)
     implementation(libs.opentelemetry.annotations)

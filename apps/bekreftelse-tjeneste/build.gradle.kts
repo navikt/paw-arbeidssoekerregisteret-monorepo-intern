@@ -31,6 +31,8 @@ dependencies {
 
     // Tooling
     implementation(libs.arrow.core.core)
+    implementation(libs.arrow.functions)
+    implementation(libs.arrow.integration.jackson)
 
     // Logging
     implementation(libs.logbackClassic)

@@ -1,5 +1,6 @@
 package no.nav.paw.bekreftelsetjeneste.tilstand
 
+import arrow.integrations.jackson.module.NonEmptyListModule
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -31,4 +32,5 @@ object InternTilstandDeserializer : Deserializer<BekreftelseTilstand> {
 
 private val internTilstandObjectMapper = ObjectMapper()
     .registerKotlinModule()
+    .registerModules(NonEmptyListModule)
     .registerModules(JavaTimeModule())

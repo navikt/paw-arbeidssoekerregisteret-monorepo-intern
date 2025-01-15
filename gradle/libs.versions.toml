@@ -5,7 +5,7 @@ noNavCommonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
 navPoaoTilgangClientVersion = "2024.04.29_13.59-a0ddddd36ac9"
 arbeidssokerregisteretVersion = "1.9348086045.48-1"
 bekreftelseSchemaVersion = "24.10.28.13-1"
-arrowVersion = "1.2.4"
+arrowVersion = "2.0.0"
 arrowJacksonIntegrationVersion = "0.14.1"
 comSksamuelHopliteVersion = "2.9.0"
 graphqlClientVersion = "8.2.1"
@@ -34,6 +34,7 @@ ktorVersion = "3.0.3"
 coroutinesCore = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutinesVersion" }
 arrow-core-core = { group = "io.arrow-kt", name = "arrow-core", version.ref = "arrowVersion" }
 arrow-core-serialization = { group = "io.arrow-kt", name = "arrow-core-serialization", version.ref = "arrowVersion" }
+arrow-functions = { group = "io.arrow-kt", name = "arrow-functions", version.ref = "arrowVersion" }
 arrow-integration-jackson = { group = "io.arrow-kt", name = "arrow-integrations-jackson-module", version.ref = "arrowJacksonIntegrationVersion" }
 logbackClassic = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logbackVersion" }
 logstashLogbackEncoder = { group = "net.logstash.logback", name = "logstash-logback-encoder", version.ref = "logstashVersion" }

@@ -23,6 +23,7 @@ dependencies {
     implementation(kotlin("reflect"))
 
     implementation(libs.arrow.core.core)
+    implementation(libs.arrow.functions)
     implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
     implementation(libs.ktor.server.cors)
     implementation(libs.ktor.server.swagger)

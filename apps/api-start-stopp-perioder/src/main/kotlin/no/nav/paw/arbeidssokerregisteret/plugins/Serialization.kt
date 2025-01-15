@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.plugins
 
+import arrow.integrations.jackson.module.NonEmptyListModule
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.*
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
@@ -22,6 +23,7 @@ fun Application.configureSerialization() {
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             registerModule(JavaTimeModule())
             registerKotlinModule()
+            registerModule(NonEmptyListModule)
             registerModule(SimpleModule().addDeserializer(Detaljer::class.java, DetaljerDeserializer()))
         }
     }
