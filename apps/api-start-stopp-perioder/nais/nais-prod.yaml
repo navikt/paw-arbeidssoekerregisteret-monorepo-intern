@@ -71,6 +71,7 @@ spec:
           namespace: poao
         - application: paw-kafka-key-generator
           namespace: paw
+        - application: paw-tilgangskontroll
       external:
         - host: pdl-api.prod-fss-pub.nais.io
 
