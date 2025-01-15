@@ -20,10 +20,10 @@ data class DatabaseConfig(
 ) {
     fun buildJdbcUrl(): String {
         return if (jdbcUrl != null) {
-            require(jdbcUrl.isBlank()) { "JDBC URL er tom" }
+            require(jdbcUrl.isNotBlank()) { "JDBC URL er tom" }
             jdbcUrl
         } else if (url != null) {
-            require(url.isBlank()) { "URL er tom" }
+            require(url.isNotBlank()) { "URL er tom" }
             "jdbc:$url"
         } else {
             require(!host.isNullOrBlank()) { "Host er ikke satt" }
