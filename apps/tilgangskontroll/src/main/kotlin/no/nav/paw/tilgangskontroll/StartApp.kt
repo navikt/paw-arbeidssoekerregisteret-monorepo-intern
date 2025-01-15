@@ -20,13 +20,11 @@ val secureLogger = LoggerFactory.getLogger("tjenestekall")
 val secureMarker = MarkerFactory.getMarker("SECURE_LOG")
 
 fun main() {
-    secureLogger.info(secureMarker, "Starter tilgangskontroll med sikker logging...")
     logger.info("Starter tilgangskontroll...")
     val azureM2MClientConfig = loadNaisOrLocalConfiguration<AzureAdM2MConfig>(AZURE_M2M_CONFIG)
     val authProviders = authProvidersOf(AuthProvider.EntraId)
-    val httpClient = createHttpClient()
-    val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val poaoConfig = loadPoaoConfig()
+    val httpClient = createHttpClient()
     val service: TilgangsTjenesteForAnsatte = initPoaobackend(
         m2mTokenClient = createAzureAdM2MTokenClient(azureProviderConfig = azureM2MClientConfig),
         httpClient = httpClient,
@@ -35,6 +33,7 @@ fun main() {
         secureLogger = secureLogger,
         secureMarker = secureMarker
     )
+    val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     initKtor(
         prometheusMeterRegistry = prometheusMeterRegistry,
         authProviders = authProviders,
