@@ -14,7 +14,6 @@ import no.nav.paw.bekreftelse.api.config.SERVER_CONFIG
 import no.nav.paw.bekreftelse.api.config.ServerConfig
 import no.nav.paw.bekreftelse.api.context.ApplicationContext
 import no.nav.paw.bekreftelse.api.handler.KafkaConsumerExceptionHandler
-import no.nav.paw.bekreftelse.api.plugin.configTestDataPlugin
 import no.nav.paw.bekreftelse.api.plugins.configureAuthentication
 import no.nav.paw.bekreftelse.api.plugins.configureDatabase
 import no.nav.paw.bekreftelse.api.plugins.configureHTTP
@@ -22,13 +21,16 @@ import no.nav.paw.bekreftelse.api.plugins.configureSerialization
 import no.nav.paw.bekreftelse.api.producer.BekreftelseKafkaProducer
 import no.nav.paw.bekreftelse.api.repository.BekreftelseRepository
 import no.nav.paw.bekreftelse.api.routes.bekreftelseRoutes
+import no.nav.paw.bekreftelse.api.service.TestDataService
 import no.nav.paw.bekreftelse.api.services.AuthorizationService
 import no.nav.paw.bekreftelse.api.services.BekreftelseService
 import no.nav.paw.bekreftelse.api.utils.configureJackson
-import no.nav.paw.bekreftelse.api.utils.createDataSource
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
+import no.nav.paw.database.config.DATABASE_CONFIG
+import no.nav.paw.database.config.DatabaseConfig
+import no.nav.paw.database.factory.createHikariDataSource
 import no.nav.paw.health.model.LivenessHealthIndicator
 import no.nav.paw.health.model.ReadinessHealthIndicator
 import no.nav.paw.health.repository.HealthIndicatorRepository
@@ -48,6 +50,7 @@ class ApplicationTestContext {
     val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG)
     val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG)
     val securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>(SECURITY_CONFIG)
+    val databaseConfig = loadNaisOrLocalConfiguration<DatabaseConfig>(DATABASE_CONFIG)
     val dataSource = createTestDataSource()
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val kafkaKeysClientMock = mockk<KafkaKeysClient>()
@@ -70,6 +73,7 @@ class ApplicationTestContext {
         bekreftelseKafkaProducerMock,
         bekreftelseRepository
     )
+    val testDataService = TestDataService(bekreftelseRepository)
     val mockOAuth2Server = MockOAuth2Server()
 
     fun createApplicationContext(bekreftelseService: BekreftelseService) = ApplicationContext(
@@ -87,10 +91,7 @@ class ApplicationTestContext {
         bekreftelseService
     )
 
-    fun ApplicationTestBuilder.configureTestApplication(
-        bekreftelseService: BekreftelseService,
-        testData: TestData = TestData()
-    ) {
+    fun ApplicationTestBuilder.configureTestApplication(bekreftelseService: BekreftelseService) {
         val applicationContext = createApplicationContext(bekreftelseService)
 
         application {
@@ -98,9 +99,8 @@ class ApplicationTestContext {
             configureAuthentication(applicationContext)
             configureSerialization()
             configureDatabase(applicationContext)
-            configTestDataPlugin(testData)
             routing {
-                bekreftelseRoutes(applicationContext)
+                bekreftelseRoutes(applicationContext.authorizationService, applicationContext.bekreftelseService)
             }
         }
     }
@@ -118,11 +118,15 @@ class ApplicationTestContext {
     private fun createTestDataSource(): DataSource {
         val postgres = postgresContainer()
         val databaseConfig = postgres.let {
-            applicationConfig.database.copy(
-                jdbcUrl = "jdbc:postgresql://${it.host}:${it.firstMappedPort}/${it.databaseName}?user=${it.username}&password=${it.password}"
+            databaseConfig.copy(
+                host = it.host,
+                port = it.firstMappedPort,
+                username = it.username,
+                password = it.password,
+                database = it.databaseName
             )
         }
-        return createDataSource(databaseConfig)
+        return createHikariDataSource(databaseConfig)
     }
 
     private fun postgresContainer(): PostgreSQLContainer<out PostgreSQLContainer<*>> {

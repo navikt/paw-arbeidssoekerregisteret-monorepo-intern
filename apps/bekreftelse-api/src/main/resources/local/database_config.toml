@@ -1,0 +1,5 @@
+host = "localhost"
+port = 5432
+username = "bekreftelse_api"
+password = "Paw1234"
+database = "bekreftelser"

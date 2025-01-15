@@ -5,9 +5,9 @@ import no.nav.paw.bekreftelse.api.utils.audit
 import no.nav.paw.bekreftelse.api.utils.buildAuditLogger
 import no.nav.paw.error.model.getOrThrow
 import no.nav.paw.error.model.map
+import no.nav.paw.model.Identitetsnummer
 import no.nav.paw.model.NavIdent
 import no.nav.paw.security.authentication.model.Anonym
-import no.nav.paw.model.Identitetsnummer
 import no.nav.paw.security.authentication.model.NavAnsatt
 import no.nav.paw.security.authentication.model.SecurityContext
 import no.nav.paw.security.authentication.model.Sluttbruker
@@ -62,8 +62,7 @@ class TilgangskontrollAccessPolicy(
                                 melding = "NAV-ansatt har benyttet $tilgang-tilgang til informasjon om sluttbruker"
                             )
                             Permit("Veileder har $tilgang-tilgang til sluttbruker")
-                        }
-                        else {
+                        } else {
                             Deny("NAV-ansatt har ikke $tilgang-tilgang til sluttbruker")
                         }
                     }.getOrThrow()
@@ -71,10 +70,10 @@ class TilgangskontrollAccessPolicy(
             }
 
             is Anonym -> {
-                if (identitetsnummer != null) {
-                    return Permit("M2M-token har $action-tilgang til sluttbruker")
-                } else {
+                if (identitetsnummer == null) {
                     Deny("M2M-token må sende med identitetsnummer for sluttbruker")
+                } else {
+                    Permit("M2M-token har $action-tilgang til sluttbruker")
                 }
             }
         }

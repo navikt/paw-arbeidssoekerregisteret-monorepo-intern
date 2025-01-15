@@ -4,7 +4,6 @@ import io.ktor.server.application.Application
 import io.ktor.server.engine.addShutdownHook
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import io.ktor.server.routing.routing
 import no.nav.paw.bekreftelse.api.context.ApplicationContext
 import no.nav.paw.bekreftelse.api.plugins.configureAuthentication
 import no.nav.paw.bekreftelse.api.plugins.configureDatabase
@@ -12,14 +11,11 @@ import no.nav.paw.bekreftelse.api.plugins.configureHTTP
 import no.nav.paw.bekreftelse.api.plugins.configureKafka
 import no.nav.paw.bekreftelse.api.plugins.configureLogging
 import no.nav.paw.bekreftelse.api.plugins.configureMetrics
+import no.nav.paw.bekreftelse.api.plugins.configureRouting
 import no.nav.paw.bekreftelse.api.plugins.configureSerialization
 import no.nav.paw.bekreftelse.api.plugins.configureTracing
-import no.nav.paw.bekreftelse.api.routes.bekreftelseRoutes
-import no.nav.paw.bekreftelse.api.routes.metricsRoutes
-import no.nav.paw.bekreftelse.api.routes.swaggerRoutes
 import no.nav.paw.bekreftelse.api.utils.buildApplicationLogger
 import no.nav.paw.config.env.appNameOrDefaultForLocal
-import no.nav.paw.health.route.healthRoutes
 
 fun main() {
     val logger = buildApplicationLogger
@@ -51,11 +47,5 @@ fun Application.module(applicationContext: ApplicationContext) {
     configureTracing()
     configureDatabase(applicationContext)
     configureKafka(applicationContext)
-
-    routing {
-        healthRoutes(applicationContext.healthIndicatorRepository)
-        metricsRoutes(applicationContext)
-        swaggerRoutes()
-        bekreftelseRoutes(applicationContext)
-    }
+    configureRouting(applicationContext)
 }

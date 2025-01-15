@@ -13,6 +13,7 @@ dependencies {
     // Project
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:error-handling"))
+    implementation(project(":lib:database"))
     implementation(project(":lib:security"))
     implementation(project(":lib:kafka-streams"))
     implementation(project(":lib:kafka-key-generator-client"))

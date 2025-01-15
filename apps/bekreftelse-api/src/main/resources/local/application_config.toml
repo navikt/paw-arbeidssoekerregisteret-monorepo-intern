@@ -9,9 +9,3 @@ consumerId = "paw-arbeidssoekerregisteret-api-bekreftelse-v1-consumer"
 consumerGroupId = "paw-arbeidssoekerregisteret-api-bekreftelse-v1"
 bekreftelseTopic = "paw.arbeidssoker-bekreftelse-v1"
 bekreftelseHendelsesloggTopic = "paw.arbeidssoker-bekreftelse-hendelseslogg-v1"
-
-[database]
-jdbcUrl = "jdbc:postgresql://localhost:5432/bekreftelser?user=bekreftelse_api&password=5up3r_53cr3t_p455w0rd"
-driverClassName = "org.postgresql.Driver"
-autoCommit = false
-maxPoolSize = 3

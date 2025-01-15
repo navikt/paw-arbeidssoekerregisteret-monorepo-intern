@@ -78,27 +78,19 @@
                         "name": "Nav Navesen",
                         "NAVident": "NAV12345"
                     }
-                }
-            ]
-        },
-        {
-            "issuerId": "default",
-            "tokenExpiry": 15780000,
-            "requestMappings": [
-                {
-                    "requestParam": "scope",
-                    "match": "openid somescope",
-                    "claims": {
-                        "sub": "admin@paw-arbeidssokerregisteret-utgang-pdl",
-                        "aud": ["paw-arbeidssokerregisteret-api-utgang-pdl"]
-                    }
                 },
                 {
-                    "requestParam": "scope",
-                    "match": "openid somescope",
+                    "requestParam": "client_id",
+                    "match": "paw-arbeidssoekerregisteret-api-bekreftelse-m2m",
                     "claims": {
-                        "sub": "admin@paw-arbeidssokerregisteret-api-inngang",
-                        "aud": ["paw-arbeidssokerregisteret-api-inngang"]
+                        "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
+                        "aud": [
+                            "paw-arbeidssoekerregisteret-api-bekreftelse"
+                        ],
+                        "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
+                        "roles": [
+                            "access_as_application"
+                        ]
                     }
                 }
             ]

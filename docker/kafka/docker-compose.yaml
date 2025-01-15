@@ -60,6 +60,9 @@ services:
       echo -e 'Successfully created the following topics:'
       kafka-topics --bootstrap-server kafka:29092 --list
       "
+    volumes:
+      - kafka-init-data:/var/lib/kafka/data
+      - kafka-init-secrets:/etc/kafka/secrets
     networks:
       - kafka
 
@@ -102,6 +105,10 @@ volumes:
     name: kafka-data
   kafka-secrets:
     name: kafka-secrets
+  kafka-init-data:
+    name: kafka-init-data
+  kafka-init-secrets:
+    name: kafka-init-secrets
   schema-registry-secrets:
     name: schema-registry-secrets
 
