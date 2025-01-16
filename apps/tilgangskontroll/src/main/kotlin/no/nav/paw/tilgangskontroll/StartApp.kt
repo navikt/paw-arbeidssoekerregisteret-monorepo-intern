@@ -12,12 +12,9 @@ import no.nav.paw.tilgangskontroll.ktorserver.authProvidersOf
 import no.nav.paw.tilgangskontroll.poaotilgang.initPoaobackend
 import no.nav.paw.tilgangskontroll.poaotilgang.loadPoaoConfig
 import org.slf4j.LoggerFactory
-import org.slf4j.MarkerFactory
 
 private val logger = LoggerFactory.getLogger("tilgangskontroll")
 
-val secureLogger = LoggerFactory.getLogger("tjenestekall")
-val secureMarker = MarkerFactory.getMarker("SECURE_LOG")
 
 fun main() {
     logger.info("Starter tilgangskontroll...")
@@ -26,12 +23,12 @@ fun main() {
     val poaoConfig = loadPoaoConfig()
     val httpClient = createHttpClient()
     val service: TilgangsTjenesteForAnsatte = initPoaobackend(
+        secureLogger = SecureLogger,
         m2mTokenClient = createAzureAdM2MTokenClient(azureProviderConfig = azureM2MClientConfig),
         httpClient = httpClient,
         poaoConfig = poaoConfig
     ).withSecureLogging(
-        secureLogger = secureLogger,
-        secureMarker = secureMarker
+        secureLogger = SecureLogger
     )
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     initKtor(

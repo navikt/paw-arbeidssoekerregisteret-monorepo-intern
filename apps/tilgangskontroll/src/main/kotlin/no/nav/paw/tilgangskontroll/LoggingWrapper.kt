@@ -6,13 +6,12 @@ import no.nav.paw.tilgangskontroll.vo.Tilgang
 import org.slf4j.Logger
 import org.slf4j.Marker
 
-fun TilgangsTjenesteForAnsatte.withSecureLogging(secureLogger: Logger, secureMarker: Marker): TilgangsTjenesteForAnsatte {
-    return LoggingWrapper(secureLogger, secureMarker, this)
+fun TilgangsTjenesteForAnsatte.withSecureLogging(secureLogger: SecureLogger): TilgangsTjenesteForAnsatte {
+    return LoggingWrapper(secureLogger, this)
 }
 
 class LoggingWrapper(
-    private val secureLogger: Logger,
-    private val secureMarker: Marker,
+    private val secureLogger: SecureLogger,
     private val backend: TilgangsTjenesteForAnsatte
 ): TilgangsTjenesteForAnsatte {
     override suspend fun harAnsattTilgangTilPerson(
@@ -26,7 +25,6 @@ class LoggingWrapper(
             return result
         } finally {
             secureLogger.trace(
-                secureMarker,
                 "Tilgangskontroll: ansatt={}, identitetsnummer={}, tilgangstype={}, har_tilgang={}",
                 navIdent.value,
                 identitetsnummer.value,

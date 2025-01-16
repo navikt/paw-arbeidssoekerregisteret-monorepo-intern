@@ -6,11 +6,15 @@ import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.headers
 import io.ktor.http.isSuccess
 import io.ktor.http.takeFrom
+import no.nav.paw.error.exception.ServerResponseException
+import no.nav.paw.error.model.ErrorType
 import no.nav.paw.tilgangskontroll.RemoteHttpException
+import no.nav.paw.tilgangskontroll.SecureLogger
 import no.nav.paw.tilgangskontroll.TilgangsTjenesteForAnsatte
 import no.nav.paw.tilgangskontroll.poaotilgang.api.DecisionType
 import no.nav.paw.tilgangskontroll.poaotilgang.api.EvaluatePoliciesResponse
@@ -24,6 +28,7 @@ import java.net.URI
 private const val V1_POLICY_EVEAL_PATH = "/api/v1/policy/evaluate"
 
 class PoaoTilgangsTjeneste(
+    private val secureLogger : SecureLogger,
     private val httpClient: HttpClient,
     poaTilgangUrl: URI,
     private val poaoToken: () -> String
@@ -50,10 +55,18 @@ class PoaoTilgangsTjeneste(
             if (httpResponse.status.isSuccess()) {
                 httpResponse.body<EvaluatePoliciesResponse>()
             } else {
-                throw RemoteHttpException(
-                    msg = "Ekstern feil ved evaluering av policy",
-                    statusCode = httpResponse.status.value,
-                    statusMessage = httpResponse.status.description
+                val body = kotlin.runCatching { httpResponse.body<String>() }.getOrElse { "" }
+                secureLogger.error(
+                    "Feil mot poao-tilgang: url='{}', status='{} {}', body='{}'",
+                    v1PolicyEvalUri,
+                    httpResponse.status.value,
+                    httpResponse.status.description,
+                    body
+                )
+                throw ServerResponseException(
+                    status = HttpStatusCode.BadRequest,
+                    type = ErrorType.domain("tilgangskontroll").error("feil-ved-evaluering-av-tilgangspolicy").build(),
+                    message = "Feil ved evaluering av tilgangspolicy"
                 )
             }
         }.let { responseDto ->

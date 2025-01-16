@@ -104,7 +104,7 @@ private fun tilgangsTjenesteMock(map: ConcurrentHashMap<Triple<NavIdent, Identit
         ): Boolean {
             return map[Triple(navIdent, identitetsnummer, tilgang)] ?: false
         }
-    }.withSecureLogging(secureLogger, secureMarker)
+    }.withSecureLogging(SecureLogger)
 
 
 fun Application.configureAuthentication(
