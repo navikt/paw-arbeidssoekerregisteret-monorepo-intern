@@ -6,7 +6,7 @@ plugins {
 }
 
 val jvmMajorVersion: String by project
-val baseImage: String by project
+val baseImage = "gcr.io/distroless/java${jvmMajorVersion}-debian12"
 val image: String? by project
 
 dependencies {
@@ -143,7 +143,7 @@ openApiGenerate {
 }
 
 jib {
-    from.image = "$baseImage:$jvmMajorVersion"
+    from.image = "$baseImage"
     to.image = "${image ?: project.name}:${project.version}"
     container {
         environment = mapOf(
