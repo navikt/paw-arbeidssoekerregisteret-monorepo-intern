@@ -1,6 +1,5 @@
 package no.nav.paw.tilgangskontroll
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.nimbusds.jwt.SignedJWT
 import io.kotest.core.spec.style.FreeSpec
@@ -62,7 +61,6 @@ class TilgangskontrollTest: FreeSpec({
                 install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
                     jackson {
                         registerKotlinModule()
-                        registerModule(JavaTimeModule())
                     }
                 }
             }

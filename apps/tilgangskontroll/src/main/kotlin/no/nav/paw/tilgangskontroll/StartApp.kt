@@ -15,25 +15,20 @@ import org.slf4j.LoggerFactory
 
 private val logger = LoggerFactory.getLogger("tilgangskontroll")
 
-
 fun main() {
     logger.info("Starter tilgangskontroll...")
-    val azureM2MClientConfig = loadNaisOrLocalConfiguration<AzureAdM2MConfig>(AZURE_M2M_CONFIG)
-    val authProviders = authProvidersOf(AuthProvider.EntraId)
-    val poaoConfig = loadPoaoConfig()
-    val httpClient = createHttpClient()
     val service: TilgangsTjenesteForAnsatte = initPoaobackend(
         secureLogger = SecureLogger,
-        m2mTokenClient = createAzureAdM2MTokenClient(azureProviderConfig = azureM2MClientConfig),
-        httpClient = httpClient,
-        poaoConfig = poaoConfig
+        m2mTokenClient = createAzureAdM2MTokenClient(azureProviderConfig = loadNaisOrLocalConfiguration(AZURE_M2M_CONFIG)),
+        httpClient = createHttpClient(),
+        poaoConfig = loadPoaoConfig()
     ).withSecureLogging(
         secureLogger = SecureLogger
     )
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     initKtor(
         prometheusMeterRegistry = prometheusMeterRegistry,
-        authProviders = authProviders,
+        authProviders = authProvidersOf(AuthProvider.EntraId),
         tilgangsTjenesteForAnsatte = service
     ).start(wait = true)
     logger.info("Avslutter tilgangskontroll...")

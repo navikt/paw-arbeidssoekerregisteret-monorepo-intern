@@ -18,10 +18,9 @@ dependencies {
     implementation(project(":lib:http-client-utils"))
     implementation(project(":lib:error-handling"))
 
-    implementation(libs.arrow.core.core)
+    //implementation(libs.arrow.core.core)
     implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
     implementation(libs.micrometer.registryPrometheus)
-    implementation(libs.opentelemetry.annotations)
     implementation(libs.hoplite.core)
     implementation(libs.hoplite.toml)
     implementation(libs.nav.security.tokenValidationKtorV3)
@@ -34,14 +33,11 @@ dependencies {
     implementation(libs.ktor.client.contentNegotiation)
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.cio)
-    implementation(libs.ktor.server.cors)
     implementation(libs.ktor.server.swagger)
-    implementation(libs.ktor.server.callId)
     implementation(libs.ktor.server.statusPages)
     implementation(libs.ktor.server.contentNegotiation)
     implementation(libs.ktor.serialization.jvm)
     implementation(libs.ktor.serialization.jackson)
-    implementation(libs.jackson.datatypeJsr310)
     implementation(libs.ktor.server.coreJvm)
     implementation(libs.ktor.server.openapi)
     testImplementation(libs.ktor.server.test.host)
@@ -82,10 +78,7 @@ jib {
     to.image = "${image ?: project.name}:${project.version}"
     container {
         environment = mapOf(
-            "IMAGE_WITH_VERSION" to "${image ?: project.name}:${project.version}",
-            "OTEL_INSTRUMENTATION_METHODS_INCLUDE" to ("io.ktor.server.routing.Routing[interceptor,executeResult];" +
-                    "io.ktor.server.netty.NettyApplicationCallHandler[handleRequest,exceptionCaught];") +
-                    "io.ktor.serialization.jackson.JacksonConverter[deserialize,serializeNullable]"
+            "IMAGE_WITH_VERSION" to "${image ?: project.name}:${project.version}"
         )
         jvmFlags = listOf("-XX:ActiveProcessorCount=4", "-XX:+UseZGC", "-XX:+ZGenerational")
     }

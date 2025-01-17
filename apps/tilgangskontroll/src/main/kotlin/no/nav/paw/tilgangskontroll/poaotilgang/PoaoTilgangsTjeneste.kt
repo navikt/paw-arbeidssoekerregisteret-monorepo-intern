@@ -8,12 +8,10 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import io.ktor.http.headers
 import io.ktor.http.isSuccess
 import io.ktor.http.takeFrom
 import no.nav.paw.error.exception.ServerResponseException
 import no.nav.paw.error.model.ErrorType
-import no.nav.paw.tilgangskontroll.RemoteHttpException
 import no.nav.paw.tilgangskontroll.SecureLogger
 import no.nav.paw.tilgangskontroll.TilgangsTjenesteForAnsatte
 import no.nav.paw.tilgangskontroll.poaotilgang.api.DecisionType

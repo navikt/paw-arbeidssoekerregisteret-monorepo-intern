@@ -87,6 +87,7 @@ jobs:
     name: Deploy to prod-gcp
     needs:
       - build
+      - deploy-dev
     permissions:
       contents: read
       id-token: write
