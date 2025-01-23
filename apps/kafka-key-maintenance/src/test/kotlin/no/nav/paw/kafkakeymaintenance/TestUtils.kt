@@ -4,13 +4,13 @@ import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.TidspunktFraKilde
 import no.nav.paw.kafkakeygenerator.client.Alias
 import no.nav.paw.kafkakeygenerator.client.LokaleAlias
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.AktorConfig
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.functions.HendelseRecord
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.functions.metadata
+import no.nav.paw.kafkakeymaintenance.pdlprocessor.tilIdentRader
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.procesAktorMelding
 import no.nav.paw.kafkakeymaintenance.perioder.PeriodeRad
 import no.nav.paw.kafkakeymaintenance.perioder.Perioder
@@ -64,7 +64,7 @@ fun ApplicationTestContext.process(
         meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
         aliasTjeneste,
         perioderTjeneste,
-        aktor,
+        tilIdentRader(aktor),
         metadata
     )
 }

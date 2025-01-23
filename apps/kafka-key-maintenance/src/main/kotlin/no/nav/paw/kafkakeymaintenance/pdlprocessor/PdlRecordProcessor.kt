@@ -1,16 +1,13 @@
 package no.nav.paw.kafkakeymaintenance.pdlprocessor
 
 import arrow.core.partially1
-import io.confluent.kafka.streams.serdes.avro.SpecificAvroDeserializer
 import io.micrometer.core.instrument.Tag
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.trace.Span
-import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.propagation.TextMapGetter
 import io.opentelemetry.context.propagation.TextMapPropagator
-import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
@@ -18,11 +15,10 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.TidspunktFraKilde
 import no.nav.paw.kafkakeygenerator.client.LokaleAlias
 import no.nav.paw.kafkakeymaintenance.kafka.Topic
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.functions.*
-import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.Data
+import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.Ident
+import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.Person
 import no.nav.paw.kafkakeymaintenance.perioder.Perioder
 import no.nav.paw.kafkakeymaintenance.vo.genererAvviksMelding
-import no.nav.person.pdl.aktor.v2.Aktor
-import org.apache.kafka.common.serialization.Deserializer
 import org.slf4j.LoggerFactory
 import java.time.Instant
 
@@ -41,22 +37,21 @@ fun procesAktorMelding(
     hentAlias: (List<String>) -> List<LokaleAlias>,
     aktorTopic: Topic,
     perioder: Perioder,
-    aktorDeserializer: Deserializer<Aktor>,
-    data: Data
+    person: Person,
+    identiter: List<Ident>
 ): List<HendelseRecord<Hendelse>> {
     val metadata = metadata(
         kilde = aktorTopic.value,
         tidspunkt = Instant.now(),
         tidspunktFraKilde = TidspunktFraKilde(
-            tidspunkt = data.time,
+            tidspunkt = person.tidspunktFraKilde,
             avviksType = AvviksType.FORSINKELSE
         )
     )
-    val aktor = aktorDeserializer.deserialize(aktorTopic.value, data.data)
     return procesAktorMelding(
         meterRegistry = meterRegistry,
         hentAlias = hentAlias,
-        aktor = aktor,
+        identiter = identiter,
         perioder = perioder,
         metadata = metadata
     )
@@ -66,9 +61,9 @@ fun procesAktorMelding(
     meterRegistry: PrometheusMeterRegistry,
     hentAlias: (List<String>) -> List<LokaleAlias>,
     perioder: Perioder,
-    aktor: Aktor,
+    identiter: List<Ident>,
     metadata: Metadata
-) = hentData(hentAlias, aktor)
+) = hentData(hentAlias, identiter)
     .takeIf(::harAvvik)
     ?.let(::genererAvviksMelding)
     ?.let(perioder::hentPerioder)

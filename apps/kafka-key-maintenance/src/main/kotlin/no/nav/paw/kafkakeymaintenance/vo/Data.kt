@@ -1,16 +1,16 @@
 package no.nav.paw.kafkakeymaintenance.vo
 
 import no.nav.paw.kafkakeygenerator.client.LokaleAlias
-import no.nav.person.pdl.aktor.v2.Aktor
+import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.Ident
 
 data class Data(
-    val aktor: Aktor,
+    val pdlIdentiteter: List<Ident>,
     val alias: List<LokaleAlias>
 )
 
 fun Data.debugString(): String {
-    val pdlIdenterEtterType = aktor.identifikatorer
-        .groupBy { it.type }
+    val pdlIdenterEtterType = pdlIdentiteter
+        .groupBy { it.identType }
         .mapValues { kv -> kv.value.size }
     val aliasString = alias
         .flatMap { it.koblinger }

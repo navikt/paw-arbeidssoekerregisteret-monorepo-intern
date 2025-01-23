@@ -21,9 +21,11 @@ import no.nav.paw.kafkakeymaintenance.kafka.Topic
 import no.nav.paw.kafkakeymaintenance.kafka.TransactionContext
 import no.nav.paw.kafkakeymaintenance.kafka.txContext
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.functions.HendelseRecord
-import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.Data
-import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.delete
-import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.getBatch
+import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.IdentMedPersonId
+import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.Person
+import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.hentIdenter
+import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.hentIkkeProsessertePersoner
+import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.mergeProsessert
 import no.nav.paw.kafkakeymaintenance.perioder.Perioder
 import no.nav.person.pdl.aktor.v2.Aktor
 import org.apache.kafka.common.serialization.Deserializer
@@ -82,16 +84,16 @@ class DbReaderTask(
     private fun processBatch(ctxFactory: Transaction.() -> TransactionContext) {
         transaction {
             val txContext = ctxFactory()
-            val batch = txContext.getBatch(
-                size = dbReaderContext.aktorConfig.batchSize,
-                time = Instant.now() - dbReaderContext.aktorConfig.supressionDelay
+            val batch = txContext.hentIkkeProsessertePersoner(
+                maksAntall = dbReaderContext.aktorConfig.batchSize,
+                sistEndretFoer = Instant.now() - dbReaderContext.aktorConfig.supressionDelay
             )
             val count = batch
                 .asSequence()
                 .flatMap { entry ->
                     initSpan(entry).use {
-                        entry.takeIf { txContext.delete(it.id) }
-                            ?.let(::processAktorMessage)
+                        entry.takeIf { txContext.mergeProsessert(entry.personId) }
+                            ?.let { prosesserOppdatertPerson(it, txContext.hentIdenter(it.personId)) }
                             ?.map { hendelser -> dbReaderContext.receiver(hendelser) }
                             ?: emptyList()
                     }
@@ -107,22 +109,22 @@ class DbReaderTask(
         }
     }
 
-    fun processAktorMessage(entry: Data): List<HendelseRecord<Hendelse>> {
+    fun prosesserOppdatertPerson(person: Person, identiter: List<IdentMedPersonId>): List<HendelseRecord<Hendelse>> {
         return procesAktorMelding(
             meterRegistry = applicationContext.meterRegistry,
             hentAlias = dbReaderContext.hentAlias,
             aktorTopic = Topic(dbReaderContext.aktorConfig.aktorTopic),
             perioder = dbReaderContext.perioder,
-            aktorDeserializer = dbReaderContext.aktorDeSerializer,
-            data = entry
+            person = person,
+            identiter = identiter
         )
     }
 
     private val spanHandlerLogger = LoggerFactory.getLogger("spanHandler")
-    private fun initSpan(entry: Data): ClossableSpan {
-        val traceparent = entry.traceparant?.let { String(it, Charsets.UTF_8) }
+    private fun initSpan(entry: Person): ClossableSpan {
+        val traceparent = entry.traceparant
         spanHandlerLogger.info("traceparent: {}", traceparent)
-        return traceparent?.let { tp ->
+        return traceparent.let { tp ->
             val asArray = tp.split("-")
             SpanContext.createFromRemoteParent(
                 asArray[1],

@@ -1,16 +1,16 @@
 package no.nav.paw.kafkakeymaintenance.vo
 
 import no.nav.paw.kafkakeygenerator.client.Alias
-import no.nav.person.pdl.aktor.v2.Type
+import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.IdentType
 
 fun genererAvviksMelding(data: Data): AvviksMelding {
     return AvviksMelding(
-        gjeldeneIdentitetsnummer = data.aktor.identifikatorer
+        gjeldeneIdentitetsnummer = data.pdlIdentiteter
             .filter { it.gjeldende }
-            .filter { it.type == Type.FOLKEREGISTERIDENT }
-            .map { it.idnummer }
+            .filter { it.identType == IdentType.FOLKEREGISTERET }
+            .map { it.ident }
             .firstOrNull(),
-        pdlIdentitetsnummer = data.aktor.identifikatorer.map { it.idnummer },
+        pdlIdentitetsnummer = data.pdlIdentiteter.map { it.ident },
         lokaleAlias = data.alias.flatMap { it.koblinger }
     )
 }
