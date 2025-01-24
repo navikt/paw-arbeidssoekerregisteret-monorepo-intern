@@ -39,6 +39,10 @@ fun main() {
     )
     Runtime.getRuntime().addShutdownHook(Thread { applicationContext.eventOccured(ShutdownSignal("Shutdown hook")) })
     val healthIndicatorRepository = HealthIndicatorRepository()
+    initKtor(
+        healthIndicatorRepository = healthIndicatorRepository,
+        prometheusMeterRegistry = applicationContext.meterRegistry
+    ).start(wait = false)
     with(loadNaisOrLocalConfiguration<DatabaseConfig>("database_configuration.toml").dataSource()) {
         migrateDatabase(this)
         Database.connect(this)
@@ -79,10 +83,7 @@ fun main() {
     ).run(executor)
 
     applicationContext.logger.info("Applikasjonen er startet")
-    initKtor(
-        healthIndicatorRepository = healthIndicatorRepository,
-        prometheusMeterRegistry = applicationContext.meterRegistry
-    ).start(wait = false)
+
     awaitShutdownSignalOrError(applicationContext)
 }
 
