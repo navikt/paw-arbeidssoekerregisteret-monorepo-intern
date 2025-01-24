@@ -11,7 +11,9 @@ import java.time.Instant
 
 private val lagreAktorLogger = LoggerFactory.getLogger("lagreAktorMelding")
 
-class LagreAktorMelding : HwmRunnerProcessor<String, Aktor> {
+class LagreAktorMelding(
+    private val startDatoForMergeProsessering: Instant
+) : HwmRunnerProcessor<String, Aktor> {
 
     override fun process(txContext: TransactionContext, record: ConsumerRecord<String, Aktor>) {
         if (record.value() == null) {
@@ -24,12 +26,14 @@ class LagreAktorMelding : HwmRunnerProcessor<String, Aktor> {
             val traceparent = Span.current().spanContext.let { ctx ->
                 "00-${ctx.traceId}-${ctx.spanId}-${ctx.traceFlags.asHex()}"
             }
+            val tidspunktFraKilde = Instant.ofEpochMilli(record.timestamp())
             txContext.settInEllerOppdatere(
                 record.key(),
-                tidspunktFraKilde = Instant.ofEpochMilli(record.timestamp()),
+                tidspunktFraKilde = tidspunktFraKilde,
                 tidspunkt = Instant.now(),
                 aktor = record.value(),
-                traceparent = traceparent
+                traceparent = traceparent,
+                mergeProsessert = tidspunktFraKilde.isBefore(startDatoForMergeProsessering)
             )
         }
     }
@@ -51,7 +55,8 @@ fun TransactionContext.settInEllerOppdatere(
     tidspunktFraKilde: Instant,
     tidspunkt: Instant,
     aktor: Aktor,
-    traceparent: String
+    traceparent: String,
+    mergeProsessert: Boolean
 ): SetInEllerOpdaterResultat {
     val (person, personOpprettet) = (hentPerson(recordKey)?.let { it to false })
         ?: (opprettPerson(
@@ -85,6 +90,9 @@ fun TransactionContext.settInEllerOppdatere(
             tidspunktFraKilde = tidspunktFraKilde,
             traceId = traceparent
         )
+    }
+    if (mergeProsessert) {
+        mergeProsessert(personId = person.personId)
     }
     return SetInEllerOpdaterResultat(
         person = person,

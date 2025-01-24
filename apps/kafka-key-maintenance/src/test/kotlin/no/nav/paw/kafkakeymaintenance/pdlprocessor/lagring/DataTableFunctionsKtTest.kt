@@ -40,7 +40,8 @@ class DataTableFunctionsKtTest : FreeSpec({
                             tidspunktFraKilde = tidspunktFraKilde,
                             tidspunkt = timestamp,
                             aktor = aktor,
-                            traceparent = traceparent
+                            traceparent = traceparent,
+                            mergeProsessert = false
                         )
                     } should { resultat ->
                         _personId = resultat.person.personId
@@ -99,8 +100,9 @@ class DataTableFunctionsKtTest : FreeSpec({
                             recordKey = key,
                             tidspunktFraKilde = tidspunktFraKilde + Duration.ofMinutes(30),
                             tidspunkt = timestamp + Duration.ofMinutes(30),
+                            aktor = oppdatertAktor,
                             traceparent = oppdatertTraceparant,
-                            aktor = oppdatertAktor
+                            mergeProsessert = false
                         )
                     }
                 }
@@ -141,7 +143,8 @@ class DataTableFunctionsKtTest : FreeSpec({
     }
 
     "Verifiser fullstendig behandling av innkommende Aktor melding".config(enabled = true) - {
-        val lagreAktorMeldinger = LagreAktorMelding()
+        val startDatoForMergeProsessering = Instant.now().minus(Duration.ofDays(10))
+        val lagreAktorMeldinger = LagreAktorMelding(startDatoForMergeProsessering)
         val tcxFactory = txContext(2)
         val aktorId = "AC123456789012345678"
         val tidFraKilde = Instant.now().minus(Duration.ofDays(2)).minus(Duration.ofMinutes(10)).truncatedTo(ChronoUnit.MILLIS)
@@ -150,6 +153,20 @@ class DataTableFunctionsKtTest : FreeSpec({
             Triple(Type.FOLKEREGISTERIDENT, false, "01010112345"),
             Triple(Type.AKTORID, false, aktorId)
         )
+        "Nå vi har prosessert en melding datert før 'startDatoForMergeProsessering', skal den ikke være i listen over ikke prosesserte personer" {
+            transaction {
+                lagreAktorMeldinger.process(tcxFactory(), consumerRecord(
+                    aktorId,
+                    startDatoForMergeProsessering - Duration.ofMinutes(10),
+                    foersteAktorMelding
+                ))
+            }
+            transaction {
+                tcxFactory().hentIkkeProsessertePersoner(1, Instant.now() + Duration.ofDays(10))
+            } should { personer ->
+                personer.size shouldBe 0
+            }
+        }
         "Når vi har prosessert en melding, kan vi hente den ut igjen" {
             transaction {
                 lagreAktorMeldinger.process(tcxFactory(), consumerRecord(aktorId, tidFraKilde, foersteAktorMelding))

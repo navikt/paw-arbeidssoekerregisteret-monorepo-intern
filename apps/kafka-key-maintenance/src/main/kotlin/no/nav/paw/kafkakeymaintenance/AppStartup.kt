@@ -52,7 +52,8 @@ fun main() {
     val aktorConsumer = kafkaFactory.initAktorConsumer(
         healthIndicatorRepository = healthIndicatorRepository,
         aktorTopic = AKTOR_TOPIC,
-        applicationContext = applicationContext
+        applicationContext = applicationContext,
+        startDataForMergeProsessering = START_DATO_FOR_MERGE_PROSESSERING
     )
     val producer = kafkaFactory.createProducer(
         clientId = "key-maintenance-producer",

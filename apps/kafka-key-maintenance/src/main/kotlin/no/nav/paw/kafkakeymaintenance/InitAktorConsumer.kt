@@ -13,11 +13,13 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Duration
+import java.time.Instant
 
 fun KafkaFactory.initAktorConsumer(
     healthIndicatorRepository: HealthIndicatorRepository,
     aktorTopic: Topic,
-    applicationContext: ApplicationContext
+    applicationContext: ApplicationContext,
+    startDataForMergeProsessering: Instant
 ): HwmConsumer<String, Aktor> {
     val aktorConsumer: KafkaConsumer<String, Aktor> = KafkaConsumer(
         baseProperties +
@@ -49,7 +51,7 @@ fun KafkaFactory.initAktorConsumer(
         applicationContext = applicationContext,
         contextFactory = { tx -> txContext(aktorConsumerVersion)(tx) },
         consumer = aktorConsumer,
-        function = LagreAktorMelding(),
+        function = LagreAktorMelding(startDataForMergeProsessering),
         pollTimeout = Duration.ofMillis(1000)
     )
 }
