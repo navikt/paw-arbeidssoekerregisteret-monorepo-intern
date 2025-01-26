@@ -20,6 +20,8 @@ spec:
   azure:
     application:
       enabled: true
+  secureLogs:
+    enabled: true
   env:
     - name: HENDELSELOGG_TOPIC
       value: paw.arbeidssoker-hendelseslogg-v1

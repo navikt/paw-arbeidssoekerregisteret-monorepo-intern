@@ -1,6 +1,7 @@
 package no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring
 
 import io.opentelemetry.api.trace.Span
+import no.nav.paw.kafkakeymaintenance.SecureLogger
 import no.nav.paw.kafkakeymaintenance.kafka.HwmRunnerProcessor
 import no.nav.paw.kafkakeymaintenance.kafka.TransactionContext
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.tilIdentRader
@@ -16,26 +17,34 @@ class LagreAktorMelding(
 ) : HwmRunnerProcessor<String, Aktor> {
 
     override fun process(txContext: TransactionContext, record: ConsumerRecord<String, Aktor>) {
-        if (record.value() == null) {
-            lagreAktorLogger.info(
-                "Sletter aktør: null={}",
-                record.value() == null
-            )
-            txContext.slettPerson(record.key())
-        } else {
-            val traceparent = Span.current().spanContext.let { ctx ->
-                "00-${ctx.traceId}-${ctx.spanId}-${ctx.traceFlags.asHex()}"
+        runCatching {
+            if (record.value() == null) {
+                lagreAktorLogger.info(
+                    "Sletter aktør: null={}",
+                    record.value() == null
+                )
+                txContext.slettPerson(record.key())
+            } else {
+                val traceparent = Span.current().spanContext.let { ctx ->
+                    "00-${ctx.traceId}-${ctx.spanId}-${ctx.traceFlags.asHex()}"
+                }
+                val tidspunktFraKilde = Instant.ofEpochMilli(record.timestamp())
+                txContext.settInEllerOppdatere(
+                    record.key(),
+                    tidspunktFraKilde = tidspunktFraKilde,
+                    tidspunkt = Instant.now(),
+                    aktor = record.value(),
+                    traceparent = traceparent,
+                    mergeProsessert = tidspunktFraKilde.isBefore(startDatoForMergeProsessering)
+                )
             }
-            val tidspunktFraKilde = Instant.ofEpochMilli(record.timestamp())
-            txContext.settInEllerOppdatere(
-                record.key(),
-                tidspunktFraKilde = tidspunktFraKilde,
-                tidspunkt = Instant.now(),
-                aktor = record.value(),
-                traceparent = traceparent,
-                mergeProsessert = tidspunktFraKilde.isBefore(startDatoForMergeProsessering)
+        }.onFailure { error ->
+            SecureLogger.error(
+                "Feil ved lagring av aktør, melding: '{}'",
+                record.value(),
+                error
             )
-        }
+        }.getOrElse { throw Exception("Feilet under prosessering av melding, se securelogs for detaljer") }
     }
 
     override fun ignore(record: ConsumerRecord<String, Aktor>): Boolean {

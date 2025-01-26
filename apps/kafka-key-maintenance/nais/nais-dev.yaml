@@ -20,6 +20,8 @@ spec:
   azure:
     application:
       enabled: true
+  secureLogs:
+    enabled: true
   env:
     - name: HENDELSELOGG_TOPIC
       value: paw.arbeidssoker-hendelseslogg-v1
@@ -27,10 +29,10 @@ spec:
       value: "api://dev-gcp.paw.paw-kafka-key-generator/.default"
   liveness:
     path: /internal/isAlive
-    initialDelay: 20
+    initialDelay: 10
   readiness:
     path: /internal/isReady
-    initialDelay: 20
+    initialDelay: 10
   prometheus:
     enabled: true
     path: /internal/metrics

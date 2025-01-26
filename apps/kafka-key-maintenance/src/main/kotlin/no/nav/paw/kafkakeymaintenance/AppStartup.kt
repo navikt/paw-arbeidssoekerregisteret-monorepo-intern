@@ -39,10 +39,6 @@ fun main() {
     )
     Runtime.getRuntime().addShutdownHook(Thread { applicationContext.eventOccured(ShutdownSignal("Shutdown hook")) })
     val healthIndicatorRepository = HealthIndicatorRepository()
-    initKtor(
-        healthIndicatorRepository = healthIndicatorRepository,
-        prometheusMeterRegistry = applicationContext.meterRegistry
-    ).start(wait = false)
     with(loadNaisOrLocalConfiguration<DatabaseConfig>("database_configuration.toml").dataSource()) {
         migrateDatabase(this)
         Database.connect(this)
@@ -65,12 +61,12 @@ fun main() {
         valueSerializer = HendelseSerializer::class
     )
     val executor = ThreadPoolExecutor(4, 4, 10L, TimeUnit.SECONDS, LinkedBlockingQueue())
-    val periodeTask = periodeConsumer.run(executor)
-    val aktorTask = aktorConsumer.run(executor)
+    periodeConsumer.run(executor)
+    aktorConsumer.run(executor)
     val aktorConfig = loadNaisOrLocalConfiguration<AktorConfig>(AktorConfig.configFile)
     val antallHendelsePartisjoner = producer.partitionsFor(aktorConfig.hendelseloggTopic).size
     val kafkaKeysClient = createKafkaKeyGeneratorClient()
-    val dbReaderTask = DbReaderTask(
+    DbReaderTask(
         healthIndicatorRepository = healthIndicatorRepository,
         applicationContext = applicationContext,
         dbReaderContext = DbReaderContext(
@@ -81,9 +77,11 @@ fun main() {
             aktorDeSerializer = kafkaFactory.kafkaAvroDeSerializer()
         )
     ).run(executor)
-
+    initKtor(
+        healthIndicatorRepository = healthIndicatorRepository,
+        prometheusMeterRegistry = applicationContext.meterRegistry
+    ).start(wait = false)
     applicationContext.logger.info("Applikasjonen er startet")
-
     awaitShutdownSignalOrError(applicationContext)
 }
 
