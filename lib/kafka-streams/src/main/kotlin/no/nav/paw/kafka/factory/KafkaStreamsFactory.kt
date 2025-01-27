@@ -64,6 +64,15 @@ class KafkaStreamsFactory private constructor(
             additionalProperties = additionalProperties + (StreamsConfig.PROCESSING_GUARANTEE_CONFIG to StreamsConfig.EXACTLY_ONCE_V2)
         )
 
+    fun withLogAndContinueOnDeSerializationError(): KafkaStreamsFactory =
+        KafkaStreamsFactory(
+            applicationIdSuffix = applicationIdSuffix,
+            config = config,
+            additionalProperties = additionalProperties + (
+                    StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG to
+                            "org.apache.kafka.streams.errors.LogAndContinueExceptionHandler")
+        )
+
     fun withServerConfig(host: String, post: Int) = KafkaStreamsFactory(
         applicationIdSuffix = applicationIdSuffix,
         config = config,

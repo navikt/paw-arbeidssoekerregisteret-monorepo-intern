@@ -58,6 +58,7 @@ fun buildKafkaStreams(
     )
         .withDefaultKeySerde(Serdes.Long()::class)
         .withDefaultValueSerde(SpecificAvroSerde::class)
+        .withLogAndContinueOnDeSerializationError()
         .apply { properties["application.server"] = applicationConfig.hostname }
 
     val kafkaStreams = KafkaStreams(
