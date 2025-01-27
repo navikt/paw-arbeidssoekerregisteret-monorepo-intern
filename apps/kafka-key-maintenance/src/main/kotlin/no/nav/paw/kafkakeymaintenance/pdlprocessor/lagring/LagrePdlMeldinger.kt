@@ -44,11 +44,7 @@ class LagreAktorMelding(
                 record.value(),
                 error
             )
-        }.getOrElse {
-            if (record.offset() != 3829596L) {
-                throw Exception("Feilet under prosessering av melding(${record.partition()}::${record.offset()}), se securelogs for detaljer")
-            }
-        }
+        }.getOrElse { throw Exception("Feilet under prosessering av melding(${record.partition()}::${record.offset()}), se securelogs for detaljer") }
     }
 
     override fun ignore(record: ConsumerRecord<String, Aktor>): Boolean {
