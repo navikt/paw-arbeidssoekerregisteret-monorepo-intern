@@ -17,10 +17,6 @@ class LagreAktorMelding(
 ) : HwmRunnerProcessor<String, Aktor> {
 
     override fun process(txContext: TransactionContext, record: ConsumerRecord<String, Aktor>) {
-        if (record.offset() == 3829596L) {
-            lagreAktorLogger.info("Ignorerer melding: offset={}", record.offset())
-            return
-        }
         runCatching {
             if (record.value() == null) {
                 lagreAktorLogger.info(
