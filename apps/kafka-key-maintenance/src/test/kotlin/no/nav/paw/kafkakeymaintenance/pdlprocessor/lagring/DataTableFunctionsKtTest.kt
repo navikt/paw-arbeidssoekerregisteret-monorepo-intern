@@ -186,9 +186,11 @@ fun consumerRecord(
     key: String,
     timestamp: Instant,
     aktor: Aktor,
+    offsset: Long = 0
 ): ConsumerRecord<String, Aktor> = mockk {
     every { key() } returns key
     every { timestamp() } returns timestamp.toEpochMilli()
     every { timestampType() } returns TimestampType.NO_TIMESTAMP_TYPE
     every { value() } returns aktor
+    every { offset() } returns offsset
 }
