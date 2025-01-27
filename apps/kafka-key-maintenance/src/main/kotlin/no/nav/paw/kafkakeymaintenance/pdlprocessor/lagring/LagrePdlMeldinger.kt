@@ -44,7 +44,8 @@ class LagreAktorMelding(
             }
         }.onFailure { error ->
             SecureLogger.error(
-                "Feil ved lagring av aktør, melding: '{}'",
+                "Feil ved lagring av aktør (offset:{}), melding: '{}'",
+                record.offset(),
                 record.value(),
                 error
             )
