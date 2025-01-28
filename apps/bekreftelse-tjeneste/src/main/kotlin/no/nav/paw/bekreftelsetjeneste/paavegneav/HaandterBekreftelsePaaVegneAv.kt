@@ -3,6 +3,7 @@ package no.nav.paw.bekreftelsetjeneste.paavegneav
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.StatusCode
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
 import no.nav.paw.bekreftelse.internehendelser.BekreftelsePaaVegneAvStartet
@@ -20,6 +21,7 @@ import java.util.*
 @JvmInline
 value class WallClock(val value: Instant)
 
+@WithSpan(value = "haandter_bekreftelse_paa_vegne_av_endret")
 fun haandterBekreftelsePaaVegneAvEndret(
     wallclock: WallClock,
     bekreftelseTilstand: BekreftelseTilstand?,
