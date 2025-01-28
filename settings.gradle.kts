@@ -5,7 +5,7 @@ plugins {
     id("com.google.cloud.tools.jib") version "3.4.4" apply false
     id("org.openapi.generator") version "7.11.0" apply false
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1" apply false
-    id("com.expediagroup.graphql") version "8.2.1" apply false
+    id("com.expediagroup.graphql") version "8.3.0" apply false
 }
 
 rootProject.name = "paw-arbeidssoekerregisteret-monorepo-intern"
