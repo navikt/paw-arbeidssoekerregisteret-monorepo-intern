@@ -1,6 +1,8 @@
 package no.nav.paw.bekreftelsetjeneste.topology
 
 import arrow.core.toNonEmptyListOrNull
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
@@ -22,6 +24,10 @@ import java.util.*
 
 private val punctuatorLogger = LoggerFactory.getLogger("punctuator.bekreftelse")
 
+@WithSpan(
+    value = "bekreftelse_punctuator",
+    kind = SpanKind.INTERNAL
+)
 fun bekreftelsePunctuator(
     bekreftelseTilstandStateStoreName: String,
     paaVegneAvTilstandStateStoreName: String,
@@ -31,7 +37,7 @@ fun bekreftelsePunctuator(
 ) {
     val bekreftelseTilstandStateStore: BekreftelseTilstandStateStore = ctx.getStateStore(bekreftelseTilstandStateStoreName)
     val paaVegneAvTilstandStateStore: PaaVegneAvTilstandStateStore = ctx.getStateStore(paaVegneAvTilstandStateStoreName)
-
+    Span.current().setAttribute(AttributeKey.longKey("partition"), ctx.taskId().partition())
     bekreftelseTilstandStateStore
         .all()
         .use { states ->
