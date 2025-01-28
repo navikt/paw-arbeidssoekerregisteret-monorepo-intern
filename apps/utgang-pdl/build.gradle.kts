@@ -1,14 +1,11 @@
 plugins {
     kotlin("jvm")
-    id("com.google.cloud.tools.jib")
+    id("jib-distroless")
     id("com.github.davidmc24.gradle.plugin.avro")
     application
 }
 
-val baseImage: String by project
 val jvmMajorVersion: String by project
-
-val image: String? by project
 
 val schema by configurations.creating {
     isTransitive = false
@@ -70,17 +67,6 @@ java {
 
 application {
     mainClass.set("no.nav.paw.arbeidssoekerregisteret.utgang.pdl.StartupKt")
-}
-
-jib {
-    from.image = "$baseImage:$jvmMajorVersion"
-    val actualImage = "${image ?: rootProject.name}:${project.version}"
-    to.image = actualImage
-    container {
-        environment = mapOf(
-            "IMAGE_WITH_VERSION" to actualImage
-        )
-    }
 }
 
 tasks.named<Test>("test") {

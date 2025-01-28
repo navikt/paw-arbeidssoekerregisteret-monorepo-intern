@@ -6,13 +6,10 @@ plugins {
     kotlin("jvm")
     id("org.openapi.generator")
     application
-    id("com.google.cloud.tools.jib")
+    id("jib-distroless")
 }
 
-val baseImage: String by project
 val jvmMajorVersion: String by project
-
-val image: String? by project
 
 dependencies {
     implementation(project(":domain:interne-hendelser"))
@@ -77,14 +74,6 @@ application {
 tasks.withType<KotlinCompile>().configureEach {
     compilerOptions {
         allWarningsAsErrors = true
-    }
-}
-
-jib {
-    from.image = "$baseImage:$jvmMajorVersion"
-    to.image = "${image ?: project.name}:${project.version}"
-    container {
-        jvmFlags = listOf("-XX:ActiveProcessorCount=4", "-XX:+UseZGC", "-XX:+ZGenerational")
     }
 }
 

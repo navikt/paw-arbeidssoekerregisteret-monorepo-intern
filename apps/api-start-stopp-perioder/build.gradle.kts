@@ -5,15 +5,10 @@ plugins {
     kotlin("jvm")
     id("org.openapi.generator")
     application
-    id("com.google.cloud.tools.jib")
+    id("jib-distroless")
 }
 
-val baseImage: String by project
 val jvmMajorVersion: String by project
-
-val arbeidssokerregisteretVersion = "24.03.25.160-1"
-
-val image: String? by project
 
 dependencies {
     implementation(project(":domain:arbeidssoekerregisteret-kotlin"))
@@ -83,20 +78,6 @@ tasks.withType(Jar::class) {
         attributes["Implementation-Version"] = project.version
         attributes["Main-Class"] = application.mainClass.get()
         attributes["Implementation-Title"] = rootProject.name
-    }
-}
-
-jib {
-    from.image = "$baseImage:$jvmMajorVersion"
-    to.image = "${image ?: project.name}:${project.version}"
-    container {
-        environment = mapOf(
-            "IMAGE_WITH_VERSION" to "${image ?: project.name}:${project.version}",
-            "OTEL_INSTRUMENTATION_METHODS_INCLUDE" to ("io.ktor.server.routing.Routing[interceptor,executeResult];" +
-                    "io.ktor.server.netty.NettyApplicationCallHandler[handleRequest,exceptionCaught];") +
-                    "io.ktor.serialization.jackson.JacksonConverter[deserialize,serializeNullable]"
-        )
-        jvmFlags = listOf("-XX:ActiveProcessorCount=4", "-XX:+UseZGC", "-XX:+ZGenerational")
     }
 }
 

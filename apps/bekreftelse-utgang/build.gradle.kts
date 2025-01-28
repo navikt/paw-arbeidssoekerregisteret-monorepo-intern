@@ -1,14 +1,11 @@
 
 plugins {
     kotlin("jvm")
-    id("com.google.cloud.tools.jib")
+    id("jib-distroless")
     application
 }
 
 val jvmMajorVersion: String by project
-val baseImage: String by project
-val image: String? by project
-
 
 dependencies {
     // Project
@@ -66,16 +63,5 @@ tasks.withType<Test>().configureEach {
     useJUnitPlatform()
     testLogging {
         events("failed")
-    }
-}
-
-jib {
-    from.image = "$baseImage:$jvmMajorVersion"
-    to.image = "${image ?: project.name}:${project.version}"
-    container {
-        environment = mapOf(
-            "IMAGE_WITH_VERSION" to "${image ?: project.name}:${project.version}"
-        )
-        jvmFlags = listOf("-XX:ActiveProcessorCount=4", "-XX:+UseZGC", "-XX:+ZGenerational")
     }
 }

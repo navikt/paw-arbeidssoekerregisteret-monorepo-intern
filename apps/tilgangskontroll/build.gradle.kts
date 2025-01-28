@@ -5,13 +5,10 @@ plugins {
     kotlin("jvm")
     id("org.openapi.generator")
     application
-    id("com.google.cloud.tools.jib")
+    id("jib-distroless")
 }
 
-val baseImage: String by project
 val jvmMajorVersion: String by project
-
-val image: String? by project
 
 dependencies {
     implementation(project(":lib:hoplite-config"))
@@ -70,17 +67,6 @@ tasks.withType(Jar::class) {
         attributes["Implementation-Version"] = project.version
         attributes["Main-Class"] = application.mainClass.get()
         attributes["Implementation-Title"] = rootProject.name
-    }
-}
-
-jib {
-    from.image = "$baseImage:$jvmMajorVersion"
-    to.image = "${image ?: project.name}:${project.version}"
-    container {
-        environment = mapOf(
-            "IMAGE_WITH_VERSION" to "${image ?: project.name}:${project.version}"
-        )
-        jvmFlags = listOf("-XX:ActiveProcessorCount=4", "-XX:+UseZGC", "-XX:+ZGenerational")
     }
 }
 
