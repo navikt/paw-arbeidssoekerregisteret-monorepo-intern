@@ -2,7 +2,6 @@ plugins {
     kotlin("jvm")
     id("org.openapi.generator")
     application
-    id("com.google.cloud.tools.jib")
 }
 
 val baseImage: String by project

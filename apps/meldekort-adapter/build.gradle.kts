@@ -2,12 +2,10 @@
 plugins {
     kotlin("jvm")
     id("com.github.davidmc24.gradle.plugin.avro")
-    id("com.google.cloud.tools.jib")
+    id("jib-distroless")
     application
 }
 val jvmMajorVersion: String by project
-val image: String? by project
-val baseImage: String by project
 
 dependencies {
     implementation(project(":domain:interne-hendelser"))
@@ -43,11 +41,6 @@ java {
 
 application {
     mainClass.set("no.nav.paw.meldekortadapter.AppKt")
-}
-
-jib {
-    from.image = "$baseImage:$jvmMajorVersion"
-    to.image = "${image ?: rootProject.name }:${project.version}"
 }
 
 tasks.named<Test>("test") {
