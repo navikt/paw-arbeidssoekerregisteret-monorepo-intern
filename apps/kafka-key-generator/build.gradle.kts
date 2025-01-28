@@ -95,9 +95,15 @@ tasks.named<Test>("test") {
     useJUnitPlatform()
 }
 
-tasks.create("runTestApp", JavaExec::class) {
-    classpath = sourceSets["test"].runtimeClasspath +
-            sourceSets["main"].runtimeClasspath
-    mainClass = "no.nav.paw.kafkakeygenerator.TestApplicationKt"
-    args = listOf()
+abstract class RunAppTask : JavaExec() {
+    init {
+        classpath = sourceSets["main"].runtimeClasspath +
+                sourceSets["test"].runtimeClasspath
+        mainClass = "no.nav.paw.kafkakeygenerator.TestApplicationKt"
+        args = emptyList()
+    }
+}
+tasks.register<RunAppTask>("runApp") {
+    group = "application"
+    description = "Run the application"
 }
