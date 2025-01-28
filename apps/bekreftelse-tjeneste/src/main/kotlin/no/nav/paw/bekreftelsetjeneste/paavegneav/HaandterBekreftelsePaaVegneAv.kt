@@ -1,11 +1,18 @@
 package no.nav.paw.bekreftelsetjeneste.paavegneav
 
+import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.StatusCode
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
 import no.nav.paw.bekreftelse.internehendelser.BekreftelsePaaVegneAvStartet
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Stopp
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
+import no.nav.paw.bekreftelsetjeneste.topology.bekreftelseloesingKey
+import no.nav.paw.bekreftelsetjeneste.topology.meldingIgnorert
+import no.nav.paw.bekreftelsetjeneste.topology.harAnsvar
+import no.nav.paw.bekreftelsetjeneste.topology.periodeFunnetKey
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -34,6 +41,25 @@ fun haandterBekreftelsePaaVegneAvEndret(
         )
 
         else -> emptyList()
+    }.also { handlinger ->
+        val hendelse = handlinger
+            .filterIsInstance<SendHendelse>()
+            .firstOrNull()
+            ?.hendelse
+        val traceHendelse = hendelse?.hendelseType ?: meldingIgnorert
+        Span.current().addEvent(
+            traceHendelse, Attributes.of(
+                bekreftelseloesingKey, paaVegneAvHendelse.bekreftelsesloesning.name,
+                periodeFunnetKey, bekreftelseTilstand != null,
+                harAnsvar, paaVegneAvTilstand?.paaVegneAvList
+                    ?.map { it.loesning }
+                    ?.contains(Loesning.from(paaVegneAvHendelse.bekreftelsesloesning)) ?: false
+            )
+        )
+        if (hendelse != null) {
+            Span.current()
+                .setStatus(StatusCode.ERROR, "ingen endring utført, se trace 'event' '$traceHendelse' for detaljer")
+        }
     }
 }
 
@@ -44,7 +70,11 @@ fun stoppPaaVegneAv(
     val oppdatertPaaVegneAv = paaVegneAvTilstand - Loesning.from(paaVegneAvHendelse.bekreftelsesloesning)
     val paaVegneAvHandling = when {
         paaVegneAvTilstand != null && oppdatertPaaVegneAv == null -> SlettPaaVegneAvTilstand(paaVegneAvHendelse.periodeId)
-        paaVegneAvTilstand != null && oppdatertPaaVegneAv != null -> SkrivPaaVegneAvTilstand(paaVegneAvHendelse.periodeId, oppdatertPaaVegneAv)
+        paaVegneAvTilstand != null && oppdatertPaaVegneAv != null -> SkrivPaaVegneAvTilstand(
+            paaVegneAvHendelse.periodeId,
+            oppdatertPaaVegneAv
+        )
+
         else -> null
     }
     return listOfNotNull(paaVegneAvHandling)
@@ -72,6 +102,7 @@ fun startPaaVegneAv(
             hendelseTidspunkt = wallclock.value,
         )
     }
+
     val oppdaterBekreftelseTilstand = bekreftelseTilstand?.let {
         val oppdaterteBekreftelser = it.bekreftelser
             .map { bekreftelse ->
@@ -80,16 +111,25 @@ fun startPaaVegneAv(
                     is KlarForUtfylling,
                     is GracePeriodeVarselet,
                     is IkkeKlarForUtfylling -> bekreftelse + InternBekreftelsePaaVegneAvStartet(wallclock.value)
+
                     else -> bekreftelse
                 }
             }
         it.copy(bekreftelser = oppdaterteBekreftelser)
     }
         ?.takeIf { oppdatertBekreftelseTilstand -> oppdatertBekreftelseTilstand != bekreftelseTilstand }
-        ?.let { oppdatertBekreftelseTilstand -> SkrivBekreftelseTilstand(oppdatertBekreftelseTilstand.periode.periodeId, oppdatertBekreftelseTilstand) }
+        ?.let { oppdatertBekreftelseTilstand ->
+            SkrivBekreftelseTilstand(
+                oppdatertBekreftelseTilstand.periode.periodeId,
+                oppdatertBekreftelseTilstand
+            )
+        }
 
     return listOfNotNull(
-        if (paaVegneAvTilstand != oppdatertPaaVegneAvTilstand) SkrivPaaVegneAvTilstand(paaVegneAvHendelse.periodeId, oppdatertPaaVegneAvTilstand) else null,
+        if (paaVegneAvTilstand != oppdatertPaaVegneAvTilstand) SkrivPaaVegneAvTilstand(
+            paaVegneAvHendelse.periodeId,
+            oppdatertPaaVegneAvTilstand
+        ) else null,
         oppdaterBekreftelseTilstand,
         hendelse?.let(::SendHendelse)
     )

@@ -9,6 +9,8 @@ import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.internehendelser.*
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
+import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
+import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternBekreftelsePaaVegneAvStartet
 import no.nav.paw.kafka.processor.Punctuation
@@ -39,26 +41,59 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
                 ),
             ) { record ->
                 val bekreftelseTilstandStateStore = getStateStore<BekreftelseTilstandStateStore>(internStateStoreName)
-                val paaVegneAvTilstandStateStore = getStateStore<PaaVegneAvTilstandStateStore>(bekreftelsePaaVegneAvStateStoreName)
+                val paaVegneAvTilstandStateStore =
+                    getStateStore<PaaVegneAvTilstandStateStore>(bekreftelsePaaVegneAvStateStoreName)
 
                 val gjeldendeTilstand: BekreftelseTilstand? = retrieveState(bekreftelseTilstandStateStore, record)
                 val paaVegneAvTilstand = paaVegneAvTilstandStateStore[record.value().periodeId]
                 val melding = record.value()
 
-                if (gjeldendeTilstand == null) {
-                    Span.current().setStatus(StatusCode.ERROR).addEvent("tilstand is null for record", Attributes.of(
-                        AttributeKey.longKey("recordKey"), record.key()
-                    ))
-                    meldingsLogger.warn("Melding mottatt for periode som ikke er aktiv/eksisterer")
-                    return@genericProcess
-                }
-                val (oppdatertTilstand, hendelser) = haandterBekreftelseMottatt(gjeldendeTilstand, paaVegneAvTilstand, melding)
-                if (oppdatertTilstand != gjeldendeTilstand) {
-                    bekreftelseTilstandStateStore.put(oppdatertTilstand.periode.periodeId, oppdatertTilstand)
+                val hendelser = when (gjeldendeTilstand) {
+                    null -> {
+                        meldingsLogger.warn("Melding mottatt for periode som ikke er aktiv/eksisterer")
+                        addTraceEvent(record, paaVegneAvTilstand, meldingIgnorert)
+                        emptyList()
+                    }
+                    else -> {
+                        haandterBekreftelseMottatt(
+                            gjeldendeTilstand,
+                            paaVegneAvTilstand,
+                            melding
+                        ).also { (oppdatertTilstand, hendelser) ->
+                            if (oppdatertTilstand != gjeldendeTilstand) {
+                                bekreftelseTilstandStateStore.put(oppdatertTilstand.periode.periodeId, oppdatertTilstand)
+                            }
+                            hendelser.forEach { hendelse -> addTraceEvent(record, paaVegneAvTilstand, hendelse.hendelseType) }
+                        }.second
+                    }
                 }
                 forwardHendelser(record, hendelser, this::forward)
             }
             .to(bekreftelseHendelseloggTopic, Produced.with(Serdes.Long(), BekreftelseHendelseSerde()))
+    }
+}
+
+private fun addTraceEvent(
+    record: Record<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>,
+    paaVegneAvTilstand: PaaVegneAvTilstand?,
+    traceMelding: String
+) {
+    Span.current().addEvent(
+        meldingIgnorert, Attributes.of(
+            bekreftelseloesingKey, record.value().bekreftelsesloesning.name,
+            periodeFunnetKey, false,
+            harAnsvar, paaVegneAvTilstand
+                ?.paaVegneAvList
+                ?.map { it.loesning }
+                ?.contains(Loesning.from(record.value().bekreftelsesloesning)) ?: false
+        )
+    )
+    if (traceMelding == meldingIgnorert) {
+        Span.current()
+            .setStatus(
+                StatusCode.ERROR,
+                "ingen endring utført, se trace 'event' '$traceMelding' for detaljer"
+            )
     }
 }
 
@@ -173,14 +208,18 @@ fun forwardHendelser(
 ) {
     hendelser.map(record::withValue).forEach {
         forward(it.withTimestamp(Instant.now().toEpochMilli()))
-        Span.current().addEvent("Forwarded hendelse", Attributes.of(
-            AttributeKey.stringKey("hendelseId"), it.value().hendelseId.toString()
-        ))
+        Span.current().addEvent(
+            "Forwarded hendelse", Attributes.of(
+                AttributeKey.stringKey("hendelseId"), it.value().hendelseId.toString()
+            )
+        )
     }
 
-    Span.current().addEvent("Antall hendelser forwarded", Attributes.of(
-        AttributeKey.stringKey("event_count"), hendelser.size.toString()
-    ))
+    Span.current().addEvent(
+        "Antall hendelser forwarded", Attributes.of(
+            AttributeKey.stringKey("event_count"), hendelser.size.toString()
+        )
+    )
 }
 
 private val meldingsLogger = LoggerFactory.getLogger("meldingsLogger")

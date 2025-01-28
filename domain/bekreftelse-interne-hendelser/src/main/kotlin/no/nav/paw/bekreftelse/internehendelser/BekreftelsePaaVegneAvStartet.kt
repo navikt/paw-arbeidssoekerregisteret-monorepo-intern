@@ -3,7 +3,7 @@ package no.nav.paw.bekreftelse.internehendelser
 import java.time.Instant
 import java.util.*
 
-const val bekreftelsePaaVegneAvStartetHendelsesType = "bekreftelse.paa_vegne_av_startet"
+const val bekreftelsePaaVegneAvStartetHendelsesType = ""
 
 class BekreftelsePaaVegneAvStartet(
     override val hendelseId: UUID,
