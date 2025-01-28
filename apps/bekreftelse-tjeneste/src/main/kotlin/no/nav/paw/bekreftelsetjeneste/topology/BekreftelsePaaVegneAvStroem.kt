@@ -3,6 +3,7 @@ package no.nav.paw.bekreftelsetjeneste.topology
 import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.Tags
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import io.opentelemetry.api.trace.Span
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
@@ -31,6 +32,7 @@ fun StreamsBuilder.byggBekreftelsePaaVegneAvStroem(
             kafkaTopologyConfig.bekreftelsePaaVegneAvStateStoreName,
             kafkaTopologyConfig.internStateStoreName
         ) { message ->
+            Span.current().setAttribute(bekreftelseloesingKey, message.bekreftelsesloesning.name)
             val bekreftelseTilstandStateStore =
                 getStateStore<KeyValueStore<UUID, BekreftelseTilstand>>(kafkaTopologyConfig.internStateStoreName)
             val paaVegneAvTilstandStateStore = getStateStore<KeyValueStore<UUID, PaaVegneAvTilstand>>(kafkaTopologyConfig.bekreftelsePaaVegneAvStateStoreName)

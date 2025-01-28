@@ -2,6 +2,7 @@ package no.nav.paw.bekreftelsetjeneste.paavegneav
 
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
@@ -21,7 +22,10 @@ import java.util.*
 @JvmInline
 value class WallClock(val value: Instant)
 
-@WithSpan(value = "haandter_bekreftelse_paa_vegne_av_endret")
+@WithSpan(
+    value = "haandter_bekreftelse_paa_vegne_av_endret",
+    kind = SpanKind.INTERNAL
+)
 fun haandterBekreftelsePaaVegneAvEndret(
     wallclock: WallClock,
     bekreftelseTilstand: BekreftelseTilstand?,
@@ -61,6 +65,8 @@ fun haandterBekreftelsePaaVegneAvEndret(
         if (hendelse != null) {
             Span.current()
                 .setStatus(StatusCode.ERROR, "ingen endring utført, se trace 'event' '$traceHendelse' for detaljer")
+        } else {
+            Span.current().setStatus(StatusCode.OK, "endring utført")
         }
     }
 }

@@ -1,6 +1,8 @@
 package no.nav.paw.bekreftelsetjeneste.topology
 
 import arrow.core.toNonEmptyListOrNull
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
@@ -67,6 +69,10 @@ fun Sequence<Pair<BekreftelseTilstand, PaaVegneAvTilstand?>>.prosesserBekreftels
             )
         }
 
+@WithSpan(
+    value = "prosesser_bekreftelser",
+    kind = SpanKind.INTERNAL
+)
 fun BekreftelseTilstand.prosesserBekreftelser(
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
     currentTime: Instant,
