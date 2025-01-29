@@ -33,6 +33,7 @@ fun initSpan(
             tracer.spanBuilder(spanName)
                 .setParent(Context.current().with(spanNoop))
                 .startSpan()
+                .also { it.makeCurrent() }
                 .let(::ClosableSpan)
         } ?: ClosableSpan(null)
 }
