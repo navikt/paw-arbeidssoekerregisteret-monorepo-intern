@@ -35,6 +35,7 @@ dependencies {
     implementation(libs.ktor.server.contentNegotiation)
     implementation(libs.ktor.serialization.jvm)
     implementation(libs.ktor.serialization.jackson)
+    implementation(libs.jackson.datatypeJsr310)
     implementation(libs.ktor.server.coreJvm)
     implementation(libs.ktor.server.openapi)
     testImplementation(libs.ktor.server.test.host)

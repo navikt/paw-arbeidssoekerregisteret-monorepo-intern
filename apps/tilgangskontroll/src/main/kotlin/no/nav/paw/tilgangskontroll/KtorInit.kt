@@ -17,7 +17,7 @@ import no.nav.paw.tilgangskontroll.ktorserver.AuthProvider
 import no.nav.paw.tilgangskontroll.ktorserver.AuthProviders
 import no.nav.paw.tilgangskontroll.ktorserver.configureAuthentication
 import no.nav.paw.tilgangskontroll.ktorserver.installContentNegotiation
-import no.nav.paw.tilgangskontroll.ktorserver.installStatusPage
+import no.nav.paw.tilgangskontroll.ktorserver.installErrorHandling
 import no.nav.paw.tilgangskontroll.routes.apiV1Tilgang
 import java.time.Duration
 
@@ -28,7 +28,7 @@ fun initKtor(
 ) = embeddedServer(Netty, port = 8080) {
     installMetrics(prometheusMeterRegistry)
     installContentNegotiation()
-    installStatusPage()
+    installErrorHandling()
     configureAuthentication(authProviders)
     routing {
         healthAndMetricEndpoints(prometheusMeterRegistry)
