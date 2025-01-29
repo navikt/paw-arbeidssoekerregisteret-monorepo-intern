@@ -121,7 +121,7 @@ class DbReaderTask(
     }
 
     private val spanHandlerLogger = LoggerFactory.getLogger("spanHandler")
-    private fun initSpan(entry: Person): ClossableSpan {
+    private fun initSpan(entry: Person): ClosableSpan {
         val traceparent = entry.traceparant
         spanHandlerLogger.info("traceparent: {}", traceparent)
         return traceparent.let { tp ->
@@ -141,12 +141,12 @@ class DbReaderTask(
             tracer.spanBuilder("process_pdl_aktor_v2_record")
                 .setParent(Context.current().with(spanNoop))
                 .startSpan()
-                .let(::ClossableSpan)
-        } ?: ClossableSpan(null)
+                .let(::ClosableSpan)
+        } ?: ClosableSpan(null)
     }
 }
 
-class ClossableSpan(span: Span?) : AutoCloseable, Span by (span ?: Span.getInvalid()) {
+class ClosableSpan(span: Span?) : AutoCloseable, Span by (span ?: Span.getInvalid()) {
     override fun close() {
         end()
     }
