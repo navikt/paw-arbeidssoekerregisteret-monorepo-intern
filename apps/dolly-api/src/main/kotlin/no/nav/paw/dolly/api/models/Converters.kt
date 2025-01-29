@@ -15,6 +15,23 @@ import java.util.UUID
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType as HendelseBrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata as HendelseMetadata
 
+fun erGodkjentUtdanningsnivaa(nuskode: String?): Boolean = nuskode in setOf("3", "4", "5", "6", "7", "8") && nuskode != null
+
+fun ArbeidssoekerregistreringRequest.medStandardverdier() = erGodkjentUtdanningsnivaa(nuskode).let { godkjentUtdanning ->
+        copy(
+            utfoertAv = utfoertAv ?: BrukerType.SLUTTBRUKER,
+            kilde = kilde ?: "Dolly",
+            aarsak = aarsak ?: "Registrering av arbeidssøker i Dolly",
+            nuskode = nuskode ?: "3",
+            utdanningBestaatt = if (!godkjentUtdanning) null else utdanningBestaatt ?: true,
+            utdanningGodkjent = if (!godkjentUtdanning) null else  utdanningGodkjent ?: true,
+            jobbsituasjonBeskrivelse = jobbsituasjonBeskrivelse ?: Beskrivelse.HAR_BLITT_SAGT_OPP,
+            jobbsituasjonDetaljer = jobbsituasjonDetaljer ?: Detaljer(stillingStyrk08 = "00", stilling = "Annen stilling"),
+            helsetilstandHindrerArbeid = helsetilstandHindrerArbeid ?: false,
+            andreForholdHindrerArbeid = andreForholdHindrerArbeid ?: false
+        )
+}
+
 fun ArbeidssoekerregistreringRequest.toMetadata(): HendelseMetadata = HendelseMetadata(
     tidspunkt = Instant.now(),
     utfoertAv = Bruker(
