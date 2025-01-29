@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="STDOUT_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+    </appender>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %5level %c{1}:%logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <if condition='"${NAIS_CLUSTER_NAME}" == "NAIS_CLUSTER_NAME_IS_UNDEFINED"'>
+        <then>
+            <root level="INFO">
+                <appender-ref ref="CONSOLE"/>
+            </root>
+            <logger name="org.apache.kafka.clients.admin.AdminClientConfig" level="WARN"/>
+            <logger name="org.apache.kafka.clients.producer.ProducerConfig" level="WARN"/>
+            <logger name="io.confluent.kafka.serializers.KafkaAvroSerializerConfig" level="WARN"/>
+            <logger name="no.nav" level="DEBUG"/>
+            <logger name="io.ktor.auth" level="DEBUG"/>
+            <logger name="io.ktor.server.auth" level="DEBUG"/>
+        </then>
+        <else>
+            <root level="INFO">
+                <appender-ref ref="STDOUT_JSON"/>
+            </root>
+            <include resource="no/nav/common/audit_log/logback-naudit.xml"/>
+        </else>
+    </if>
+</configuration>

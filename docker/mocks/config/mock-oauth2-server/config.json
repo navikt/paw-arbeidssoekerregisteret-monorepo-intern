@@ -92,6 +92,20 @@
                             "access_as_application"
                         ]
                     }
+                },
+                {
+                    "requestParam": "client_id",
+                    "match": "paw-arbeidssoekerregisteret-api-dolly",
+                    "claims": {
+                        "sub": "admin@paw-arbeidssoekerregisteret-api-dolly",
+                        "aud": [
+                            "paw-arbeidssoekerregisteret-api-dolly"
+                        ],
+                        "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
+                        "roles": [
+                            "access_as_application"
+                        ]
+                    }
                 }
             ]
         }

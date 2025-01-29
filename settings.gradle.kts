@@ -47,6 +47,7 @@ include(
     "apps:bekreftelse-utgang",
     "apps:tilgangskontroll",
     "apps:meldekort-adapter",
+    "apps:dolly-api"
 )
 
 dependencyResolutionManagement {

@@ -1,0 +1,5 @@
+[kafkaTopology]
+version = 1
+antallPartitioner = 1
+producerId = "paw-arbeidssoekerregisteret-api-dolly-v1-producer"
+hendelsesloggTopic = "paw.arbeidssoker-hendelseslogg-v1"
