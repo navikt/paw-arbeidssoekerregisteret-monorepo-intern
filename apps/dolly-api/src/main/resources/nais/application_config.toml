@@ -4,4 +4,4 @@ antallPartitioner = 6
 producerId = "${NAIS_APP_NAME}-v1-producer"
 consumerId = "${NAIS_APP_NAME}-v1-consumer"
 consumerGroupId = "${NAIS_APP_NAME}-v1"
-hendelseloggTopic = "${HENDELSESLOGG_TOPIC}"
+hendelsesloggTopic = "${HENDELSESLOGG_TOPIC}"
