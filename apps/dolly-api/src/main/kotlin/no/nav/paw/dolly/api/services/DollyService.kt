@@ -22,13 +22,15 @@ class DollyService(
     suspend fun registrerArbeidssoeker(request: ArbeidssoekerregistreringRequest) {
         logger.info("Registrerer arbeidssøker med identitetsnummer ${request.identitetsnummer}")
         val (id, key) = kafkaKeysClient.getIdAndKey(request.identitetsnummer)
+        val nuskode = request.nuskode
+        val erGodkjentUtdanningsnivaa = erGodkjentUtdanningsnivaa(nuskode)
         val requestMedDefaultVerdier = request.copy(
             utfoertAv = request.utfoertAv ?: BrukerType.SLUTTBRUKER,
             kilde = request.kilde ?: "Dolly",
             aarsak = request.aarsak ?: "Registrering av arbeidssøker i Dolly",
             nuskode = request.nuskode ?: "3",
-            utdanningBestaatt = request.utdanningBestaatt ?: true,
-            utdanningGodkjent = request.utdanningGodkjent ?: true,
+            utdanningBestaatt = if (!erGodkjentUtdanningsnivaa) null else request.utdanningBestaatt ?: true,
+            utdanningGodkjent = if (!erGodkjentUtdanningsnivaa) null else  request.utdanningGodkjent ?: true,
             jobbsituasjonBeskrivelse = request.jobbsituasjonBeskrivelse ?: Beskrivelse.HAR_BLITT_SAGT_OPP,
             jobbsituasjonDetaljer = request.jobbsituasjonDetaljer ?: Detaljer(stillingStyrk08 = "00", stilling = "Annen stilling"),
             helsetilstandHindrerArbeid = request.helsetilstandHindrerArbeid ?: false,
@@ -61,5 +63,15 @@ class DollyService(
         logger.info("Arbeidssøker registrert med identitetsnummer: ${request.identitetsnummer}")
     }
 }
+
+
+private fun erGodkjentUtdanningsnivaa(nuskode: String?): Boolean {
+    val forventerBestaattOgGodkjent = setOf("3", "4", "5", "6", "7", "8")
+    if (nuskode !in forventerBestaattOgGodkjent) {
+        return false
+    }
+    return true
+}
+
 
 
