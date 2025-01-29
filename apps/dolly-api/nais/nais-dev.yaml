@@ -11,6 +11,8 @@ spec:
   env:
     - name: HENDELSESLOGG_TOPIC
       value: "paw.arbeidssoker-hendelseslogg-v1"
+    - name: KAFKA_KEYS_SCOPE
+      value: "api://dev-gcp.paw.paw-kafka-key-generator/.default"
   replicas:
     min: 2
     max: 2
@@ -45,3 +47,5 @@ spec:
       rules:
         - application: azure-token-generator
           namespace: aura
+        - application: paw-kafka-key-generator
+          namespace: paw
