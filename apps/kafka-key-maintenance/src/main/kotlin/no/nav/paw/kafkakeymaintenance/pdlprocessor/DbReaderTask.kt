@@ -91,7 +91,11 @@ class DbReaderTask(
             val count = batch
                 .asSequence()
                 .flatMap { entry ->
-                    initSpan(entry).use {
+                    initSpan(
+                        traceparent = entry.traceparant,
+                        instrumentationScopeName = "no.nav.paw.kafkakeymaintenance.pdlprocessor.DbReaderTask",
+                        spanName = "process_pdl_aktor_v2_record"
+                    ).use {
                         entry.takeIf { txContext.mergeProsessert(entry.personId) }
                             ?.let { prosesserOppdatertPerson(it, txContext.hentIdenter(it.personId)) }
                             ?.map { hendelser -> dbReaderContext.receiver(hendelser) }
@@ -120,30 +124,36 @@ class DbReaderTask(
         )
     }
 
-    private val spanHandlerLogger = LoggerFactory.getLogger("spanHandler")
-    private fun initSpan(entry: Person): ClosableSpan {
-        val traceparent = entry.traceparant
-        spanHandlerLogger.info("traceparent: {}", traceparent)
-        return traceparent.let { tp ->
-            val asArray = tp.split("-")
-            SpanContext.createFromRemoteParent(
-                asArray[1],
-                asArray[2],
-                TraceFlags.getSampled(),
-                TraceState.getDefault()
-            )
-        }?.let { spanContext ->
-            val spanNoop = Span.wrap(spanContext)
-            Span.current().addLink(spanContext)
-            val telemetry = GlobalOpenTelemetry.get()
-            val tracer = telemetry.tracerProvider
-                .get("no.nav.paw.kafkakeymaintenance.pdlprocessor.DbReaderTask")
-            tracer.spanBuilder("process_pdl_aktor_v2_record")
-                .setParent(Context.current().with(spanNoop))
-                .startSpan()
-                .let(::ClosableSpan)
-        } ?: ClosableSpan(null)
-    }
+
+
+}
+
+private val spanHandlerLogger = LoggerFactory.getLogger("spanHandler")
+fun initSpan(
+    traceparent: String,
+    instrumentationScopeName: String,
+    spanName: String
+): ClosableSpan {
+    spanHandlerLogger.info("traceparent: {}", traceparent)
+    return traceparent.let { tp ->
+        val asArray = tp.split("-")
+        SpanContext.createFromRemoteParent(
+            asArray[1],
+            asArray[2],
+            TraceFlags.getSampled(),
+            TraceState.getDefault()
+        )
+    }?.let { spanContext ->
+        val spanNoop = Span.wrap(spanContext)
+        Span.current().addLink(spanContext)
+        val telemetry = GlobalOpenTelemetry.get()
+        val tracer = telemetry.tracerProvider
+            .get(instrumentationScopeName)
+        tracer.spanBuilder(spanName)
+            .setParent(Context.current().with(spanNoop))
+            .startSpan()
+            .let(::ClosableSpan)
+    } ?: ClosableSpan(null)
 }
 
 class ClosableSpan(span: Span?) : AutoCloseable, Span by (span ?: Span.getInvalid()) {
