@@ -10,7 +10,7 @@ servers:
 paths:
   /api/v1/record-key:
     post:
-      description: ""
+      description: "Hent Record Key"
       parameters:
         - name: "traceparent"
           in: "header"
@@ -21,29 +21,29 @@ paths:
             format: "traceparent"
       requestBody:
         content:
-          '*/*':
+          application/json:
             schema:
               $ref: "#/components/schemas/RecordKeyLookupRequestV1"
         required: true
       responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecordKeyLookupResponseV1"
         "400":
           description: "Bad Request"
           content:
-            '*/*':
+            application/json:
               schema:
-                $ref: "#/components/schemas/FailureResponseV1"
+                $ref: "#/components/schemas/ProblemDetails"
         "500":
           description: "Internal Server Error"
           content:
-            '*/*':
+            application/json:
               schema:
-                $ref: "#/components/schemas/FailureResponseV1"
-        "200":
-          description: ""
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/RecordKeyLookupResponseV1"
+                $ref: "#/components/schemas/ProblemDetails"
 components:
   schemas:
     RecordKeyLookupRequestV1:
@@ -59,15 +59,39 @@ components:
         key:
           type: "integer"
           format: "int64"
-    FailureResponseV1:
-        type: "object"
-        properties:
-            message:
-              type: "string"
-            code:
-              type: "string"
-              enum:
-                - "UKJENT_REGISTERET"
-                - "UKJENT_IDENT"
-        required:
-        - "message"
+    ProblemDetails:
+      type: object
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        type:
+          type: "string"
+          format: "uri"
+        status:
+          type: "integer"
+        title:
+          type: "string"
+        detail:
+          type: "string"
+        instance:
+          type: "string"
+        timestamp:
+          type: "string"
+          format: "date-time"
+      required:
+        - id
+        - type
+        - status
+        - title
+        - detail
+        - instance
+        - timestamp
+      example:
+        id: "3cd944fb-6187-41a8-91b2-b172f2baf890"
+        type: "urn:paw:default:ukjent-feil"
+        status: 500
+        title: "Internal Server Error"
+        detail: "Ukjent feil"
+        instance: "/api/v2/info"
+        timestamp: "2021-01-01T12:00:00.000Z"

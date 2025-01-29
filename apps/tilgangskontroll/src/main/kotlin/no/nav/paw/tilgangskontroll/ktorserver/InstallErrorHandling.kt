@@ -1,9 +1,9 @@
-package no.nav.paw.kafkakeygenerator.plugin
+package no.nav.paw.tilgangskontroll.ktorserver
 
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import no.nav.paw.error.plugin.ErrorHandlingPlugin
 
-fun Application.configureErrorHandling() {
+fun Application.installErrorHandling() {
     install(ErrorHandlingPlugin)
 }
