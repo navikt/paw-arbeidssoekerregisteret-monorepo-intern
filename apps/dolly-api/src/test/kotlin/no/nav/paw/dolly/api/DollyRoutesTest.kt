@@ -10,10 +10,6 @@ import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.confirmVerified
-import no.nav.paw.dolly.api.models.ArbeidssoekerregistreringRequest
-import no.nav.paw.dolly.api.models.Beskrivelse
-import no.nav.paw.dolly.api.models.BrukerType
-import no.nav.paw.dolly.api.models.Detaljer
 import no.nav.paw.dolly.api.test.ApplicationTestContext
 import no.nav.paw.dolly.api.test.TestData
 import no.nav.paw.dolly.api.test.issueAzureM2MToken
@@ -70,19 +66,7 @@ class DollyRoutesTest : FreeSpec({
                 configureTestApplication(dollyService)
 
                 val client = configureTestClient()
-                val arbeidssoekerregistreringRequest = ArbeidssoekerregistreringRequest(
-                    identitetsnummer = "12345678912",
-                    utfoertAv = BrukerType.SLUTTBRUKER,
-                    kilde = "Dolly",
-                    aarsak = "Registrering av arbeidssøker i Dolly",
-                    nuskode = "3",
-                    utdanningBestaatt = true,
-                    utdanningGodkjent = true,
-                    jobbsituasjonBeskrivelse = Beskrivelse.HAR_BLITT_SAGT_OPP,
-                    jobbsituasjonDetaljer = Detaljer(stillingStyrk08 = "00", stilling = "Annen stilling"),
-                    helsetilstandHindrerArbeid = false,
-                    andreForholdHindrerArbeid = false
-                )
+                val arbeidssoekerregistreringRequest = TestData.fullstendingArbeidssoekerregistreringRequest()
                 val response = client.post("/api/v1/arbeidssoekerregistrering") {
                     bearerAuth(mockOAuth2Server.issueAzureM2MToken())
                     setJsonBody(arbeidssoekerregistreringRequest)
