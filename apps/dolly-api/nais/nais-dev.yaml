@@ -43,9 +43,11 @@ spec:
   kafka:
     pool: nav-dev
   accessPolicy:
+    outbound:
+      rules:
+        - application: paw-kafka-key-generator
     inbound:
       rules:
         - application: azure-token-generator
           namespace: aura
-        - application: paw-kafka-key-generator
-          namespace: paw
+
