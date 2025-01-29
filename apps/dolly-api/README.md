@@ -1,6 +1,6 @@
 # Dolly API (DEV)
 
-Et API for å kunne automatisk registrere en person som arbeidssøker ved opprettelse av testpersoner i Dolly.
+API for registrering av en person som arbeidssøker i arbeidssøkerregisteret ved opprettelsen av testpersoner i Dolly.
 
 ## Dokumentasjon for API
 
