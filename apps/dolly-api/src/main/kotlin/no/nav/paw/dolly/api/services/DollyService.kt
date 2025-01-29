@@ -28,7 +28,7 @@ class DollyService(
             utfoertAv = request.utfoertAv ?: BrukerType.SLUTTBRUKER,
             kilde = request.kilde ?: "Dolly",
             aarsak = request.aarsak ?: "Registrering av arbeidssøker i Dolly",
-            nuskode = request.nuskode ?: "3",
+            nuskode = nuskode ?: "3",
             utdanningBestaatt = if (!erGodkjentUtdanningsnivaa) null else request.utdanningBestaatt ?: true,
             utdanningGodkjent = if (!erGodkjentUtdanningsnivaa) null else  request.utdanningGodkjent ?: true,
             jobbsituasjonBeskrivelse = request.jobbsituasjonBeskrivelse ?: Beskrivelse.HAR_BLITT_SAGT_OPP,
@@ -65,13 +65,7 @@ class DollyService(
 }
 
 
-private fun erGodkjentUtdanningsnivaa(nuskode: String?): Boolean {
-    val forventerBestaattOgGodkjent = setOf("3", "4", "5", "6", "7", "8")
-    if (nuskode !in forventerBestaattOgGodkjent) {
-        return false
-    }
-    return true
-}
+private fun erGodkjentUtdanningsnivaa(nuskode: String?): Boolean = nuskode in setOf("3", "4", "5", "6", "7", "8")
 
 
 
