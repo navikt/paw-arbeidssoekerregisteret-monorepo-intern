@@ -2,7 +2,6 @@ package no.nav.paw.dolly.api
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import io.ktor.client.call.body
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.post
 import io.ktor.http.HttpStatusCode
@@ -38,7 +37,7 @@ class DollyRoutesTest : FreeSpec({
             mockOAuth2Server.shutdown()
         }
 
-        "200 OK ved gyldig request" {
+        "202 Accepted ved gyldig request" {
             coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
                 1,
                 1234
@@ -54,15 +53,14 @@ class DollyRoutesTest : FreeSpec({
                     setJsonBody(arbeidssoekerregistreringRequest)
                 }
 
-                response.status shouldBe HttpStatusCode.OK
-                response.body<String>() shouldBe "Arbeidssøker registrert"
+                response.status shouldBe HttpStatusCode.Accepted
             }
 
             coVerify { kafkaKeysClientMock.getIdAndKey(any<String>()) }
             coVerify { hendelseKafkaProducerMock.sendHendelse(any(), any()) }
         }
 
-        "200 OK ved fullstendig request" {
+        "202 Accepted ved fullstendig request" {
             coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
                 2,
                 1235
@@ -90,8 +88,7 @@ class DollyRoutesTest : FreeSpec({
                     setJsonBody(arbeidssoekerregistreringRequest)
                 }
 
-                response.status shouldBe HttpStatusCode.OK
-                response.body<String>() shouldBe "Arbeidssøker registrert"
+                response.status shouldBe HttpStatusCode.Accepted
             }
 
             coVerify { kafkaKeysClientMock.getIdAndKey(any<String>()) }

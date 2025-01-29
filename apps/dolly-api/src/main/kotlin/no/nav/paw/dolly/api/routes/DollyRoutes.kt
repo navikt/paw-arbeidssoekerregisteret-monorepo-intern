@@ -1,7 +1,6 @@
 package no.nav.paw.dolly.api.routes
 
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.response.respondText
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
@@ -14,11 +13,10 @@ fun Route.dollyRoutes(
     dollyService: DollyService
 ) {
     route("/api/v1") {
-        autentisering(AzureAd){
+        autentisering(AzureAd) {
             post<ArbeidssoekerregistreringRequest>("/arbeidssoekerregistrering") { request ->
                 dollyService.registrerArbeidssoeker(request)
-
-                call.respondText("Arbeidssøker registrert", status = HttpStatusCode.OK)
+                call.response.status(HttpStatusCode.Accepted)
             }
         }
     }
