@@ -27,6 +27,7 @@ import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.hentIdenter
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.hentIkkeProsessertePersoner
 import no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring.mergeProsessert
 import no.nav.paw.kafkakeymaintenance.perioder.Perioder
+import no.nav.paw.tracing.initSpan
 import no.nav.person.pdl.aktor.v2.Aktor
 import org.apache.kafka.common.serialization.Deserializer
 import org.jetbrains.exposed.sql.Transaction
@@ -122,42 +123,5 @@ class DbReaderTask(
             person = person,
             identiter = identiter
         )
-    }
-
-
-
-}
-
-private val spanHandlerLogger = LoggerFactory.getLogger("spanHandler")
-fun initSpan(
-    traceparent: String,
-    instrumentationScopeName: String,
-    spanName: String
-): ClosableSpan {
-    spanHandlerLogger.info("traceparent: {}", traceparent)
-    return traceparent.let { tp ->
-        val asArray = tp.split("-")
-        SpanContext.createFromRemoteParent(
-            asArray[1],
-            asArray[2],
-            TraceFlags.getSampled(),
-            TraceState.getDefault()
-        )
-    }?.let { spanContext ->
-        val spanNoop = Span.wrap(spanContext)
-        Span.current().addLink(spanContext)
-        val telemetry = GlobalOpenTelemetry.get()
-        val tracer = telemetry.tracerProvider
-            .get(instrumentationScopeName)
-        tracer.spanBuilder(spanName)
-            .setParent(Context.current().with(spanNoop))
-            .startSpan()
-            .let(::ClosableSpan)
-    } ?: ClosableSpan(null)
-}
-
-class ClosableSpan(span: Span?) : AutoCloseable, Span by (span ?: Span.getInvalid()) {
-    override fun close() {
-        end()
     }
 }
