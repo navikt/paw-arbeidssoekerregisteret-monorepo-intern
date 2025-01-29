@@ -4,6 +4,7 @@ import io.confluent.kafka.schemaregistry.client.SchemaRegistryClientConfig
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.kafka.config.KafkaAuthenticationConfig
 import no.nav.paw.kafka.config.KafkaConfig
 import no.nav.paw.kafka.config.KafkaSchemaRegistryConfig
@@ -71,6 +72,13 @@ class KafkaStreamsFactory private constructor(
             config = config,
             additionalProperties = additionalProperties + (
                     StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG to handler.qualifiedName!!)
+        )
+
+    fun addPrometheusMeterRegistryToConfig(prometheusMeterRegistry: PrometheusMeterRegistry): KafkaStreamsFactory =
+        KafkaStreamsFactory(
+            applicationIdSuffix = applicationIdSuffix,
+            config = config,
+            additionalProperties = additionalProperties + (PROMETHEUS_METER_REGISTRY to prometheusMeterRegistry)
         )
 
     fun withServerConfig(host: String, post: Int) = KafkaStreamsFactory(

@@ -15,25 +15,26 @@ fun initSpan(
     spanName: String
 ): ClosableSpan {
     spanHandlerLogger.info("traceparent: {}", traceparent)
-    return traceparent.let { tp ->
-        val asArray = tp.split("-")
-        SpanContext.createFromRemoteParent(
-            asArray[1],
-            asArray[2],
-            TraceFlags.getSampled(),
-            TraceState.getDefault()
-        )
-    }?.let { spanContext ->
-        val spanNoop = Span.wrap(spanContext)
-        Span.current().addLink(spanContext)
-        val telemetry = GlobalOpenTelemetry.get()
-        val tracer = telemetry.tracerProvider
-            .get(instrumentationScopeName)
-        tracer.spanBuilder(spanName)
-            .setParent(Context.current().with(spanNoop))
-            .startSpan()
-            .let(::ClosableSpan)
-    } ?: ClosableSpan(null)
+    return traceparent.split("-")
+        .takeIf { it.size == 4 }
+        ?.let { asArray ->
+            SpanContext.createFromRemoteParent(
+                asArray[1],
+                asArray[2],
+                TraceFlags.getSampled(),
+                TraceState.getDefault()
+            )
+        }?.let { spanContext ->
+            val spanNoop = Span.wrap(spanContext)
+            Span.current().addLink(spanContext)
+            val telemetry = GlobalOpenTelemetry.get()
+            val tracer = telemetry.tracerProvider
+                .get(instrumentationScopeName)
+            tracer.spanBuilder(spanName)
+                .setParent(Context.current().with(spanNoop))
+                .startSpan()
+                .let(::ClosableSpan)
+        } ?: ClosableSpan(null)
 }
 
 class ClosableSpan(span: Span?) : AutoCloseable, Span by (span ?: Span.getInvalid()) {

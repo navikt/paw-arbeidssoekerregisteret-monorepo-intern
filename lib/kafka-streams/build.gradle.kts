@@ -10,6 +10,7 @@ dependencies {
     implementation(libs.avro.kafkaStreamsSerde)
     implementation(libs.opentelemetry.api)
     implementation(libs.opentelemetry.sdk)
+    implementation(libs.micrometer.registryPrometheus)
 
     // Test
     testImplementation(libs.bundles.testLibsWithUnitTesting)

@@ -75,5 +75,5 @@ fun count(
             Tag.of("bekreftelsesloesing", bekreftelsesloesning.name),
             Tag.of("handling", action)
         )
-    )
+    ).count()
 }

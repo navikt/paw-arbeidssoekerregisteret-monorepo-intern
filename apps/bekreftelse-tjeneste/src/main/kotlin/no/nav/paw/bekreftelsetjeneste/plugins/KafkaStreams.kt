@@ -60,6 +60,7 @@ fun buildKafkaStreams(
         .withDefaultKeySerde(Serdes.Long()::class)
         .withDefaultValueSerde(SpecificAvroSerde::class)
         .withSerializationExceptionHendler(KafkaLogAndContinueExceptionHandler::class)
+        .addPrometheusMeterRegistryToConfig(applicationContext.prometheusMeterRegistry)
         .apply { properties["application.server"] = applicationConfig.hostname }
 
     val kafkaStreams = KafkaStreams(

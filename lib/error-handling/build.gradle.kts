@@ -3,11 +3,13 @@ plugins {
 }
 
 dependencies {
+    compileOnly(project(":lib:kafka"))
     compileOnly(libs.ktor.server.cors)
     compileOnly(libs.ktor.server.statusPages)
     compileOnly(libs.ktor.serialization.jackson)
     compileOnly(libs.kafka.streams.core)
     compileOnly(libs.logbackClassic)
+    compileOnly(libs.micrometer.registryPrometheus)
     implementation(libs.opentelemetry.annotations)
 
     //Test
