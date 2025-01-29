@@ -12,6 +12,7 @@ import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.streams.StreamsConfig
+import org.apache.kafka.streams.errors.DeserializationExceptionHandler
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -64,13 +65,12 @@ class KafkaStreamsFactory private constructor(
             additionalProperties = additionalProperties + (StreamsConfig.PROCESSING_GUARANTEE_CONFIG to StreamsConfig.EXACTLY_ONCE_V2)
         )
 
-    fun withLogAndContinueOnDeSerializationError(): KafkaStreamsFactory =
+    fun <A: DeserializationExceptionHandler> withSerializationExceptionHendler(handler: KClass<A>): KafkaStreamsFactory =
         KafkaStreamsFactory(
             applicationIdSuffix = applicationIdSuffix,
             config = config,
             additionalProperties = additionalProperties + (
-                    StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG to
-                            "org.apache.kafka.streams.errors.LogAndContinueExceptionHandler")
+                    StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG to handler.qualifiedName!!)
         )
 
     fun withServerConfig(host: String, post: Int) = KafkaStreamsFactory(

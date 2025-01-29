@@ -94,16 +94,3 @@ tasks.withType(Jar::class) {
 tasks.named<Test>("test") {
     useJUnitPlatform()
 }
-
-abstract class RunAppTask : JavaExec() {
-    init {
-        classpath = sourceSets["main"].runtimeClasspath +
-                sourceSets["test"].runtimeClasspath
-        mainClass = "no.nav.paw.kafkakeygenerator.TestApplicationKt"
-        args = emptyList()
-    }
-}
-tasks.register<RunAppTask>("runApp") {
-    group = "application"
-    description = "Run the application"
-}

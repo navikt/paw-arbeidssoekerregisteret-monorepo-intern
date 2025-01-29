@@ -9,6 +9,7 @@ import io.ktor.server.application.hooks.MonitoringEvent
 import io.ktor.server.application.log
 import io.ktor.utils.io.KtorDsl
 import no.nav.paw.bekreftelsetjeneste.context.ApplicationContext
+import no.nav.paw.error.handler.KafkaLogAndContinueExceptionHandler
 import no.nav.paw.kafka.factory.KafkaStreamsFactory
 import no.nav.paw.error.handler.withApplicationTerminatingExceptionHandler
 import no.nav.paw.health.listener.withHealthIndicatorStateListener
@@ -58,7 +59,7 @@ fun buildKafkaStreams(
     )
         .withDefaultKeySerde(Serdes.Long()::class)
         .withDefaultValueSerde(SpecificAvroSerde::class)
-        .withLogAndContinueOnDeSerializationError()
+        .withSerializationExceptionHendler(KafkaLogAndContinueExceptionHandler::class)
         .apply { properties["application.server"] = applicationConfig.hostname }
 
     val kafkaStreams = KafkaStreams(

@@ -8,6 +8,7 @@ dependencies {
     compileOnly(libs.ktor.serialization.jackson)
     compileOnly(libs.kafka.streams.core)
     compileOnly(libs.logbackClassic)
+    implementation(libs.opentelemetry.annotations)
 
     //Test
     testImplementation(libs.bundles.testLibsWithUnitTesting)
