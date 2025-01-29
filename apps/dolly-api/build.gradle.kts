@@ -1,13 +1,11 @@
 plugins {
     kotlin("jvm")
     id("org.openapi.generator")
-    id("com.google.cloud.tools.jib")
+    id("jib-distroless")
     application
 }
 
 val jvmMajorVersion: String by project
-val baseImage = "gcr.io/distroless/java${jvmMajorVersion}-debian12"
-val image: String? by project
 
 dependencies {
     // Project
@@ -130,15 +128,4 @@ openApiGenerate {
     importMappings = mapOf(
         "Instant" to "java.time.Instant"
     )
-}
-
-jib {
-    from.image = "$baseImage"
-    to.image = "${image ?: project.name}:${project.version}"
-    container {
-        environment = mapOf(
-            "IMAGE_WITH_VERSION" to "${image ?: project.name}:${project.version}"
-        )
-        jvmFlags = listOf("-XX:ActiveProcessorCount=4", "-XX:+UseZGC", "-XX:+ZGenerational")
-    }
 }
