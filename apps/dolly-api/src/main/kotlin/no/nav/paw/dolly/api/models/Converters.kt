@@ -31,8 +31,8 @@ fun ArbeidssoekerregistreringRequest.toOpplysningerOmArbeidssoeker(metadata: Met
         metadata = metadata,
         utdanning = Utdanning(
             nus = nuskode!!,
-            bestaatt = if (utdanningBestaatt != false) JaNeiVetIkke.JA else JaNeiVetIkke.NEI,
-            godkjent = if (utdanningGodkjent != false) JaNeiVetIkke.JA else JaNeiVetIkke.NEI
+            bestaatt = utdanningBestaatt?.asJaNeiVetikke(),
+            godkjent = utdanningGodkjent?.asJaNeiVetikke()
         ),
         helse = Helse(
             helsetilstandHindrerArbeid = if (helsetilstandHindrerArbeid != false) JaNeiVetIkke.JA else JaNeiVetIkke.NEI,
@@ -49,6 +49,11 @@ fun ArbeidssoekerregistreringRequest.toOpplysningerOmArbeidssoeker(metadata: Met
             andreForholdHindrerArbeid = if (andreForholdHindrerArbeid != false) JaNeiVetIkke.JA else JaNeiVetIkke.NEI
         )
     )
+
+fun Boolean.asJaNeiVetikke(): JaNeiVetIkke = when (this) {
+    true -> JaNeiVetIkke.JA
+    false -> JaNeiVetIkke.NEI
+}
 
 fun BrukerType.asBrukerType(): HendelseBrukerType = when (this) {
     BrukerType.UKJENT_VERDI -> HendelseBrukerType.UKJENT_VERDI
