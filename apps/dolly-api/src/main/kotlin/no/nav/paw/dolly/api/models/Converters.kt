@@ -18,11 +18,11 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata as HendelseMetada
 fun ArbeidssoekerregistreringRequest.toMetadata(): HendelseMetadata = HendelseMetadata(
     tidspunkt = Instant.now(),
     utfoertAv = Bruker(
-        id = this.identitetsnummer,
-        type = this.utfoertAv!!.asBrukerType()
+        id = identitetsnummer,
+        type = utfoertAv!!.asBrukerType()
     ),
-    kilde = this.kilde!!,
-    aarsak = this.aarsak!!
+    kilde = kilde!!,
+    aarsak = aarsak!!
 )
 
 fun ArbeidssoekerregistreringRequest.toOpplysningerOmArbeidssoeker(metadata: Metadata): HendelseOpplysningerOmArbeidssoeker =
@@ -30,23 +30,23 @@ fun ArbeidssoekerregistreringRequest.toOpplysningerOmArbeidssoeker(metadata: Met
         id = UUID.randomUUID(),
         metadata = metadata,
         utdanning = Utdanning(
-            nus = this.nuskode!!,
-            bestaatt = if (this.utdanningBestaatt != false) JaNeiVetIkke.JA else JaNeiVetIkke.NEI,
-            godkjent = if (this.utdanningGodkjent != false) JaNeiVetIkke.JA else JaNeiVetIkke.NEI
+            nus = nuskode!!,
+            bestaatt = if (utdanningBestaatt != false) JaNeiVetIkke.JA else JaNeiVetIkke.NEI,
+            godkjent = if (utdanningGodkjent != false) JaNeiVetIkke.JA else JaNeiVetIkke.NEI
         ),
         helse = Helse(
-            helsetilstandHindrerArbeid = if (this.helsetilstandHindrerArbeid != false) JaNeiVetIkke.JA else JaNeiVetIkke.NEI,
+            helsetilstandHindrerArbeid = if (helsetilstandHindrerArbeid != false) JaNeiVetIkke.JA else JaNeiVetIkke.NEI,
         ),
         jobbsituasjon = Jobbsituasjon(
             beskrivelser = listOf(
                     JobbsituasjonMedDetaljer(
-                        beskrivelse = this.jobbsituasjonBeskrivelse!!.toHendelseBeskrivelse(),
-                        detaljer = this.jobbsituasjonDetaljer!!.toHendelseDetaljer()
+                        beskrivelse = jobbsituasjonBeskrivelse!!.toHendelseBeskrivelse(),
+                        detaljer = jobbsituasjonDetaljer!!.toHendelseDetaljer()
                     )
                 )
         ),
         annet = Annet(
-            andreForholdHindrerArbeid = if (this.andreForholdHindrerArbeid != false) JaNeiVetIkke.JA else JaNeiVetIkke.NEI
+            andreForholdHindrerArbeid = if (andreForholdHindrerArbeid != false) JaNeiVetIkke.JA else JaNeiVetIkke.NEI
         )
     )
 
@@ -78,12 +78,12 @@ fun Beskrivelse.toHendelseBeskrivelse(): JobbsituasjonBeskrivelse = when (this) 
 
 fun Detaljer.toHendelseDetaljer(): Map<String, String> =
     mapOf(
-        "gjelder_fra_dato_iso8601" to this.gjelderFraDatoIso8601,
-        "gjelder_til_dato_iso8601" to this.gjelderTilDatoIso8601,
-        "stilling_styrk08" to this.stillingStyrk08,
-        "stilling" to this.stilling,
-        "prosent" to this.prosent,
-        "siste_dag_med_loenn_iso8601" to this.sisteDagMedLoennIso8601,
-        "siste_arbeidsdag_iso8601" to this.sisteArbeidsdagIso8601
+        "gjelder_fra_dato_iso8601" to gjelderFraDatoIso8601,
+        "gjelder_til_dato_iso8601" to gjelderTilDatoIso8601,
+        "stilling_styrk08" to stillingStyrk08,
+        "stilling" to stilling,
+        "prosent" to prosent,
+        "siste_dag_med_loenn_iso8601" to sisteDagMedLoennIso8601,
+        "siste_arbeidsdag_iso8601" to sisteArbeidsdagIso8601
     ).filterValues { it != null }
         .mapValues { it.value!!.toString() }
