@@ -25,7 +25,9 @@ class LagreAktorMelding(
                 )
                 txContext.slettPerson(record.key())
             } else {
-                val traceparent = Span.current().spanContext.let { ctx ->
+                val traceparent =record.headers().lastHeader("traceparent")?.let { traceparent ->
+                    String(traceparent.value(), Charsets.UTF_8)
+                } ?: Span.current().spanContext.let { ctx ->
                     "00-${ctx.traceId}-${ctx.spanId}-${ctx.traceFlags.asHex()}"
                 }
                 val tidspunktFraKilde = Instant.ofEpochMilli(record.timestamp())

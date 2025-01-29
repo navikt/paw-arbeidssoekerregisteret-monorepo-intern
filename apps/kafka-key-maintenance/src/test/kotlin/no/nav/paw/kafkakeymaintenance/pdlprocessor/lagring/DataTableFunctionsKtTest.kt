@@ -15,6 +15,8 @@ import no.nav.person.pdl.aktor.v2.Aktor
 import no.nav.person.pdl.aktor.v2.Identifikator
 import no.nav.person.pdl.aktor.v2.Type
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.apache.kafka.common.header.Headers
+import org.apache.kafka.common.header.internals.RecordHeaders
 import org.apache.kafka.common.record.TimestampType
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Duration
@@ -158,7 +160,8 @@ class DataTableFunctionsKtTest : FreeSpec({
                 lagreAktorMeldinger.process(tcxFactory(), consumerRecord(
                     aktorId,
                     startDatoForMergeProsessering - Duration.ofMinutes(10),
-                    foersteAktorMelding
+                    foersteAktorMelding,
+                    traceparent = null
                 ))
             }
             transaction {
@@ -169,7 +172,7 @@ class DataTableFunctionsKtTest : FreeSpec({
         }
         "Når vi har prosessert en melding, kan vi hente den ut igjen" {
             transaction {
-                lagreAktorMeldinger.process(tcxFactory(), consumerRecord(aktorId, tidFraKilde, foersteAktorMelding))
+                lagreAktorMeldinger.process(tcxFactory(), consumerRecord(aktorId, tidFraKilde, foersteAktorMelding, traceparent = null))
             }
             transaction {
                 tcxFactory().hentIkkeProsessertePersoner(1, Instant.now() + Duration.ofDays(10))
@@ -186,11 +189,21 @@ fun consumerRecord(
     key: String,
     timestamp: Instant,
     aktor: Aktor,
-    offsset: Long = 0
+    offsset: Long = 0,
+    traceparent: String?
 ): ConsumerRecord<String, Aktor> = mockk {
     every { key() } returns key
     every { timestamp() } returns timestamp.toEpochMilli()
     every { timestampType() } returns TimestampType.NO_TIMESTAMP_TYPE
     every { value() } returns aktor
     every { offset() } returns offsset
+    if (traceparent != null) {
+        every { headers() } returns mockk {
+            every { lastHeader("traceparent") } returns mockk {
+                every { value() } returns traceparent.toByteArray(Charsets.UTF_8)
+            }
+        }
+    } else {
+        every { headers() } returns RecordHeaders()
+    }
 }
