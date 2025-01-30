@@ -26,10 +26,8 @@ fun initSpan(
             )
         }?.let { spanContext ->
             val spanNoop = Span.wrap(spanContext)
-            Span.current().addLink(spanContext)
             val telemetry = GlobalOpenTelemetry.get()
-            val tracer = telemetry.tracerProvider
-                .get(instrumentationScopeName)
+            val tracer = telemetry.tracerProvider.get(instrumentationScopeName)
             tracer.spanBuilder(spanName)
                 .setParent(Context.current().with(spanNoop))
                 .startSpan()
