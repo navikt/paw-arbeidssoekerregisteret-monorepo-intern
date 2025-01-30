@@ -178,7 +178,7 @@ paths:
           required: true
           schema:
             type: "string"
-            example:
+            enum:
               - "UKJENT_VERDI"
               - "UDEFINERT"
               - "HAR_SAGT_OPP"
@@ -366,7 +366,7 @@ components:
       properties:
         key:
           type: string
-          example:
+          enum:
             - "UKJENT_VERDI"
             - "UDEFINERT"
             - "HAR_SAGT_OPP"
@@ -389,7 +389,7 @@ components:
             - "SLUTTBRUKER"
         value:
           type: string
-          example:
+          enum:
             - "Ukjent verdi"
             - "Udefinert"
             - "Har sagt opp jobben"
