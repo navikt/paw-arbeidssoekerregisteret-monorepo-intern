@@ -1,0 +1,5 @@
+[kafkaTopology]
+bekreftelseTargetTopic = "paw.arbeidssoker-bekreftelse-v1"
+bekreftelsePaaVegneAvTargetTopic = "paw.arbeidssoker-bekreftelse-paavegneav-v1"
+bekreftelseTeamDagpengerSourceTopic = "paw.arbeidssoker-bekreftelse-teamdagpenger-v1"
+bekreftelsePaaVegneAvTeamDagpengerSourceTopic = "paw.arbeidssoker-bekreftelse-paavegneav-teamdagpenger-v1"

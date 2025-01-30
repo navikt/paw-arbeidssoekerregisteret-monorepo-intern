@@ -1,0 +1,5 @@
+[kafkaTopology]
+bekreftelseTargetTopic = "${KAFKA_BEKREFTELSE_TARGET_TOPIC}"
+bekreftelsePaaVegneAvTargetTopic = "${KAFKA_BEKREFTELSE_PAAVEGNEAV_TARGET_TOPIC}"
+bekreftelseTeamDagpengerSourceTopic = "${KAFKA_BEKREFTELSE_TEAMDAGPENGER_SOURCE_TOPIC}"
+bekreftelsePaaVegneAvTeamDagpengerSourceTopic = "${KAFKA_BEKREFTELSE_PAAVEGNEAV_TEAMDAGPENGER_SOURCE_TOPIC}"
