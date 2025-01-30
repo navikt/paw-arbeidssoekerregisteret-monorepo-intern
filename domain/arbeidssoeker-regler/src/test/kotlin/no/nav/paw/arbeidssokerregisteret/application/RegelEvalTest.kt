@@ -1,19 +1,15 @@
 package no.nav.paw.arbeidssokerregisteret.application
 
 import arrow.core.Either
-import arrow.core.NonEmptyList
-import arrow.core.left
-import arrow.core.nonEmptyListOf
-import arrow.core.raise.result
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import io.kotest.matchers.types.shouldNotBeInstanceOf
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
+import no.nav.paw.collections.PawNonEmptyList
 
-typealias Avvist = Either.Left<NonEmptyList<Problem>>
+typealias Avvist = Either.Left<PawNonEmptyList<Problem>>
 typealias Godkjent = Either.Right<GrunnlagForGodkjenning>
 
 class RegelEvalTest : FreeSpec({
@@ -30,7 +26,7 @@ class RegelEvalTest : FreeSpec({
                         )
                     ) should { result ->
                         result.shouldBeInstanceOf<Avvist>()
-                        result.value.map { problem -> problem.regel.id } shouldContainExactlyInAnyOrder listOf(
+                        result.value.map { problem -> problem.regel.id }.toList() shouldContainExactlyInAnyOrder listOf(
                             Under18Aar
                         )
                     }
@@ -43,7 +39,7 @@ class RegelEvalTest : FreeSpec({
                         )
                     ) should { result ->
                         result.shouldBeInstanceOf<Avvist>()
-                        result.value.map { problem -> problem.regel.id } shouldContainExactlyInAnyOrder listOf(
+                        result.value.map { problem -> problem.regel.id }.toList() shouldContainExactlyInAnyOrder listOf(
                             Under18Aar,
                             IkkeBosattINorgeIHenholdTilFolkeregisterloven
                         )
@@ -58,7 +54,7 @@ class RegelEvalTest : FreeSpec({
                         )
                     ) should { result ->
                         result.shouldBeInstanceOf<Avvist>()
-                        result.value.map { problem -> problem.regel.id } shouldContainExactlyInAnyOrder listOf(
+                        result.value.map { problem -> problem.regel.id }.toList() shouldContainExactlyInAnyOrder listOf(
                             Under18Aar,
                             IkkeBosattINorgeIHenholdTilFolkeregisterloven
                         )
@@ -73,7 +69,7 @@ class RegelEvalTest : FreeSpec({
                         )
                     ) should { result ->
                         result.shouldBeInstanceOf<Avvist>()
-                        result.value.map { problem -> problem.regel.id } shouldContainExactlyInAnyOrder listOf(
+                        result.value.map { problem -> problem.regel.id }.toList() shouldContainExactlyInAnyOrder listOf(
                             Under18Aar,
                             EuEoesStatsborgerMenHarStatusIkkeBosatt
                         )
@@ -93,7 +89,7 @@ class RegelEvalTest : FreeSpec({
                     )
                 ) should { result ->
                     result.shouldBeInstanceOf<Avvist>()
-                    result.value.map { problem -> problem.regel.id } shouldContainExactlyInAnyOrder listOf(
+                    result.value.map { problem -> problem.regel.id }.toList() shouldContainExactlyInAnyOrder listOf(
                         Under18Aar
                     )
                 }
@@ -112,7 +108,7 @@ class RegelEvalTest : FreeSpec({
                     )
                 ) should { result ->
                     result.shouldBeInstanceOf<Avvist>()
-                    result.value.map { problem -> problem.regel.id } shouldContainExactlyInAnyOrder listOf(
+                    result.value.map { problem -> problem.regel.id }.toList() shouldContainExactlyInAnyOrder listOf(
                         Under18Aar,
                         EuEoesStatsborgerMenHarStatusIkkeBosatt
                     )
@@ -130,7 +126,7 @@ class RegelEvalTest : FreeSpec({
                             )
                         ) should { result ->
                             result.shouldBeInstanceOf<Avvist>()
-                            result.value.map { problem -> problem.regel.id } shouldContainExactlyInAnyOrder listOf(
+                            result.value.map { problem -> problem.regel.id }.toList() shouldContainExactlyInAnyOrder listOf(
                                 Doed,
                                 Under18Aar
                             )
@@ -145,7 +141,7 @@ class RegelEvalTest : FreeSpec({
                             )
                         ) should { result ->
                             result.shouldBeInstanceOf<Avvist>()
-                            result.value.map { problem -> problem.regel.id } shouldContainExactlyInAnyOrder listOf(
+                            result.value.map { problem -> problem.regel.id }.toList() shouldContainExactlyInAnyOrder listOf(
                                 Savnet,
                                 Under18Aar,
                                 IkkeBosattINorgeIHenholdTilFolkeregisterloven
@@ -159,7 +155,7 @@ class RegelEvalTest : FreeSpec({
                             )
                         ) should { result ->
                             result.shouldBeInstanceOf<Avvist>()
-                            result.value.map { problem -> problem.regel.id } shouldContainExactlyInAnyOrder listOf(
+                            result.value.map { problem -> problem.regel.id }.toList() shouldContainExactlyInAnyOrder listOf(
                                 IkkeFunnet
                             )
                         }
@@ -202,7 +198,7 @@ class RegelEvalTest : FreeSpec({
                         )
                     ) should { result ->
                         result.shouldBeInstanceOf<Avvist>()
-                        result.value.map { it.regel.id } shouldContainExactlyInAnyOrder listOf(
+                        result.value.map { it.regel.id }.toList() shouldContainExactlyInAnyOrder listOf(
                             IkkeBosattINorgeIHenholdTilFolkeregisterloven
                         )
                     }
@@ -215,7 +211,7 @@ class RegelEvalTest : FreeSpec({
                         )
                     ) should { result ->
                         result.shouldBeInstanceOf<Avvist>()
-                        result.value.map { it.regel.id } shouldContainExactlyInAnyOrder listOf(
+                        result.value.map { it.regel.id }.toList() shouldContainExactlyInAnyOrder listOf(
                             IkkeBosattINorgeIHenholdTilFolkeregisterloven
                         )
                     }
@@ -229,7 +225,7 @@ class RegelEvalTest : FreeSpec({
                         )
                     ) should { result ->
                         result.shouldBeInstanceOf<Avvist>()
-                        result.value.map { it.regel.id } shouldContainExactlyInAnyOrder listOf(
+                        result.value.map { it.regel.id }.toList() shouldContainExactlyInAnyOrder listOf(
                             EuEoesStatsborgerMenHarStatusIkkeBosatt
                         )
                     }
@@ -284,7 +280,7 @@ class RegelEvalTest : FreeSpec({
                     )
                 ) should { result ->
                     result.shouldBeInstanceOf<Avvist>()
-                    result.value.map { it.regel.id } shouldBe nonEmptyListOf(Under18Aar)
+                    result.value.map { it.regel.id }.toList() shouldBe listOf(Under18Aar)
                 }
             }
             "3. lands statsborger under 18 år skal avvises" {
@@ -294,7 +290,7 @@ class RegelEvalTest : FreeSpec({
                     )
                 ) should { result ->
                     result.shouldBeInstanceOf<Avvist>()
-                    result.value.map { it.regel.id } shouldContainExactlyInAnyOrder nonEmptyListOf(Under18Aar, IkkeBosattINorgeIHenholdTilFolkeregisterloven)
+                    result.value.map { it.regel.id }.toList() shouldContainExactlyInAnyOrder listOf(Under18Aar, IkkeBosattINorgeIHenholdTilFolkeregisterloven)
                 }
             }
             "3. lands statsborger over 18 år skal avvises" {
@@ -302,7 +298,7 @@ class RegelEvalTest : FreeSpec({
                     listOf()
                 ) should { result ->
                     result.shouldBeInstanceOf<Avvist>()
-                    result.value.map { it.regel.id } shouldContainExactlyInAnyOrder nonEmptyListOf(IkkeBosattINorgeIHenholdTilFolkeregisterloven)
+                    result.value.map { it.regel.id }.toList() shouldContainExactlyInAnyOrder listOf(IkkeBosattINorgeIHenholdTilFolkeregisterloven)
                 }
             }
         }

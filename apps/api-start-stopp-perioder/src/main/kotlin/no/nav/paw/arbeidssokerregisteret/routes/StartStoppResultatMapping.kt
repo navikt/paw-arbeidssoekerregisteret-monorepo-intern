@@ -1,7 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.routes
 
 import arrow.core.Either
-import arrow.core.NonEmptyList
 import io.ktor.http.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.RoutingContext
@@ -11,35 +10,37 @@ import no.nav.paw.arbeidssokerregisteret.application.authfaktka.*
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.*
 import no.nav.paw.arbeidssokerregisteret.application.regler.*
 import no.nav.paw.arbeidssokerregisteret.application.regler.UgyldigFeilretting
+import no.nav.paw.collections.PawNonEmptyList
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Opplysning as ApiOpplysning
 
 
 const val feilmeldingVedAvvist = "Avvist, se 'aarsakTilAvvisning' for detaljer"
 
-suspend fun RoutingContext.respondWithV2(resultat: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>) =
+suspend fun RoutingContext.respondWithV2(resultat: Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning>) =
     when (resultat) {
         is Either.Left -> respondWithErrorV2(resultat.value)
         is Either.Right -> call.respond(HttpStatusCode.NoContent)
     }
 
-suspend fun RoutingContext.respondWithErrorV2(problemer: NonEmptyList<Problem>) {
+suspend fun RoutingContext.respondWithErrorV2(problemer: PawNonEmptyList<Problem>) {
     val (httpCode, feilkode) = problemer
+        .toList()
         .firstOrNull { it.regel.id is AuthRegelId }
         ?.let { it.httpCode() to FeilV2.FeilKode.IKKE_TILGANG }
-        ?: problemer.firstOrNull { it.regel.id is DomeneRegelId }
+        ?: problemer.toList().firstOrNull { it.regel.id is DomeneRegelId }
             ?.let { it.httpCode() to FeilV2.FeilKode.AVVIST }
         ?: (HttpStatusCode.InternalServerError to FeilV2.FeilKode.UKJENT_FEIL)
     val melding = if (FeilV2.FeilKode.AVVIST == feilkode) {
         feilmeldingVedAvvist
-    } else problemer.first().regel.id.beskrivelse
+    } else problemer.first.regel.id.beskrivelse
     call.respond(
         httpCode, FeilV2(
             melding = melding,
             feilKode = feilkode,
             aarsakTilAvvisning = if (feilkode == FeilV2.FeilKode.AVVIST) {
                 AarsakTilAvvisningV2(
-                    regler = problemer.map { ApiRegel(id = it.regel.id.apiRegelId(), beskrivelse = it.regel.id.beskrivelse) },
-                    detaljer = problemer.first().opplysninger.map(::opplysningTilApiOpplysning)
+                    regler = problemer.map { ApiRegel(id = it.regel.id.apiRegelId(), beskrivelse = it.regel.id.beskrivelse) }.toList(),
+                    detaljer = problemer.first.opplysninger.map(::opplysningTilApiOpplysning)
                 )
             } else null
         )

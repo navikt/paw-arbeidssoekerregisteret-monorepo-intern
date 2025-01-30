@@ -28,7 +28,7 @@ class OpplysningerRequestHandler(
             requestValidator.validerTilgang(requestScope, identitetsnummer)
                 .mapLeft { problemer ->
                     Feil(
-                        melding = problemer.first().regel.id.beskrivelse,
+                        melding = problemer.first.regel.id.beskrivelse,
                         feilKode = Feil.FeilKode.IKKE_TILGANG
                     )
                 }.bind()

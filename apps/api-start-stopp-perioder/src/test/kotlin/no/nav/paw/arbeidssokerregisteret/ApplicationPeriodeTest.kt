@@ -1,6 +1,5 @@
 package no.nav.paw.arbeidssokerregisteret
 
-import arrow.core.nonEmptyListOf
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FunSpec
@@ -21,6 +20,7 @@ import no.nav.paw.arbeidssokerregisteret.plugins.configureSerialization
 import no.nav.paw.arbeidssokerregisteret.routes.apiRegel
 import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutesV2
 import no.nav.paw.arbeidssokerregisteret.routes.feilmeldingVedAvvist
+import no.nav.paw.collections.pawNonEmptyListOf
 
 class ApplicationPeriodeTest : FunSpec({
     test("Verifiser at vi returnerer 'Feil' objekt når vi avviser en periode") {
@@ -40,7 +40,7 @@ class ApplicationPeriodeTest : FunSpec({
                         vedTreff = ::skalAvises
                     ),
                     opplysninger = listOf(DomeneOpplysning.ErUnder18Aar, DomeneOpplysning.BosattEtterFregLoven)
-                ).mapLeft { nonEmptyListOf(it) }
+                ).mapLeft { pawNonEmptyListOf(it) }
                 arbeidssokerRoutesV2(startStoppRequestHandler)
             }
             val client = createClient {

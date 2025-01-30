@@ -1,6 +1,5 @@
 package no.nav.paw.bekreftelsetjeneste.topology
 
-import arrow.core.toNonEmptyListOrNull
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
@@ -14,6 +13,7 @@ import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
 import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
+import no.nav.paw.collections.toPawNonEmptyListOrNull
 import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
@@ -114,7 +114,7 @@ private fun BekreftelseTilstand.sjekkOgLagNyBekreftelse(
     timestamp: Instant,
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
 ): Pair<BekreftelseTilstand, BekreftelseHendelse?> {
-    val nonEmptyBekreftelser = bekreftelser.toNonEmptyListOrNull() ?: return this to null
+    val nonEmptyBekreftelser = bekreftelser.toPawNonEmptyListOrNull() ?: return this to null
 
     return if (nonEmptyBekreftelser.skalOppretteNyBekreftelse(
             timestamp,
@@ -126,7 +126,7 @@ private fun BekreftelseTilstand.sjekkOgLagNyBekreftelse(
             tilgjengeliggjort = timestamp,
             interval = bekreftelseKonfigurasjon.interval,
         )
-        copy(bekreftelser = nonEmptyBekreftelser + newBekreftelse) to opprettNyBekreftelseTilgjengeligHendelse(newBekreftelse)
+        copy(bekreftelser = (nonEmptyBekreftelser + newBekreftelse).toList()) to opprettNyBekreftelseTilgjengeligHendelse(newBekreftelse)
     } else {
         this to null
     }

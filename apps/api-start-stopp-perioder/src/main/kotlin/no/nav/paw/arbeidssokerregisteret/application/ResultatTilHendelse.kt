@@ -1,7 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.application
 
 import arrow.core.Either
-import arrow.core.NonEmptyList
 import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.OpplysningerRequest
 import no.nav.paw.arbeidssokerregisteret.ApplicationInfo
 import no.nav.paw.arbeidssokerregisteret.RequestScope
@@ -15,6 +14,7 @@ import no.nav.paw.arbeidssokerregisteret.domain.navAnsatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.*
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.*
 import no.nav.paw.arbeidssokerregisteret.utils.TokenXPID
+import no.nav.paw.collections.PawNonEmptyList
 import java.time.Instant
 import java.util.*
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning as HendelseOpplysning
@@ -24,7 +24,7 @@ fun stoppResultatSomHendelse(
     requestScope: RequestScope,
     id: Long,
     identitetsnummer: Identitetsnummer,
-    resultat: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>,
+    resultat: Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning>,
     feilretting: Feilretting?
 ): Hendelse =
     when (resultat) {
@@ -34,9 +34,9 @@ fun stoppResultatSomHendelse(
             identitetsnummer = identitetsnummer.verdi,
             metadata = hendelseMetadata(
                 requestScope = requestScope,
-                aarsak = resultat.value.map { it.regel.id.beskrivelse }.joinToString(". ")
+                aarsak = resultat.value.map { it.regel.id.beskrivelse }.toList().joinToString(". ")
             ),
-            opplysninger = resultat.value.head.opplysninger.map(::mapToHendelseOpplysning).toSet()
+            opplysninger = resultat.value.first.opplysninger.map(::mapToHendelseOpplysning).toSet()
         )
 
         is Either.Right -> Avsluttet(
@@ -63,15 +63,15 @@ fun somHendelse(
     requestScope: RequestScope,
     id: Long,
     identitetsnummer: Identitetsnummer,
-    resultat: Either<NonEmptyList<Problem>, GrunnlagForGodkjenning>
+    resultat: Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning>
 ): Hendelse =
     when (resultat) {
         is Either.Left -> Avvist(
             id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
-            metadata = hendelseMetadata(requestScope, resultat.value.map { it.regel.id.beskrivelse }.joinToString(". ")),
-            opplysninger = resultat.value.head.opplysninger.map(::mapToHendelseOpplysning).toSet(),
+            metadata = hendelseMetadata(requestScope, resultat.value.map { it.regel.id.beskrivelse }.toList().joinToString(". ")),
+            opplysninger = resultat.value.first.opplysninger.map(::mapToHendelseOpplysning).toSet(),
             handling = requestScope.path
         )
 

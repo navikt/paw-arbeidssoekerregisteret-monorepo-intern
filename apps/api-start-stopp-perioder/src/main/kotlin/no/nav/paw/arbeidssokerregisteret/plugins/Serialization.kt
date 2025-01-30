@@ -1,8 +1,10 @@
 package no.nav.paw.arbeidssokerregisteret.plugins
 
-import arrow.integrations.jackson.module.NonEmptyListModule
 import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.*
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -13,7 +15,13 @@ import io.ktor.server.application.install
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.Detaljer
-import no.nav.paw.arbeidssokerregisteret.*
+import no.nav.paw.arbeidssokerregisteret.GJELDER_FRA_DATO
+import no.nav.paw.arbeidssokerregisteret.GJELDER_TIL_DATO
+import no.nav.paw.arbeidssokerregisteret.PROSENT
+import no.nav.paw.arbeidssokerregisteret.SISTE_ARBEIDSDAG
+import no.nav.paw.arbeidssokerregisteret.SISTE_DAG_MED_LOENN
+import no.nav.paw.arbeidssokerregisteret.STILLING
+import no.nav.paw.arbeidssokerregisteret.STILLING_STYRK08
 import java.time.LocalDate
 
 fun Application.configureSerialization() {
@@ -23,7 +31,6 @@ fun Application.configureSerialization() {
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             registerModule(JavaTimeModule())
             registerKotlinModule()
-            registerModule(NonEmptyListModule)
             registerModule(SimpleModule().addDeserializer(Detaljer::class.java, DetaljerDeserializer()))
         }
     }

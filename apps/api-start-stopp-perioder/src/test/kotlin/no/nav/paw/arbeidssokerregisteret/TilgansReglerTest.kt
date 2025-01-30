@@ -1,7 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret
 
 import arrow.core.Either
-import arrow.core.NonEmptyList
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
@@ -11,6 +10,7 @@ import no.nav.paw.arbeidssokerregisteret.application.authfaktka.AuthOpplysning.A
 import no.nav.paw.arbeidssokerregisteret.application.authfaktka.AuthOpplysning.IkkeAnsatt
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
 import no.nav.paw.arbeidssokerregisteret.application.regler.*
+import no.nav.paw.collections.PawNonEmptyList
 
 class TilgansReglerTest : FreeSpec({
     "eval av tilgang skal gi" - {
@@ -20,9 +20,9 @@ class TilgansReglerTest : FreeSpec({
                     IkkeAnsatt,
                     DomeneOpplysning.ErForhaandsgodkjent
                 )
-            ).shouldBeInstanceOf<Either.Left<NonEmptyList<Problem>>>()
-            resultat.value.head.regel.id shouldBe IkkeAnsattOgForhaandsgodkjentAvAnsatt
-            resultat.value.head.opplysninger shouldContainAll listOf(IkkeAnsatt, DomeneOpplysning.ErForhaandsgodkjent)
+            ).shouldBeInstanceOf<Either.Left<PawNonEmptyList<Problem>>>()
+            resultat.value.first.regel.id shouldBe IkkeAnsattOgForhaandsgodkjentAvAnsatt
+            resultat.value.first.opplysninger shouldContainAll listOf(IkkeAnsatt, DomeneOpplysning.ErForhaandsgodkjent)
         }
         "lovlig kombinasjon av ANSATT og FORHANDSGODKJENT_AV_ANSATT" {
             val resultat = TilgangsRegler.evaluer(

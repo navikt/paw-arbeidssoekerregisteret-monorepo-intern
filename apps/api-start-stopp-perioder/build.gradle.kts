@@ -11,6 +11,7 @@ plugins {
 val jvmMajorVersion: String by project
 
 dependencies {
+    implementation(project(":lib:common-model"))
     implementation(project(":domain:arbeidssoekerregisteret-kotlin"))
     implementation(project(":domain:interne-hendelser"))
     implementation(project(":lib:kafka"))

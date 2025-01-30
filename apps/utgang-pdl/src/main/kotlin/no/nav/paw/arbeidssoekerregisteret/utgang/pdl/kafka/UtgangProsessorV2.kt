@@ -1,10 +1,13 @@
 package no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka
 
-import arrow.core.*
+import arrow.core.Either
 import arrow.core.raise.Raise
+import arrow.core.recover
 import no.nav.paw.arbeidssokerregisteret.application.*
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
+import no.nav.paw.collections.PawNonEmptyList
+import no.nav.paw.collections.pawNonEmptyListOf
 
 
 fun prosesser(
@@ -46,12 +49,12 @@ fun prosesser(
             { it }
         )
 
-private fun Raise<NonEmptyList<Problem>>.raiseIfNewProblem(
-    gjeldeneProblemer: NonEmptyList<Problem>,
-    regResultat: Either.Left<NonEmptyList<Problem>>
+private fun Raise<PawNonEmptyList<Problem>>.raiseIfNewProblem(
+    gjeldeneProblemer: PawNonEmptyList<Problem>,
+    regResultat: Either.Left<PawNonEmptyList<Problem>>
 ): ProsesseringsResultat =
-    gjeldeneProblemer.filterNot { gjeldeneProblem ->
-        regResultat.value.any { it.regel.id == gjeldeneProblem.regel.id }
+    gjeldeneProblemer.toList().filterNot { gjeldeneProblem ->
+        regResultat.value.toList().any { it.regel.id == gjeldeneProblem.regel.id }
     }.let { nyeProblemer ->
         val head = nyeProblemer.firstOrNull()
         if (head == null) {
@@ -61,9 +64,9 @@ private fun Raise<NonEmptyList<Problem>>.raiseIfNewProblem(
                 forhaandsgodkjenningSkalSlettes = false
             )
         } else {
-            val noneEmptyNyeProblemer = nonEmptyListOf(
+            val noneEmptyNyeProblemer = pawNonEmptyListOf(
                 head = head,
-                *nyeProblemer.tail().toTypedArray()
+                nyeProblemer.drop(1)
             )
             raise(noneEmptyNyeProblemer)
         }
@@ -73,12 +76,12 @@ private fun Raise<NonEmptyList<Problem>>.raiseIfNewProblem(
 fun registreringsResultat(
     regler: Regler,
     inngangsOpplysninger: Collection<Opplysning>
-): Either<NonEmptyList<Problem>, GrunnlagForGodkjenning> {
+): Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning> {
     return if (inngangsOpplysninger.isEmpty()) {
         muligGrunnlagForAvvisning(
             regel = regler.regler.find { it.id == Under18Aar }!!,
             opplysninger = inngangsOpplysninger
-        ).mapLeft(::nonEmptyListOf)
+        ).mapLeft(::pawNonEmptyListOf)
     } else {
         regler.evaluer(
             inngangsOpplysninger

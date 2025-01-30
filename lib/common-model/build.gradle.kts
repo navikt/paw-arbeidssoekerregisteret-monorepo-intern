@@ -5,7 +5,8 @@ plugins {
 val jvmMajorVersion: String by project
 
 dependencies {
-
+    testImplementation(libs.test.junit5.runner)
+    testImplementation(libs.test.kotest.assertionsCore)
 }
 
 java {

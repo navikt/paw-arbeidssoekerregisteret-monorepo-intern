@@ -1,6 +1,7 @@
 package no.nav.paw.bekreftelsetjeneste.tilstand
 
 import arrow.core.NonEmptyList
+import no.nav.paw.collections.PawNonEmptyList
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Instant
@@ -40,7 +41,7 @@ fun Bekreftelse.harGraceperiodeUtloept(now: Instant, graceperiode: Duration): Bo
     }
 
 
-fun NonEmptyList<Bekreftelse>.skalOppretteNyBekreftelse(
+fun PawNonEmptyList<Bekreftelse>.skalOppretteNyBekreftelse(
     now: Instant,
     interval: Duration,
     tilgjengeligOffset: Duration

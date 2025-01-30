@@ -8,6 +8,7 @@ import kotlinx.coroutines.coroutineScope
 import no.nav.paw.arbeidssokerregisteret.RequestScope
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
+import no.nav.paw.collections.PawNonEmptyList
 import no.nav.paw.kafka.producer.sendDeferred
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import org.apache.kafka.clients.producer.Producer
@@ -23,7 +24,7 @@ class StartStoppRequestHandler(
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     @WithSpan
-    suspend fun startArbeidssokerperiode(requestScope: RequestScope, identitetsnummer: Identitetsnummer, erForhaandsGodkjentAvVeileder: Boolean): Either<NonEmptyList<Problem>, GrunnlagForGodkjenning> =
+    suspend fun startArbeidssokerperiode(requestScope: RequestScope, identitetsnummer: Identitetsnummer, erForhaandsGodkjentAvVeileder: Boolean): Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning> =
         coroutineScope {
             val kafkaKeysResponse = async { kafkaKeysClient.getIdAndKey(identitetsnummer.verdi) }
             val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitetsnummer, erForhaandsGodkjentAvVeileder)
@@ -43,7 +44,7 @@ class StartStoppRequestHandler(
         requestScope: RequestScope,
         identitetsnummer: Identitetsnummer,
         feilretting: Feilretting?
-    ): Either<NonEmptyList<Problem>, GrunnlagForGodkjenning> {
+    ): Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning> {
         val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
         val tilgangskontrollResultat = requestValidator.validerTilgang(
             requestScope = requestScope,
@@ -67,7 +68,7 @@ class StartStoppRequestHandler(
         return tilgangskontrollResultat
     }
 
-    suspend fun kanRegistreresSomArbeidssoker(requestScope: RequestScope, identitetsnummer: Identitetsnummer): Either<NonEmptyList<Problem>, GrunnlagForGodkjenning> {
+    suspend fun kanRegistreresSomArbeidssoker(requestScope: RequestScope, identitetsnummer: Identitetsnummer): Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning> {
         val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
         val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitetsnummer)
         if (resultat.isLeft()) {

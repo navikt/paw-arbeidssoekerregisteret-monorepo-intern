@@ -15,6 +15,7 @@ import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.arbeidssokerregisteret.services.PersonInfoService
 import no.nav.paw.arbeidssokerregisteret.utils.logger
+import no.nav.paw.collections.PawNonEmptyList
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 
 class RequestValidator(
@@ -32,7 +33,7 @@ class RequestValidator(
         identitetsnummer: Identitetsnummer,
         erForhaandsGodkjentAvVeileder: Boolean = false,
         feilretting: Feilretting? = null
-    ): Either<NonEmptyList<Problem>, GrunnlagForGodkjenning> {
+    ): Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning> {
         val autentiseringsFakta = requestScope.tokenXPidFakta(identitetsnummer) +
                 sjekkOmNavAnsattHarTilgang(requestScope, identitetsnummer) +
                 listOfNotNull(
@@ -47,7 +48,7 @@ class RequestValidator(
         requestScope: RequestScope,
         identitetsnummer: Identitetsnummer,
         erForhaandsGodkjentAvVeileder: Boolean = false
-    ): Either<NonEmptyList<Problem>, GrunnlagForGodkjenning> =
+    ): Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning> =
         validerTilgang(requestScope, identitetsnummer, erForhaandsGodkjentAvVeileder)
             .flatMap { grunnlagForGodkjentAuth ->
                 val person = personInfoService.hentPersonInfo(requestScope, identitetsnummer.verdi)

@@ -1,6 +1,7 @@
 package no.nav.paw.bekreftelsetjeneste.tilstand
 
 import arrow.core.NonEmptyList
+import no.nav.paw.collections.PawNonEmptyList
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -40,7 +41,7 @@ fun opprettFoersteBekreftelse(
     )
 }
 
-fun NonEmptyList<Bekreftelse>.opprettNesteTilgjengeligeBekreftelse(
+fun PawNonEmptyList<Bekreftelse>.opprettNesteTilgjengeligeBekreftelse(
     tilgjengeliggjort: Instant,
     interval: Duration,
 ): Bekreftelse {

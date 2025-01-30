@@ -1,6 +1,5 @@
 package no.nav.paw.arbeidssokerregisteret
 
-import arrow.core.nonEmptyListOf
 import arrow.core.right
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -24,6 +23,7 @@ import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.plugins.configureHTTP
 import no.nav.paw.arbeidssokerregisteret.plugins.configureSerialization
 import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutesV2
+import no.nav.paw.collections.pawNonEmptyListOf
 import no.nav.security.mock.oauth2.MockOAuth2Server
 
 class InngangSomBrukerTest : FreeSpec({
@@ -106,7 +106,7 @@ class InngangSomBrukerTest : FreeSpec({
                     vedTreff = ::skalAvises
                 ),
                 opplysninger = emptySet()
-            ).mapLeft { nonEmptyListOf(it) }
+            ).mapLeft { pawNonEmptyListOf(it) }
             testApplication {
                 application {
                     configureHTTP()

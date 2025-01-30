@@ -1,8 +1,12 @@
 package no.nav.paw.arbeidssokerregisteret.application
 
-import arrow.core.*
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
+import no.nav.paw.collections.PawNonEmptyList
+import no.nav.paw.collections.pawNonEmptyListOf
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning as HendelseOpplysning
 
 
@@ -26,7 +30,7 @@ fun Regel.evaluer(opplysninger: Iterable<Opplysning>): Boolean =
  */
 fun Regler.evaluer(
     opplysninger: Iterable<Opplysning>
-): Either<NonEmptyList<Problem>, GrunnlagForGodkjenning> =
+): Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning> =
     regler
         .filter { regel -> regel.evaluer(opplysninger) }
         .map { it.vedTreff(opplysninger) }
@@ -42,11 +46,11 @@ fun Regler.evaluer(
                 .filterIsInstance<Either.Right<GrunnlagForGodkjenning>>()
                 .map { it.value }
             when {
-                skalAvvises?.regel?.id == IkkeFunnet -> nonEmptyListOf(skalAvvises).left()
-                skalAvvises != null -> nonEmptyListOf(skalAvvises, *(alleProblemer - skalAvvises).toTypedArray()).left()
+                skalAvvises?.regel?.id == IkkeFunnet -> pawNonEmptyListOf(skalAvvises as Problem, emptyList()).left()
+                skalAvvises != null -> pawNonEmptyListOf(skalAvvises, (alleProblemer - skalAvvises)).left()
                 grunnlagForGodkjenning.isNotEmpty() -> grunnlagForGodkjenning.first().right()
-                alleProblemer.isNotEmpty() -> nonEmptyListOf(alleProblemer.first(), *alleProblemer.tail().toTypedArray()).left()
-                else -> standardRegel.vedTreff(opplysninger).mapLeft { nonEmptyListOf(it) }
+                alleProblemer.isNotEmpty() -> pawNonEmptyListOf(alleProblemer.first(), alleProblemer.drop(1)).left()
+                else -> standardRegel.vedTreff(opplysninger).mapLeft { pawNonEmptyListOf(it, emptyList()) }
             }
         }
 
