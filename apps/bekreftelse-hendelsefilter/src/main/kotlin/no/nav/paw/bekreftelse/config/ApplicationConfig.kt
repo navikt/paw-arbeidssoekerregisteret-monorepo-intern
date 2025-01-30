@@ -7,9 +7,18 @@ data class ApplicationConfig(
 )
 
 data class KafkaTopologyConfig(
-    val applicationIdSuffix: String,
     val bekreftelseTargetTopic: String,
     val bekreftelsePaaVegneAvTargetTopic: String,
-    val teamDagpengerBekreftelseSourceTopic: String,
-    val teamDagpengerBekreftelsePaaVegneAvSourceTopic: String
+    val bekreftelseKlienter: List<BekreftelseKlient>
 )
+
+data class BekreftelseKlient (
+    val applicationIdSuffix: String,
+    val paaVegneAvSourceTopic: String,
+    val bekreftelseSourceTopic: String
+)
+
+@JvmInline
+value class ApplicationIdSuffix(val value: String)
+
+fun BekreftelseKlient.applicationIdSuffix() = ApplicationIdSuffix(applicationIdSuffix)
