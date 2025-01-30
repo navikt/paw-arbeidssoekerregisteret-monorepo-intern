@@ -26,19 +26,21 @@ fun initSpan(
             )
         }?.let { spanContext ->
             val spanNoop = Span.wrap(spanContext)
-            Span.current().addLink(spanContext)
+            val originalSPan = Span.current()
+            originalSPan.addLink(spanContext)
             val telemetry = GlobalOpenTelemetry.get()
             val tracer = telemetry.tracerProvider.get(instrumentationScopeName)
             tracer.spanBuilder(spanName)
                 .setParent(Context.current().with(spanNoop))
                 .startSpan()
                 .also { it.makeCurrent() }
-                .let(::ClosableSpan)
-        } ?: ClosableSpan(null)
+                .let { ClosableSpan(it, originalSPan) }
+        } ?: ClosableSpan(null, null)
 }
 
-class ClosableSpan(span: Span?) : AutoCloseable, Span by (span ?: Span.getInvalid()) {
+class ClosableSpan(span: Span?, private val replacedSpan: Span?) : AutoCloseable, Span by (span ?: Span.getInvalid()) {
     override fun close() {
         end()
+        replacedSpan?.makeCurrent()
     }
 }

@@ -92,7 +92,7 @@ class DbReaderTask(
             val count = batch
                 .asSequence()
                 .flatMap { entry ->
-                    _initSpan(
+                    initSpan(
                         traceparent = entry.traceparant,
                         instrumentationScopeName = "no.nav.paw.kafkakeymaintenance.pdlprocessor.DbReaderTask",
                         spanName = "process_pdl_aktor_v2_record"
