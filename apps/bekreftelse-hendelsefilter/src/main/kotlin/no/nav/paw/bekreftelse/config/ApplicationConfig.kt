@@ -3,13 +3,13 @@ package no.nav.paw.bekreftelse.config
 const val APPLICATION_CONFIG = "application_config.toml"
 
 data class ApplicationConfig(
-    val kafkaTopology: KafkaTopologyConfig
+    val kafkaTopology: KafkaTopologyConfig,
+    val bekreftelseKlienter: List<BekreftelseKlient>
 )
 
 data class KafkaTopologyConfig(
     val bekreftelseTargetTopic: String,
-    val bekreftelsePaaVegneAvTargetTopic: String,
-    val bekreftelseKlienter: List<BekreftelseKlient>
+    val bekreftelsePaaVegneAvTargetTopic: String
 )
 
 data class BekreftelseKlient (

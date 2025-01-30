@@ -8,13 +8,17 @@ import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
 
 fun buildBekreftelseKafkaTopologyList(applicationConfig: ApplicationConfig): List<Pair<ApplicationIdSuffix, Topology>> =
-    with(applicationConfig.kafkaTopology) {
-        bekreftelseKlienter.flatMap { bekreftelseKlient ->
-            listOf(
-                buildKafkaTopology(bekreftelseKlient.bekreftelseSourceTopic, bekreftelseTargetTopic),
-                buildKafkaTopology(bekreftelseKlient.paaVegneAvSourceTopic, bekreftelsePaaVegneAvTargetTopic)
-            ).map { bekreftelseKlient.applicationIdSuffix() to it }
-        }
+    applicationConfig.bekreftelseKlienter.flatMap { bekreftelseKlient ->
+        listOf(
+            buildKafkaTopology(
+                bekreftelseKlient.bekreftelseSourceTopic,
+                applicationConfig.kafkaTopology.bekreftelseTargetTopic
+            ),
+            buildKafkaTopology(
+                bekreftelseKlient.paaVegneAvSourceTopic,
+                applicationConfig.kafkaTopology.bekreftelsePaaVegneAvTargetTopic
+            )
+        ).map { bekreftelseKlient.applicationIdSuffix() to it }
     }
 
 private fun buildKafkaTopology(
