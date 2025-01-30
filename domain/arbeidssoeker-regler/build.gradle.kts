@@ -4,7 +4,6 @@ plugins {
     application
 }
 
-val baseImage: String by project
 val jvmMajorVersion: String by project
 
 dependencies {
