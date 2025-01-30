@@ -1,0 +1,6 @@
+[kafkaTopology]
+applicationIdSuffix = "v1"
+bekreftelseTargetTopic = "paw.arbeidssoker-bekreftelse-v1"
+bekreftelsePaaVegneAvTargetTopic = "paw.arbeidssoker-bekreftelse-paavegneav-v1"
+teamDagpengerBekreftelseSourceTopic = "paw.arbeidssoker-bekreftelse-teamdagpenger-v1"
+teamDagpengerBekreftelsePaaVegneAvSourceTopic = "paw.arbeidssoker-bekreftelse-paavegneav-teamdagpenger-v1"
