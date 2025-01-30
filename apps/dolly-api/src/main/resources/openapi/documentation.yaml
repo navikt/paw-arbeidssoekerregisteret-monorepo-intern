@@ -168,47 +168,37 @@ paths:
                 instance: "/api/v1/arbeidssoekerregistrering"
                 timestamp: "2021-01-01T12:00:00.000Z"
 
-  /api/v1/typer:
-    get:
-      operationId: "getTyper"
-      description: "Returnerer map hvor nøkler er enum verdier og verdier er beskrivelser"
-      responses:
-        "500":
-          description: "Internal Server Error"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-              example:
-                id: "fa85c6aa-29a8-4378-bff7-7cbc4a1e9b5a"
-                type: "urn:paw:default:ukjent-feil"
-                status: 500
-                title: "Internal Server Error"
-                detail: "Ukjent feil"
-                instance: "/api/v1/typer"
-                timestamp: "2021-01-01T12:00:00.000Z"
-        "200":
-          description: "OK"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/EnumResponse"
-              example:
-                UKJENT_VERDI: "Ukjent verdi"
-                HAR_SAGT_OPP: "Har sagt opp jobben"
-                DELTIDSJOBB_VIL_MER: "Har deltidsjobb, vil ha mer"
-
   /api/v1/typer/{type}:
     get:
       operationId: "getType"
-      description: "Returnerer map hvor nøkkel er enum verdi og verdi er beskrivelse"
+      description: "Returnerer objekt hvor key er enum verdi og value er beskrivelse"
       parameters:
         - name: "type"
           in: "path"
           required: true
           schema:
             type: "string"
-            example: "HAR_SAGT_OPP"
+            example:
+              - "UKJENT_VERDI"
+              - "UDEFINERT"
+              - "HAR_SAGT_OPP"
+              - "HAR_BLITT_SAGT_OPP"
+              - "ER_PERMITTERT"
+              - "ALDRI_HATT_JOBB"
+              - "IKKE_VAERT_I_JOBB_SISTE_2_AAR"
+              - "AKKURAT_FULLFORT_UTDANNING"
+              - "VIL_BYTTE_JOBB"
+              - "USIKKER_JOBBSITUASJON"
+              - "MIDLERTIDIG_JOBB"
+              - "DELTIDSJOBB_VIL_MER"
+              - "NY_JOBB"
+              - "KONKURS"
+              - "ANNET"
+              - "UKJENT_VERDI"
+              - "UDEFINERT"
+              - "VEILEDER"
+              - "SYSTEM"
+              - "SLUTTBRUKER"
       responses:
         "500":
           description: "Internal Server Error"
@@ -224,14 +214,29 @@ paths:
                 detail: "Ukjent feil"
                 instance: "/api/v1/typer"
                 timestamp: "2021-01-01T12:00:00.000Z"
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                id: "fa85c6aa-29a8-4378-bff7-7cbc4a1e9b5a"
+                type: "urn:paw:ressurs-ikke-funnet"
+                status: 404
+                title: "Not Found"
+                detail: "Ressurs ikke funnet"
+                instance: "/api/v1/typer/UKJENT"
+                timestamp: "2021-01-01T12:00:00.000Z"
         "200":
           description: "OK"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/EnumResponse"
+                $ref: "#/components/schemas/TypeResponse"
               example:
-                DELTIDSJOBB_VIL_MER: "Har deltidsjobb, vil ha mer"
+                key: "HAR_SAGT_OPP"
+                value: "Har sagt opp jobben"
 
   /internal/isAlive:
     get:
@@ -356,10 +361,55 @@ components:
         - "andreForholdHindrerArbeid"
         - "registrertDato"
 
-    EnumResponse:
+    TypeResponse:
       type: "object"
-      additionalProperties:
-        type: "string"
+      properties:
+        key:
+          type: string
+          example:
+            - "UKJENT_VERDI"
+            - "UDEFINERT"
+            - "HAR_SAGT_OPP"
+            - "HAR_BLITT_SAGT_OPP"
+            - "ER_PERMITTERT"
+            - "ALDRI_HATT_JOBB"
+            - "IKKE_VAERT_I_JOBB_SISTE_2_AAR"
+            - "AKKURAT_FULLFORT_UTDANNING"
+            - "VIL_BYTTE_JOBB"
+            - "USIKKER_JOBBSITUASJON"
+            - "MIDLERTIDIG_JOBB"
+            - "DELTIDSJOBB_VIL_MER"
+            - "NY_JOBB"
+            - "KONKURS"
+            - "ANNET"
+            - "UKJENT_VERDI"
+            - "UDEFINERT"
+            - "VEILEDER"
+            - "SYSTEM"
+            - "SLUTTBRUKER"
+        value:
+          type: string
+          example:
+            - "Ukjent verdi"
+            - "Udefinert"
+            - "Har sagt opp jobben"
+            - "Har blitt sagt opp"
+            - "Er permittert"
+            - "Har aldri hatt jobb"
+            - "Ikke vært i jobb siste 2 år"
+            - "Har akkurat fullført utdanning"
+            - "Vil bytte jobb"
+            - "Usikker jobbsituasjon"
+            - "Har midlertidig jobb"
+            - "Har deltidsjobb, vil ha mer"
+            - "Har fått ny jobb"
+            - "Har gått konkurs"
+            - "Annet"
+            - "Ukjent verdi"
+            - "Udefinert"
+            - "Veileder"
+            - "System"
+            - "Sluttbruker"
 
     BrukerType:
       type: "string"

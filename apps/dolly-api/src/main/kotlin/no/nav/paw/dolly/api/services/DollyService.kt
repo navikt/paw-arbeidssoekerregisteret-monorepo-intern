@@ -9,6 +9,7 @@ import no.nav.paw.dolly.api.models.ArbeidssoekerregistreringResponse
 import no.nav.paw.dolly.api.models.Beskrivelse
 import no.nav.paw.dolly.api.models.BrukerType
 import no.nav.paw.dolly.api.models.Detaljer
+import no.nav.paw.dolly.api.models.TypeResponse
 import no.nav.paw.dolly.api.models.hentAvsluttetMetadata
 import no.nav.paw.dolly.api.utils.buildLogger
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
@@ -86,7 +87,7 @@ class DollyService(
 
 
 
-    fun hentEnumMap(type: String?) = mapOf(
+    fun hentEnumType(type: String): TypeResponse? = mapOf(
             "UKJENT_VERDI" to "Ukjent verdi",
             "UDEFINERT" to "Udefinert",
             "VEILEDER" to "Veileder",
@@ -103,9 +104,11 @@ class DollyService(
             "MIDLERTIDIG_JOBB" to "Har midlertidig jobb",
             "DELTIDSJOBB_VIL_MER" to "Har deltidsjobb, vil ha mer",
             "NY_JOBB" to "Har fått ny jobb",
-            "KONKURS" to "Er konkurs",
+            "KONKURS" to "Har gått konkurs",
             "ANNET" to "Annet"
-        ).filterKeys { it.startsWith(type ?: "") }
+        ).filterKeys { it.startsWith(type) }
+        .map { (key, value) -> TypeResponse(key, value) }
+        .firstOrNull()
 }
 
 

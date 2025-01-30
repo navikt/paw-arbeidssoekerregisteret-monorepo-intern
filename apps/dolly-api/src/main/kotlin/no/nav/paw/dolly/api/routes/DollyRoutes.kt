@@ -41,13 +41,14 @@ fun Route.dollyRoutes(
                 call.response.status(HttpStatusCode.NoContent)
             }
 
-            get("/typer") {
-                call.respond(dollyService.hentEnumMap(null))
-            }
-
             get("/typer/{type}") {
                 val type = call.parameters["type"] ?: throw BadRequestException("Mangler type")
-                call.respond(dollyService.hentEnumMap(type))
+                val response = dollyService.hentEnumType(type)
+                if (response == null) {
+                    call.response.status(HttpStatusCode.NotFound)
+                } else {
+                    call.respond(response)
+                }
             }
         }
     }
