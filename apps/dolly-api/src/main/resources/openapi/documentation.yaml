@@ -7,6 +7,125 @@ servers:
   - url: "https://dolly-arbeidssoekerregisteret.intern.dev.nav.no"
     description: "Development"
 paths:
+  /api/v1/arbeidssoekerregistrering/{identitetsnummer}:
+    get:
+      operationId: "getArbeidssoekerregistrering"
+      description: "Henter registrering av bruker som arbeidssøker"
+      parameters:
+        - name: "identitetsnummer"
+          in: "path"
+          required: true
+          schema:
+            $ref: "#/components/schemas/Identitetsnummer"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArbeidssoekerregistreringResponse"
+              example:
+                identitetsnummer: "12345678901"
+                utfoertAv: "SYSTEM"
+                kilde: "Dolly"
+                aarsak: "Registrerer testbruker i dev"
+                nuskode: "4"
+                utdanningBestaatt: true
+                utdanningGodkjent: true
+                jobbsituasjonBeskrivelse: "HAR_SAGT_OPP"
+                jobbsituasjonDetaljer:
+                  gjelder_fra_dato_iso8601: "2021-01-01"
+                  gjelder_til_dato_iso8601: "2021-01-31"
+                  stilling_styrk08: "00"
+                  stilling: "Butikkmedarbeider"
+                  prosent: "100"
+                  siste_dag_med_loenn_iso8601: "2021-01-31"
+                  siste_arbeidsdag_iso8601: "2021-01-31"
+                helsetilstandHindrerArbeid: false
+                andreForholdHindrerArbeid: false
+                registrertDato: "2021-01-01T12:00:00Z"
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                id: "fa85c6aa-29a8-4378-bff7-7cbc4a1e9b5a"
+                type: "urn:paw:ressurs-ikke-funnet"
+                status: 404
+                title: "Not Found"
+                detail: "Ressurs ikke funnet"
+                instance: "/api/v1/arbeidssoekerregistrering/12345678901"
+                timestamp: "2021-01-01T12:00:00.000Z"
+        "400":
+            description: "Bad Request"
+            content:
+                application/json:
+                  schema:
+                    $ref: "#/components/schemas/ProblemDetails"
+                  example:
+                    id: "fa85c6aa-29a8-4378-bff7-7cbc4a1e9b5a"
+                    type: "urn:paw:http:kunne-ikke-tolke-forespoersel"
+                    status: 400
+                    title: "Bad Request"
+                    detail: "Identitetsnummer må bestå av 11 sifre"
+                    instance: "/api/v1/arbeidssoekerregistrering/1234"
+                    timestamp: "2021-01-01T12:00:00.000Z"
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                id: "fa85c6aa-29a8-4378-bff7-7cbc4a1e9b5a"
+                type: "urn:paw:default:ukjent-feil"
+                status: 500
+                title: "Internal Server Error"
+                detail: "Ukjent feil"
+                instance: "/api/v1/arbeidssoekerregistrering/12345678911"
+                timestamp: "2021-01-01T12:00:00.000Z"
+    delete:
+      operationId: "deleteArbeidssoekerregistrering"
+      description: "Avslutter brukers arbeidssøkerperiode"
+      parameters:
+        - name: "identitetsnummer"
+          in: "path"
+          required: true
+          schema:
+            $ref: "#/components/schemas/Identitetsnummer"
+      responses:
+        "204":
+          description: "No Content"
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                id: "fa85c6aa-29a8-4378-bff7-7cbc4a1e9b5a"
+                type: "urn:paw:ressurs-ikke-funnet"
+                status: 404
+                title: "Not Found"
+                detail: "Ressurs ikke funnet"
+                instance: "/api/v1/arbeidssoekerregistrering/12345678901"
+                timestamp: "2021-01-01T12:00:00.000Z"
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                id: "fa85c6aa-29a8-4378-bff7-7cbc4a1e9b5a"
+                type: "urn:paw:default:ukjent-feil"
+                status: 500
+                title: "Internal Server Error"
+                detail: "Ukjent feil"
+                instance: "/api/v1/arbeidssoekerregistrering/1234"
+                timestamp: "2021-01-01T12:00:00.000Z"
   /api/v1/arbeidssoekerregistrering:
     post:
       operationId: "postArbeidssoekerregistrering"
@@ -18,6 +137,8 @@ paths:
             schema:
               $ref: "#/components/schemas/ArbeidssoekerregistreringRequest"
       responses:
+        "202":
+          description: "Accepted"
         "400":
           description: "Bad Request"
           content:
@@ -46,8 +167,72 @@ paths:
                 detail: "Ukjent feil"
                 instance: "/api/v1/arbeidssoekerregistrering"
                 timestamp: "2021-01-01T12:00:00.000Z"
-        "202":
-          description: "Accepted"
+
+  /api/v1/typer:
+    get:
+      operationId: "getTyper"
+      description: "Returnerer map hvor nøkler er enum verdier og verdier er beskrivelser"
+      responses:
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                id: "fa85c6aa-29a8-4378-bff7-7cbc4a1e9b5a"
+                type: "urn:paw:default:ukjent-feil"
+                status: 500
+                title: "Internal Server Error"
+                detail: "Ukjent feil"
+                instance: "/api/v1/typer"
+                timestamp: "2021-01-01T12:00:00.000Z"
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnumResponse"
+              example:
+                UKJENT_VERDI: "Ukjent verdi"
+                HAR_SAGT_OPP: "Har sagt opp jobben"
+                DELTIDSJOBB_VIL_MER: "Har deltidsjobb, vil ha mer"
+
+  /api/v1/typer/{type}:
+    get:
+      operationId: "getType"
+      description: "Returnerer map hvor nøkkel er enum verdi og verdi er beskrivelse"
+      parameters:
+        - name: "type"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            example: "HAR_SAGT_OPP"
+      responses:
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                id: "fa85c6aa-29a8-4378-bff7-7cbc4a1e9b5a"
+                type: "urn:paw:default:ukjent-feil"
+                status: 500
+                title: "Internal Server Error"
+                detail: "Ukjent feil"
+                instance: "/api/v1/typer"
+                timestamp: "2021-01-01T12:00:00.000Z"
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnumResponse"
+              example:
+                DELTIDSJOBB_VIL_MER: "Har deltidsjobb, vil ha mer"
+
   /internal/isAlive:
     get:
       operationId: "getIsAlive"
@@ -127,6 +312,54 @@ components:
           type: "boolean"
       required:
         - "identitetsnummer"
+
+    ArbeidssoekerregistreringResponse:
+      type: "object"
+      properties:
+        identitetsnummer:
+          $ref: "#/components/schemas/Identitetsnummer"
+        utfoertAv:
+          $ref: "#/components/schemas/BrukerType"
+        kilde:
+          type: "string"
+        aarsak:
+          type: "string"
+        nuskode:
+          type: "string"
+        utdanningBestaatt:
+          type: "boolean"
+        utdanningGodkjent:
+          type: "boolean"
+        jobbsituasjonBeskrivelse:
+          $ref: "#/components/schemas/Beskrivelse"
+        jobbsituasjonDetaljer:
+          $ref: "#/components/schemas/Detaljer"
+        helsetilstandHindrerArbeid:
+          type: "boolean"
+        andreForholdHindrerArbeid:
+          type: "boolean"
+        registrertDato:
+          type: "string"
+          format: "date-time"
+          example: "2021-01-01T12:00:00Z"
+      required:
+        - "identitetsnummer"
+        - "utfoertAv"
+        - "kilde"
+        - "aarsak"
+        - "nuskode"
+        - "utdanningBestaatt"
+        - "utdanningGodkjent"
+        - "jobbsituasjonBeskrivelse"
+        - "jobbsituasjonDetaljer"
+        - "helsetilstandHindrerArbeid"
+        - "andreForholdHindrerArbeid"
+        - "registrertDato"
+
+    EnumResponse:
+      type: "object"
+      additionalProperties:
+        type: "string"
 
     BrukerType:
       type: "string"

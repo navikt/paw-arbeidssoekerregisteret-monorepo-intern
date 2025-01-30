@@ -42,6 +42,16 @@ fun ArbeidssoekerregistreringRequest.toMetadata(): HendelseMetadata = HendelseMe
     aarsak = aarsak!!
 )
 
+fun hentAvsluttetMetadata() = HendelseMetadata(
+    tidspunkt = Instant.now(),
+    utfoertAv = Bruker(
+        id = "null",
+        type = HendelseBrukerType.SYSTEM
+    ),
+    kilde = "Dolly",
+    aarsak = "Avsluttet i Dolly"
+)
+
 fun ArbeidssoekerregistreringRequest.toOpplysningerOmArbeidssoeker(metadata: Metadata): HendelseOpplysningerOmArbeidssoeker =
     HendelseOpplysningerOmArbeidssoeker(
         id = UUID.randomUUID(),
