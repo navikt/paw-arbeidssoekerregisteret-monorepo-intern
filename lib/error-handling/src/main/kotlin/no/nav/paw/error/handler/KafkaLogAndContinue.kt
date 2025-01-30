@@ -33,7 +33,7 @@ class KafkaLogAndContinueExceptionHandler : DeserializationExceptionHandler {
                 instrumentationScopeName = this::class.simpleName!!,
                 spanName = "deserialization_error"
             )
-        } ?: ClosableSpan(null)
+        } ?: ClosableSpan(null, null)
         return span.use {
             metrics?.counter(
                 "kafka_deserialization_error",
