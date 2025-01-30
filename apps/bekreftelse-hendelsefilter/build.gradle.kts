@@ -12,6 +12,7 @@ dependencies {
     implementation(project(":lib:error-handling"))
     implementation(project(":lib:kafka-streams"))
     implementation(project(":domain:bekreftelsesmelding-avro-schema"))
+    implementation(project(":domain:bekreftelse-paavegneav-avro-schema"))
 
     // Server
     implementation(libs.bundles.ktorServerWithNettyAndMicrometer)

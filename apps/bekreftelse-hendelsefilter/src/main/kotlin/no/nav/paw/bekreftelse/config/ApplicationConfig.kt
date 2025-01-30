@@ -7,8 +7,9 @@ data class ApplicationConfig(
 )
 
 data class KafkaTopologyConfig(
+    val applicationIdSuffix: String,
     val bekreftelseTargetTopic: String,
     val bekreftelsePaaVegneAvTargetTopic: String,
-    val bekreftelseTeamDagpengerSourceTopic: String,
-    val bekreftelsePaaVegneAvTeamDagpengerSourceTopic: String
+    val teamDagpengerBekreftelseSourceTopic: String,
+    val teamDagpengerBekreftelsePaaVegneAvSourceTopic: String
 )

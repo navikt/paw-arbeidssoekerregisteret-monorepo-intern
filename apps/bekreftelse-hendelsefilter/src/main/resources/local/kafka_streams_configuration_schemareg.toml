@@ -1,0 +1,5 @@
+brokers = "localhost:9092"
+applicationIdPrefix = "paw.paw-arbeidssoekerregisteret-bekreftelse-hendelsefilter"
+
+[schemaRegistry]
+url = "http://localhost:8082"

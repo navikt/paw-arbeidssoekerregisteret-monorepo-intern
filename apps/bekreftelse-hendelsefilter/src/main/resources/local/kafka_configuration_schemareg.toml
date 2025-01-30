@@ -1,3 +1,0 @@
-brokers = "localhost:9092"
-[schemaRegistry]
-url = "http://localhost:8082"

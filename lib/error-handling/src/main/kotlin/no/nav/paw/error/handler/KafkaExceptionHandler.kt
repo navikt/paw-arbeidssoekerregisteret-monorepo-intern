@@ -7,8 +7,9 @@ import org.slf4j.LoggerFactory
 
 private val logger: Logger = LoggerFactory.getLogger("no.nav.paw.logger.error.kafka")
 
-fun KafkaStreams.withApplicationTerminatingExceptionHandler() {
+fun KafkaStreams.withApplicationTerminatingExceptionHandler(): KafkaStreams {
     this.setUncaughtExceptionHandler(createApplicationTerminatingExceptionHandler())
+    return this
 }
 
 fun createApplicationTerminatingExceptionHandler() = StreamsUncaughtExceptionHandler { throwable ->

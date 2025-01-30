@@ -10,8 +10,9 @@ private val logger = LoggerFactory.getLogger("no.nav.paw.logger.health.kafka")
 fun KafkaStreams.withHealthIndicatorStateListener(
     livenessIndicator: LivenessHealthIndicator,
     readinessIndicator: ReadinessHealthIndicator
-) {
+): KafkaStreams {
     this.setStateListener(createHealthIndicatorStateListener(livenessIndicator, readinessIndicator))
+    return this
 }
 
 fun createHealthIndicatorStateListener(

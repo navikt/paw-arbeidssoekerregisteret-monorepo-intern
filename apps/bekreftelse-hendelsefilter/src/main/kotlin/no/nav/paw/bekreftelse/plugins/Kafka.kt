@@ -9,7 +9,7 @@ import no.nav.paw.kafka.plugin.KafkaStreamsPlugin
 fun Application.configureKafka(applicationContext: ApplicationContext) {
     with(applicationContext) {
         install(KafkaStreamsPlugin) {
-            kafkaStreams = listOf()
+            kafkaStreams = kafkaStreamsList
         }
     }
 }
