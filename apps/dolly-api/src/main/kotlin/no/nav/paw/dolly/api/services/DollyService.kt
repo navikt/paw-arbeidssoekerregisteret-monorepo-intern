@@ -85,8 +85,6 @@ class DollyService(
             registrertDato = Instant.now()
         )
 
-
-
     fun hentEnumType(type: String): TypeResponse? = mapOf(
             "UKJENT_VERDI" to "Ukjent verdi",
             "UDEFINERT" to "Udefinert",
@@ -97,7 +95,7 @@ class DollyService(
             "HAR_BLITT_SAGT_OPP" to "Har blitt sagt opp",
             "ER_PERMITTERT" to "Er permittert",
             "ALDRI_HATT_JOBB" to "Har aldri hatt jobb",
-            "IKKE_VAERT_I_JOBB_SISTE_2_AAR" to "Har ikke vært i jobb siste 2 år",
+            "IKKE_VAERT_I_JOBB_SISTE_2_AAR" to "Ikke vært i jobb siste 2 år",
             "AKKURAT_FULLFORT_UTDANNING" to "Har akkurat fullført utdanning",
             "VIL_BYTTE_JOBB" to "Vil bytte jobb",
             "USIKKER_JOBBSITUASJON" to "Usikker jobbsituasjon",
@@ -106,9 +104,16 @@ class DollyService(
             "NY_JOBB" to "Har fått ny jobb",
             "KONKURS" to "Har gått konkurs",
             "ANNET" to "Annet"
-        ).filterKeys { it.startsWith(type) }
-        .map { (key, value) -> TypeResponse(key, value) }
-        .firstOrNull()
+        )[type]?.let { value ->
+            val keyEnum = TypeResponse.Key.entries.find { it.name == type }
+            val valueEnum = TypeResponse.Value.entries.find { it.toString() == value }
+
+            if (keyEnum != null && valueEnum != null) {
+                TypeResponse(keyEnum, valueEnum)
+            } else {
+                null
+            }
+        }
 }
 
 

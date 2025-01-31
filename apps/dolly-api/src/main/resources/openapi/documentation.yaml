@@ -365,7 +365,7 @@ components:
       type: "object"
       properties:
         key:
-          type: string
+          type: "string"
           enum:
             - "UKJENT_VERDI"
             - "UDEFINERT"
@@ -388,7 +388,7 @@ components:
             - "SYSTEM"
             - "SLUTTBRUKER"
         value:
-          type: string
+          type: "string"
           enum:
             - "Ukjent verdi"
             - "Udefinert"
