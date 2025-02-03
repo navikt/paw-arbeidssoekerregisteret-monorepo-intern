@@ -1,5 +1,9 @@
 package no.nav.paw.bekreftelse.topology
 
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.StatusCode
 import no.nav.paw.bekreftelse.config.ApplicationConfig
 import no.nav.paw.bekreftelse.config.ApplicationIdSuffix
 import no.nav.paw.bekreftelse.config.bekreftelseApplicationIdSuffix
@@ -8,6 +12,7 @@ import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.kafka.processor.mapRecord
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bekreftelse.utils.buildApplicationLogger
+import no.nav.paw.kafka.processor.mapNonNull
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
@@ -18,12 +23,12 @@ fun buildKafkaTopologyList(applicationConfig: ApplicationConfig): List<Pair<Appl
     applicationConfig.bekreftelseKlienter.flatMap { bekreftelseKlient ->
         listOf(
             bekreftelseKlient.bekreftelseApplicationIdSuffix to buildKafkaTopology<Bekreftelse>(
-                streamId = bekreftelseKlient.bekreftelsesloesning,
+                bekreftelsesloesning = bekreftelseKlient.bekreftelsesloesning,
                 sourceTopic = bekreftelseKlient.bekreftelseSourceTopic,
                 targetTopic = applicationConfig.kafkaTopology.bekreftelseTargetTopic
             ),
             bekreftelseKlient.bekreftelsePaaVegneAvApplicationIdSuffix to buildKafkaTopology<PaaVegneAv>(
-                streamId = bekreftelseKlient.bekreftelsesloesning,
+                bekreftelsesloesning = bekreftelseKlient.bekreftelsesloesning,
                 sourceTopic = bekreftelseKlient.paaVegneAvSourceTopic,
                 targetTopic = applicationConfig.kafkaTopology.bekreftelsePaaVegneAvTargetTopic
             )
@@ -31,15 +36,39 @@ fun buildKafkaTopologyList(applicationConfig: ApplicationConfig): List<Pair<Appl
     }
 
 fun <T : SpecificRecord> buildKafkaTopology(
-    streamId: String,
+    bekreftelsesloesning: String,
     sourceTopic: String,
     targetTopic: String
 ): Topology = StreamsBuilder().apply {
     stream<Long, T>(sourceTopic)
         .peek { _, _ -> logger.debug("Mottok melding på topic {}", sourceTopic) }
+        .mapNonNull(name = "verifiser_bekreftelseloesning") { value ->
+            val loesningFraMelding = when (value) {
+                is Bekreftelse -> value.bekreftelsesloesning.name
+                is PaaVegneAv -> value.bekreftelsesloesning.name
+                else -> throw IllegalArgumentException("Ukjent meldingstype: ${value::class.simpleName}")
+            }
+            with(Span.current()) {
+                val gyldig = loesningFraMelding.equals(bekreftelsesloesning, ignoreCase = true)
+                val attributes = Attributes.of(
+                    AttributeKey.stringKey("acl_bekreftelsesloesning"), bekreftelsesloesning,
+                    AttributeKey.stringKey("record_bekreftelsesloesning"), loesningFraMelding,
+                    AttributeKey.booleanKey("gyldig_loesning"), gyldig
+                )
+                if (gyldig) {
+                    addEvent("bekreftelseloesning_verifisert", attributes)
+                    value
+                } else {
+                    addEvent("bekreftelseloesning_ikke_gyldig", attributes)
+                    setStatus(StatusCode.ERROR, "Bekreftelsesløsning fra melding matcher ikke forventet løsning")
+                    logger.warn("Meldingens bekreftelsesløsning '$loesningFraMelding' matcher ikke forventet løsning '$bekreftelsesloesning'. Dropper melding.")
+                    null
+                }
+            }
+        }
         .mapRecord(name = "add_source_header") { record ->
             val headers = record.headers()
-            val updatedHeaders = headers.add("source", streamId.toByteArray())
+            val updatedHeaders = headers.add("source", bekreftelsesloesning.toByteArray())
             record.withHeaders(updatedHeaders)
         }
         .to(targetTopic)

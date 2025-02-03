@@ -21,10 +21,21 @@ object TestData {
         UUID.randomUUID(),
         svar
     )
+    val bekreftelse2 = Bekreftelse(
+        UUID.randomUUID(),
+        Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET,
+        UUID.randomUUID(),
+        svar
+    )
     val start = Start(1L, 1L)
     val paaVegneAv1 = PaaVegneAv(
         UUID.randomUUID(),
         no.nav.paw.bekreftelse.paavegneav.v1.vo.Bekreftelsesloesning.DAGPENGER,
+        start
+    )
+    val paaVegneAv2 = PaaVegneAv(
+        UUID.randomUUID(),
+        no.nav.paw.bekreftelse.paavegneav.v1.vo.Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET,
         start
     )
 }

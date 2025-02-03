@@ -4,6 +4,7 @@ import io.confluent.kafka.schemaregistry.testutil.MockSchemaRegistry
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
+import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bekreftelse.topology.buildKafkaTopology
 import org.apache.avro.specific.SpecificRecord
@@ -33,12 +34,12 @@ class TestContext {
     private val bekreftelsePaaVegneAvAvroSerde: Serde<PaaVegneAv> = avroSerde()
 
     private val bekreftelseTestDriver = TopologyTestDriver(
-        buildKafkaTopology<Bekreftelse>("client1", bekreftelseSourceTopicName, bekreftelseTargetTopicName),
+        buildKafkaTopology<Bekreftelse>(Bekreftelsesloesning.DAGPENGER.name, bekreftelseSourceTopicName, bekreftelseTargetTopicName),
         kafkaStreamProperties
     )
 
     private val bekreftelsePaaVegneAvTestDriver = TopologyTestDriver(
-        buildKafkaTopology<PaaVegneAv>("client1", bekreftelsePaaVegneAvSourceTopicName, bekreftelsePaaVegneAvTargetTopicName),
+        buildKafkaTopology<PaaVegneAv>(Bekreftelsesloesning.DAGPENGER.name, bekreftelsePaaVegneAvSourceTopicName, bekreftelsePaaVegneAvTargetTopicName),
         kafkaStreamProperties
     )
 

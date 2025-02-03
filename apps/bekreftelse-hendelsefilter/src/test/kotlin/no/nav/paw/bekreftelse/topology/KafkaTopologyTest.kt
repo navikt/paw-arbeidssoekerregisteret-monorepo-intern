@@ -7,7 +7,7 @@ import no.nav.paw.bekreftelse.test.TestData
 
 class KafkaTopologyTest : FreeSpec({
     with(TestContext()) {
-        "Skal videresende bekreftelse-meldinger" {
+        "Skal videresende bekreftelse-meldinger med riktig bekreftelsesløsning" {
             val value = TestData.bekreftelse1
             bekreftelseSourceTopic.pipeInput(1001L, value)
 
@@ -21,7 +21,7 @@ class KafkaTopologyTest : FreeSpec({
             keyValue.value.bekreftelsesloesning shouldBe value.bekreftelsesloesning
         }
 
-        "Skal videresende på-vegne-av-meldinger" {
+        "Skal videresende på-vegne-av-meldinger med riktig bekreftelsesløsning" {
             val value = TestData.paaVegneAv1
             bekreftelsePaaVegneAvSourceTopic.pipeInput(1002L, value)
 
@@ -32,6 +32,18 @@ class KafkaTopologyTest : FreeSpec({
             keyValue.key shouldBe 1002L
             keyValue.value.periodeId shouldBe value.periodeId
             keyValue.value.bekreftelsesloesning shouldBe value.bekreftelsesloesning
+        }
+
+        "Skal ikke videresende bekreftelse-meldinger med feil bekreftelsesløsning" {
+            val value = TestData.bekreftelse2
+            bekreftelseSourceTopic.pipeInput(1001L, value)
+            bekreftelseTargetTopic.isEmpty shouldBe true
+        }
+
+        "Skal ikke videresende på-vegne-av-meldinger med feil bekreftelsesløsning" {
+            val value = TestData.paaVegneAv2
+            bekreftelsePaaVegneAvSourceTopic.pipeInput(1002L, value)
+            bekreftelsePaaVegneAvTargetTopic.isEmpty shouldBe true
         }
     }
 })
