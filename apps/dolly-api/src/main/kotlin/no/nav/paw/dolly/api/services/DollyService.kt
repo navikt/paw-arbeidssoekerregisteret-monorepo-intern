@@ -1,39 +1,39 @@
 package no.nav.paw.dolly.api.services
 
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.dolly.api.kafka.HendelseKafkaProducer
 import no.nav.paw.dolly.api.models.ArbeidssoekerregistreringRequest
 import no.nav.paw.dolly.api.models.ArbeidssoekerregistreringResponse
-import no.nav.paw.dolly.api.models.Beskrivelse
-import no.nav.paw.dolly.api.models.BrukerType
-import no.nav.paw.dolly.api.models.Detaljer
-import no.nav.paw.dolly.api.models.TypeResponse
 import no.nav.paw.dolly.api.models.hentAvsluttetMetadata
-import no.nav.paw.dolly.api.utils.buildLogger
-import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
-import java.util.UUID
 import no.nav.paw.dolly.api.models.medStandardverdier
+import no.nav.paw.dolly.api.models.toArbeidssoekerregistreringResponse
 import no.nav.paw.dolly.api.models.toMetadata
 import no.nav.paw.dolly.api.models.toOpplysningerOmArbeidssoeker
-import java.time.Instant
+import no.nav.paw.dolly.api.oppslag.OppslagClient
+import no.nav.paw.dolly.api.utils.buildLogger
+import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
+import java.util.*
 
 class DollyService(
     private val kafkaKeysClient: KafkaKeysClient,
+    private val oppslagClient: OppslagClient,
     private val hendelseKafkaProducer: HendelseKafkaProducer,
 ) {
     private val logger = buildLogger
+    private fun genererHendelseId() = UUID.randomUUID()
 
     suspend fun registrerArbeidssoeker(request: ArbeidssoekerregistreringRequest) {
         val (id, key) = kafkaKeysClient.getIdAndKey(request.identitetsnummer)
         val requestMedDefaultVerdier = request.medStandardverdier()
         val metadata = requestMedDefaultVerdier.toMetadata()
-        logger.info("Sender Startet-hendelse for identitetsnummer: ${request.identitetsnummer} på key: $key")
-        hendelseKafkaProducer.sendHendelse(
+        sendHendelse(
             key,
+            request.identitetsnummer,
             Startet(
-                hendelseId = UUID.randomUUID(),
+                hendelseId = genererHendelseId(),
                 id = id,
                 identitetsnummer = request.identitetsnummer,
                 metadata = metadata,
@@ -41,11 +41,11 @@ class DollyService(
             )
         )
 
-        logger.info("Sender OpplysningerOmArbeidssoekerMottatt-hendelse for identitetsnummer: ${request.identitetsnummer} på key: $key")
-        hendelseKafkaProducer.sendHendelse(
+        sendHendelse(
             key,
+            request.identitetsnummer,
             OpplysningerOmArbeidssoekerMottatt(
-                hendelseId = UUID.randomUUID(),
+                hendelseId = genererHendelseId(),
                 id = id,
                 identitetsnummer = request.identitetsnummer,
                 opplysningerOmArbeidssoeker = requestMedDefaultVerdier.toOpplysningerOmArbeidssoeker(metadata)
@@ -56,11 +56,11 @@ class DollyService(
     suspend fun avsluttArbeidssoekerperiode(identitetsnummer: String) {
         val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer)
         val metadata = hentAvsluttetMetadata()
-        logger.info("Sender Avsluttet-hendelse for identitetsnummer: $identitetsnummer på key: $key")
-        hendelseKafkaProducer.sendHendelse(
+        sendHendelse(
             key,
+            identitetsnummer,
             Avsluttet(
-                hendelseId = UUID.randomUUID(),
+                hendelseId = genererHendelseId(),
                 id = id,
                 identitetsnummer = identitetsnummer,
                 metadata = metadata
@@ -68,52 +68,14 @@ class DollyService(
         )
     }
 
-    //TODO: Implementer oppslags-api client
-    suspend fun hentArbeidssoeker(identitetsnummer: String) =
-        ArbeidssoekerregistreringResponse(
-            identitetsnummer = identitetsnummer,
-            utfoertAv = BrukerType.SYSTEM,
-            kilde = "Dolly",
-            aarsak = "Opprettet i Dolly",
-            nuskode = "4",
-            utdanningBestaatt = true,
-            utdanningGodkjent = true,
-            jobbsituasjonBeskrivelse = Beskrivelse.HAR_BLITT_SAGT_OPP,
-            jobbsituasjonDetaljer = Detaljer(stillingStyrk08 = "00", stilling = "Annen stilling"),
-            helsetilstandHindrerArbeid = false,
-            andreForholdHindrerArbeid = false,
-            registrertDato = Instant.now()
-        )
+    suspend fun hentArbeidssoekerregistrering(identitetsnummer: String): ArbeidssoekerregistreringResponse? =
+        oppslagClient.hentAggregerteArbeidssoekerperioder(identitetsnummer)
+            ?.toArbeidssoekerregistreringResponse(identitetsnummer)
 
-    fun hentEnumType(type: String): TypeResponse? = mapOf(
-            "UKJENT_VERDI" to "Ukjent verdi",
-            "UDEFINERT" to "Udefinert",
-            "VEILEDER" to "Veileder",
-            "SLUTTBRUKER" to "Sluttbruker",
-            "SYSTEM" to "System",
-            "HAR_SAGT_OPP" to "Har sagt opp jobben",
-            "HAR_BLITT_SAGT_OPP" to "Har blitt sagt opp",
-            "ER_PERMITTERT" to "Er permittert",
-            "ALDRI_HATT_JOBB" to "Har aldri hatt jobb",
-            "IKKE_VAERT_I_JOBB_SISTE_2_AAR" to "Ikke vært i jobb siste 2 år",
-            "AKKURAT_FULLFORT_UTDANNING" to "Har akkurat fullført utdanning",
-            "VIL_BYTTE_JOBB" to "Vil bytte jobb",
-            "USIKKER_JOBBSITUASJON" to "Usikker jobbsituasjon",
-            "MIDLERTIDIG_JOBB" to "Har midlertidig jobb",
-            "DELTIDSJOBB_VIL_MER" to "Har deltidsjobb, vil ha mer",
-            "NY_JOBB" to "Har fått ny jobb",
-            "KONKURS" to "Har gått konkurs",
-            "ANNET" to "Annet"
-        )[type]?.let { value ->
-            val keyEnum = TypeResponse.Key.entries.find { it.name == type }
-            val valueEnum = TypeResponse.Value.entries.find { it.toString() == value }
-
-            if (keyEnum != null && valueEnum != null) {
-                TypeResponse(keyEnum, valueEnum)
-            } else {
-                null
-            }
-        }
+    private fun sendHendelse(key: Long, identitetsnummer: String, event: Hendelse) {
+        logger.info("Sender ${event::class.simpleName} for identitetsnummer: $identitetsnummer på key: $key")
+        hendelseKafkaProducer.sendHendelse(key, event)
+    }
 }
 
 

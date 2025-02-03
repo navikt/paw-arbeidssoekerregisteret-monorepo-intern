@@ -1,7 +1,6 @@
 package no.nav.paw.dolly.api.routes
 
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.plugins.BadRequestException
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.delete
@@ -9,7 +8,10 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import no.nav.paw.dolly.api.models.ArbeidssoekerregistreringRequest
+import no.nav.paw.dolly.api.models.asIdentitetsnummer
+import no.nav.paw.dolly.api.models.asTypeRequest
 import no.nav.paw.dolly.api.services.DollyService
+import no.nav.paw.dolly.api.services.EnumTypeData
 import no.nav.paw.security.authentication.interceptor.autentisering
 import no.nav.paw.security.authentication.model.AzureAd
 
@@ -24,34 +26,28 @@ fun Route.dollyRoutes(
             }
 
             get("/arbeidssoekerregistrering/{identitetsnummer}") {
-                val identitetsnummer = call.parameters["identitetsnummer"] ?: throw BadRequestException("Mangler identitetsnummer")
-                if (!gyldigIdentitetsnummer(identitetsnummer)) {
-                    throw BadRequestException("Identitetsnummer må bestå av 11 sifre")
+                val identitetsnummer = call.parameters["identitetsnummer"].asIdentitetsnummer()
+                val arbeidssoeker = dollyService.hentArbeidssoekerregistrering(identitetsnummer)
+                if (arbeidssoeker == null) {
+                    call.response.status(HttpStatusCode.NotFound)
+                    return@get
                 }
-                val arbeidssoeker = dollyService.hentArbeidssoeker(identitetsnummer)
                 call.respond(arbeidssoeker)
             }
 
             delete("/arbeidssoekerregistrering/{identitetsnummer}") {
-                val identitetsnummer = call.parameters["identitetsnummer"] ?: throw BadRequestException("Mangler identitetsnummer")
-                if (!gyldigIdentitetsnummer(identitetsnummer)) {
-                    throw BadRequestException("Identitetsnummer må bestå av 11 sifre")
-                }
+                val identitetsnummer = call.parameters["identitetsnummer"].asIdentitetsnummer()
                 dollyService.avsluttArbeidssoekerperiode(identitetsnummer)
                 call.response.status(HttpStatusCode.NoContent)
             }
 
             get("/typer/{type}") {
-                val type = call.parameters["type"] ?: throw BadRequestException("Mangler type")
-                val response = dollyService.hentEnumType(type)
-                if (response == null) {
-                    call.response.status(HttpStatusCode.NotFound)
-                } else {
-                    call.respond(response)
-                }
+                val type = call.parameters["type"].asTypeRequest()
+                val response = EnumTypeData.hentEnumTypeResponse(type)
+                call.respond(response)
             }
         }
     }
 }
 
-fun gyldigIdentitetsnummer(identitetsnummer: String): Boolean = identitetsnummer.matches(Regex("^\\d{11}$"))
+

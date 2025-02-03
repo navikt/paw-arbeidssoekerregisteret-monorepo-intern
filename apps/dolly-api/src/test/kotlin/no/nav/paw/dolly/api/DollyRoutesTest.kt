@@ -33,6 +33,8 @@ class DollyRoutesTest : FreeSpec({
             mockOAuth2Server.shutdown()
         }
 
+        // TODO: test resten av api og legg til oppslag mock
+
         "202 Accepted ved gyldig request" {
             coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
                 1,

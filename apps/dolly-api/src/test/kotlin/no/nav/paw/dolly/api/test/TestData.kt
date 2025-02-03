@@ -7,9 +7,9 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.append
 import no.nav.paw.dolly.api.models.ArbeidssoekerregistreringRequest
-import no.nav.paw.dolly.api.models.Beskrivelse
-import no.nav.paw.dolly.api.models.BrukerType
-import no.nav.paw.dolly.api.models.Detaljer
+import no.nav.paw.dolly.api.models.Brukertype
+import no.nav.paw.dolly.api.models.Jobbsituasjonsbeskrivelse
+import no.nav.paw.dolly.api.models.Jobbsituasjonsdetaljer
 
 inline fun <reified T> HttpRequestBuilder.setJsonBody(body: T) {
     headers {
@@ -28,14 +28,14 @@ object TestData {
     fun fullstendingArbeidssoekerregistreringRequest() =
         ArbeidssoekerregistreringRequest(
             identitetsnummer = "12345678912",
-            utfoertAv = BrukerType.SLUTTBRUKER,
+            utfoertAv = Brukertype.SLUTTBRUKER,
             kilde = "Dolly",
             aarsak = "Registrering av arbeidssøker i Dolly",
             nuskode = "3",
             utdanningBestaatt = true,
             utdanningGodkjent = true,
-            jobbsituasjonBeskrivelse = Beskrivelse.HAR_BLITT_SAGT_OPP,
-            jobbsituasjonDetaljer = Detaljer(stillingStyrk08 = "00", stilling = "Annen stilling"),
+            jobbsituasjonsbeskrivelse = Jobbsituasjonsbeskrivelse.HAR_BLITT_SAGT_OPP,
+            jobbsituasjonsdetaljer = Jobbsituasjonsdetaljer(stillingStyrk08 = "00", stilling = "Annen stilling"),
             helsetilstandHindrerArbeid = false,
             andreForholdHindrerArbeid = false
         )

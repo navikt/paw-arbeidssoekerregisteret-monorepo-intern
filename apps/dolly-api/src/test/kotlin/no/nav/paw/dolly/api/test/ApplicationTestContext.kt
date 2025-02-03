@@ -19,6 +19,7 @@ import no.nav.paw.dolly.api.config.SERVER_CONFIG
 import no.nav.paw.dolly.api.config.ServerConfig
 import no.nav.paw.dolly.api.context.ApplicationContext
 import no.nav.paw.dolly.api.kafka.HendelseKafkaProducer
+import no.nav.paw.dolly.api.oppslag.OppslagClient
 import no.nav.paw.dolly.api.plugins.configureAuthentication
 import no.nav.paw.dolly.api.plugins.configureHTTP
 import no.nav.paw.dolly.api.plugins.configureSerialization
@@ -33,21 +34,23 @@ import org.apache.kafka.clients.producer.Producer
 
 class ApplicationTestContext {
 
-    val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG)
-    val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG)
-    val securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>(SECURITY_CONFIG)
-    val azureAdM2MConfig = loadNaisOrLocalConfiguration<AzureAdM2MConfig>(AZURE_M2M_CONFIG)
+    private val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG)
+    private val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG)
+    private val securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>(SECURITY_CONFIG)
+    private val azureAdM2MConfig = loadNaisOrLocalConfiguration<AzureAdM2MConfig>(AZURE_M2M_CONFIG)
     val kafkaKeysClientMock = mockk<KafkaKeysClient>()
+    val oppslagClientMock = mockk<OppslagClient>()
     val kafkaProducerMock = mockk<Producer<Long, Hendelse>>()
     val hendelseKafkaProducerMock = mockk<HendelseKafkaProducer>()
     val dollyServiceMock = mockk<DollyService>()
     val dollyService = DollyService(
         kafkaKeysClientMock,
+        oppslagClientMock,
         hendelseKafkaProducerMock,
     )
     val mockOAuth2Server = MockOAuth2Server()
-    val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-    val healthIndicatorRepository = HealthIndicatorRepository()
+    private val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+    private val healthIndicatorRepository = HealthIndicatorRepository()
 
     fun createApplicationContext(dollyService: DollyService) = ApplicationContext(
         serverConfig,

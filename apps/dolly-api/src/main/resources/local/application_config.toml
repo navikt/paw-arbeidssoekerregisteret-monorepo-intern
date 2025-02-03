@@ -3,3 +3,7 @@ version = 1
 antallPartitioner = 1
 producerId = "paw-arbeidssoekerregisteret-api-dolly-v1-producer"
 hendelsesloggTopic = "paw.arbeidssoker-hendelseslogg-v1"
+
+[oppslagClientConfig]
+url = "http://localhost:8090/api/v1/veileder/arbeidssoekerperioder-aggregert?siste=true"
+scope = "api://test.test.paw-oppslag/.default"

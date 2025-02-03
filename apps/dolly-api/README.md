@@ -22,3 +22,37 @@ https://dolly-arbeidssoekerregisteret.intern.dev.nav.no/docs
 ```
 
 For alle nuskoder under "3" blir utdanningBestaatt og utdanningGodkjent satt til null.
+
+## Azure autentisering
+
+Kall til API-et er autentisert med Bearer token fra Azure.
+Eksempel: `Authorization: Bearer <token>`
+
+Machine-to-maching token:
+```json
+{
+  "oid": "989f736f-14db-45dc-b8d1-94d621dbf2bb",
+  "roles": ["access_as_application"]
+}
+```
+
+## Teknologier
+
+Øvrige teknologier, rammeverk og biblioteker som er blitt tatt i bruk:
+
+- [**Kotlin**](https://kotlinlang.org/)
+- [**Ktor**](https://ktor.io/)
+- [**Kafka**](https://kafka.apache.org/)
+- [**Gradle**](https://gradle.org/)
+
+# Henvendelser
+
+Spørsmål knyttet til koden eller prosjektet kan stilles via issues her på github.
+
+## For NAV-ansatte
+
+Interne henvendelser kan sendes via Slack i kanalen [#team-paw-dev](https://nav-it.slack.com/archives/CLTFAEW75)
+
+# Lisens
+
+[MIT](LICENSE)

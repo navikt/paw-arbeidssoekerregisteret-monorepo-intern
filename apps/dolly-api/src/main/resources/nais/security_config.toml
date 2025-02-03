@@ -3,5 +3,5 @@ name = "azure"
 audiences = ["${AZURE_APP_CLIENT_ID}"]
 discoveryUrl = "${AZURE_APP_WELL_KNOWN_URL}"
 
-    [authProviders.requiredClaims]
-    claims = ["NAVident"]
+[authProviders.requiredClaims]
+claims = ["NAVident"]

@@ -1,7 +1,8 @@
 openapi: "3.0.3"
 info:
   title: "paw_arbeidssokerregisteret_api_dolly API"
-  description: "API mot arbeidssoekerregisteret i DEV. Brukes for å registrere person som arbeidssøker ved opprettelse av testpersoner i Dolly. Felter som ikke er utfylt erstattes med standardverdier."
+  description: "API mot arbeidssoekerregisteret i DEV. Brukes for å registrere testperson som arbeidssøker ved opprettelse av testpersoner i Dolly.
+  Felter som ikke er utfylt erstattes med standardverdier."
   version: "1.0.0"
 servers:
   - url: "https://dolly-arbeidssoekerregisteret.intern.dev.nav.no"
@@ -10,7 +11,7 @@ paths:
   /api/v1/arbeidssoekerregistrering/{identitetsnummer}:
     get:
       operationId: "getArbeidssoekerregistrering"
-      description: "Henter registrering av bruker som arbeidssøker"
+      description: "Henter arbeidssøkerregistrering for identitetsnummer"
       parameters:
         - name: "identitetsnummer"
           in: "path"
@@ -59,19 +60,19 @@ paths:
                 instance: "/api/v1/arbeidssoekerregistrering/12345678901"
                 timestamp: "2021-01-01T12:00:00.000Z"
         "400":
-            description: "Bad Request"
-            content:
-                application/json:
-                  schema:
-                    $ref: "#/components/schemas/ProblemDetails"
-                  example:
-                    id: "fa85c6aa-29a8-4378-bff7-7cbc4a1e9b5a"
-                    type: "urn:paw:http:kunne-ikke-tolke-forespoersel"
-                    status: 400
-                    title: "Bad Request"
-                    detail: "Identitetsnummer må bestå av 11 sifre"
-                    instance: "/api/v1/arbeidssoekerregistrering/1234"
-                    timestamp: "2021-01-01T12:00:00.000Z"
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                id: "fa85c6aa-29a8-4378-bff7-7cbc4a1e9b5a"
+                type: "urn:paw:http:kunne-ikke-tolke-forespoersel"
+                status: 400
+                title: "Bad Request"
+                detail: "Identitetsnummer må bestå av 11 sifre"
+                instance: "/api/v1/arbeidssoekerregistrering/1234"
+                timestamp: "2021-01-01T12:00:00.000Z"
         "500":
           description: "Internal Server Error"
           content:
@@ -171,49 +172,20 @@ paths:
   /api/v1/typer/{type}:
     get:
       operationId: "getType"
-      description: "Returnerer objekt hvor key er enum verdi og value er beskrivelse"
+      description: "Returnerer liste av objekter hvor key er enum verdi og value er enum beskrivelse"
       parameters:
         - name: "type"
           in: "path"
           required: true
           schema:
-            type: "string"
-            enum:
-              - "UKJENT_VERDI"
-              - "UDEFINERT"
-              - "HAR_SAGT_OPP"
-              - "HAR_BLITT_SAGT_OPP"
-              - "ER_PERMITTERT"
-              - "ALDRI_HATT_JOBB"
-              - "IKKE_VAERT_I_JOBB_SISTE_2_AAR"
-              - "AKKURAT_FULLFORT_UTDANNING"
-              - "VIL_BYTTE_JOBB"
-              - "USIKKER_JOBBSITUASJON"
-              - "MIDLERTIDIG_JOBB"
-              - "DELTIDSJOBB_VIL_MER"
-              - "NY_JOBB"
-              - "KONKURS"
-              - "ANNET"
-              - "UKJENT_VERDI"
-              - "UDEFINERT"
-              - "VEILEDER"
-              - "SYSTEM"
-              - "SLUTTBRUKER"
+            $ref: "#/components/schemas/TypeRequest"
       responses:
-        "500":
-          description: "Internal Server Error"
+        "200":
+          description: "OK"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProblemDetails"
-              example:
-                id: "fa85c6aa-29a8-4378-bff7-7cbc4a1e9b5a"
-                type: "urn:paw:default:ukjent-feil"
-                status: 500
-                title: "Internal Server Error"
-                detail: "Ukjent feil"
-                instance: "/api/v1/typer"
-                timestamp: "2021-01-01T12:00:00.000Z"
+                $ref: "#/components/schemas/TypeResponse"
         "404":
           description: "Not Found"
           content:
@@ -228,15 +200,34 @@ paths:
                 detail: "Ressurs ikke funnet"
                 instance: "/api/v1/typer/UKJENT"
                 timestamp: "2021-01-01T12:00:00.000Z"
-        "200":
-          description: "OK"
+        "400":
+          description: "Bad Request"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TypeResponse"
+                $ref: "#/components/schemas/ProblemDetails"
               example:
-                key: "HAR_SAGT_OPP"
-                value: "Har sagt opp jobben"
+                id: "fa85c6aa-29a8-4378-bff7-7cbc4a1e9b5a"
+                type: "urn:paw:http:kunne-ikke-tolke-forespoersel"
+                status: 400
+                title: "Bad Request"
+                detail: "Type må være JOBBSITUASJONSBESKRIVELSE eller BRUKERTYPE"
+                instance: "/api/v1/typer/UKJENT"
+                timestamp: "2021-01-01T12:00:00.000Z"
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                id: "fa85c6aa-29a8-4378-bff7-7cbc4a1e9b5a"
+                type: "urn:paw:default:ukjent-feil"
+                status: 500
+                title: "Internal Server Error"
+                detail: "Ukjent feil"
+                instance: "/api/v1/typer"
+                timestamp: "2021-01-01T12:00:00.000Z"
 
   /internal/isAlive:
     get:
@@ -293,7 +284,7 @@ components:
         identitetsnummer:
           $ref: "#/components/schemas/Identitetsnummer"
         utfoertAv:
-          $ref: "#/components/schemas/BrukerType"
+          $ref: "#/components/schemas/Brukertype"
         kilde:
           type: "string"
           example: "Dolly"
@@ -307,10 +298,10 @@ components:
           type: "boolean"
         utdanningGodkjent:
           type: "boolean"
-        jobbsituasjonBeskrivelse:
-          $ref: "#/components/schemas/Beskrivelse"
-        jobbsituasjonDetaljer:
-          $ref: "#/components/schemas/Detaljer"
+        jobbsituasjonsbeskrivelse:
+          $ref: "#/components/schemas/Jobbsituasjonsbeskrivelse"
+        jobbsituasjonsdetaljer:
+          $ref: "#/components/schemas/Jobbsituasjonsdetaljer"
         helsetilstandHindrerArbeid:
           type: "boolean"
         andreForholdHindrerArbeid:
@@ -324,7 +315,7 @@ components:
         identitetsnummer:
           $ref: "#/components/schemas/Identitetsnummer"
         utfoertAv:
-          $ref: "#/components/schemas/BrukerType"
+          $ref: "#/components/schemas/Brukertype"
         kilde:
           type: "string"
         aarsak:
@@ -335,10 +326,10 @@ components:
           type: "boolean"
         utdanningGodkjent:
           type: "boolean"
-        jobbsituasjonBeskrivelse:
-          $ref: "#/components/schemas/Beskrivelse"
-        jobbsituasjonDetaljer:
-          $ref: "#/components/schemas/Detaljer"
+        jobbsituasjonsbeskrivelse:
+          $ref: "#/components/schemas/Jobbsituasjonsbeskrivelse"
+        jobbsituasjonsdetaljer:
+          $ref: "#/components/schemas/Jobbsituasjonsdetaljer"
         helsetilstandHindrerArbeid:
           type: "boolean"
         andreForholdHindrerArbeid:
@@ -353,65 +344,91 @@ components:
         - "kilde"
         - "aarsak"
         - "nuskode"
-        - "utdanningBestaatt"
-        - "utdanningGodkjent"
-        - "jobbsituasjonBeskrivelse"
-        - "jobbsituasjonDetaljer"
+        - "jobbsituasjonsbeskrivelse"
+        - "jobbsituasjonsdetaljer"
         - "helsetilstandHindrerArbeid"
         - "andreForholdHindrerArbeid"
         - "registrertDato"
 
-    TypeResponse:
-      type: "object"
-      properties:
-        key:
-          type: "string"
-          enum:
-            - "UKJENT_VERDI"
-            - "UDEFINERT"
-            - "HAR_SAGT_OPP"
-            - "HAR_BLITT_SAGT_OPP"
-            - "ER_PERMITTERT"
-            - "ALDRI_HATT_JOBB"
-            - "IKKE_VAERT_I_JOBB_SISTE_2_AAR"
-            - "AKKURAT_FULLFORT_UTDANNING"
-            - "VIL_BYTTE_JOBB"
-            - "USIKKER_JOBBSITUASJON"
-            - "MIDLERTIDIG_JOBB"
-            - "DELTIDSJOBB_VIL_MER"
-            - "NY_JOBB"
-            - "KONKURS"
-            - "ANNET"
-            - "UKJENT_VERDI"
-            - "UDEFINERT"
-            - "VEILEDER"
-            - "SYSTEM"
-            - "SLUTTBRUKER"
-        value:
-          type: "string"
-          enum:
-            - "Ukjent verdi"
-            - "Udefinert"
-            - "Har sagt opp jobben"
-            - "Har blitt sagt opp"
-            - "Er permittert"
-            - "Har aldri hatt jobb"
-            - "Ikke vært i jobb siste 2 år"
-            - "Har akkurat fullført utdanning"
-            - "Vil bytte jobb"
-            - "Usikker jobbsituasjon"
-            - "Har midlertidig jobb"
-            - "Har deltidsjobb, vil ha mer"
-            - "Har fått ny jobb"
-            - "Har gått konkurs"
-            - "Annet"
-            - "Ukjent verdi"
-            - "Udefinert"
-            - "Veileder"
-            - "System"
-            - "Sluttbruker"
+    TypeRequest:
+      type: "string"
+      enum:
+        - "JOBBSITUASJONSBESKRIVELSE"
+        - "BRUKERTYPE"
 
-    BrukerType:
+    TypeResponse:
+      type: "array"
+      items:
+        type: "object"
+        properties:
+          key:
+            type: "string"
+          value:
+            type: "string"
+      example: [
+        {
+          key: "UKJENT_VERDI",
+          value: "Ukjent verdi"
+        },
+        {
+          key: "UDEFINERT",
+          value: "Udefinert"
+        },
+        {
+          key: "HAR_SAGT_OPP",
+          value: "Har sagt opp jobben"
+        },
+        {
+          key: "HAR_BLITT_SAGT_OPP",
+          value: "Har blitt sagt opp"
+        },
+        {
+          key: "ER_PERMITTERT",
+          value: "Er permittert"
+        },
+        {
+          key: "ALDRI_HATT_JOBB",
+          value: "Har aldri hatt jobb"
+        },
+        {
+          key: "IKKE_VAERT_I_JOBB_SISTE_2_AAR",
+          value: "Ikke vært i jobb siste 2 år"
+        },
+        {
+          key: "AKKURAT_FULLFORT_UTDANNING",
+          value: "Har akkurat fullført utdanning"
+        },
+        {
+          key: "VIL_BYTTE_JOBB",
+          value: "Vil bytte jobb"
+        },
+        {
+          key: "USIKKER_JOBBSITUASJON",
+          value: "Usikker jobbsituasjon"
+        },
+        {
+          key: "MIDLERTIDIG_JOBB",
+          value: "Har midlertidig jobb"
+        },
+        {
+          key: "DELTIDSJOBB_VIL_MER",
+          value: "Har deltidsjobb, vil ha mer"
+        },
+        {
+          key: "NY_JOBB",
+          value: "Har fått ny jobb"
+        },
+        {
+          key: "KONKURS",
+          value: "Har gått konkurs"
+        },
+        {
+          key: "ANNET",
+          value: "Annet"
+        }
+      ]
+
+    Brukertype:
       type: "string"
       enum:
         - "UKJENT_VERDI"
@@ -420,7 +437,7 @@ components:
         - "SYSTEM"
         - "SLUTTBRUKER"
 
-    Beskrivelse:
+    Jobbsituasjonsbeskrivelse:
       type: "string"
       enum:
         - "UKJENT_VERDI"
@@ -439,7 +456,7 @@ components:
         - "KONKURS"
         - "ANNET"
 
-    Detaljer:
+    Jobbsituasjonsdetaljer:
       type: "object"
       properties:
         gjelder_fra_dato_iso8601:

@@ -3,3 +3,7 @@ version = 1
 antallPartitioner = 6
 producerId = "${NAIS_APP_NAME}-v1-producer"
 hendelsesloggTopic = "${HENDELSESLOGG_TOPIC}"
+
+[oppslagClientConfig]
+url = "https://oppslag-arbeidssoekerregisteret.intern.dev.nav.no/api/v1/veileder/arbeidssoekerperioder-aggregert?siste=true"
+scope = "${OPPSLAG_SCOPE}"
