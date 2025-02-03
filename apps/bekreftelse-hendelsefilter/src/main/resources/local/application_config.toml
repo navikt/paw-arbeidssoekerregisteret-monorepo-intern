@@ -3,6 +3,6 @@ bekreftelseTargetTopic = "paw.arbeidssoker-bekreftelse-v1"
 bekreftelsePaaVegneAvTargetTopic = "paw.arbeidssoker-bekreftelse-paavegneav-v1"
 
 [[bekreftelseKlienter]]
-applicationIdSuffix = "dagpenger_v1"
+applicationIdSuffix = "dagpenger-v1"
 paaVegneAvSourceTopic = "paw.arbeidssoker-bekreftelse-paavegneav-teamdagpenger-v1"
 bekreftelseSourceTopic = "paw.arbeidssoker-bekreftelse-teamdagpenger-v1"
