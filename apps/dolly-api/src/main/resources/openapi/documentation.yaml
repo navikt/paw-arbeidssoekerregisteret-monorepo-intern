@@ -1,8 +1,7 @@
 openapi: "3.0.3"
 info:
   title: "paw_arbeidssokerregisteret_api_dolly API"
-  description: "API mot arbeidssoekerregisteret i DEV. Brukes for å registrere testperson som arbeidssøker ved opprettelse av testpersoner i Dolly.
-  Felter som ikke er utfylt erstattes med standardverdier."
+  description: "API mot arbeidssoekerregisteret i DEV. Brukes for å registrere testperson som arbeidssøker ved opprettelse av testpersoner i Dolly. Felter som ikke er utfylt erstattes med standardverdier."
   version: "1.0.0"
 servers:
   - url: "https://dolly-arbeidssoekerregisteret.intern.dev.nav.no"
