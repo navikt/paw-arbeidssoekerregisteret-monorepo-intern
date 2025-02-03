@@ -30,4 +30,5 @@
             </root>
         </else>
     </if>
+    <logger name="org.apache.kafka" level="WARN"/>
 </configuration>
