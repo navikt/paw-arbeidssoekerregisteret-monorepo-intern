@@ -18,8 +18,8 @@ spec:
     - name: KAFKA_TEAMDAGPENGER_BEKREFTELSE_PAAVEGNEAV_SOURCE_TOPIC
       value: "paw.arbeidssoker-bekreftelse-paavegneav-teamdagpenger-beta-v1"
   replicas:
-    min: 2
-    max: 2
+    min: 1
+    max: 1
   resources:
     limits:
       memory: 1024Mi
