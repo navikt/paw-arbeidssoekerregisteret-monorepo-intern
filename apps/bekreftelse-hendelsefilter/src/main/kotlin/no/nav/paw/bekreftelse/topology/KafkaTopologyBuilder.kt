@@ -18,12 +18,12 @@ fun buildKafkaTopologyList(applicationConfig: ApplicationConfig): List<Pair<Appl
     applicationConfig.bekreftelseKlienter.flatMap { bekreftelseKlient ->
         listOf(
             bekreftelseKlient.bekreftelseApplicationIdSuffix to buildKafkaTopology<Bekreftelse>(
-                streamId = bekreftelseKlient.applicationIdSuffix,
+                streamId = bekreftelseKlient.bekreftelsesloesning,
                 sourceTopic = bekreftelseKlient.bekreftelseSourceTopic,
                 targetTopic = applicationConfig.kafkaTopology.bekreftelseTargetTopic
             ),
             bekreftelseKlient.bekreftelsePaaVegneAvApplicationIdSuffix to buildKafkaTopology<PaaVegneAv>(
-                streamId = bekreftelseKlient.applicationIdSuffix,
+                streamId = bekreftelseKlient.bekreftelsesloesning,
                 sourceTopic = bekreftelseKlient.paaVegneAvSourceTopic,
                 targetTopic = applicationConfig.kafkaTopology.bekreftelsePaaVegneAvTargetTopic
             )
@@ -37,7 +37,6 @@ fun <T : SpecificRecord> buildKafkaTopology(
 ): Topology = StreamsBuilder().apply {
     stream<Long, T>(sourceTopic)
         .peek { _, _ -> logger.debug("Mottok melding på topic {}", sourceTopic) }
-    stream<Long, Bekreftelse>(sourceTopic)
         .mapRecord(name = "add_source_header") { record ->
             val headers = record.headers()
             val updatedHeaders = headers.add("source", streamId.toByteArray())

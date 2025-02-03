@@ -1,5 +1,7 @@
 package no.nav.paw.bekreftelse.config
 
+import no.nav.paw.bekreftelse.paavegneav.v1.vo.Bekreftelsesloesning
+
 const val APPLICATION_CONFIG = "application_config.toml"
 
 data class ApplicationConfig(
@@ -13,16 +15,23 @@ data class KafkaTopologyConfig(
 )
 
 data class BekreftelseKlient(
-    val applicationIdSuffix: String,
+    val bekreftelsesloesning: String,
     val paaVegneAvSourceTopic: String,
     val bekreftelseSourceTopic: String
-)
+) {
+    init {
+        val loesning = Bekreftelsesloesning.valueOf(bekreftelsesloesning.uppercase())
+        require(loesning != Bekreftelsesloesning.UKJENT_VERDI) {
+            "Bekreftelsesløsning kan ikke være 'UKJENT_VERDI'"
+        }
+    }
+}
 
 val BekreftelseKlient.bekreftelseApplicationIdSuffix: ApplicationIdSuffix
-    get() = ApplicationIdSuffix("bekreftelse-${applicationIdSuffix}")
+    get() = ApplicationIdSuffix("bekreftelse-${bekreftelsesloesning}")
 
 val BekreftelseKlient.bekreftelsePaaVegneAvApplicationIdSuffix: ApplicationIdSuffix
-    get() = ApplicationIdSuffix("bekreftelse-paavegneav-${applicationIdSuffix}")
+    get() = ApplicationIdSuffix("bekreftelse-paavegneav-${bekreftelsesloesning}")
 
 @JvmInline
 value class ApplicationIdSuffix(val value: String)
