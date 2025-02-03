@@ -44,7 +44,7 @@ data class ApplicationContext(
                 .map { (applicationIdSuffix, topology) ->
                     factoryForSuffix(applicationIdSuffix.value)
                         .buildKafkaStreams(healthIndicatorRepository, topology)
-                }.onEach { it.start() }
+                }
 
             return ApplicationContext(
                 serverConfig,
