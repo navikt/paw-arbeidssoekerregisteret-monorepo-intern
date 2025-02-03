@@ -356,76 +356,49 @@ components:
         - "BRUKERTYPE"
 
     TypeResponse:
-      type: "array"
+      type: array
       items:
-        type: "object"
+        type: object
         properties:
           key:
-            type: "string"
+            type: string
           value:
-            type: "string"
-      example: [
-        {
-          key: "UKJENT_VERDI",
+            type: string
+        example:
+          key: "UKJENT_VERDI"
           value: "Ukjent verdi"
-        },
-        {
-          key: "UDEFINERT",
+      example:
+        - key: "UKJENT_VERDI"
+          value: "Ukjent verdi"
+        - key: "UDEFINERT"
           value: "Udefinert"
-        },
-        {
-          key: "HAR_SAGT_OPP",
+        - key: "HAR_SAGT_OPP"
           value: "Har sagt opp jobben"
-        },
-        {
-          key: "HAR_BLITT_SAGT_OPP",
+        - key: "HAR_BLITT_SAGT_OPP"
           value: "Har blitt sagt opp"
-        },
-        {
-          key: "ER_PERMITTERT",
+        - key: "ER_PERMITTERT"
           value: "Er permittert"
-        },
-        {
-          key: "ALDRI_HATT_JOBB",
+        - key: "ALDRI_HATT_JOBB"
           value: "Har aldri hatt jobb"
-        },
-        {
-          key: "IKKE_VAERT_I_JOBB_SISTE_2_AAR",
+        - key: "IKKE_VAERT_I_JOBB_SISTE_2_AAR"
           value: "Ikke vært i jobb siste 2 år"
-        },
-        {
-          key: "AKKURAT_FULLFORT_UTDANNING",
+        - key: "AKKURAT_FULLFORT_UTDANNING"
           value: "Har akkurat fullført utdanning"
-        },
-        {
-          key: "VIL_BYTTE_JOBB",
+        - key: "VIL_BYTTE_JOBB"
           value: "Vil bytte jobb"
-        },
-        {
-          key: "USIKKER_JOBBSITUASJON",
+        - key: "USIKKER_JOBBSITUASJON"
           value: "Usikker jobbsituasjon"
-        },
-        {
-          key: "MIDLERTIDIG_JOBB",
+        - key: "MIDLERTIDIG_JOBB"
           value: "Har midlertidig jobb"
-        },
-        {
-          key: "DELTIDSJOBB_VIL_MER",
+        - key: "DELTIDSJOBB_VIL_MER"
           value: "Har deltidsjobb, vil ha mer"
-        },
-        {
-          key: "NY_JOBB",
+        - key: "NY_JOBB"
           value: "Har fått ny jobb"
-        },
-        {
-          key: "KONKURS",
+        - key: "KONKURS"
           value: "Har gått konkurs"
-        },
-        {
-          key: "ANNET",
+        - key: "ANNET"
           value: "Annet"
-        }
-      ]
+
 
     Brukertype:
       type: "string"
