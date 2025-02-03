@@ -62,7 +62,7 @@ fun haandterBekreftelsePaaVegneAvEndret(
                     ?.contains(Loesning.from(paaVegneAvHendelse.bekreftelsesloesning)) ?: false
             )
         )
-        if (hendelse != null) {
+        if (hendelse == null) {
             Span.current()
                 .setStatus(StatusCode.ERROR, "ingen endring utført, se trace 'event' '$traceHendelse' for detaljer")
         } else {
