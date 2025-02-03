@@ -1,5 +1,8 @@
 package no.nav.paw.bekreftelsetjeneste.topology
 
+import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.StatusCode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
@@ -19,10 +22,16 @@ fun haandterBekreftelseMottatt(
     melding: no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 ): Pair<BekreftelseTilstand, List<BekreftelseHendelse>> {
     val (tilstand, hendelser) = if (melding.bekreftelsesloesning == Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET) {
-        processPawNamespace(melding, gjeldendeTilstand)
+        processPawNamespace(melding, gjeldendeTilstand, paaVegneAvTilstand)
     } else {
         val paaVegneAvList = paaVegneAvTilstand?.paaVegneAvList ?: emptyList()
         if (paaVegneAvList.any { it.loesning == Loesning.from(melding.bekreftelsesloesning) }) {
+            Span.current().addEvent(
+                bekreftelseMottattOK, Attributes.of(
+                    bekreftelseloesingKey, Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET.name,
+                    harAnsvarKey, true
+                )
+            )
             gjeldendeTilstand.leggTilNyEllerOppdaterBekreftelse(
                 Bekreftelse(
                     tilstandsLogg = BekreftelseTilstandsLogg(
@@ -34,7 +43,19 @@ fun haandterBekreftelseMottatt(
                     gjelderTil = melding.svar.gjelderTil
                 )
             ) to emptyList()
-        } else gjeldendeTilstand to emptyList()
+        } else {
+            with(Span.current()) {
+                addEvent(
+                    bekreftelseMottattFeil, Attributes.of(
+                        bekreftelseloesingKey, Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET.name,
+                        harAnsvarKey, false,
+                        feilMeldingKey, "Bekreftelsesløsning har ikke ansvar"
+                    )
+                )
+                setStatus(StatusCode.ERROR, "Bekreftelsesløsning har ikke ansvar")
+            }
+            gjeldendeTilstand to emptyList()
+        }
     }
     return tilstand.copy(
         bekreftelser = tilstand.bekreftelser.filterByStatusAndCount(maksAntallBekreftelserEtterStatus)

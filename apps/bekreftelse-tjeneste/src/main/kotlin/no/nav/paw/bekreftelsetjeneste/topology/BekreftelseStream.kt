@@ -8,8 +8,8 @@ import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.internehendelser.*
+import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
-import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
 import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternBekreftelsePaaVegneAvStartet
@@ -51,19 +51,22 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
                 val hendelser = when (gjeldendeTilstand) {
                     null -> {
                         meldingsLogger.warn("Melding mottatt for periode som ikke er aktiv/eksisterer")
-                        addTraceEvent(record, paaVegneAvTilstand, meldingIgnorert)
+                        addTraceEventIkkeAktivPeriode(record.value().bekreftelsesloesning.name)
                         emptyList()
                     }
+
                     else -> {
                         haandterBekreftelseMottatt(
                             gjeldendeTilstand,
                             paaVegneAvTilstand,
                             melding
-                        ).also { (oppdatertTilstand, hendelser) ->
+                        ).also { (oppdatertTilstand, _) ->
                             if (oppdatertTilstand != gjeldendeTilstand) {
-                                bekreftelseTilstandStateStore.put(oppdatertTilstand.periode.periodeId, oppdatertTilstand)
+                                bekreftelseTilstandStateStore.put(
+                                    oppdatertTilstand.periode.periodeId,
+                                    oppdatertTilstand
+                                )
                             }
-                            hendelser.forEach { hendelse -> addTraceEvent(record, paaVegneAvTilstand, hendelse.hendelseType) }
                         }.second
                     }
                 }
@@ -73,89 +76,93 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
     }
 }
 
-private fun addTraceEvent(
-    record: Record<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>,
-    paaVegneAvTilstand: PaaVegneAvTilstand?,
-    traceMelding: String
+private fun addTraceEventIkkeAktivPeriode(
+    bekreftelseLoesing: String,
 ) {
-    Span.current().addEvent(
-        meldingIgnorert, Attributes.of(
-            bekreftelseloesingKey, record.value().bekreftelsesloesning.name,
-            periodeFunnetKey, false,
-            harAnsvar, paaVegneAvTilstand
-                ?.paaVegneAvList
-                ?.map { it.loesning }
-                ?.contains(Loesning.from(record.value().bekreftelsesloesning)) ?: false
-        )
-    )
-    if (traceMelding == meldingIgnorert) {
-        Span.current()
-            .setStatus(
-                StatusCode.ERROR,
-                "ingen endring utført, se trace 'event' '$traceMelding' for detaljer"
+    with(Span.current()) {
+        addEvent(
+            bekreftelseMottattFeil, Attributes.of(
+                bekreftelseloesingKey, bekreftelseLoesing,
+                periodeFunnetKey, false,
+                harAnsvarKey, false
             )
+        )
+        setStatus(StatusCode.ERROR, "ingen aktiv periode funnet")
     }
 }
 
-@WithSpan(
-    value = "retrieveState",
-    kind = SpanKind.INTERNAL
-)
 fun retrieveState(
     bekreftelseTilstandStateStore: BekreftelseTilstandStateStore,
     record: Record<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>
 ): BekreftelseTilstand? {
     val periodeId = record.value().periodeId
     val state = bekreftelseTilstandStateStore[periodeId]
-
-    Span.current().setAttribute("periodeId", periodeId.toString())
     return state
 }
 
-@WithSpan(
-    value = "processPawNamespace",
-    kind = SpanKind.INTERNAL
-)
 fun processPawNamespace(
     hendelse: no.nav.paw.bekreftelse.melding.v1.Bekreftelse,
-    gjeldeneTilstand: BekreftelseTilstand
+    gjeldeneTilstand: BekreftelseTilstand,
+    paaVegneAvTilstand: PaaVegneAvTilstand?
 ): Pair<BekreftelseTilstand, List<BekreftelseHendelse>> {
     val bekreftelse = gjeldeneTilstand.findBekreftelse(hendelse.id)
-
-    if (bekreftelse == null) {
-        Span.current().addEvent("Bekreftelse not found for message")
-        meldingsLogger.warn("Melding {} har ingen matchene bekreftelse", hendelse.id)
-        return gjeldeneTilstand to emptyList()
-    }
-
-    return when (val sisteTilstand = bekreftelse.sisteTilstand()) {
-        is VenterSvar,
-        is KlarForUtfylling,
-        is GracePeriodeVarselet,
-        is InternBekreftelsePaaVegneAvStartet -> {
-            val (hendelser, oppdatertBekreftelse) = behandleGyldigSvar(gjeldeneTilstand, hendelse, bekreftelse)
-            Span.current().setAttribute("bekreftelse.tilstand", sisteTilstand.toString())
-            gjeldeneTilstand.oppdaterBekreftelse(oppdatertBekreftelse) to hendelser
-        }
-
-        else -> {
-            Span.current().setStatus(StatusCode.ERROR).setAttribute("unexpected_tilstand", sisteTilstand.toString())
-            meldingsLogger.error(
-                "Melding {} har ikke forventet tilstand, tilstand={}",
-                hendelse.id,
-                sisteTilstand
+    val registeretHarAnsvar = paaVegneAvTilstand?.paaVegneAvList?.isEmpty() ?: true
+    return if (bekreftelse == null) {
+        with(Span.current()) {
+            addEvent(
+                bekreftelseMottattFeil, Attributes.of(
+                    bekreftelseloesingKey, Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET.name,
+                    feilMeldingKey, "Bekreftelse ikke funnet",
+                    harAnsvarKey, registeretHarAnsvar
+                )
             )
-            gjeldeneTilstand to emptyList()
+            setStatus(StatusCode.ERROR, "Bekreftelse ikke funnet")
+        }
+        meldingsLogger.warn("Melding {} har ingen matchene bekreftelse", hendelse.id)
+        gjeldeneTilstand to emptyList()
+    } else {
+        when (val sisteTilstand = bekreftelse.sisteTilstand()) {
+            is VenterSvar,
+            is KlarForUtfylling,
+            is GracePeriodeVarselet,
+            is InternBekreftelsePaaVegneAvStartet -> {
+                Span.current().addEvent(
+                    bekreftelseMottattOK, Attributes.of(
+                        bekreftelseloesingKey, Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET.name,
+                        tilstandKey, sisteTilstand.toString(),
+                        harAnsvarKey, registeretHarAnsvar
+                    )
+                )
+                val (hendelser, oppdatertBekreftelse) = behandleGyldigSvar(gjeldeneTilstand, hendelse, bekreftelse)
+                Span.current().setAttribute("bekreftelse.tilstand", sisteTilstand.toString())
+                gjeldeneTilstand.oppdaterBekreftelse(oppdatertBekreftelse) to hendelser
+            }
+
+            else -> {
+                with(Span.current()) {
+                    addEvent(
+                        bekreftelseMottattFeil, Attributes.of(
+                            bekreftelseloesingKey, Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET.name,
+                            feilMeldingKey, "Melding har ikke forventet tilstand",
+                            tilstandKey, sisteTilstand.toString(),
+                            harAnsvarKey, registeretHarAnsvar
+                        )
+                    )
+                    setStatus(StatusCode.ERROR, "Melding har ikke forventet tilstand")
+                }
+                meldingsLogger.error(
+                    "Melding {} har ikke forventet tilstand, tilstand={}",
+                    hendelse.id,
+                    sisteTilstand
+                )
+                gjeldeneTilstand to emptyList()
+            }
         }
     }
 }
 
 fun BekreftelseTilstand.findBekreftelse(id: UUID): Bekreftelse? = bekreftelser.find { it.bekreftelseId == id }
 
-@WithSpan(
-    value = "behandleGyldigSvar",
-    kind = SpanKind.INTERNAL
-)
 fun behandleGyldigSvar(
     gjeldeneTilstand: BekreftelseTilstand,
     record: no.nav.paw.bekreftelse.melding.v1.Bekreftelse,

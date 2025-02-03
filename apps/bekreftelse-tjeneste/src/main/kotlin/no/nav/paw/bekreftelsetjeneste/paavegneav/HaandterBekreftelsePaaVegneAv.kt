@@ -12,8 +12,10 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Stopp
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import no.nav.paw.bekreftelsetjeneste.topology.bekreftelseloesingKey
-import no.nav.paw.bekreftelsetjeneste.topology.meldingIgnorert
-import no.nav.paw.bekreftelsetjeneste.topology.harAnsvar
+import no.nav.paw.bekreftelsetjeneste.topology.forespoerselTypeKey
+import no.nav.paw.bekreftelsetjeneste.topology.harAnsvarKey
+import no.nav.paw.bekreftelsetjeneste.topology.paaVegneAvMottattFeil
+import no.nav.paw.bekreftelsetjeneste.topology.paaVegneAvMottattOk
 import no.nav.paw.bekreftelsetjeneste.topology.periodeFunnetKey
 import java.time.Duration
 import java.time.Instant
@@ -52,21 +54,30 @@ fun haandterBekreftelsePaaVegneAvEndret(
             .filterIsInstance<SendHendelse>()
             .firstOrNull()
             ?.hendelse
-        val traceHendelse = hendelse?.hendelseType ?: meldingIgnorert
-        Span.current().addEvent(
-            traceHendelse, Attributes.of(
-                bekreftelseloesingKey, paaVegneAvHendelse.bekreftelsesloesning.name,
-                periodeFunnetKey, bekreftelseTilstand != null,
-                harAnsvar, paaVegneAvTilstand?.paaVegneAvList
-                    ?.map { it.loesning }
-                    ?.contains(Loesning.from(paaVegneAvHendelse.bekreftelsesloesning)) ?: false
-            )
+        val forespoerselType = when (paaVegneAvHendelse.handling) {
+            is Start -> "startet"
+            is Stopp -> "stoppet"
+            else -> "ukjent"
+        }
+        val attributes = Attributes.of(
+            forespoerselTypeKey, forespoerselType,
+            bekreftelseloesingKey, paaVegneAvHendelse.bekreftelsesloesning.name,
+            periodeFunnetKey, bekreftelseTilstand != null,
+            harAnsvarKey, paaVegneAvTilstand?.paaVegneAvList
+                ?.map { it.loesning }
+                ?.contains(Loesning.from(paaVegneAvHendelse.bekreftelsesloesning)) ?: false
         )
         if (hendelse == null) {
+            Span.current().addEvent(
+                paaVegneAvMottattFeil, attributes
+            )
             Span.current()
-                .setStatus(StatusCode.ERROR, "ingen endring utført, se trace 'event' '$traceHendelse' for detaljer")
+                .setStatus(StatusCode.ERROR, "ingen endring utført, se trace 'event' '$paaVegneAvMottattFeil' for detaljer")
         } else {
-            Span.current().setStatus(StatusCode.OK, "endring utført")
+            with(Span.current()) {
+                Span.current().addEvent(paaVegneAvMottattOk, attributes)
+                setStatus(StatusCode.OK, "endring utført")
+            }
         }
     }
 }
