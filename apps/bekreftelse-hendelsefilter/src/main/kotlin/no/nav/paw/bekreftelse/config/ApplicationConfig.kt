@@ -20,5 +20,3 @@ data class BekreftelseKlient (
 
 @JvmInline
 value class ApplicationIdSuffix(val value: String)
-
-fun BekreftelseKlient.applicationIdSuffix() = ApplicationIdSuffix(applicationIdSuffix)
