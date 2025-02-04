@@ -25,29 +25,28 @@ fun buildKafkaTopologyList(applicationConfig: ApplicationConfig): List<Pair<Appl
             bekreftelseKlient.bekreftelseApplicationIdSuffix to buildKafkaTopology<Bekreftelse>(
                 bekreftelsesloesning = bekreftelseKlient.bekreftelsesloesning,
                 sourceTopic = bekreftelseKlient.bekreftelseSourceTopic,
-                targetTopic = applicationConfig.kafkaTopology.bekreftelseTargetTopic
+                targetTopic = applicationConfig.kafkaTopology.bekreftelseTargetTopic,
+                hentLoesningFraMelding = { it.bekreftelsesloesning.name }
             ),
             bekreftelseKlient.bekreftelsePaaVegneAvApplicationIdSuffix to buildKafkaTopology<PaaVegneAv>(
                 bekreftelsesloesning = bekreftelseKlient.bekreftelsesloesning,
                 sourceTopic = bekreftelseKlient.paaVegneAvSourceTopic,
-                targetTopic = applicationConfig.kafkaTopology.bekreftelsePaaVegneAvTargetTopic
+                targetTopic = applicationConfig.kafkaTopology.bekreftelsePaaVegneAvTargetTopic,
+                hentLoesningFraMelding = { it.bekreftelsesloesning.name }
             )
         )
     }
 
-fun <T : SpecificRecord> buildKafkaTopology(
+fun <T: SpecificRecord> buildKafkaTopology(
     bekreftelsesloesning: String,
     sourceTopic: String,
-    targetTopic: String
+    targetTopic: String,
+    hentLoesningFraMelding: (T) -> String
 ): Topology = StreamsBuilder().apply {
     stream<Long, T>(sourceTopic)
         .peek { _, _ -> logger.debug("Mottok melding på topic {}", sourceTopic) }
         .mapNonNull(name = "verifiser_bekreftelseloesning") { value ->
-            val loesningFraMelding = when (value) {
-                is Bekreftelse -> value.bekreftelsesloesning.name
-                is PaaVegneAv -> value.bekreftelsesloesning.name
-                else -> throw IllegalArgumentException("Ukjent meldingstype: ${value::class.simpleName}")
-            }
+            val loesningFraMelding = hentLoesningFraMelding(value)
             with(Span.current()) {
                 val gyldig = loesningFraMelding.equals(bekreftelsesloesning, ignoreCase = true)
                 val attributes = Attributes.of(
