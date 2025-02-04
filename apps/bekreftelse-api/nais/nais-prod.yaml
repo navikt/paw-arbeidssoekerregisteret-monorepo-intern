@@ -62,6 +62,11 @@ spec:
         tier: db-custom-1-6144
         databases:
           - name: bekreftelser
+        flags:
+          - name: cloudsql.enable_pgaudit
+            value: "true"
+          - name: pgaudit.log
+            value: "write"
   accessPolicy:
     inbound:
       rules:
