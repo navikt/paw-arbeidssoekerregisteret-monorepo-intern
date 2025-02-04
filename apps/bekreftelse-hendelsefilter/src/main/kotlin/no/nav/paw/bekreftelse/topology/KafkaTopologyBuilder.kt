@@ -55,10 +55,10 @@ fun <T: SpecificRecord> buildKafkaTopology(
                     AttributeKey.booleanKey("gyldig_loesning"), gyldig
                 )
                 if (gyldig) {
-                    addEvent("bekreftelseloesning_verifisert", attributes)
+                    addEvent("bekreftelse.filter.ok", attributes)
                     value
                 } else {
-                    addEvent("bekreftelseloesning_ikke_gyldig", attributes)
+                    addEvent("bekreftelse.filter.feil", attributes)
                     setStatus(StatusCode.ERROR, "Bekreftelsesløsning fra melding matcher ikke forventet løsning")
                     logger.warn("Meldingens bekreftelsesløsning '$loesningFraMelding' matcher ikke forventet løsning '$bekreftelsesloesning'. Dropper melding.")
                     null
