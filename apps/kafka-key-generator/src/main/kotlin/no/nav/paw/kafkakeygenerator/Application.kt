@@ -105,9 +105,9 @@ fun startApplication(
             })
         }
     ) {
+        configureErrorHandling()
         configSerialization()
         configureLogging()
-        configureErrorHandling()
         configureAuthentication(authenticationConfig)
         configureMetrics(
             meterRegistry = prometheusMeterRegistry,

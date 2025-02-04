@@ -26,9 +26,9 @@ fun Application.configureRouting(
             prometheusMeterRegistry = prometheusMeterRegistry,
             mergeDetector = mergeDetector
         )
-        konfigurerApiV2(authenticationConfig, kafkaKeysService)
-        configureRecordKeyApi(authenticationConfig, kafkaKeysService)
         swaggerUI(path = "docs", swaggerFile = "openapi/documentation.yaml")
         swaggerUI(path = "docs/record-key", swaggerFile = "openapi/record-key-api-spec.yaml")
+        konfigurerApiV2(authenticationConfig, kafkaKeysService)
+        configureRecordKeyApi(authenticationConfig, kafkaKeysService)
     }
 }

@@ -20,7 +20,7 @@ import no.nav.paw.tilgangskontroll.ktorserver.AuthProviderConfig
 import no.nav.paw.tilgangskontroll.ktorserver.AuthProviders
 import no.nav.paw.tilgangskontroll.ktorserver.configureAuthentication
 import no.nav.paw.tilgangskontroll.ktorserver.installContentNegotiation
-import no.nav.paw.tilgangskontroll.ktorserver.installStatusPage
+import no.nav.paw.tilgangskontroll.ktorserver.installErrorHandling
 import no.nav.paw.tilgangskontroll.routes.apiV1Tilgang
 import no.nav.paw.tilgangskontroll.vo.Identitetsnummer
 import no.nav.paw.tilgangskontroll.vo.NavIdent
@@ -49,7 +49,7 @@ class TilgangskontrollTest: FreeSpec({
         testApplication {
             application {
                 configureAuthentication(mockOAuthServer, AuthProvider.EntraId)
-                installStatusPage()
+                installErrorHandling()
                 installContentNegotiation()
                 routing {
                     authenticate(AuthProvider.EntraId.name) {

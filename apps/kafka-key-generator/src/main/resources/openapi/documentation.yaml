@@ -8,7 +8,8 @@ servers:
 paths:
   /api/v2/info:
     post:
-      description: ""
+      operationId: postHentInfoV2
+      description: "Hent info"
       parameters:
         - name: "traceparent"
           in: "header"
@@ -17,44 +18,49 @@ paths:
             type: "string"
       requestBody:
         content:
-          '*/*':
+          application/json:
             schema:
               $ref: "#/components/schemas/RequestV2"
         required: true
       responses:
-        "400":
-          description: "Bad Request"
-          content:
-            text/plain:
-              schema:
-                type: "string"
-              examples:
-                Example#1:
-                  value: "Bad request"
-        "500":
-          description: "Internal Server Error"
-          content:
-            text/plain:
-              schema:
-                type: "string"
-              examples:
-                Example#1:
-                  value: "En uventet feil oppstod"
         "200":
-          description: ""
+          description: "OK"
           content:
-            text/plain:
-              schema:
-                type: "string"
-              examples:
-                Example#1:
-                  value: "Intern feil, prøv igjen senere"
-            '*/*':
+            application/json:
               schema:
                 $ref: "#/components/schemas/InfoResponse"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                id: "3cd944fb-6187-41a8-91b2-b172f2baf890"
+                type: "urn:paw:http:kunne-ikke-tolke-forespoersel"
+                status: 400
+                title: "Bad Request"
+                detail: "Kunne ikke tolke forespørsel"
+                instance: "/api/v2/info"
+                timestamp: "2021-01-01T12:00:00.000Z"
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                id: "3cd944fb-6187-41a8-91b2-b172f2baf890"
+                type: "urn:paw:default:ukjent-feil"
+                status: 500
+                title: "Internal Server Error"
+                detail: "Ukjent feil"
+                instance: "/api/v2/info"
+                timestamp: "2021-01-01T12:00:00.000Z"
   /api/v2/hentEllerOpprett:
     post:
-      description: ""
+      operationId: postHentEllerOpprettKeyV2
+      description: "Hent eller opprett Kafka keys"
       parameters:
         - name: "traceparent"
           in: "header"
@@ -63,41 +69,90 @@ paths:
             type: "string"
       requestBody:
         content:
-          '*/*':
+          application/json:
             schema:
               $ref: "#/components/schemas/RequestV2"
         required: true
       responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseV2"
         "400":
           description: "Bad Request"
           content:
-            text/plain:
+            application/json:
               schema:
-                type: "string"
-              examples:
-                Example#1:
-                  value: "Bad request"
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                id: "3cd944fb-6187-41a8-91b2-b172f2baf890"
+                type: "urn:paw:http:kunne-ikke-tolke-forespoersel"
+                status: 400
+                title: "Bad Request"
+                detail: "Kunne ikke tolke forespørsel"
+                instance: "/api/v2/hentEllerOpprett"
+                timestamp: "2021-01-01T12:00:00.000Z"
         "500":
           description: "Internal Server Error"
           content:
-            text/plain:
+            application/json:
               schema:
-                type: "string"
-              examples:
-                Example#1:
-                  value: "En uventet feil oppstod"
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                id: "3cd944fb-6187-41a8-91b2-b172f2baf890"
+                type: "urn:paw:default:ukjent-feil"
+                status: 500
+                title: "Internal Server Error"
+                detail: "Ukjent feil"
+                instance: "/api/v2/hentEllerOpprett"
+                timestamp: "2021-01-01T12:00:00.000Z"
+  /internal/isAlive:
+    get:
+      operationId: getIsAlive
+      description: "Service is alive probe"
+      responses:
         "200":
-          description: ""
+          description: "OK"
           content:
             text/plain:
               schema:
-                type: "string"
-              examples:
-                Example#1:
-                  value: "Intern feil, prøv igjen senere"
-            '*/*':
+                $ref: "#/components/schemas/HealthStatus"
+        "503":
+          description: "Service Unavailable"
+          content:
+            text/plain:
               schema:
-                $ref: "#/components/schemas/ResponseV2"
+                $ref: "#/components/schemas/HealthStatus"
+  /internal/isReady:
+    get:
+      operationId: getIsReady
+      description: "Service is ready probe"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+        "503":
+          description: "Service Unavailable"
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /internal/metrics:
+    get:
+      operationId: getMetrics
+      description: "Prometheus metrics"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "string"
 components:
   schemas:
     InfoResponse:
@@ -146,6 +201,8 @@ components:
           type: "string"
       required:
         - "ident"
+      example:
+        ident: "01017012345"
     ResponseV2:
       type: "object"
       properties:
@@ -155,3 +212,48 @@ components:
         key:
           type: "integer"
           format: "int64"
+      example:
+        id: 1234
+        key: -1234
+    ProblemDetails:
+      type: object
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        type:
+          type: "string"
+          format: "uri"
+        status:
+          type: "integer"
+        title:
+          type: "string"
+        detail:
+          type: "string"
+        instance:
+          type: "string"
+        timestamp:
+          type: "string"
+          format: "date-time"
+      required:
+        - id
+        - type
+        - status
+        - title
+        - detail
+        - instance
+        - timestamp
+      example:
+        id: "3cd944fb-6187-41a8-91b2-b172f2baf890"
+        type: "urn:paw:default:ukjent-feil"
+        status: 500
+        title: "Internal Server Error"
+        detail: "Ukjent feil"
+        instance: "/api/v2/info"
+        timestamp: "2021-01-01T12:00:00.000Z"
+    HealthStatus:
+      type: "string"
+      enum:
+        - "UNKNOWN"
+        - "HEALTHY"
+        - "UNHEALTHY"
