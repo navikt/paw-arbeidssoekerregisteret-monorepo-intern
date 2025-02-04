@@ -33,7 +33,7 @@ fun ArbeidssoekerregistreringRequest.medStandardverdier() =
             jobbsituasjonsbeskrivelse = jobbsituasjonsbeskrivelse ?: Jobbsituasjonsbeskrivelse.HAR_BLITT_SAGT_OPP,
             jobbsituasjonsdetaljer = jobbsituasjonsdetaljer ?: Jobbsituasjonsdetaljer(
                 stillingStyrk08 = "00",
-                stilling = "Annen stilling"
+                stillingstittel = "Annen stilling"
             ),
             helsetilstandHindrerArbeid = helsetilstandHindrerArbeid ?: false,
             andreForholdHindrerArbeid = andreForholdHindrerArbeid ?: false
@@ -118,13 +118,13 @@ fun Jobbsituasjonsbeskrivelse.asHendelseJobbsituasjonsbeskrivelse(): Jobbsituasj
 
 fun Jobbsituasjonsdetaljer.toHendelsesdetaljer(): Map<String, String> =
     mapOf(
-        "gjelder_fra_dato_iso8601" to gjelderFraDatoIso8601,
-        "gjelder_til_dato_iso8601" to gjelderTilDatoIso8601,
+        "gjelder_fra_dato_iso8601" to gjelderFraDato,
+        "gjelder_til_dato_iso8601" to gjelderTilDato,
         "stilling_styrk08" to stillingStyrk08,
-        "stilling" to stilling,
-        "prosent" to prosent,
-        "siste_dag_med_loenn_iso8601" to sisteDagMedLoennIso8601,
-        "siste_arbeidsdag_iso8601" to sisteArbeidsdagIso8601
+        "stilling" to stillingstittel,
+        "prosent" to stillingsprosent,
+        "siste_dag_med_loenn_iso8601" to sisteDagMedLoenn,
+        "siste_arbeidsdag_iso8601" to sisteArbeidsdag
     ).filterValues { it != null }
         .mapValues { it.value!!.toString() }
 
@@ -167,19 +167,19 @@ fun OppslagResponse.toArbeidssoekerregistreringResponse(identitetsnummer: String
         jobbsituasjonsdetaljer = jobbsituasjonsdetaljer ?: return null,
         helsetilstandHindrerArbeid = helsetilstandHindrerArbeid,
         andreForholdHindrerArbeid = andreForholdHindrerArbeid,
-        registrertDato = startet.tidspunkt
+        registreringstidspunkt = startet.tidspunkt
     )
 }
 
 fun Map<String, String>.toJobbsituasjonsdetaljer(): Jobbsituasjonsdetaljer {
     return Jobbsituasjonsdetaljer(
-        gjelderFraDatoIso8601 = this["gjelder_fra_dato_iso8601"]?.let { java.time.LocalDate.parse(it) },
-        gjelderTilDatoIso8601 = this["gjelder_til_dato_iso8601"]?.let { java.time.LocalDate.parse(it) },
+        gjelderFraDato = this["gjelder_fra_dato_iso8601"]?.let { java.time.LocalDate.parse(it) },
+        gjelderTilDato = this["gjelder_til_dato_iso8601"]?.let { java.time.LocalDate.parse(it) },
         stillingStyrk08 = this["stilling_styrk08"],
-        stilling = this["stilling"],
-        prosent = this["prosent"],
-        sisteDagMedLoennIso8601 = this["siste_dag_med_loenn_iso8601"]?.let { java.time.LocalDate.parse(it) },
-        sisteArbeidsdagIso8601 = this["siste_arbeidsdag_iso8601"]?.let { java.time.LocalDate.parse(it) }
+        stillingstittel = this["stilling"],
+        stillingsprosent = this["prosent"],
+        sisteDagMedLoenn = this["siste_dag_med_loenn_iso8601"]?.let { java.time.LocalDate.parse(it) },
+        sisteArbeidsdag = this["siste_arbeidsdag_iso8601"]?.let { java.time.LocalDate.parse(it) }
     )
 }
 

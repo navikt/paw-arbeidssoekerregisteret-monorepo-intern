@@ -1,10 +1,12 @@
 package no.nav.paw.dolly.api.oppslag
 
 import io.ktor.client.call.body
+import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import no.nav.paw.client.factory.createHttpClient
 import no.nav.paw.dolly.api.config.OppslagClientConfig
@@ -28,7 +30,14 @@ class OppslagClientImpl(
     private val url: String,
     private val getAccessToken: () -> String
 ) : OppslagClient {
-    private val httpClient = createHttpClient()
+    private val httpClient = createHttpClient {
+        install(HttpRequestRetry) {
+            maxRetries = 2
+            retryIf { _, response ->
+                response.status == HttpStatusCode.NotFound
+            }
+        }
+    }
     override suspend fun hentAggregerteArbeidssoekerperioder(identitetsnummer: String): OppslagResponse? {
         httpClient.post(url) {
             header("Authorization", "Bearer ${getAccessToken()}")

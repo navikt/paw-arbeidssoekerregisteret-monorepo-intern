@@ -30,6 +30,19 @@ object EnumTypeData {
         "SYSTEM" to "System"
     )
 
+    private val nuskoder = mapOf(
+        "0" to "Ingen utdanning og førskoleutdanning",
+        "1" to "Barneskoleutdanning",
+        "2" to "Ungdomsskoleutdanning",
+        "3" to "Videregående, grunnutdanning",
+        "4" to "Videregående, avsluttende utdanning",
+        "5" to "Påbygging til videregående utdanning",
+        "6" to "Universitets- og høgskoleutdanning, lavere nivå",
+        "7" to "Universitets- og høgskoleutdanning, høyere nivå",
+        "8" to "Forskerutdanning"
+
+    )
+
     fun hentEnumTypeResponse(type: TypeRequest): List<TypeResponseInner> = when (type) {
         TypeRequest.JOBBSITUASJONSBESKRIVELSE -> jobbsituasjonsbeskrivelser.map { (key, value) ->
             TypeResponseInner(
@@ -39,5 +52,7 @@ object EnumTypeData {
         }
 
         TypeRequest.BRUKERTYPE -> brukertyper.map { (key, value) -> TypeResponseInner(key, value) }
+
+        TypeRequest.NUSKODE -> nuskoder.map { (key, value) -> TypeResponseInner(key, value) }
     }
 }
