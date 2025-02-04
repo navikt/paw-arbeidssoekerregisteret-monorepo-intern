@@ -6,7 +6,7 @@ metadata:
   labels:
     team: paw
 spec:
-  image: { { image } }
+  image: {{ image }}
   port: 8080
   env:
     - name: HENDELSESLOGG_TOPIC
