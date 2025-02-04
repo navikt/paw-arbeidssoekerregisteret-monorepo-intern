@@ -52,4 +52,8 @@ spec:
       rules:
         - application: azure-token-generator
           namespace: aura
+        - application: testnav-arbeidssoekerregisteret-proxy-trygdeetaten
+          namespace: dolly
+        - application: testnav-arbeidssoekerregisteret-proxy
+          namespace: dolly
 
