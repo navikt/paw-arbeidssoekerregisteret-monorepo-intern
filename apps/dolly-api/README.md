@@ -7,7 +7,7 @@ API for registrering av en person som arbeidssøker i arbeidssøkerregisteret ve
 https://dolly-arbeidssoekerregisteret.intern.dev.nav.no/docs
 
 ## Default-verdier
-
+Felt som ikke er satt i request bruker følgende default-verdier.
 ```
   utfoertAv = BrukerType.SLUTTBRUKER,
   kilde = "Dolly",
