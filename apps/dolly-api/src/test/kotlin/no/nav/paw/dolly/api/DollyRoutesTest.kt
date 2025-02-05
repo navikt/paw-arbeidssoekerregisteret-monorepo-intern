@@ -231,12 +231,12 @@ class DollyRoutesTest : FreeSpec({
                 }
             }
 
-            "400 Bad Request ved ugyldig request" {
+            "400 Bad Request ved ugyldig type" {
                 testApplication {
                     configureTestApplication(dollyService)
 
                     val client = configureTestClient()
-                    val response = client.get("/api/v1/typer/test") {
+                    val response = client.get("/api/v1/typer/ugyldigType") {
                         bearerAuth(mockOAuth2Server.issueAzureM2MToken())
                     }
 
@@ -255,7 +255,7 @@ class DollyRoutesTest : FreeSpec({
                 }
             }
 
-            "404 Not Found ved ugyldig type" {
+            "404 Not Found ved manglende path parameter" {
                 testApplication {
                     configureTestApplication(dollyService)
 
