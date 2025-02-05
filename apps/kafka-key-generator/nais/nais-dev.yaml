@@ -76,5 +76,7 @@ spec:
           - application: paw-arbeidssoekerregisteret-bekreftelse-tjeneste
           - application: paw-arbeidssoekerregisteret-bekreftelse-min-side-varsler
           - application: paw-arbeidssoekerregisteret-api-dolly
-          - application: dp-arbeidssokerregister-adapter
+          - application: dp-rapportering-personregister
+            namespace: teamdagpenger
+          - application: dp-rapportering
             namespace: teamdagpenger
