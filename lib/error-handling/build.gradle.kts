@@ -7,6 +7,7 @@ dependencies {
     compileOnly(libs.ktor.server.cors)
     compileOnly(libs.ktor.server.statusPages)
     compileOnly(libs.ktor.serialization.jackson)
+    compileOnly(libs.jackson.datatypeJsr310)
     compileOnly(libs.kafka.streams.core)
     compileOnly(libs.logbackClassic)
     compileOnly(libs.micrometer.registryPrometheus)

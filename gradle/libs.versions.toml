@@ -49,6 +49,7 @@ ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.r
 ktor-server-cors = { group = "io.ktor", name = "ktor-server-cors", version.ref = "ktorVersion" }
 ktor-server-swagger = { group = "io.ktor", name = "ktor-server-swagger", version.ref = "ktorVersion" }
 ktor-server-callId = { group = "io.ktor", name = "ktor-server-call-id", version.ref = "ktorVersion" }
+ktor-server-callLogging = { group = "io.ktor", name = "ktor-server-call-logging", version.ref = "ktorVersion" }
 ktor-server-statusPages = { group = "io.ktor", name = "ktor-server-status-pages", version.ref = "ktorVersion" }
 ktor-server-contentNegotiation = { group = "io.ktor", name = "ktor-server-content-negotiation", version.ref = "ktorVersion" }
 ktor-server-coreJvm = { group = "io.ktor", name = "ktor-server-core-jvm", version.ref = "ktorVersion" }

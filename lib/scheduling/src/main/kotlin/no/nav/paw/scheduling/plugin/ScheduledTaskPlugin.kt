@@ -25,7 +25,7 @@ class ScheduledTaskPluginConfig {
     var period: Duration? = null
     var startEvent: EventDefinition<Application>? = null
     var stopEvent: EventDefinition<Application>? = null
-    val coroutineDispatcher: CoroutineDispatcher? = null
+    var coroutineDispatcher: CoroutineDispatcher? = null
 }
 
 @Suppress("FunctionName")

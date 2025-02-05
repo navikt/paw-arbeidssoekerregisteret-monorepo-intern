@@ -6,10 +6,10 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.jackson
-import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.routing.IgnoreTrailingSlash
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.testApplication
+import no.nav.paw.error.plugin.ErrorHandlingPlugin
 import no.nav.paw.health.model.HealthStatus
 import no.nav.paw.health.model.LivenessHealthIndicator
 import no.nav.paw.health.model.ReadinessHealthIndicator
@@ -20,14 +20,43 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation as ServerCon
 
 class HealthRoutesTest : FreeSpec({
 
-    "Endepunkter for helsesjekk skal returnere korrekt helsesjekk-status" {
+    "Helsesjekk skal returnere korrekt status basert på default helseindikator" {
+        testApplication {
+            application {
+                serverInstall(IgnoreTrailingSlash)
+                serverInstall(ErrorHandlingPlugin)
+                serverInstall(ServerContentNegotiation) {
+                    jackson {}
+                }
+                routing {
+                    healthRoutes()
+                }
+            }
+
+            val client = createClient {
+                install(ClientContentNegotiation) {
+                    jackson {}
+                }
+            }
+
+            val livenessResponse1 = client.get("/internal/isAlive")
+            val readinessResponse1 = client.get("/internal/isReady")
+
+            livenessResponse1.status shouldBe HttpStatusCode.OK
+            livenessResponse1.body<String>() shouldBe HealthStatus.HEALTHY.value
+            readinessResponse1.status shouldBe HttpStatusCode.OK
+            readinessResponse1.body<String>() shouldBe HealthStatus.HEALTHY.value
+        }
+    }
+
+    "Helsesjekk skal returnere korrekt status basert på modifisert helseindikator" {
 
         val healthIndicatorRepository = HealthIndicatorRepository()
 
         testApplication {
             application {
                 serverInstall(IgnoreTrailingSlash)
-                serverInstall(StatusPages)
+                serverInstall(ErrorHandlingPlugin)
                 serverInstall(ServerContentNegotiation) {
                     jackson {}
                 }

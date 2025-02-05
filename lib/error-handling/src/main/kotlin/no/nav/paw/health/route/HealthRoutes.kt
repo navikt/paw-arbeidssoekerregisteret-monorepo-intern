@@ -10,7 +10,7 @@ import no.nav.paw.health.model.getAggregatedStatus
 import no.nav.paw.health.repository.HealthIndicatorRepository
 
 fun Route.healthRoutes(
-    healthIndicatorRepository: HealthIndicatorRepository,
+    healthIndicatorRepository: HealthIndicatorRepository = HealthIndicatorRepository(),
 ) {
 
     get("/internal/isAlive") {

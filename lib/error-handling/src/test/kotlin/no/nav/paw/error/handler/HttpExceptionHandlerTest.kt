@@ -9,7 +9,6 @@ import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.plugins.BadRequestException
-import io.ktor.server.routing.IgnoreTrailingSlash
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.testApplication
@@ -24,7 +23,6 @@ class HttpExceptionHandlerTest : FreeSpec({
     "Skal håndtere exceptions og returnere ProblemDetails response" {
         testApplication {
             application {
-                serverInstall(IgnoreTrailingSlash)
                 serverInstall(ErrorHandlingPlugin)
                 serverInstall(ServerContentNegotiation) {
                     jackson {

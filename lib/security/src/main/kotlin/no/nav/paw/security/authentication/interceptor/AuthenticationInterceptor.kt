@@ -1,6 +1,5 @@
 package no.nav.paw.security.authentication.interceptor
 
-import io.ktor.server.application.install
 import io.ktor.server.auth.authenticate
 import io.ktor.server.routing.Route
 import no.nav.paw.security.authentication.model.Issuer

@@ -24,9 +24,9 @@ private const val MDC_EXCEPTION_KEY = "exception"
 
 suspend fun ApplicationCall.handleException(
     throwable: Throwable,
-    resolver: (throwable: Throwable) -> ProblemDetails? = { null }
+    customResolver: (throwable: Throwable) -> ProblemDetails? = { null }
 ) {
-    val problemDetails = resolveProblemDetails(request, throwable, resolver)
+    val problemDetails = resolveProblemDetails(request, throwable, customResolver)
 
     MDC.put(MDC_ERROR_ID_KEY, problemDetails.id.toString())
     MDC.put(MDC_ERROR_TYPE_KEY, problemDetails.type.toString())
@@ -44,9 +44,9 @@ suspend fun ApplicationCall.handleException(
 fun resolveProblemDetails(
     request: ApplicationRequest,
     throwable: Throwable,
-    resolver: (throwable: Throwable) -> ProblemDetails? = { null }
+    customResolver: (throwable: Throwable) -> ProblemDetails? = { null }
 ): ProblemDetails {
-    val problemDetails = resolver(throwable)
+    val problemDetails = customResolver(throwable)
     if (problemDetails != null) {
         return problemDetails
     }

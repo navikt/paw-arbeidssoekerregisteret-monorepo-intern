@@ -21,14 +21,14 @@ data class ProblemDetails(
     val detail: String? = null,
     val instance: String,
     val timestamp: Instant = Instant.now()
-): Response<Nothing>
+) : Response<Nothing>
 
 class ProblemDetailsBuilder private constructor(
-    var type: URI = ErrorType.default().build(),
-    var status: HttpStatusCode = HttpStatusCode.InternalServerError,
-    var title: String? = null,
-    var detail: String? = null,
-    var instance: String = "/"
+    private var type: URI = ErrorType.default().build(),
+    private var status: HttpStatusCode = HttpStatusCode.InternalServerError,
+    private var title: String? = null,
+    private var detail: String? = null,
+    private var instance: String = "/"
 ) {
     fun type(type: URI) = apply { this.type = type }
     fun status(status: HttpStatusCode) = apply { this.status = status }
@@ -36,7 +36,11 @@ class ProblemDetailsBuilder private constructor(
     fun detail(detail: String) = apply { this.detail = detail }
     fun instance(instance: String) = apply { this.instance = instance }
     fun build(): ProblemDetails = ProblemDetails(
-        type = type, status = status, title = title ?: status.description, detail = detail, instance = instance
+        type = type,
+        status = status,
+        title = title ?: status.description,
+        detail = detail,
+        instance = instance
     )
 
     companion object {
