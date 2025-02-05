@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":lib:kafka"))
     implementation(project(":lib:kafka-key-generator-client"))
     implementation(project(":lib:logging"))
+    implementation(project(":lib:metrics"))
     implementation(project(":domain:arbeidssoekerregisteret-kotlin"))
     implementation(project(":domain:interne-hendelser"))
 

@@ -4,7 +4,7 @@ info:
   description: "API mot arbeidssoekerregisteret i DEV. Brukes for å registrere testperson som arbeidssøker ved opprettelse av testpersoner i Dolly. Felter som ikke er utfylt erstattes med standardverdier."
   version: "1.0.0"
 servers:
-  - url: "https://dolly-arbeidssoekerregisteret.intern.dev.nav.no"
+  - url: "http://dev-gcp.paw-arbeidssoekerregisteret-api-dolly.paw"
     description: "Development"
 paths:
   /api/v1/arbeidssoekerregistrering/{identitetsnummer}:

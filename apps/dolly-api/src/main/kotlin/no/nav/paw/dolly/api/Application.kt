@@ -9,12 +9,12 @@ import no.nav.paw.dolly.api.context.ApplicationContext
 import no.nav.paw.dolly.api.plugins.configureAuthentication
 import no.nav.paw.dolly.api.plugins.configureHTTP
 import no.nav.paw.dolly.api.plugins.configureKafka
-import no.nav.paw.dolly.api.plugins.configureMetrics
 import no.nav.paw.dolly.api.plugins.configureRouting
 import no.nav.paw.dolly.api.plugins.configureSerialization
 import no.nav.paw.dolly.api.plugins.configureTracing
 import no.nav.paw.dolly.api.utils.buildApplicationLogger
 import no.nav.paw.logging.plugin.installLoggingPlugin
+import no.nav.paw.metrics.plugin.installWebAppMetricsPlugin
 
 fun main() {
     val logger = buildApplicationLogger
@@ -38,7 +38,7 @@ fun main() {
 }
 
 fun Application.module(applicationContext: ApplicationContext) {
-    configureMetrics(applicationContext)
+    installWebAppMetricsPlugin(applicationContext.prometheusMeterRegistry)
     configureAuthentication(applicationContext)
     configureHTTP()
     configureSerialization()
