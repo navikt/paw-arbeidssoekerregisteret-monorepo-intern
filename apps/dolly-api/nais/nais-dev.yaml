@@ -48,6 +48,7 @@ spec:
     outbound:
       rules:
         - application: paw-kafka-key-generator
+        - application: paw-arbeidssoekerregisteret-api-oppslag
     inbound:
       rules:
         - application: azure-token-generator
