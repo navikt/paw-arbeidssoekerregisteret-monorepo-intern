@@ -21,7 +21,14 @@ https://dolly-arbeidssoekerregisteret.intern.dev.nav.no/docs
   andreForholdHindrerArbeid = false
 ```
 
+## Nuskoder
+
 For alle nuskoder under "3" blir utdanningBestaatt og utdanningGodkjent satt til null.
+Se informasjon om nuskoder her: https://www.ssb.no/klass/klassifikasjoner/36
+
+## Styrk08
+
+Standard for yrkesklassifisering: https://www.ssb.no/klass/klassifikasjoner/7
 
 ## Azure autentisering
 
