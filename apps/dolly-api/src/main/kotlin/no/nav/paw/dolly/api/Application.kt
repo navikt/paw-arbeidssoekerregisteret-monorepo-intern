@@ -14,6 +14,7 @@ import no.nav.paw.dolly.api.plugins.configureRouting
 import no.nav.paw.dolly.api.plugins.configureSerialization
 import no.nav.paw.dolly.api.plugins.configureTracing
 import no.nav.paw.dolly.api.utils.buildApplicationLogger
+import no.nav.paw.logging.plugin.installLoggingPlugin
 
 fun main() {
     val logger = buildApplicationLogger
@@ -44,4 +45,5 @@ fun Application.module(applicationContext: ApplicationContext) {
     configureKafka(applicationContext)
     configureRouting(applicationContext)
     configureTracing()
+    installLoggingPlugin()
 }

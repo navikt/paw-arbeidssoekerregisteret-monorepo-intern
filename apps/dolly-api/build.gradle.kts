@@ -15,6 +15,7 @@ dependencies {
     implementation(project(":lib:http-client-utils"))
     implementation(project(":lib:kafka"))
     implementation(project(":lib:kafka-key-generator-client"))
+    implementation(project(":lib:logging"))
     implementation(project(":domain:arbeidssoekerregisteret-kotlin"))
     implementation(project(":domain:interne-hendelser"))
 
@@ -24,6 +25,7 @@ dependencies {
     implementation(libs.ktor.server.statusPages)
     implementation(libs.ktor.server.cors)
     implementation(libs.ktor.server.callId)
+    implementation(libs.ktor.server.callLogging)
     implementation(libs.ktor.server.auth)
 
     // Client
