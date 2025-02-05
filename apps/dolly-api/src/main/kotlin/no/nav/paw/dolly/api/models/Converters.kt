@@ -1,7 +1,6 @@
 package no.nav.paw.dolly.api.models
 
 import io.ktor.server.plugins.BadRequestException
-import io.ktor.server.plugins.NotFoundException
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Annet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Helse
@@ -11,6 +10,8 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.JobbsituasjonBeskrivelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.JobbsituasjonMedDetaljer
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Utdanning
+import no.nav.paw.dolly.api.oppslag.BrukerType
+import no.nav.paw.dolly.api.oppslag.JobbSituasjonBeskrivelse
 import no.nav.paw.dolly.api.oppslag.OppslagResponse
 import java.time.Instant
 import java.util.*
@@ -129,11 +130,11 @@ fun Jobbsituasjonsdetaljer.toHendelsesdetaljer(): Map<String, String> =
         .mapValues { it.value!!.toString() }
 
 
-fun String?.asTypeRequest(): TypeRequest =
-    this?.let { value ->
+fun String.asTypeRequest(): TypeRequest =
+    let { value ->
         TypeRequest.entries.find { it.name.equals(value, ignoreCase = true) }
-            ?: throw NotFoundException("Type '$value' ikke funnet")
-    } ?: throw BadRequestException("Type mangler i forespørselen")
+            ?: throw BadRequestException("Ukjent type: $value")
+    }
 
 fun String?.asIdentitetsnummer(): String {
     requireNotNull(this) { throw BadRequestException("Mangler identitetsnummer") }
@@ -144,31 +145,60 @@ fun String?.asIdentitetsnummer(): String {
 fun String.erGyldigIdentitetsnummer() = matches(Regex("^\\d{11}$"))
 
 fun OppslagResponse.toArbeidssoekerregistreringResponse(identitetsnummer: String): ArbeidssoekerregistreringResponse? {
-    val opplysninger = opplysningerOmArbeidssoeker?.firstOrNull() ?: return null
-
-    val jobbsituasjonsbeskrivelse = opplysninger.jobbsituasjon.firstOrNull()?.beskrivelse
-    val jobbsituasjonsdetaljer = opplysninger.jobbsituasjon.firstOrNull()?.detaljer?.toJobbsituasjonsdetaljer()
+    val opplysninger = opplysningerOmArbeidssoeker.firstOrNull() ?: return null
+    val oppslagBeskrivelse = opplysninger.jobbsituasjon.firstOrNull()?.beskrivelse ?: return null
+    val oppslagDetaljer = opplysninger.jobbsituasjon.firstOrNull()?.detaljer ?: return null
+    val nuskode = opplysninger.utdanning?.nus ?: return null
     val utdanningBestaatt =
-        if (opplysninger.utdanning?.bestaatt != null) opplysninger.utdanning.bestaatt.value == "JA" else null
+        if (opplysninger.utdanning.bestaatt != null) opplysninger.utdanning.bestaatt.value == "JA" else null
     val utdanningGodkjent =
-        if (opplysninger.utdanning?.godkjent != null) opplysninger.utdanning.godkjent.value == "JA" else null
+        if (opplysninger.utdanning.godkjent != null) opplysninger.utdanning.godkjent.value == "JA" else null
     val helsetilstandHindrerArbeid = opplysninger.helse?.helsetilstandHindrerArbeid?.value == "JA"
     val andreForholdHindrerArbeid = opplysninger.annet?.andreForholdHindrerArbeid?.value == "JA"
+    val utfoertAv = startet.utfoertAv.type.toBrukertype()
+    val jobbsituasjonsbeskrivelse = oppslagBeskrivelse.toJobbsituasjonsbeskrivelse()
+    val jobbsituasjonsdetaljer = oppslagDetaljer.toJobbsituasjonsdetaljer()
 
     return ArbeidssoekerregistreringResponse(
         identitetsnummer = identitetsnummer,
-        utfoertAv = Brukertype.decode(opplysninger.sendtInnAv.utfoertAv.type) ?: return null,
+        utfoertAv = utfoertAv,
         kilde = startet.kilde,
         aarsak = startet.aarsak,
-        nuskode = opplysninger.utdanning?.nus ?: return null,
+        nuskode = nuskode,
         utdanningBestaatt = utdanningBestaatt,
         utdanningGodkjent = utdanningGodkjent,
-        jobbsituasjonsbeskrivelse = Jobbsituasjonsbeskrivelse.decode(jobbsituasjonsbeskrivelse) ?: return null,
-        jobbsituasjonsdetaljer = jobbsituasjonsdetaljer ?: return null,
+        jobbsituasjonsbeskrivelse = jobbsituasjonsbeskrivelse,
+        jobbsituasjonsdetaljer = jobbsituasjonsdetaljer,
         helsetilstandHindrerArbeid = helsetilstandHindrerArbeid,
         andreForholdHindrerArbeid = andreForholdHindrerArbeid,
         registreringstidspunkt = startet.tidspunkt
     )
+}
+
+fun JobbSituasjonBeskrivelse.toJobbsituasjonsbeskrivelse(): Jobbsituasjonsbeskrivelse = when (this) {
+    JobbSituasjonBeskrivelse.UKJENT_VERDI -> Jobbsituasjonsbeskrivelse.UKJENT_VERDI
+    JobbSituasjonBeskrivelse.UDEFINERT -> Jobbsituasjonsbeskrivelse.UDEFINERT
+    JobbSituasjonBeskrivelse.HAR_SAGT_OPP -> Jobbsituasjonsbeskrivelse.HAR_SAGT_OPP
+    JobbSituasjonBeskrivelse.HAR_BLITT_SAGT_OPP -> Jobbsituasjonsbeskrivelse.HAR_BLITT_SAGT_OPP
+    JobbSituasjonBeskrivelse.ER_PERMITTERT -> Jobbsituasjonsbeskrivelse.ER_PERMITTERT
+    JobbSituasjonBeskrivelse.ALDRI_HATT_JOBB -> Jobbsituasjonsbeskrivelse.ALDRI_HATT_JOBB
+    JobbSituasjonBeskrivelse.IKKE_VAERT_I_JOBB_SISTE_2_AAR -> Jobbsituasjonsbeskrivelse.IKKE_VAERT_I_JOBB_SISTE_2_AAR
+    JobbSituasjonBeskrivelse.AKKURAT_FULLFORT_UTDANNING -> Jobbsituasjonsbeskrivelse.AKKURAT_FULLFORT_UTDANNING
+    JobbSituasjonBeskrivelse.VIL_BYTTE_JOBB -> Jobbsituasjonsbeskrivelse.VIL_BYTTE_JOBB
+    JobbSituasjonBeskrivelse.USIKKER_JOBBSITUASJON -> Jobbsituasjonsbeskrivelse.USIKKER_JOBBSITUASJON
+    JobbSituasjonBeskrivelse.MIDLERTIDIG_JOBB -> Jobbsituasjonsbeskrivelse.MIDLERTIDIG_JOBB
+    JobbSituasjonBeskrivelse.DELTIDSJOBB_VIL_MER -> Jobbsituasjonsbeskrivelse.DELTIDSJOBB_VIL_MER
+    JobbSituasjonBeskrivelse.NY_JOBB -> Jobbsituasjonsbeskrivelse.NY_JOBB
+    JobbSituasjonBeskrivelse.KONKURS -> Jobbsituasjonsbeskrivelse.KONKURS
+    JobbSituasjonBeskrivelse.ANNET -> Jobbsituasjonsbeskrivelse.ANNET
+}
+
+fun BrukerType.toBrukertype(): Brukertype = when (this) {
+    BrukerType.UKJENT_VERDI -> Brukertype.UKJENT_VERDI
+    BrukerType.UDEFINERT -> Brukertype.UDEFINERT
+    BrukerType.VEILEDER -> Brukertype.VEILEDER
+    BrukerType.SYSTEM -> Brukertype.SYSTEM
+    BrukerType.SLUTTBRUKER -> Brukertype.SLUTTBRUKER
 }
 
 fun Map<String, String>.toJobbsituasjonsdetaljer(): Jobbsituasjonsdetaljer {

@@ -42,7 +42,7 @@ fun Route.dollyRoutes(
             }
 
             get("/typer/{type}") {
-                val type = call.parameters["type"].asTypeRequest()
+                val type = call.parameters["type"]?.asTypeRequest() ?: return@get
                 val response = EnumTypeData.hentEnumTypeResponse(type)
                 call.respond(response)
             }

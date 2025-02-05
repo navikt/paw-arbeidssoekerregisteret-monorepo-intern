@@ -13,12 +13,14 @@ import no.nav.paw.dolly.api.models.Jobbsituasjonsdetaljer
 import no.nav.paw.dolly.api.oppslag.BeskrivelseMedDetaljerResponse
 import no.nav.paw.dolly.api.oppslag.BrukerResponse
 import no.nav.paw.dolly.api.oppslag.BrukerType
+import no.nav.paw.dolly.api.oppslag.JaNeiVetIkke
 import no.nav.paw.dolly.api.oppslag.JobbSituasjonBeskrivelse
 import no.nav.paw.dolly.api.oppslag.MetadataResponse
 import no.nav.paw.dolly.api.oppslag.OpplysningerOmArbeidssoekerAggregertResponse
 import no.nav.paw.dolly.api.oppslag.OppslagResponse
 import no.nav.paw.dolly.api.oppslag.ProfileringResponse
 import no.nav.paw.dolly.api.oppslag.ProfileringsResultat
+import no.nav.paw.dolly.api.oppslag.UtdanningResponse
 import java.time.Instant
 import java.util.*
 
@@ -31,14 +33,14 @@ inline fun <reified T> HttpRequestBuilder.setJsonBody(body: T) {
 
 object TestData {
 
-    fun nyArbeidssoekerregistreringRequest() =
+    fun nyArbeidssoekerregistreringRequest(identitetsnummer: String) =
         ArbeidssoekerregistreringRequest(
-            identitetsnummer = "12345678911",
+            identitetsnummer = identitetsnummer,
         )
 
-    fun fullstendingArbeidssoekerregistreringRequest() =
+    fun fullstendingArbeidssoekerregistreringRequest(identitetsnummer: String) =
         ArbeidssoekerregistreringRequest(
-            identitetsnummer = "12345678912",
+            identitetsnummer = identitetsnummer,
             utfoertAv = Brukertype.SLUTTBRUKER,
             kilde = "Dolly",
             aarsak = "Registrering av arbeidssøker i Dolly",
@@ -80,7 +82,11 @@ object TestData {
                     detaljer = mapOf("stillingStyrk08" to "00", "stilling" to "Annen stilling")
                 )
             ),
-            utdanning = null,
+            utdanning = UtdanningResponse(
+                nus = "3",
+                bestaatt = JaNeiVetIkke.JA,
+                godkjent = JaNeiVetIkke.JA
+            ),
             helse = null,
             annet = null,
             profilering = ProfileringResponse(
@@ -101,7 +107,7 @@ object TestData {
                 alder = 30
             )
         )),
-        bekreftelser = null
+        bekreftelser = emptyList()
     )
 
 }

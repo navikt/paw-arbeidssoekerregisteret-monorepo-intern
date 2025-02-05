@@ -1,6 +1,6 @@
 openapi: "3.0.3"
 info:
-  title: "paw_arbeidssokerregisteret_api_dolly API"
+  title: "paw_arbeidssoekerregisteret_api_dolly API"
   description: "API mot arbeidssoekerregisteret i DEV. Brukes for å registrere testperson som arbeidssøker ved opprettelse av testpersoner i Dolly. Felter som ikke er utfylt erstattes med standardverdier."
   version: "1.0.0"
 servers:
@@ -98,19 +98,19 @@ paths:
       responses:
         "204":
           description: "No Content"
-        "404":
-          description: "Not Found"
+        "400":
+          description: "Bad Request"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
               example:
                 id: "fa85c6aa-29a8-4378-bff7-7cbc4a1e9b5a"
-                type: "urn:paw:ressurs-ikke-funnet"
-                status: 404
-                title: "Not Found"
-                detail: "Ressurs ikke funnet"
-                instance: "/api/v1/arbeidssoekerregistrering/12345678901"
+                type: "urn:paw:http:kunne-ikke-tolke-forespoersel"
+                status: 400
+                title: "Bad Request"
+                detail: "Kunne ikke tolke forespørsel"
+                instance: "/api/v1/arbeidssoekerregistrering"
                 timestamp: "2021-01-01T12:00:00.000Z"
         "500":
           description: "Internal Server Error"

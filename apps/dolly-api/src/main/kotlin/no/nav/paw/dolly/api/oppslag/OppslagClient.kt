@@ -15,8 +15,8 @@ data class OppslagResponse(
     val periodeId: java.util.UUID,
     val startet: MetadataResponse,
     val avsluttet: MetadataResponse? = null,
-    val opplysningerOmArbeidssoeker: List<OpplysningerOmArbeidssoekerAggregertResponse>? = null,
-    val bekreftelser: List<BekreftelseResponse>? = null
+    val opplysningerOmArbeidssoeker: List<OpplysningerOmArbeidssoekerAggregertResponse> = emptyList(),
+    val bekreftelser: List<BekreftelseResponse> = emptyList()
 )
 
 interface OppslagClient {
@@ -45,11 +45,11 @@ class OppslagClientImpl(
             setBody(identitetsnummer)
         }.let { response ->
             return when (response.status) {
-                io.ktor.http.HttpStatusCode.OK -> {
+                HttpStatusCode.OK -> {
                     response.body<OppslagResponse>()
                 }
 
-                io.ktor.http.HttpStatusCode.NotFound -> null
+                HttpStatusCode.NotFound -> null
                 else -> {
                     throw Exception("Kunne ikke hente aggregerte arbeidssoekerperioder, http_status=${response.status}, melding=${response.body<String>()}")
                 }
