@@ -34,12 +34,22 @@ class TestContext {
     private val bekreftelsePaaVegneAvAvroSerde: Serde<PaaVegneAv> = avroSerde()
 
     private val bekreftelseTestDriver = TopologyTestDriver(
-        buildKafkaTopology<Bekreftelse>(Bekreftelsesloesning.DAGPENGER.name, bekreftelseSourceTopicName, bekreftelseTargetTopicName),
+        buildKafkaTopology<Bekreftelse>(
+            bekreftelsesloesning = Bekreftelsesloesning.DAGPENGER.name,
+            sourceTopic = bekreftelseSourceTopicName,
+            targetTopic = bekreftelseTargetTopicName,
+            hentLoesningFraMelding = { it.bekreftelsesloesning.name }
+        ),
         kafkaStreamProperties
     )
 
     private val bekreftelsePaaVegneAvTestDriver = TopologyTestDriver(
-        buildKafkaTopology<PaaVegneAv>(Bekreftelsesloesning.DAGPENGER.name, bekreftelsePaaVegneAvSourceTopicName, bekreftelsePaaVegneAvTargetTopicName),
+        buildKafkaTopology<PaaVegneAv>(
+            bekreftelsesloesning = Bekreftelsesloesning.DAGPENGER.name,
+            sourceTopic = bekreftelsePaaVegneAvSourceTopicName,
+            targetTopic = bekreftelsePaaVegneAvTargetTopicName,
+            hentLoesningFraMelding = { it.bekreftelsesloesning.name }
+        ),
         kafkaStreamProperties
     )
 
