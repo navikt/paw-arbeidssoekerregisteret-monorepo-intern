@@ -43,6 +43,9 @@ Machine-to-maching token:
 }
 ```
 
+Logg inn med trygdeetatenbruker på https://azure-token-generator.intern.dev.nav.no/api/m2m?aud=dev-gcp:paw:paw-arbeidssoekerregisteret-api-dolly
+for å generere token.
+
 ## Teknologier
 
 Øvrige teknologier, rammeverk og biblioteker som er blitt tatt i bruk:
