@@ -173,7 +173,7 @@ class DollyRoutesTest : FreeSpec({
 
         "GET /api/v1/arbeidssoekerregistrering/{identitetsnummer}" - {
             "200 OK" {
-                coEvery { oppslagClientMock.hentAggregerteArbeidssoekerperioder(any()) } returns TestData.oppslagsApiResponse()
+                coEvery { oppslagClientMock.hentAggregerteArbeidssoekerperioder(any()) } returns listOf(TestData.oppslagsApiResponse())
                 testApplication {
                     configureTestApplication(dollyService)
 

@@ -26,7 +26,7 @@ data class OppslagResponse(
 )
 
 interface OppslagClient {
-    suspend fun hentAggregerteArbeidssoekerperioder(identitetsnummer: String): OppslagResponse?
+    suspend fun hentAggregerteArbeidssoekerperioder(identitetsnummer: String): List<OppslagResponse>?
 }
 
 fun oppslagClient(config: OppslagClientConfig, m2mTokenFactory: () -> String): OppslagClient =
@@ -47,7 +47,7 @@ class OppslagClientImpl(
             }
         }
     }
-    override suspend fun hentAggregerteArbeidssoekerperioder(identitetsnummer: String): OppslagResponse? {
+    override suspend fun hentAggregerteArbeidssoekerperioder(identitetsnummer: String): List<OppslagResponse>? {
         httpClient.post(url) {
             header("Authorization", "Bearer ${getAccessToken()}")
             contentType(ContentType.Application.Json)
@@ -55,7 +55,7 @@ class OppslagClientImpl(
         }.let { response ->
             return when (response.status) {
                 HttpStatusCode.OK -> {
-                    response.body<OppslagResponse>()
+                    response.body<List<OppslagResponse>>()
                 }
 
                 HttpStatusCode.NotFound -> null
