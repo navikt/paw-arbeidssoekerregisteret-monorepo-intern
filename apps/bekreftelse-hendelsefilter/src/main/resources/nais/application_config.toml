@@ -6,3 +6,9 @@ bekreftelsePaaVegneAvTargetTopic = "${KAFKA_BEKREFTELSE_PAAVEGNEAV_TARGET_TOPIC}
 bekreftelsesloesning = "dagpenger"
 paaVegneAvSourceTopic = "${KAFKA_TEAMDAGPENGER_BEKREFTELSE_PAAVEGNEAV_SOURCE_TOPIC}"
 bekreftelseSourceTopic = "${KAFKA_TEAMDAGPENGER_BEKREFTELSE_SOURCE_TOPIC}"
+
+[[bekreftelseKlienter]]
+bekreftelsesloesning = "friskmeldt_til_arbeidsformidling"
+paaVegneAvSourceTopic = "${KAFKA_FRISKMELDT_TIL_ARBEIDSFORMIDLING_BEKREFTELSE_PAAVEGNEAV_SOURCE_TOPIC}"
+bekreftelseSourceTopic = "${KAFKA_FRISKMELDT_TIL_ARBEIDSFORMIDLING_BEKREFTELSE_SOURCE_TOPIC}"
+
