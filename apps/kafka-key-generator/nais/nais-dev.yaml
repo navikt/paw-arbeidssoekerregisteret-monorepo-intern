@@ -80,3 +80,5 @@ spec:
             namespace: teamdagpenger
           - application: dp-rapportering
             namespace: teamdagpenger
+          - application: flex-arbeidssokerregister-oppdatering
+            namespace: flex
