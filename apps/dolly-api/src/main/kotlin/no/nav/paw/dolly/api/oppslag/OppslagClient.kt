@@ -2,14 +2,20 @@ package no.nav.paw.dolly.api.oppslag
 
 import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import io.ktor.serialization.jackson.jackson
 import no.nav.paw.client.factory.createHttpClient
 import no.nav.paw.dolly.api.config.OppslagClientConfig
+
+data class OppslagRequest(
+    val identitetsnummer: String
+)
 
 data class OppslagResponse(
     val periodeId: java.util.UUID,
@@ -31,6 +37,9 @@ class OppslagClientImpl(
     private val getAccessToken: () -> String
 ) : OppslagClient {
     private val httpClient = createHttpClient {
+        install(ContentNegotiation) {
+            jackson()
+        }
         install(HttpRequestRetry) {
             maxRetries = 2
             retryIf { _, response ->
@@ -42,7 +51,7 @@ class OppslagClientImpl(
         httpClient.post(url) {
             header("Authorization", "Bearer ${getAccessToken()}")
             contentType(ContentType.Application.Json)
-            setBody(mapOf("identitetsnummer" to identitetsnummer))
+            setBody(OppslagRequest(identitetsnummer))
         }.let { response ->
             return when (response.status) {
                 HttpStatusCode.OK -> {
