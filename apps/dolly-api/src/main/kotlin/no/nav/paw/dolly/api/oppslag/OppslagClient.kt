@@ -42,7 +42,7 @@ class OppslagClientImpl(
         httpClient.post(url) {
             header("Authorization", "Bearer ${getAccessToken()}")
             contentType(ContentType.Application.Json)
-            setBody(identitetsnummer)
+            setBody(mapOf("identitetsnummer" to identitetsnummer))
         }.let { response ->
             return when (response.status) {
                 HttpStatusCode.OK -> {
