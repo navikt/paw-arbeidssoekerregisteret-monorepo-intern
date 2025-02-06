@@ -12,7 +12,7 @@ import no.nav.paw.bekreftelse.api.services.AuthorizationService
 import no.nav.paw.bekreftelse.api.services.BekreftelseService
 import no.nav.paw.bekreftelse.api.utils.hentSluttbrukerIdentitet
 import no.nav.paw.model.asIdentitetsnummer
-import no.nav.paw.security.authentication.interceptor.autentisering
+import no.nav.paw.security.authentication.plugin.autentisering
 import no.nav.paw.security.authentication.model.AzureAd
 import no.nav.paw.security.authentication.model.Bruker
 import no.nav.paw.security.authentication.model.IdPorten

@@ -19,7 +19,7 @@ import io.ktor.server.testing.ApplicationTestBuilder
 import no.nav.paw.error.plugin.ErrorHandlingPlugin
 import no.nav.paw.security.authentication.config.asRequiredClaims
 import no.nav.paw.security.authentication.config.asTokenSupportConfig
-import no.nav.paw.security.authentication.interceptor.autentisering
+import no.nav.paw.security.authentication.plugin.autentisering
 import no.nav.paw.security.authentication.model.AzureAd
 import no.nav.paw.security.authentication.model.IdPorten
 import no.nav.paw.security.authentication.model.MaskinPorten

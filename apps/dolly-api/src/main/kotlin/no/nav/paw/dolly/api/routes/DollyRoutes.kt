@@ -12,7 +12,7 @@ import no.nav.paw.dolly.api.models.asIdentitetsnummer
 import no.nav.paw.dolly.api.models.asTypeRequest
 import no.nav.paw.dolly.api.services.DollyService
 import no.nav.paw.dolly.api.services.EnumTypeData
-import no.nav.paw.security.authentication.interceptor.autentisering
+import no.nav.paw.security.authentication.plugin.autentisering
 import no.nav.paw.security.authentication.model.AzureAd
 
 fun Route.dollyRoutes(

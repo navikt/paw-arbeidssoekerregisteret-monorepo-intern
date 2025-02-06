@@ -11,10 +11,12 @@ plugins {
 rootProject.name = "paw-arbeidssoekerregisteret-monorepo-intern"
 
 include(
-    "lib:logging",
     "lib:hoplite-config",
+    "lib:logging",
+    "lib:serialization",
     "lib:error-handling",
     "lib:metrics",
+    "lib:api-docs",
     "lib:security",
     "lib:database",
     "lib:scheduling",
