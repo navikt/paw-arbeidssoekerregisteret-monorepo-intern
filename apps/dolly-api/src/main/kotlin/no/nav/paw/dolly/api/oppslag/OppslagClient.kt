@@ -10,6 +10,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.jackson.jackson
+import no.nav.paw.client.factory.configureJackson
 import no.nav.paw.client.factory.createHttpClient
 import no.nav.paw.dolly.api.config.OppslagClientConfig
 
@@ -38,7 +39,9 @@ class OppslagClientImpl(
 ) : OppslagClient {
     private val httpClient = createHttpClient {
         install(ContentNegotiation) {
-            jackson()
+            jackson {
+                configureJackson()
+            }
         }
         install(HttpRequestRetry) {
             maxRetries = 2
