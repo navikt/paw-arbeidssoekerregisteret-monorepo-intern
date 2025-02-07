@@ -1,6 +1,6 @@
 package no.nav.paw.bekreftelse.api.service
 
-import no.nav.paw.bekreftelse.api.models.BekreftelseRow
+import no.nav.paw.bekreftelse.api.model.BekreftelseRow
 import no.nav.paw.bekreftelse.api.repository.BekreftelseRepository
 import org.jetbrains.exposed.sql.transactions.transaction
 

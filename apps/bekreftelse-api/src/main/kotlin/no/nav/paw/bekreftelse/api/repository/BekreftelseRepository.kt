@@ -1,8 +1,8 @@
 package no.nav.paw.bekreftelse.api.repository
 
-import no.nav.paw.bekreftelse.api.models.BekreftelseRow
-import no.nav.paw.bekreftelse.api.models.BekreftelserTable
-import no.nav.paw.bekreftelse.api.models.asBekreftelseRow
+import no.nav.paw.bekreftelse.api.model.BekreftelseRow
+import no.nav.paw.bekreftelse.api.model.BekreftelserTable
+import no.nav.paw.bekreftelse.api.model.asBekreftelseRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere

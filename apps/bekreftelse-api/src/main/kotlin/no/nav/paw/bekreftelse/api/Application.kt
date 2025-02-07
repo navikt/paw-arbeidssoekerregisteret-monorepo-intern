@@ -5,17 +5,18 @@ import io.ktor.server.engine.addShutdownHook
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import no.nav.paw.bekreftelse.api.context.ApplicationContext
-import no.nav.paw.bekreftelse.api.plugins.configureAuthentication
-import no.nav.paw.bekreftelse.api.plugins.configureDatabase
-import no.nav.paw.bekreftelse.api.plugins.configureHTTP
-import no.nav.paw.bekreftelse.api.plugins.configureKafka
-import no.nav.paw.bekreftelse.api.plugins.configureLogging
-import no.nav.paw.bekreftelse.api.plugins.configureMetrics
-import no.nav.paw.bekreftelse.api.plugins.configureRouting
-import no.nav.paw.bekreftelse.api.plugins.configureSerialization
-import no.nav.paw.bekreftelse.api.plugins.configureTracing
-import no.nav.paw.bekreftelse.api.utils.buildApplicationLogger
+import no.nav.paw.bekreftelse.api.plugin.configureRouting
+import no.nav.paw.bekreftelse.api.plugin.installKafkaPlugins
+import no.nav.paw.bekreftelse.api.plugin.installTracingPlugin
+import no.nav.paw.bekreftelse.api.plugin.installWebPlugins
 import no.nav.paw.config.env.appNameOrDefaultForLocal
+import no.nav.paw.database.plugin.installDatabasePlugin
+import no.nav.paw.error.plugin.installErrorHandlingPlugin
+import no.nav.paw.logging.logger.buildApplicationLogger
+import no.nav.paw.logging.plugin.installLoggingPlugin
+import no.nav.paw.metrics.plugin.installMetricsPlugin
+import no.nav.paw.security.authentication.plugin.installAuthenticationPlugin
+import no.nav.paw.serialization.plugin.installContentNegotiationPlugin
 
 fun main() {
     val logger = buildApplicationLogger
@@ -39,13 +40,17 @@ fun main() {
 }
 
 fun Application.module(applicationContext: ApplicationContext) {
-    configureMetrics(applicationContext)
-    configureHTTP(applicationContext)
-    configureAuthentication(applicationContext)
-    configureLogging()
-    configureSerialization()
-    configureTracing()
-    configureDatabase(applicationContext)
-    configureKafka(applicationContext)
+    installWebPlugins(applicationContext)
+    installLoggingPlugin()
+    installContentNegotiationPlugin()
+    installErrorHandlingPlugin()
+    installAuthenticationPlugin(providers = applicationContext.securityConfig.authProviders)
+    installMetricsPlugin(
+        meterRegistry = applicationContext.prometheusMeterRegistry,
+        additionalMeterBinders = applicationContext.additionalMeterBinders
+    )
+    installTracingPlugin()
+    installDatabasePlugin(dataSource = applicationContext.dataSource)
+    installKafkaPlugins(applicationContext)
     configureRouting(applicationContext)
 }
