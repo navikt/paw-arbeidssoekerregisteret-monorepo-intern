@@ -1,6 +1,6 @@
 package no.nav.paw.bekreftelse.api.models
 
-import no.nav.paw.bekreftelse.api.utils.JsonbSerde
+import no.nav.paw.bekreftelse.api.utils.JsonSerde
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.json.jsonb
 
@@ -12,6 +12,6 @@ object BekreftelserTable : Table("bekreftelser") {
     val arbeidssoekerId = long("arbeidssoeker_id")
     val periodeId = uuid("periode_id")
     val bekreftelseId = uuid("bekreftelse_id")
-    val data = jsonb("data", JsonbSerde::serialize, JsonbSerde::deserialize)
+    val data = jsonb("data", JsonSerde::serialize, JsonSerde::deserialize)
     override val primaryKey: PrimaryKey = PrimaryKey(version, partition, offset)
 }

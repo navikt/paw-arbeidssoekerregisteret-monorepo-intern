@@ -6,7 +6,7 @@
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %5level %c{1}:%logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -21,9 +21,9 @@
             <logger name="org.apache.kafka.clients.producer.ProducerConfig" level="WARN"/>
             <logger name="io.confluent.kafka.serializers.KafkaAvroSerializerConfig" level="WARN"/>
             <logger name="io.confluent.kafka.serializers.KafkaAvroDeserializerConfig" level="WARN"/>
-            <logger name="no.nav" level="DEBUG"/>
-            <logger name="io.ktor.auth" level="DEBUG"/>
             <logger name="io.ktor.server.auth" level="DEBUG"/>
+            <logger name="io.ktor.auth" level="DEBUG"/>
+            <logger name="no.nav" level="DEBUG"/>
         </then>
         <else>
             <root level="INFO">

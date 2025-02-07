@@ -23,6 +23,7 @@ import no.nav.paw.bekreftelse.api.test.TestData
 import no.nav.paw.bekreftelse.api.test.issueAzureToken
 import no.nav.paw.bekreftelse.api.test.issueTokenXToken
 import no.nav.paw.bekreftelse.api.test.setJsonBody
+import no.nav.paw.bekreftelse.api.utils.sendBlocking
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.error.model.Data
 import no.nav.paw.error.model.ProblemDetails
@@ -241,7 +242,9 @@ class BekreftelseRoutesTest : FreeSpec({
                     TestData.arbeidssoekerId3,
                     TestData.kafkaKey3
                 )
-                every { bekreftelseKafkaProducerMock.produceMessage(any<Long>(), any<Bekreftelse>()) } just runs
+                every {
+                    bekreftelseKafkaProducerMock.sendBlocking(any<String>(), any<Long>(), any<Bekreftelse>())
+                } just runs
                 val bereftelseRows = TestData.nyBekreftelseRows(
                     arbeidssoekerId = TestData.arbeidssoekerId3,
                     periodeId = TestData.periodeId3,
@@ -269,7 +272,7 @@ class BekreftelseRoutesTest : FreeSpec({
                 }
 
                 coVerify { kafkaKeysClientMock.getIdAndKey(any<String>()) }
-                verify { bekreftelseKafkaProducerMock.produceMessage(any<Long>(), any<Bekreftelse>()) }
+                verify { bekreftelseKafkaProducerMock.sendBlocking(any<String>(), any<Long>(), any<Bekreftelse>()) }
             }
 
             "Skal motta bekreftelse men finner ikke relatert tilgjengelig bekreftelse" {
@@ -404,7 +407,9 @@ class BekreftelseRoutesTest : FreeSpec({
                     TestData.kafkaKey6
                 )
                 coEvery { tilgangskontrollClientMock.harAnsattTilgangTilPerson(any(), any(), any()) } returns Data(true)
-                every { bekreftelseKafkaProducerMock.produceMessage(any<Long>(), any<Bekreftelse>()) } just runs
+                every {
+                    bekreftelseKafkaProducerMock.sendBlocking(any<String>(), any<Long>(), any<Bekreftelse>())
+                } just runs
                 val bereftelseRows = TestData.nyBekreftelseRows(
                     arbeidssoekerId = TestData.arbeidssoekerId6,
                     periodeId = TestData.periodeId5,
@@ -433,7 +438,7 @@ class BekreftelseRoutesTest : FreeSpec({
 
                 coVerify { kafkaKeysClientMock.getIdAndKey(any<String>()) }
                 coVerify { tilgangskontrollClientMock.harAnsattTilgangTilPerson(any(), any(), any()) }
-                verify { bekreftelseKafkaProducerMock.produceMessage(any<Long>(), any<Bekreftelse>()) }
+                verify { bekreftelseKafkaProducerMock.sendBlocking(any<String>(), any<Long>(), any<Bekreftelse>()) }
             }
         }
     }

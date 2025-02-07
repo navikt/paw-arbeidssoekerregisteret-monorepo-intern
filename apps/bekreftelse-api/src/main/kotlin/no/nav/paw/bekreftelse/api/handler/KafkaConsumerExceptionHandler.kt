@@ -1,8 +1,8 @@
 package no.nav.paw.bekreftelse.api.handler
 
-import no.nav.paw.bekreftelse.api.utils.buildErrorLogger
 import no.nav.paw.health.model.LivenessHealthIndicator
 import no.nav.paw.health.model.ReadinessHealthIndicator
+import no.nav.paw.logging.logger.buildErrorLogger
 
 class KafkaConsumerExceptionHandler(
     private val livenessIndicator: LivenessHealthIndicator,

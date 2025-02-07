@@ -3,6 +3,8 @@ package no.nav.paw.bekreftelse.api.context
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.jackson.jackson
+import io.micrometer.core.instrument.binder.MeterBinder
+import io.micrometer.core.instrument.binder.kafka.KafkaClientMetrics
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.bekreftelse.api.config.APPLICATION_CONFIG
@@ -10,7 +12,6 @@ import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.config.SERVER_CONFIG
 import no.nav.paw.bekreftelse.api.config.ServerConfig
 import no.nav.paw.bekreftelse.api.handler.KafkaConsumerExceptionHandler
-import no.nav.paw.bekreftelse.api.producer.BekreftelseKafkaProducer
 import no.nav.paw.bekreftelse.api.repository.BekreftelseRepository
 import no.nav.paw.bekreftelse.api.services.AuthorizationService
 import no.nav.paw.bekreftelse.api.services.BekreftelseService
@@ -60,6 +61,7 @@ data class ApplicationContext(
     val kafkaConsumerExceptionHandler: KafkaConsumerExceptionHandler,
     val authorizationService: AuthorizationService,
     val bekreftelseService: BekreftelseService,
+    val additionalMeterBinders: List<MeterBinder>
 ) {
     companion object {
         fun create(): ApplicationContext {
@@ -104,13 +106,13 @@ data class ApplicationContext(
 
             val kafkaFactory = KafkaFactory(kafkaConfig)
 
-            val kafkaProducer = kafkaFactory.createProducer<Long, Bekreftelse>(
+            val bekreftelseKafkaProducer = kafkaFactory.createProducer<Long, Bekreftelse>(
                 clientId = applicationConfig.kafkaTopology.producerId,
                 keySerializer = LongSerializer::class,
                 valueSerializer = BekreftelseAvroSerializer::class
             )
 
-            val kafkaConsumer = kafkaFactory.createConsumer(
+            val bekreftelseKafkaConsumer = kafkaFactory.createConsumer(
                 clientId = applicationConfig.kafkaTopology.consumerId,
                 groupId = applicationConfig.kafkaTopology.consumerGroupId,
                 keyDeserializer = LongDeserializer::class,
@@ -118,7 +120,6 @@ data class ApplicationContext(
                 autoCommit = false
             )
 
-            val bekreftelseKafkaProducer = BekreftelseKafkaProducer(applicationConfig, kafkaProducer)
             val bekreftelseRepository = BekreftelseRepository()
 
             val bekreftelseService = BekreftelseService(
@@ -131,18 +132,22 @@ data class ApplicationContext(
             )
 
             return ApplicationContext(
-                serverConfig,
-                applicationConfig,
-                securityConfig,
-                dataSource,
-                kafkaKeysClient,
-                prometheusMeterRegistry,
-                healthIndicatorRepository,
-                kafkaProducer,
-                kafkaConsumer,
-                kafkaConsumerExceptionHandler,
-                authorizationService,
-                bekreftelseService
+                serverConfig = serverConfig,
+                applicationConfig = applicationConfig,
+                securityConfig = securityConfig,
+                dataSource = dataSource,
+                kafkaKeysClient = kafkaKeysClient,
+                prometheusMeterRegistry = prometheusMeterRegistry,
+                healthIndicatorRepository = healthIndicatorRepository,
+                bekreftelseKafkaProducer = bekreftelseKafkaProducer,
+                bekreftelseKafkaConsumer = bekreftelseKafkaConsumer,
+                kafkaConsumerExceptionHandler = kafkaConsumerExceptionHandler,
+                authorizationService = authorizationService,
+                bekreftelseService = bekreftelseService,
+                additionalMeterBinders = listOf(
+                    KafkaClientMetrics(bekreftelseKafkaProducer),
+                    KafkaClientMetrics(bekreftelseKafkaConsumer)
+                )
             )
         }
     }

@@ -8,7 +8,7 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.kafka.plugin.KafkaConsumerPlugin
 import no.nav.paw.kafka.plugin.KafkaProducerPlugin
 
-fun Application.configureKafka(applicationContext: ApplicationContext) {
+fun Application.installKafkaPlugins(applicationContext: ApplicationContext) {
     with(applicationContext) {
         install(KafkaProducerPlugin) {
             kafkaProducers = listOf(bekreftelseKafkaProducer)

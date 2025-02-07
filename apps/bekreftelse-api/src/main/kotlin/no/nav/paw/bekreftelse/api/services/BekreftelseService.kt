@@ -14,28 +14,35 @@ import no.nav.paw.bekreftelse.api.models.asBekreftelse
 import no.nav.paw.bekreftelse.api.models.asBekreftelseBruker
 import no.nav.paw.bekreftelse.api.models.asBekreftelseRow
 import no.nav.paw.bekreftelse.api.models.asTilgjengeligBekreftelse
-import no.nav.paw.bekreftelse.api.producer.BekreftelseKafkaProducer
+import no.nav.paw.bekreftelse.api.utils.sendBlocking
 import no.nav.paw.bekreftelse.api.repository.BekreftelseRepository
-import no.nav.paw.bekreftelse.api.utils.buildLogger
 import no.nav.paw.bekreftelse.api.utils.deleteBekreftelseHendelseCounter
 import no.nav.paw.bekreftelse.api.utils.ignoreBekreftelseHendeleCounter
 import no.nav.paw.bekreftelse.api.utils.insertBekreftelseHendelseCounter
 import no.nav.paw.bekreftelse.api.utils.receiveBekreftelseCounter
 import no.nav.paw.bekreftelse.api.utils.receiveBekreftelseHendelseCounter
 import no.nav.paw.bekreftelse.api.utils.sendBekreftelseHendelseCounter
+import no.nav.paw.bekreftelse.api.utils.setCreateActionAttribute
+import no.nav.paw.bekreftelse.api.utils.setDeleteActionAttribute
+import no.nav.paw.bekreftelse.api.utils.setEventAttribute
+import no.nav.paw.bekreftelse.api.utils.setIgnoreActionAttribute
+import no.nav.paw.bekreftelse.api.utils.setUpdateActionAttribute
 import no.nav.paw.bekreftelse.api.utils.updateBekreftelseHendelseCounter
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
 import no.nav.paw.bekreftelse.internehendelser.meldingMottattHendelseType
+import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.config.env.appImageOrDefaultForLocal
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
-import no.nav.paw.security.authentication.model.Bruker
+import no.nav.paw.logging.logger.buildLogger
 import no.nav.paw.model.Identitetsnummer
+import no.nav.paw.security.authentication.model.Bruker
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
+import org.apache.kafka.clients.producer.Producer
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class BekreftelseService(
@@ -43,7 +50,7 @@ class BekreftelseService(
     private val applicationConfig: ApplicationConfig,
     private val meterRegistry: MeterRegistry,
     private val kafkaKeysClient: KafkaKeysClient,
-    private val bekreftelseKafkaProducer: BekreftelseKafkaProducer,
+    private val bekreftelseKafkaProducer: Producer<Long, Bekreftelse>,
     private val bekreftelseRepository: BekreftelseRepository,
 ) {
     private val logger = buildLogger
@@ -91,7 +98,7 @@ class BekreftelseService(
 
                 logger.debug("Sletter bekreftelse fra database")
                 bekreftelseRepository.deleteByBekreftelseId(bekreftelse.bekreftelseId)
-                bekreftelseKafkaProducer.produceMessage(key, message)
+                bekreftelseKafkaProducer.sendBlocking(applicationConfig.kafkaTopology.bekreftelseTopic, key, message)
                 meterRegistry.sendBekreftelseHendelseCounter(meldingMottattHendelseType)
             } else {
                 throw DataIkkeFunnetForIdException("Fant ingen bekreftelse for gitt id")
@@ -139,7 +146,7 @@ class BekreftelseService(
         hendelse: BekreftelseTilgjengelig
     ) {
         val currentSpan = Span.current()
-        currentSpan.setAttribute("paw.arbeidssoekerregisteret.hendelse.type", hendelse.hendelseType)
+        currentSpan.setEventAttribute(hendelse.hendelseType)
 
         val eksisterendeRow = bekreftelseRepository.getByBekreftelseId(hendelse.bekreftelseId)
         val nyRow = hendelse.asBekreftelseRow(
@@ -154,12 +161,16 @@ class BekreftelseService(
                 logger.warn("Ny bekreftelse er lik eksisterende men har forskjellig Kafka offset")
             }
             val rowsAffected = bekreftelseRepository.update(nyRow)
-            currentSpan.setAttribute("paw.arbeidssoekerregisteret.aksjon", "update")
+            currentSpan.setUpdateActionAttribute()
             meterRegistry.updateBekreftelseHendelseCounter(hendelse.hendelseType, rowsAffected)
-            logger.debug("Oppdaterte bekreftelse av type {} (rows affected {})", hendelse.hendelseType, rowsAffected)
+            logger.debug(
+                "Oppdaterte bekreftelse av type {} (rows affected {})",
+                hendelse.hendelseType,
+                rowsAffected
+            )
         } else {
             val rowsAffected = bekreftelseRepository.insert(nyRow)
-            currentSpan.setAttribute("paw.arbeidssoekerregisteret.aksjon", "insert")
+            currentSpan.setCreateActionAttribute()
             meterRegistry.insertBekreftelseHendelseCounter(hendelse.hendelseType, rowsAffected)
             logger.debug("Opprettet bekreftelse av type {} (rows affected {})", hendelse.hendelseType, rowsAffected)
         }
@@ -167,22 +178,20 @@ class BekreftelseService(
 
     @WithSpan(value = "processBekreftelseMeldingMottatt", kind = SpanKind.INTERNAL)
     private fun processBekreftelseMeldingMottatt(hendelse: BekreftelseMeldingMottatt) {
-        val rowsAffected = bekreftelseRepository.deleteByBekreftelseId(hendelse.bekreftelseId)
-
         val currentSpan = Span.current()
-        currentSpan.setAttribute("paw.arbeidssoekerregisteret.hendelse.type", hendelse.hendelseType)
-        currentSpan.setAttribute("paw.arbeidssoekerregisteret.aksjon", "delete")
+        val rowsAffected = bekreftelseRepository.deleteByBekreftelseId(hendelse.bekreftelseId)
+        currentSpan.setEventAttribute(hendelse.hendelseType)
+        currentSpan.setDeleteActionAttribute()
         meterRegistry.deleteBekreftelseHendelseCounter(hendelse.hendelseType, rowsAffected)
         logger.debug("Slettet bekreftelse(r) av type {} (rows affected {})", hendelse.hendelseType, rowsAffected)
     }
 
     @WithSpan(value = "processPeriodeAvsluttet", kind = SpanKind.INTERNAL)
     private fun processPeriodeAvsluttet(hendelse: PeriodeAvsluttet) {
-        val rowsAffected = bekreftelseRepository.deleteByPeriodeId(hendelse.periodeId)
-
         val currentSpan = Span.current()
-        currentSpan.setAttribute("paw.arbeidssoekerregisteret.hendelse.type", hendelse.hendelseType)
-        currentSpan.setAttribute("paw.arbeidssoekerregisteret.aksjon", "delete")
+        val rowsAffected = bekreftelseRepository.deleteByPeriodeId(hendelse.periodeId)
+        currentSpan.setEventAttribute(hendelse.hendelseType)
+        currentSpan.setDeleteActionAttribute()
         meterRegistry.deleteBekreftelseHendelseCounter(hendelse.hendelseType, rowsAffected)
         logger.debug("Slettet bekreftelse(r) av type {} (rows affected {})", hendelse.hendelseType, rowsAffected)
     }
@@ -190,8 +199,8 @@ class BekreftelseService(
     @WithSpan(value = "processAnnenHendelse", kind = SpanKind.INTERNAL)
     private fun processAnnenHendelse(hendelse: BekreftelseHendelse) {
         val currentSpan = Span.current()
-        currentSpan.setAttribute("paw.arbeidssoekerregisteret.hendelse.type", hendelse.hendelseType)
-        currentSpan.setAttribute("paw.arbeidssoekerregisteret.aksjon", "ignore")
+        currentSpan.setEventAttribute(hendelse.hendelseType)
+        currentSpan.setIgnoreActionAttribute()
         meterRegistry.ignoreBekreftelseHendeleCounter(hendelse.hendelseType)
         logger.debug("Ignorerer hendelse av type {}", hendelse.hendelseType)
     }

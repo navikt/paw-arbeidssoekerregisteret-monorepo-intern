@@ -14,29 +14,28 @@ import no.nav.paw.bekreftelse.api.config.SERVER_CONFIG
 import no.nav.paw.bekreftelse.api.config.ServerConfig
 import no.nav.paw.bekreftelse.api.context.ApplicationContext
 import no.nav.paw.bekreftelse.api.handler.KafkaConsumerExceptionHandler
-import no.nav.paw.bekreftelse.api.plugins.configureAuthentication
-import no.nav.paw.bekreftelse.api.plugins.configureDatabase
-import no.nav.paw.bekreftelse.api.plugins.configureHTTP
-import no.nav.paw.bekreftelse.api.plugins.configureSerialization
-import no.nav.paw.bekreftelse.api.producer.BekreftelseKafkaProducer
+import no.nav.paw.bekreftelse.api.plugins.installWebPlugins
 import no.nav.paw.bekreftelse.api.repository.BekreftelseRepository
 import no.nav.paw.bekreftelse.api.routes.bekreftelseRoutes
 import no.nav.paw.bekreftelse.api.service.TestDataService
 import no.nav.paw.bekreftelse.api.services.AuthorizationService
 import no.nav.paw.bekreftelse.api.services.BekreftelseService
-import no.nav.paw.bekreftelse.api.utils.configureJackson
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.database.config.DATABASE_CONFIG
 import no.nav.paw.database.config.DatabaseConfig
 import no.nav.paw.database.factory.createHikariDataSource
+import no.nav.paw.database.plugin.installDatabasePlugin
 import no.nav.paw.health.model.LivenessHealthIndicator
 import no.nav.paw.health.model.ReadinessHealthIndicator
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.security.authentication.config.SECURITY_CONFIG
 import no.nav.paw.security.authentication.config.SecurityConfig
+import no.nav.paw.security.authentication.plugin.installAuthenticationPlugin
+import no.nav.paw.serialization.jackson.configureJackson
+import no.nav.paw.serialization.plugin.installContentNegotiationPlugin
 import no.nav.paw.tilgangskontroll.client.TilgangsTjenesteForAnsatte
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -56,7 +55,7 @@ class ApplicationTestContext {
     val kafkaKeysClientMock = mockk<KafkaKeysClient>()
     val tilgangskontrollClientMock = mockk<TilgangsTjenesteForAnsatte>()
     val kafkaProducerMock = mockk<Producer<Long, Bekreftelse>>()
-    val bekreftelseKafkaProducerMock = mockk<BekreftelseKafkaProducer>()
+    val bekreftelseKafkaProducerMock = mockk<Producer<Long, Bekreftelse>>()
     val kafkaConsumerMock = mockk<KafkaConsumer<Long, BekreftelseHendelse>>()
     val kafkaConsumerExceptionHandler = KafkaConsumerExceptionHandler(
         LivenessHealthIndicator(),
@@ -77,28 +76,29 @@ class ApplicationTestContext {
     val mockOAuth2Server = MockOAuth2Server()
 
     fun createApplicationContext(bekreftelseService: BekreftelseService) = ApplicationContext(
-        serverConfig,
-        applicationConfig,
-        securityConfig.copy(authProviders = mockOAuth2Server.createAuthProviders()),
-        dataSource,
-        kafkaKeysClientMock,
-        prometheusMeterRegistry,
-        HealthIndicatorRepository(),
-        kafkaProducerMock,
-        kafkaConsumerMock,
-        kafkaConsumerExceptionHandler,
-        authorizationService,
-        bekreftelseService
+        serverConfig = serverConfig,
+        applicationConfig = applicationConfig,
+        securityConfig = securityConfig.copy(authProviders = mockOAuth2Server.createAuthProviders()),
+        dataSource = dataSource,
+        kafkaKeysClient = kafkaKeysClientMock,
+        prometheusMeterRegistry = prometheusMeterRegistry,
+        healthIndicatorRepository = HealthIndicatorRepository(),
+        bekreftelseKafkaProducer = kafkaProducerMock,
+        bekreftelseKafkaConsumer = kafkaConsumerMock,
+        kafkaConsumerExceptionHandler = kafkaConsumerExceptionHandler,
+        authorizationService = authorizationService,
+        bekreftelseService = bekreftelseService,
+        additionalMeterBinders = emptyList()
     )
 
     fun ApplicationTestBuilder.configureTestApplication(bekreftelseService: BekreftelseService) {
         val applicationContext = createApplicationContext(bekreftelseService)
 
         application {
-            configureHTTP(applicationContext)
-            configureAuthentication(applicationContext)
-            configureSerialization()
-            configureDatabase(applicationContext)
+            installWebPlugins(applicationContext)
+            installContentNegotiationPlugin()
+            installAuthenticationPlugin(applicationContext.securityConfig.authProviders)
+            installDatabasePlugin(applicationContext.dataSource)
             routing {
                 bekreftelseRoutes(applicationContext.authorizationService, applicationContext.bekreftelseService)
             }
@@ -132,7 +132,7 @@ class ApplicationTestContext {
     private fun postgresContainer(): PostgreSQLContainer<out PostgreSQLContainer<*>> {
         val postgres = PostgreSQLContainer("postgres:16").apply {
             addEnv("POSTGRES_PASSWORD", "bekreftelse_api")
-            addEnv("POSTGRES_USER", "5up3r_53cr3t_p455w0rd")
+            addEnv("POSTGRES_USER", "Paw1234")
             addEnv("POSTGRES_DB", "bekreftelser")
             addExposedPorts(5432)
         }

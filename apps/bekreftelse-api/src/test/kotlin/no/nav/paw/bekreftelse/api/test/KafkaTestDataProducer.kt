@@ -1,18 +1,14 @@
 package no.nav.paw.bekreftelse.api.test
 
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import no.nav.paw.bekreftelse.api.config.APPLICATION_CONFIG
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
+import no.nav.paw.bekreftelse.api.utils.sendBlocking
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerializer
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.kafka.config.KAFKA_CONFIG_WITH_SCHEME_REG
 import no.nav.paw.kafka.config.KafkaConfig
 import no.nav.paw.kafka.factory.KafkaFactory
-import no.nav.paw.kafka.producer.sendDeferred
-import org.apache.kafka.clients.producer.Producer
-import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.LongSerializer
 import java.time.Duration
 import java.time.Instant
@@ -41,14 +37,4 @@ fun main() {
     )
 
     kafkaProducer.sendBlocking(topic, key, value)
-}
-
-fun Producer<Long, BekreftelseHendelse>.sendBlocking(
-    topic: String,
-    key: Long,
-    value: BekreftelseHendelse
-) = runBlocking {
-    launch {
-        sendDeferred(ProducerRecord(topic, key, value)).await()
-    }
 }
