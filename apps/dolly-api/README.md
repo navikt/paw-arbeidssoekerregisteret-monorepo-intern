@@ -7,16 +7,17 @@ API for registrering av en person som arbeidssøker i arbeidssøkerregisteret ve
 https://dolly-arbeidssoekerregisteret.intern.dev.nav.no/docs
 
 ## Default-verdier
+
 Felt som ikke er satt i request bruker følgende default-verdier.
 ```
-  utfoertAv = BrukerType.SLUTTBRUKER,
+  utfoertAv = Brukertype.SLUTTBRUKER,
   kilde = "Dolly",
   aarsak = "Registrering av arbeidssøker i Dolly",
   nuskode = "3",
   utdanningBestaatt = true,
   utdanningGodkjent = true,
-  jobbsituasjonBeskrivelse = Beskrivelse.HAR_BLITT_SAGT_OPP,
-  jobbsituasjonDetaljer = Detaljer(stillingStyrk08 = "00", stilling = "Annen stilling"),
+  jobbsituasjonsbeskrivelse = Jobbsituasjonsbeskrivelse.HAR_BLITT_SAGT_OPP,
+  jobbsituasjonsdetaljer = Jobbsituasjonsdetaljer(stillingStyrk08 = "00", stilling = "Annen stilling"),
   helsetilstandHindrerArbeid = false,
   andreForholdHindrerArbeid = false
 ```
