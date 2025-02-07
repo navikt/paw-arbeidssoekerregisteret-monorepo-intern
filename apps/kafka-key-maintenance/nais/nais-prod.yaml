@@ -47,6 +47,7 @@ spec:
     sqlInstances:
       - type: POSTGRES_17
         tier: db-custom-1-5120
+        diskAutoresize: true
         databases:
           - name: pawkafkakeysmaintenance
   accessPolicy:
