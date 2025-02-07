@@ -24,7 +24,7 @@ private const val MDC_EXCEPTION_KEY = "exception"
 
 suspend fun ApplicationCall.handleException(
     throwable: Throwable,
-    customResolver: (throwable: Throwable) -> ProblemDetails? = { null }
+    customResolver: (throwable: Throwable, call: ApplicationRequest) -> ProblemDetails? = {_, _ -> null }
 ) {
     val problemDetails = resolveProblemDetails(request, throwable, customResolver)
 
@@ -44,9 +44,9 @@ suspend fun ApplicationCall.handleException(
 fun resolveProblemDetails(
     request: ApplicationRequest,
     throwable: Throwable,
-    customResolver: (throwable: Throwable) -> ProblemDetails? = { null }
+    customResolver: (throwable: Throwable, call: ApplicationRequest) -> ProblemDetails? = {_, _ -> null }
 ): ProblemDetails {
-    val problemDetails = customResolver(throwable)
+    val problemDetails = customResolver(throwable, request)
     if (problemDetails != null) {
         return problemDetails
     }
