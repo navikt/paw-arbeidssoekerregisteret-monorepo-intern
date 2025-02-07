@@ -69,7 +69,7 @@ class DollyService(
     }
 
     suspend fun hentArbeidssoekerregistrering(identitetsnummer: String): ArbeidssoekerregistreringResponse? =
-        oppslagClient.hentAggregerteArbeidssoekerperioder(identitetsnummer)?.firstOrNull()
+        oppslagClient.hentAggregerteArbeidssoekerperioder(identitetsnummer)?.firstOrNull()?.takeIf { it.avsluttet == null }
             ?.toArbeidssoekerregistreringResponse(identitetsnummer)
 
     private fun sendHendelse(key: Long, identitetsnummer: String, event: Hendelse) {
