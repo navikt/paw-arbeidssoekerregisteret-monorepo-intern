@@ -11,6 +11,7 @@ plugins {
 rootProject.name = "paw-arbeidssoekerregisteret-monorepo-intern"
 
 include(
+    // libs
     "lib:hoplite-config",
     "lib:logging",
     "lib:serialization",
@@ -28,8 +29,10 @@ include(
     "lib:aareg-client",
     "lib:tilgangskontroll-client",
     "lib:common-model",
+    // test
     "test:test-data-lib",
     "test:kafka-streams-test-functions",
+    // domain
     "domain:bekreftelse-interne-hendelser",
     "domain:bekreftelse-paavegneav-avro-schema",
     "domain:bekreftelsesmelding-avro-schema",
@@ -38,6 +41,9 @@ include(
     "domain:arbeidssoekerregisteret-kotlin",
     "domain:arbeidssoeker-regler",
     "domain:pdl-aktoer-schema",
+    // jobs
+    "jobs:arbeidssoekere-synk-jobb",
+    // apps
     "apps:api-start-stopp-perioder",
     "apps:hendelseprosessor",
     "apps:utgang-formidlingsgruppe",

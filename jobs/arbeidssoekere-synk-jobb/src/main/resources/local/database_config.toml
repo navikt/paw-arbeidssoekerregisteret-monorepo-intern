@@ -1,0 +1,5 @@
+host = "localhost"
+port = 5432
+username = "paw_arbeidssoekere_synk_jobb"
+password = "Paw1234"
+database = "paw_arbeidssoekere"
