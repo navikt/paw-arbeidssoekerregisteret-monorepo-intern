@@ -27,9 +27,12 @@ fun haandterBekreftelseMottatt(
         val paaVegneAvList = paaVegneAvTilstand?.paaVegneAvList ?: emptyList()
         if (paaVegneAvList.any { it.loesning == Loesning.from(melding.bekreftelsesloesning) }) {
             Span.current().addEvent(
-                bekreftelseMottattOK, Attributes.of(
+                okEvent, Attributes.of(
+                    domainKey, "bekreftelse",
+                    actionKey, bekreftelseLevertAction,
                     bekreftelseloesingKey, Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET.name,
-                    harAnsvarKey, true
+                    harAnsvarKey, true,
+                    periodeFunnetKey, true
                 )
             )
             gjeldendeTilstand.leggTilNyEllerOppdaterBekreftelse(
@@ -46,9 +49,12 @@ fun haandterBekreftelseMottatt(
         } else {
             with(Span.current()) {
                 addEvent(
-                    bekreftelseMottattFeil, Attributes.of(
+                    errorEvent, Attributes.of(
+                        domainKey, "bekreftelse",
+                        actionKey, bekreftelseLevertAction,
                         bekreftelseloesingKey, Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET.name,
                         harAnsvarKey, false,
+                        periodeFunnetKey, true,
                         feilMeldingKey, "Bekreftelsesløsning har ikke ansvar"
                     )
                 )

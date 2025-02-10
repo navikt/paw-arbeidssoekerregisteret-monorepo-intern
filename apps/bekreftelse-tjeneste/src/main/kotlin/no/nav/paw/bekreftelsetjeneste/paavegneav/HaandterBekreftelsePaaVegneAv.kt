@@ -5,17 +5,27 @@ import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
+import no.nav.paw.bekreftelse.internehendelser.BekreftelsePaaVegneAvStartet
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
-import no.nav.paw.bekreftelse.internehendelser.BekreftelsePaaVegneAvStartet
-import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Stopp
-import no.nav.paw.bekreftelsetjeneste.tilstand.*
+import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
+import no.nav.paw.bekreftelsetjeneste.tilstand.GracePeriodeVarselet
+import no.nav.paw.bekreftelsetjeneste.tilstand.IkkeKlarForUtfylling
+import no.nav.paw.bekreftelsetjeneste.tilstand.InternBekreftelsePaaVegneAvStartet
+import no.nav.paw.bekreftelsetjeneste.tilstand.KlarForUtfylling
+import no.nav.paw.bekreftelsetjeneste.tilstand.VenterSvar
+import no.nav.paw.bekreftelsetjeneste.tilstand.plus
+import no.nav.paw.bekreftelsetjeneste.tilstand.sisteTilstand
+import no.nav.paw.bekreftelsetjeneste.topology.actionKey
 import no.nav.paw.bekreftelsetjeneste.topology.bekreftelseloesingKey
-import no.nav.paw.bekreftelsetjeneste.topology.forespoerselTypeKey
+import no.nav.paw.bekreftelsetjeneste.topology.domainKey
+import no.nav.paw.bekreftelsetjeneste.topology.errorEvent
 import no.nav.paw.bekreftelsetjeneste.topology.harAnsvarKey
-import no.nav.paw.bekreftelsetjeneste.topology.paaVegneAvMottattFeil
-import no.nav.paw.bekreftelsetjeneste.topology.paaVegneAvMottattOk
+import no.nav.paw.bekreftelsetjeneste.topology.okEvent
+import no.nav.paw.bekreftelsetjeneste.topology.paaVegneAvStartet
+import no.nav.paw.bekreftelsetjeneste.topology.paaVegneAvStoppet
 import no.nav.paw.bekreftelsetjeneste.topology.periodeFunnetKey
 import java.time.Duration
 import java.time.Instant
@@ -54,13 +64,14 @@ fun haandterBekreftelsePaaVegneAvEndret(
             .filterIsInstance<SendHendelse>()
             .firstOrNull()
             ?.hendelse
-        val forespoerselType = when (paaVegneAvHendelse.handling) {
-            is Start -> "startet"
-            is Stopp -> "stoppet"
+        val action = when (paaVegneAvHendelse.handling) {
+            is Start -> paaVegneAvStartet
+            is Stopp -> paaVegneAvStoppet
             else -> "ukjent"
         }
         val attributes = Attributes.of(
-            forespoerselTypeKey, forespoerselType,
+            domainKey, "bekreftelse",
+            actionKey, action,
             bekreftelseloesingKey, paaVegneAvHendelse.bekreftelsesloesning.name,
             periodeFunnetKey, bekreftelseTilstand != null,
             harAnsvarKey, paaVegneAvTilstand?.paaVegneAvList
@@ -69,13 +80,13 @@ fun haandterBekreftelsePaaVegneAvEndret(
         )
         if (hendelse == null) {
             Span.current().addEvent(
-                paaVegneAvMottattFeil, attributes
+                errorEvent, attributes
             )
             Span.current()
-                .setStatus(StatusCode.ERROR, "ingen endring utført, se trace 'event' '$paaVegneAvMottattFeil' for detaljer")
+                .setStatus(StatusCode.ERROR, "ingen endring utført, se trace 'event' '$errorEvent' for detaljer")
         } else {
             with(Span.current()) {
-                Span.current().addEvent(paaVegneAvMottattOk, attributes)
+                Span.current().addEvent(okEvent, attributes)
                 setStatus(StatusCode.OK, "endring utført")
             }
         }

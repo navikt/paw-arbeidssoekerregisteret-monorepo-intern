@@ -81,7 +81,9 @@ private fun addTraceEventIkkeAktivPeriode(
 ) {
     with(Span.current()) {
         addEvent(
-            bekreftelseMottattFeil, Attributes.of(
+            errorEvent, Attributes.of(
+                domainKey, "bekreftelse",
+                actionKey, bekreftelseLevertAction,
                 bekreftelseloesingKey, bekreftelseLoesing,
                 periodeFunnetKey, false,
                 harAnsvarKey, false
@@ -110,7 +112,9 @@ fun processPawNamespace(
     return if (bekreftelse == null) {
         with(Span.current()) {
             addEvent(
-                bekreftelseMottattFeil, Attributes.of(
+                errorEvent, Attributes.of(
+                    domainKey, "bekreftelse",
+                    actionKey, bekreftelseLevertAction,
                     bekreftelseloesingKey, Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET.name,
                     feilMeldingKey, "Bekreftelse ikke funnet",
                     harAnsvarKey, registeretHarAnsvar
@@ -127,21 +131,24 @@ fun processPawNamespace(
             is GracePeriodeVarselet,
             is InternBekreftelsePaaVegneAvStartet -> {
                 Span.current().addEvent(
-                    bekreftelseMottattOK, Attributes.of(
+                    okEvent, Attributes.of(
+                        domainKey, "bekreftelse",
+                        actionKey, bekreftelseLevertAction,
                         bekreftelseloesingKey, Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET.name,
                         tilstandKey, sisteTilstand.toString(),
                         harAnsvarKey, registeretHarAnsvar
                     )
                 )
                 val (hendelser, oppdatertBekreftelse) = behandleGyldigSvar(gjeldeneTilstand, hendelse, bekreftelse)
-                Span.current().setAttribute("bekreftelse.tilstand", sisteTilstand.toString())
                 gjeldeneTilstand.oppdaterBekreftelse(oppdatertBekreftelse) to hendelser
             }
 
             else -> {
                 with(Span.current()) {
                     addEvent(
-                        bekreftelseMottattFeil, Attributes.of(
+                        errorEvent, Attributes.of(
+                            domainKey, "bekreftelse",
+                            actionKey, bekreftelseLevertAction,
                             bekreftelseloesingKey, Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET.name,
                             feilMeldingKey, "Melding har ikke forventet tilstand",
                             tilstandKey, sisteTilstand.toString(),
@@ -169,18 +176,8 @@ fun behandleGyldigSvar(
     bekreftelse: Bekreftelse
 ): Pair<List<BekreftelseHendelse>, Bekreftelse> {
     val arbeidssoekerId = gjeldeneTilstand.periode.arbeidsoekerId
-    val sisteTilstand = bekreftelse.sisteTilstand()
-    Span.current().setAttribute("arbeidsoekerId", arbeidssoekerId.toString())
-    Span.current().setAttribute("bekreftelseId", bekreftelse.bekreftelseId.toString())
-    Span.current().setAttribute("periodeId", record.periodeId.toString())
-    Span.current().setAttribute("bekreftelse.oldTilstand", sisteTilstand.toString())
-
     val oppdatertBekreftelse = bekreftelse + Levert(Instant.now())
-    Span.current().setAttribute("bekreftelse.newTilstand", oppdatertBekreftelse.sisteTilstand().toString())
-
     val vilFortsette = record.svar.vilFortsetteSomArbeidssoeker
-    Span.current().setAttribute("vilFortsetteSomArbeidssoeker", vilFortsette.toString())
-
     val baOmAaAvslutte = if (!vilFortsette) {
         val baOmAaAvslutteHendelse = BaOmAaAvsluttePeriode(
             hendelseId = UUID.randomUUID(),
@@ -188,7 +185,6 @@ fun behandleGyldigSvar(
             arbeidssoekerId = arbeidssoekerId,
             hendelseTidspunkt = Instant.now()
         )
-        Span.current().setAttribute("avsluttePeriode.hendelseId", baOmAaAvslutteHendelse.hendelseId.toString())
         baOmAaAvslutteHendelse
     } else null
 
@@ -199,8 +195,6 @@ fun behandleGyldigSvar(
         bekreftelseId = bekreftelse.bekreftelseId,
         hendelseTidspunkt = Instant.now()
     )
-    Span.current().setAttribute("meldingMottatt.hendelseId", meldingMottatt.hendelseId.toString())
-
     return listOfNotNull(meldingMottatt, baOmAaAvslutte) to oppdatertBekreftelse
 }
 
@@ -216,17 +210,11 @@ fun forwardHendelser(
     hendelser.map(record::withValue).forEach {
         forward(it.withTimestamp(Instant.now().toEpochMilli()))
         Span.current().addEvent(
-            "Forwarded hendelse", Attributes.of(
-                AttributeKey.stringKey("hendelseId"), it.value().hendelseId.toString()
+            "publish", Attributes.of(
+                AttributeKey.stringKey("type"), it.value().hendelseType
             )
         )
     }
-
-    Span.current().addEvent(
-        "Antall hendelser forwarded", Attributes.of(
-            AttributeKey.stringKey("event_count"), hendelser.size.toString()
-        )
-    )
 }
 
 private val meldingsLogger = LoggerFactory.getLogger("meldingsLogger")

@@ -50,15 +50,16 @@ fun <T: SpecificRecord> buildKafkaTopology(
             with(Span.current()) {
                 val gyldig = loesningFraMelding.equals(bekreftelsesloesning, ignoreCase = true)
                 val attributes = Attributes.of(
+                    AttributeKey.stringKey("domain"), "bekreftelse",
                     AttributeKey.stringKey("acl_bekreftelsesloesning"), bekreftelsesloesning,
                     AttributeKey.stringKey("record_bekreftelsesloesning"), loesningFraMelding,
                     AttributeKey.booleanKey("gyldig_loesning"), gyldig
                 )
                 if (gyldig) {
-                    addEvent("bekreftelse.filter.ok", attributes)
+                    addEvent("ok", attributes)
                     value
                 } else {
-                    addEvent("bekreftelse.filter.feil", attributes)
+                    addEvent("error", attributes)
                     setStatus(StatusCode.ERROR, "Bekreftelsesløsning fra melding matcher ikke forventet løsning")
                     logger.warn("Meldingens bekreftelsesløsning '$loesningFraMelding' matcher ikke forventet løsning '$bekreftelsesloesning'. Dropper melding.")
                     null
