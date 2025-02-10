@@ -18,6 +18,7 @@ data class InternPaaVegneAv(
 enum class Loesning {
     UKJENT_VERDI,
     ARBEIDSSOEKERREGISTERET,
+    FRISKMELDT_TIL_ARBEIDSFORMIDLING,
     DAGPENGER;
 
     companion object {
@@ -25,11 +26,13 @@ enum class Loesning {
             Bekreftelsesloesning.UKJENT_VERDI -> UKJENT_VERDI
             Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET -> ARBEIDSSOEKERREGISTERET
             Bekreftelsesloesning.DAGPENGER -> DAGPENGER
+            Bekreftelsesloesning.FRISKMELDT_TIL_ARBEIDSFORMIDLING -> FRISKMELDT_TIL_ARBEIDSFORMIDLING
         }
         fun from(value: no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning): Loesning = when (value) {
             no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning.UKJENT_VERDI -> UKJENT_VERDI
             no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET -> ARBEIDSSOEKERREGISTERET
             no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning.DAGPENGER -> DAGPENGER
+            no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning.FRISKMELDT_TIL_ARBEIDSFORMIDLING -> FRISKMELDT_TIL_ARBEIDSFORMIDLING
         }
     }
 }
