@@ -6,7 +6,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.append
-import no.nav.paw.bekreftelse.api.models.BekreftelseRow
+import no.nav.paw.bekreftelse.api.model.BekreftelseRow
 import no.nav.paw.bekreftelse.api.models.MottaBekreftelseRequest
 import no.nav.paw.bekreftelse.api.models.TilgjengeligeBekreftelserRequest
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig

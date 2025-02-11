@@ -1,10 +1,11 @@
 package no.nav.paw.bekreftelse.api.policy
 
+import no.nav.common.audit_log.cef.CefMessageEvent
 import no.nav.paw.bekreftelse.api.config.ServerConfig
-import no.nav.paw.bekreftelse.api.utils.audit
-import no.nav.paw.bekreftelse.api.utils.buildAuditLogger
 import no.nav.paw.error.model.getOrThrow
 import no.nav.paw.error.model.map
+import no.nav.paw.logging.logger.AuditLogger
+import no.nav.paw.logging.logger.buildAuditLogger
 import no.nav.paw.model.Identitetsnummer
 import no.nav.paw.model.NavIdent
 import no.nav.paw.security.authentication.model.Anonym
@@ -18,12 +19,16 @@ import no.nav.paw.security.authorization.model.Permit
 import no.nav.paw.security.authorization.policy.AccessPolicy
 import no.nav.paw.tilgangskontroll.client.Tilgang
 import no.nav.paw.tilgangskontroll.client.TilgangsTjenesteForAnsatte
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 private fun Action.asTilgang(): Tilgang = when (this) {
     Action.READ -> Tilgang.LESE
     Action.WRITE -> Tilgang.SKRIVE
+}
+
+private fun Action.asCefMessageEvent(): CefMessageEvent = when (this) {
+    Action.READ -> CefMessageEvent.ACCESS
+    Action.WRITE -> CefMessageEvent.UPDATE
 }
 
 class TilgangskontrollAccessPolicy(
@@ -33,13 +38,17 @@ class TilgangskontrollAccessPolicy(
 ) : AccessPolicy {
 
     private val logger = LoggerFactory.getLogger("no.nav.paw.logger.security.authorization")
-    private val auditLogger: Logger = buildAuditLogger
+    private val auditLogger: AuditLogger = buildAuditLogger
 
     override suspend fun hasAccess(action: Action, securityContext: SecurityContext): AccessDecision {
         return when (val bruker = securityContext.bruker) {
             is Sluttbruker -> {
-                logger.debug("Ingen tilgangssjekk for sluttbruker")
-                Permit("Sluttbruker har $action-tilgang")
+                // TODO Håndtere verge
+                if (identitetsnummer != null && identitetsnummer != bruker.ident) {
+                    Deny("Sluttbruker har ikke tilgang til data for annen bruker")
+                } else {
+                    Permit("Sluttbruker har tilgang")
+                }
             }
 
             is NavAnsatt -> {
@@ -58,7 +67,7 @@ class TilgangskontrollAccessPolicy(
                                 runtimeEnvironment = serverConfig.runtimeEnvironment,
                                 aktorIdent = bruker.ident,
                                 sluttbrukerIdent = identitetsnummer.verdi,
-                                action = action,
+                                event = action.asCefMessageEvent(),
                                 melding = "NAV-ansatt har benyttet $tilgang-tilgang til informasjon om sluttbruker"
                             )
                             Permit("Veileder har $tilgang-tilgang til sluttbruker")

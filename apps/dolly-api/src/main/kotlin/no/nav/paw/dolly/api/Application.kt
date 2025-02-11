@@ -6,15 +6,15 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import no.nav.paw.config.env.appNameOrDefaultForLocal
 import no.nav.paw.dolly.api.context.ApplicationContext
-import no.nav.paw.dolly.api.plugins.configureAuthentication
-import no.nav.paw.dolly.api.plugins.configureHTTP
-import no.nav.paw.dolly.api.plugins.configureKafka
-import no.nav.paw.dolly.api.plugins.configureRouting
-import no.nav.paw.dolly.api.plugins.configureSerialization
-import no.nav.paw.dolly.api.plugins.configureTracing
-import no.nav.paw.dolly.api.utils.buildApplicationLogger
+import no.nav.paw.dolly.api.plugin.configureRouting
+import no.nav.paw.dolly.api.plugin.installKafkaPlugin
+import no.nav.paw.dolly.api.plugin.installTracingPlugin
+import no.nav.paw.dolly.api.plugin.installWebPlugins
+import no.nav.paw.logging.logger.buildApplicationLogger
 import no.nav.paw.logging.plugin.installLoggingPlugin
 import no.nav.paw.metrics.plugin.installWebAppMetricsPlugin
+import no.nav.paw.security.authentication.plugin.installAuthenticationPlugin
+import no.nav.paw.serialization.plugin.installContentNegotiationPlugin
 
 fun main() {
     val logger = buildApplicationLogger
@@ -38,12 +38,12 @@ fun main() {
 }
 
 fun Application.module(applicationContext: ApplicationContext) {
-    installWebAppMetricsPlugin(applicationContext.prometheusMeterRegistry)
-    configureAuthentication(applicationContext)
-    configureHTTP()
-    configureSerialization()
-    configureKafka(applicationContext)
-    configureRouting(applicationContext)
-    configureTracing()
+    installWebPlugins()
+    installContentNegotiationPlugin()
     installLoggingPlugin()
+    installTracingPlugin()
+    installWebAppMetricsPlugin(applicationContext.prometheusMeterRegistry)
+    installAuthenticationPlugin(applicationContext.securityConfig.authProviders)
+    installKafkaPlugin(applicationContext)
+    configureRouting(applicationContext)
 }

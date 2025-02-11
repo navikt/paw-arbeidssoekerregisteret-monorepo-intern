@@ -9,8 +9,12 @@ val jvmMajorVersion: String by project
 
 dependencies {
     // Project
+    implementation(project(":lib:serialization"))
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:error-handling"))
+    implementation(project(":lib:api-docs"))
+    implementation(project(":lib:metrics"))
+    implementation(project(":lib:logging"))
     implementation(project(":lib:database"))
     implementation(project(":lib:security"))
     implementation(project(":lib:kafka-streams"))
@@ -25,6 +29,7 @@ dependencies {
     implementation(libs.ktor.server.statusPages)
     implementation(libs.ktor.server.cors)
     implementation(libs.ktor.server.callId)
+    implementation(libs.ktor.server.callLogging)
     implementation(libs.ktor.server.auth)
 
     // Client
@@ -34,7 +39,6 @@ dependencies {
 
     // Serialization
     implementation(libs.ktor.serialization.jackson)
-    implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.jackson.datatypeJsr310)
 
     // Authentication

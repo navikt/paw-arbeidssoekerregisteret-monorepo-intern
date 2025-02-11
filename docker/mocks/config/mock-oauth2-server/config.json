@@ -3,24 +3,6 @@
     "httpServer": "NettyWrapper",
     "tokenCallbacks": [
         {
-            "issuerId": "idporten",
-            "tokenExpiry": 3600,
-            "requestMappings": [
-                {
-                    "requestParam": "client_id",
-                    "match": "paw-arbeidssoekerregisteret-api-bekreftelse",
-                    "claims": {
-                        "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
-                        "aud": [
-                            "paw-arbeidssoekerregisteret-api-bekreftelse"
-                        ],
-                        "pid": "17830348441",
-                        "acr": "idporten-loa-high"
-                    }
-                }
-            ]
-        },
-        {
             "issuerId": "tokenx",
             "tokenExpiry": 3600,
             "requestMappings": [
@@ -47,6 +29,11 @@
                         "pid": "01017012345",
                         "acr": "idporten-loa-high"
                     }
+                },
+                {
+                    "requestParam": "client_id",
+                    "match": "paw-arbeidssoekerregisteret-api-bekreftelse-empty-claims",
+                    "claims": {}
                 }
             ]
         },
@@ -108,6 +95,29 @@
                     }
                 }
             ]
+        },
+        {
+            "issuerId": "idporten",
+            "tokenExpiry": 3600,
+            "requestMappings": [
+                {
+                    "requestParam": "client_id",
+                    "match": "paw-arbeidssoekerregisteret-api-bekreftelse",
+                    "claims": {
+                        "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
+                        "aud": [
+                            "paw-arbeidssoekerregisteret-api-bekreftelse"
+                        ],
+                        "pid": "17830348441",
+                        "acr": "idporten-loa-high"
+                    }
+                }
+            ]
+        },
+        {
+            "issuerId": "maskinporten",
+            "tokenExpiry": 3600,
+            "requestMappings": []
         }
     ]
 }

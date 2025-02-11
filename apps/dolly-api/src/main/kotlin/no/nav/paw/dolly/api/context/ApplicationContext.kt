@@ -12,9 +12,9 @@ import no.nav.paw.dolly.api.config.APPLICATION_CONFIG
 import no.nav.paw.dolly.api.config.ApplicationConfig
 import no.nav.paw.dolly.api.config.SERVER_CONFIG
 import no.nav.paw.dolly.api.config.ServerConfig
-import no.nav.paw.dolly.api.kafka.HendelseKafkaProducer
-import no.nav.paw.dolly.api.oppslag.oppslagClient
-import no.nav.paw.dolly.api.services.DollyService
+import no.nav.paw.dolly.api.producer.HendelseKafkaProducer
+import no.nav.paw.dolly.api.client.oppslagClient
+import no.nav.paw.dolly.api.service.DollyService
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafka.config.KAFKA_CONFIG_WITH_SCHEME_REG
 import no.nav.paw.kafka.config.KafkaConfig
