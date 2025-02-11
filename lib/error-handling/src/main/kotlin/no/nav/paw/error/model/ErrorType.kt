@@ -25,3 +25,6 @@ class ErrorType(
         fun default(): ErrorType = ErrorType()
     }
 }
+
+fun String.asHttpErrorType(): URI = ErrorType.domain("http").error(this).build()
+fun String.asSecurityErrorType(): URI = ErrorType.domain("security").error(this).build()

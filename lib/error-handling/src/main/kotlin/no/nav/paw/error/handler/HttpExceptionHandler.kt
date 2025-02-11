@@ -10,9 +10,9 @@ import io.ktor.server.request.uri
 import io.ktor.server.response.respond
 import no.nav.paw.error.exception.ClientResponseException
 import no.nav.paw.error.exception.ServerResponseException
-import no.nav.paw.error.model.ErrorType
 import no.nav.paw.error.model.ProblemDetails
 import no.nav.paw.error.model.ProblemDetailsBuilder
+import no.nav.paw.error.model.asHttpErrorType
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -24,7 +24,7 @@ private const val MDC_EXCEPTION_KEY = "exception"
 
 suspend fun ApplicationCall.handleException(
     throwable: Throwable,
-    customResolver: (throwable: Throwable, call: ApplicationRequest) -> ProblemDetails? = {_, _ -> null }
+    customResolver: (throwable: Throwable, request: ApplicationRequest) -> ProblemDetails? = { _, _ -> null }
 ) {
     val problemDetails = resolveProblemDetails(request, throwable, customResolver)
 
@@ -44,7 +44,7 @@ suspend fun ApplicationCall.handleException(
 fun resolveProblemDetails(
     request: ApplicationRequest,
     throwable: Throwable,
-    customResolver: (throwable: Throwable, call: ApplicationRequest) -> ProblemDetails? = {_, _ -> null }
+    customResolver: (throwable: Throwable, request: ApplicationRequest) -> ProblemDetails? = { _, _ -> null }
 ): ProblemDetails {
     val problemDetails = customResolver(throwable, request)
     if (problemDetails != null) {
@@ -54,7 +54,7 @@ fun resolveProblemDetails(
     when (throwable) {
         is BadRequestException -> {
             return ProblemDetailsBuilder.builder()
-                .type(ErrorType.domain("http").error("kunne-ikke-tolke-forespoersel").build())
+                .type("kunne-ikke-tolke-forespoersel".asHttpErrorType())
                 .status(HttpStatusCode.BadRequest)
                 .detail("Kunne ikke tolke forespørsel")
                 .instance(request.uri)
@@ -63,7 +63,7 @@ fun resolveProblemDetails(
 
         is ContentTransformationException -> {
             return ProblemDetailsBuilder.builder()
-                .type(ErrorType.domain("http").error("kunne-ikke-tolke-innhold").build())
+                .type("kunne-ikke-tolke-innhold".asHttpErrorType())
                 .status(HttpStatusCode.BadRequest)
                 .detail("Kunne ikke tolke innhold i forespørsel")
                 .instance(request.uri)
@@ -72,7 +72,7 @@ fun resolveProblemDetails(
 
         is RequestAlreadyConsumedException -> {
             return ProblemDetailsBuilder.builder()
-                .type(ErrorType.domain("http").error("forespoersel-allerede-mottatt").build())
+                .type("forespoersel-allerede-mottatt".asHttpErrorType())
                 .status(HttpStatusCode.InternalServerError)
                 .detail("Forespørsel er allerede mottatt. Dette er en kodefeil")
                 .instance(request.uri)

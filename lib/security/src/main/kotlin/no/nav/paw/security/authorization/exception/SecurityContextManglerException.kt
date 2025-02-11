@@ -1,6 +1,6 @@
 package no.nav.paw.security.authorization.exception
 
-import no.nav.paw.error.model.ErrorType
+import no.nav.paw.error.model.asSecurityErrorType
 
 class SecurityContextManglerException(message: String) :
-    AuthorizationException(ErrorType.domain("security").error("security-context-mangler").build(), message)
+    AuthorizationException("security-context-mangler".asSecurityErrorType(), message)
