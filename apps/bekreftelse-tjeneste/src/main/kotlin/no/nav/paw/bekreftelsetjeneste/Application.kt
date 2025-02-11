@@ -11,6 +11,7 @@ import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
 import no.nav.paw.bekreftelsetjeneste.config.SERVER_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelsetjeneste.config.ServerConfig
 import no.nav.paw.bekreftelsetjeneste.context.ApplicationContext
+import no.nav.paw.bekreftelsetjeneste.metrics.TilstandsGauge
 import no.nav.paw.bekreftelsetjeneste.plugins.buildKafkaStreams
 import no.nav.paw.bekreftelsetjeneste.plugins.configureKafka
 import no.nav.paw.bekreftelsetjeneste.plugins.configureMetrics
@@ -25,26 +26,29 @@ import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.state.Stores
 import org.slf4j.LoggerFactory
+import java.util.concurrent.atomic.AtomicBoolean
 
+val logger = LoggerFactory.getLogger("no.nav.paw.logger.application")
 fun main() {
-    val logger = LoggerFactory.getLogger("no.nav.paw.logger.application")
-
     val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG_FILE_NAME)
     val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG_FILE_NAME)
 
     logger.info("Starter: ${currentRuntimeEnvironment.appNameOrDefaultForLocal()}")
-
+    val keepGoing = AtomicBoolean(true)
     with(serverConfig) {
         embeddedServer(Netty, port = port) {
             module(applicationConfig)
         }.apply {
-            addShutdownHook { stop(gracePeriodMillis, timeoutMillis) }
+            addShutdownHook {
+                keepGoing.set(false)
+                stop(gracePeriodMillis, timeoutMillis)
+            }
             start(wait = true)
         }
     }
 }
 
-fun Application.module(applicationConfig: ApplicationConfig) {
+fun Application.module(applicationConfig: ApplicationConfig, keepGoing: AtomicBoolean = AtomicBoolean(true)) {
     val applicationContext = ApplicationContext.create(applicationConfig)
     val stream = StreamsBuilder()
     stream.addStateStore(
@@ -63,6 +67,21 @@ fun Application.module(applicationConfig: ApplicationConfig) {
     )
     val kafkaTopology = stream.buildTopology(applicationContext)
     val kafkaStreams = buildKafkaStreams(applicationContext, kafkaTopology)
+    TilstandsGauge(
+        kafkaStreams = kafkaStreams,
+        paaVegneAvStoreName = applicationContext.applicationConfig.kafkaTopology.bekreftelsePaaVegneAvStateStoreName,
+        tilstandStoreName = applicationContext.applicationConfig.kafkaTopology.internStateStoreName,
+        keepGoing = keepGoing,
+        prometheusMeterRegistry = applicationContext.prometheusMeterRegistry
+    )
+        .stateGaugeTask
+        .handle{ _, ex ->
+            if (ex != null) {
+                logger.error("Metrics oppdateringer er avsluttet med feil", ex)
+            } else {
+                logger.info("Metrics oppdateringer er avsluttet")
+            }
+        }
 
     configureMetrics(applicationContext)
     configureKafka(applicationContext, kafkaStreams)
