@@ -16,8 +16,10 @@ import no.nav.paw.kafka.processor.mapNonNull
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
+import org.slf4j.LoggerFactory
 
 private val logger = buildApplicationLogger
+private val clientErrorLogger = LoggerFactory.getLogger("client_error")
 
 fun buildKafkaTopologyList(applicationConfig: ApplicationConfig): List<Pair<ApplicationIdSuffix, Topology>> =
     applicationConfig.bekreftelseKlienter.flatMap { bekreftelseKlient ->
@@ -59,9 +61,23 @@ fun <T: SpecificRecord> buildKafkaTopology(
                     addEvent("ok", attributes)
                     value
                 } else {
+                    val (topic, partition, offset) = with(recordMetadata().orElse(null)) {
+                        Triple(
+                            this?.topic(),
+                            this?.partition(),
+                            this?.offset()
+                        )
+                    }
                     addEvent("error", attributes)
                     setStatus(StatusCode.ERROR, "Bekreftelsesløsning fra melding matcher ikke forventet løsning")
-                    logger.warn("Meldingens bekreftelsesløsning '$loesningFraMelding' matcher ikke forventet løsning '$bekreftelsesloesning'. Dropper melding.")
+                    clientErrorLogger.error(
+                        "Topic:{} - ugyldig bekreftelseløsning, forventet '{}', mottatt '{}'. Dropper melding: partition: {}, offset: {}",
+                        topic,
+                        bekreftelsesloesning,
+                        loesningFraMelding,
+                        partition,
+                        offset
+                    )
                     null
                 }
             }

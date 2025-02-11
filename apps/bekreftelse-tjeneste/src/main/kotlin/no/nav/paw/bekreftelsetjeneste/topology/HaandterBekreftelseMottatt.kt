@@ -47,19 +47,11 @@ fun haandterBekreftelseMottatt(
                 )
             ) to emptyList()
         } else {
-            with(Span.current()) {
-                addEvent(
-                    errorEvent, Attributes.of(
-                        domainKey, "bekreftelse",
-                        actionKey, bekreftelseLevertAction,
-                        bekreftelseloesingKey, Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET.name,
-                        harAnsvarKey, false,
-                        periodeFunnetKey, true,
-                        feilMeldingKey, "Bekreftelsesløsning har ikke ansvar"
-                    )
-                )
-                setStatus(StatusCode.ERROR, "Bekreftelsesløsning har ikke ansvar")
-            }
+            errorLog(
+                Loesning.from(melding.bekreftelsesloesning),
+                bekreftelseLevertAction,
+                Feil.HAR_IKKE_ANSVAR
+            )
             gjeldendeTilstand to emptyList()
         }
     }

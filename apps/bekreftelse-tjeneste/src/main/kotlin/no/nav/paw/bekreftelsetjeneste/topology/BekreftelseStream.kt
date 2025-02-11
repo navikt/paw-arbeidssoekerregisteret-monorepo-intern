@@ -5,14 +5,25 @@ import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
-import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.instrumentation.annotations.WithSpan
-import no.nav.paw.bekreftelse.internehendelser.*
+import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
+import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
 import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
-import no.nav.paw.bekreftelsetjeneste.tilstand.*
+import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
+import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
+import no.nav.paw.bekreftelsetjeneste.tilstand.GracePeriodeVarselet
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternBekreftelsePaaVegneAvStartet
+import no.nav.paw.bekreftelsetjeneste.tilstand.KlarForUtfylling
+import no.nav.paw.bekreftelsetjeneste.tilstand.Levert
+import no.nav.paw.bekreftelsetjeneste.tilstand.VenterSvar
+import no.nav.paw.bekreftelsetjeneste.tilstand.oppdaterBekreftelse
+import no.nav.paw.bekreftelsetjeneste.tilstand.plus
+import no.nav.paw.bekreftelsetjeneste.tilstand.sisteTilstand
 import no.nav.paw.kafka.processor.Punctuation
 import no.nav.paw.kafka.processor.genericProcess
 import org.apache.kafka.common.serialization.Serdes
@@ -50,8 +61,11 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
 
                 val hendelser = when (gjeldendeTilstand) {
                     null -> {
-                        meldingsLogger.warn("Melding mottatt for periode som ikke er aktiv/eksisterer")
-                        addTraceEventIkkeAktivPeriode(record.value().bekreftelsesloesning.name)
+                        errorLog(
+                            Loesning.from(Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET),
+                            bekreftelseLevertAction,
+                            Feil.PERIODE_IKKE_FUNNET
+                        )
                         emptyList()
                     }
 
@@ -76,23 +90,6 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
     }
 }
 
-private fun addTraceEventIkkeAktivPeriode(
-    bekreftelseLoesing: String,
-) {
-    with(Span.current()) {
-        addEvent(
-            errorEvent, Attributes.of(
-                domainKey, "bekreftelse",
-                actionKey, bekreftelseLevertAction,
-                bekreftelseloesingKey, bekreftelseLoesing,
-                periodeFunnetKey, false,
-                harAnsvarKey, false
-            )
-        )
-        setStatus(StatusCode.ERROR, "ingen aktiv periode funnet")
-    }
-}
-
 fun retrieveState(
     bekreftelseTilstandStateStore: BekreftelseTilstandStateStore,
     record: Record<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>
@@ -110,19 +107,12 @@ fun processPawNamespace(
     val bekreftelse = gjeldeneTilstand.findBekreftelse(hendelse.id)
     val registeretHarAnsvar = paaVegneAvTilstand?.paaVegneAvList?.isEmpty() ?: true
     return if (bekreftelse == null) {
-        with(Span.current()) {
-            addEvent(
-                errorEvent, Attributes.of(
-                    domainKey, "bekreftelse",
-                    actionKey, bekreftelseLevertAction,
-                    bekreftelseloesingKey, Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET.name,
-                    feilMeldingKey, "Bekreftelse ikke funnet",
-                    harAnsvarKey, registeretHarAnsvar
-                )
-            )
-            setStatus(StatusCode.ERROR, "Bekreftelse ikke funnet")
-        }
-        meldingsLogger.warn("Melding {} har ingen matchene bekreftelse", hendelse.id)
+        errorLog(
+            Loesning.from(Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET),
+            bekreftelseLevertAction,
+            Feil.BEKREFTELSE_IKKE_FUNNET,
+            registeretHarAnsvar
+        )
         gjeldeneTilstand to emptyList()
     } else {
         when (val sisteTilstand = bekreftelse.sisteTilstand()) {
@@ -144,23 +134,12 @@ fun processPawNamespace(
             }
 
             else -> {
-                with(Span.current()) {
-                    addEvent(
-                        errorEvent, Attributes.of(
-                            domainKey, "bekreftelse",
-                            actionKey, bekreftelseLevertAction,
-                            bekreftelseloesingKey, Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET.name,
-                            feilMeldingKey, "Melding har ikke forventet tilstand",
-                            tilstandKey, sisteTilstand.toString(),
-                            harAnsvarKey, registeretHarAnsvar
-                        )
-                    )
-                    setStatus(StatusCode.ERROR, "Melding har ikke forventet tilstand")
-                }
-                meldingsLogger.error(
-                    "Melding {} har ikke forventet tilstand, tilstand={}",
-                    hendelse.id,
-                    sisteTilstand
+                errorLog(
+                    loesning = Loesning.from(Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET),
+                    handling = bekreftelseLevertAction,
+                    feil = Feil.UVENTET_TILSTAND,
+                    harAnsvar = registeretHarAnsvar,
+                    tilstand = sisteTilstand.toString()
                 )
                 gjeldeneTilstand to emptyList()
             }
@@ -211,10 +190,8 @@ fun forwardHendelser(
         forward(it.withTimestamp(Instant.now().toEpochMilli()))
         Span.current().addEvent(
             "publish", Attributes.of(
-                AttributeKey.stringKey("type"), it.value().hendelseType
+                AttributeKey.stringKey("type"), it.value().hendelseType.replace(".", "_")
             )
         )
     }
 }
-
-private val meldingsLogger = LoggerFactory.getLogger("meldingsLogger")
