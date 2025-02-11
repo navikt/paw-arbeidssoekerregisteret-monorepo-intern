@@ -20,6 +20,6 @@ fun main() {
     } catch (throwable: Throwable) {
         logger.error("Kjøring feilet", throwable)
     } finally {
-        logger.info("Stopper $name")
+        logger.info("Avslutter $name")
     }
 }
