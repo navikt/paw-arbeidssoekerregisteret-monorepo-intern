@@ -11,3 +11,6 @@ spec:
     requests:
       cpu: 200m
       memory: 256Mi
+  filesFrom:
+    - secret: paw-arbeidssoekere-csv
+      mountPath: /var/run/secrets/paw-arbeidssoekere-csv
