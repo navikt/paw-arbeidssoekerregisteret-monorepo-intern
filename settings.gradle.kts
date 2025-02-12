@@ -51,7 +51,6 @@ include(
     "apps:bekreftelse-utgang",
     "apps:bekreftelse-hendelsefilter",
     "apps:tilgangskontroll",
-    "apps:meldekort-adapter",
     "apps:dolly-api"
 )
 
