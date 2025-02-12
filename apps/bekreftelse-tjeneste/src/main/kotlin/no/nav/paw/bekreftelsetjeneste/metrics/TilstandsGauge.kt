@@ -27,7 +27,7 @@ import java.time.Instant
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
-const val bekreftelseTilstandMetric = "bekreftelse_tilstand"
+const val bekreftelseTilstandMetric = "bekreftelse_tilstand_v2"
 class Labels {
     companion object {
         const val graceperiode_dager = "graceperiode_dager"
@@ -106,6 +106,7 @@ fun map(
         Tag.of(Labels.dager_til_siste_frist, dagerTilSisteFrist.dagerTilSisteFristString())
     )
     return WithMetricsInfo(
+        partition = tilstand.kafkaPartition,
         name = bekreftelseTilstandMetric,
         labels = tags
     )
