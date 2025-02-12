@@ -57,6 +57,7 @@ fun <T: SpecificRecord> buildKafkaTopology(
                     AttributeKey.stringKey("record_bekreftelsesloesning"), loesningFraMelding,
                     AttributeKey.booleanKey("gyldig_loesning"), gyldig
                 )
+                setAllAttributes(attributes)
                 if (gyldig) {
                     addEvent("ok", attributes)
                     value

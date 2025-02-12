@@ -2,7 +2,6 @@ package no.nav.paw.bekreftelsetjeneste.topology
 
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
-import io.opentelemetry.api.trace.StatusCode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
@@ -21,40 +20,43 @@ fun haandterBekreftelseMottatt(
     paaVegneAvTilstand: PaaVegneAvTilstand?,
     melding: no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 ): Pair<BekreftelseTilstand, List<BekreftelseHendelse>> {
-    val (tilstand, hendelser) = if (melding.bekreftelsesloesning == Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET) {
-        processPawNamespace(melding, gjeldendeTilstand, paaVegneAvTilstand)
-    } else {
-        val paaVegneAvList = paaVegneAvTilstand?.paaVegneAvList ?: emptyList()
-        if (paaVegneAvList.any { it.loesning == Loesning.from(melding.bekreftelsesloesning) }) {
-            Span.current().addEvent(
-                okEvent, Attributes.of(
-                    domainKey, "bekreftelse",
-                    actionKey, bekreftelseLevertAction,
-                    bekreftelseloesingKey, Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET.name,
-                    harAnsvarKey, true,
-                    periodeFunnetKey, true
-                )
-            )
-            gjeldendeTilstand.leggTilNyEllerOppdaterBekreftelse(
-                Bekreftelse(
-                    tilstandsLogg = BekreftelseTilstandsLogg(
-                        siste = Levert(melding.svar.sendtInnAv.tidspunkt),
-                        tidligere = emptyList()
-                    ),
-                    bekreftelseId = melding.id,
-                    gjelderFra = melding.svar.gjelderFra,
-                    gjelderTil = melding.svar.gjelderTil
-                )
-            ) to emptyList()
+    val harAnsvar = melding.bekreftelsesloesning == Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET ||
+            (paaVegneAvTilstand?.paaVegneAvList
+                ?: emptyList()).any { it.loesning == Loesning.from(melding.bekreftelsesloesning) }
+    val attributes = Attributes.of(
+        domainKey, "bekreftelse",
+        actionKey, bekreftelseLevertAction,
+        bekreftelseloesingKey, melding.bekreftelsesloesning.name,
+        harAnsvarKey, harAnsvar,
+        periodeFunnetKey, true
+    )
+    Span.current().setAllAttributes(attributes)
+    val (tilstand, hendelser) =
+        if (melding.bekreftelsesloesning == Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET) {
+            processPawNamespace(melding, gjeldendeTilstand, paaVegneAvTilstand)
         } else {
-            errorLog(
-                Loesning.from(melding.bekreftelsesloesning),
-                bekreftelseLevertAction,
-                Feil.HAR_IKKE_ANSVAR
-            )
-            gjeldendeTilstand to emptyList()
+            if (harAnsvar) {
+                Span.current().addEvent(okEvent, attributes)
+                gjeldendeTilstand.leggTilNyEllerOppdaterBekreftelse(
+                    Bekreftelse(
+                        tilstandsLogg = BekreftelseTilstandsLogg(
+                            siste = Levert(melding.svar.sendtInnAv.tidspunkt),
+                            tidligere = emptyList()
+                        ),
+                        bekreftelseId = melding.id,
+                        gjelderFra = melding.svar.gjelderFra,
+                        gjelderTil = melding.svar.gjelderTil
+                    )
+                ) to emptyList()
+            } else {
+                errorLog(
+                    Loesning.from(melding.bekreftelsesloesning),
+                    bekreftelseLevertAction,
+                    Feil.HAR_IKKE_ANSVAR
+                )
+                gjeldendeTilstand to emptyList()
+            }
         }
-    }
     return tilstand.copy(
         bekreftelser = tilstand.bekreftelser.filterByStatusAndCount(maksAntallBekreftelserEtterStatus)
     ) to hendelser

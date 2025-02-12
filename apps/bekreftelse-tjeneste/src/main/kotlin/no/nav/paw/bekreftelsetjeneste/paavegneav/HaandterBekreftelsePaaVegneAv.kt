@@ -34,10 +34,6 @@ import java.util.*
 @JvmInline
 value class WallClock(val value: Instant)
 
-@WithSpan(
-    value = "haandter_bekreftelse_paa_vegne_av_endret",
-    kind = SpanKind.INTERNAL
-)
 fun haandterBekreftelsePaaVegneAvEndret(
     wallclock: WallClock,
     bekreftelseTilstand: BekreftelseTilstand?,
@@ -78,6 +74,7 @@ fun haandterBekreftelsePaaVegneAvEndret(
                 ?.map { it.loesning }
                 ?.contains(Loesning.from(paaVegneAvHendelse.bekreftelsesloesning)) ?: false
         )
+        Span.current().setAllAttributes(attributes)
         if (hendelse == null) {
             Span.current().addEvent(
                 errorEvent, attributes
