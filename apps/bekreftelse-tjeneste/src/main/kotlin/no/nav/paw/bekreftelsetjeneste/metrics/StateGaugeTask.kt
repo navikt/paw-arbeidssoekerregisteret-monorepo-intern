@@ -31,14 +31,14 @@ fun <T1> initStateGaugeTask(
                     if (streamState == KafkaStreams.State.RUNNING) {
                         val source = contentSupplier().flatMap(mapper)
                         gauge.update(source)
-                        metricLogger.debug("Metrics oppdatert")
+                        metricLogger.info("Metrics oppdatert")
                         Thread.sleep(Duration.ofMinutes(10))
                     } else {
-                        metricLogger.debug("KafkaStreamsState={}, metrics oppdateres ikke", streamState)
+                        metricLogger.info("KafkaStreamsState={}, metrics oppdateres ikke", streamState)
                         Thread.sleep(Duration.ofMinutes(1))
                     }
                 } catch (ex: InvalidStateStoreException) {
-                    metricLogger.error("Metrics: state store ikke lenger gyldig", ex)
+                    metricLogger.info("Metrics: state store ikke lenger gyldig", ex)
                     Thread.sleep(Duration.ofMinutes(1))
                 }
             }
