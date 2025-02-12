@@ -8,9 +8,12 @@ val jvmMajorVersion: String by project
 
 dependencies {
     implementation(project(":lib:hoplite-config"))
+    implementation(project(":lib:logging"))
+    implementation(project(":lib:serialization"))
+    implementation(project(":lib:error-handling"))
+    implementation(project(":lib:metrics"))
     implementation(project(":lib:kafka-streams"))
     implementation(project(":domain:bekreftelse-interne-hendelser"))
-    implementation(project(":lib:error-handling"))
     implementation(project(":domain:main-avro-schema"))
     implementation(libs.jackson.datatypeJsr310)
     implementation(libs.jackson.kotlin)
@@ -25,7 +28,7 @@ dependencies {
     implementation(libs.avro.kafkaStreamsSerde)
     implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
     implementation(libs.micrometer.registryPrometheus)
-    implementation("no.nav.tms.varsel:kotlin-builder:1.1.0")
+    implementation("no.nav.tms.varsel:kotlin-builder:1.1.0") // TODO: Legg til i libs.versions.toml
     testImplementation(libs.kafka.streams.test)
     testImplementation(libs.bundles.testLibsWithUnitTesting)
     testImplementation(project(":lib:kafka-key-generator-client"))

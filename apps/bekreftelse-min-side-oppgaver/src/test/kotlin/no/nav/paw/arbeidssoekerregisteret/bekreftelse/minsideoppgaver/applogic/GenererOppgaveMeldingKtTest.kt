@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory
 import java.util.*
 
 private val oppgaveGeneratorLogger = LoggerFactory.getLogger("oppgaveGeneratorLogger")
+
 class GenererOppgaveMeldingKtTest : FreeSpec({
     val varselMeldingBygger = VarselMeldingBygger(
         runtimeEnvironment = Local,
@@ -25,9 +26,8 @@ class GenererOppgaveMeldingKtTest : FreeSpec({
         val bekreftgelseTilgjengelig = bekreftelseTilgjengelig(
             periodeId = gjeldeneTilstand.periodeId,
         )
-        genererOppgaveMeldinger(
+        gjeldeneTilstand.asOppgaveMeldinger(
             varselMeldingBygger = varselMeldingBygger,
-            tilstand = gjeldeneTilstand,
             hendelse = bekreftgelseTilgjengelig
         ) should { (nyTilstand, oppgaveMeldinger) ->
             runCatching {

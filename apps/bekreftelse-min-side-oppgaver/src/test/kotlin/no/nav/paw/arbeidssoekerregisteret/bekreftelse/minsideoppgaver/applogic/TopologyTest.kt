@@ -11,9 +11,9 @@ import no.nav.paw.arbeidssoekerregisteret.testdata.bekreftelse.periodeAvsluttet
 import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.periode
 
 
-class TopologyTest: FreeSpec({
+class TopologyTest : FreeSpec({
     "Verifiser standard applikasjonsflyt" {
-        with(testContext()) {
+        with(TestContext.build()) {
             val periode = with(kafkaKeyContext) { periode() }
             val bekreftelseTilgjengelig = bekreftelseTilgjengelig(
                 periodeId = periode.value.id

@@ -13,9 +13,8 @@ class GenererTilstandTest : FreeSpec({
     "Når en ny periode kommer inn opprettes tilsvarende tilstand" {
         with(kafkaKeyContext()) {
             val periode = periode().value
-            genererTilstand(
+            periode.asInternTilstand(
                 gjeldeneTilstand = null,
-                periode = periode
             ) shouldBe InternTilstand(
                 periodeId = periode.id,
                 ident = periode.identitetsnummer,
@@ -28,13 +27,12 @@ class GenererTilstandTest : FreeSpec({
         with(kafkaKeyContext()) {
             val periode = periode(avsluttetMetadata = metadata()).value
             val gjeldeneTilstand = InternTilstand(
-                periodeId =  periode.id,
+                periodeId = periode.id,
                 ident = periode.identitetsnummer,
                 bekreftelser = listOf(UUID.randomUUID())
             )
-            genererTilstand(
+            periode.asInternTilstand(
                 gjeldeneTilstand = gjeldeneTilstand,
-                periode = periode
             ) shouldBe gjeldeneTilstand
         }
     }
@@ -43,13 +41,12 @@ class GenererTilstandTest : FreeSpec({
         with(kafkaKeyContext()) {
             val periode = periode(identitetsnummer = "00998877654").value
             val gjeldeneTilstand = InternTilstand(
-                periodeId =  periode.id,
+                periodeId = periode.id,
                 ident = "12345678909",
                 bekreftelser = listOf(UUID.randomUUID(), UUID.randomUUID())
             )
-            genererTilstand(
+            periode.asInternTilstand(
                 gjeldeneTilstand = gjeldeneTilstand,
-                periode = periode
             ) shouldBe gjeldeneTilstand.copy(
                 ident = periode.identitetsnummer
             )
