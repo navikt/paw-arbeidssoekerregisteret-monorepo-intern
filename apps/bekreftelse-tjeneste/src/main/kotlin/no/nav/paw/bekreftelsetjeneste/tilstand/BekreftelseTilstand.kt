@@ -6,16 +6,19 @@ const val MAKS_ANTALL_HISTRISKE_BEKREFTELSER = 20
 
 @JvmRecord
 data class BekreftelseTilstand(
+    val kafkaPartition: Int,
     val periode: PeriodeInfo,
     val bekreftelser: List<Bekreftelse>
 )
 
 fun opprettBekreftelseTilstand(
+    kafkaPartition: Int,
     id: Long,
     key: Long,
     periode: Periode,
 ): BekreftelseTilstand =
     BekreftelseTilstand(
+        kafkaPartition = kafkaPartition,
         periode = PeriodeInfo(
             periodeId = periode.id,
             identitetsnummer = periode.identitetsnummer,

@@ -31,9 +31,11 @@ fun bekreftelseTilstand(
     identitetsnummer: String = "12345678901",
     arbeidsoekerId: Long = 1L,
     recordKey: Long = 1L,
+    kafkaPartition: Int = 0,
     avsluttet: Instant? = null,
     bekreftelser: List<Bekreftelse> = emptyList()
 ) = BekreftelseTilstand(
+    kafkaPartition = kafkaPartition,
     periode = PeriodeInfo(
         periodeId = periodeId,
         identitetsnummer = identitetsnummer,

@@ -39,7 +39,7 @@ class PeriodeStreamTest : FreeSpec({
                 val bekreftelseTilstandStateStore: BekreftelseTilstandStateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
                 val currentState = bekreftelseTilstandStateStore.get(periode.id)
                 currentState.shouldBeInstanceOf<BekreftelseTilstand>()
-                currentState shouldBe opprettBekreftelseTilstand(id, key, periode)
+                currentState shouldBe opprettBekreftelseTilstand(0, id, key, periode)
             }
         }
     }
@@ -70,7 +70,7 @@ class PeriodeStreamTest : FreeSpec({
             with(kafkaKeyContext()) {
                 val (id, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
                 val bekreftelseTilstandStateStore: BekreftelseTilstandStateStore = testDriver.getKeyValueStore(applicationConfig.kafkaTopology.internStateStoreName)
-                bekreftelseTilstandStateStore.put(periode.id, opprettBekreftelseTilstand(id, key, periode))
+                bekreftelseTilstandStateStore.put(periode.id, opprettBekreftelseTilstand(0, id, key, periode))
                 val state = bekreftelseTilstandStateStore.get(periode.id)
                 periodeTopic.pipeInput(key, periode)
 

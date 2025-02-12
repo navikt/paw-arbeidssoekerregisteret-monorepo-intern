@@ -16,6 +16,7 @@ import org.apache.kafka.streams.kstream.Produced
 import org.apache.kafka.streams.state.KeyValueStore
 import java.time.Instant
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 fun StreamsBuilder.buildPeriodeStream(
     applicationConfig: ApplicationConfig,
@@ -37,6 +38,7 @@ fun StreamsBuilder.buildPeriodeStream(
                     periode.avsluttet() -> Action.DeleteStateAndEmit(arbeidsoekerId, periode)
                     currentState == null -> Action.UpdateState(
                         opprettBekreftelseTilstand(
+                            kafkaPartition = requireNotNull(recordMetadata().getOrNull()?.partition()) { "Forventer at kafka.partition er satt"},
                             id = arbeidsoekerId,
                             key = kafkaKey,
                             periode = periode
