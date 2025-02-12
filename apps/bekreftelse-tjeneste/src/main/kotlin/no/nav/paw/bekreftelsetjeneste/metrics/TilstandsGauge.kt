@@ -55,7 +55,8 @@ class TilstandsGauge(
     private val paaVegneAvStoreName: String,
     private val tilstandStoreName: String,
     keepGoing: AtomicBoolean,
-    prometheusMeterRegistry: PrometheusMeterRegistry
+    prometheusMeterRegistry: PrometheusMeterRegistry,
+    bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
 ) {
 
     val stateGaugeTask = initStateGaugeTask(
@@ -63,7 +64,10 @@ class TilstandsGauge(
         registry = prometheusMeterRegistry,
         streamStateSupplier = { kafkaStreams.state() },
         contentSupplier = ::contentSupplier,
-        mapper = { emptyList() }
+        mapper = { (tilstand, ansvarlige) ->
+            val now = Instant.now()
+            listOf(map(now, bekreftelseKonfigurasjon, tilstand, ansvarlige))
+        }
     )
 
     private fun contentSupplier(): Sequence<Pair<BekreftelseTilstand, List<InternPaaVegneAv>>> {

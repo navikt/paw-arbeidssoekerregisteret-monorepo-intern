@@ -72,7 +72,8 @@ fun Application.module(applicationConfig: ApplicationConfig, keepGoing: AtomicBo
         paaVegneAvStoreName = applicationContext.applicationConfig.kafkaTopology.bekreftelsePaaVegneAvStateStoreName,
         tilstandStoreName = applicationContext.applicationConfig.kafkaTopology.internStateStoreName,
         keepGoing = keepGoing,
-        prometheusMeterRegistry = applicationContext.prometheusMeterRegistry
+        prometheusMeterRegistry = applicationContext.prometheusMeterRegistry,
+        bekreftelseKonfigurasjon = applicationContext.applicationConfig.bekreftelseKonfigurasjon
     )
         .stateGaugeTask
         .handle{ _, ex ->
