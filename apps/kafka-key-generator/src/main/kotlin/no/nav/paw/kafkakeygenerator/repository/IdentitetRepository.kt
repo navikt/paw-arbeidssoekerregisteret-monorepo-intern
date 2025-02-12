@@ -3,16 +3,13 @@ package no.nav.paw.kafkakeygenerator.repository
 import no.nav.paw.kafkakeygenerator.database.IdentitetTabell
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
-import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 
-class IdentitetRepository(
-    private val database: Database
-) {
-    fun find(identitetsnummer: Identitetsnummer): Pair<Identitetsnummer, ArbeidssoekerId>? = transaction(database) {
+class IdentitetRepository {
+    fun find(identitetsnummer: Identitetsnummer): Pair<Identitetsnummer, ArbeidssoekerId>? = transaction {
         IdentitetTabell.selectAll()
             .where { IdentitetTabell.identitetsnummer eq identitetsnummer.value }
             .singleOrNull()
@@ -24,7 +21,7 @@ class IdentitetRepository(
     fun insert(
         ident: Identitetsnummer,
         arbeidssoekerId: ArbeidssoekerId
-    ): Int = transaction(database) {
+    ): Int = transaction {
         IdentitetTabell.insert {
             it[identitetsnummer] = ident.value
             it[kafkaKey] = arbeidssoekerId.value
@@ -34,7 +31,7 @@ class IdentitetRepository(
     fun update(
         identitetsnummer: Identitetsnummer,
         tilArbeidssoekerId: ArbeidssoekerId
-    ): Int = transaction(database) {
+    ): Int = transaction {
         IdentitetTabell.update(where = {
             (IdentitetTabell.identitetsnummer eq identitetsnummer.value)
         }) {

@@ -1,27 +1,31 @@
 package no.nav.paw.kafkakeygenerator.api.recordkey
 
-import io.ktor.server.auth.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.server.request.receive
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.RoutingContext
+import io.ktor.server.routing.post
+import io.ktor.server.routing.route
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.kafkakeygenerator.api.recordkey.functions.recordKey
-import no.nav.paw.kafkakeygenerator.config.AuthenticationConfig
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
 import no.nav.paw.kafkakeygenerator.vo.CallId
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import no.nav.paw.security.authentication.model.AzureAd
+import no.nav.paw.security.authentication.plugin.autentisering
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
 
 fun Routing.configureRecordKeyApi(
-    authenticationConfig: AuthenticationConfig,
     kafkaKeysService: KafkaKeysService
 ) {
     val logger = LoggerFactory.getLogger("record-key-api")
-    authenticate(authenticationConfig.kafkaKeyApiAuthProvider) {
-        post("/api/v1/record-key") {
-            handleRequest(kafkaKeysService, logger)
+    route("/api/v1") {
+        autentisering(AzureAd) {
+            post("/record-key") {
+                handleRequest(kafkaKeysService, logger)
+            }
         }
     }
 }

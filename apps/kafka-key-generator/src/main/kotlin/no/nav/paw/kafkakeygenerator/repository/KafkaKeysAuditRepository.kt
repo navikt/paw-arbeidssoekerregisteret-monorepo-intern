@@ -5,17 +5,14 @@ import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Audit
 import no.nav.paw.kafkakeygenerator.vo.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
-import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class KafkaKeysAuditRepository(
-    private val database: Database
-) {
+class KafkaKeysAuditRepository {
 
-    fun findByIdentitetsnummer(identitetsnummer: Identitetsnummer): List<Audit> = transaction(database) {
+    fun findByIdentitetsnummer(identitetsnummer: Identitetsnummer): List<Audit> = transaction {
         KafkaKeysAuditTable.selectAll()
             .where(KafkaKeysAuditTable.identitetsnummer eq identitetsnummer.value)
             .map {
@@ -29,7 +26,7 @@ class KafkaKeysAuditRepository(
             }
     }
 
-    fun findByStatus(status: IdentitetStatus): List<Audit> = transaction(database) {
+    fun findByStatus(status: IdentitetStatus): List<Audit> = transaction {
         KafkaKeysAuditTable.selectAll()
             .where(KafkaKeysAuditTable.status eq status)
             .map {
@@ -43,7 +40,7 @@ class KafkaKeysAuditRepository(
             }
     }
 
-    fun insert(audit: Audit): Int = transaction(database) {
+    fun insert(audit: Audit): Int = transaction {
         KafkaKeysAuditTable.insert {
             it[identitetsnummer] = audit.identitetsnummer.value
             it[tidligereKafkaKey] = audit.tidligereArbeidssoekerId.value

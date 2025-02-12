@@ -10,7 +10,6 @@ import io.ktor.client.engine.mock.MockEngine
 import io.micrometer.core.instrument.logging.LoggingMeterRegistry
 import kotlinx.coroutines.runBlocking
 import no.nav.paw.kafkakeygenerator.api.v2.hentLokaleAlias
-import no.nav.paw.kafkakeygenerator.plugin.custom.flywayMigrate
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
 import no.nav.paw.kafkakeygenerator.test.genererResponse
 import no.nav.paw.kafkakeygenerator.test.initTestDatabase
@@ -30,13 +29,19 @@ import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import no.nav.paw.kafkakeygenerator.vo.Left
 import no.nav.paw.kafkakeygenerator.vo.Right
 import no.nav.paw.pdl.PdlClient
+import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
 import org.junit.jupiter.api.fail
 import java.util.*
 
 class KafkaKeysServiceTest : StringSpec({
     val dataSource = initTestDatabase()
-    dataSource.flywayMigrate()
+    Flyway.configure()
+        .dataSource(dataSource)
+        .baselineOnMigrate(true)
+        .load()
+        .migrate()
+    Database.connect(dataSource)
     val pdlKlient = PdlClient(
         url = "http://mock",
         tema = "tema",
@@ -46,7 +51,7 @@ class KafkaKeysServiceTest : StringSpec({
     ) { "fake token" }
     val kafkaKeysService = KafkaKeysService(
         meterRegistry = LoggingMeterRegistry(),
-        kafkaKeysRepository = KafkaKeysRepository(Database.connect(dataSource)),
+        kafkaKeysRepository = KafkaKeysRepository(),
         pdlService = PdlService(pdlKlient)
     )
 

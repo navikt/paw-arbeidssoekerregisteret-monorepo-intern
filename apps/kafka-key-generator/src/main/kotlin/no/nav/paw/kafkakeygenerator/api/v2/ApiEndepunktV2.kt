@@ -1,38 +1,43 @@
 package no.nav.paw.kafkakeygenerator.api.v2
 
-import io.ktor.http.*
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.HttpStatusCode.Companion.InternalServerError
 import io.ktor.http.HttpStatusCode.Companion.OK
-import io.ktor.server.auth.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.server.request.receive
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.RoutingContext
+import io.ktor.server.routing.post
+import io.ktor.server.routing.route
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
+import no.nav.paw.kafkakeygenerator.vo.CallId
 import no.nav.paw.kafkakeygenerator.vo.FailureCode
+import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import no.nav.paw.kafkakeygenerator.vo.Left
 import no.nav.paw.kafkakeygenerator.vo.Right
-import no.nav.paw.kafkakeygenerator.config.AuthenticationConfig
-import no.nav.paw.kafkakeygenerator.vo.CallId
-import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import no.nav.paw.security.authentication.model.AzureAd
+import no.nav.paw.security.authentication.plugin.autentisering
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
 
 fun Routing.konfigurerApiV2(
-    authenticationConfig: AuthenticationConfig,
     kafkaKeysService: KafkaKeysService
 ) {
     val logger = LoggerFactory.getLogger("api")
-    authenticate(authenticationConfig.kafkaKeyApiAuthProvider) {
-        post("/api/v2/hentEllerOpprett") {
-            hentEllerOpprett(kafkaKeysService, logger)
-        }
-        post("/api/v2/info") {
-            hentInfo(kafkaKeysService, logger)
-        }
-        post("/api/v2/lokalInfo") {
-            hentLokalInfo(kafkaKeysService, logger)
+    route("/api/v2") {
+        autentisering(AzureAd) {
+            post("/hentEllerOpprett") {
+                hentEllerOpprett(kafkaKeysService, logger)
+            }
+            post("/info") {
+                hentInfo(kafkaKeysService, logger)
+            }
+            post("/lokalInfo") {
+                hentLokalInfo(kafkaKeysService, logger)
+            }
         }
     }
 }
@@ -49,6 +54,7 @@ suspend fun RoutingContext.hentLokalInfo(
                 alias = resultat.right
             )
         )
+
         is Left -> {
             logger.error("Kunne ikke hente alias for identer: {}", resultat.left.code, resultat.left.exception)
             call.respond(
@@ -73,6 +79,7 @@ suspend fun RoutingContext.hentInfo(
             status = InternalServerError,
             message = resultat.left.code.name
         )
+
         is Right -> call.respond(resultat.right)
     }
 }

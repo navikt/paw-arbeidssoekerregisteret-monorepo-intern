@@ -2,23 +2,23 @@ package no.nav.paw.kafkakeygenerator.plugin
 
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
-import no.nav.paw.kafkakeygenerator.plugin.custom.kafkaConsumerPlugin
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
+import no.nav.paw.kafka.plugin.KafkaConsumerPlugin
+import no.nav.paw.kafkakeygenerator.config.KafkaTopologyConfig
+import no.nav.paw.kafkakeygenerator.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 
-fun <K, V> Application.configureKafka(
-    consumeFunction: ((ConsumerRecords<K, V>) -> Unit),
-    successFunction: ((ConsumerRecords<K, V>) -> Unit)? = null,
-    errorFunction: ((throwable: Throwable) -> Unit),
-    kafkaConsumer: KafkaConsumer<K, V>,
-    kafkaTopics: List<String>
+fun Application.installKafkaPlugins(
+    kafkaTopologyConfig: KafkaTopologyConfig,
+    kafkaConsumer: KafkaConsumer<Long, Hendelse>,
+    kafkaConsumerService: KafkaConsumerService
 ) {
 
-    install(kafkaConsumerPlugin<K, V>()) {
-        this.consumeFunction = consumeFunction
-        this.successFunction = successFunction
-        this.errorFunction = errorFunction
+    install(KafkaConsumerPlugin<Long, Hendelse>("Hendelselogg")) {
+        this.consumeFunction = kafkaConsumerService::handleRecords
+        this.errorFunction = kafkaConsumerService::handleException
         this.kafkaConsumer = kafkaConsumer
-        this.kafkaTopics = kafkaTopics
+        this.kafkaTopics = listOf(kafkaTopologyConfig.hendelseloggTopic)
     }
 }

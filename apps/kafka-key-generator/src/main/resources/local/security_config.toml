@@ -1,0 +1,8 @@
+[[authProviders]]
+name = "azure"
+audiences = ["paw-kafka-key-generator"]
+discoveryUrl = "http://localhost:8081/azure/.well-known/openid-configuration"
+
+[authProviders.requiredClaims]
+claims = ["NAVident"]
+

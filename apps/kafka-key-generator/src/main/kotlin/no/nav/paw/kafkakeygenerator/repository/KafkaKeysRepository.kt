@@ -12,7 +12,6 @@ import no.nav.paw.kafkakeygenerator.vo.flatMap
 import no.nav.paw.kafkakeygenerator.vo.left
 import no.nav.paw.kafkakeygenerator.vo.mapToFailure
 import no.nav.paw.kafkakeygenerator.vo.right
-import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
@@ -20,10 +19,10 @@ import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class KafkaKeysRepository(private val database: Database) {
+class KafkaKeysRepository {
 
     fun find(arbeidssoekerId: ArbeidssoekerId): ArbeidssoekerId? =
-        transaction(database) {
+        transaction {
             KafkaKeysTabell.selectAll()
                 .where { KafkaKeysTabell.id eq arbeidssoekerId.value }
                 .singleOrNull()?.let { ArbeidssoekerId(it[KafkaKeysTabell.id]) }
@@ -31,7 +30,7 @@ class KafkaKeysRepository(private val database: Database) {
 
     fun hentSisteArbeidssoekerId(): Either<Failure, ArbeidssoekerId> =
         attempt {
-            transaction(database) {
+            transaction {
                 IdentitetTabell
                     .selectAll()
                     .orderBy(IdentitetTabell.kafkaKey, SortOrder.DESC)
@@ -45,7 +44,7 @@ class KafkaKeysRepository(private val database: Database) {
 
     fun hent(currentPos: Long, maxSize: Int): Either<Failure, Map<Identitetsnummer, ArbeidssoekerId>> {
         return attempt {
-            transaction(database) {
+            transaction {
                 IdentitetTabell
                     .selectAll()
                     .where { IdentitetTabell.kafkaKey greaterEq currentPos and (IdentitetTabell.kafkaKey less (currentPos + maxSize)) }
@@ -62,7 +61,7 @@ class KafkaKeysRepository(private val database: Database) {
 
     fun hent(identiteter: List<String>): Either<Failure, Map<String, ArbeidssoekerId>> =
         attempt {
-            transaction(database) {
+            transaction {
                 IdentitetTabell
                     .selectAll()
                     .where { IdentitetTabell.identitetsnummer inList identiteter }
@@ -76,7 +75,7 @@ class KafkaKeysRepository(private val database: Database) {
 
     fun hent(identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> =
         attempt {
-            transaction(database) {
+            transaction {
                 IdentitetTabell
                     .selectAll()
                     .where { IdentitetTabell.identitetsnummer eq identitet.value }
@@ -90,7 +89,7 @@ class KafkaKeysRepository(private val database: Database) {
 
     fun hent(arbeidssoekerId: ArbeidssoekerId): Either<Failure, List<Identitetsnummer>> =
         attempt {
-            transaction(database) {
+            transaction {
                 IdentitetTabell
                     .selectAll()
                     .where { IdentitetTabell.kafkaKey eq arbeidssoekerId.value }
@@ -103,7 +102,7 @@ class KafkaKeysRepository(private val database: Database) {
 
     fun lagre(identitet: Identitetsnummer, arbeidssoekerId: ArbeidssoekerId): Either<Failure, Unit> =
         attempt {
-            transaction(database) {
+            transaction {
                 IdentitetTabell.insertIgnore {
                     it[identitetsnummer] = identitet.value
                     it[kafkaKey] = arbeidssoekerId.value
@@ -118,7 +117,7 @@ class KafkaKeysRepository(private val database: Database) {
 
     fun opprett(identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> =
         attempt {
-            transaction(database) {
+            transaction {
                 val key = KafkaKeysTabell.insert { }[KafkaKeysTabell.id]
                 val opprettet = IdentitetTabell.insertIgnore {
                     it[identitetsnummer] = identitet.value

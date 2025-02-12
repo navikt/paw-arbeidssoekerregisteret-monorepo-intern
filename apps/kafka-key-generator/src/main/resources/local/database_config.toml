@@ -1,7 +1,6 @@
 host = "localhost"
 port = 5432
-database = "pawkafkakeys"
 username = "kafka_key_generator"
 password = "Paw1234"
-driverClassName = "org.postgresql.Driver"
+database = "pawkafkakeys"
 autoCommit = false
