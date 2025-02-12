@@ -1,0 +1,18 @@
+apiVersion: nais.io/v1
+kind: Naisjob
+metadata:
+  name: paw-arbeidssoekere-synk-jobb
+  namespace: paw
+  labels:
+    team: paw
+spec:
+  image: {{ image }}
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  secureLogs:
+    enabled: true
+  filesFrom:
+    - secret: paw-arbeidssoekere-csv
+      mountPath: /var/run/secrets/paw-arbeidssoekere-csv

@@ -76,6 +76,7 @@ avro-core = { group = "org.apache.avro", name = "avro", version.ref = "orgApache
 avro-kafkaSerializer = { group = "io.confluent", name = "kafka-avro-serializer", version.ref = "ioConfluentKafkaVersion" }
 avro-kafkaStreamsSerde = { group = "io.confluent", name = "kafka-streams-avro-serde", version.ref = "ioConfluentKafkaVersion" }
 jackson-datatypeJsr310 = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version.ref = "comFasterxmlJacksonVersion" }
+jackson-dataformat-csv = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-csv", version.ref = "comFasterxmlJacksonVersion" }
 jackson-kotlin = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "comFasterxmlJacksonVersion" }
 jackson-core = { group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "comFasterxmlJacksonVersion" }
 graphql-client = { group = "com.expediagroup", name = "graphql-kotlin-client", version.ref = "graphqlClientVersion" }
