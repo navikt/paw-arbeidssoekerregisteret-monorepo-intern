@@ -4,12 +4,13 @@ import io.ktor.server.application.Application
 import io.ktor.server.engine.addShutdownHook
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.micrometer.core.instrument.binder.kafka.KafkaStreamsMetrics
 import no.nav.paw.bekreftelse.context.ApplicationContext
-import no.nav.paw.bekreftelse.plugins.configureKafka
-import no.nav.paw.bekreftelse.plugins.configureMetrics
 import no.nav.paw.bekreftelse.plugins.configureRouting
 import no.nav.paw.bekreftelse.utils.buildApplicationLogger
 import no.nav.paw.config.env.appNameOrDefaultForLocal
+import no.nav.paw.kafka.plugin.installKafkaStreamsPlugins
+import no.nav.paw.metrics.plugin.installMetricsPlugin
 
 fun main() {
     val logger = buildApplicationLogger
@@ -34,7 +35,14 @@ fun main() {
 }
 
 fun Application.module(applicationContext: ApplicationContext) {
-    configureMetrics(applicationContext)
-    configureKafka(applicationContext)
-    configureRouting(applicationContext)
+    with(applicationContext) {
+        installMetricsPlugin(
+            meterRegistry = prometheusMeterRegistry,
+            additionalMeterBinders = kafkaStreamsList.map { KafkaStreamsMetrics(it) }
+        )
+        installKafkaStreamsPlugins(
+            kafkaStreamsList = kafkaStreamsList
+        )
+        configureRouting(applicationContext)
+    }
 }
