@@ -10,63 +10,56 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.client.config.AZURE_M2M_CONFIG
 import no.nav.paw.client.config.AzureAdM2MConfig
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
+import no.nav.paw.database.config.DATABASE_CONFIG
+import no.nav.paw.database.config.DatabaseConfig
+import no.nav.paw.database.factory.createHikariDataSource
+import no.nav.paw.database.plugin.installDatabasePlugin
+import no.nav.paw.error.plugin.installErrorHandlingPlugin
+import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafka.config.KAFKA_CONFIG
 import no.nav.paw.kafka.config.KafkaConfig
 import no.nav.paw.kafka.factory.KafkaFactory
-import no.nav.paw.health.repository.HealthIndicatorRepository
-import no.nav.paw.kafkakeygenerator.config.AUTHENTICATION_CONFIG
-import no.nav.paw.kafkakeygenerator.config.AuthenticationConfig
-import no.nav.paw.kafkakeygenerator.config.DATABASE_CONFIG
-import no.nav.paw.kafkakeygenerator.config.DatabaseConfig
 import no.nav.paw.kafkakeygenerator.config.KAFKA_TOPOLOGY_CONFIG
 import no.nav.paw.kafkakeygenerator.config.KafkaTopologyConfig
 import no.nav.paw.kafkakeygenerator.config.PDL_CLIENT_CONFIG
 import no.nav.paw.kafkakeygenerator.config.PdlClientConfig
 import no.nav.paw.kafkakeygenerator.merge.MergeDetector
-import no.nav.paw.kafkakeygenerator.plugin.configSerialization
-import no.nav.paw.kafkakeygenerator.plugin.configureAuthentication
-import no.nav.paw.kafkakeygenerator.plugin.configureDatabase
-import no.nav.paw.kafkakeygenerator.plugin.configureErrorHandling
-import no.nav.paw.kafkakeygenerator.plugin.configureKafka
-import no.nav.paw.kafkakeygenerator.plugin.configureLogging
-import no.nav.paw.kafkakeygenerator.plugin.configureMetrics
 import no.nav.paw.kafkakeygenerator.plugin.configureRouting
+import no.nav.paw.kafkakeygenerator.plugin.installCustomLoggingPlugin
+import no.nav.paw.kafkakeygenerator.plugin.installKafkaPlugins
 import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
 import no.nav.paw.kafkakeygenerator.service.KafkaConsumerService
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
 import no.nav.paw.kafkakeygenerator.service.PdlService
-import no.nav.paw.kafkakeygenerator.utils.createDataSource
 import no.nav.paw.kafkakeygenerator.utils.createPdlClient
+import no.nav.paw.metrics.plugin.installWebAppMetricsPlugin
 import no.nav.paw.pdl.PdlClient
+import no.nav.paw.security.authentication.config.SECURITY_CONFIG
+import no.nav.paw.security.authentication.config.SecurityConfig
+import no.nav.paw.security.authentication.plugin.installAuthenticationPlugin
+import no.nav.paw.serialization.plugin.installContentNegotiationPlugin
 import org.apache.kafka.common.serialization.LongDeserializer
-import org.jetbrains.exposed.sql.Database
 import javax.sql.DataSource
 
 fun main() {
     val databaseConfig = loadNaisOrLocalConfiguration<DatabaseConfig>(DATABASE_CONFIG)
-    val authenticationConfig = loadNaisOrLocalConfiguration<AuthenticationConfig>(AUTHENTICATION_CONFIG)
+    val securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>(SECURITY_CONFIG)
     val azureAdM2MConfig = loadNaisOrLocalConfiguration<AzureAdM2MConfig>(AZURE_M2M_CONFIG)
     val pdlClientConfig = loadNaisOrLocalConfiguration<PdlClientConfig>(PDL_CLIENT_CONFIG)
-    val dataSource = createDataSource(databaseConfig)
+    val dataSource = createHikariDataSource(databaseConfig)
     val pdlClient = createPdlClient(pdlClientConfig, azureAdM2MConfig)
-    startApplication(authenticationConfig, dataSource, pdlClient)
+    startApplication(securityConfig, dataSource, pdlClient)
 }
 
-fun startApplication(
-    authenticationConfig: AuthenticationConfig,
-    dataSource: DataSource,
-    pdlClient: PdlClient
-) {
-    val database = Database.connect(dataSource)
+fun startApplication(securityConfig: SecurityConfig, dataSource: DataSource, pdlClient: PdlClient) {
     val healthIndicatorRepository = HealthIndicatorRepository()
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-    val identitetRepository = IdentitetRepository(database)
-    val kafkaKeysRepository = KafkaKeysRepository(database)
-    val kafkaKeysAuditRepository = KafkaKeysAuditRepository(database)
+    val identitetRepository = IdentitetRepository()
+    val kafkaKeysRepository = KafkaKeysRepository()
+    val kafkaKeysAuditRepository = KafkaKeysAuditRepository()
     val kafkaConsumerService = KafkaConsumerService(
-        database,
         healthIndicatorRepository,
         prometheusMeterRegistry,
         identitetRepository,
@@ -105,23 +98,21 @@ fun startApplication(
             })
         }
     ) {
-        configureErrorHandling()
-        configSerialization()
-        configureLogging()
-        configureAuthentication(authenticationConfig)
-        configureMetrics(
+        installErrorHandlingPlugin()
+        installContentNegotiationPlugin()
+        installCustomLoggingPlugin()
+        installAuthenticationPlugin(securityConfig.authProviders)
+        installWebAppMetricsPlugin(
             meterRegistry = prometheusMeterRegistry,
-            extraMeterBinders = listOf(KafkaClientMetrics(hendelseKafkaConsumer))
+            additionalMeterBinders = listOf(KafkaClientMetrics(hendelseKafkaConsumer))
         )
-        configureDatabase(dataSource)
-        configureKafka(
-            consumeFunction = kafkaConsumerService::handleRecords,
-            errorFunction = kafkaConsumerService::handleException,
+        installDatabasePlugin(dataSource)
+        installKafkaPlugins(
+            kafkaTopologyConfig = kafkaTopologyConfig,
             kafkaConsumer = hendelseKafkaConsumer,
-            kafkaTopics = listOf(kafkaTopologyConfig.hendelseloggTopic)
+            kafkaConsumerService = kafkaConsumerService
         )
         configureRouting(
-            authenticationConfig,
             prometheusMeterRegistry,
             healthIndicatorRepository,
             kafkaKeysService,

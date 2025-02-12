@@ -7,7 +7,6 @@ import io.kotest.matchers.shouldBe
 import io.micrometer.core.instrument.logging.LoggingMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.health.repository.HealthIndicatorRepository
-import no.nav.paw.kafkakeygenerator.plugin.custom.flywayMigrate
 import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
@@ -19,6 +18,7 @@ import no.nav.paw.kafkakeygenerator.vo.Failure
 import no.nav.paw.kafkakeygenerator.vo.FailureCode
 import no.nav.paw.kafkakeygenerator.vo.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
 import javax.sql.DataSource
 
@@ -31,16 +31,19 @@ class KafkaConsumerServiceTest : FreeSpec({
 
     beforeSpec {
         dataSource = initTestDatabase()
-        dataSource.flywayMigrate()
-        val database = Database.connect(dataSource)
+        Flyway.configure()
+            .dataSource(dataSource)
+            .baselineOnMigrate(true)
+            .load()
+            .migrate()
+        Database.connect(dataSource)
         val healthIndicatorRepository = HealthIndicatorRepository()
-        kafkaKeysRepository = KafkaKeysRepository(database)
-        kafkaKeysAuditRepository = KafkaKeysAuditRepository(database)
+        kafkaKeysRepository = KafkaKeysRepository()
+        kafkaKeysAuditRepository = KafkaKeysAuditRepository()
         kafkaConsumerService = KafkaConsumerService(
-            database = database,
             meterRegistry = LoggingMeterRegistry(),
             healthIndicatorRepository = healthIndicatorRepository,
-            identitetRepository = IdentitetRepository(database),
+            identitetRepository = IdentitetRepository(),
             kafkaKeysRepository = kafkaKeysRepository,
             kafkaKeysAuditRepository = kafkaKeysAuditRepository
         )

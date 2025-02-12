@@ -13,8 +13,6 @@ import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
-import no.nav.paw.kafkakeygenerator.utils.buildErrorLogger
-import no.nav.paw.kafkakeygenerator.utils.buildLogger
 import no.nav.paw.kafkakeygenerator.utils.countKafkaFailed
 import no.nav.paw.kafkakeygenerator.utils.countKafkaIgnored
 import no.nav.paw.kafkakeygenerator.utils.countKafkaInserted
@@ -27,12 +25,12 @@ import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Audit
 import no.nav.paw.kafkakeygenerator.vo.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import no.nav.paw.logging.logger.buildErrorLogger
+import no.nav.paw.logging.logger.buildLogger
 import org.apache.kafka.clients.consumer.ConsumerRecords
-import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class KafkaConsumerService(
-    private val database: Database,
     private val healthIndicatorRepository: HealthIndicatorRepository,
     private val meterRegistry: MeterRegistry,
     private val identitetRepository: IdentitetRepository,
@@ -100,7 +98,7 @@ class KafkaConsumerService(
             }
         }
 
-        transaction(database) {
+        transaction {
             identitetsnummerSet.forEach { identitetsnummer ->
                 val kafkaKey = identitetRepository.find(identitetsnummer)
                 if (kafkaKey != null) {

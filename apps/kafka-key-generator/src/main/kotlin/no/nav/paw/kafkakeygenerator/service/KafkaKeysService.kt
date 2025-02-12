@@ -10,7 +10,6 @@ import no.nav.paw.kafkakeygenerator.mergedetector.findMerge
 import no.nav.paw.kafkakeygenerator.mergedetector.hentLagretData
 import no.nav.paw.kafkakeygenerator.mergedetector.vo.MergeDetected
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
-import no.nav.paw.kafkakeygenerator.utils.buildLogger
 import no.nav.paw.kafkakeygenerator.utils.countRestApiFailed
 import no.nav.paw.kafkakeygenerator.utils.countRestApiFetched
 import no.nav.paw.kafkakeygenerator.utils.countRestApiInserted
@@ -31,6 +30,7 @@ import no.nav.paw.kafkakeygenerator.vo.left
 import no.nav.paw.kafkakeygenerator.vo.recover
 import no.nav.paw.kafkakeygenerator.vo.right
 import no.nav.paw.kafkakeygenerator.vo.suspendingRecover
+import no.nav.paw.logging.logger.buildLogger
 import org.apache.kafka.clients.producer.internals.BuiltInPartitioner.partitionForKey
 import org.apache.kafka.common.serialization.Serdes
 

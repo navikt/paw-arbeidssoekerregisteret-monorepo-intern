@@ -1,12 +1,13 @@
 package no.nav.paw.kafkakeygenerator
 
-import io.ktor.client.*
-import io.ktor.client.engine.mock.*
-import no.nav.paw.kafkakeygenerator.config.AuthenticationProviderConfig
-import no.nav.paw.kafkakeygenerator.config.AuthenticationConfig
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.mock.MockEngine
 import no.nav.paw.kafkakeygenerator.test.genererResponse
 import no.nav.paw.kafkakeygenerator.test.initTestDatabase
 import no.nav.paw.pdl.PdlClient
+import no.nav.paw.security.authentication.config.AuthProvider
+import no.nav.paw.security.authentication.config.AuthProviderRequiredClaims
+import no.nav.paw.security.authentication.config.SecurityConfig
 
 fun main() {
     val dataSource = initTestDatabase()
@@ -17,14 +18,16 @@ fun main() {
             genererResponse(it)
         })
     ) { "fake token" }
-    startApplication(AuthenticationConfig(
-        providers = listOf(AuthenticationProviderConfig(
-            name = "mock",
-            discoveryUrl = "http://localhost:8081/.well-known/openid-configuration",
-            acceptedAudience = listOf("mock"),
-            cookieName = "mock",
-            requiredClaims = listOf("mock")
-        )),
-        kafkaKeyApiAuthProvider = "mock"
-    ), dataSource, pdlKlient)
+    startApplication(
+        SecurityConfig(
+            authProviders = listOf(
+                AuthProvider(
+                    name = "mock",
+                    discoveryUrl = "http://localhost:8081/.well-known/openid-configuration",
+                    audiences = listOf("mock"),
+                    requiredClaims = AuthProviderRequiredClaims(claims = listOf("mock"))
+                )
+            )
+        ), dataSource, pdlKlient
+    )
 }

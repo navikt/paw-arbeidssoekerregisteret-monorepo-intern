@@ -1,7 +1,7 @@
 package no.nav.paw.kafkakeygenerator.test
 
-import no.nav.paw.kafkakeygenerator.config.DatabaseConfig
-import no.nav.paw.kafkakeygenerator.utils.createDataSource
+import no.nav.paw.database.config.DatabaseConfig
+import no.nav.paw.database.factory.createHikariDataSource
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import javax.sql.DataSource
@@ -14,11 +14,10 @@ fun initTestDatabase(): DataSource {
             database = it.databaseName,
             username = it.username,
             password = it.password,
-            driverClassName = "org.postgresql.Driver",
             autoCommit = false
         )
     }
-    return createDataSource(config)
+    return createHikariDataSource(config)
 }
 
 fun postgreSQLContainer(): PostgreSQLContainer<out PostgreSQLContainer<*>> {

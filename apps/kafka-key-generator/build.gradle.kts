@@ -10,7 +10,12 @@ val jvmMajorVersion: String by project
 dependencies {
     // PAW
     implementation(project(":lib:hoplite-config"))
+    implementation(project(":lib:serialization"))
+    implementation(project(":lib:logging"))
     implementation(project(":lib:error-handling"))
+    implementation(project(":lib:metrics"))
+    implementation(project(":lib:security"))
+    implementation(project(":lib:database"))
     implementation(project(":lib:http-client-utils"))
     implementation(project(":lib:pdl-client"))
     implementation(project(":lib:kafka"))
