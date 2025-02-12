@@ -20,10 +20,14 @@ fun <T1> initStateGaugeTask(
     supplyAsync {
         metricLogger.info("Starter tråd for metrics oppdateringer")
         try {
+            metricLogger.info("init gauge...")
             val gauge = StateGauge(registry)
+            metricLogger.info("init gauge... completed")
             while (keepGoing.get()) {
+                metricLogger.info("Startin run....")
                 try {
                     val streamState = streamStateSupplier()
+                    metricLogger.info("Stream state: $streamState")
                     if (streamState == KafkaStreams.State.RUNNING) {
                         val source = contentSupplier().flatMap(mapper)
                         gauge.update(source)
