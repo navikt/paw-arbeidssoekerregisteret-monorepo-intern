@@ -7,9 +7,12 @@ val jvmMajorVersion: String by project
 
 dependencies {
     implementation(project(":lib:hoplite-config"))
+    implementation(project(":lib:logging"))
+    implementation(project(":lib:serialization"))
+    implementation(project(":lib:error-handling"))
+    implementation(project(":lib:metrics"))
     implementation(project(":lib:kafka-streams"))
     implementation(project(":domain:bekreftelse-interne-hendelser"))
-    implementation(project(":lib:error-handling"))
     implementation(project(":domain:main-avro-schema"))
     implementation(libs.jackson.datatypeJsr310)
     implementation(libs.jackson.kotlin)

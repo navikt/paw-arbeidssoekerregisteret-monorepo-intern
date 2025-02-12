@@ -1,0 +1,4 @@
+periodeTopic="paw.arbeidssokerperioder-v1"
+bekreftelseHendelseTopic="paw.arbeidssoker-bekreftelse-hendelseslogg-beta-v2"
+tmsOppgaveTopic="min-side.aapen-brukervarsel-v1"
+tmsVarselHendelseTopic="min-side.aapen-varsel-hendelse-v1"
