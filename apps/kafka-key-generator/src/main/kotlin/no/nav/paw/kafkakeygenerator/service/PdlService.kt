@@ -17,7 +17,7 @@ import no.nav.paw.pdl.graphql.generated.hentidenter.IdentInformasjon
 import no.nav.paw.pdl.hentIdenter
 import no.nav.paw.pdl.hentIdenterBolk
 
-class PdlService(private val pdlKlient: PdlClient) {
+class PdlService(private val pdlClient: PdlClient) {
     private val consumerId = "paw-arbeidssoekerregisteret"
     private val behandlingsnummer = "B452"
 
@@ -25,7 +25,7 @@ class PdlService(private val pdlKlient: PdlClient) {
         identiteter: List<Identitetsnummer>,
     ): Either<Failure, Map<String, List<IdentInformasjon>>> =
         suspendeableAttempt {
-            pdlKlient.hentIdenterBolk(
+            pdlClient.hentIdenterBolk(
                 identer = identiteter.map { it.value },
                 grupper = listOf(IdentGruppe.FOLKEREGISTERIDENT),
                 historikk = true,
@@ -46,7 +46,7 @@ class PdlService(private val pdlKlient: PdlClient) {
         histrorikk: Boolean = false
     ): Either<Failure, List<IdentInformasjon>> {
         return suspendeableAttempt {
-            pdlKlient
+            pdlClient
                 .hentIdenter(
                     ident = identitet.value,
                     callId = callId.value,
