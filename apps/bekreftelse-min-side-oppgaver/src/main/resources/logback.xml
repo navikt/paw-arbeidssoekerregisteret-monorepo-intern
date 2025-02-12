@@ -29,6 +29,10 @@
             <root level="INFO">
                 <appender-ref ref="CONSOLE"/>
             </root>
+            <logger name="org.apache.kafka.streams" level="WARN"/>
+            <logger name="org.apache.kafka.clients" level="WARN"/>
+            <logger name="io.confluent.kafka.serializers" level="WARN"/>
+            <logger name="no.nav.paw" level="DEBUG"/>
         </then>
         <else>
             <logger name="tjenestekall" level="DEBUG" additivity="false">
@@ -37,7 +41,9 @@
             <root level="INFO">
                 <appender-ref ref="STDOUT_JSON"/>
             </root>
+            <logger name="org.apache.kafka.streams" level="WARN"/>
+            <logger name="org.apache.kafka.clients" level="WARN"/>
+            <logger name="io.confluent.kafka.serializers" level="WARN"/>
         </else>
     </if>
-    <logger name="org.apache.kafka.streams" level="WARN"/>
 </configuration>

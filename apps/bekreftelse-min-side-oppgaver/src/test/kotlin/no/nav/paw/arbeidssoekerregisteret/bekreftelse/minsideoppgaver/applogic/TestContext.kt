@@ -3,9 +3,8 @@ package no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic
 import io.confluent.kafka.schemaregistry.testutil.MockSchemaRegistry
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.STATE_STORE_NAME
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.varselbygger.VarselMeldingBygger
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.KafkaTopics
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.KafkaTopicsConfig
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.minSideVarselKonfigurasjon
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.jacksonSerde
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.vo.InternTilstand
@@ -20,7 +19,12 @@ import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.utils.Time
-import org.apache.kafka.streams.*
+import org.apache.kafka.streams.KeyValue
+import org.apache.kafka.streams.StreamsBuilder
+import org.apache.kafka.streams.StreamsConfig
+import org.apache.kafka.streams.TestInputTopic
+import org.apache.kafka.streams.TestOutputTopic
+import org.apache.kafka.streams.TopologyTestDriver
 import org.apache.kafka.streams.state.KeyValueStore
 import org.apache.kafka.streams.state.internals.InMemoryKeyValueBytesStoreSupplier
 import org.apache.kafka.streams.state.internals.KeyValueStoreBuilder
@@ -50,10 +54,11 @@ fun testContext(
         minSideVarselKonfigurasjon = minSideVarselKonfigurasjon()
     ),
     kafkaKeyContext: KafkaKeyContext = KafkaKeyContext(inMemoryKafkaKeysMock()),
-    kafkaTopics: KafkaTopics = KafkaTopics(
+    kafkaTopicsConfig: KafkaTopicsConfig = KafkaTopicsConfig(
         periodeTopic = "periodeTopic",
         bekreftelseHendelseTopic = "bekreftelse-hendelse-topic",
-        tmsOppgaveTopic = "tms-oppgave-topic"
+        tmsOppgaveTopic = "tms-oppgave-topic",
+        tmsVarselHendelseTopic = "tms-varsel-hendelse-topic"
     )
 ): TestContext {
     val periodeSerde = createAvroSerde<Periode>()
@@ -71,24 +76,23 @@ fun testContext(
     val testDriver = TopologyTestDriver(
         streamBuilder.applicationTopology(
             varselMeldingBygger = varselMeldingBygger,
-            kafkaTopics = kafkaTopics,
-            stateStoreName = STATE_STORE_NAME
+            kafkaTopicsConfig = kafkaTopicsConfig
         ),
         kafkaStreamProperties
     )
 
     val periodeInputTopic = testDriver.createInputTopic(
-        kafkaTopics.periodeTopic,
+        kafkaTopicsConfig.periodeTopic,
         Serdes.Long().serializer(),
         periodeSerde.serializer()
     )
     val bekreftelseHendelseTopic = testDriver.createInputTopic(
-        kafkaTopics.bekreftelseHendelseTopic,
+        kafkaTopicsConfig.bekreftelseHendelseTopic,
         Serdes.Long().serializer(),
         bekreftelseHendelseSerde.serializer(),
     )
     val tmsOppgaveTopic = testDriver.createOutputTopic(
-        kafkaTopics.tmsOppgaveTopic,
+        kafkaTopicsConfig.tmsOppgaveTopic,
         Serdes.String().deserializer(),
         Serdes.String().deserializer()
     )

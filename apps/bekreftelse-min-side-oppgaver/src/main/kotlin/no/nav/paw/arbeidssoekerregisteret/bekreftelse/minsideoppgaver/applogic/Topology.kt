@@ -1,7 +1,8 @@
 package no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic
 
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.varselbygger.VarselMeldingBygger
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.KafkaTopics
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.KafkaTopicsConfig
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.jacksonSerde
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.vo.InternTilstand
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.vo.StateStoreName
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
@@ -18,9 +19,11 @@ import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.Produced
 import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.state.KeyValueStore
+import org.apache.kafka.streams.state.Stores
 import org.slf4j.LoggerFactory
 import java.util.*
 
+val STATE_STORE_NAME: StateStoreName = StateStoreName("internal_state")
 typealias InternalStateStore = KeyValueStore<UUID, InternTilstand>
 
 fun ProcessorContext<*, *>.getStateStore(stateStoreName: StateStoreName): InternalStateStore =
@@ -28,15 +31,25 @@ fun ProcessorContext<*, *>.getStateStore(stateStoreName: StateStoreName): Intern
 
 private val logger = LoggerFactory.getLogger("bekreftelse.varsler.topology")
 
+fun StreamsBuilder.stateStore(): StreamsBuilder {
+    addStateStore(
+        Stores.keyValueStoreBuilder(
+            Stores.persistentKeyValueStore(STATE_STORE_NAME.value),
+            Serdes.UUID(),
+            jacksonSerde<InternTilstand>()
+        )
+    )
+    return this
+}
+
 fun StreamsBuilder.applicationTopology(
     varselMeldingBygger: VarselMeldingBygger,
-    kafkaTopics: KafkaTopics,
-    stateStoreName: StateStoreName
+    kafkaTopicsConfig: KafkaTopicsConfig
 ): Topology {
-    stream<Long, Periode>(kafkaTopics.periodeTopic)
+    stream<Long, Periode>(kafkaTopicsConfig.periodeTopic)
         .filter { _, periode -> periode.avsluttet == null }
-        .genericProcess<Long, Periode, Long, Unit>("lagre_periode_data", stateStoreName.value) { (_, periode) ->
-            val stateStore = getStateStore(stateStoreName)
+        .genericProcess<Long, Periode, Long, Unit>("lagre_periode_data", STATE_STORE_NAME.value) { (_, periode) ->
+            val stateStore = getStateStore(STATE_STORE_NAME)
             val gjeldeneTilstand = stateStore[periode.id]
             val nyTilstand = genererTilstand(gjeldeneTilstand, periode)
             if (nyTilstand != gjeldeneTilstand) {
@@ -45,9 +58,9 @@ fun StreamsBuilder.applicationTopology(
         }
 
     stream(
-        kafkaTopics.bekreftelseHendelseTopic, Consumed.with(Serdes.Long(), BekreftelseHendelseSerde())
-    ).mapWithContext("bekreftelse-hendelse-mottatt", stateStoreName.value) { hendelse ->
-        val store = getStateStore(stateStoreName)
+        kafkaTopicsConfig.bekreftelseHendelseTopic, Consumed.with(Serdes.Long(), BekreftelseHendelseSerde())
+    ).mapWithContext("bekreftelse-hendelse-mottatt", STATE_STORE_NAME.value) { hendelse ->
+        val store = getStateStore(STATE_STORE_NAME)
         val tilstand = store[hendelse.periodeId]
         if (tilstand == null) {
             logger.warn(
@@ -69,7 +82,7 @@ fun StreamsBuilder.applicationTopology(
         .flatMapValues { _, meldinger -> meldinger }
         .mapKeyAndValue("map_til_utgaaende") { _, melding ->
             melding.varselId.toString() to melding.value
-        }.to(kafkaTopics.tmsOppgaveTopic, Produced.with(Serdes.String(), Serdes.String()))
+        }.to(kafkaTopicsConfig.tmsOppgaveTopic, Produced.with(Serdes.String(), Serdes.String()))
 
     return build()
 }
