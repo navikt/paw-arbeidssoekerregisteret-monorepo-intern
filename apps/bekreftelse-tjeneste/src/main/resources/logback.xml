@@ -31,4 +31,6 @@
         </else>
     </if>
     <logger name="punctuator.bekreftelse" level="trace"/>
+    <logger name="org.apache.kafka" level="WARN"/>
+    <logger name="bekreftelse" level="INFO"/>
 </configuration>
