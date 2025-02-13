@@ -14,14 +14,14 @@ import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
 import no.nav.paw.metrics.route.metricsRoutes
 
 fun Application.configureRouting(
-    prometheusMeterRegistry: PrometheusMeterRegistry,
+    meterRegistry: PrometheusMeterRegistry,
     healthIndicatorRepository: HealthIndicatorRepository,
     kafkaKeysService: KafkaKeysService,
     mergeDetector: MergeDetector
 ) {
     routing {
         healthRoutes(healthIndicatorRepository)
-        metricsRoutes(prometheusMeterRegistry)
+        metricsRoutes(meterRegistry)
         mergeDetectorRoutes(mergeDetector)
         swaggerUI(path = "docs", swaggerFile = "openapi/documentation.yaml")
         swaggerUI(path = "docs/record-key", swaggerFile = "openapi/record-key-api-spec.yaml")
