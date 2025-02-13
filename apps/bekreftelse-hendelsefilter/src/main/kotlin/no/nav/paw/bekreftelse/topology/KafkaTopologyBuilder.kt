@@ -12,14 +12,14 @@ import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.kafka.processor.mapRecord
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bekreftelse.utils.buildApplicationLogger
+import no.nav.paw.bekreftelse.utils.buildClientLogger
 import no.nav.paw.kafka.processor.mapNonNull
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
-import org.slf4j.LoggerFactory
 
-private val logger = buildApplicationLogger
-private val clientErrorLogger = LoggerFactory.getLogger("client_error")
+private val appLogger = buildApplicationLogger
+private val clientLogger = buildClientLogger
 
 fun buildKafkaTopologyList(applicationConfig: ApplicationConfig): List<Pair<ApplicationIdSuffix, Topology>> =
     applicationConfig.bekreftelseKlienter.flatMap { bekreftelseKlient ->
@@ -46,7 +46,7 @@ fun <T: SpecificRecord> buildKafkaTopology(
     hentLoesningFraMelding: (T) -> String
 ): Topology = StreamsBuilder().apply {
     stream<Long, T>(sourceTopic)
-        .peek { _, _ -> logger.debug("Mottok melding på topic {}", sourceTopic) }
+        .peek { _, _ -> appLogger.debug("Mottok melding på topic {}", sourceTopic) }
         .mapNonNull(name = "verifiser_bekreftelseloesning") { value ->
             val loesningFraMelding = hentLoesningFraMelding(value)
             with(Span.current()) {
@@ -71,8 +71,9 @@ fun <T: SpecificRecord> buildKafkaTopology(
                     }
                     addEvent("error", attributes)
                     setStatus(StatusCode.ERROR, "Bekreftelsesløsning fra melding matcher ikke forventet løsning")
-                    clientErrorLogger.error(
-                        "Topic:{} - ugyldig bekreftelseløsning, forventet '{}', mottatt '{}'. Dropper melding: partition: {}, offset: {}",
+                    clientLogger.error(
+                        "[{}] Topic:{} - ugyldig bekreftelseløsning, forventet '{}', mottatt '{}'. Dropper melding: partition: {}, offset: {}",
+                        bekreftelsesloesning,
                         topic,
                         bekreftelsesloesning,
                         loesningFraMelding,

@@ -28,7 +28,7 @@ import org.apache.kafka.streams.state.Stores
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
 
-val logger = LoggerFactory.getLogger("no.nav.paw.logger.application")
+val logger = LoggerFactory.getLogger("bekreftelse.tjeneste.application")
 fun main() {
     val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG_FILE_NAME)
     val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG_FILE_NAME)

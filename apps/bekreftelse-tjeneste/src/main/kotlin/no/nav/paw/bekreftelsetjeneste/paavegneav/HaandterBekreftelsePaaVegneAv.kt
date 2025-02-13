@@ -1,10 +1,5 @@
 package no.nav.paw.bekreftelsetjeneste.paavegneav
 
-import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.api.trace.Span
-import io.opentelemetry.api.trace.SpanKind
-import io.opentelemetry.api.trace.StatusCode
-import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelsePaaVegneAvStartet
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
@@ -18,15 +13,11 @@ import no.nav.paw.bekreftelsetjeneste.tilstand.KlarForUtfylling
 import no.nav.paw.bekreftelsetjeneste.tilstand.VenterSvar
 import no.nav.paw.bekreftelsetjeneste.tilstand.plus
 import no.nav.paw.bekreftelsetjeneste.tilstand.sisteTilstand
-import no.nav.paw.bekreftelsetjeneste.topology.actionKey
-import no.nav.paw.bekreftelsetjeneste.topology.bekreftelseloesingKey
-import no.nav.paw.bekreftelsetjeneste.topology.domainKey
-import no.nav.paw.bekreftelsetjeneste.topology.errorEvent
-import no.nav.paw.bekreftelsetjeneste.topology.harAnsvarKey
-import no.nav.paw.bekreftelsetjeneste.topology.okEvent
+import no.nav.paw.bekreftelsetjeneste.topology.Feil
+import no.nav.paw.bekreftelsetjeneste.topology.log
+import no.nav.paw.bekreftelsetjeneste.topology.logWarning
 import no.nav.paw.bekreftelsetjeneste.topology.paaVegneAvStartet
 import no.nav.paw.bekreftelsetjeneste.topology.paaVegneAvStoppet
-import no.nav.paw.bekreftelsetjeneste.topology.periodeFunnetKey
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -55,37 +46,30 @@ fun haandterBekreftelsePaaVegneAvEndret(
         )
 
         else -> emptyList()
-    }.also { handlinger ->
-        val hendelse = handlinger
-            .filterIsInstance<SendHendelse>()
-            .firstOrNull()
-            ?.hendelse
+    }.also { _ ->
         val action = when (paaVegneAvHendelse.handling) {
             is Start -> paaVegneAvStartet
             is Stopp -> paaVegneAvStoppet
             else -> "ukjent"
         }
-        val attributes = Attributes.of(
-            domainKey, "bekreftelse",
-            actionKey, action,
-            bekreftelseloesingKey, paaVegneAvHendelse.bekreftelsesloesning.name,
-            periodeFunnetKey, bekreftelseTilstand != null,
-            harAnsvarKey, paaVegneAvTilstand?.paaVegneAvList
-                ?.map { it.loesning }
-                ?.contains(Loesning.from(paaVegneAvHendelse.bekreftelsesloesning)) ?: false
-        )
-        Span.current().setAllAttributes(attributes)
-        if (hendelse == null) {
-            Span.current().addEvent(
-                errorEvent, attributes
+        val periodeFunnet = bekreftelseTilstand != null
+        val harAnsvar = paaVegneAvTilstand?.paaVegneAvList
+            ?.map { it.loesning }
+            ?.contains(Loesning.from(paaVegneAvHendelse.bekreftelsesloesning)) ?: false
+        if (!periodeFunnet) {
+            logWarning(
+                loesning = Loesning.from(paaVegneAvHendelse.bekreftelsesloesning),
+                handling = action,
+                feil = Feil.PERIODE_IKKE_FUNNET,
+                harAnsvar = harAnsvar
             )
-            Span.current()
-                .setStatus(StatusCode.ERROR, "ingen endring utført, se trace 'event' '$errorEvent' for detaljer")
         } else {
-            with(Span.current()) {
-                Span.current().addEvent(okEvent, attributes)
-                setStatus(StatusCode.OK, "endring utført")
-            }
+            log(
+                loesning = Loesning.from(paaVegneAvHendelse.bekreftelsesloesning),
+                handling = action,
+                periodeFunnet = periodeFunnet,
+                harAnsvar = harAnsvar
+            )
         }
     }
 }

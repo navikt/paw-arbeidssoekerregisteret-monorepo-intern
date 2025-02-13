@@ -1,6 +1,5 @@
 package no.nav.paw.bekreftelsetjeneste.topology
 
-import io.ktor.util.Attributes
 import io.opentelemetry.api.common.AttributeKey
 
 //hendelser
@@ -20,6 +19,5 @@ val tilstandKey = AttributeKey.stringKey("tilstand")
 const val bekreftelseLevertAction = "bekreftelse_levert"
 
 //PaaVegneAv
-val forespoerselTypeKey = AttributeKey.stringKey("forespoersel_type")
 const val paaVegneAvStartet ="paa_vegne_av_startet"
 const val paaVegneAvStoppet ="paa_vegne_av_stoppet"

@@ -7,7 +7,7 @@ import java.time.Duration
 import java.time.Instant
 
 const val MAKS_ANTALL_UTSTEENDE_BEKREFTELSER: Int = 100
-private val maksAntallLogger = LoggerFactory.getLogger("maksAntallLogger")
+private val maksAntallLogger = LoggerFactory.getLogger("bekreftelse.tjeneste.maksAntallLogger")
 fun Bekreftelse.erKlarForUtfylling(now: Instant, tilgjengeligOffset: Duration): Boolean =
     when (sisteTilstand()) {
         is IkkeKlarForUtfylling -> now.isAfter(gjelderTil.minus(tilgjengeligOffset))

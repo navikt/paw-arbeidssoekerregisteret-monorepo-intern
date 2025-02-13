@@ -32,7 +32,6 @@ fun StreamsBuilder.byggBekreftelsePaaVegneAvStroem(
             kafkaTopologyConfig.bekreftelsePaaVegneAvStateStoreName,
             kafkaTopologyConfig.internStateStoreName
         ) { message ->
-            Span.current().setAttribute(bekreftelseloesingKey, message.bekreftelsesloesning.name)
             val bekreftelseTilstandStateStore =
                 getStateStore<KeyValueStore<UUID, BekreftelseTilstand>>(kafkaTopologyConfig.internStateStoreName)
             val paaVegneAvTilstandStateStore = getStateStore<KeyValueStore<UUID, PaaVegneAvTilstand>>(kafkaTopologyConfig.bekreftelsePaaVegneAvStateStoreName)

@@ -22,7 +22,7 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 
-private val punctuatorLogger = LoggerFactory.getLogger("punctuator.bekreftelse")
+private val punctuatorLogger = LoggerFactory.getLogger("bekreftelse.tjeneste.punctuator")
 
 @WithSpan(
     value = "bekreftelse_punctuator",

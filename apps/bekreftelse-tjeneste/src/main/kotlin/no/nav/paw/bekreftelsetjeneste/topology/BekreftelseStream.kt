@@ -61,7 +61,7 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
 
                 val hendelser = when (gjeldendeTilstand) {
                     null -> {
-                        errorLog(
+                        logWarning(
                             Loesning.from(Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET),
                             bekreftelseLevertAction,
                             Feil.PERIODE_IKKE_FUNNET
@@ -107,7 +107,7 @@ fun processPawNamespace(
     val bekreftelse = gjeldeneTilstand.findBekreftelse(hendelse.id)
     val registeretHarAnsvar = paaVegneAvTilstand?.paaVegneAvList?.isEmpty() ?: true
     return if (bekreftelse == null) {
-        errorLog(
+        logWarning(
             Loesning.from(Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET),
             bekreftelseLevertAction,
             Feil.BEKREFTELSE_IKKE_FUNNET,
@@ -120,21 +120,19 @@ fun processPawNamespace(
             is KlarForUtfylling,
             is GracePeriodeVarselet,
             is InternBekreftelsePaaVegneAvStartet -> {
-                Span.current().addEvent(
-                    okEvent, Attributes.of(
-                        domainKey, "bekreftelse",
-                        actionKey, bekreftelseLevertAction,
-                        bekreftelseloesingKey, Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET.name,
-                        tilstandKey, sisteTilstand.toString(),
-                        harAnsvarKey, registeretHarAnsvar
-                    )
+                log(
+                    loesning = Loesning.from(Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET),
+                    handling = bekreftelseLevertAction,
+                    periodeFunnet = true,
+                    harAnsvar = registeretHarAnsvar,
+                    tilstand = sisteTilstand.toString()
                 )
                 val (hendelser, oppdatertBekreftelse) = behandleGyldigSvar(gjeldeneTilstand, hendelse, bekreftelse)
                 gjeldeneTilstand.oppdaterBekreftelse(oppdatertBekreftelse) to hendelser
             }
 
             else -> {
-                errorLog(
+                logWarning(
                     loesning = Loesning.from(Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET),
                     handling = bekreftelseLevertAction,
                     feil = Feil.UVENTET_TILSTAND,
@@ -177,10 +175,6 @@ fun behandleGyldigSvar(
     return listOfNotNull(meldingMottatt, baOmAaAvslutte) to oppdatertBekreftelse
 }
 
-@WithSpan(
-    value = "forwardHendelser",
-    kind = SpanKind.INTERNAL
-)
 fun forwardHendelser(
     record: Record<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>,
     hendelser: List<BekreftelseHendelse>,

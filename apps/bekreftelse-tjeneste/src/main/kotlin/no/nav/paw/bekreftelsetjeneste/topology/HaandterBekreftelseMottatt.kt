@@ -23,20 +23,17 @@ fun haandterBekreftelseMottatt(
     val harAnsvar = melding.bekreftelsesloesning == Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET ||
             (paaVegneAvTilstand?.paaVegneAvList
                 ?: emptyList()).any { it.loesning == Loesning.from(melding.bekreftelsesloesning) }
-    val attributes = Attributes.of(
-        domainKey, "bekreftelse",
-        actionKey, bekreftelseLevertAction,
-        bekreftelseloesingKey, melding.bekreftelsesloesning.name,
-        harAnsvarKey, harAnsvar,
-        periodeFunnetKey, true
-    )
-    Span.current().setAllAttributes(attributes)
     val (tilstand, hendelser) =
         if (melding.bekreftelsesloesning == Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET) {
             processPawNamespace(melding, gjeldendeTilstand, paaVegneAvTilstand)
         } else {
             if (harAnsvar) {
-                Span.current().addEvent(okEvent, attributes)
+                log(
+                    loesning = Loesning.from(melding.bekreftelsesloesning),
+                    handling = bekreftelseLevertAction,
+                    periodeFunnet = true,
+                    harAnsvar = true
+                )
                 gjeldendeTilstand.leggTilNyEllerOppdaterBekreftelse(
                     Bekreftelse(
                         tilstandsLogg = BekreftelseTilstandsLogg(
@@ -49,7 +46,7 @@ fun haandterBekreftelseMottatt(
                     )
                 ) to emptyList()
             } else {
-                errorLog(
+                logWarning(
                     Loesning.from(melding.bekreftelsesloesning),
                     bekreftelseLevertAction,
                     Feil.HAR_IKKE_ANSVAR
