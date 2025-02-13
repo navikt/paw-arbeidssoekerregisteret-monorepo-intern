@@ -16,3 +16,9 @@ spec:
   filesFrom:
     - secret: paw-arbeidssoekere-csv
       mountPath: /var/run/secrets/paw-arbeidssoekere-csv
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_17
+        tier: db-f1-micro
+        databases:
+          - name: paw_arbeidssoekere_synk_jobb
