@@ -125,7 +125,7 @@ fun processPawNamespace(
                     handling = bekreftelseLevertAction,
                     periodeFunnet = true,
                     harAnsvar = registeretHarAnsvar,
-                    tilstand = sisteTilstand.toString()
+                    tilstand = sisteTilstand
                 )
                 val (hendelser, oppdatertBekreftelse) = behandleGyldigSvar(gjeldeneTilstand, hendelse, bekreftelse)
                 gjeldeneTilstand.oppdaterBekreftelse(oppdatertBekreftelse) to hendelser
@@ -137,7 +137,7 @@ fun processPawNamespace(
                     handling = bekreftelseLevertAction,
                     feil = Feil.UVENTET_TILSTAND,
                     harAnsvar = registeretHarAnsvar,
-                    tilstand = sisteTilstand.toString()
+                    tilstand = sisteTilstand
                 )
                 gjeldeneTilstand to emptyList()
             }

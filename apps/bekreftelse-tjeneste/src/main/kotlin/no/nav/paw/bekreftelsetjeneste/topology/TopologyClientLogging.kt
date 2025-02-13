@@ -4,14 +4,12 @@ import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.StatusCode
 import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
-import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstandStatus
-import no.nav.paw.bekreftelsetjeneste.tilstand.tilstand
 import org.slf4j.LoggerFactory
 
 private val clientLogger = LoggerFactory.getLogger("bekreftelse.tjeneste.client")
 
-fun attributes(
+private fun attributes(
     loesning: Loesning,
     handling: String,
     periodeFunnet: Boolean,
@@ -33,9 +31,16 @@ fun log(
     handling: String,
     periodeFunnet: Boolean,
     harAnsvar: Boolean,
-    tilstand: String? = null
+    tilstand: BekreftelseTilstandStatus? = null
 ) {
-    val attributes = attributes(loesning, handling, periodeFunnet, harAnsvar, tilstand = tilstand)
+    val attributes = attributes(
+        loesning = loesning,
+        handling = handling,
+        periodeFunnet = periodeFunnet,
+        harAnsvar = harAnsvar,
+        tilstand = tilstand?.javaClass?.simpleName
+            ?.map { char -> if (char.isUpperCase()) "_${char.lowercase()}" else "$char" }
+            ?.joinToString(""))
     with(Span.current()) {
         setAllAttributes(attributes)
         addEvent(okEvent, attributes)
@@ -60,7 +65,8 @@ fun logWarning(
         periodeFunnet = feil.periodeFunnet,
         harAnsvar = harAnsvar,
         feilMelding = feil.name,
-        tilstand = tilstand?.javaClass?.simpleName?.map { char ->  if (char.isUpperCase()) "_${char.lowercase()}" else "$char" }
+        tilstand = tilstand?.javaClass?.simpleName
+            ?.map { char -> if (char.isUpperCase()) "_${char.lowercase()}" else "$char" }
             ?.joinToString("")
     )
     with(Span.current()) {
