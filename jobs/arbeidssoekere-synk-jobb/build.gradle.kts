@@ -10,6 +10,8 @@ dependencies {
     // Project
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:logging"))
+    implementation(project(":lib:database"))
+    implementation(project(":lib:http-client-utils"))
 
     // Logging
     implementation(libs.nav.common.log)
@@ -18,8 +20,17 @@ dependencies {
     implementation(libs.jackson.kotlin)
     implementation(libs.jackson.dataformat.csv)
 
+    // Database
+    implementation(libs.exposed.jdbc)
+    implementation(libs.exposed.javaTime)
+    implementation(libs.database.hikari.connectionPool)
+    implementation(libs.database.postgres.driver)
+    implementation(libs.database.flyway.postgres)
+
     // Test
     testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.ktor.client.mock)
+    testImplementation(libs.test.testContainers.postgresql)
 }
 
 java {
