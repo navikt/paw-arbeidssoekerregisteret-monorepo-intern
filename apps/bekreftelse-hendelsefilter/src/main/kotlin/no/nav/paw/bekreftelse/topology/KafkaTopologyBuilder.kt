@@ -58,17 +58,25 @@ fun <T: SpecificRecord> buildKafkaTopology(
                     AttributeKey.booleanKey("gyldig_loesning"), gyldig
                 )
                 setAllAttributes(attributes)
+                val (topic, partition, offset) = with(recordMetadata().orElse(null)) {
+                    Triple(
+                        this?.topic(),
+                        this?.partition(),
+                        this?.offset()
+                    )
+                }
                 if (gyldig) {
+                    clientLogger.trace(
+                        "[{}] Topic:{} - loesning: {}, partition: {}, offset: {}",
+                        bekreftelsesloesning,
+                        topic,
+                        bekreftelsesloesning,
+                        partition,
+                        offset
+                    )
                     addEvent("ok", attributes)
                     value
                 } else {
-                    val (topic, partition, offset) = with(recordMetadata().orElse(null)) {
-                        Triple(
-                            this?.topic(),
-                            this?.partition(),
-                            this?.offset()
-                        )
-                    }
                     addEvent("error", attributes)
                     setStatus(StatusCode.ERROR, "Bekreftelsesløsning fra melding matcher ikke forventet løsning")
                     clientLogger.error(

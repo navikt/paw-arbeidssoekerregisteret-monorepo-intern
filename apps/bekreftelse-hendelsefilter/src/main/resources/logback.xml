@@ -32,4 +32,5 @@
     </if>
     <logger name="org.apache.kafka" level="WARN"/>
     <logger name="bekreftelse" level="TRACE"/>
+    <logger name="bekreftelse.filter.client" level="TRACE"/>
 </configuration>
