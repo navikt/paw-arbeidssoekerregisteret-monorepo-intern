@@ -1,0 +1,32 @@
+{
+    "request": {
+        "method": "POST",
+        "urlPathPattern": "/api/v2/arbeidssoker/periode",
+        "bodyPatterns": [
+            {
+                "matchesJsonPath": "$[?(@.identitetsnummer == '04017012345')]"
+            }
+        ]
+    },
+    "response": {
+        "status": 400,
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "jsonBody": {
+            "melding": "Ikke prøv deg",
+            "feilKode": "AVVIST",
+            "aarsakTilAvvisning": {
+                "detaljer": [
+                    "UGYLDIG_FEILRETTING"
+                ],
+                "regler": [
+                    {
+                        "id": "ENDRE_FOR_ANNEN_BRUKER",
+                        "beskrivelse": "Ugyldig feilretting"
+                    }
+                ]
+            }
+        }
+    }
+}

@@ -1,0 +1,32 @@
+{
+    "request": {
+        "method": "POST",
+        "urlPathPattern": "/api/v2/arbeidssoker/periode",
+        "bodyPatterns": [
+            {
+                "matchesJsonPath": "$[?(@.identitetsnummer == '03017012345')]"
+            }
+        ]
+    },
+    "response": {
+        "status": 403,
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "jsonBody": {
+            "melding": "Å nei du",
+            "feilKode": "IKKE_TILGANG",
+            "aarsakTilAvvisning": {
+                "detaljer": [
+                    "ANSATT_IKKE_TILGANG"
+                ],
+                "regler": [
+                    {
+                        "id": "IKKE_TILGANG",
+                        "beskrivelse": "Ansatt har ikke tilgang"
+                    }
+                ]
+            }
+        }
+    }
+}

@@ -1,0 +1,17 @@
+{
+    "request": {
+        "method": "POST",
+        "urlPathPattern": "/api/v2/arbeidssoker/periode",
+        "bodyPatterns": [
+            {
+                "matchesJsonPath": "$[?(@.identitetsnummer == '01017012345')]"
+            }
+        ]
+    },
+    "response": {
+        "status": 204,
+        "headers": {
+            "Content-Type": "application/json"
+        }
+    }
+}

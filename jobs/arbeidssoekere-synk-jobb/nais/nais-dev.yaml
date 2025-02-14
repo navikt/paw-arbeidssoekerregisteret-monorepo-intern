@@ -14,11 +14,15 @@ spec:
   secureLogs:
     enabled: true
   filesFrom:
-    - secret: paw-arbeidssoekere-csv
-      mountPath: /var/run/secrets/paw-arbeidssoekere-csv
+    - secret: paw-arbeidssoekere-synk-jobb-csv
+      mountPath: /var/run/secrets/paw-arbeidssoekere-synk-jobb-csv
   gcp:
     sqlInstances:
       - type: POSTGRES_17
         tier: db-f1-micro
         databases:
-          - name: paw_arbeidssoekere_synk_jobb
+          - name: pawarbeidssoekeresynk
+  accessPolicy:
+    outbound:
+      rules:
+        - application: paw-arbeidssokerregisteret-api-inngang
