@@ -1,3 +1,4 @@
 syncFilePath = "/var/run/secrets/paw-arbeidssoekere-synk-jobb-csv/v1.csv"
-apiInngangBaseUrl = "http://paw-arbeidssokerregisteret-api-inngang:8080"
+markerForhaandsgodkjentAvAnsatt = false
+apiInngangBaseUrl = "http://paw-arbeidssokerregisteret-api-inngang"
 apiInngangScope = "api://${NAIS_CLUSTER_NAME}.paw.paw-arbeidssokerregisteret-api-inngang/.default"

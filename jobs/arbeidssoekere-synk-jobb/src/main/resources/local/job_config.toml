@@ -1,3 +1,4 @@
 syncFilePath = "/tmp/v1.csv"
+markerForhaandsgodkjentAvAnsatt = false
 apiInngangBaseUrl = "http://localhost:8090"
-apiInngangScope = "api://localhost.paw.paw-arbeidssokerregisteret-api-inngang/.default"
+apiInngangScope = "api://test.paw.paw-arbeidssokerregisteret-api-inngang/.default"

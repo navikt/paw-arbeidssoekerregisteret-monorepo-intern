@@ -7,14 +7,7 @@ on:
       - dev/*
     paths:
       - 'jobs/arbeidssoekere-synk-jobb/**'
-      - 'lib/**'
-      - 'domain/**'
       - 'arbeidssoekere-synk-jobb.yaml'
-      - 'gradle/**'
-      - 'settings.gradle.kts'
-      - 'gradle.properties'
-      - 'gradlew'
-      - 'gradlew.bat'
 
 env:
   MODULE: arbeidssoekere-synk-jobb

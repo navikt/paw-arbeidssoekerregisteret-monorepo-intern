@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssoeker.synk.service
 
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import no.nav.paw.arbeidssoeker.synk.config.JobConfig
 import no.nav.paw.arbeidssoeker.synk.consumer.InngangHttpConsumer
 import no.nav.paw.arbeidssoeker.synk.model.VersjonertArbeidssoeker
 import no.nav.paw.arbeidssoeker.synk.model.asOpprettPeriodeRequest
@@ -17,6 +18,7 @@ import java.time.Instant
 import kotlin.io.path.name
 
 class ArbeidssoekerSynkService(
+    private val jobConfig: JobConfig,
     private val arbeidssoekerSynkRepository: ArbeidssoekerSynkRepository,
     private val inngangHttpConsumer: InngangHttpConsumer
 ) {
@@ -36,7 +38,8 @@ class ArbeidssoekerSynkService(
                 logger.info("Prosessert {} linjer CSV-data på {} ms", totalCount, timestamp.millisSince())
             }
             val arbeidssoeker = values.nextValue()
-            prosesserArbeidssoeker(arbeidssoeker.asVersioned(path.name))
+                .asVersioned(path.name, jobConfig.markerForhaandsgodkjentAvAnsatt)
+            prosesserArbeidssoeker(arbeidssoeker)
         }
         logger.info("Fullførte prosessering av {} linjer CSV-data på {} ms", totalCount, timestamp.millisSince())
     }

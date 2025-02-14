@@ -4,8 +4,7 @@ import java.time.Instant
 
 data class Arbeidssoeker(
     val identitetsnummer: String,
-    val originalStartTidspunkt: Instant,
-    val forhaandsgodkjentAvAnsatt: Boolean = false,
+    val originalStartTidspunkt: Instant
 )
 
 data class VersjonertArbeidssoeker(
