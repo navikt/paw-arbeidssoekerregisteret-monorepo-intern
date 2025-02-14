@@ -38,9 +38,8 @@ fun log(
         handling = handling,
         periodeFunnet = periodeFunnet,
         harAnsvar = harAnsvar,
-        tilstand = tilstand?.javaClass?.simpleName
-            ?.map { char -> if (char.isUpperCase()) "_${char.lowercase()}" else "$char" }
-            ?.joinToString(""))
+        tilstand = formaterClassSimpleName(tilstand)
+    )
     with(Span.current()) {
         setAllAttributes(attributes)
         addEvent(okEvent, attributes)
@@ -65,9 +64,7 @@ fun logWarning(
         periodeFunnet = feil.periodeFunnet,
         harAnsvar = harAnsvar,
         feilMelding = feil.name,
-        tilstand = tilstand?.javaClass?.simpleName
-            ?.map { char -> if (char.isUpperCase()) "_${char.lowercase()}" else "$char" }
-            ?.joinToString("")
+        tilstand = formaterClassSimpleName(tilstand)
     )
     with(Span.current()) {
         setAllAttributes(attributes)
@@ -79,6 +76,15 @@ fun logWarning(
         attributes.asMap().mapKeys { it.key.key }
     )
 }
+
+private fun formaterClassSimpleName(tilstand: BekreftelseTilstandStatus?) =
+    tilstand?.javaClass?.simpleName
+        ?.let { name ->
+            "${name.first().lowercase()}${
+                name.drop(1).map { char -> if (char.isUpperCase()) "_${char.lowercase()}" else "$char" }
+                    .joinToString("")
+            }"
+        }
 
 enum class Feil(val periodeFunnet: Boolean, val harAnsvar: Boolean) {
     HAR_IKKE_ANSVAR(periodeFunnet = true, harAnsvar = false),
