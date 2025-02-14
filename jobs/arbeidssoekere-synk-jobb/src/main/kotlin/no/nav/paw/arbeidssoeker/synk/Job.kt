@@ -36,7 +36,7 @@ fun main() {
     val inngangHttpConsumer = InngangHttpConsumer(jobConfig.apiInngangBaseUrl) {
         azureAdM2MTokenClient.createMachineToMachineToken(jobConfig.apiInngangScope)
     }
-    val arbeidssoekerSynkService = ArbeidssoekerSynkService(arbeidssoekerSynkRepository, inngangHttpConsumer)
+    val arbeidssoekerSynkService = ArbeidssoekerSynkService(jobConfig, arbeidssoekerSynkRepository, inngangHttpConsumer)
 
     try {
         logger.info("Starter $name")

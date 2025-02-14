@@ -6,7 +6,10 @@ import org.jetbrains.exposed.sql.ResultRow
 import java.time.Duration
 import java.time.Instant
 
-fun Arbeidssoeker.asVersioned(version: String): VersjonertArbeidssoeker = VersjonertArbeidssoeker(
+fun Arbeidssoeker.asVersioned(
+    version: String,
+    forhaandsgodkjentAvAnsatt: Boolean = false
+): VersjonertArbeidssoeker = VersjonertArbeidssoeker(
     version = version,
     identitetsnummer = identitetsnummer,
     originalStartTidspunkt = originalStartTidspunkt,

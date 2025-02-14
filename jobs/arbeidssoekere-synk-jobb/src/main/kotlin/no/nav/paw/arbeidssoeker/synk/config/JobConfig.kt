@@ -7,6 +7,7 @@ const val JOB_CONFIG = "job_config.toml"
 
 data class JobConfig(
     val syncFilePath: String,
+    val markerForhaandsgodkjentAvAnsatt: Boolean,
     val apiInngangBaseUrl: String,
     val apiInngangScope: String,
     val runtimeEnvironment: RuntimeEnvironment = currentRuntimeEnvironment
