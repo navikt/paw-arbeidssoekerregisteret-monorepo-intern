@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.Tags
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.paavegneav.InternPaaVegneAv
+import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
 import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstandStatus
@@ -152,7 +153,7 @@ fun BekreftelseTilstandStatus.utestaaende(): Boolean = when (this) {
 }
 
 fun ansvar(ansvarlige: Collection<InternPaaVegneAv>): Pair<Int, String> = when {
-    ansvarlige.isEmpty() -> 0 to "registeret"
+    ansvarlige.isEmpty() -> 0 to Loesning.ARBEIDSSOEKERREGISTERET.name
     ansvarlige.size == 1 -> 1 to ansvarlige.first().loesning.name
     ansvarlige.size <= 3 -> ansvarlige.size to ansvarlige.map { it.loesning.name }.sorted().joinToString("_")
     else -> ansvarlige.size to "flere"
