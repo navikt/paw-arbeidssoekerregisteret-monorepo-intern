@@ -68,7 +68,6 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
                         )
                         emptyList()
                     }
-
                     else -> {
                         haandterBekreftelseMottatt(
                             gjeldendeTilstand,

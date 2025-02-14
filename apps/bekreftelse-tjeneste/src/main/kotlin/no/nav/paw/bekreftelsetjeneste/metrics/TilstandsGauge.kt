@@ -161,7 +161,7 @@ fun ansvar(ansvarlige: Collection<InternPaaVegneAv>): Pair<Int, String> = when {
 
 fun Long?.dagerSidenForfallString(): String = when {
     this == null -> "levert"
-    this < 0 -> "ikke forfalt"
+    this < 0 -> "ikke_forfalt"
     this in (0..7) -> this.toString()
     this in (8..14) -> "[8-14]"
     else -> "14+"
@@ -176,8 +176,8 @@ fun Long?.dagerTilSisteFristString(): String = when {
 }
 
 fun Long?.dagerSidenSistLeverteAvsluttetString(): String = when {
-    this == null -> "ingen levert"
-    this < 0 -> "ikke avsluttet"
+    this == null -> "ingen_levert"
+    this < 0 -> "ikke_avsluttet"
     this in (0..7) -> this.toString()
     this in (8..14) -> "[8-14]"
     else -> "14+"
