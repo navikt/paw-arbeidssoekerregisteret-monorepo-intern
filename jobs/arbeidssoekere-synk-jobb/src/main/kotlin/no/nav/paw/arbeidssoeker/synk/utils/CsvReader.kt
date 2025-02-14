@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.ObjectReader
 import com.fasterxml.jackson.dataformat.csv.CsvMapper
 import com.fasterxml.jackson.dataformat.csv.CsvSchema
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import no.nav.paw.arbeidssoeker.synk.model.Arbeidssoeker
 import java.net.URI
@@ -12,6 +13,7 @@ import java.nio.file.Path
 
 private val csvMapper: ObjectMapper = CsvMapper()
     .registerModule(KotlinModule.Builder().build())
+    .registerModule(JavaTimeModule())
 private val csvSchema: CsvSchema = CsvSchema.builder()
     .setAllowComments(true)
     .setColumnSeparator(',')

@@ -2,7 +2,6 @@ package no.nav.paw.arbeidssoeker.synk.test
 
 import no.nav.paw.database.config.DatabaseConfig
 import no.nav.paw.database.factory.createHikariDataSource
-import org.flywaydb.core.Flyway
 import org.testcontainers.containers.PostgreSQLContainer
 import javax.sql.DataSource
 
@@ -27,13 +26,4 @@ private fun postgresContainer(): PostgreSQLContainer<out PostgreSQLContainer<*>>
     }
     postgres.start()
     return postgres
-}
-
-fun DataSource.flywayMigrate(): DataSource {
-    Flyway.configure()
-        .dataSource(this)
-        .baselineOnMigrate(true)
-        .load()
-        .migrate()
-    return this
 }

@@ -12,12 +12,19 @@ dependencies {
     implementation(project(":lib:logging"))
     implementation(project(":lib:database"))
     implementation(project(":lib:http-client-utils"))
+    implementation(project(":lib:serialization"))
+
+    // Ktor
+    implementation(libs.ktor.serialization.jackson)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.contentNegotiation)
 
     // Logging
     implementation(libs.nav.common.log)
 
     // Jackson
     implementation(libs.jackson.kotlin)
+    implementation(libs.jackson.datatypeJsr310)
     implementation(libs.jackson.dataformat.csv)
 
     // Database
