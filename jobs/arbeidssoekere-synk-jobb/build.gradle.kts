@@ -27,6 +27,10 @@ dependencies {
     implementation(libs.jackson.datatypeJsr310)
     implementation(libs.jackson.dataformat.csv)
 
+    // Instrumentation
+    implementation(libs.opentelemetry.api)
+    implementation(libs.opentelemetry.annotations)
+
     // Database
     implementation(libs.exposed.jdbc)
     implementation(libs.exposed.javaTime)

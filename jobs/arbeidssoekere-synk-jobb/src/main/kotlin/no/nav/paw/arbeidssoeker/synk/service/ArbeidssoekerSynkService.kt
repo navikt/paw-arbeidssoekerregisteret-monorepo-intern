@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssoeker.synk.service
 
-import io.ktor.http.isSuccess
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssoeker.synk.consumer.InngangHttpConsumer
 import no.nav.paw.arbeidssoeker.synk.model.VersjonertArbeidssoeker
 import no.nav.paw.arbeidssoeker.synk.model.asOpprettPeriodeRequest
@@ -9,6 +9,7 @@ import no.nav.paw.arbeidssoeker.synk.model.isNotSuccess
 import no.nav.paw.arbeidssoeker.synk.model.millisSince
 import no.nav.paw.arbeidssoeker.synk.repository.ArbeidssoekerSynkRepository
 import no.nav.paw.arbeidssoeker.synk.utils.ArbeidssoekerCsvReader
+import no.nav.paw.arbeidssoeker.synk.utils.traceAndLog
 import no.nav.paw.logging.logger.buildApplicationLogger
 import no.nav.paw.logging.logger.buildNamedLogger
 import java.nio.file.Path
@@ -22,6 +23,7 @@ class ArbeidssoekerSynkService(
     private val logger = buildApplicationLogger
     private val secureLogger = buildNamedLogger("secure")
 
+    @WithSpan(value = "synkArbeidssoekere")
     fun synkArbeidssoekere(path: Path) {
         var totalCount = 0
         val timestamp = Instant.now()
@@ -39,6 +41,7 @@ class ArbeidssoekerSynkService(
         logger.info("Fullførte prosessering av {} linjer CSV-data på {} ms", totalCount, timestamp.millisSince())
     }
 
+    @WithSpan(value = "prosesserArbeidssoeker")
     @Suppress("LoggingSimilarMessage")
     private fun prosesserArbeidssoeker(arbeidssoeker: VersjonertArbeidssoeker) {
         val (version, identitetsnummer) = arbeidssoeker
@@ -50,12 +53,7 @@ class ArbeidssoekerSynkService(
             logger.debug("Fant ingen status i databasen for version {}", version)
             logger.debug("Kaller API Inngang for opprettelse av periode")
             val response = inngangHttpConsumer.opprettPeriode(arbeidssoeker.asOpprettPeriodeRequest())
-            if (response.status.isSuccess()) {
-                logger.debug("Opprettelse av periode fullførte OK")
-            } else {
-                // TODO: Vurdere å ha en feilteller, og så avbryte om det blir for mange feil
-                logger.debug("Opprettelse av periode feilet med status {}", response.status.value)
-            }
+            logger.traceAndLog(response.status)
 
             logger.debug("Oppretter status {} i databasen for version {}", response.status.value, version)
             arbeidssoekerSynkRepository.insert(version, identitetsnummer, response.status.value)
@@ -63,12 +61,7 @@ class ArbeidssoekerSynkService(
             logger.debug("Fant feilet status {} i databasen for version {}", row.status, version)
             logger.debug("Utfører opprettelse av periode i registeret")
             val response = inngangHttpConsumer.opprettPeriode(arbeidssoeker.asOpprettPeriodeRequest())
-            if (response.status.isSuccess()) {
-                logger.debug("Opprettelse av periode i registeret fullførte OK")
-            } else {
-                // TODO: Vurdere å ha en feilteller, og så avbryte om det blir for mange feil
-                logger.debug("Opprettelse av periode i registeret feilet med status {}", response.status.value)
-            }
+            logger.traceAndLog(response.status)
 
             logger.debug("Oppdaterer status {} i databasen for version {}", response.status.value, version)
             arbeidssoekerSynkRepository.update(version, identitetsnummer, response.status.value)

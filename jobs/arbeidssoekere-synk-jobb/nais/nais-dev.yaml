@@ -13,6 +13,13 @@ spec:
       memory: 256Mi
   secureLogs:
     enabled: true
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
+  azure:
+    application:
+      enabled: true
   filesFrom:
     - secret: paw-arbeidssoekere-synk-jobb-csv
       mountPath: /var/run/secrets/paw-arbeidssoekere-synk-jobb-csv
