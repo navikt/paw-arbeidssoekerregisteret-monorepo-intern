@@ -1,7 +1,5 @@
 package no.nav.paw.bekreftelsetjeneste.topology
 
-import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.api.trace.Span
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
@@ -20,14 +18,11 @@ fun haandterBekreftelseMottatt(
     paaVegneAvTilstand: PaaVegneAvTilstand?,
     melding: no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 ): Pair<BekreftelseTilstand, List<BekreftelseHendelse>> {
-    val harAnsvar = melding.bekreftelsesloesning == Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET ||
-            (paaVegneAvTilstand?.paaVegneAvList
-                ?: emptyList()).any { it.loesning == Loesning.from(melding.bekreftelsesloesning) }
     val (tilstand, hendelser) =
         if (melding.bekreftelsesloesning == Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET) {
             processPawNamespace(melding, gjeldendeTilstand, paaVegneAvTilstand)
         } else {
-            if (harAnsvar) {
+            if (harAnsvar(melding.bekreftelsesloesning, paaVegneAvTilstand)) {
                 log(
                     loesning = Loesning.from(melding.bekreftelsesloesning),
                     handling = bekreftelseLevertAction,
@@ -58,6 +53,13 @@ fun haandterBekreftelseMottatt(
         bekreftelser = tilstand.bekreftelser.filterByStatusAndCount(maksAntallBekreftelserEtterStatus)
     ) to hendelser
 }
+
+fun harAnsvar(
+    bekreftelsesloesning: Bekreftelsesloesning,
+    paaVegneAvTilstand: PaaVegneAvTilstand?
+) = bekreftelsesloesning == Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET ||
+        (paaVegneAvTilstand?.paaVegneAvList
+            ?: emptyList()).any { it.loesning == Loesning.from(bekreftelsesloesning) }
 
 fun Collection<Bekreftelse>.filterByStatusAndCount(maxSizeConfig: Map<KClass<out BekreftelseTilstandStatus>, Int>): List<Bekreftelse> =
     groupBy { it.sisteTilstand()::class }

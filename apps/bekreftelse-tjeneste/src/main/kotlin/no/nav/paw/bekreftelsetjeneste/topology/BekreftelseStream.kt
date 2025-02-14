@@ -1,6 +1,7 @@
 package no.nav.paw.bekreftelsetjeneste.topology
 
 import arrow.core.partially1
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
@@ -12,6 +13,7 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
+import no.nav.paw.bekreftelsetjeneste.metrics.tellBekreftelseMottatt
 import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
 import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
@@ -35,7 +37,10 @@ import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
 
-fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) {
+fun StreamsBuilder.buildBekreftelseStream(
+    prometheusMeterRegistry: PrometheusMeterRegistry,
+    applicationConfig: ApplicationConfig
+) {
     with(applicationConfig.kafkaTopology) {
         stream<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>(bekreftelseTopic)
             .genericProcess<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse, Long, BekreftelseHendelse>(
@@ -58,7 +63,11 @@ fun StreamsBuilder.buildBekreftelseStream(applicationConfig: ApplicationConfig) 
                 val gjeldendeTilstand: BekreftelseTilstand? = retrieveState(bekreftelseTilstandStateStore, record)
                 val paaVegneAvTilstand = paaVegneAvTilstandStateStore[record.value().periodeId]
                 val melding = record.value()
-
+                prometheusMeterRegistry.tellBekreftelseMottatt(
+                    bekreftelse = melding,
+                    periodeFunnet = gjeldendeTilstand != null,
+                    harAnsvar = harAnsvar(melding.bekreftelsesloesning, paaVegneAvTilstand)
+                )
                 val hendelser = when (gjeldendeTilstand) {
                     null -> {
                         logWarning(

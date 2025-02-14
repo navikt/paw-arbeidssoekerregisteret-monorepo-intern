@@ -1,7 +1,6 @@
 package no.nav.paw.bekreftelsetjeneste.metrics
 
 import io.micrometer.core.instrument.Tag
-import io.micrometer.core.instrument.Tags
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.paavegneav.InternPaaVegneAv
@@ -29,17 +28,6 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
 const val bekreftelseTilstandMetric = "bekreftelse_tilstand_v2"
-class Labels {
-    companion object {
-        const val graceperiode_dager = "graceperiode_dager"
-        const val interval_dager = "interval_dager"
-        const val dager_siden_siste_leverte_periode_avsluttet = "dager_siden_siste_leverte_periode_avsluttet"
-        const val ansvarlig = "ansvarlig"
-        const val antall_ansvarlige = "antall_ansvarlige"
-        const val dager_siden_forfall = "dager_siden_forfall"
-        const val dager_til_siste_frist = "dager_til_siste_frist"
-    }
-}
 
 fun <T, E> T.asCloseableSequence(): Sequence<E> where T : Closeable, T : Iterator<E> =
     generateSequence {
