@@ -79,7 +79,7 @@ fun map(
     val gracePeriode =
         ansvarlige.maxOfOrNull { it.gracePeriode } ?: bekreftelseKonfigurasjon.graceperiode
     val intervall = ansvarlige.maxOfOrNull { it.intervall } ?: bekreftelseKonfigurasjon.interval
-    val (antallAnsvarlige, ansvarlig) = ansvar(ansvarlige)
+    val (antallAnsvarlige, ansvarlig) = ansvar(ansvarlige.map { it.loesning })
     val dagerSidenSistLeverteAvsluttet = dagerSidenForfallSistLeverte(naaTid, tilstand)
     val dagerSidenForfallIkkeLevert = dagerSidenFrist(naaTid, tilstand)
     val dagerTilSisteFrist = with(gracePeriode.toDays()) {
@@ -140,10 +140,10 @@ fun BekreftelseTilstandStatus.utestaaende(): Boolean = when (this) {
     is VenterSvar -> true
 }
 
-fun ansvar(ansvarlige: Collection<InternPaaVegneAv>): Pair<Int, String> = when {
+fun ansvar(ansvarlige: Collection<Loesning>): Pair<Int, String> = when {
     ansvarlige.isEmpty() -> 0 to Loesning.ARBEIDSSOEKERREGISTERET.name
-    ansvarlige.size == 1 -> 1 to ansvarlige.first().loesning.name
-    ansvarlige.size <= 3 -> ansvarlige.size to ansvarlige.map { it.loesning.name }.sorted().joinToString("_")
+    ansvarlige.size == 1 -> 1 to ansvarlige.first().name
+    ansvarlige.size <= 3 -> ansvarlige.size to ansvarlige.map { it.name }.sorted().joinToString("_")
     else -> ansvarlige.size to "flere"
 }
 

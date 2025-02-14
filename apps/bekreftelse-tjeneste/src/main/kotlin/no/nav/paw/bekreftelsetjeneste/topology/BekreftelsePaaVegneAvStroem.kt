@@ -11,6 +11,7 @@ import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Stopp
 import no.nav.paw.bekreftelsetjeneste.paavegneav.*
 import no.nav.paw.bekreftelsetjeneste.config.KafkaTopologyConfig
+import no.nav.paw.bekreftelsetjeneste.metrics.tellPaVegneAv
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
 import no.nav.paw.kafka.processor.mapNonNull
 import org.apache.kafka.common.serialization.Serdes
@@ -26,7 +27,6 @@ fun StreamsBuilder.byggBekreftelsePaaVegneAvStroem(
     bekreftelseHendelseSerde: BekreftelseHendelseSerde
 ) {
     stream<Long, PaaVegneAv>(kafkaTopologyConfig.bekreftelsePaaVegneAvTopic)
-        .peek { _, message -> count(registry, message) }
         .mapNonNull(
             name = "bekreftelse_paa_vegne_av_stroem",
             kafkaTopologyConfig.bekreftelsePaaVegneAvStateStoreName,
@@ -37,6 +37,11 @@ fun StreamsBuilder.byggBekreftelsePaaVegneAvStroem(
             val paaVegneAvTilstandStateStore = getStateStore<KeyValueStore<UUID, PaaVegneAvTilstand>>(kafkaTopologyConfig.bekreftelsePaaVegneAvStateStoreName)
             val bekreftelseTilstand = bekreftelseTilstandStateStore[message.periodeId]
             val paaVegneAvTilstand = paaVegneAvTilstandStateStore[message.periodeId]
+            registry.tellPaVegneAv(
+                paaVegneAv = message,
+                periodeFunnet = bekreftelseTilstand != null,
+                ansvarlige = paaVegneAvTilstand?.paaVegneAvList?.map { it.loesning } ?: emptyList()
+            )
             haandterBekreftelsePaaVegneAvEndret(
                 wallclock = WallClock(Instant.now()),
                 bekreftelseTilstand = bekreftelseTilstand,
@@ -56,23 +61,4 @@ fun StreamsBuilder.byggBekreftelsePaaVegneAvStroem(
             kafkaTopologyConfig.bekreftelseHendelseloggTopic,
             Produced.with(Serdes.Long(), bekreftelseHendelseSerde)
         )
-}
-
-fun count(
-    registry: PrometheusMeterRegistry,
-    message: PaaVegneAv
-) {
-    val action = when (message.handling) {
-        is Start -> "start"
-        is Stopp -> "stopp"
-        else -> "ukjent"
-    }
-    val bekreftelsesloesning = message.bekreftelsesloesning
-    registry.counter(
-        "paw_bekreftelse_pa_vegne_av",
-        Tags.of(
-            Tag.of("bekreftelsesloesing", bekreftelsesloesning.name),
-            Tag.of("handling", action)
-        )
-    ).count()
 }
