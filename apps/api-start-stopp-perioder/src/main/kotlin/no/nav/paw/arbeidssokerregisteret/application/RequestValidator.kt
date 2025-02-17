@@ -1,15 +1,25 @@
 package no.nav.paw.arbeidssokerregisteret.application
 
 import arrow.core.Either
-import arrow.core.NonEmptyList
 import arrow.core.flatMap
 import arrow.core.partially1
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssokerregisteret.RequestScope
+import no.nav.paw.arbeidssokerregisteret.application.authfaktka.systemTilgangFakta
 import no.nav.paw.arbeidssokerregisteret.application.authfaktka.navAnsattTilgangFakta
-import no.nav.paw.arbeidssokerregisteret.application.authfaktka.tokenXPidFakta
-import no.nav.paw.arbeidssokerregisteret.application.opplysninger.*
+import no.nav.paw.arbeidssokerregisteret.application.authfaktka.sluttbrukerTilgangFakta
+import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
+import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
+import no.nav.paw.arbeidssokerregisteret.application.opplysninger.adreseOpplysning
+import no.nav.paw.arbeidssokerregisteret.application.opplysninger.alderOpplysning
+import no.nav.paw.arbeidssokerregisteret.application.opplysninger.euEoesStatsborgerOpplysning
+import no.nav.paw.arbeidssokerregisteret.application.opplysninger.forenkletFregOpplysning
+import no.nav.paw.arbeidssokerregisteret.application.opplysninger.gbrStatsborgerOpplysning
+import no.nav.paw.arbeidssokerregisteret.application.opplysninger.norskStatsborgerOpplysning
+import no.nav.paw.arbeidssokerregisteret.application.opplysninger.oppholdstillatelseOpplysning
+import no.nav.paw.arbeidssokerregisteret.application.opplysninger.plus
+import no.nav.paw.arbeidssokerregisteret.application.opplysninger.utflyttingOpplysning
 import no.nav.paw.arbeidssokerregisteret.application.regler.TilgangsRegler
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
@@ -26,6 +36,7 @@ class RequestValidator(
 ) {
 
     private val sjekkOmNavAnsattHarTilgang = ::navAnsattTilgangFakta.partially1(autorisasjonService)
+    private val sjekkOmSystemHarTilgang = ::systemTilgangFakta.partially1(autorisasjonService)
 
     @WithSpan
     suspend fun validerTilgang(
@@ -34,12 +45,14 @@ class RequestValidator(
         erForhaandsGodkjentAvVeileder: Boolean = false,
         feilretting: Feilretting? = null
     ): Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning> {
-        val autentiseringsFakta = requestScope.tokenXPidFakta(identitetsnummer) +
+        val autentiseringsFakta = requestScope.sluttbrukerTilgangFakta(identitetsnummer) +
                 sjekkOmNavAnsattHarTilgang(requestScope, identitetsnummer) +
+                sjekkOmSystemHarTilgang(requestScope) +
                 listOfNotNull(
                     if (erForhaandsGodkjentAvVeileder) DomeneOpplysning.ErForhaandsgodkjent else null,
                     feilretting?.let { DomeneOpplysning.ErFeilretting }
                 )
+
         return TilgangsRegler.evaluer(autentiseringsFakta)
     }
 

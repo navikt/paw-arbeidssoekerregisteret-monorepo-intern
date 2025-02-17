@@ -1,10 +1,15 @@
 package no.nav.paw.arbeidssokerregisteret.application.regler
 
-import no.nav.paw.arbeidssokerregisteret.application.*
-import no.nav.paw.arbeidssokerregisteret.application.authfaktka.*
+import no.nav.paw.arbeidssokerregisteret.application.Regel
+import no.nav.paw.arbeidssokerregisteret.application.RegelId
+import no.nav.paw.arbeidssokerregisteret.application.Regler
+import no.nav.paw.arbeidssokerregisteret.application.authfaktka.AuthOpplysning
+import no.nav.paw.arbeidssokerregisteret.application.grunnlagForGodkjenning
+import no.nav.paw.arbeidssokerregisteret.application.invoke
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
+import no.nav.paw.arbeidssokerregisteret.application.skalAvises
 
-object TilgangsRegler: Regler {
+object TilgangsRegler : Regler {
     override val regler: List<Regel> = listOf(
         AnsattHarTilgangTilBruker(
             AuthOpplysning.AnsattTilgang,
@@ -36,6 +41,14 @@ object TilgangsRegler: Regler {
         AnsattIkkeTilgangTilBruker(
             AuthOpplysning.AnsattIkkeTilgang,
             vedTreff = ::skalAvises
+        ),
+        SystemHarIkkeTilgangTilBruker(
+            AuthOpplysning.SystemIkkeTilgang,
+            vedTreff = ::skalAvises
+        ),
+        SystemHarTilgangTilBruker(
+            AuthOpplysning.SystemTilgang,
+            vedTreff = ::grunnlagForGodkjenning
         )
     )
 
@@ -45,7 +58,7 @@ object TilgangsRegler: Regler {
 
 }
 
-sealed interface AuthRegelId: RegelId
+sealed interface AuthRegelId : RegelId
 
 data object IkkeTilgang : AuthRegelId {
     override val beskrivelse: String = "Ikke tilgang"
@@ -77,4 +90,12 @@ data object UgyldigFeilretting : AuthRegelId {
 
 data object AnsattHarTilgangTilBruker : AuthRegelId {
     override val beskrivelse: String = "Ansatt har tilgang til bruker"
+}
+
+data object SystemHarIkkeTilgangTilBruker : AuthRegelId {
+    override val beskrivelse: String = "System har ikke tilgang til bruker"
+}
+
+data object SystemHarTilgangTilBruker : AuthRegelId {
+    override val beskrivelse: String = "System har tilgang til bruker"
 }

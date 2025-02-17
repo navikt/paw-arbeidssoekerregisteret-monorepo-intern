@@ -1,20 +1,25 @@
 package no.nav.paw.arbeidssokerregisteret.testdata
 
 import io.kotest.common.runBlocking
-import io.ktor.http.*
+import io.ktor.http.HttpStatusCode
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.AarsakTilAvvisningV2
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
-import no.nav.paw.arbeidssokerregisteret.*
 import no.nav.paw.arbeidssokerregisteret.application.IkkeBosattINorgeIHenholdTilFolkeregisterloven
 import no.nav.paw.arbeidssokerregisteret.application.Under18Aar
+import no.nav.paw.arbeidssokerregisteret.bostedsadresse
+import no.nav.paw.arbeidssokerregisteret.dNummer
+import no.nav.paw.arbeidssokerregisteret.folkeregisterpersonstatus
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
+import no.nav.paw.arbeidssokerregisteret.list
+import no.nav.paw.arbeidssokerregisteret.personToken
 import no.nav.paw.arbeidssokerregisteret.routes.apiRegel
+import no.nav.paw.arbeidssokerregisteret.statsborgerskap
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
-import no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato
 import no.nav.paw.pdl.graphql.generated.hentperson.Foedested
+import no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 import no.nav.paw.pdl.graphql.generated.hentperson.UtenlandskAdresse
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -69,7 +74,8 @@ data object SvenskBrukerBosattISverigeUnder18aar : TestCase {
                 ApiOpplysning.SAMME_SOM_INNLOGGET_BRUKER,
                 ApiOpplysning.INGEN_INFORMASJON_OM_OPPHOLDSTILLATELSE,
                 ApiOpplysning.DNUMMER,
-                ApiOpplysning.INGEN_FLYTTE_INFORMASJON
+                ApiOpplysning.INGEN_FLYTTE_INFORMASJON,
+                ApiOpplysning.IKKE_SYSTEM
             )
         )
     )
@@ -102,7 +108,8 @@ data object SvenskBrukerBosattISverigeUnder18aar : TestCase {
                 Opplysning.SAMME_SOM_INNLOGGET_BRUKER,
                 Opplysning.INGEN_INFORMASJON_OM_OPPHOLDSTILLATELSE,
                 Opplysning.DNUMMER,
-                Opplysning.INGEN_FLYTTE_INFORMASJON
+                Opplysning.INGEN_FLYTTE_INFORMASJON,
+                Opplysning.IKKE_SYSTEM
             )
         )
     )

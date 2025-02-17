@@ -129,6 +129,9 @@ fun hendelseOpplysningTilDomeneOpplysninger(opplysning: HendelseOpplysning): Dom
         HendelseOpplysning.ANSATT_IKKE_TILGANG -> null
         HendelseOpplysning.ANSATT_TILGANG -> null
         HendelseOpplysning.IKKE_ANSATT -> null
+        HendelseOpplysning.SYSTEM_IKKE_TILGANG -> null
+        HendelseOpplysning.SYSTEM_TILGANG -> null
+        HendelseOpplysning.IKKE_SYSTEM -> null
         HendelseOpplysning.UKJENT_OPPLYSNING -> null
         no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.UGYLDIG_FEILRETTING -> DomeneOpplysning.UgyldigFeilretting
     }

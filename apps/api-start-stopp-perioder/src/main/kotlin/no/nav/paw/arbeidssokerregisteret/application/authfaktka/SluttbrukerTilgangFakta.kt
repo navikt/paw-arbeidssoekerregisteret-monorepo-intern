@@ -7,7 +7,7 @@ import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.utils.TokenXPID
 
-fun RequestScope.tokenXPidFakta(identitetsnummer: Identitetsnummer): Opplysning {
+fun RequestScope.sluttbrukerTilgangFakta(identitetsnummer: Identitetsnummer): Opplysning {
     return (claims[TokenXPID]?.let { authenticatedUser ->
         if (authenticatedUser != identitetsnummer) {
             IkkeSammeSomInnloggerBruker

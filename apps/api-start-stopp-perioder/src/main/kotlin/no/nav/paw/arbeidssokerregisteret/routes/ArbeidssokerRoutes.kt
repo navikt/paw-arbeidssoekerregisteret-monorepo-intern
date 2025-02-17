@@ -1,8 +1,8 @@
 package no.nav.paw.arbeidssokerregisteret.routes
 
-import io.ktor.server.application.*
-import io.ktor.server.request.*
-import io.ktor.server.routing.*
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.post
+import io.ktor.server.routing.route
 import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.OpplysningerRequest
 import no.nav.paw.arbeidssokerregisteret.application.OpplysningerRequestHandler
 import no.nav.paw.arbeidssokerregisteret.requestScope
@@ -17,11 +17,10 @@ fun Route.arbeidssokerRoutes(
     route(opplysningerAPI) {
         route(opplysninger) {
             // Registrerer eller oppdaterer brukers opplysninger
-            post {
-                val opplysningerRequest = call.receive<OpplysningerRequest>()
+            post<OpplysningerRequest> { request ->
                 val resultat = opplysningerRequestHandler.opprettBrukeropplysninger(
                     requestScope = requestScope(),
-                    opplysningerRequest = opplysningerRequest
+                    opplysningerRequest = request
                 )
                 logger.debug("Oppdateringsresultat: {}", resultat)
                 respondWith(resultat)
