@@ -10,10 +10,7 @@ import io.ktor.utils.io.writer
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import no.nav.paw.arbeidssoeker.synk.model.AarsakTilAvvisning
-import no.nav.paw.arbeidssoeker.synk.model.AvvisningDetaljer
 import no.nav.paw.arbeidssoeker.synk.model.AvvisningRegel
-import no.nav.paw.arbeidssoeker.synk.model.AvvisningRegelId
-import no.nav.paw.arbeidssoeker.synk.model.FeilKode
 import no.nav.paw.arbeidssoeker.synk.model.OpprettPeriodeErrorResponse
 import no.nav.paw.serialization.jackson.buildObjectMapper
 import kotlin.coroutines.coroutineContext
@@ -26,12 +23,12 @@ object ErrorResponse {
         get(): Pair<HttpStatusCode, String> =
             HttpStatusCode.Forbidden to OpprettPeriodeErrorResponse(
                 melding = "Å nei du",
-                feilKode = FeilKode.IKKE_TILGANG,
+                feilKode = "IKKE_TILGANG",
                 aarsakTilAvvisning = AarsakTilAvvisning(
-                    detaljer = listOf(AvvisningDetaljer.ANSATT_IKKE_TILGANG),
+                    detaljer = listOf("ANSATT_IKKE_TILGANG"),
                     regler = listOf(
                         AvvisningRegel(
-                            id = AvvisningRegelId.IKKE_TILGANG,
+                            id = "IKKE_TILGANG",
                             beskrivelse = "Ansatt har ikke tilgang"
                         )
                     )
@@ -42,12 +39,12 @@ object ErrorResponse {
         get(): Pair<HttpStatusCode, String> =
             HttpStatusCode.BadRequest to OpprettPeriodeErrorResponse(
                 melding = "Ikke prøv deg",
-                feilKode = FeilKode.AVVIST,
+                feilKode = "AVVIST",
                 aarsakTilAvvisning = AarsakTilAvvisning(
-                    detaljer = listOf(AvvisningDetaljer.UGYLDIG_FEILRETTING),
+                    detaljer = listOf("UGYLDIG_FEILRETTING"),
                     regler = listOf(
                         AvvisningRegel(
-                            id = AvvisningRegelId.ENDRE_FOR_ANNEN_BRUKER,
+                            id = "ENDRE_FOR_ANNEN_BRUKER",
                             beskrivelse = "Ugyldig feilretting"
                         )
                     )
@@ -58,7 +55,7 @@ object ErrorResponse {
         get(): Pair<HttpStatusCode, String> =
             HttpStatusCode.InternalServerError to OpprettPeriodeErrorResponse(
                 melding = "Dette gikk skikkelig dårlig",
-                feilKode = FeilKode.UKJENT_FEIL
+                feilKode = "UKJENT_FEIL"
             ).asJson().also { println(it) }
 }
 
