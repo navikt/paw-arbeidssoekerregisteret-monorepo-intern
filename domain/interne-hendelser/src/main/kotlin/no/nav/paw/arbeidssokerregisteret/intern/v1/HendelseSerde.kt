@@ -73,7 +73,6 @@ fun eventTypeToClass(type: String?): KClass<out Hendelse> =
         avvistHendelseType -> Avvist::class
         avvistStoppAvPeriodeHendelseType -> AvvistStoppAvPeriode::class
         opplysningerOmArbeidssoekerHendelseType -> OpplysningerOmArbeidssoekerMottatt::class
-        identitetsnummerOpphoertHendelseType -> IdentitetsnummerOpphoert::class
         identitetsnummerSammenslaattHendelseType -> IdentitetsnummerSammenslaatt::class
         arbeidssoekerIdFlettetInn -> ArbeidssoekerIdFlettetInn::class
         automatiskIdMergeIkkeMulig -> AutomatiskIdMergeIkkeMulig::class

@@ -18,7 +18,6 @@ fun genererNyInternTilstandOgNyeApiTilstander(
             is Avvist -> avvist(hendelse)
             is AvvistStoppAvPeriode -> ingenEndringEllerUtgaaendeMeldinger()
             is IdentitetsnummerSammenslaatt -> identitetsnummerSammenslaattAvsluttPeriode(hendelse)
-            is IdentitetsnummerOpphoert -> ingenEndringEllerUtgaaendeMeldinger()
             is ArbeidssoekerIdFlettetInn -> ingenEndringEllerUtgaaendeMeldinger()
             is AutomatiskIdMergeIkkeMulig -> ingenEndringEllerUtgaaendeMeldinger()
         }
