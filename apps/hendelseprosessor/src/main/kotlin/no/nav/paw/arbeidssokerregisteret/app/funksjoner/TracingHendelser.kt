@@ -8,7 +8,7 @@ const val hendelseIgnorert = "arbeidssoekerregisteret_hendelse_ignorert"
 const val hendelseAkseptert = "arbeidssoekerregisteret_hendelse_akseptert"
 
 val hendelseTypeKey = AttributeKey.stringKey("arbeidssoekerregisteret_hendelse_type")
-val tilstandKey = AttributeKey.stringKey("paw.arbeidssoekerregisteret.tilstand")
+val tilstandKey = AttributeKey.stringKey("arbeidssoekerregisteret_tilstand")
 
 fun hendelseType(hendelse: StreamHendelse): Pair<AttributeKey<String>, String> =
      hendelseTypeKey to hendelse.hendelseType.replace(".", "_")
