@@ -36,10 +36,10 @@
             <root level="INFO">
                 <appender-ref ref="STDOUT_JSON"/>
             </root>
-            <logger name="no.nav" level="DEBUG"/>
             <logger name="no.nav.paw.logger.secure" level="INFO" additivity="false">
                 <appender-ref ref="SECURE_LOG_JSON"/>
             </logger>
+            <logger name="no.nav.paw" level="DEBUG"/>
         </then>
     </if>
     <if condition='"${NAIS_CLUSTER_NAME}" == "NAIS_CLUSTER_NAME_IS_UNDEFINED"'>
@@ -47,7 +47,7 @@
             <root level="INFO">
                 <appender-ref ref="STDOUT"/>
             </root>
-            <logger name="no.nav" level="DEBUG"/>
+            <logger name="no.nav.paw" level="DEBUG"/>
         </then>
     </if>
 </configuration>

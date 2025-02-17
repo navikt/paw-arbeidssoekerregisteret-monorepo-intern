@@ -1,1 +1,4 @@
-mountPath = "/var/run/secrets/paw-arbeidssoekere-csv/v1.csv"
+syncFilePath = "/var/run/secrets/paw-arbeidssoekere-synk-jobb-csv/v1.csv"
+markerForhaandsgodkjentAvAnsatt = false
+apiInngangBaseUrl = "http://paw-arbeidssokerregisteret-api-inngang"
+apiInngangScope = "api://${NAIS_CLUSTER_NAME}.paw.paw-arbeidssokerregisteret-api-inngang/.default"

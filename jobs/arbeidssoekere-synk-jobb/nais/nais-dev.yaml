@@ -13,6 +13,23 @@ spec:
       memory: 256Mi
   secureLogs:
     enabled: true
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
+  azure:
+    application:
+      enabled: true
   filesFrom:
-    - secret: paw-arbeidssoekere-csv
-      mountPath: /var/run/secrets/paw-arbeidssoekere-csv
+    - secret: paw-arbeidssoekere-synk-jobb-csv
+      mountPath: /var/run/secrets/paw-arbeidssoekere-synk-jobb-csv
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_17
+        tier: db-f1-micro
+        databases:
+          - name: pawarbeidssoekeresynk
+  accessPolicy:
+    outbound:
+      rules:
+        - application: paw-arbeidssokerregisteret-api-inngang

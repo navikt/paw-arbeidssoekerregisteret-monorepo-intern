@@ -1,1 +1,4 @@
-mountPath = "/tmp/paw-arbeidssoekere-csv/v1.csv"
+syncFilePath = "/tmp/v1.csv"
+markerForhaandsgodkjentAvAnsatt = false
+apiInngangBaseUrl = "http://localhost:8090"
+apiInngangScope = "api://test.paw.paw-arbeidssokerregisteret-api-inngang/.default"
