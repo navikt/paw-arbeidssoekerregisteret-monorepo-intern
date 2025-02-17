@@ -58,7 +58,9 @@ fun TidspunktFraKilde.api(): ApiTidspunktFraKilde =
         tidspunkt,
         when (avviksType) {
             AvviksType.FORSINKELSE -> ApiAvviksType.FORSINKELSE
-            AvviksType.RETTING -> ApiAvviksType.RETTING
+            AvviksType.RETTING -> ApiAvviksType.SLETTET // RETTING er erstattet av SLETTET(periode som aldri skulle vært lagt inn)
+            AvviksType.SLETTET -> ApiAvviksType.SLETTET
+            AvviksType.TIDSPUNKT_KORRIGERT -> no.nav.paw.arbeidssokerregisteret.api.v1.AvviksType.TIDSPUNKT_KORRIGERT
         }
     )
 

@@ -18,6 +18,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMo
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.*
 import no.nav.paw.test.assertEvent
+import no.nav.paw.test.days
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.TopologyTestDriver
 import java.time.Duration
@@ -76,7 +77,7 @@ class ApplikasjonsTest : FreeSpec({
                 aarsak = "tester",
                 tidspunktFraKilde = TidspunktFraKilde(
                     Instant.parse("2024-03-07T15:41:01Z"),
-                    AvviksType.RETTING
+                    AvviksType.FORSINKELSE
                 )
             )
         )
@@ -124,6 +125,40 @@ class ApplikasjonsTest : FreeSpec({
             eventlogTopic.pipeInput(key, duplikatStart)
             periodeTopic.isEmpty shouldBe true
             opplysningerOmArbeidssoekerTopic.isEmpty shouldBe true
+        }
+
+        "Når vi mottar en 'startet' med korrigert tidspunkt for en akrive periode skal vi oppdatere perioden".config(
+            enabled = false // Funsjonalitet er ikke implementert
+        ) {
+            val duplikatStart = Startet(
+                hendelseId = UUID.randomUUID(),
+                id = 1L,
+                identitetsnummer = identitetnummer,
+                metadata = Metadata(
+                    tidspunkt = Instant.now(),
+                    utfoertAv = Bruker(type = BrukerType.VEILEDER, id = "en_som_fikser_ting"),
+                    kilde = "unit-test2",
+                    aarsak = "tekniske feil i systemet",
+                    tidspunktFraKilde = TidspunktFraKilde(
+                        startet.metadata.tidspunkt - 10.days,
+                        AvviksType.TIDSPUNKT_KORRIGERT
+                    )
+                )
+            )
+            eventlogTopic.pipeInput(key, duplikatStart)
+            periodeTopic.isEmpty shouldBe false
+            val periodeKv = periodeTopic.readKeyValue()
+            val periode = periodeKv.value
+            periode.startet.tidspunkt shouldBe startet.metadata.tidspunkt
+            periode.startet.tidspunktFraKilde?.avviksType shouldBe AvviksType.TIDSPUNKT_KORRIGERT
+            periode.startet.tidspunktFraKilde?.tidspunkt shouldBe duplikatStart.metadata.tidspunktFraKilde?.tidspunkt
+            periode.id shouldBe startet.hendelseId
+            periode.identitetsnummer shouldBe startet.identitetsnummer
+            periode.startet.utfoertAv.type shouldBe BrukerType.VEILEDER
+            periode.startet.utfoertAv.id shouldBe "en_som_fikser_ting"
+            periode.startet.aarsak shouldBe "tekniske feil i systemet"
+            periode.startet.kilde shouldBe "unit-test2"
+            periodeTopic.isEmpty shouldBe true
         }
 
         "Når vi mottar en ny situsjon for en person med en aktiv periode skal vi sende ut en ny situasjon" {

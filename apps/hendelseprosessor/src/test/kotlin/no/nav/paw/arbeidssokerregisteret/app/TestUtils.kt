@@ -74,6 +74,8 @@ fun verifiserApiMetadataMotInternMetadata(
     when (forventedeMetadataVerdier.tidspunktFraKilde?.avviksType) {
         FORSINKELSE -> mottattApiMetadata.tidspunktFraKilde?.avviksType shouldBe AvviksType.FORSINKELSE
         RETTING -> mottattApiMetadata.tidspunktFraKilde?.avviksType shouldBe AvviksType.RETTING
+        SLETTET -> mottattApiMetadata.tidspunktFraKilde?.avviksType shouldBe AvviksType.SLETTET
+        TIDSPUNKT_KORRIGERT -> mottattApiMetadata.tidspunktFraKilde?.avviksType shouldBe AvviksType.TIDSPUNKT_KORRIGERT
         null -> mottattApiMetadata.tidspunktFraKilde shouldBe null
     }
 }
