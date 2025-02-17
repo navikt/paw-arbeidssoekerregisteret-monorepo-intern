@@ -31,17 +31,21 @@ class ArbeidssoekerSynkService(
         val timestamp = Instant.now()
         logger.info("Leser CSV-fil {} fra mappe {}", path.name, path.parent)
         val values = ArbeidssoekerCsvReader.readValues(path)
-        logger.info("Starter prosessering av CSV-data")
-        while (values.hasNextValue()) {
-            totalCount++
-            if (totalCount % 100 == 0) {
-                logger.info("Prosessert {} linjer CSV-data på {} ms", totalCount, timestamp.millisSince())
+        if (values.hasNextValue()) {
+            logger.info("Starter prosessering av CSV-data")
+            while (values.hasNextValue()) {
+                totalCount++
+                if (totalCount % 100 == 0) {
+                    logger.info("Prosessert {} linjer CSV-data på {} ms", totalCount, timestamp.millisSince())
+                }
+                val arbeidssoeker = values.nextValue()
+                    .asVersioned(path.name, jobConfig.markerForhaandsgodkjentAvAnsatt)
+                prosesserArbeidssoeker(arbeidssoeker)
             }
-            val arbeidssoeker = values.nextValue()
-                .asVersioned(path.name, jobConfig.markerForhaandsgodkjentAvAnsatt)
-            prosesserArbeidssoeker(arbeidssoeker)
+            logger.info("Fullførte prosessering av {} linjer CSV-data på {} ms", totalCount, timestamp.millisSince())
+        } else {
+            logger.warn("CSV-fil {} fra mappe {} er tom", path.name, path.parent)
         }
-        logger.info("Fullførte prosessering av {} linjer CSV-data på {} ms", totalCount, timestamp.millisSince())
     }
 
     @WithSpan(value = "prosesserArbeidssoeker")
