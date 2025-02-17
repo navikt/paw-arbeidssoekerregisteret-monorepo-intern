@@ -62,16 +62,14 @@ spec:
   accessPolicy:
     inbound:
       rules:
+        - application: aia-backend
         - application: arbeidssokerregistrering
         - application: arbeidssokerregistrering-for-veileder
-        - application: aia-backend
     outbound:
       rules:
+        - application: paw-kafka-key-generator
+        - application: paw-tilgangskontroll
         - application: poao-tilgang
           namespace: poao
-        - application: paw-kafka-key-generator
-          namespace: paw
-        - application: paw-tilgangskontroll
       external:
         - host: pdl-api.prod-fss-pub.nais.io
-

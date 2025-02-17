@@ -16,8 +16,8 @@ class ResolvedClaims private constructor(
     operator fun <T : Any> get(claim: Claim<T>): T? = map[claim] as T?
     fun isResolved(claim: Claim<*>): Boolean = map.containsKey(claim)
 
-    fun <T : Any> add(claim: Claim<T>, rawValue: String): ResolvedClaims {
-        val parsed = claim.fromString(rawValue)
+    fun <T : Any> add(claim: Claim<T>, value: Any): ResolvedClaims {
+        val parsed = claim.resolve(value)
         val pair: Pair<Claim<T>, Any> = claim to parsed
         return ResolvedClaims(map + pair)
     }
@@ -31,9 +31,19 @@ fun TokenValidationContext?.resolveClaims(vararg claims: Claim<*>): ResolvedClai
             resolvedClaims.add(claim, value)
         }
 
-fun TokenValidationContext?.resolve(claim: Claim<*>): String? =
-    this?.getClaimOrNull(claim.issuer)
-        ?.getStringClaim(claim.claimName)
+fun TokenValidationContext?.resolve(claim: Claim<*>): Any? {
+    return when (claim) {
+        is ListClaim<*> -> {
+            this?.getClaimOrNull(claim.issuer)
+                ?.getAsList(claim.claimName)
+        }
+
+        else -> {
+            this?.getClaimOrNull(claim.issuer)
+                ?.getStringClaim(claim.claimName)
+        }
+    }
+}
 
 fun TokenValidationContext.getClaimOrNull(issuer: String) =
     issuers

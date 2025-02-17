@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.testdata
 
 import io.kotest.common.runBlocking
-import io.ktor.http.*
+import io.ktor.http.HttpStatusCode
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
 import no.nav.paw.arbeidssokerregisteret.application.regler.EndreForAnnenBruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
@@ -30,7 +30,7 @@ data object SluttbrukerProeverAaEndreForAnnenPerson : TestCase {
         utflyttingFraNorge = emptyList()
     )
     private val autentiserBruker = "1234567890"
-    override val configure: TestCaseBuilder.() -> Unit =  {
+    override val configure: TestCaseBuilder.() -> Unit = {
         authToken = mockOAuth2Server.personToken(autentiserBruker)
     }
 
@@ -61,7 +61,8 @@ data object SluttbrukerProeverAaEndreForAnnenPerson : TestCase {
             ),
             opplysninger = setOf(
                 Opplysning.IKKE_SAMME_SOM_INNLOGGER_BRUKER,
-                Opplysning.IKKE_ANSATT
+                Opplysning.IKKE_ANSATT,
+                Opplysning.IKKE_SYSTEM
             )
         )
     )

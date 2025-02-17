@@ -10,6 +10,9 @@
   },
   "response": {
     "status": 200,
+    "headers": {
+      "Content-Type": "application/graphql-response+json"
+    },
     "jsonBody": {
       "data": {
         "hentIdenter": {
@@ -22,9 +25,6 @@
           ]
         }
       }
-    },
-    "headers": {
-      "Content-Type": "application/json"
     }
   }
 }

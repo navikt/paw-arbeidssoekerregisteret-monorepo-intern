@@ -55,7 +55,8 @@ data object AnsattRegistrererIkkeEuEoesBrukerIkkeBosattUtenForhaandgodkjenning :
                 ApiOpplysning.ANSATT_TILGANG,
                 ApiOpplysning.HAR_GYLDIG_OPPHOLDSTILLATELSE,
                 ApiOpplysning.DNUMMER,
-                ApiOpplysning.TOKENX_PID_IKKE_FUNNET
+                ApiOpplysning.TOKENX_PID_IKKE_FUNNET,
+                ApiOpplysning.IKKE_SYSTEM
             )
         )
     )
@@ -87,7 +88,8 @@ data object AnsattRegistrererIkkeEuEoesBrukerIkkeBosattUtenForhaandgodkjenning :
                 Opplysning.ANSATT_TILGANG,
                 Opplysning.HAR_GYLDIG_OPPHOLDSTILLATELSE,
                 Opplysning.DNUMMER,
-                Opplysning.TOKENX_PID_IKKE_FUNNET
+                Opplysning.TOKENX_PID_IKKE_FUNNET,
+                Opplysning.IKKE_SYSTEM
             )
         )
     )

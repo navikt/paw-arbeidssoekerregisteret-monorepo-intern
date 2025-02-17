@@ -10,10 +10,20 @@ import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysni
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
 import no.nav.paw.arbeidssokerregisteret.authOpplysningTilHendelseOpplysning
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
+import no.nav.paw.arbeidssokerregisteret.domain.m2mToken
 import no.nav.paw.arbeidssokerregisteret.domain.navAnsatt
-import no.nav.paw.arbeidssokerregisteret.intern.v1.*
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.*
-import no.nav.paw.arbeidssokerregisteret.utils.TokenXPID
+import no.nav.paw.arbeidssokerregisteret.domain.sluttbruker
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
+import no.nav.paw.arbeidssokerregisteret.intern.v1.AvvistStoppAvPeriode
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
+import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.OpplysningerOmArbeidssoeker
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.TidspunktFraKilde
 import no.nav.paw.collections.PawNonEmptyList
 import java.time.Instant
 import java.util.*
@@ -70,7 +80,10 @@ fun somHendelse(
             id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
-            metadata = hendelseMetadata(requestScope, resultat.value.map { it.regel.id.beskrivelse }.toList().joinToString(". ")),
+            metadata = hendelseMetadata(
+                requestScope = requestScope,
+                aarsak = resultat.value.map { it.regel.id.beskrivelse }.toList().joinToString(". ")
+            ),
             opplysninger = resultat.value.first.opplysninger.map(::mapToHendelseOpplysning).toSet(),
             handling = requestScope.path
         )
@@ -79,7 +92,10 @@ fun somHendelse(
             id = id,
             hendelseId = UUID.randomUUID(),
             identitetsnummer = identitetsnummer.verdi,
-            metadata = hendelseMetadata(requestScope, resultat.value.regel.id.beskrivelse),
+            metadata = hendelseMetadata(
+                requestScope = requestScope,
+                aarsak = resultat.value.regel.id.beskrivelse
+            ),
             opplysninger = resultat.value.opplysning.map(::mapToHendelseOpplysning).toSet()
         )
     }
@@ -120,15 +136,20 @@ fun hendelseMetadata(
 )
 
 fun RequestScope.brukerFraClaims(): Bruker {
-    return claims[TokenXPID]?.let { foedselsnummer ->
+    return sluttbruker(claims)?.let {
         Bruker(
             type = BrukerType.SLUTTBRUKER,
-            id = foedselsnummer.verdi
+            id = it.identitetsnummer.verdi
         )
-    } ?: navAnsatt(claims)?.let { navAnsatt ->
+    } ?: navAnsatt(claims)?.let {
         Bruker(
             type = BrukerType.VEILEDER,
-            id = navAnsatt.ident
+            id = it.ident
+        )
+    } ?: m2mToken(claims)?.let {
+        Bruker(
+            type = BrukerType.SYSTEM,
+            id = it.tjeneste
         )
     } ?: throw IllegalStateException("Kunne ikke finne bruker i claims")
 }

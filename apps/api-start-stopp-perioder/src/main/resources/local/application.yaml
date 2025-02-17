@@ -3,24 +3,24 @@ poaoTilgangClientConfig:
   url: http://localhost:8090/poao-tilgang/api/v1/policy/evaluate
   scope: api://test.test.poao-tilgang/.default
 pdlClientConfig:
-  url: http://localhost:8090/pdl
+  url: http://localhost:8090/pdl/person
   scope: api://test.test.pdl-api/.default
 kafkaKeysConfig:
-  url: http://localhost:8090/kafka-keys
+  url: http://localhost:8090/api/v2/hentEllerOpprett
   urlLokalInfo: http://localhost:8090/kafka-keys/lokalinfo
   scope: api://test.test.kafka-keys/.default
 authProviders:
   azure:
     name: azure
-    discoveryUrl: http://localhost:8081/default/.well-known/openid-configuration
-    tokenEndpointUrl: http://localhost:8081/default/token
+    discoveryUrl: http://localhost:8081/azure/.well-known/openid-configuration
+    tokenEndpointUrl: http://localhost:8081/azure/token
     clientId: paw-arbeidssokerregisteret-api-inngang
     claims:
       - NAVident
   tokenx:
     name: tokenx
-    discoveryUrl: http://localhost:8081/default/.well-known/openid-configuration
-    tokenEndpointUrl: http://localhost:8081/default/token
+    discoveryUrl: http://localhost:8081/tokenx/.well-known/openid-configuration
+    tokenEndpointUrl: http://localhost:8081/tokenx/token
     clientId: paw-arbeidssokerregisteret-api-inngang
     claims:
       - acr=Level4

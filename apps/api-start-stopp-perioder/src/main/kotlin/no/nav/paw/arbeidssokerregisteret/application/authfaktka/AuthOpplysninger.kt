@@ -4,7 +4,7 @@ import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Effect
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
 
 
-sealed interface AuthOpplysning: Opplysning {
+sealed interface AuthOpplysning : Opplysning {
 
     data object IkkeSammeSomInnloggerBruker : AuthOpplysning, Effect.Negative {
         override val id = "IKKE_SAMME_SOM_INNLOGGER_BRUKER"
@@ -37,5 +37,22 @@ sealed interface AuthOpplysning: Opplysning {
     data object IkkeAnsatt : AuthOpplysning, Effect.Neutral {
         override val id = "IKKE_ANSATT"
         override val beskrivelse = "Innlogget bruker er ikke en NAV-ansatt"
+    }
+
+    data object SystemIkkeTilgang : AuthOpplysning, Effect.Negative {
+        override val id = "SYSTEM_IKKE_TILGANG"
+        override val beskrivelse =
+            "System uten tilgang til å utføre start/stopp av perioder"
+    }
+
+    data object SystemTilgang : AuthOpplysning, Effect.Positive {
+        override val id = "SYSTEM_TILGANG"
+        override val beskrivelse =
+            "System med tilgang til å utføre start/stopp av perioder"
+    }
+
+    data object IkkeSystem : AuthOpplysning, Effect.Neutral {
+        override val id = "IKKE_SYSTEM"
+        override val beskrivelse = "Ikke system"
     }
 }

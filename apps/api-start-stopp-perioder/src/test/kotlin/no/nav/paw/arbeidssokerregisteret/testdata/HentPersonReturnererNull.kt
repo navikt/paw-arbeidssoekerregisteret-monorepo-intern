@@ -1,16 +1,20 @@
 package no.nav.paw.arbeidssokerregisteret.testdata
 
 import io.kotest.common.runBlocking
-import io.ktor.http.*
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.*
+import io.ktor.http.HttpStatusCode
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.AarsakTilAvvisningV2
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Opplysning
 import no.nav.paw.arbeidssokerregisteret.application.IkkeFunnet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.*
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.IKKE_ANSATT
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.IKKE_SYSTEM
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.PERSON_IKKE_FUNNET
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning.SAMME_SOM_INNLOGGET_BRUKER
 import no.nav.paw.arbeidssokerregisteret.personToken
 import no.nav.paw.arbeidssokerregisteret.routes.apiRegel
-import no.nav.paw.arbeidssokerregisteret.routes.apiRegelId
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import org.apache.kafka.clients.producer.ProducerRecord
 import java.time.Instant
@@ -33,7 +37,8 @@ data object HentPersonReturnererNull : TestCase {
             detaljer = listOf(
                 Opplysning.PERSON_IKKE_FUNNET,
                 Opplysning.SAMME_SOM_INNLOGGET_BRUKER,
-                Opplysning.IKKE_ANSATT
+                Opplysning.IKKE_ANSATT,
+                Opplysning.IKKE_SYSTEM
             )
         )
     )
@@ -60,7 +65,8 @@ data object HentPersonReturnererNull : TestCase {
             opplysninger = setOf(
                 SAMME_SOM_INNLOGGET_BRUKER,
                 PERSON_IKKE_FUNNET,
-                IKKE_ANSATT
+                IKKE_ANSATT,
+                IKKE_SYSTEM
             )
         )
     )

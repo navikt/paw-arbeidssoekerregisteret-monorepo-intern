@@ -67,7 +67,8 @@ data object AnsattRegistrererUtenTilgangTilBruker: TestCase {
             ),
             opplysninger = setOf(
                 Opplysning.ANSATT_IKKE_TILGANG,
-                Opplysning.TOKENX_PID_IKKE_FUNNET
+                Opplysning.TOKENX_PID_IKKE_FUNNET,
+                Opplysning.IKKE_SYSTEM
             )
         )
     )

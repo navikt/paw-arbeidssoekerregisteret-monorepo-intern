@@ -1,6 +1,8 @@
 package no.nav.paw.arbeidssokerregisteret.routes
 
-import io.ktor.server.routing.*
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.put
+import io.ktor.server.routing.route
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV2ArbeidssokerKanStartePeriodePutRequest
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV2ArbeidssokerPeriodePutRequest
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV2ArbeidssokerPeriodePutRequest.PeriodeTilstand
@@ -29,21 +31,21 @@ fun Route.arbeidssokerRoutesV2(
 
         route(periodeV2) {
             // Registrerer bruker som arbeidssøker
-            put<ApiV2ArbeidssokerPeriodePutRequest> { startStoppRequest ->
-                val resultat = when (startStoppRequest.periodeTilstand) {
+            put<ApiV2ArbeidssokerPeriodePutRequest> { request ->
+                val resultat = when (request.periodeTilstand) {
                     PeriodeTilstand.STARTET ->
                         startStoppRequestHandler.startArbeidssokerperiode(
                             requestScope = requestScope(),
-                            identitetsnummer = startStoppRequest.getId(),
+                            identitetsnummer = request.getId(),
                             erForhaandsGodkjentAvVeileder =
-                            startStoppRequest.registreringForhaandsGodkjentAvAnsatt ?: false
+                                request.registreringForhaandsGodkjentAvAnsatt ?: false
                         )
 
                     PeriodeTilstand.STOPPET ->
                         startStoppRequestHandler.avsluttArbeidssokerperiode(
                             requestScope = requestScope(),
-                            identitetsnummer = startStoppRequest.getId(),
-                            feilretting = feilretting(startStoppRequest.feilretting)
+                            identitetsnummer = request.getId(),
+                            feilretting = feilretting(request.feilretting)
                         )
                 }
                 logger.debug("Registreringsresultat: {}", resultat)

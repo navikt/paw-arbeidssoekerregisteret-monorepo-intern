@@ -1,14 +1,41 @@
 package no.nav.paw.arbeidssokerregisteret.routes
 
 import arrow.core.Either
-import io.ktor.http.*
-import io.ktor.server.response.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.response.respond
 import io.ktor.server.routing.RoutingContext
-import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.*
-import no.nav.paw.arbeidssokerregisteret.application.*
-import no.nav.paw.arbeidssokerregisteret.application.authfaktka.*
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.AarsakTilAvvisningV2
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiRegel
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiRegelId
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
+import no.nav.paw.arbeidssokerregisteret.application.Doed
+import no.nav.paw.arbeidssokerregisteret.application.DomeneRegelId
+import no.nav.paw.arbeidssokerregisteret.application.ErStatsborgerILandMedAvtale
+import no.nav.paw.arbeidssokerregisteret.application.EuEoesStatsborgerMenHarStatusIkkeBosatt
+import no.nav.paw.arbeidssokerregisteret.application.EuEoesStatsborgerOver18Aar
+import no.nav.paw.arbeidssokerregisteret.application.ForhaandsgodkjentAvAnsatt
+import no.nav.paw.arbeidssokerregisteret.application.GrunnlagForGodkjenning
+import no.nav.paw.arbeidssokerregisteret.application.IkkeBosattINorgeIHenholdTilFolkeregisterloven
+import no.nav.paw.arbeidssokerregisteret.application.IkkeFunnet
+import no.nav.paw.arbeidssokerregisteret.application.Opphoert
+import no.nav.paw.arbeidssokerregisteret.application.Over18AarOgBosattEtterFregLoven
+import no.nav.paw.arbeidssokerregisteret.application.Problem
+import no.nav.paw.arbeidssokerregisteret.application.RegelId
+import no.nav.paw.arbeidssokerregisteret.application.Savnet
+import no.nav.paw.arbeidssokerregisteret.application.UkjentAlder
+import no.nav.paw.arbeidssokerregisteret.application.Under18Aar
+import no.nav.paw.arbeidssokerregisteret.application.authfaktka.AuthOpplysning
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.*
-import no.nav.paw.arbeidssokerregisteret.application.regler.*
+import no.nav.paw.arbeidssokerregisteret.application.regler.AnsattHarTilgangTilBruker
+import no.nav.paw.arbeidssokerregisteret.application.regler.AnsattIkkeTilgangTilBruker
+import no.nav.paw.arbeidssokerregisteret.application.regler.AuthRegelId
+import no.nav.paw.arbeidssokerregisteret.application.regler.EndreEgenBruker
+import no.nav.paw.arbeidssokerregisteret.application.regler.EndreForAnnenBruker
+import no.nav.paw.arbeidssokerregisteret.application.regler.IkkeAnsattOgFeilretting
+import no.nav.paw.arbeidssokerregisteret.application.regler.IkkeAnsattOgForhaandsgodkjentAvAnsatt
+import no.nav.paw.arbeidssokerregisteret.application.regler.IkkeTilgang
+import no.nav.paw.arbeidssokerregisteret.application.regler.SystemHarIkkeTilgangTilBruker
+import no.nav.paw.arbeidssokerregisteret.application.regler.SystemHarTilgangTilBruker
 import no.nav.paw.arbeidssokerregisteret.application.regler.UgyldigFeilretting
 import no.nav.paw.collections.PawNonEmptyList
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Opplysning as ApiOpplysning
@@ -39,7 +66,12 @@ suspend fun RoutingContext.respondWithErrorV2(problemer: PawNonEmptyList<Problem
             feilKode = feilkode,
             aarsakTilAvvisning = if (feilkode == FeilV2.FeilKode.AVVIST) {
                 AarsakTilAvvisningV2(
-                    regler = problemer.map { ApiRegel(id = it.regel.id.apiRegelId(), beskrivelse = it.regel.id.beskrivelse) }.toList(),
+                    regler = problemer.map {
+                        ApiRegel(
+                            id = it.regel.id.apiRegelId(),
+                            beskrivelse = it.regel.id.beskrivelse
+                        )
+                    }.toList(),
                     detaljer = problemer.first.opplysninger.map(::opplysningTilApiOpplysning)
                 )
             } else null
@@ -91,6 +123,9 @@ fun opplysningTilApiOpplysning(opplysning: Opplysning): ApiOpplysning =
             AuthOpplysning.AnsattIkkeTilgang -> ApiOpplysning.ANSATT_IKKE_TILGANG
             AuthOpplysning.AnsattTilgang -> ApiOpplysning.ANSATT_TILGANG
             AuthOpplysning.IkkeAnsatt -> ApiOpplysning.IKKE_ANSATT
+            AuthOpplysning.SystemIkkeTilgang -> ApiOpplysning.SYSTEM_IKKE_TILGANG
+            AuthOpplysning.SystemTilgang -> ApiOpplysning.SYSTEM_TILGANG
+            AuthOpplysning.IkkeSystem -> ApiOpplysning.IKKE_SYSTEM
         }
 
         else -> ApiOpplysning.UKJENT_OPPLYSNING
@@ -133,6 +168,8 @@ fun AuthRegelId.httpCode(): HttpStatusCode = when (this) {
     IkkeTilgang -> HttpStatusCode.Forbidden
     IkkeAnsattOgFeilretting -> HttpStatusCode.Forbidden
     UgyldigFeilretting -> HttpStatusCode.BadRequest
+    SystemHarIkkeTilgangTilBruker -> HttpStatusCode.Forbidden
+    SystemHarTilgangTilBruker -> HttpStatusCode.OK
 }
 
 fun DomeneRegelId.httpCode(): HttpStatusCode = when (this) {

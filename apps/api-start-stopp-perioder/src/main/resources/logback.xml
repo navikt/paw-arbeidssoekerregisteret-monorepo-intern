@@ -4,12 +4,11 @@
         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
     </appender>
 
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %5p %c{1}:%L - %m%n</pattern>
         </encoder>
     </appender>
-
 
     <appender name="secureLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>/secure-logs/secure.log</file>
@@ -27,8 +26,12 @@
     <if condition='"${NAIS_CLUSTER_NAME}" == "NAIS_CLUSTER_NAME_IS_UNDEFINED"'>
         <then>
             <root level="INFO">
-                <appender-ref ref="CONSOLE"/>
+                <appender-ref ref="STDOUT"/>
             </root>
+            <logger name="org.apache.kafka.streams" level="WARN"/>
+            <logger name="org.apache.kafka.clients" level="WARN"/>
+            <logger name="io.confluent.kafka.serializers" level="WARN"/>
+            <logger name="no.nav" level="DEBUG"/>
         </then>
         <else>
             <logger name="tjenestekall" level="DEBUG" additivity="false">
@@ -37,8 +40,7 @@
             <root level="INFO">
                 <appender-ref ref="STDOUT_JSON"/>
             </root>
+            <include resource="no/nav/common/audit_log/logback-naudit.xml"/>
         </else>
     </if>
-
-    <include resource="no/nav/common/audit_log/logback-naudit.xml"/>
 </configuration>

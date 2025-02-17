@@ -1,23 +1,30 @@
 package no.nav.paw.arbeidssokerregisteret.testdata
 
 import io.kotest.common.runBlocking
-import io.ktor.http.*
+import io.ktor.http.HttpStatusCode
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
-import no.nav.paw.arbeidssokerregisteret.*
+import no.nav.paw.arbeidssokerregisteret.bosatt
+import no.nav.paw.arbeidssokerregisteret.bostedsadresse
+import no.nav.paw.arbeidssokerregisteret.folkeregisterpersonstatus
+import no.nav.paw.arbeidssokerregisteret.innflytting
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
+import no.nav.paw.arbeidssokerregisteret.list
+import no.nav.paw.arbeidssokerregisteret.personToken
+import no.nav.paw.arbeidssokerregisteret.statsborgerskap
+import no.nav.paw.arbeidssokerregisteret.utflytting
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
-import no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato
 import no.nav.paw.pdl.graphql.generated.hentperson.Foedested
+import no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 import no.nav.paw.pdl.graphql.generated.hentperson.Vegadresse
 import org.apache.kafka.clients.producer.ProducerRecord
 import java.time.Instant
 import java.util.*
 
-data object NorskBrukerBosattINorge: TestCase {
+data object NorskBrukerBosattINorge : TestCase {
     override val id = "12345678909"
     override val person = Person(
         foedselsdato = Foedselsdato("2000-03-04", 2000).list(),
@@ -32,7 +39,7 @@ data object NorskBrukerBosattINorge: TestCase {
         utflyttingFraNorge = "2017-01-02".utflytting()
     )
 
-    override val configure: TestCaseBuilder.() -> Unit =  {
+    override val configure: TestCaseBuilder.() -> Unit = {
         authToken = mockOAuth2Server.personToken(id)
     }
 
@@ -68,7 +75,8 @@ data object NorskBrukerBosattINorge: TestCase {
                 Opplysning.IKKE_ANSATT,
                 Opplysning.SAMME_SOM_INNLOGGET_BRUKER,
                 Opplysning.INGEN_INFORMASJON_OM_OPPHOLDSTILLATELSE,
-                Opplysning.ER_NORSK_STATSBORGER
+                Opplysning.ER_NORSK_STATSBORGER,
+                Opplysning.IKKE_SYSTEM
             )
         )
     )

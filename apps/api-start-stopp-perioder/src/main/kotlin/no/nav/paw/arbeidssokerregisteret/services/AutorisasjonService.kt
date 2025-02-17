@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.services
 
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
+import no.nav.paw.arbeidssokerregisteret.domain.M2MToken
 import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
 import no.nav.paw.arbeidssokerregisteret.utils.auditLogMessage
 import no.nav.paw.arbeidssokerregisteret.utils.autitLogger
@@ -13,6 +14,10 @@ import no.nav.paw.tilgangskontroll.client.TilgangsTjenesteForAnsatte
 class AutorisasjonService(
     private val tilgangsTjenesteForAnsatte: TilgangsTjenesteForAnsatte
 ) {
+    private val tillatteSystemer = listOf(
+        "paw:paw-arbeidssoekere-synk-jobb"
+    )
+
     suspend fun verifiserVeilederTilgangTilBruker(navAnsatt: NavAnsatt, identitetsnummer: Identitetsnummer): Boolean {
         logger.info("NAV-ansatt forsøker å hente informasjon om bruker: $identitetsnummer")
 
@@ -32,5 +37,9 @@ class AutorisasjonService(
         }
 
         return harNavAnsattTilgang
+    }
+
+    fun verifiserSystemTilgangTilBruker(m2MToken: M2MToken): Boolean {
+        return tillatteSystemer.any { m2MToken.tjeneste.endsWith(it) }
     }
 }

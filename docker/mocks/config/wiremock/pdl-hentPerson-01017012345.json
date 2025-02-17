@@ -1,0 +1,63 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/pdl/person",
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$.variables[?(@.ident == '01017012345')]"
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/graphql-response+json"
+    },
+    "jsonBody": {
+      "data": {
+        "hentPerson": {
+          "foedselsdato": [
+            {
+              "foedselsdato": "1970-01-01",
+              "foedselsaar": "1970"
+            }
+          ],
+          "foedested": [
+            {
+              "foedeland": "NOR",
+              "foedested": "Strupen"
+            }
+          ],
+          "statsborgerskap": [
+            {
+              "land": "NOR",
+              "metadata": {
+                "endringer": []
+              }
+            }
+          ],
+          "opphold": [],
+          "folkeregisterpersonstatus": [
+            {
+              "forenkletStatus": "bosattEtterFolkeregisterloven",
+              "metadata": {
+                "endringer": []
+              }
+            }
+          ],
+          "bostedsadresse": [
+            {
+              "angittFlyttedato": "2010-01-20",
+              "gyldigFraOgMed": "2010-01-20",
+              "vegadresse": {
+                "kommunenummer": "9107"
+              }
+            }
+          ],
+          "innflyttingTilNorge": [],
+          "utflyttingFraNorge": []
+        }
+      }
+    }
+  }
+}

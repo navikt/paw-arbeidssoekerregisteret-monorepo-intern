@@ -96,6 +96,38 @@
                             "access_as_application"
                         ]
                     }
+                },
+                {
+                    "requestParam": "client_id",
+                    "match": "paw-arbeidssoekere-synk-jobb",
+                    "claims": {
+                        "sub": "admin@paw-arbeidssoekere-synk-jobb",
+                        "aud": [
+                            "paw-arbeidssokerregisteret-api-inngang"
+                        ],
+                        "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
+                        "azp": "5f28c10f-ecd5-45ef-96b8-db4311802e89",
+                        "azp_name": "local:paw:paw-arbeidssoekere-synk-jobb",
+                        "roles": [
+                            "access_as_application"
+                        ]
+                    }
+                },
+                {
+                    "requestParam": "client_assertion_type",
+                    "match": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+                    "claims": {
+                        "sub": "admin@paw-arbeidssoekere-synk-jobb",
+                        "aud": [
+                            "paw-arbeidssokerregisteret-api-inngang"
+                        ],
+                        "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
+                        "azp": "5f28c10f-ecd5-45ef-96b8-db4311802e89",
+                        "azp_name": "local:paw:paw-arbeidssoekere-synk-jobb",
+                        "roles": [
+                            "access_as_application"
+                        ]
+                    }
                 }
             ]
         },
