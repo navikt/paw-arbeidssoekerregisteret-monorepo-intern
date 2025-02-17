@@ -12,10 +12,6 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import org.slf4j.LoggerFactory
 
-@WithSpan(
-    value = "ignorerDuplikatStartOgStopp",
-    kind = SpanKind.INTERNAL
-)
 fun ignorerDuplikatStartOgStopp(
     @Suppress("UNUSED_PARAMETER") recordKey: Long,
     tilstandOgHendelse: InternTilstandOgHendelse
@@ -43,10 +39,6 @@ fun ignorerDuplikatStartOgStopp(
 
 inline fun <reified A : StreamHendelse> StreamHendelse.erIkke(): Boolean = this !is A
 
-@WithSpan(
-    value = "ignorerAvsluttetForAnnenPeriode",
-    kind = SpanKind.INTERNAL
-)
 fun ignorerAvsluttetForAnnenPeriode(
     @Suppress("UNUSED_PARAMETER") recordKey: Long,
     tilstandOgHendelse: InternTilstandOgHendelse
@@ -71,10 +63,6 @@ fun ignorerAvsluttetForAnnenPeriode(
 
 private val opphoerteIdenterLogger = LoggerFactory.getLogger("OpphoerteIdenterLogger")
 
-@WithSpan(
-    value = "ignorerOpphoerteIdenter",
-    kind = SpanKind.INTERNAL
-)
 fun ignorerOpphoerteIdenter(
     @Suppress("UNUSED_PARAMETER") recordKey: Long,
     tilstandOgHendelse: InternTilstandOgHendelse
