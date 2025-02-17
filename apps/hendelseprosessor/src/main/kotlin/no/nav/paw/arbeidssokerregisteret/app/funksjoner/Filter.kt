@@ -28,16 +28,16 @@ fun ignorerDuplikatStartOgStopp(
         GjeldeneTilstand.AVVIST -> hendelse.erIkke<Avsluttet>()
         else -> false
     }.also { include ->
-        Span.current().setAllAttributes(
-            Attributes.of(
-                AttributeKey.stringKey("paw.arbeidssoekerregisteret.hendelse.type"),
-                hendelse.hendelseType,
-                AttributeKey.stringKey("paw.arbeidssoekerregisteret.hendelse.inkludert"),
-                include.toString(),
-                AttributeKey.stringKey("paw.arbeidssoekerregisteret.tilstand"),
-                tilstand?.gjeldeneTilstand?.name ?: "null"
+        if (!include) {
+            Span.current().addEvent(
+                "arbeidssoekerregisteret_ignorert", Attributes.of(
+                    AttributeKey.stringKey("arbeidssoekerregisteret_hendelse_type"),
+                    hendelse.hendelseType,
+                    AttributeKey.stringKey("aarsak"),
+                    tilstand?.gjeldeneTilstand?.name ?: "null"
+                )
             )
-        )
+        }
     }
 }
 
@@ -56,18 +56,16 @@ fun ignorerAvsluttetForAnnenPeriode(
     val gjeldenePeriodeId = tilstand?.gjeldenePeriode?.id
     return (((gjeldenePeriodeId == null) || (hendelse.periodeId == null) || (gjeldenePeriodeId == hendelse.periodeId)))
         .also { include ->
-            Span.current().setAllAttributes(
-                Attributes.of(
-                    AttributeKey.stringKey("paw.arbeidssoekerregisteret.hendelse.type"),
-                    hendelse.hendelseType,
-                    AttributeKey.stringKey("paw.arbeidssoekerregisteret.hendelse.periodeIdErSatt"),
-                    (hendelse as? Avsluttet)?.let { it.periodeId != null }?.toString() ?: "NA",
-                    AttributeKey.stringKey("paw.arbeidssoekerregisteret.hendelse.inkludert"),
-                    include.toString(),
-                    AttributeKey.stringKey("paw.arbeidssoekerregisteret.tilstand.periodeIdErSatt"),
-                    (tilstandOgHendelse.tilstand?.gjeldenePeriode?.id != null).toString()
+            if (!include) {
+                Span.current().addEvent(
+                    "arbeidssoekerregisteret_ignorert", Attributes.of(
+                        AttributeKey.stringKey("arbeidssoekerregisteret_hendelse_type"),
+                        hendelse.hendelseType,
+                        AttributeKey.stringKey("aarsak"),
+                        "ulik_periode_id"
+                    )
                 )
-            )
+            }
         }
 }
 
@@ -83,18 +81,20 @@ fun ignorerOpphoerteIdenter(
 ): Boolean {
     val (_, tilstand, hendelse) = tilstandOgHendelse
     return (tilstand?.gjeldeneTilstand != GjeldeneTilstand.OPPHOERT).also { include ->
-        if(!include) {
-            opphoerteIdenterLogger.error("Ignorerte hendelse med opphoert ident: {} {}", hendelse.hendelseType, hendelse.hendelseId)
-        }
-        Span.current().setAllAttributes(
-            Attributes.of(
-                AttributeKey.stringKey("paw.arbeidssoekerregisteret.hendelse.type"),
+        if (!include) {
+            opphoerteIdenterLogger.error(
+                "Ignorerte hendelse med opphoert ident: {} {}",
                 hendelse.hendelseType,
-                AttributeKey.stringKey("paw.arbeidssoekerregisteret.hendelse.inkludert"),
-                include.toString(),
-                AttributeKey.stringKey("paw.arbeidssoekerregisteret.tilstand"),
-                tilstand?.gjeldeneTilstand?.name ?: "null",
+                hendelse.hendelseId
             )
-        )
+            Span.current().addEvent(
+                "ignorert", Attributes.of(
+                    AttributeKey.stringKey("arbeidssoekerregisteret_hendelse_type"),
+                    hendelse.hendelseType,
+                    AttributeKey.stringKey("aarsak"),
+                    tilstand?.gjeldeneTilstand?.name ?: "null"
+                )
+            )
+        }
     }
 }
