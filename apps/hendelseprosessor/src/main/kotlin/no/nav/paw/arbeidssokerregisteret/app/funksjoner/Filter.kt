@@ -29,7 +29,7 @@ fun ignorerDuplikatStartOgStopp(
                 hendelseIgnorert, Attributes.of(
                     AttributeKey.stringKey("arbeidssoekerregisteret_hendelse_type"),
                     hendelse.hendelseType,
-                    AttributeKey.stringKey("aarsak"),
+                    aarsakKey,
                     tilstand?.gjeldeneTilstand?.name ?: "null"
                 )
             )
@@ -53,7 +53,7 @@ fun ignorerAvsluttetForAnnenPeriode(
                     hendelseIgnorert, Attributes.of(
                         AttributeKey.stringKey("arbeidssoekerregisteret_hendelse_type"),
                         hendelse.hendelseType,
-                        AttributeKey.stringKey("aarsak"),
+                        aarsakKey,
                         "ulik_periode_id"
                     )
                 )
@@ -79,7 +79,7 @@ fun ignorerOpphoerteIdenter(
                 hendelseIgnorert, Attributes.of(
                     AttributeKey.stringKey("arbeidssoekerregisteret_hendelse_type"),
                     hendelse.hendelseType,
-                    AttributeKey.stringKey("aarsak"),
+                    aarsakKey,
                     tilstand?.gjeldeneTilstand?.name ?: "null"
                 )
             )

@@ -9,11 +9,12 @@ const val hendelseAkseptert = "arbeidssoekerregisteret_hendelse_akseptert"
 
 val hendelseTypeKey = AttributeKey.stringKey("arbeidssoekerregisteret_hendelse_type")
 val tilstandKey = AttributeKey.stringKey("arbeidssoekerregisteret_tilstand")
+val aarsakKey = AttributeKey.stringKey("aarsak")
 
 fun hendelseType(hendelse: StreamHendelse): Pair<AttributeKey<String>, String> =
      hendelseTypeKey to hendelse.hendelseType.replace(".", "_")
 
 fun aarsak(aarsak: String): Pair<AttributeKey<String>, String> =
-    AttributeKey.stringKey("aarsak") to aarsak
+     aarsakKey to aarsak
 
 fun <A: Any> AttributesBuilder.add(kv: Pair<AttributeKey<A>, A>) : AttributesBuilder = this.put(kv.first, kv.second)
