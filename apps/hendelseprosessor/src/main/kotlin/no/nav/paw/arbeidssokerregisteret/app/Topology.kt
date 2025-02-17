@@ -3,9 +3,13 @@ package no.nav.paw.arbeidssokerregisteret.app
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.common.AttributesBuilder
 import io.opentelemetry.api.trace.Span
 import no.nav.paw.arbeidssokerregisteret.app.config.ApplicationLogicConfig
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.add
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.genererNyInternTilstandOgNyeApiTilstander
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.hendelseAkseptert
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.hendelseType
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.ignorerAvsluttetForAnnenPeriode
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.ignorerDuplikatStartOgStopp
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.ignorerOpphoerteIdenter
@@ -13,6 +17,7 @@ import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors.M
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors.lagreInternTilstand
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors.lastInternTilstand
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.tellHendelse
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.tilstandKey
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
@@ -40,21 +45,23 @@ fun topology(
             .peek { _, (_, tilstand, hendelse) ->
                 prometheusMeterRegistry.tellHendelse(innTopic, hendelse)
                 Span.current().setAllAttributes(
-                    Attributes.of(
-                        AttributeKey.stringKey("paw.arbeidssoekerregisteret.hendelse.type"),
-                        hendelse.hendelseType,
-                        AttributeKey.stringKey("paw.arbeidssoekerregisteret.tilstand"),
-                        tilstand?.gjeldeneTilstand?.name ?: "null",
-                        AttributeKey.stringKey("paw.arbeidssoekerregisteret.hendelse.periodeIdErSatt"),
-                        (hendelse as? Avsluttet)?.let { it.periodeId != null }?.toString() ?: "NA",
-                        AttributeKey.stringKey("paw.arbeidssoekerregisteret.tilstand.periodeIdErSatt"),
-                        (tilstand?.gjeldenePeriode?.id != null).toString()
+                    Attributes.builder()
+                        .add(hendelseType(hendelse))
+                        .put(tilstandKey, tilstand?.gjeldeneTilstand?.name ?: "null")
+                        .put(
+                            AttributeKey.stringKey("paw.arbeidssoekerregisteret.hendelse.periodeIdErSatt"),
+                            (hendelse as? Avsluttet)?.let { it.periodeId != null }?.toString() ?: "NA"
+                        ).put(AttributeKey.stringKey("paw.arbeidssoekerregisteret.tilstand.periodeIdErSatt"),
+                            (tilstand?.gjeldenePeriode?.id != null).toString()
+                        ).build()
                     )
-                )
             }
             .filter(::ignorerOpphoerteIdenter)
             .filter(::ignorerDuplikatStartOgStopp)
             .filter(::ignorerAvsluttetForAnnenPeriode)
+            .peek { _, (_, _, hendelse) ->
+                Span.current().addEvent(hendelseAkseptert, Attributes.builder().add(hendelseType(hendelse)).build())
+            }
             .mapValues { internTilstandOgHendelse ->
                 genererNyInternTilstandOgNyeApiTilstander(
                     applicationLogicConfig,

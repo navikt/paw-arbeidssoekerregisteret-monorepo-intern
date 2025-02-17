@@ -26,7 +26,7 @@ fun ignorerDuplikatStartOgStopp(
     }.also { include ->
         if (!include) {
             Span.current().addEvent(
-                "arbeidssoekerregisteret_ignorert", Attributes.of(
+                hendelseIgnorert, Attributes.of(
                     AttributeKey.stringKey("arbeidssoekerregisteret_hendelse_type"),
                     hendelse.hendelseType,
                     AttributeKey.stringKey("aarsak"),
@@ -50,7 +50,7 @@ fun ignorerAvsluttetForAnnenPeriode(
         .also { include ->
             if (!include) {
                 Span.current().addEvent(
-                    "arbeidssoekerregisteret_ignorert", Attributes.of(
+                    hendelseIgnorert, Attributes.of(
                         AttributeKey.stringKey("arbeidssoekerregisteret_hendelse_type"),
                         hendelse.hendelseType,
                         AttributeKey.stringKey("aarsak"),
@@ -76,7 +76,7 @@ fun ignorerOpphoerteIdenter(
                 hendelse.hendelseId
             )
             Span.current().addEvent(
-                "ignorert", Attributes.of(
+                hendelseIgnorert, Attributes.of(
                     AttributeKey.stringKey("arbeidssoekerregisteret_hendelse_type"),
                     hendelse.hendelseType,
                     AttributeKey.stringKey("aarsak"),

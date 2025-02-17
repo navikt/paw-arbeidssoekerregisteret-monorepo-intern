@@ -10,10 +10,6 @@ import no.nav.paw.arbeidssokerregisteret.app.tilstand.*
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand.STARTET
 import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
 
-@WithSpan(
-    value = "opplysningerOmArbeidssoekerMottatt",
-    kind = SpanKind.INTERNAL
-)
 fun FunctionContext<TilstandV1?, Long>.opplysningerOmArbeidssoekerMottatt(hendelse: OpplysningerOmArbeidssoekerMottatt): InternTilstandOgApiTilstander =
     when {
         tilstand == null -> scope.harIngenTilstandLagreSomSisteOpplysninger(hendelse)
