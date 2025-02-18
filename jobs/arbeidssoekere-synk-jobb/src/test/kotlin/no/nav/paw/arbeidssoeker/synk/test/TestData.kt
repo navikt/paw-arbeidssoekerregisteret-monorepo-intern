@@ -33,7 +33,7 @@ object ErrorResponse {
                         )
                     )
                 )
-            ).asJson().also { println(it) }
+            ).asJson()
 
     val avvist
         get(): Pair<HttpStatusCode, String> =
@@ -49,14 +49,14 @@ object ErrorResponse {
                         )
                     )
                 )
-            ).asJson().also { println(it) }
+            ).asJson()
 
     val ukjentFeil
         get(): Pair<HttpStatusCode, String> =
             HttpStatusCode.InternalServerError to OpprettPeriodeErrorResponse(
                 melding = "Dette gikk skikkelig dårlig",
                 feilKode = "UKJENT_FEIL"
-            ).asJson().also { println(it) }
+            ).asJson()
 }
 
 inline fun <reified T> OutgoingContent.readValue(): T {

@@ -1,21 +1,20 @@
 package no.nav.paw.arbeidssoeker.synk.service
 
+import com.fasterxml.jackson.databind.MappingIterator
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssoeker.synk.config.JobConfig
 import no.nav.paw.arbeidssoeker.synk.consumer.InngangHttpConsumer
 import no.nav.paw.arbeidssoeker.synk.model.Arbeidssoeker
+import no.nav.paw.arbeidssoeker.synk.model.ArbeidssoekerFileRow
 import no.nav.paw.arbeidssoeker.synk.model.asArbeidssoeker
 import no.nav.paw.arbeidssoeker.synk.model.asOpprettPeriodeRequest
 import no.nav.paw.arbeidssoeker.synk.model.isNotSuccess
 import no.nav.paw.arbeidssoeker.synk.model.millisSince
 import no.nav.paw.arbeidssoeker.synk.repository.ArbeidssoekerSynkRepository
-import no.nav.paw.arbeidssoeker.synk.utils.ArbeidssoekerCsvReader
 import no.nav.paw.arbeidssoeker.synk.utils.traceAndLog
 import no.nav.paw.logging.logger.buildApplicationLogger
 import no.nav.paw.logging.logger.buildNamedLogger
-import java.nio.file.Path
 import java.time.Instant
-import kotlin.io.path.name
 
 class ArbeidssoekerSynkService(
     private val jobConfig: JobConfig,
@@ -26,35 +25,29 @@ class ArbeidssoekerSynkService(
     private val secureLogger = buildNamedLogger("secure")
 
     @WithSpan(value = "synkArbeidssoekere")
-    fun synkArbeidssoekere(path: Path) {
+    fun synkArbeidssoekere(version: String, fileRows: MappingIterator<ArbeidssoekerFileRow>) {
         with(jobConfig) {
             var totalCount = 0
             val timestamp = Instant.now()
-            logger.info("Leser CSV-fil {} fra mappe {}", path.name, path.parent)
-            val values = ArbeidssoekerCsvReader.readValues(path)
-            if (values.hasNextValue()) {
-                logger.info("Starter prosessering av CSV-data")
-                while (values.hasNextValue()) {
-                    totalCount++
-                    if (totalCount % 100 == 0) {
-                        logger.info("Prosessert {} linjer CSV-data på {} ms", totalCount, timestamp.millisSince())
-                    }
-                    val arbeidssoeker = values.nextValue()
-                        .asArbeidssoeker(
-                            version = path.name,
-                            periodeTilstand = defaultVerdier.periodeTilstand,
-                            forhaandsgodkjentAvAnsatt = defaultVerdier.forhaandsgodkjentAvAnsatt
-                        )
-                    prosesserArbeidssoeker(arbeidssoeker)
+            logger.info("Starter prosessering av CSV-data")
+            while (fileRows.hasNextValue()) {
+                totalCount++
+                if (totalCount % 100 == 0) {
+                    logger.info("Prosessert {} linjer CSV-data på {} ms", totalCount, timestamp.millisSince())
                 }
-                logger.info(
-                    "Fullførte prosessering av {} linjer CSV-data på {} ms",
-                    totalCount,
-                    timestamp.millisSince()
-                )
-            } else {
-                logger.warn("CSV-fil {} fra mappe {} er tom", path.name, path.parent)
+                val arbeidssoeker = fileRows.nextValue()
+                    .asArbeidssoeker(
+                        version = version,
+                        periodeTilstand = defaultVerdier.periodeTilstand,
+                        forhaandsgodkjentAvAnsatt = defaultVerdier.forhaandsgodkjentAvAnsatt
+                    )
+                prosesserArbeidssoeker(arbeidssoeker)
             }
+            logger.info(
+                "Fullførte prosessering av {} linjer CSV-data på {} ms",
+                totalCount,
+                timestamp.millisSince()
+            )
         }
     }
 
@@ -64,26 +57,26 @@ class ArbeidssoekerSynkService(
         val (version, identitetsnummer) = arbeidssoeker
         secureLogger.info("Prosesserer arbeidssøker {}", identitetsnummer)
 
-        logger.debug("Ser etter status i databasen for version {}", version)
-        val row = arbeidssoekerSynkRepository.find(version, identitetsnummer)
-        if (row == null) {
-            logger.debug("Fant ingen status i databasen for version {}", version)
+        logger.debug("Ser etter innslag i databasen for version {}", version)
+        val databaseRow = arbeidssoekerSynkRepository.find(version, identitetsnummer)
+        if (databaseRow == null) {
+            logger.debug("Fant ingen innslag i databasen for version {}", version)
             logger.debug("Kaller API Inngang for opprettelse av periode")
             val response = inngangHttpConsumer.opprettPeriode(arbeidssoeker.asOpprettPeriodeRequest())
             logger.traceAndLog(response.status)
 
-            logger.debug("Oppretter status {} i databasen for version {}", response.status.value, version)
+            logger.debug("Oppretter innslag med status {} i databasen for version {}", response.status.value, version)
             arbeidssoekerSynkRepository.insert(version, identitetsnummer, response.status.value)
-        } else if (row.status.isNotSuccess()) {
-            logger.debug("Fant feilet status {} i databasen for version {}", row.status, version)
+        } else if (databaseRow.status.isNotSuccess()) {
+            logger.debug("Fant innslag med status {} i databasen for version {}", databaseRow.status, version)
             logger.debug("Utfører opprettelse av periode i registeret")
             val response = inngangHttpConsumer.opprettPeriode(arbeidssoeker.asOpprettPeriodeRequest())
             logger.traceAndLog(response.status)
 
-            logger.debug("Oppdaterer status {} i databasen for version {}", response.status.value, version)
+            logger.debug("Oppdaterer innslag med status {} i databasen for version {}", response.status.value, version)
             arbeidssoekerSynkRepository.update(version, identitetsnummer, response.status.value)
         } else {
-            logger.debug("Ignorerer fullført status {} i databasen", row.status)
+            logger.debug("Ignorerer fullført innslag med status {} i databasen", databaseRow.status)
         }
     }
 }

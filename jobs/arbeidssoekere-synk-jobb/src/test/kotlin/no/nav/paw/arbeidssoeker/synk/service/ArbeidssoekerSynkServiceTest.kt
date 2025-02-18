@@ -6,6 +6,8 @@ import io.kotest.matchers.shouldBe
 import io.ktor.http.HttpStatusCode
 import no.nav.paw.arbeidssoeker.synk.context.TestContext
 import no.nav.paw.arbeidssoeker.synk.test.ErrorResponse
+import no.nav.paw.arbeidssoeker.synk.utils.ArbeidssoekerCsvReader
+import kotlin.io.path.name
 
 class ArbeidssoekerSynkServiceTest : FreeSpec({
     with(TestContext()) {
@@ -21,42 +23,42 @@ class ArbeidssoekerSynkServiceTest : FreeSpec({
                 "08017012345" to ErrorResponse.ukjentFeil
             )
 
+            val version = filePath.name
+            var fileRows = ArbeidssoekerCsvReader.readValues(filePath)
+            initArbeidssoekerSynkService(responseMapping).synkArbeidssoekere(version, fileRows)
+            var databaseRows = arbeidssoekerSynkRepository.find()
 
-            initArbeidssoekerSynkService(responseMapping)
-                .synkArbeidssoekere(filePath)
-            var rows = arbeidssoekerSynkRepository.find()
-
-            rows shouldHaveSize 10
-            rows[0].version shouldBe "v1.csv"
-            rows[0].identitetsnummer shouldBe "01017012345"
-            rows[0].status shouldBe HttpStatusCode.NoContent.value
-            rows[1].version shouldBe "v1.csv"
-            rows[1].identitetsnummer shouldBe "02017012345"
-            rows[1].status shouldBe HttpStatusCode.NoContent.value
-            rows[2].version shouldBe "v1.csv"
-            rows[2].identitetsnummer shouldBe "03017012345"
-            rows[2].status shouldBe HttpStatusCode.Forbidden.value
-            rows[3].version shouldBe "v1.csv"
-            rows[3].identitetsnummer shouldBe "04017012345"
-            rows[3].status shouldBe HttpStatusCode.NoContent.value
-            rows[4].version shouldBe "v1.csv"
-            rows[4].identitetsnummer shouldBe "05017012345"
-            rows[4].status shouldBe HttpStatusCode.NoContent.value
-            rows[5].version shouldBe "v1.csv"
-            rows[5].identitetsnummer shouldBe "06017012345"
-            rows[5].status shouldBe HttpStatusCode.BadRequest.value
-            rows[6].version shouldBe "v1.csv"
-            rows[6].identitetsnummer shouldBe "07017012345"
-            rows[6].status shouldBe HttpStatusCode.NoContent.value
-            rows[7].version shouldBe "v1.csv"
-            rows[7].identitetsnummer shouldBe "08017012345"
-            rows[7].status shouldBe HttpStatusCode.InternalServerError.value
-            rows[8].version shouldBe "v1.csv"
-            rows[8].identitetsnummer shouldBe "09017012345"
-            rows[8].status shouldBe HttpStatusCode.NoContent.value
-            rows[9].version shouldBe "v1.csv"
-            rows[9].identitetsnummer shouldBe "10017012345"
-            rows[9].status shouldBe HttpStatusCode.NoContent.value
+            databaseRows shouldHaveSize 10
+            databaseRows[0].version shouldBe version
+            databaseRows[0].identitetsnummer shouldBe "01017012345"
+            databaseRows[0].status shouldBe HttpStatusCode.NoContent.value
+            databaseRows[1].version shouldBe version
+            databaseRows[1].identitetsnummer shouldBe "02017012345"
+            databaseRows[1].status shouldBe HttpStatusCode.NoContent.value
+            databaseRows[2].version shouldBe version
+            databaseRows[2].identitetsnummer shouldBe "03017012345"
+            databaseRows[2].status shouldBe HttpStatusCode.Forbidden.value
+            databaseRows[3].version shouldBe version
+            databaseRows[3].identitetsnummer shouldBe "04017012345"
+            databaseRows[3].status shouldBe HttpStatusCode.NoContent.value
+            databaseRows[4].version shouldBe version
+            databaseRows[4].identitetsnummer shouldBe "05017012345"
+            databaseRows[4].status shouldBe HttpStatusCode.NoContent.value
+            databaseRows[5].version shouldBe version
+            databaseRows[5].identitetsnummer shouldBe "06017012345"
+            databaseRows[5].status shouldBe HttpStatusCode.BadRequest.value
+            databaseRows[6].version shouldBe version
+            databaseRows[6].identitetsnummer shouldBe "07017012345"
+            databaseRows[6].status shouldBe HttpStatusCode.NoContent.value
+            databaseRows[7].version shouldBe version
+            databaseRows[7].identitetsnummer shouldBe "08017012345"
+            databaseRows[7].status shouldBe HttpStatusCode.InternalServerError.value
+            databaseRows[8].version shouldBe version
+            databaseRows[8].identitetsnummer shouldBe "09017012345"
+            databaseRows[8].status shouldBe HttpStatusCode.NoContent.value
+            databaseRows[9].version shouldBe version
+            databaseRows[9].identitetsnummer shouldBe "10017012345"
+            databaseRows[9].status shouldBe HttpStatusCode.NoContent.value
 
             responseMapping = mapOf(
                 "01017012345" to ErrorResponse.ikkeTilgang,
@@ -64,41 +66,41 @@ class ArbeidssoekerSynkServiceTest : FreeSpec({
                 "08017012345" to ErrorResponse.ukjentFeil
             )
 
-            initArbeidssoekerSynkService(responseMapping)
-                .synkArbeidssoekere(filePath)
-            rows = arbeidssoekerSynkRepository.find()
+            fileRows = ArbeidssoekerCsvReader.readValues(filePath)
+            initArbeidssoekerSynkService(responseMapping).synkArbeidssoekere(filePath.name, fileRows)
+            databaseRows = arbeidssoekerSynkRepository.find()
 
-            rows shouldHaveSize 10
-            rows[0].version shouldBe "v1.csv"
-            rows[0].identitetsnummer shouldBe "01017012345"
-            rows[0].status shouldBe HttpStatusCode.NoContent.value
-            rows[1].version shouldBe "v1.csv"
-            rows[1].identitetsnummer shouldBe "02017012345"
-            rows[1].status shouldBe HttpStatusCode.NoContent.value
-            rows[2].version shouldBe "v1.csv"
-            rows[2].identitetsnummer shouldBe "03017012345"
-            rows[2].status shouldBe HttpStatusCode.NoContent.value
-            rows[3].version shouldBe "v1.csv"
-            rows[3].identitetsnummer shouldBe "04017012345"
-            rows[3].status shouldBe HttpStatusCode.NoContent.value
-            rows[4].version shouldBe "v1.csv"
-            rows[4].identitetsnummer shouldBe "05017012345"
-            rows[4].status shouldBe HttpStatusCode.NoContent.value
-            rows[5].version shouldBe "v1.csv"
-            rows[5].identitetsnummer shouldBe "06017012345"
-            rows[5].status shouldBe HttpStatusCode.NoContent.value
-            rows[6].version shouldBe "v1.csv"
-            rows[6].identitetsnummer shouldBe "07017012345"
-            rows[6].status shouldBe HttpStatusCode.NoContent.value
-            rows[7].version shouldBe "v1.csv"
-            rows[7].identitetsnummer shouldBe "08017012345"
-            rows[7].status shouldBe HttpStatusCode.InternalServerError.value
-            rows[8].version shouldBe "v1.csv"
-            rows[8].identitetsnummer shouldBe "09017012345"
-            rows[8].status shouldBe HttpStatusCode.NoContent.value
-            rows[9].version shouldBe "v1.csv"
-            rows[9].identitetsnummer shouldBe "10017012345"
-            rows[9].status shouldBe HttpStatusCode.NoContent.value
+            databaseRows shouldHaveSize 10
+            databaseRows[0].version shouldBe version
+            databaseRows[0].identitetsnummer shouldBe "01017012345"
+            databaseRows[0].status shouldBe HttpStatusCode.NoContent.value
+            databaseRows[1].version shouldBe version
+            databaseRows[1].identitetsnummer shouldBe "02017012345"
+            databaseRows[1].status shouldBe HttpStatusCode.NoContent.value
+            databaseRows[2].version shouldBe version
+            databaseRows[2].identitetsnummer shouldBe "03017012345"
+            databaseRows[2].status shouldBe HttpStatusCode.NoContent.value
+            databaseRows[3].version shouldBe version
+            databaseRows[3].identitetsnummer shouldBe "04017012345"
+            databaseRows[3].status shouldBe HttpStatusCode.NoContent.value
+            databaseRows[4].version shouldBe version
+            databaseRows[4].identitetsnummer shouldBe "05017012345"
+            databaseRows[4].status shouldBe HttpStatusCode.NoContent.value
+            databaseRows[5].version shouldBe version
+            databaseRows[5].identitetsnummer shouldBe "06017012345"
+            databaseRows[5].status shouldBe HttpStatusCode.NoContent.value
+            databaseRows[6].version shouldBe version
+            databaseRows[6].identitetsnummer shouldBe "07017012345"
+            databaseRows[6].status shouldBe HttpStatusCode.NoContent.value
+            databaseRows[7].version shouldBe version
+            databaseRows[7].identitetsnummer shouldBe "08017012345"
+            databaseRows[7].status shouldBe HttpStatusCode.InternalServerError.value
+            databaseRows[8].version shouldBe version
+            databaseRows[8].identitetsnummer shouldBe "09017012345"
+            databaseRows[8].status shouldBe HttpStatusCode.NoContent.value
+            databaseRows[9].version shouldBe version
+            databaseRows[9].identitetsnummer shouldBe "10017012345"
+            databaseRows[9].status shouldBe HttpStatusCode.NoContent.value
         }
     }
 })
