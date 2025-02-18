@@ -43,7 +43,7 @@ class InngagnSomVeilederTest : FreeSpec({
         "forhåndsgodkjent param skal taes med til validering" {
             val startStoppRequestHandler: StartStoppRequestHandler = mockk()
             coEvery {
-                startStoppRequestHandler.startArbeidssokerperiode(any(), any(), any())
+                startStoppRequestHandler.startArbeidssokerperiode(any(), any(), any(), any())
             } returns GrunnlagForGodkjenning(
                 regel = Regel(
                     id = AnsattHarTilgangTilBruker,
@@ -93,7 +93,7 @@ class InngagnSomVeilederTest : FreeSpec({
                 }
                 response.status shouldBe HttpStatusCode.NoContent
                 coVerify(exactly = 1) {
-                    startStoppRequestHandler.startArbeidssokerperiode(any(), Identitetsnummer("12345678909"), true)
+                    startStoppRequestHandler.startArbeidssokerperiode(any(), Identitetsnummer("12345678909"), true, null)
                 }
 
                 val response2 = client.put("/api/v2/arbeidssoker/periode") {
@@ -111,7 +111,7 @@ class InngagnSomVeilederTest : FreeSpec({
                 }
                 response2.status shouldBe HttpStatusCode.NoContent
                 coVerify(exactly = 1) {
-                        startStoppRequestHandler.startArbeidssokerperiode(any(), Identitetsnummer("12345678909"), false)
+                        startStoppRequestHandler.startArbeidssokerperiode(any(), Identitetsnummer("12345678909"), false, null)
                 }
             }
         }

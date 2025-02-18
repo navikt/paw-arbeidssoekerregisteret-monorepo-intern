@@ -44,7 +44,8 @@ fun stoppResultatSomHendelse(
             identitetsnummer = identitetsnummer.verdi,
             metadata = hendelseMetadata(
                 requestScope = requestScope,
-                aarsak = resultat.value.map { it.regel.id.beskrivelse }.toList().joinToString(". ")
+                aarsak = resultat.value.map { it.regel.id.beskrivelse }.toList().joinToString(". "),
+                tidspunktFraKilde = feilretting.tidspunktFraKilde
             ),
             opplysninger = resultat.value.first.opplysninger.map(::mapToHendelseOpplysning).toSet()
         )
@@ -73,7 +74,8 @@ fun somHendelse(
     requestScope: RequestScope,
     id: Long,
     identitetsnummer: Identitetsnummer,
-    resultat: Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning>
+    resultat: Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning>,
+    feilretting: Feilretting?
 ): Hendelse =
     when (resultat) {
         is Either.Left -> Avvist(
@@ -82,7 +84,8 @@ fun somHendelse(
             identitetsnummer = identitetsnummer.verdi,
             metadata = hendelseMetadata(
                 requestScope = requestScope,
-                aarsak = resultat.value.map { it.regel.id.beskrivelse }.toList().joinToString(". ")
+                aarsak = resultat.value.map { it.regel.id.beskrivelse }.toList().joinToString(". "),
+                tidspunktFraKilde = feilretting?.tidspunktFraKilde
             ),
             opplysninger = resultat.value.first.opplysninger.map(::mapToHendelseOpplysning).toSet(),
             handling = requestScope.path
@@ -94,7 +97,8 @@ fun somHendelse(
             identitetsnummer = identitetsnummer.verdi,
             metadata = hendelseMetadata(
                 requestScope = requestScope,
-                aarsak = resultat.value.regel.id.beskrivelse
+                aarsak = resultat.value.regel.id.beskrivelse,
+                tidspunktFraKilde = feilretting?.tidspunktFraKilde
             ),
             opplysninger = resultat.value.opplysning.map(::mapToHendelseOpplysning).toSet()
         )

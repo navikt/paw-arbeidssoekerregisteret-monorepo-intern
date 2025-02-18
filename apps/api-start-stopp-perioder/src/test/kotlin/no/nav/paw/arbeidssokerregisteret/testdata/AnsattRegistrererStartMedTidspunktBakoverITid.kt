@@ -90,7 +90,8 @@ data object AnsattRegistrererStartMedTidspunktBakoverITid : StartPeriodeTestCase
                 Opplysning.INGEN_INFORMASJON_OM_OPPHOLDSTILLATELSE,
                 Opplysning.BOSATT_ETTER_FREG_LOVEN,
                 Opplysning.TOKENX_PID_IKKE_FUNNET,
-                Opplysning.IKKE_SYSTEM
+                Opplysning.IKKE_SYSTEM,
+                Opplysning.ER_FEILRETTING
             )
         )
     )

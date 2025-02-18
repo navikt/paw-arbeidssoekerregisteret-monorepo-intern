@@ -23,12 +23,28 @@ class StartStoppRequestHandler(
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     @WithSpan
-    suspend fun startArbeidssokerperiode(requestScope: RequestScope, identitetsnummer: Identitetsnummer, erForhaandsGodkjentAvVeileder: Boolean): Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning> =
+    suspend fun startArbeidssokerperiode(
+        requestScope: RequestScope,
+        identitetsnummer: Identitetsnummer,
+        erForhaandsGodkjentAvVeileder: Boolean,
+        feilretting: Feilretting?
+    ): Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning> =
         coroutineScope {
             val kafkaKeysResponse = async { kafkaKeysClient.getIdAndKey(identitetsnummer.verdi) }
-            val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitetsnummer, erForhaandsGodkjentAvVeileder)
+            val resultat = requestValidator.validerStartAvPeriodeOenske(
+                requestScope = requestScope,
+                identitetsnummer = identitetsnummer,
+                erForhaandsGodkjentAvVeileder = erForhaandsGodkjentAvVeileder,
+                feilretting = feilretting
+            )
             val (id, key) = kafkaKeysResponse.await()
-            val hendelse = somHendelse(requestScope, id, identitetsnummer, resultat)
+            val hendelse = somHendelse(
+                requestScope = requestScope,
+                id = id,
+                identitetsnummer = identitetsnummer,
+                resultat = resultat,
+                feilretting = feilretting
+            )
             val record = ProducerRecord(
                 hendelseTopic,
                 key,
@@ -69,9 +85,18 @@ class StartStoppRequestHandler(
 
     suspend fun kanRegistreresSomArbeidssoker(requestScope: RequestScope, identitetsnummer: Identitetsnummer): Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning> {
         val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
-        val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitetsnummer)
+        val resultat = requestValidator.validerStartAvPeriodeOenske(
+            requestScope = requestScope,
+            identitetsnummer = identitetsnummer,
+            feilretting = null
+        )
         if (resultat.isLeft()) {
-            val hendelse = somHendelse(requestScope, id, identitetsnummer, resultat)
+            val hendelse = somHendelse(
+                requestScope = requestScope,
+                id = id,
+                identitetsnummer = identitetsnummer,
+                resultat = resultat, feilretting = null
+            )
             val record = ProducerRecord(
                 hendelseTopic,
                 key,

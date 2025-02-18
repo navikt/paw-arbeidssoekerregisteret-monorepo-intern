@@ -67,6 +67,13 @@ data object AnsattStopperEnFeilregistrertPeriodeMenHarMedTidspunkt : StoppPeriod
                     tidspunkt = Instant.now(),//ikke validert siden den settes server-side,
                     avviksType = no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType.SLETTET
                 )
+            ),
+            opplysninger = setOf(
+                Opplysning.ANSATT_TILGANG,
+                Opplysning.TOKENX_PID_IKKE_FUNNET,
+                Opplysning.IKKE_SYSTEM,
+                Opplysning.ER_FEILRETTING,
+                Opplysning.UGYLDIG_FEILRETTING
             )
         )
     )

@@ -32,20 +32,21 @@ fun Route.arbeidssokerRoutesV2(
         route(periodeV2) {
             // Registrerer bruker som arbeidssøker
             put<ApiV2ArbeidssokerPeriodePutRequest> { request ->
-                val resultat = when (request.periodeTilstand) {
+                val resultat = when (val tilstand = request.periodeTilstand) {
                     PeriodeTilstand.STARTET ->
                         startStoppRequestHandler.startArbeidssokerperiode(
                             requestScope = requestScope(),
                             identitetsnummer = request.getId(),
                             erForhaandsGodkjentAvVeileder =
-                                request.registreringForhaandsGodkjentAvAnsatt ?: false
+                                request.registreringForhaandsGodkjentAvAnsatt ?: false,
+                            feilretting = feilretting(tilstand, request.feilretting)
                         )
 
                     PeriodeTilstand.STOPPET ->
                         startStoppRequestHandler.avsluttArbeidssokerperiode(
                             requestScope = requestScope(),
                             identitetsnummer = request.getId(),
-                            feilretting = feilretting(request.feilretting)
+                            feilretting = feilretting(tilstand, request.feilretting)
                         )
                 }
                 logger.debug("Registreringsresultat: {}", resultat)

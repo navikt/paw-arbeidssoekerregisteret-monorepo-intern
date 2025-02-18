@@ -51,13 +51,13 @@ class RequestValidatorTest : FreeSpec({
                 } returns true
                 val requestValidator = RequestValidator(autorisasjonService, personInfoService, InngangsReglerV2, registry)
                 "Når forhandsgodkjent av veileder er false" {
-                    val tilgangskontrollresultat = requestValidator.validerRequest(requestScope = requestScope, identitetsnummer = identitsnummer)
+                    val tilgangskontrollresultat = requestValidator.validerRequest(requestScope = requestScope, identitetsnummer = identitsnummer, feilretting = null)
                         .shouldBeInstanceOf<Either.Right<GrunnlagForGodkjenning>>()
                     tilgangskontrollresultat.value.opplysning shouldContain AnsattTilgang
                     tilgangskontrollresultat.value.opplysning shouldNotContain DomeneOpplysning.ErForhaandsgodkjent
                 }
                 "Når forhandsgodkjent av ansatt er true" {
-                    val tilgangskontrollresultat = requestValidator.validerRequest(requestScope, identitsnummer, true)
+                    val tilgangskontrollresultat = requestValidator.validerRequest(requestScope, identitsnummer, true, null)
                         .shouldBeInstanceOf<Either.Right<GrunnlagForGodkjenning>>()
                     tilgangskontrollresultat.value.opplysning shouldContain AnsattTilgang
                     tilgangskontrollresultat.value.opplysning shouldContain DomeneOpplysning.ErForhaandsgodkjent
@@ -70,7 +70,7 @@ class RequestValidatorTest : FreeSpec({
                 } returns false
                 val requestValidator = RequestValidator(autorisasjonService, personInfoService, InngangsReglerV2, registry)
 
-                val tilgangskontrollresultat = requestValidator.validerRequest(requestScope, identitsnummer)
+                val tilgangskontrollresultat = requestValidator.validerRequest(requestScope, identitsnummer, feilretting = null)
                     .shouldBeInstanceOf<Either.Left<PawNonEmptyList<Problem>>>()
                 tilgangskontrollresultat.value.first.opplysninger shouldContain AnsattIkkeTilgang
             }
@@ -87,13 +87,13 @@ class RequestValidatorTest : FreeSpec({
             val autorisasjonService: AutorisasjonService = mockk()
             val requestValidator = RequestValidator(autorisasjonService, personInfoService, InngangsReglerV2, registry)
             "standardbruker" {
-                val tilgangskontrollresultat = requestValidator.validerRequest(requestScope, identitsnummer)
+                val tilgangskontrollresultat = requestValidator.validerRequest(requestScope, identitsnummer, feilretting = null)
                     .shouldBeInstanceOf<Either.Right<GrunnlagForGodkjenning>>()
                 tilgangskontrollresultat.value.opplysning shouldContain IkkeAnsatt
                 tilgangskontrollresultat.value.opplysning shouldNotContain DomeneOpplysning.ErForhaandsgodkjent
             }
             "forhåndsgodkjentflagg" {
-                val tilgangskontrollresultat = requestValidator.validerRequest(requestScope, identitsnummer, true)
+                val tilgangskontrollresultat = requestValidator.validerRequest(requestScope, identitsnummer, true, null)
                     .shouldBeInstanceOf<Either.Left<PawNonEmptyList<Problem>>>()
                 tilgangskontrollresultat.value.first.opplysninger shouldContain IkkeAnsatt
                 tilgangskontrollresultat.value.first.opplysninger shouldContain DomeneOpplysning.ErForhaandsgodkjent
@@ -137,14 +137,14 @@ class RequestValidatorTest : FreeSpec({
                         statsborgerskap = listOf(Statsborgerskap("ARG", Metadata(emptyList())))
                     )
                     "godkjent av veilederflagg er true" {
-                        val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitsnummer, true)
+                        val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitsnummer, true, null)
                             .shouldBeInstanceOf<Either.Left<PawNonEmptyList<Problem>>>()
                         resultat.value.first.opplysninger shouldContain IkkeAnsatt
                         resultat.value.first.opplysninger shouldContain DomeneOpplysning.ErForhaandsgodkjent
                     }
 
                     "godkjent av veileder er false" {
-                        val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitsnummer)
+                        val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitsnummer, feilretting = null)
                             .shouldBeInstanceOf<Either.Right<GrunnlagForGodkjenning>>()
                         resultat.value.opplysning shouldContain IkkeAnsatt
                         resultat.value.opplysning shouldNotContain DomeneOpplysning.ErForhaandsgodkjent
@@ -179,7 +179,7 @@ class RequestValidatorTest : FreeSpec({
                         utflyttingFraNorge = emptyList(),
                         statsborgerskap = listOf(Statsborgerskap("ARG", Metadata(emptyList())))
                     )
-                    val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitsnummer)
+                    val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitsnummer, feilretting = null)
                         .shouldBeInstanceOf<Either.Left<PawNonEmptyList<Problem>>>()
                     resultat.value.first.opplysninger shouldContain DomeneOpplysning.IkkeBosatt
                     resultat.value.first.regel.id shouldBe IkkeBosattINorgeIHenholdTilFolkeregisterloven
@@ -218,7 +218,7 @@ class RequestValidatorTest : FreeSpec({
                         utflyttingFraNorge = emptyList(),
                         statsborgerskap = listOf(Statsborgerskap("ARG", Metadata(emptyList())))
                     )
-                    val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitsnummer)
+                    val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitsnummer, feilretting = null)
                         .shouldBeInstanceOf<Either.Left<PawNonEmptyList<Problem>>>()
                     resultat.value.first.opplysninger shouldContain DomeneOpplysning.IkkeBosatt
                     resultat.value.first.opplysninger shouldContain DomeneOpplysning.Dnummer
@@ -236,7 +236,7 @@ class RequestValidatorTest : FreeSpec({
                     coEvery {
                             personInfoService.hentPersonInfo(requestScope, identitsnummer.verdi)
                     } returns null
-                    val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitsnummer)
+                    val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitsnummer, feilretting = null)
                         .shouldBeInstanceOf<Either.Left<PawNonEmptyList<Problem>>>()
                     resultat.value.first.opplysninger shouldContain DomeneOpplysning.PersonIkkeFunnet
                     resultat.value.first.regel.id shouldBe IkkeFunnet
@@ -262,7 +262,7 @@ class RequestValidatorTest : FreeSpec({
                         utflyttingFraNorge = emptyList(),
                         statsborgerskap = listOf(Statsborgerskap("ARG", Metadata(emptyList())))
                     )
-                    val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitsnummer)
+                    val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitsnummer, feilretting = null)
                         .shouldBeInstanceOf<Either.Left<PawNonEmptyList<Problem>>>()
                     resultat.value.first.opplysninger shouldContain DomeneOpplysning.UkjentFoedselsdato
                 }
@@ -294,7 +294,7 @@ class RequestValidatorTest : FreeSpec({
                         utflyttingFraNorge = emptyList(),
                         statsborgerskap = listOf(Statsborgerskap("ARG", Metadata(emptyList())))
                     )
-                    val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitsnummer)
+                    val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitsnummer, feilretting = null)
                         .shouldBeInstanceOf<Either.Left<PawNonEmptyList<Problem>>>()
                     resultat.value.first.opplysninger shouldContain DomeneOpplysning.ErDoed
                 }
@@ -332,7 +332,7 @@ class RequestValidatorTest : FreeSpec({
                         utflyttingFraNorge = emptyList(),
                         statsborgerskap = listOf(Statsborgerskap("ARG", Metadata(emptyList())))
                     )
-                    val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitsnummer)
+                    val resultat = requestValidator.validerStartAvPeriodeOenske(requestScope, identitsnummer, feilretting = null)
                         .shouldBeInstanceOf<Either.Left<PawNonEmptyList<Problem>>>()
                     resultat.value.first.opplysninger shouldContain DomeneOpplysning.ErSavnet
                 }

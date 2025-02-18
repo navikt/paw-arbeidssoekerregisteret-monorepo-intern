@@ -43,7 +43,7 @@ class RequestValidator(
         requestScope: RequestScope,
         identitetsnummer: Identitetsnummer,
         erForhaandsGodkjentAvVeileder: Boolean = false,
-        feilretting: Feilretting? = null
+        feilretting: Feilretting?
     ): Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning> {
         val valideringsFakta = requestScope.sluttbrukerTilgangFakta(identitetsnummer) +
                 sjekkOmNavAnsattHarTilgang(requestScope, identitetsnummer) +
@@ -61,9 +61,15 @@ class RequestValidator(
     suspend fun validerStartAvPeriodeOenske(
         requestScope: RequestScope,
         identitetsnummer: Identitetsnummer,
-        erForhaandsGodkjentAvVeileder: Boolean = false
+        erForhaandsGodkjentAvVeileder: Boolean = false,
+        feilretting: Feilretting?
     ): Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning> =
-        validerRequest(requestScope, identitetsnummer, erForhaandsGodkjentAvVeileder)
+        validerRequest(
+            requestScope = requestScope,
+            identitetsnummer = identitetsnummer,
+            erForhaandsGodkjentAvVeileder = erForhaandsGodkjentAvVeileder,
+            feilretting = feilretting
+        )
             .flatMap { valideringsFakta ->
                 val person = personInfoService.hentPersonInfo(requestScope, identitetsnummer.verdi)
                 val opplysning = person?.let { genererPersonFakta(it) } ?: setOf(DomeneOpplysning.PersonIkkeFunnet)

@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.application
 
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV2ArbeidssokerPeriodePutRequest.PeriodeTilstand
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feilretting.FeilType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.TidspunktFraKilde
@@ -18,7 +19,10 @@ data class FeilTidspunkt(
     val tidspunkt: Instant
 ) : GyldigFeilretting
 
-data class UgyldigFeilretting(val grunn: String) : Feilretting
+data class UgyldigFeilretting(
+    val grunn: String,
+    val kilde: ApiFeilretting
+) : Feilretting
 
 val Feilretting?.tidspunkt: Instant?
     get() = when (this) {
@@ -35,6 +39,7 @@ val Feilretting?.aarsak
 
 val Feilretting?.tidspunktFraKilde
     get() = when (this) {
+        null -> null
         is FeilTidspunkt -> TidspunktFraKilde(
             tidspunkt = tidspunkt,
             avviksType = AvviksType.TIDSPUNKT_KORRIGERT
@@ -45,25 +50,31 @@ val Feilretting?.tidspunktFraKilde
             avviksType = AvviksType.SLETTET
         )
 
-        else -> null
+        is UgyldigFeilretting -> TidspunktFraKilde(
+            tidspunkt = kilde.tidspunkt ?: Instant.now(),
+            avviksType = when(kilde.feilType) {
+                FeilType.FeilTidspunkt -> AvviksType.TIDSPUNKT_KORRIGERT
+                FeilType.Feilregistrering -> AvviksType.SLETTET
+            }
+        )
     }
 
-fun feilretting(apiObj: ApiFeilretting?): Feilretting? {
+fun feilretting(status: PeriodeTilstand, apiObj: ApiFeilretting?): Feilretting? {
     if (apiObj == null) return null
     return when (apiObj.feilType) {
         FeilType.FeilTidspunkt -> {
             when {
-                apiObj.tidspunkt == null -> UgyldigFeilretting("FeilTidspunkt må ha tidspunkt")
-                apiObj.tidspunkt.isAfter(Instant.now()) -> UgyldigFeilretting("FeilTidspunkt kan ikke være i fremtiden")
+                apiObj.tidspunkt == null -> UgyldigFeilretting("FeilTidspunkt må ha tidspunkt", apiObj)
+                apiObj.tidspunkt.isAfter(Instant.now()) -> UgyldigFeilretting("FeilTidspunkt kan ikke være i fremtiden", apiObj)
                 else -> FeilTidspunkt(apiObj.melding, apiObj.tidspunkt)
             }
         }
         FeilType.Feilregistrering -> {
             when {
-                apiObj.tidspunkt != null ->UgyldigFeilretting("Feilregistrering kan ikke ha tidspunkt")
+                status == PeriodeTilstand.STARTET -> UgyldigFeilretting("Feilregistrering kan ikke ha status STARTET", apiObj)
+                apiObj.tidspunkt != null ->UgyldigFeilretting("Feilregistrering kan ikke ha tidspunkt", apiObj)
                 else -> Feilregistrering(apiObj.melding)
             }
         }
     }
 }
-
