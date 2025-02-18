@@ -25,6 +25,7 @@ import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HarOpplysninger
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.arbeidssokerregisteret.services.PersonInfoService
 import no.nav.paw.pdl.graphql.generated.enums.Oppholdstillatelse
@@ -84,7 +85,10 @@ fun verify(
     actualValue.identitetsnummer shouldBe expectedValue.identitetsnummer
     actualValue.metadata.utfoertAv.id shouldBe expectedValue.metadata.utfoertAv.id
     actualValue.metadata.utfoertAv.type shouldBe expectedValue.metadata.utfoertAv.type
-    actualValue.metadata.tidspunktFraKilde shouldBe expectedValue.metadata.tidspunktFraKilde
+    actualValue.metadata.tidspunktFraKilde?.avviksType shouldBe expectedValue.metadata.tidspunktFraKilde?.avviksType
+    if (actualValue.metadata.tidspunktFraKilde?.avviksType != AvviksType.SLETTET) {
+        actualValue.metadata.tidspunktFraKilde?.tidspunkt shouldBe expectedValue.metadata.tidspunktFraKilde?.tidspunkt
+    }
     if (expectedValue is HarOpplysninger) {
         actualValue.shouldBeInstanceOf<HarOpplysninger>()
         actualValue.opplysninger shouldContainExactlyInAnyOrder expectedValue.opplysninger
