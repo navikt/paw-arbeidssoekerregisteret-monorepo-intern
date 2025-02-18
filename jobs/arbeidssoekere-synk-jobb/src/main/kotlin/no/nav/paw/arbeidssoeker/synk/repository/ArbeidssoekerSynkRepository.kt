@@ -1,8 +1,8 @@
 package no.nav.paw.arbeidssoeker.synk.repository
 
-import no.nav.paw.arbeidssoeker.synk.model.ArbeidssoekereSynkRow
+import no.nav.paw.arbeidssoeker.synk.model.ArbeidssoekerDatabaseRow
 import no.nav.paw.arbeidssoeker.synk.model.ArbeidssoekereSynkTable
-import no.nav.paw.arbeidssoeker.synk.model.asArbeidssoekereSynkRow
+import no.nav.paw.arbeidssoeker.synk.model.asArbeidssoekereRow
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
@@ -12,27 +12,27 @@ import java.time.Instant
 
 class ArbeidssoekerSynkRepository {
 
-    fun find(): List<ArbeidssoekereSynkRow> {
+    fun find(): List<ArbeidssoekerDatabaseRow> {
         return transaction {
             ArbeidssoekereSynkTable.selectAll()
                 .orderBy(ArbeidssoekereSynkTable.inserted to SortOrder.ASC)
-                .map { it.asArbeidssoekereSynkRow() }
+                .map { it.asArbeidssoekereRow() }
         }
     }
 
-    fun find(identitetsnummer: String): List<ArbeidssoekereSynkRow> {
+    fun find(identitetsnummer: String): List<ArbeidssoekerDatabaseRow> {
         return transaction {
             ArbeidssoekereSynkTable.selectAll()
                 .where { ArbeidssoekereSynkTable.identitetsnummer eq identitetsnummer }
                 .orderBy(ArbeidssoekereSynkTable.inserted to SortOrder.ASC)
-                .map { it.asArbeidssoekereSynkRow() }
+                .map { it.asArbeidssoekereRow() }
         }
     }
 
     fun find(
         version: String,
         identitetsnummer: String
-    ): ArbeidssoekereSynkRow? {
+    ): ArbeidssoekerDatabaseRow? {
         return transaction {
             ArbeidssoekereSynkTable.selectAll()
                 .where {
@@ -40,12 +40,16 @@ class ArbeidssoekerSynkRepository {
                     ArbeidssoekereSynkTable.identitetsnummer eq identitetsnummer
                 }
                 .orderBy(ArbeidssoekereSynkTable.inserted to SortOrder.ASC)
-                .map { it.asArbeidssoekereSynkRow() }
+                .map { it.asArbeidssoekereRow() }
                 .firstOrNull()
         }
     }
 
-    fun insert(version: String, identitetsnummer: String, status: Int) {
+    fun insert(
+        version: String,
+        identitetsnummer: String,
+        status: Int
+    ) {
         transaction {
             ArbeidssoekereSynkTable.insert {
                 it[ArbeidssoekereSynkTable.version] = version
@@ -56,7 +60,11 @@ class ArbeidssoekerSynkRepository {
         }
     }
 
-    fun update(version: String, identitetsnummer: String, status: Int) {
+    fun update(
+        version: String,
+        identitetsnummer: String,
+        status: Int
+    ) {
         transaction {
             ArbeidssoekereSynkTable.update({
                 ArbeidssoekereSynkTable.version eq version

@@ -32,8 +32,8 @@ fun main() {
         Database.connect(dataSource)
         val azureAdM2MTokenClient = createAzureAdM2MTokenClient(jobConfig.runtimeEnvironment, azureAdM2MConfig)
         val arbeidssoekerSynkRepository = ArbeidssoekerSynkRepository()
-        val inngangHttpConsumer = InngangHttpConsumer(jobConfig.apiInngangBaseUrl) {
-            azureAdM2MTokenClient.createMachineToMachineToken(jobConfig.apiInngangScope)
+        val inngangHttpConsumer = InngangHttpConsumer(jobConfig.apiInngang.baseUrl) {
+            azureAdM2MTokenClient.createMachineToMachineToken(jobConfig.apiInngang.scope)
         }
         val arbeidssoekerSynkService =
             ArbeidssoekerSynkService(jobConfig, arbeidssoekerSynkRepository, inngangHttpConsumer)

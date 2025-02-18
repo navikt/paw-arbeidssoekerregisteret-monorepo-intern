@@ -4,12 +4,12 @@ import java.time.Instant
 
 data class OpprettPeriodeRequest(
     val identitetsnummer: String,
-    val periodeTilstand: PeriodeTilstand,
+    val periodeTilstand: OpprettPeriodeTilstand,
     val registreringForhaandsGodkjentAvAnsatt: Boolean? = null,
     val feilretting: Feilretting? = null
 )
 
-enum class PeriodeTilstand(val value: String) {
+enum class OpprettPeriodeTilstand(val value: String) {
     STARTET("STARTET"),
     STOPPET("STOPPET");
 }

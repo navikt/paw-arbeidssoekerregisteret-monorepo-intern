@@ -6,28 +6,41 @@ import org.jetbrains.exposed.sql.ResultRow
 import java.time.Duration
 import java.time.Instant
 
-fun Arbeidssoeker.asVersioned(
+fun ArbeidssoekerFileRow.asArbeidssoeker(
     version: String,
+    periodeTilstand: PeriodeTilstand = PeriodeTilstand.STARTET,
     forhaandsgodkjentAvAnsatt: Boolean = false
-): VersjonertArbeidssoeker = VersjonertArbeidssoeker(
+): Arbeidssoeker = Arbeidssoeker(
     version = version,
     identitetsnummer = identitetsnummer,
-    originalStartTidspunkt = originalStartTidspunkt,
+    periodeTilstand = periodeTilstand,
+    tidspunktFraKilde = tidspunktFraKilde,
     forhaandsgodkjentAvAnsatt = forhaandsgodkjentAvAnsatt
 )
 
-fun VersjonertArbeidssoeker.asOpprettPeriodeRequest(): OpprettPeriodeRequest = OpprettPeriodeRequest(
-    identitetsnummer = this.identitetsnummer,
-    periodeTilstand = PeriodeTilstand.STARTET,
-    registreringForhaandsGodkjentAvAnsatt = this.forhaandsgodkjentAvAnsatt,
-    feilretting = Feilretting(
-        feilType = FeilType.FeilTidspunkt,
-        melding = "Arbeidssøker migrert fra Arena",
-        tidspunkt = this.originalStartTidspunkt
-    )
+fun Arbeidssoeker.asOpprettPeriodeRequest(): OpprettPeriodeRequest = OpprettPeriodeRequest(
+    identitetsnummer = identitetsnummer,
+    periodeTilstand = asPeriodeTilstand(),
+    registreringForhaandsGodkjentAvAnsatt = forhaandsgodkjentAvAnsatt,
+    feilretting = asFeilretting()
 )
 
-fun ResultRow.asArbeidssoekereSynkRow(): ArbeidssoekereSynkRow = ArbeidssoekereSynkRow(
+fun Arbeidssoeker.asPeriodeTilstand(): OpprettPeriodeTilstand =
+    when (periodeTilstand) {
+        PeriodeTilstand.STARTET -> OpprettPeriodeTilstand.STARTET
+        PeriodeTilstand.STOPPET -> OpprettPeriodeTilstand.STOPPET
+    }
+
+fun Arbeidssoeker.asFeilretting(): Feilretting? =
+    tidspunktFraKilde?.let {
+        Feilretting(
+            feilType = FeilType.FeilTidspunkt,
+            melding = "Arbeidssøker migrert fra Arena",
+            tidspunkt = it
+        )
+    }
+
+fun ResultRow.asArbeidssoekereRow(): ArbeidssoekerDatabaseRow = ArbeidssoekerDatabaseRow(
     version = this[ArbeidssoekereSynkTable.version],
     identitetsnummer = this[ArbeidssoekereSynkTable.identitetsnummer],
     status = this[ArbeidssoekereSynkTable.status],

@@ -2,14 +2,28 @@ package no.nav.paw.arbeidssoeker.synk.model
 
 import java.time.Instant
 
-data class Arbeidssoeker(
+data class ArbeidssoekerFileRow(
     val identitetsnummer: String,
-    val originalStartTidspunkt: Instant
+    val tidspunktFraKilde: Instant? = null
 )
 
-data class VersjonertArbeidssoeker(
+data class ArbeidssoekerDatabaseRow(
     val version: String,
     val identitetsnummer: String,
-    val originalStartTidspunkt: Instant,
-    val forhaandsgodkjentAvAnsatt: Boolean = false,
+    val status: Int,
+    val inserted: Instant,
+    val updated: Instant? = null
 )
+
+data class Arbeidssoeker(
+    val version: String,
+    val identitetsnummer: String,
+    val periodeTilstand: PeriodeTilstand,
+    val tidspunktFraKilde: Instant?,
+    val forhaandsgodkjentAvAnsatt: Boolean,
+)
+
+enum class PeriodeTilstand {
+    STARTET,
+    STOPPET;
+}

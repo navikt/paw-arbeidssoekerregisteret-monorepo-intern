@@ -7,7 +7,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper
 import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import no.nav.paw.arbeidssoeker.synk.model.Arbeidssoeker
+import no.nav.paw.arbeidssoeker.synk.model.ArbeidssoekerFileRow
 import java.net.URI
 import java.nio.file.Path
 
@@ -36,8 +36,8 @@ sealed class CsvReader<T>(val objectReader: ObjectReader) {
     }
 }
 
-data object ArbeidssoekerCsvReader : CsvReader<Arbeidssoeker>(
+data object ArbeidssoekerCsvReader : CsvReader<ArbeidssoekerFileRow>(
     objectReader = csvMapper
-        .readerFor(Arbeidssoeker::class.java)
+        .readerFor(ArbeidssoekerFileRow::class.java)
         .with(csvSchema)
 )

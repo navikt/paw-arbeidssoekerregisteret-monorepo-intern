@@ -3,9 +3,9 @@ package no.nav.paw.arbeidssoeker.synk.service
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssoeker.synk.config.JobConfig
 import no.nav.paw.arbeidssoeker.synk.consumer.InngangHttpConsumer
-import no.nav.paw.arbeidssoeker.synk.model.VersjonertArbeidssoeker
+import no.nav.paw.arbeidssoeker.synk.model.Arbeidssoeker
+import no.nav.paw.arbeidssoeker.synk.model.asArbeidssoeker
 import no.nav.paw.arbeidssoeker.synk.model.asOpprettPeriodeRequest
-import no.nav.paw.arbeidssoeker.synk.model.asVersioned
 import no.nav.paw.arbeidssoeker.synk.model.isNotSuccess
 import no.nav.paw.arbeidssoeker.synk.model.millisSince
 import no.nav.paw.arbeidssoeker.synk.repository.ArbeidssoekerSynkRepository
@@ -27,30 +27,40 @@ class ArbeidssoekerSynkService(
 
     @WithSpan(value = "synkArbeidssoekere")
     fun synkArbeidssoekere(path: Path) {
-        var totalCount = 0
-        val timestamp = Instant.now()
-        logger.info("Leser CSV-fil {} fra mappe {}", path.name, path.parent)
-        val values = ArbeidssoekerCsvReader.readValues(path)
-        if (values.hasNextValue()) {
-            logger.info("Starter prosessering av CSV-data")
-            while (values.hasNextValue()) {
-                totalCount++
-                if (totalCount % 100 == 0) {
-                    logger.info("Prosessert {} linjer CSV-data på {} ms", totalCount, timestamp.millisSince())
+        with(jobConfig) {
+            var totalCount = 0
+            val timestamp = Instant.now()
+            logger.info("Leser CSV-fil {} fra mappe {}", path.name, path.parent)
+            val values = ArbeidssoekerCsvReader.readValues(path)
+            if (values.hasNextValue()) {
+                logger.info("Starter prosessering av CSV-data")
+                while (values.hasNextValue()) {
+                    totalCount++
+                    if (totalCount % 100 == 0) {
+                        logger.info("Prosessert {} linjer CSV-data på {} ms", totalCount, timestamp.millisSince())
+                    }
+                    val arbeidssoeker = values.nextValue()
+                        .asArbeidssoeker(
+                            version = path.name,
+                            periodeTilstand = defaultVerdier.periodeTilstand,
+                            forhaandsgodkjentAvAnsatt = defaultVerdier.forhaandsgodkjentAvAnsatt
+                        )
+                    prosesserArbeidssoeker(arbeidssoeker)
                 }
-                val arbeidssoeker = values.nextValue()
-                    .asVersioned(path.name, jobConfig.markerForhaandsgodkjentAvAnsatt)
-                prosesserArbeidssoeker(arbeidssoeker)
+                logger.info(
+                    "Fullførte prosessering av {} linjer CSV-data på {} ms",
+                    totalCount,
+                    timestamp.millisSince()
+                )
+            } else {
+                logger.warn("CSV-fil {} fra mappe {} er tom", path.name, path.parent)
             }
-            logger.info("Fullførte prosessering av {} linjer CSV-data på {} ms", totalCount, timestamp.millisSince())
-        } else {
-            logger.warn("CSV-fil {} fra mappe {} er tom", path.name, path.parent)
         }
     }
 
     @WithSpan(value = "prosesserArbeidssoeker")
     @Suppress("LoggingSimilarMessage")
-    private fun prosesserArbeidssoeker(arbeidssoeker: VersjonertArbeidssoeker) {
+    private fun prosesserArbeidssoeker(arbeidssoeker: Arbeidssoeker) {
         val (version, identitetsnummer) = arbeidssoeker
         secureLogger.info("Prosesserer arbeidssøker {}", identitetsnummer)
 
