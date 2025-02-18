@@ -62,7 +62,7 @@ data object AnsattStopperEnFeilregistrertPeriode : StoppPeriodeTestCase {
                 ),
                 aarsak = "any",
                 tidspunktFraKilde = TidspunktFraKilde(
-                    tidspunkt = Instant.now(),//ikke validert siden den settes server-side,
+                    tidspunkt = anyTime,//settes server-side så den kan vi ikke validere her
                     avviksType = no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType.SLETTET
                 )
             ),

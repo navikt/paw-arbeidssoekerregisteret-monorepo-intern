@@ -1,7 +1,10 @@
 package no.nav.paw.arbeidssokerregisteret.testdata
 
 import com.nimbusds.jwt.SignedJWT
+import io.kotest.matchers.shouldBe
 import io.ktor.http.*
+import io.mockk.every
+import io.mockk.mockk
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV2ArbeidssokerPeriodePutRequest
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feilretting
@@ -11,6 +14,14 @@ import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import org.apache.kafka.clients.producer.ProducerRecord
+import java.time.Instant
+
+val anyTime: Instant = mockk()
+
+infix fun Instant?.mustBe(expected: Instant?) {
+    if (expected === anyTime) return
+    else this shouldBe expected
+}
 
 sealed interface TestCase  {
     fun producesRecord(kafkaKeysClient: KafkaKeysClient): ProducerRecord<Long, out Hendelse>?

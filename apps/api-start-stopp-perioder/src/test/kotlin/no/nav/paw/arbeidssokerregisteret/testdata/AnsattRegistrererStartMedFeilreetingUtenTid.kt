@@ -9,8 +9,7 @@ import no.nav.paw.arbeidssokerregisteret.bosatt
 import no.nav.paw.arbeidssokerregisteret.bostedsadresse
 import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
 import no.nav.paw.arbeidssokerregisteret.folkeregisterpersonstatus
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
-import no.nav.paw.arbeidssokerregisteret.intern.v1.AvvistStoppAvPeriode
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
@@ -29,8 +28,21 @@ import java.time.Duration.ofDays
 import java.time.Instant
 import java.util.*
 
-data object AnsattStopperEnFeilregistrertPeriodeMenHarMedTidspunkt : StoppPeriodeTestCase {
+data object AnsattRegistrererStartMedFeilreetingUtenTid : StartPeriodeTestCase {
     override val id = "12345678906"
+    override val forhaandsGodkjent: Boolean = false
+    override val person = Person(
+        foedselsdato = Foedselsdato("2000-03-04", 2000).list(),
+        foedested = Foedested("NOR", "Oslo", "Oslo").list(),
+        statsborgerskap = "NOR".statsborgerskap(),
+        opphold = emptyList(),
+        folkeregisterpersonstatus = bosatt.folkeregisterpersonstatus(),
+        bostedsadresse = bostedsadresse(
+            vegadresse = Vegadresse("1201")
+        ),
+        innflyttingTilNorge = emptyList(),
+        utflyttingFraNorge = emptyList()
+    )
     private val ansatt = NavAnsatt(UUID.randomUUID(), UUID.randomUUID().toString())
     override val configure: TestCaseBuilder.() -> Unit = {
         authToken = mockOAuth2Server.ansattToken(ansatt)
@@ -38,9 +50,9 @@ data object AnsattStopperEnFeilregistrertPeriodeMenHarMedTidspunkt : StoppPeriod
     }
 
     override val feilretting: Feilretting = Feilretting(
-        feilType = Feilretting.FeilType.Feilregistrering,
-        melding = "Tastet feil i systemet",
-        tidspunkt = Instant.now()
+        feilType = Feilretting.FeilType.FeilTidspunkt,
+        melding = "Fikk ikke registrert seg grunnet feil i Nav systemer",
+        tidspunkt = null
     )
 
     override val producesHttpResponse: HttpStatusCode = HttpStatusCode.BadRequest
@@ -51,7 +63,7 @@ data object AnsattStopperEnFeilregistrertPeriodeMenHarMedTidspunkt : StoppPeriod
     ) = ProducerRecord(
         "any",
         runBlocking { kafkaKeysClient.getIdAndKey(id).key },
-        AvvistStoppAvPeriode(
+        Avvist(
             hendelseId = UUID.randomUUID(),
             id = runBlocking { kafkaKeysClient.getIdAndKey(id).id },
             identitetsnummer = id,
@@ -60,12 +72,12 @@ data object AnsattStopperEnFeilregistrertPeriodeMenHarMedTidspunkt : StoppPeriod
                 kilde = "paw-arbeidssokerregisteret-api-start-stopp-perioder",
                 utfoertAv = Bruker(
                     id = ansatt.ident,
-                    type = BrukerType.VEILEDER,
+                    type = BrukerType.VEILEDER
                 ),
                 aarsak = "any",
                 tidspunktFraKilde = TidspunktFraKilde(
-                    tidspunkt = anyTime,//settes server-side så den kan vi ikke validere her
-                    avviksType = no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType.SLETTET
+                    tidspunkt = anyTime,
+                    avviksType = no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType.TIDSPUNKT_KORRIGERT
                 )
             ),
             opplysninger = setOf(
