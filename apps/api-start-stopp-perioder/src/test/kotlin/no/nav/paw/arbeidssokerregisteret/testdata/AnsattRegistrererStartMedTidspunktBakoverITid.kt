@@ -7,32 +7,27 @@ import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feilretting
 import no.nav.paw.arbeidssokerregisteret.ansattToken
 import no.nav.paw.arbeidssokerregisteret.bosatt
 import no.nav.paw.arbeidssokerregisteret.bostedsadresse
-import no.nav.paw.arbeidssokerregisteret.dNummer
 import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
 import no.nav.paw.arbeidssokerregisteret.folkeregisterpersonstatus
-import no.nav.paw.arbeidssokerregisteret.innflytting
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.TidspunktFraKilde
 import no.nav.paw.arbeidssokerregisteret.list
-import no.nav.paw.arbeidssokerregisteret.opphold
 import no.nav.paw.arbeidssokerregisteret.setHarTilgangTilBruker
 import no.nav.paw.arbeidssokerregisteret.statsborgerskap
-import no.nav.paw.arbeidssokerregisteret.utflytting
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.pdl.graphql.generated.hentperson.Foedested
 import no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 import no.nav.paw.pdl.graphql.generated.hentperson.Vegadresse
 import org.apache.kafka.clients.producer.ProducerRecord
-import java.time.Duration
 import java.time.Duration.ofDays
 import java.time.Instant
 import java.util.*
 
-data object AnsattRegistrererStartMedTidspunktBakoverITid : TestCase {
+data object AnsattRegistrererStartMedTidspunktBakoverITid : StartPeriodeTestCase {
     override val id = "12345678906"
     override val forhaandsGodkjent: Boolean = false
     override val person = Person(
