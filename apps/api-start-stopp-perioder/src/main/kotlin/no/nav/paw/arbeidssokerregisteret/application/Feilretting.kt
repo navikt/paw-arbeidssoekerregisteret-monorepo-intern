@@ -34,11 +34,11 @@ val Feilretting?.aarsak get() = when (this) {
 val Feilretting?.tidspunktFraKilde get() = when (this) {
     is FeilTidspunkt -> TidspunktFraKilde(
         tidspunkt = tidspunkt,
-        avviksType = AvviksType.RETTING
+        avviksType = AvviksType.TIDSPUNKT_KORRIGERT
     )
     is Feilregistrering -> TidspunktFraKilde(
         tidspunkt = Instant.now(),
-        avviksType = AvviksType.RETTING
+        avviksType = AvviksType.SLETTET
     )
     else -> null
 }
