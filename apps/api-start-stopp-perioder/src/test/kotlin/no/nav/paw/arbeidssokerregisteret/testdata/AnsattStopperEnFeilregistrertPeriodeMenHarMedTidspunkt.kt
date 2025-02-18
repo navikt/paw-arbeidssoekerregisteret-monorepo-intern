@@ -10,6 +10,7 @@ import no.nav.paw.arbeidssokerregisteret.bostedsadresse
 import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
 import no.nav.paw.arbeidssokerregisteret.folkeregisterpersonstatus
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.AvvistStoppAvPeriode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
@@ -50,7 +51,7 @@ data object AnsattStopperEnFeilregistrertPeriodeMenHarMedTidspunkt : StoppPeriod
     ) = ProducerRecord(
         "any",
         runBlocking { kafkaKeysClient.getIdAndKey(id).key },
-        Avsluttet(
+        AvvistStoppAvPeriode(
             hendelseId = UUID.randomUUID(),
             id = runBlocking { kafkaKeysClient.getIdAndKey(id).id },
             identitetsnummer = id,
@@ -59,7 +60,7 @@ data object AnsattStopperEnFeilregistrertPeriodeMenHarMedTidspunkt : StoppPeriod
                 kilde = "paw-arbeidssokerregisteret-api-start-stopp-perioder",
                 utfoertAv = Bruker(
                     id = ansatt.ident,
-                    type = BrukerType.VEILEDER
+                    type = BrukerType.VEILEDER,
                 ),
                 aarsak = "any",
                 tidspunktFraKilde = TidspunktFraKilde(

@@ -25,7 +25,7 @@ class OpplysningerRequestHandler(
     suspend fun opprettBrukeropplysninger(requestScope: RequestScope, opplysningerRequest: OpplysningerRequest): Either<Feil, Unit> =
         either {
             val identitetsnummer = opplysningerRequest.getId()
-            requestValidator.validerTilgang(requestScope, identitetsnummer)
+            requestValidator.validerRequest(requestScope, identitetsnummer)
                 .mapLeft { problemer ->
                     Feil(
                         melding = problemer.first.regel.id.beskrivelse,

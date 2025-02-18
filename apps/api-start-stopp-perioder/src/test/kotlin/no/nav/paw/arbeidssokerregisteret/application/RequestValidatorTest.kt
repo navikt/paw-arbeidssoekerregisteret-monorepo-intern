@@ -51,13 +51,13 @@ class RequestValidatorTest : FreeSpec({
                 } returns true
                 val requestValidator = RequestValidator(autorisasjonService, personInfoService, InngangsReglerV2, registry)
                 "Når forhandsgodkjent av veileder er false" {
-                    val tilgangskontrollresultat = requestValidator.validerTilgang(requestScope = requestScope, identitetsnummer = identitsnummer)
+                    val tilgangskontrollresultat = requestValidator.validerRequest(requestScope = requestScope, identitetsnummer = identitsnummer)
                         .shouldBeInstanceOf<Either.Right<GrunnlagForGodkjenning>>()
                     tilgangskontrollresultat.value.opplysning shouldContain AnsattTilgang
                     tilgangskontrollresultat.value.opplysning shouldNotContain DomeneOpplysning.ErForhaandsgodkjent
                 }
                 "Når forhandsgodkjent av ansatt er true" {
-                    val tilgangskontrollresultat = requestValidator.validerTilgang(requestScope, identitsnummer, true)
+                    val tilgangskontrollresultat = requestValidator.validerRequest(requestScope, identitsnummer, true)
                         .shouldBeInstanceOf<Either.Right<GrunnlagForGodkjenning>>()
                     tilgangskontrollresultat.value.opplysning shouldContain AnsattTilgang
                     tilgangskontrollresultat.value.opplysning shouldContain DomeneOpplysning.ErForhaandsgodkjent
@@ -70,7 +70,7 @@ class RequestValidatorTest : FreeSpec({
                 } returns false
                 val requestValidator = RequestValidator(autorisasjonService, personInfoService, InngangsReglerV2, registry)
 
-                val tilgangskontrollresultat = requestValidator.validerTilgang(requestScope, identitsnummer)
+                val tilgangskontrollresultat = requestValidator.validerRequest(requestScope, identitsnummer)
                     .shouldBeInstanceOf<Either.Left<PawNonEmptyList<Problem>>>()
                 tilgangskontrollresultat.value.first.opplysninger shouldContain AnsattIkkeTilgang
             }
@@ -87,13 +87,13 @@ class RequestValidatorTest : FreeSpec({
             val autorisasjonService: AutorisasjonService = mockk()
             val requestValidator = RequestValidator(autorisasjonService, personInfoService, InngangsReglerV2, registry)
             "standardbruker" {
-                val tilgangskontrollresultat = requestValidator.validerTilgang(requestScope, identitsnummer)
+                val tilgangskontrollresultat = requestValidator.validerRequest(requestScope, identitsnummer)
                     .shouldBeInstanceOf<Either.Right<GrunnlagForGodkjenning>>()
                 tilgangskontrollresultat.value.opplysning shouldContain IkkeAnsatt
                 tilgangskontrollresultat.value.opplysning shouldNotContain DomeneOpplysning.ErForhaandsgodkjent
             }
             "forhåndsgodkjentflagg" {
-                val tilgangskontrollresultat = requestValidator.validerTilgang(requestScope, identitsnummer, true)
+                val tilgangskontrollresultat = requestValidator.validerRequest(requestScope, identitsnummer, true)
                     .shouldBeInstanceOf<Either.Left<PawNonEmptyList<Problem>>>()
                 tilgangskontrollresultat.value.first.opplysninger shouldContain IkkeAnsatt
                 tilgangskontrollresultat.value.first.opplysninger shouldContain DomeneOpplysning.ErForhaandsgodkjent

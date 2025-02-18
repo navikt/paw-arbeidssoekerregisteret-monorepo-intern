@@ -15,7 +15,7 @@ import no.nav.paw.collections.PawNonEmptyList
 class TilgansReglerTest : FreeSpec({
     "eval av tilgang skal gi" - {
         "ugydlig request ved IKKE_ANSATT kombinert med GODKJENT_AV_ANSATT" {
-            val resultat = TilgangsRegler.evaluer(
+            val resultat = ValideringsRegler.evaluer(
                 setOf(
                     IkkeAnsatt,
                     DomeneOpplysning.ErForhaandsgodkjent
@@ -25,7 +25,7 @@ class TilgansReglerTest : FreeSpec({
             resultat.value.first.opplysninger shouldContainAll listOf(IkkeAnsatt, DomeneOpplysning.ErForhaandsgodkjent)
         }
         "lovlig kombinasjon av ANSATT og FORHANDSGODKJENT_AV_ANSATT" {
-            val resultat = TilgangsRegler.evaluer(
+            val resultat = ValideringsRegler.evaluer(
                 setOf(
                     AnsattTilgang,
                     DomeneOpplysning.ErForhaandsgodkjent

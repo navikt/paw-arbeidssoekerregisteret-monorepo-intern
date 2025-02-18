@@ -9,7 +9,7 @@ import no.nav.paw.arbeidssokerregisteret.application.invoke
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
 import no.nav.paw.arbeidssokerregisteret.application.skalAvises
 
-object TilgangsRegler : Regler {
+object ValideringsRegler : Regler {
     override val regler: List<Regel> = listOf(
         AnsattHarTilgangTilBruker(
             AuthOpplysning.AnsattTilgang,
@@ -58,44 +58,44 @@ object TilgangsRegler : Regler {
 
 }
 
-sealed interface AuthRegelId : RegelId
+sealed interface ValideringsRegelId : RegelId
 
-data object IkkeTilgang : AuthRegelId {
+data object IkkeTilgang : ValideringsRegelId {
     override val beskrivelse: String = "Ikke tilgang"
 }
 
-data object AnsattIkkeTilgangTilBruker : AuthRegelId {
+data object AnsattIkkeTilgangTilBruker : ValideringsRegelId {
     override val beskrivelse: String = "Ansatt har ikke tilgang til bruker"
 }
 
-data object EndreForAnnenBruker : AuthRegelId {
+data object EndreForAnnenBruker : ValideringsRegelId {
     override val beskrivelse: String = "Prøver å endre for en annen bruker"
 }
 
-data object EndreEgenBruker : AuthRegelId {
+data object EndreEgenBruker : ValideringsRegelId {
     override val beskrivelse: String = "Bruker prøver å endre for seg selv"
 }
 
-data object IkkeAnsattOgForhaandsgodkjentAvAnsatt : AuthRegelId {
+data object IkkeAnsattOgForhaandsgodkjentAvAnsatt : ValideringsRegelId {
     override val beskrivelse: String = "Ikke ansatt har satt forhaandsgodkjenningAvVeileder"
 }
 
-data object IkkeAnsattOgFeilretting : AuthRegelId {
+data object IkkeAnsattOgFeilretting : ValideringsRegelId {
     override val beskrivelse: String = "Ikke ansatt har satt feilretting"
 }
 
-data object UgyldigFeilretting : AuthRegelId {
+data object UgyldigFeilretting : ValideringsRegelId {
     override val beskrivelse: String = "Feilrettingen er ugyldig"
 }
 
-data object AnsattHarTilgangTilBruker : AuthRegelId {
+data object AnsattHarTilgangTilBruker : ValideringsRegelId {
     override val beskrivelse: String = "Ansatt har tilgang til bruker"
 }
 
-data object SystemHarIkkeTilgangTilBruker : AuthRegelId {
+data object SystemHarIkkeTilgangTilBruker : ValideringsRegelId {
     override val beskrivelse: String = "System har ikke tilgang til bruker"
 }
 
-data object SystemHarTilgangTilBruker : AuthRegelId {
+data object SystemHarTilgangTilBruker : ValideringsRegelId {
     override val beskrivelse: String = "System har tilgang til bruker"
 }

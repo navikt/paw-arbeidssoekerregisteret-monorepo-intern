@@ -28,7 +28,7 @@ import no.nav.paw.arbeidssokerregisteret.application.authfaktka.AuthOpplysning
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.*
 import no.nav.paw.arbeidssokerregisteret.application.regler.AnsattHarTilgangTilBruker
 import no.nav.paw.arbeidssokerregisteret.application.regler.AnsattIkkeTilgangTilBruker
-import no.nav.paw.arbeidssokerregisteret.application.regler.AuthRegelId
+import no.nav.paw.arbeidssokerregisteret.application.regler.ValideringsRegelId
 import no.nav.paw.arbeidssokerregisteret.application.regler.EndreEgenBruker
 import no.nav.paw.arbeidssokerregisteret.application.regler.EndreForAnnenBruker
 import no.nav.paw.arbeidssokerregisteret.application.regler.IkkeAnsattOgFeilretting
@@ -52,7 +52,7 @@ suspend fun RoutingContext.respondWithV2(resultat: Either<PawNonEmptyList<Proble
 suspend fun RoutingContext.respondWithErrorV2(problemer: PawNonEmptyList<Problem>) {
     val (httpCode, feilkode) = problemer
         .toList()
-        .firstOrNull { it.regel.id is AuthRegelId }
+        .firstOrNull { it.regel.id is ValideringsRegelId }
         ?.let { it.httpCode() to FeilV2.FeilKode.IKKE_TILGANG }
         ?: problemer.toList().firstOrNull { it.regel.id is DomeneRegelId }
             ?.let { it.httpCode() to FeilV2.FeilKode.AVVIST }
@@ -132,7 +132,7 @@ fun opplysningTilApiOpplysning(opplysning: Opplysning): ApiOpplysning =
     }
 
 fun RegelId.apiRegelId(): ApiRegelId = when (this) {
-    is AuthRegelId -> ApiRegelId.IKKE_TILGANG
+    is ValideringsRegelId -> ApiRegelId.IKKE_TILGANG
     is DomeneRegelId -> when (this) {
         ForhaandsgodkjentAvAnsatt -> ApiRegelId.UKJENT_REGEL
         Over18AarOgBosattEtterFregLoven -> ApiRegelId.UKJENT_REGEL
@@ -154,12 +154,12 @@ fun RegelId.apiRegelId(): ApiRegelId = when (this) {
 fun RegelId.apiRegel(): ApiRegel = ApiRegel(id = apiRegelId(), beskrivelse = beskrivelse)
 
 fun Problem.httpCode(): HttpStatusCode = when (val regelId = this.regel.id) {
-    is AuthRegelId -> regelId.httpCode()
+    is ValideringsRegelId -> regelId.httpCode()
     is DomeneRegelId -> regelId.httpCode()
     else -> HttpStatusCode.InternalServerError
 }
 
-fun AuthRegelId.httpCode(): HttpStatusCode = when (this) {
+fun ValideringsRegelId.httpCode(): HttpStatusCode = when (this) {
     AnsattHarTilgangTilBruker -> HttpStatusCode.OK
     EndreEgenBruker -> HttpStatusCode.OK
     AnsattIkkeTilgangTilBruker -> HttpStatusCode.Forbidden

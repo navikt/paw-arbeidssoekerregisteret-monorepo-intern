@@ -20,7 +20,7 @@ import no.nav.paw.arbeidssokerregisteret.application.opplysninger.norskStatsborg
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.oppholdstillatelseOpplysning
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.plus
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.utflyttingOpplysning
-import no.nav.paw.arbeidssokerregisteret.application.regler.TilgangsRegler
+import no.nav.paw.arbeidssokerregisteret.application.regler.ValideringsRegler
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.arbeidssokerregisteret.services.PersonInfoService
@@ -39,21 +39,22 @@ class RequestValidator(
     private val sjekkOmSystemHarTilgang = ::systemTilgangFakta.partially1(autorisasjonService)
 
     @WithSpan
-    suspend fun validerTilgang(
+    suspend fun validerRequest(
         requestScope: RequestScope,
         identitetsnummer: Identitetsnummer,
         erForhaandsGodkjentAvVeileder: Boolean = false,
         feilretting: Feilretting? = null
     ): Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning> {
-        val autentiseringsFakta = requestScope.sluttbrukerTilgangFakta(identitetsnummer) +
+        val valideringsFakta = requestScope.sluttbrukerTilgangFakta(identitetsnummer) +
                 sjekkOmNavAnsattHarTilgang(requestScope, identitetsnummer) +
                 sjekkOmSystemHarTilgang(requestScope) +
                 listOfNotNull(
                     if (erForhaandsGodkjentAvVeileder) DomeneOpplysning.ErForhaandsgodkjent else null,
-                    feilretting?.let { DomeneOpplysning.ErFeilretting }
+                    feilretting?.let { DomeneOpplysning.ErFeilretting },
+                    (feilretting as? UgyldigFeilretting)?.grunn?.let { DomeneOpplysning.UgyldigFeilretting }
                 )
 
-        return TilgangsRegler.evaluer(autentiseringsFakta)
+        return ValideringsRegler.evaluer(valideringsFakta)
     }
 
     @WithSpan
@@ -62,8 +63,8 @@ class RequestValidator(
         identitetsnummer: Identitetsnummer,
         erForhaandsGodkjentAvVeileder: Boolean = false
     ): Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning> =
-        validerTilgang(requestScope, identitetsnummer, erForhaandsGodkjentAvVeileder)
-            .flatMap { grunnlagForGodkjentAuth ->
+        validerRequest(requestScope, identitetsnummer, erForhaandsGodkjentAvVeileder)
+            .flatMap { valideringsFakta ->
                 val person = personInfoService.hentPersonInfo(requestScope, identitetsnummer.verdi)
                 val opplysning = person?.let { genererPersonFakta(it) } ?: setOf(DomeneOpplysning.PersonIkkeFunnet)
                 if (person != null) {
@@ -81,7 +82,7 @@ class RequestValidator(
                     }
                 }
                 regler.evaluer(
-                    opplysning + grunnlagForGodkjentAuth.opplysning
+                    opplysning + valideringsFakta.opplysning
                 )
             }
 

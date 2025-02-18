@@ -1,7 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.application
 
 import arrow.core.Either
-import arrow.core.NonEmptyList
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -46,7 +45,7 @@ class StartStoppRequestHandler(
         feilretting: Feilretting?
     ): Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning> {
         val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
-        val tilgangskontrollResultat = requestValidator.validerTilgang(
+        val tilgangskontrollResultat = requestValidator.validerRequest(
             requestScope = requestScope,
             identitetsnummer = identitetsnummer,
             feilretting = feilretting
