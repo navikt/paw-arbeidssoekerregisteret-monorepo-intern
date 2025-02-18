@@ -76,7 +76,8 @@ class ApiV2TestCaseRunner : FreeSpec({
                                         client.startPeriodeV2(
                                             id,
                                             testConfiguration.authToken,
-                                            testCase.forhaandsGodkjent
+                                            testCase.forhaandsGodkjent,
+                                            feilretting = testCase.feilretting
                                         )
                                     statusV2.status shouldBe testCase.producesHttpResponse
                                     testCase.producesError?.also { expectedErrorResponse ->

@@ -7,14 +7,21 @@ import io.kotest.assertions.fail
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.serialization.jackson.*
+import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
+import io.ktor.client.request.bearerAuth
+import io.ktor.client.request.headers
+import io.ktor.client.request.put
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.append
+import io.ktor.serialization.jackson.jackson
 import io.mockk.coEvery
-import io.mockk.every
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV2ArbeidssokerPeriodePutRequest
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feilretting
+import no.nav.paw.arbeidssokerregisteret.application.feilretting
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HarOpplysninger
@@ -22,7 +29,18 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.arbeidssokerregisteret.services.PersonInfoService
 import no.nav.paw.pdl.graphql.generated.enums.Oppholdstillatelse
-import no.nav.paw.pdl.graphql.generated.hentperson.*
+import no.nav.paw.pdl.graphql.generated.hentperson.Bostedsadresse
+import no.nav.paw.pdl.graphql.generated.hentperson.Folkeregistermetadata
+import no.nav.paw.pdl.graphql.generated.hentperson.Folkeregisterpersonstatus
+import no.nav.paw.pdl.graphql.generated.hentperson.InnflyttingTilNorge
+import no.nav.paw.pdl.graphql.generated.hentperson.Matrikkeladresse
+import no.nav.paw.pdl.graphql.generated.hentperson.Metadata
+import no.nav.paw.pdl.graphql.generated.hentperson.Opphold
+import no.nav.paw.pdl.graphql.generated.hentperson.Person
+import no.nav.paw.pdl.graphql.generated.hentperson.Statsborgerskap
+import no.nav.paw.pdl.graphql.generated.hentperson.UtenlandskAdresse
+import no.nav.paw.pdl.graphql.generated.hentperson.UtflyttingFraNorge
+import no.nav.paw.pdl.graphql.generated.hentperson.Vegadresse
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import org.apache.kafka.clients.producer.ProducerRecord
 
@@ -67,6 +85,7 @@ fun verify(
     actualValue.identitetsnummer shouldBe expectedValue.identitetsnummer
     actualValue.metadata.utfoertAv.id shouldBe expectedValue.metadata.utfoertAv.id
     actualValue.metadata.utfoertAv.type shouldBe expectedValue.metadata.utfoertAv.type
+    actualValue.metadata.tidspunktFraKilde shouldBe expectedValue.metadata.tidspunktFraKilde
     if (expectedValue is HarOpplysninger) {
         actualValue.shouldBeInstanceOf<HarOpplysninger>()
         actualValue.opplysninger shouldContainExactlyInAnyOrder expectedValue.opplysninger
@@ -150,7 +169,12 @@ fun PersonInfoService.setPersonInfo(identitetsnummer: String, person: Person?) {
     } returns person
 }
 
-suspend fun HttpClient.startPeriodeV2(identitetsnummer: String, token: SignedJWT?, godkjent: Boolean = false): HttpResponse =
+suspend fun HttpClient.startPeriodeV2(
+    identitetsnummer: String,
+    token: SignedJWT?,
+    godkjent: Boolean = false,
+    feilretting: Feilretting? = null
+): HttpResponse =
     put("/api/v2/arbeidssoker/periode") {
         token?.also {
             bearerAuth(token.serialize())
@@ -162,7 +186,8 @@ suspend fun HttpClient.startPeriodeV2(identitetsnummer: String, token: SignedJWT
             ApiV2ArbeidssokerPeriodePutRequest(
                 identitetsnummer = identitetsnummer,
                 periodeTilstand = ApiV2ArbeidssokerPeriodePutRequest.PeriodeTilstand.STARTET,
-                registreringForhaandsGodkjentAvAnsatt = godkjent
+                registreringForhaandsGodkjentAvAnsatt = godkjent,
+                feilretting = feilretting
             )
         )
     }

@@ -3,6 +3,7 @@ package no.nav.paw.arbeidssokerregisteret.testdata
 import com.nimbusds.jwt.SignedJWT
 import io.ktor.http.*
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
+import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feilretting
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
@@ -17,6 +18,7 @@ sealed interface TestCase {
     val configure: TestCaseBuilder.() -> Unit
     val producesHttpResponse: HttpStatusCode
     val producesError: FeilV2?
+    val feilretting: Feilretting? get() = null
     fun producesRecord(kafkaKeysClient: KafkaKeysClient): ProducerRecord<Long, out Hendelse>?
 }
 
