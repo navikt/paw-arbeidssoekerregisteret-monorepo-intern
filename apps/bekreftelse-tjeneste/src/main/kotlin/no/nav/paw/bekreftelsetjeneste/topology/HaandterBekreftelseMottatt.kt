@@ -1,6 +1,8 @@
 package no.nav.paw.bekreftelsetjeneste.topology
 
+import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
 import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
@@ -39,7 +41,18 @@ fun haandterBekreftelseMottatt(
                         gjelderFra = melding.svar.gjelderFra,
                         gjelderTil = melding.svar.gjelderTil
                     )
-                ) to emptyList()
+                ) to listOfNotNull(
+                    melding.svar.vilFortsetteSomArbeidssoeker
+                        .takeIf { !it }
+                        ?.let {
+                            BaOmAaAvsluttePeriode(
+                                hendelseId = melding.id,
+                                periodeId = melding.periodeId,
+                                arbeidssoekerId = gjeldendeTilstand.periode.arbeidsoekerId,
+                                hendelseTidspunkt = melding.svar.sendtInnAv.tidspunkt
+                            )
+                        }
+                )
             } else {
                 logWarning(
                     Loesning.from(melding.bekreftelsesloesning),
