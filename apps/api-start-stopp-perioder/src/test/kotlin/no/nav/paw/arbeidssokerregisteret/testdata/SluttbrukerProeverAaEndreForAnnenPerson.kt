@@ -17,7 +17,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import java.time.Instant
 import java.util.*
 
-data object SluttbrukerProeverAaEndreForAnnenPerson : TestCase {
+data object SluttbrukerProeverAaEndreForAnnenPerson : StartPeriodeTestCase {
     override val id: String = "09876543211"
     override val person: Person = Person(
         foedselsdato = emptyList(),

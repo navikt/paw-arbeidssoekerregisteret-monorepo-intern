@@ -20,7 +20,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import java.time.Instant
 import java.util.*
 
-data object HentPersonReturnererNull : TestCase {
+data object HentPersonReturnererNull : StartPeriodeTestCase {
     override val id = "12345678909"
     override val person = null
 

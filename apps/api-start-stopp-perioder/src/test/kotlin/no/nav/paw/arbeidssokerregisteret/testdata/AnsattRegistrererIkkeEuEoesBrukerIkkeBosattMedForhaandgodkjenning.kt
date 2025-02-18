@@ -27,7 +27,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import java.time.Instant
 import java.util.*
 
-data object AnsattRegistrererIkkeEuEoesBrukerIkkeBosattMedForhaandgodkjenning : TestCase {
+data object AnsattRegistrererIkkeEuEoesBrukerIkkeBosattMedForhaandgodkjenning : StartPeriodeTestCase {
     override val id = "12345678906"
     override val forhaandsGodkjent: Boolean = true
     override val person = Person(

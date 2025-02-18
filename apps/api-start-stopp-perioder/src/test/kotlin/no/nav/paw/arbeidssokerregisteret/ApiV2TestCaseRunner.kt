@@ -7,17 +7,18 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.ktor.client.call.*
 import io.ktor.server.auth.*
 import io.ktor.server.testing.*
-import io.mockk.mockk
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
 import no.nav.paw.arbeidssokerregisteret.application.InngangsReglerV2
 import no.nav.paw.arbeidssokerregisteret.auth.configureAuthentication
 import no.nav.paw.arbeidssokerregisteret.plugins.configureHTTP
 import no.nav.paw.arbeidssokerregisteret.plugins.configureSerialization
-import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutes
 import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutesV2
+import no.nav.paw.arbeidssokerregisteret.testdata.StartPeriodeTestCase
+import no.nav.paw.arbeidssokerregisteret.testdata.StoppPeriodeTestCase
 import no.nav.paw.arbeidssokerregisteret.testdata.TestCase
 import no.nav.paw.arbeidssokerregisteret.testdata.TestCaseBuilder
 import no.nav.security.mock.oauth2.MockOAuth2Server
@@ -32,22 +33,30 @@ class ApiV2TestCaseRunner : FreeSpec({
     afterSpec {
         mockOAuthServer.shutdown()
     }
-    val testCases = TestCase::class.sealedSubclasses
+    val startPeriodeTestCases = StartPeriodeTestCase::class.sealedSubclasses
+    val stoppPeriodeTestCases = StoppPeriodeTestCase::class.sealedSubclasses
+    val allTestCases = startPeriodeTestCases + stoppPeriodeTestCases
+    val caseInstances: List<TestCase> = allTestCases.mapNotNull { it.objectInstance }
     "Verifiserer oppsett av test caser" - {
         "Det må finnes minst en  test" {
-            testCases.shouldNotBeEmpty()
+            allTestCases.shouldNotBeEmpty()
+            caseInstances.shouldNotBeEmpty()
         }
         "Alle tester må ha 'objectInstance" - {
-            testCases.forEach { case ->
+            allTestCases.forEach { case ->
                 "${case.simpleName} må ha 'objectInstance'" {
                     case.objectInstance.shouldNotBeNull()
+                    case.objectInstance.shouldBeInstanceOf<TestCase>()
                 }
             }
+            caseInstances.forEach { case ->
+                case.shouldBeInstanceOf<TestCase>()
+            }
         }
+        println("Antall tester: ${caseInstances.size}")
     }
     "Test cases V2" - {
-        TestCase::class.sealedSubclasses
-            .mapNotNull { it.objectInstance }
+        caseInstances
             .forEach { testCase ->
                 val logger = LoggerFactory.getLogger(testCase::class.java)
                 "Test  API V2 ${testCase::class.simpleName?.readable()}" - {
@@ -67,16 +76,17 @@ class ApiV2TestCaseRunner : FreeSpec({
                                     }
                                     val client = createClient { defaultConfig() }
                                     val id = testCase.id
-                                    val person = testCase.person
+                                    val person = (testCase as? StartPeriodeTestCase)?.person
                                     logger.info("Running test for $id")
                                     personInfoService.setPersonInfo(id, person)
                                     val testConfiguration = TestCaseBuilder(mockOAuthServer, autorisasjonService)
                                         .also { testCase.configure(it) }
                                     val statusV2 =
-                                        client.startPeriodeV2(
-                                            id,
-                                            testConfiguration.authToken,
-                                            testCase.forhaandsGodkjent,
+                                        client.startStoppPeriode(
+                                            periodeTilstand = testCase.tilstand,
+                                            identitetsnummer = id,
+                                            token = testConfiguration.authToken,
+                                            godkjent = (testCase as? StartPeriodeTestCase)?.forhaandsGodkjent ?: false,
                                             feilretting = testCase.feilretting
                                         )
                                     statusV2.status shouldBe testCase.producesHttpResponse

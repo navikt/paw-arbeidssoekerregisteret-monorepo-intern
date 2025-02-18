@@ -21,7 +21,7 @@ import java.time.Instant
 import java.util.*
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Opplysning as ApiOpplysning
 
-data object AnsattRegistrererIkkeEuEoesBrukerIkkeBosattUtenForhaandgodkjenning : TestCase {
+data object AnsattRegistrererIkkeEuEoesBrukerIkkeBosattUtenForhaandgodkjenning : StartPeriodeTestCase {
     override val id = "12345678906"
     override val person = Person(
         foedselsdato = Foedselsdato("2000-03-04", 2000).list(),

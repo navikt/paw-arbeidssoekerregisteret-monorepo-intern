@@ -19,7 +19,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import java.time.Instant
 import java.util.*
 
-data object AnsattRegistrererUtenTilgangTilBruker: TestCase {
+data object AnsattRegistrererUtenTilgangTilBruker: StartPeriodeTestCase {
     override val id = "12345678906"
     override val person = Person(
         foedselsdato = Foedselsdato("2000-03-04", 2000).list(),

@@ -30,7 +30,7 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Opplysning as ApiOpplysning
 
-data object NorskBrukerBosattISverigeUnder18aar : TestCase {
+data object NorskBrukerBosattISverigeUnder18aar : StartPeriodeTestCase {
     val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         .withZone(ZoneId.systemDefault())
     val yearFormatter = DateTimeFormatter.ofPattern("yyyy")

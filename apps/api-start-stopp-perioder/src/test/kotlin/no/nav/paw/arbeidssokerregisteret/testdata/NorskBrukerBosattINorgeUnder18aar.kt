@@ -29,7 +29,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-data object NorskBrukerBosattINorgeUnder18aar : TestCase {
+data object NorskBrukerBosattINorgeUnder18aar : StartPeriodeTestCase {
     val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         .withZone(ZoneId.systemDefault())
     val yearFormatter = DateTimeFormatter.ofPattern("yyyy")

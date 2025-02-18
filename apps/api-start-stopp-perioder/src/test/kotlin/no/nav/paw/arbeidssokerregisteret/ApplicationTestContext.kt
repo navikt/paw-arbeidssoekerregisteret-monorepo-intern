@@ -21,7 +21,6 @@ import io.ktor.serialization.jackson.jackson
 import io.mockk.coEvery
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV2ArbeidssokerPeriodePutRequest
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feilretting
-import no.nav.paw.arbeidssokerregisteret.application.feilretting
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HarOpplysninger
@@ -169,7 +168,8 @@ fun PersonInfoService.setPersonInfo(identitetsnummer: String, person: Person?) {
     } returns person
 }
 
-suspend fun HttpClient.startPeriodeV2(
+suspend fun HttpClient.startStoppPeriode(
+    periodeTilstand: ApiV2ArbeidssokerPeriodePutRequest.PeriodeTilstand,
     identitetsnummer: String,
     token: SignedJWT?,
     godkjent: Boolean = false,
@@ -185,9 +185,10 @@ suspend fun HttpClient.startPeriodeV2(
         setBody(
             ApiV2ArbeidssokerPeriodePutRequest(
                 identitetsnummer = identitetsnummer,
-                periodeTilstand = ApiV2ArbeidssokerPeriodePutRequest.PeriodeTilstand.STARTET,
+                periodeTilstand = periodeTilstand,
                 registreringForhaandsGodkjentAvAnsatt = godkjent,
                 feilretting = feilretting
             )
         )
     }
+
