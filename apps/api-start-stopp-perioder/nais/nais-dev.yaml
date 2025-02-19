@@ -62,6 +62,10 @@ spec:
   accessPolicy:
     inbound:
       rules:
+        - application: tokenx-token-generator
+          namespace: aura
+        - application: azure-token-generator
+          namespace: aura
         - application: aia-backend
         - application: arbeidssokerregistrering
         - application: arbeidssokerregistrering-for-veileder
