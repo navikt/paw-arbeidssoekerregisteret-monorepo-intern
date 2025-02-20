@@ -1,158 +1,211 @@
 {
-    "interactiveLogin": true,
-    "httpServer": "NettyWrapper",
-    "tokenCallbacks": [
+  "interactiveLogin": true,
+  "httpServer": "NettyWrapper",
+  "tokenCallbacks": [
+    {
+      "issuerId": "tokenx",
+      "tokenExpiry": 3600,
+      "requestMappings": [
         {
-            "issuerId": "tokenx",
-            "tokenExpiry": 3600,
-            "requestMappings": [
-                {
-                    "requestParam": "client_id",
-                    "match": "paw-arbeidssoekerregisteret-api-bekreftelse",
-                    "claims": {
-                        "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
-                        "aud": [
-                            "paw-arbeidssoekerregisteret-api-bekreftelse"
-                        ],
-                        "pid": "01017012345",
-                        "acr": "idporten-loa-high"
-                    }
-                },
-                {
-                    "requestParam": "client_id",
-                    "match": "paw-arbeidssoekerregisteret-api-bekreftelse-empty-claims",
-                    "claims": {}
-                }
-            ]
+          "requestParam": "client_id",
+          "match": "paw-arbeidssokerregisteret-api-inngang",
+          "claims": {
+            "sub": "admin@paw-arbeidssokerregisteret-api-inngang",
+            "aud": [
+              "paw-arbeidssokerregisteret-api-inngang"
+            ],
+            "pid": "01017012345",
+            "acr": "idporten-loa-high"
+          }
         },
         {
-            "issuerId": "azure",
-            "tokenExpiry": 3600,
-            "requestMappings": [
-                {
-                    "requestParam": "client_id",
-                    "match": "paw-kafka-key-generator",
-                    "claims": {
-                        "sub": "admin@paw-kafka-key-generator",
-                        "aud": [
-                            "paw-kafka-key-generator"
-                        ],
-                        "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
-                        "name": "Nav Navesen",
-                        "NAVident": "NAV12345"
-                    }
-                },
-                {
-                    "requestParam": "client_id",
-                    "match": "paw-kafka-key-generator-m2m",
-                    "claims": {
-                        "sub": "admin@paw-kafka-key-generator",
-                        "aud": [
-                            "paw-kafka-key-generator"
-                        ],
-                        "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
-                        "roles": [
-                            "access_as_application"
-                        ]
-                    }
-                },
-                {
-                    "requestParam": "client_id",
-                    "match": "paw-arbeidssoekerregisteret-api-bekreftelse",
-                    "claims": {
-                        "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
-                        "aud": [
-                            "paw-arbeidssoekerregisteret-api-bekreftelse"
-                        ],
-                        "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
-                        "name": "Nav Navesen",
-                        "NAVident": "NAV12345"
-                    }
-                },
-                {
-                    "requestParam": "client_id",
-                    "match": "paw-arbeidssoekerregisteret-api-bekreftelse-m2m",
-                    "claims": {
-                        "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
-                        "aud": [
-                            "paw-arbeidssoekerregisteret-api-bekreftelse"
-                        ],
-                        "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
-                        "roles": [
-                            "access_as_application"
-                        ]
-                    }
-                },
-                {
-                    "requestParam": "client_id",
-                    "match": "paw-arbeidssoekerregisteret-api-dolly",
-                    "claims": {
-                        "sub": "admin@paw-arbeidssoekerregisteret-api-dolly",
-                        "aud": [
-                            "paw-arbeidssoekerregisteret-api-dolly"
-                        ],
-                        "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
-                        "roles": [
-                            "access_as_application"
-                        ]
-                    }
-                },
-                {
-                    "requestParam": "client_id",
-                    "match": "paw-arbeidssoekere-synk-jobb",
-                    "claims": {
-                        "sub": "admin@paw-arbeidssoekere-synk-jobb",
-                        "aud": [
-                            "paw-arbeidssokerregisteret-api-inngang"
-                        ],
-                        "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
-                        "azp": "5f28c10f-ecd5-45ef-96b8-db4311802e89",
-                        "azp_name": "local:paw:paw-arbeidssoekere-synk-jobb",
-                        "roles": [
-                            "access_as_application"
-                        ]
-                    }
-                },
-                {
-                    "requestParam": "client_assertion_type",
-                    "match": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-                    "claims": {
-                        "sub": "admin@paw-arbeidssoekere-synk-jobb",
-                        "aud": [
-                            "paw-arbeidssokerregisteret-api-inngang"
-                        ],
-                        "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
-                        "azp": "5f28c10f-ecd5-45ef-96b8-db4311802e89",
-                        "azp_name": "local:paw:paw-arbeidssoekere-synk-jobb",
-                        "roles": [
-                            "access_as_application"
-                        ]
-                    }
-                }
-            ]
+          "requestParam": "client_id",
+          "match": "paw-arbeidssoekerregisteret-api-bekreftelse",
+          "claims": {
+            "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
+            "aud": [
+              "paw-arbeidssoekerregisteret-api-bekreftelse"
+            ],
+            "pid": "01017012345",
+            "acr": "idporten-loa-high"
+          }
         },
         {
-            "issuerId": "idporten",
-            "tokenExpiry": 3600,
-            "requestMappings": [
-                {
-                    "requestParam": "client_id",
-                    "match": "paw-arbeidssoekerregisteret-api-bekreftelse",
-                    "claims": {
-                        "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
-                        "aud": [
-                            "paw-arbeidssoekerregisteret-api-bekreftelse"
-                        ],
-                        "pid": "17830348441",
-                        "acr": "idporten-loa-high"
-                    }
-                }
-            ]
-        },
-        {
-            "issuerId": "maskinporten",
-            "tokenExpiry": 3600,
-            "requestMappings": []
+          "requestParam": "client_id",
+          "match": "paw-arbeidssoekerregisteret-api-bekreftelse-empty-claims",
+          "claims": {}
         }
-    ]
+      ]
+    },
+    {
+      "issuerId": "azure",
+      "tokenExpiry": 3600,
+      "requestMappings": [
+        {
+          "requestParam": "client_id",
+          "match": "paw-kafka-key-generator",
+          "claims": {
+            "sub": "admin@paw-kafka-key-generator",
+            "aud": [
+              "paw-kafka-key-generator"
+            ],
+            "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
+            "azp": "87f8731e-28bf-48c9-b1ef-585e147aa0ae",
+            "azp_name": "local:paw:paw-kafka-key-generator",
+            "name": "Nav Navesen",
+            "NAVident": "NAV12345"
+          }
+        },
+        {
+          "requestParam": "client_id",
+          "match": "paw-kafka-key-generator-m2m",
+          "claims": {
+            "sub": "admin@paw-kafka-key-generator",
+            "aud": [
+              "paw-kafka-key-generator"
+            ],
+            "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
+            "azp": "87f8731e-28bf-48c9-b1ef-585e147aa0ae",
+            "azp_name": "local:paw:paw-kafka-key-generator",
+            "roles": [
+              "access_as_application"
+            ]
+          }
+        },
+        {
+          "requestParam": "client_id",
+          "match": "paw-arbeidssokerregisteret-api-inngang",
+          "claims": {
+            "sub": "admin@paw-arbeidssokerregisteret-api-inngang",
+            "aud": [
+              "paw-arbeidssokerregisteret-api-inngang"
+            ],
+            "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
+            "azp": "87f8731e-28bf-48c9-b1ef-585e147aa0ae",
+            "azp_name": "local:paw:paw-arbeidssokerregisteret-api-inngang",
+            "name": "Nav Navesen",
+            "NAVident": "NAV12345"
+          }
+        },
+        {
+          "requestParam": "client_id",
+          "match": "paw-arbeidssokerregisteret-api-inngang-m2m",
+          "claims": {
+            "sub": "admin@paw-arbeidssokerregisteret-api-inngang",
+            "aud": [
+              "paw-arbeidssokerregisteret-api-inngang"
+            ],
+            "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
+            "azp": "87f8731e-28bf-48c9-b1ef-585e147aa0ae",
+            "azp_name": "local:paw:paw-arbeidssokerregisteret-api-inngang",
+            "roles": [
+              "access_as_application"
+            ]
+          }
+        },
+        {
+          "requestParam": "client_id",
+          "match": "paw-arbeidssoekerregisteret-api-bekreftelse",
+          "claims": {
+            "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
+            "aud": [
+              "paw-arbeidssoekerregisteret-api-bekreftelse"
+            ],
+            "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
+            "azp": "87f8731e-28bf-48c9-b1ef-585e147aa0ae",
+            "azp_name": "local:paw:paw-arbeidssoekerregisteret-api-bekreftelse",
+            "name": "Nav Navesen",
+            "NAVident": "NAV12345"
+          }
+        },
+        {
+          "requestParam": "client_id",
+          "match": "paw-arbeidssoekerregisteret-api-bekreftelse-m2m",
+          "claims": {
+            "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
+            "aud": [
+              "paw-arbeidssoekerregisteret-api-bekreftelse"
+            ],
+            "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
+            "azp": "87f8731e-28bf-48c9-b1ef-585e147aa0ae",
+            "azp_name": "local:paw:paw-arbeidssoekerregisteret-api-bekreftelse",
+            "roles": [
+              "access_as_application"
+            ]
+          }
+        },
+        {
+          "requestParam": "client_id",
+          "match": "paw-arbeidssoekerregisteret-api-dolly",
+          "claims": {
+            "sub": "admin@paw-arbeidssoekerregisteret-api-dolly",
+            "aud": [
+              "paw-arbeidssoekerregisteret-api-dolly"
+            ],
+            "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
+            "azp": "87f8731e-28bf-48c9-b1ef-585e147aa0ae",
+            "azp_name": "local:paw:paw-arbeidssoekerregisteret-api-dolly",
+            "roles": [
+              "access_as_application"
+            ]
+          }
+        },
+        {
+          "requestParam": "client_id",
+          "match": "paw-arbeidssoekere-synk-jobb",
+          "claims": {
+            "sub": "admin@paw-arbeidssoekere-synk-jobb",
+            "aud": [
+              "paw-arbeidssokerregisteret-api-inngang"
+            ],
+            "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
+            "azp": "87f8731e-28bf-48c9-b1ef-585e147aa0ae",
+            "azp_name": "local:paw:paw-arbeidssoekere-synk-jobb",
+            "roles": [
+              "access_as_application"
+            ]
+          }
+        },
+        {
+          "requestParam": "client_assertion_type",
+          "match": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+          "claims": {
+            "sub": "admin@paw-arbeidssoekere-synk-jobb",
+            "aud": [
+              "paw-arbeidssokerregisteret-api-inngang"
+            ],
+            "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
+            "azp": "87f8731e-28bf-48c9-b1ef-585e147aa0ae",
+            "azp_name": "local:paw:paw-arbeidssoekere-synk-jobb",
+            "roles": [
+              "access_as_application"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "issuerId": "idporten",
+      "tokenExpiry": 3600,
+      "requestMappings": [
+        {
+          "requestParam": "client_id",
+          "match": "paw-arbeidssoekerregisteret-api-bekreftelse",
+          "claims": {
+            "sub": "admin@paw-arbeidssoekerregisteret-api-bekreftelse",
+            "aud": [
+              "paw-arbeidssoekerregisteret-api-bekreftelse"
+            ],
+            "pid": "17830348441",
+            "acr": "idporten-loa-high"
+          }
+        }
+      ]
+    },
+    {
+      "issuerId": "maskinporten",
+      "tokenExpiry": 3600,
+      "requestMappings": []
+    }
+  ]
 }

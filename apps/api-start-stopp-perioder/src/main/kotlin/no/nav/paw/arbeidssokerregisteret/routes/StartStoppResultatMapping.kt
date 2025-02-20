@@ -31,7 +31,7 @@ import no.nav.paw.arbeidssokerregisteret.application.regler.AnsattIkkeTilgangTil
 import no.nav.paw.arbeidssokerregisteret.application.regler.ValideringsRegelId
 import no.nav.paw.arbeidssokerregisteret.application.regler.EndreEgenBruker
 import no.nav.paw.arbeidssokerregisteret.application.regler.EndreForAnnenBruker
-import no.nav.paw.arbeidssokerregisteret.application.regler.IkkeAnsattOgFeilretting
+import no.nav.paw.arbeidssokerregisteret.application.regler.IkkeAnsattOgIkkeSystemOgFeilretting
 import no.nav.paw.arbeidssokerregisteret.application.regler.IkkeAnsattOgForhaandsgodkjentAvAnsatt
 import no.nav.paw.arbeidssokerregisteret.application.regler.IkkeTilgang
 import no.nav.paw.arbeidssokerregisteret.application.regler.SystemHarIkkeTilgangTilBruker
@@ -166,7 +166,7 @@ fun ValideringsRegelId.httpCode(): HttpStatusCode = when (this) {
     EndreForAnnenBruker -> HttpStatusCode.Forbidden
     IkkeAnsattOgForhaandsgodkjentAvAnsatt -> HttpStatusCode.BadRequest
     IkkeTilgang -> HttpStatusCode.Forbidden
-    IkkeAnsattOgFeilretting -> HttpStatusCode.Forbidden
+    IkkeAnsattOgIkkeSystemOgFeilretting -> HttpStatusCode.Forbidden
     UgyldigFeilretting -> HttpStatusCode.BadRequest
     SystemHarIkkeTilgangTilBruker -> HttpStatusCode.Forbidden
     SystemHarTilgangTilBruker -> HttpStatusCode.OK

@@ -20,9 +20,10 @@ object ValideringsRegler : Regler {
             AuthOpplysning.IkkeAnsatt,
             vedTreff = ::skalAvises
         ),
-        IkkeAnsattOgFeilretting(
+        IkkeAnsattOgIkkeSystemOgFeilretting(
             DomeneOpplysning.ErFeilretting,
             AuthOpplysning.IkkeAnsatt,
+            AuthOpplysning.IkkeSystem,
             vedTreff = ::skalAvises
         ),
         UgyldigFeilretting(
@@ -80,8 +81,8 @@ data object IkkeAnsattOgForhaandsgodkjentAvAnsatt : ValideringsRegelId {
     override val beskrivelse: String = "Ikke ansatt har satt forhaandsgodkjenningAvVeileder"
 }
 
-data object IkkeAnsattOgFeilretting : ValideringsRegelId {
-    override val beskrivelse: String = "Ikke ansatt har satt feilretting"
+data object IkkeAnsattOgIkkeSystemOgFeilretting : ValideringsRegelId {
+    override val beskrivelse: String = "Ikke ansatt eller system har satt feilretting"
 }
 
 data object UgyldigFeilretting : ValideringsRegelId {
