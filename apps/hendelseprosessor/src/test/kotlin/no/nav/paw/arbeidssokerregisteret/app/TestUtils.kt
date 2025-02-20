@@ -70,7 +70,8 @@ fun verifiserApiMetadataMotInternMetadata(
     mottattApiMetadata.aarsak shouldBe forventedeMetadataVerdier.aarsak
     mottattApiMetadata.utfoertAv.type.name shouldBe forventedeMetadataVerdier.utfoertAv.type.name
     mottattApiMetadata.utfoertAv.id shouldBe forventedeMetadataVerdier.utfoertAv.id
-    mottattApiMetadata.tidspunktFraKilde?.tidspunkt shouldBe forventedeMetadataVerdier.tidspunktFraKilde?.tidspunkt
+    mottattApiMetadata.tidspunktFraKilde?.tidspunkt?.truncatedTo(ChronoUnit.MILLIS) shouldBe
+            forventedeMetadataVerdier.tidspunktFraKilde?.tidspunkt?.truncatedTo(ChronoUnit.MILLIS)
     when (forventedeMetadataVerdier.tidspunktFraKilde?.avviksType) {
         FORSINKELSE -> mottattApiMetadata.tidspunktFraKilde?.avviksType shouldBe AvviksType.FORSINKELSE
         RETTING -> mottattApiMetadata.tidspunktFraKilde?.avviksType shouldBe AvviksType.RETTING

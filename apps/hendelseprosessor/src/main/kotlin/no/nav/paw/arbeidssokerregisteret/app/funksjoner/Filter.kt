@@ -1,16 +1,19 @@
+@file:OptIn(ExperimentalContracts::class)
+
 package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
-import io.opentelemetry.api.trace.SpanKind
-import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssokerregisteret.app.StreamHendelse
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgHendelse
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType
 import org.slf4j.LoggerFactory
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 fun ignorerDuplikatStartOgStopp(
     @Suppress("UNUSED_PARAMETER") recordKey: Long,
@@ -19,7 +22,7 @@ fun ignorerDuplikatStartOgStopp(
     val (_, tilstand, hendelse) = tilstandOgHendelse
     return when (tilstand?.gjeldeneTilstand) {
         null -> hendelse.erIkke<Avsluttet>()
-        GjeldeneTilstand.STARTET -> hendelse.erIkke<Startet>()
+        GjeldeneTilstand.STARTET -> hendelse.erIkke<Startet>() || hendelse.erGyldigFeilrettingAvStartTid()
         GjeldeneTilstand.AVSLUTTET -> hendelse.erIkke<Avsluttet>()
         GjeldeneTilstand.AVVIST -> hendelse.erIkke<Avsluttet>()
         else -> false
@@ -37,7 +40,17 @@ fun ignorerDuplikatStartOgStopp(
     }
 }
 
-inline fun <reified A : StreamHendelse> StreamHendelse.erIkke(): Boolean = this !is A
+@OptIn(ExperimentalContracts::class)
+inline fun <reified A : StreamHendelse> StreamHendelse.erIkke(): Boolean {
+    contract {
+        returns(false) implies (this@erIkke is A)
+    }
+    return this !is A
+}
+
+fun Startet.erGyldigFeilrettingAvStartTid(): Boolean =
+    metadata.tidspunktFraKilde?.avviksType == AvviksType.TIDSPUNKT_KORRIGERT &&
+            metadata.tidspunktFraKilde?.tidspunkt != null
 
 fun ignorerAvsluttetForAnnenPeriode(
     @Suppress("UNUSED_PARAMETER") recordKey: Long,

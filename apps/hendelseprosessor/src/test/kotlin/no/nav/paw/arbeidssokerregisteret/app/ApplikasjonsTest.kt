@@ -23,8 +23,11 @@ import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.TopologyTestDriver
 import java.time.Duration
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.*
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvviksType as AvroAvviksType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Beskrivelse.ER_PERMITTERT as API_ER_PERMITTERT
+import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType as AvroBrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.JaNeiVetIkke.JA as ApiJa
 import no.nav.paw.arbeidssokerregisteret.api.v1.JaNeiVetIkke.NEI as ApiNei
 
@@ -126,37 +129,35 @@ class ApplikasjonsTest : FreeSpec({
             periodeTopic.isEmpty shouldBe true
             opplysningerOmArbeidssoekerTopic.isEmpty shouldBe true
         }
-
-        "Når vi mottar en 'startet' med korrigert tidspunkt for en akrive periode skal vi oppdatere perioden".config(
-            enabled = false // Funsjonalitet er ikke implementert
-        ) {
-            val duplikatStart = Startet(
-                hendelseId = UUID.randomUUID(),
-                id = 1L,
-                identitetsnummer = identitetnummer,
-                metadata = Metadata(
-                    tidspunkt = Instant.now(),
-                    utfoertAv = Bruker(type = BrukerType.VEILEDER, id = "en_som_fikser_ting"),
-                    kilde = "unit-test2",
-                    aarsak = "tekniske feil i systemet",
-                    tidspunktFraKilde = TidspunktFraKilde(
-                        startet.metadata.tidspunkt - 10.days,
-                        AvviksType.TIDSPUNKT_KORRIGERT
-                    )
+        val feilrettetStart = Startet(
+            hendelseId = UUID.randomUUID(),
+            id = 1L,
+            identitetsnummer = identitetnummer,
+            metadata = Metadata(
+                tidspunkt = Instant.now(),
+                utfoertAv = Bruker(type = BrukerType.VEILEDER, id = "en_som_fikser_ting"),
+                kilde = "unit-test2",
+                aarsak = "teknisk feil i systemet",
+                tidspunktFraKilde = TidspunktFraKilde(
+                    startet.metadata.tidspunkt - 10.days,
+                    AvviksType.TIDSPUNKT_KORRIGERT
                 )
             )
-            eventlogTopic.pipeInput(key, duplikatStart)
+        )
+        "Når vi mottar en 'startet' med korrigert tidspunkt for en akrive periode skal vi oppdatere perioden" {
+            eventlogTopic.pipeInput(key, feilrettetStart)
             periodeTopic.isEmpty shouldBe false
             val periodeKv = periodeTopic.readKeyValue()
             val periode = periodeKv.value
-            periode.startet.tidspunkt shouldBe startet.metadata.tidspunkt
-            periode.startet.tidspunktFraKilde?.avviksType shouldBe AvviksType.TIDSPUNKT_KORRIGERT
-            periode.startet.tidspunktFraKilde?.tidspunkt shouldBe duplikatStart.metadata.tidspunktFraKilde?.tidspunkt
+            periode.startet.tidspunkt.truncatedTo(ChronoUnit.MILLIS) shouldBe startet.metadata.tidspunkt.truncatedTo(ChronoUnit.MILLIS)
+            periode.startet.tidspunktFraKilde?.avviksType shouldBe AvroAvviksType.TIDSPUNKT_KORRIGERT
+            periode.startet.tidspunktFraKilde?.tidspunkt?.truncatedTo(ChronoUnit.MILLIS) shouldBe
+                    feilrettetStart.metadata.tidspunktFraKilde?.tidspunkt?.truncatedTo(ChronoUnit.MILLIS)
             periode.id shouldBe startet.hendelseId
             periode.identitetsnummer shouldBe startet.identitetsnummer
-            periode.startet.utfoertAv.type shouldBe BrukerType.VEILEDER
+            periode.startet.utfoertAv.type shouldBe AvroBrukerType.VEILEDER
             periode.startet.utfoertAv.id shouldBe "en_som_fikser_ting"
-            periode.startet.aarsak shouldBe "tekniske feil i systemet"
+            periode.startet.aarsak shouldBe "teknisk feil i systemet"
             periode.startet.kilde shouldBe "unit-test2"
             periodeTopic.isEmpty shouldBe true
         }
@@ -221,7 +222,12 @@ class ApplikasjonsTest : FreeSpec({
             val avsluttetPeriode = periodeTopic.readKeyValue()
             verifiserPeriodeOppMotStartetOgStoppetHendelser(
                 forventetKafkaKey = key,
-                startet = startet,
+                startet = feilrettetStart.copy(
+                    metadata = feilrettetStart.metadata.copy(
+                        tidspunkt = startet.metadata.tidspunkt,
+                    ),
+                    hendelseId = startet.hendelseId
+                ),
                 avsluttet = stoppet,
                 mottattRecord = avsluttetPeriode
             )
