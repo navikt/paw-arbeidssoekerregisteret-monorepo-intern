@@ -62,7 +62,8 @@ fun testScope(pdlMockResponse: List<HentPersonBolkResult>?): TestScope {
             pdlHentPerson = { _, _, _ ->
                 pdlMockResponse
             },
-            prometheusRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+            prometheusRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+            sendAvsluttetHendelser = true
         ),
         kafkaStreamProperties
     )

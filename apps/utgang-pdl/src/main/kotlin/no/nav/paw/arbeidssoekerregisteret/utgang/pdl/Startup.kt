@@ -51,6 +51,7 @@ fun main() {
         applicationConfiguration.hendelseloggTopic,
         applicationConfiguration.hendelseStateStoreName,
         pdlHentPerson = PdlHentPerson.create(),
+        sendAvsluttetHendelser = applicationConfiguration.sendAvsluttetHendelser
     )
     val kafkaStreams = KafkaStreams(
         topology,
