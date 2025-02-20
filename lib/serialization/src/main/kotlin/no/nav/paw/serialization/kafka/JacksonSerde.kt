@@ -9,7 +9,7 @@ import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
 import kotlin.reflect.KClass
 
-class JacksonSerde<T : Any>(
+open class JacksonSerde<T : Any>(
     private val clazz: KClass<T>,
     private val objectMapper: ObjectMapper = buildObjectMapper,
     private val runtimeEnvironment: RuntimeEnvironment = currentRuntimeEnvironment

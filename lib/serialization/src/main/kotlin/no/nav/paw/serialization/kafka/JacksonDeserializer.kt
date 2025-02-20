@@ -9,7 +9,7 @@ import no.nav.paw.serialization.jackson.buildObjectMapper
 import org.apache.kafka.common.serialization.Deserializer
 import kotlin.reflect.KClass
 
-class JacksonDeserializer<T : Any>(
+open class JacksonDeserializer<T : Any>(
     private val clazz: KClass<T>,
     private val objectMapper: ObjectMapper = buildObjectMapper,
     private val runtimeEnvironment: RuntimeEnvironment = currentRuntimeEnvironment

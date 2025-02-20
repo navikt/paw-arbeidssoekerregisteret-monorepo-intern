@@ -8,7 +8,7 @@ import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.serialization.jackson.buildObjectMapper
 import org.apache.kafka.common.serialization.Serializer
 
-class JacksonSerializer<T : Any>(
+open class JacksonSerializer<T : Any>(
     private val objectMapper: ObjectMapper = buildObjectMapper,
     private val runtimeEnvironment: RuntimeEnvironment = currentRuntimeEnvironment
 ) : Serializer<T> {
