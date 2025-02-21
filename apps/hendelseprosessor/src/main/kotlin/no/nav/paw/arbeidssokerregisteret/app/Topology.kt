@@ -1,10 +1,13 @@
 package no.nav.paw.arbeidssokerregisteret.app
 
+import io.micrometer.core.instrument.Tag
+import io.micrometer.core.instrument.Tags
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.common.AttributesBuilder
 import io.opentelemetry.api.trace.Span
+import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.app.config.ApplicationLogicConfig
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.add
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.genererNyInternTilstandOgNyeApiTilstander
@@ -18,6 +21,7 @@ import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors.l
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors.lastInternTilstand
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.tellHendelse
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.tilstandKey
+import no.nav.paw.arbeidssokerregisteret.app.metrics.fineGrainedDurationToMonthsBucket
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
@@ -74,6 +78,16 @@ fun topology(
                     value.nyPeriodeTilstand as SpecificRecord?,
                     value.nyOpplysningerOmArbeidssoekerTilstand as SpecificRecord?
                 )
-            }.to(meteredTopicExtractor)
+            }
+            .peek { _, value ->
+                val avsluttet = (value as? Periode)?.avsluttet?.tidspunkt
+                if (avsluttet != null) {
+                    prometheusMeterRegistry.counter("avsluttet_periode_med_varighet", Tags.of(
+                        Tag.of("varighet_maaneder", fineGrainedDurationToMonthsBucket(avsluttet)),
+                        Tag.of("er_feilretting", value.avsluttet?.tidspunktFraKilde?.avviksType?.name ?: "nei")
+                    ))
+                }
+            }
+            .to(meteredTopicExtractor)
     return builder.build()
 }

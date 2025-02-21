@@ -31,12 +31,27 @@ fun durationToBucket(timestamp: Instant): String {
     }
 }
 
+fun fineGrainedDurationToMonthsBucket(timestamp: Instant): String {
+    val duration = Duration.between(timestamp, Instant.now()).abs()
+    return when {
+        lessThan6Months(duration) -> (duration.toDays()/30).toString()
+        lessThan1Year(duration) -> (duration.toDays()/30).toString()
+        lessThan18Months(duration) -> "12-18_maaneder"
+        lessThan2Years(duration) -> "18-24_maaneder"
+        else -> "mer_enn_24_maaneder"
+    }
+}
+
 fun lessThan6Months(duration: Duration): Boolean {
     return duration < Duration.ofDays(183)
 }
 
 fun lessThan1Year(duration: Duration): Boolean {
     return duration < Duration.ofDays(365)
+}
+
+fun lessThan18Months(duration: Duration): Boolean {
+    return duration < Duration.ofDays(365 + 183)
 }
 
 fun lessThan2Years(duration: Duration): Boolean {
