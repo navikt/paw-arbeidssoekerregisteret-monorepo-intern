@@ -11,7 +11,6 @@ dependencies {
 
     //Test
     testImplementation(project(":lib:pdl-client"))
-    testImplementation(libs.nav.poao.tilgangClient)
     testImplementation(libs.nav.security.mockOauth2Server)
     testImplementation(libs.bundles.testLibsWithUnitTesting)
     testImplementation(libs.ktor.server.test.host)

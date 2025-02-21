@@ -2,7 +2,6 @@
 noNavSecurityVersion = "5.0.16"
 noNavSecurityMockOauth2ServerVersion = "2.1.10"
 noNavCommonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
-navPoaoTilgangClientVersion = "2024.04.29_13.59-a0ddddd36ac9"
 arbeidssokerregisteretVersion = "1.11931397294.51-1"
 bekreftelseSchemaVersion = "1.25.02.10.17-1"
 arrowVersion = "2.0.1"
@@ -106,7 +105,6 @@ nav-common-auditLog = { group = "no.nav.common", name = "audit-log", version.ref
 nav-security-tokenClientCore = { group = "no.nav.security", name = "token-client-core", version.ref = "noNavSecurityVersion" }
 nav-security-tokenValidationKtorV3 = { group = "no.nav.security", name = "token-validation-ktor-v3", version.ref = "noNavSecurityVersion" }
 nav-security-mockOauth2Server = { group = "no.nav.security", name = "mock-oauth2-server", version.ref = "noNavSecurityMockOauth2ServerVersion" }
-nav-poao-tilgangClient = { group = "no.nav.poao-tilgang", name = "client", version.ref = "navPoaoTilgangClientVersion" }
 nav-paw-schema-main = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "main-avro-schema", version.ref = "arbeidssokerregisteretVersion" }
 nav-paw-schema-bekreftelse-paavegneav = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "bekreftelse-paavegneav-schema", version.ref = "bekreftelseSchemaVersion" }
 nav-paw-schema-bekreftelsesmelding = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "bekreftelsesmelding-schema", version.ref = "bekreftelseSchemaVersion" }
