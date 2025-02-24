@@ -15,7 +15,7 @@ import no.nav.paw.arbeidssokerregisteret.application.authfaktka.AuthOpplysning.A
 import no.nav.paw.arbeidssokerregisteret.application.authfaktka.AuthOpplysning.AnsattTilgang
 import no.nav.paw.arbeidssokerregisteret.application.authfaktka.AuthOpplysning.IkkeAnsatt
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.*
-import no.nav.paw.arbeidssokerregisteret.application.regler.IkkeAnsattOgForhaandsgodkjentAvAnsatt
+import no.nav.paw.arbeidssokerregisteret.application.regler.IkkeAnsattOgIkkeSystemOgForhaandsgodkjent
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.arbeidssokerregisteret.services.PersonInfoService
@@ -97,7 +97,7 @@ class RequestValidatorTest : FreeSpec({
                     .shouldBeInstanceOf<Either.Left<PawNonEmptyList<Problem>>>()
                 tilgangskontrollresultat.value.first.opplysninger shouldContain IkkeAnsatt
                 tilgangskontrollresultat.value.first.opplysninger shouldContain DomeneOpplysning.ErForhaandsgodkjent
-                tilgangskontrollresultat.value.first.regel.id.shouldBe(IkkeAnsattOgForhaandsgodkjentAvAnsatt)
+                tilgangskontrollresultat.value.first.regel.id.shouldBe(IkkeAnsattOgIkkeSystemOgForhaandsgodkjent)
             }
         }
 

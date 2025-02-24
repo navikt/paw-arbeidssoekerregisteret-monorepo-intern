@@ -8,4 +8,4 @@ create database pawkafkakeys with owner kafka_key_generator;
 create database bekreftelser with owner bekreftelse_api;
 create database pawkafkakeymaintenance with owner pawkafkakeymaintenance;
 create database hendelselogg_backup with owner hendelselogg_backup;
-create database paw_arbeidssoekere_synk_jobb with owner paw_arbeidssoekere_synk_jobb;
+create database pawarbeidssoekeresynk with owner paw_arbeidssoekere_synk_jobb;

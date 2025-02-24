@@ -15,9 +15,10 @@ object ValideringsRegler : Regler {
             AuthOpplysning.AnsattTilgang,
             vedTreff = ::grunnlagForGodkjenning
         ),
-        IkkeAnsattOgForhaandsgodkjentAvAnsatt(
+        IkkeAnsattOgIkkeSystemOgForhaandsgodkjent(
             DomeneOpplysning.ErForhaandsgodkjent,
             AuthOpplysning.IkkeAnsatt,
+            AuthOpplysning.IkkeSystem,
             vedTreff = ::skalAvises
         ),
         IkkeAnsattOgIkkeSystemOgFeilretting(
@@ -77,8 +78,8 @@ data object EndreEgenBruker : ValideringsRegelId {
     override val beskrivelse: String = "Bruker prøver å endre for seg selv"
 }
 
-data object IkkeAnsattOgForhaandsgodkjentAvAnsatt : ValideringsRegelId {
-    override val beskrivelse: String = "Ikke ansatt har satt forhaandsgodkjenningAvVeileder"
+data object IkkeAnsattOgIkkeSystemOgForhaandsgodkjent : ValideringsRegelId {
+    override val beskrivelse: String = "Ikke ansatt eller system har satt forhaandsgodkjenningAvVeileder"
 }
 
 data object IkkeAnsattOgIkkeSystemOgFeilretting : ValideringsRegelId {

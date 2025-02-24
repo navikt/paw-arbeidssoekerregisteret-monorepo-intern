@@ -4,7 +4,7 @@
     "urlPathPattern": "/pdl/person",
     "bodyPatterns": [
       {
-        "matchesJsonPath": "$.variables[?(@.ident == '01017012345')]"
+        "matchesJsonPath": "$.variables[?(@.ident == '05017012345')]"
       }
     ]
   },
@@ -18,7 +18,7 @@
         "hentPerson": {
           "foedselsdato": [
             {
-              "foedselsdato": "1970-01-01",
+              "foedselsdato": "1970-01-05",
               "foedselsaar": "1970"
             }
           ],
@@ -47,8 +47,8 @@
           ],
           "bostedsadresse": [
             {
-              "angittFlyttedato": "2010-01-01",
-              "gyldigFraOgMed": "2010-01-01",
+              "angittFlyttedato": "2010-01-05",
+              "gyldigFraOgMed": "2010-01-05",
               "vegadresse": {
                 "kommunenummer": "9107"
               }

@@ -1,0 +1,2 @@
+uri = "http://localhost:8090/api/v1/tilgang"
+scope = "api://local.paw.paw-arbeidssokerregisteret-api-inngang/.default"

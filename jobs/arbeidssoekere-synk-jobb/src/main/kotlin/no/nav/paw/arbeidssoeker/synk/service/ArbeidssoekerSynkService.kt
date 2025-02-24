@@ -69,7 +69,7 @@ class ArbeidssoekerSynkService(
             arbeidssoekerSynkRepository.insert(version, identitetsnummer, response.status.value)
         } else if (databaseRow.status.isNotSuccess()) {
             logger.debug("Fant innslag med status {} i databasen for version {}", databaseRow.status, version)
-            logger.debug("Utfører opprettelse av periode i registeret")
+            logger.debug("Kaller API Inngang for opprettelse av periode")
             val response = inngangHttpConsumer.opprettPeriode(arbeidssoeker.asOpprettPeriodeRequest())
             logger.traceAndLog(response.status)
 

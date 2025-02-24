@@ -17,7 +17,7 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV2ArbeidssokerPeriodePutRequest
 import no.nav.paw.arbeidssokerregisteret.application.*
-import no.nav.paw.arbeidssokerregisteret.application.regler.IkkeAnsattOgForhaandsgodkjentAvAnsatt
+import no.nav.paw.arbeidssokerregisteret.application.regler.IkkeAnsattOgIkkeSystemOgForhaandsgodkjent
 import no.nav.paw.arbeidssokerregisteret.auth.configureAuthentication
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.plugins.configureHTTP
@@ -101,7 +101,7 @@ class InngangSomBrukerTest : FreeSpec({
                 startStoppRequestHandler.startArbeidssokerperiode(any(), any(), any(), any())
             } returns skalAvises(
                 regel = Regel(
-                    id = IkkeAnsattOgForhaandsgodkjentAvAnsatt,
+                    id = IkkeAnsattOgIkkeSystemOgForhaandsgodkjent,
                     kritierier = emptyList(),
                     vedTreff = ::skalAvises
                 ),
