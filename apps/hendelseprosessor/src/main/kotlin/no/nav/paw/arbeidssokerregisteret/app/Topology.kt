@@ -80,10 +80,9 @@ fun topology(
                 )
             }
             .peek { _, value ->
-                val avsluttet = (value as? Periode)?.avsluttet?.tidspunkt
-                if (avsluttet != null) {
+                if ((value as? Periode)?.avsluttet != null) {
                     prometheusMeterRegistry.counter("avsluttet_periode_med_varighet", Tags.of(
-                        Tag.of("varighet_maaneder", fineGrainedDurationToMonthsBucket(avsluttet)),
+                        Tag.of("varighet_maaneder", fineGrainedDurationToMonthsBucket(value.startet.tidspunktFraKilde?.tidspunkt ?: value.startet.tidspunkt)),
                         Tag.of("er_feilretting", value.avsluttet?.tidspunktFraKilde?.avviksType?.name ?: "nei")
                     )).increment()
                 }
