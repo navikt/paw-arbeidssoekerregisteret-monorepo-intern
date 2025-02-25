@@ -4,7 +4,10 @@ audiences = ["${IDPORTEN_CLIENT_ID}"]
 discoveryUrl = "${IDPORTEN_WELL_KNOWN_URL}
 
     [authProviders.requiredClaims]
-    claims = ["acr=idporten-loa-high"]
+    claims = [
+        "acr=idporten-loa-substantial", # == Level3
+        "acr=idporten-loa-high" # == Level4
+    ]
 
 [[authProviders]]
 name = "tokenx"
@@ -12,7 +15,12 @@ audiences = ["${TOKEN_X_CLIENT_ID}"]
 discoveryUrl = "${TOKEN_X_WELL_KNOWN_URL}"
 
     [authProviders.requiredClaims]
-    claims = ["acr=Level4", "acr=idporten-loa-high"]
+    claims = [
+        "acr=Level3",
+        "acr=Level4",
+        "acr=idporten-loa-substantial", # == Level3
+        "acr=idporten-loa-high" # == Level4
+    ]
     combineWithOr = true
 
 [[authProviders]]
