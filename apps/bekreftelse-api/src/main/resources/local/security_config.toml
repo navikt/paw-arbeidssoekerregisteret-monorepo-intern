@@ -4,7 +4,10 @@ audiences = ["paw-arbeidssoekerregisteret-api-bekreftelse"]
 discoveryUrl = "http://localhost:8081/idporten/.well-known/openid-configuration"
 
     [authProviders.requiredClaims]
-    claims = ["acr=idporten-loa-high"]
+    claims = [
+        "acr=idporten-loa-substantial", # == Level3
+        "acr=idporten-loa-high" # == Level4
+    ]
 
 [[authProviders]]
 name = "tokenx"
@@ -12,7 +15,12 @@ audiences = ["paw-arbeidssoekerregisteret-api-bekreftelse"]
 discoveryUrl = "http://localhost:8081/tokenx/.well-known/openid-configuration"
 
     [authProviders.requiredClaims]
-    claims = ["acr=Level4", "acr=idporten-loa-high"]
+    claims = [
+        "acr=Level3",
+        "acr=Level4",
+        "acr=idporten-loa-substantial", # == Level3
+        "acr=idporten-loa-high" # == Level4
+    ]
     combineWithOr = true
 
 [[authProviders]]
