@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":domain:interne-hendelser"))
     implementation(project(":domain:bekreftelse-interne-hendelser"))
     implementation(project(":domain:bekreftelsesmelding-avro-schema"))
     implementation(project(":domain:bekreftelse-paavegneav-avro-schema"))
