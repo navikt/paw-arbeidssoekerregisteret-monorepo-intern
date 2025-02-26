@@ -9,7 +9,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-private const val DATETIME_FORMAT = "dd.MM.yyyy HH:mm:ss"
+private const val DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss"
 private val OSLO_ZONE_ID: ZoneId = ZoneId.of("Europe/Oslo")
 private val dateTimeFormatter = DateTimeFormatter.ofPattern(DATETIME_FORMAT)
 
