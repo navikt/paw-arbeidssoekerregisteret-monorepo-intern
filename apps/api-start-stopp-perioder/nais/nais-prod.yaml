@@ -65,6 +65,7 @@ spec:
         - application: aia-backend
         - application: arbeidssokerregistrering
         - application: arbeidssokerregistrering-for-veileder
+        - application: paw-arbeidssoekere-synk-jobb
     outbound:
       rules:
         - application: paw-kafka-key-generator

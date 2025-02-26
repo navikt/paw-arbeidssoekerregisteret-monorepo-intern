@@ -1,0 +1,36 @@
+apiVersion: nais.io/v1
+kind: Naisjob
+metadata:
+  name: paw-arbeidssoekere-synk-jobb
+  namespace: paw
+  labels:
+    team: paw
+spec:
+  image: {{ image }}
+  restartPolicy: Never
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  secureLogs:
+    enabled: true
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
+  azure:
+    application:
+      enabled: true
+  filesFrom:
+    - secret: paw-arbeidssoekere-synk-jobb-csv
+      mountPath: /var/run/secrets/paw-arbeidssoekere-synk-jobb-csv
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_17
+        tier: db-custom-1-6144
+        databases:
+          - name: pawarbeidssoekeresynk
+  accessPolicy:
+    outbound:
+      rules:
+        - application: paw-arbeidssokerregisteret-api-inngang
