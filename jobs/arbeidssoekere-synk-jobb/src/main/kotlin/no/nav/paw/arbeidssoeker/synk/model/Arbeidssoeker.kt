@@ -4,7 +4,7 @@ import java.time.Instant
 
 data class ArbeidssoekerFileRow(
     val identitetsnummer: String,
-    val tidspunktFraKilde: Instant? = null
+    val tidspunktFraKilde: String? = null
 )
 
 data class ArbeidssoekerDatabaseRow(

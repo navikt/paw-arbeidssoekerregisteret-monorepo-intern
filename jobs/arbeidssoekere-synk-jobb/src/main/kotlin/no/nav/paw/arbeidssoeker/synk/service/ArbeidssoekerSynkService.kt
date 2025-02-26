@@ -35,12 +35,12 @@ class ArbeidssoekerSynkService(
                 if (totalCount % 100 == 0) {
                     logger.info("Prosessert {} linjer CSV-data på {} ms", totalCount, timestamp.millisSince())
                 }
-                val arbeidssoeker = fileRows.nextValue()
-                    .asArbeidssoeker(
-                        version = version,
-                        periodeTilstand = defaultVerdier.periodeTilstand,
-                        forhaandsgodkjentAvAnsatt = defaultVerdier.forhaandsgodkjentAvAnsatt
-                    )
+                val fileRow = fileRows.nextValue()
+                val arbeidssoeker = fileRow.asArbeidssoeker(
+                    version = version,
+                    periodeTilstand = defaultVerdier.periodeTilstand,
+                    forhaandsgodkjentAvAnsatt = defaultVerdier.forhaandsgodkjentAvAnsatt
+                )
                 prosesserArbeidssoeker(arbeidssoeker)
             }
             logger.info(

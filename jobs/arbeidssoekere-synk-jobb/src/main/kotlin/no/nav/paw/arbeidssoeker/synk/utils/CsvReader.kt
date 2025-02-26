@@ -16,8 +16,10 @@ private val csvMapper: ObjectMapper = CsvMapper()
     .registerModule(JavaTimeModule())
 private val csvSchema: CsvSchema = CsvSchema.builder()
     .setAllowComments(true)
-    .setColumnSeparator(',')
-    .setUseHeader(true)
+    .setColumnSeparator(';')
+    .setUseHeader(false)
+    .addColumn("identitetsnummer", CsvSchema.ColumnType.STRING)
+    .addColumn("tidspunktFraKilde", CsvSchema.ColumnType.STRING)
     .build()
 
 sealed class CsvReader<T>(val objectReader: ObjectReader) {
