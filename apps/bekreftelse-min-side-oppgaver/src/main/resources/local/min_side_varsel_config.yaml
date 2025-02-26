@@ -1,6 +1,8 @@
 standardSpraak:
   kode: en
 link: http://localhost:8080/varsel
+prefererteKanaler:
+  - SMS
 tekster:
   - spraak:
       kode: nb

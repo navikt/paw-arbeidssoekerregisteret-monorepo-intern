@@ -47,7 +47,7 @@ fun InternTilstand.asOppgaveMeldinger(
 
         is BekreftelseTilgjengelig -> {
             this.copy(bekreftelser = bekreftelser + hendelse.bekreftelseId) to
-                    listOf(varselMeldingBygger.opprettOppgave(ident, hendelse))
+                    listOf(varselMeldingBygger.opprettOppgave(ident, hendelse.bekreftelseId, hendelse.gjelderTil))
 
         }
 

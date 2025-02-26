@@ -4,15 +4,14 @@ import io.ktor.server.application.Application
 import io.ktor.server.engine.addShutdownHook
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import io.ktor.server.routing.routing
 import io.micrometer.core.instrument.binder.kafka.KafkaStreamsMetrics
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.context.ApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.plugin.configureRouting
 import no.nav.paw.config.env.appNameOrDefaultForLocal
-import no.nav.paw.health.route.healthRoutes
+import no.nav.paw.database.plugin.installDatabasePlugin
 import no.nav.paw.kafka.plugin.installKafkaStreamsPlugins
 import no.nav.paw.logging.logger.buildApplicationLogger
 import no.nav.paw.metrics.plugin.installMetricsPlugin
-import no.nav.paw.metrics.route.metricsRoutes
 
 fun main() {
     val logger = buildApplicationLogger
@@ -37,16 +36,10 @@ fun main() {
 
 fun Application.module(applicationContext: ApplicationContext) {
     with(applicationContext) {
-        installMetricsPlugin(
-            meterRegistry = prometheusMeterRegistry,
-            additionalMeterBinders = kafkaStreamsList.map { KafkaStreamsMetrics(it) }
-        )
-        installKafkaStreamsPlugins(
-            kafkaStreamsList = kafkaStreamsList,
-        )
-        routing {
-            healthRoutes(healthIndicatorRepository)
-            metricsRoutes(prometheusMeterRegistry)
-        }
+        val additionalMeterBinders = kafkaStreamsList.map { KafkaStreamsMetrics(it) }
+        installMetricsPlugin(prometheusMeterRegistry, additionalMeterBinders)
+        installDatabasePlugin(dataSource)
+        installKafkaStreamsPlugins(kafkaStreamsList)
+        configureRouting(healthIndicatorRepository, prometheusMeterRegistry)
     }
 }

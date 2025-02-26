@@ -1,4 +1,4 @@
-package no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.vo
+package no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.model
 
 import com.fasterxml.jackson.annotation.JsonEnumDefaultValue
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -21,6 +21,7 @@ data class VarselHendelse(
 
 enum class VarselEventName(@get:JsonValue val value: String) {
     OPPRETTET("opprettet"),
+    AKTIVERT("aktivert"),
     INAKTIVERT("inaktivert"),
     SLETTET("slettet"),
     EKSTERN_STATUS_OPPDATERT("eksternStatusOppdatert"),

@@ -1,12 +1,13 @@
 package no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config
 
-import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
+import no.nav.tms.varsel.action.EksternKanal
 import java.net.URI
 
-fun minSideVarselKonfigurasjon(): MinSideVarselKonfigurasjon = loadNaisOrLocalConfiguration("min_side_varsel.yaml")
+const val MIN_SIDE_VARSEL_CONFIG = "min_side_varsel_config.yaml"
 
-data class MinSideVarselKonfigurasjon(
+data class MinSideVarselConfig(
     val link: URI,
+    val prefererteKanaler: List<EksternKanal>,
     val standardSpraak: Spraakkode,
     val tekster: List<MinSideTekst>
 ) {
@@ -14,6 +15,7 @@ data class MinSideVarselKonfigurasjon(
         requireNotNull(tekster.find { it.spraak == standardSpraak }) {
             "Ingen av tekstene har språk $standardSpraak som er satt som standard språk"
         }
+        require(prefererteKanaler.isNotEmpty()) { "Ingen kanaler konfigurert" }
     }
 }
 

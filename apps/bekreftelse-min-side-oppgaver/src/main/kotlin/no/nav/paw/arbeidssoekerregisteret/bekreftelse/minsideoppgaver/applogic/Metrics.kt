@@ -3,7 +3,7 @@ package no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.Tags
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.vo.VarselHendelse
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.model.VarselHendelse
 
 private const val METRIC_PREFIX = "paw_bekreftelse_min_side_oppgaver"
 

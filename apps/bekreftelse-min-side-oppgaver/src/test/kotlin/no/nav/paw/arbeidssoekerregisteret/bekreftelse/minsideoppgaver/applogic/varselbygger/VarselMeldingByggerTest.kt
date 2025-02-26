@@ -5,25 +5,25 @@ import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.MinSideTekst
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.MinSideVarselKonfigurasjon
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.MinSideVarselConfig
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.Spraakkode
 import no.nav.paw.arbeidssoekerregisteret.testdata.bekreftelse.bekreftelseTilgjengelig
 import no.nav.paw.config.env.Local
+import no.nav.tms.varsel.action.EksternKanal
 import java.net.URI
-import java.net.URL
-import java.net.URLStreamHandler
 
 class VarselMeldingByggerTest : FreeSpec({
-    val config = MinSideVarselKonfigurasjon(
+    val config = MinSideVarselConfig(
         link = URI.create("http://localhost:8080"),
         standardSpraak = Spraakkode("en"),
         tekster = listOf(
             MinSideTekst(Spraakkode("nb"), "Hei!"),
             MinSideTekst(Spraakkode("en"), "Hello!"),
-        )
+        ),
+        prefererteKanaler = listOf(EksternKanal.SMS)
     )
     val bygger = VarselMeldingBygger(
-        minSideVarselKonfigurasjon = config,
+        minSideVarselConfig = config,
         runtimeEnvironment = Local
     )
 
@@ -32,7 +32,8 @@ class VarselMeldingByggerTest : FreeSpec({
         val identitetsnummer = "12345678909"
         val resultat = bygger.opprettOppgave(
             identitetsnummer = identitetsnummer,
-            hendelse = hendelse
+            bekreftelseId = hendelse.bekreftelseId,
+            gjelderTilTidspunkt = hendelse.gjelderTil
         )
         resultat.varselId shouldBe hendelse.bekreftelseId
         resultat.value should { json ->

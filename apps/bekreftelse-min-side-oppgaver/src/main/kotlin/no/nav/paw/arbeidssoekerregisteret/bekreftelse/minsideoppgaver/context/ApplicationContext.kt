@@ -4,10 +4,24 @@ import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.*
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.VarselHendelseJsonSerde
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.bekreftelseKafkaTopology
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.internStateStore
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.varselHendelserKafkaTopology
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.varselbygger.VarselMeldingBygger
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.*
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.KAFKA_TOPICS_CONFIG
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.KafkaTopologyConfig
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.MIN_SIDE_VARSEL_CONFIG
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.MinSideVarselConfig
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.SERVER_CONFIG
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.ServerConfig
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.repository.PeriodeRepository
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.repository.VarselRepository
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.service.VarselService
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
+import no.nav.paw.database.config.DATABASE_CONFIG
+import no.nav.paw.database.config.DatabaseConfig
+import no.nav.paw.database.factory.createHikariDataSource
 import no.nav.paw.error.handler.withApplicationTerminatingExceptionHandler
 import no.nav.paw.health.listener.withHealthIndicatorStateListener
 import no.nav.paw.health.model.HealthStatus
@@ -20,9 +34,11 @@ import no.nav.paw.kafka.factory.KafkaStreamsFactory
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
+import javax.sql.DataSource
 
 data class ApplicationContext(
     val serverConfig: ServerConfig,
+    val dataSource: DataSource,
     val prometheusMeterRegistry: PrometheusMeterRegistry,
     val healthIndicatorRepository: HealthIndicatorRepository,
     val kafkaStreamsList: List<KafkaStreams>
@@ -30,51 +46,64 @@ data class ApplicationContext(
     companion object {
         fun build(): ApplicationContext {
             val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG)
+            val databaseConfig = loadNaisOrLocalConfiguration<DatabaseConfig>(DATABASE_CONFIG)
             val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG)
-            val kafkaTopicsConfig = loadNaisOrLocalConfiguration<KafkaTopicsConfig>(KAFKA_TOPICS_CONFIG)
+            val kafkaTopicsConfig = loadNaisOrLocalConfiguration<KafkaTopologyConfig>(KAFKA_TOPICS_CONFIG)
+            val minSideVarselConfig = loadNaisOrLocalConfiguration<MinSideVarselConfig>(MIN_SIDE_VARSEL_CONFIG)
 
             val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
             val healthIndicatorRepository = HealthIndicatorRepository()
 
+            val dataSource = createHikariDataSource(databaseConfig)
+            val periodeRepository = PeriodeRepository()
+            val varselRepository = VarselRepository()
+
+            val varselMeldingBygger = VarselMeldingBygger(serverConfig.runtimeEnvironment, minSideVarselConfig)
+
+            val varselService = VarselService(periodeRepository, varselRepository, varselMeldingBygger)
+
             val bekreftelseKafkaStreams = buildBekreftelseKafkaStreams(
-                serverConfig = serverConfig,
                 kafkaConfig = kafkaConfig,
                 kafkaTopicsConfig = kafkaTopicsConfig,
                 healthIndicatorRepository = healthIndicatorRepository,
+                varselService = varselService,
+                varselMeldingBygger = varselMeldingBygger
             )
             val varselHendelseKafkaStreams = buildVarselHendelseKafkaStreams(
+                serverConfig = serverConfig,
                 kafkaConfig = kafkaConfig,
-                kafkaTopicsConfig = kafkaTopicsConfig,
+                kafkaTopologyConfig = kafkaTopicsConfig,
                 meterRegistry = prometheusMeterRegistry,
-                healthIndicatorRepository = healthIndicatorRepository
+                healthIndicatorRepository = healthIndicatorRepository,
+                varselService = varselService
             )
 
             return ApplicationContext(
                 serverConfig = serverConfig,
+                dataSource = dataSource,
                 prometheusMeterRegistry = prometheusMeterRegistry,
                 healthIndicatorRepository = healthIndicatorRepository,
-                kafkaStreamsList = listOf(bekreftelseKafkaStreams, varselHendelseKafkaStreams)
+                kafkaStreamsList = listOf(bekreftelseKafkaStreams) // TODO: Legge til varsel-hendelse-stream
             )
         }
     }
 }
 
 private fun buildBekreftelseKafkaStreams(
-    serverConfig: ServerConfig,
     kafkaConfig: KafkaConfig,
-    kafkaTopicsConfig: KafkaTopicsConfig,
-    healthIndicatorRepository: HealthIndicatorRepository
+    kafkaTopicsConfig: KafkaTopologyConfig,
+    healthIndicatorRepository: HealthIndicatorRepository,
+    varselService: VarselService,
+    varselMeldingBygger: VarselMeldingBygger
 ): KafkaStreams {
     val kafkaTopology = StreamsBuilder()
         .internStateStore()
         .bekreftelseKafkaTopology(
-            varselMeldingBygger = VarselMeldingBygger(
-                runtimeEnvironment = serverConfig.runtimeEnvironment,
-                minSideVarselKonfigurasjon = minSideVarselKonfigurasjon()
-            ),
-            kafkaTopicsConfig = kafkaTopicsConfig
+            kafkaTopicsConfig = kafkaTopicsConfig,
+            varselService = varselService,
+            varselMeldingBygger = varselMeldingBygger
         ).build()
-    val kafkaStreamsFactory = KafkaStreamsFactory(BEKREFTELSE_STREAM_SUFFIX, kafkaConfig)
+    val kafkaStreamsFactory = KafkaStreamsFactory(kafkaTopicsConfig.bekreftelseStreamSuffix, kafkaConfig)
         .withDefaultKeySerde(Serdes.Long()::class)
         .withDefaultValueSerde(SpecificAvroSerde::class)
         .withExactlyOnce()
@@ -89,15 +118,22 @@ private fun buildBekreftelseKafkaStreams(
 }
 
 private fun buildVarselHendelseKafkaStreams(
+    serverConfig: ServerConfig,
     kafkaConfig: KafkaConfig,
-    kafkaTopicsConfig: KafkaTopicsConfig,
+    kafkaTopologyConfig: KafkaTopologyConfig,
     meterRegistry: MeterRegistry,
-    healthIndicatorRepository: HealthIndicatorRepository
+    healthIndicatorRepository: HealthIndicatorRepository,
+    varselService: VarselService
 ): KafkaStreams {
     val kafkaTopology = StreamsBuilder()
-        .varselHendelserKafkaTopology(kafkaTopicsConfig, meterRegistry)
+        .varselHendelserKafkaTopology(
+            runtimeEnvironment = serverConfig.runtimeEnvironment,
+            kafkaTopicsConfig = kafkaTopologyConfig,
+            meterRegistry = meterRegistry,
+            varselService = varselService
+        )
         .build()
-    val kafkaStreamsFactory = KafkaStreamsFactory(VARSEL_HENDELSE_STREAM_SUFFIX, kafkaConfig)
+    val kafkaStreamsFactory = KafkaStreamsFactory(kafkaTopologyConfig.varselHendelseStreamSuffix, kafkaConfig)
         .withDefaultKeySerde(Serdes.String()::class)
         .withDefaultValueSerde(VarselHendelseJsonSerde::class)
     return KafkaStreams(kafkaTopology, kafkaStreamsFactory.properties)

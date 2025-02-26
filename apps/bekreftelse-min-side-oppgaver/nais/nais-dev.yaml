@@ -18,6 +18,18 @@ spec:
       memory: 256Mi
       cpu: 25m
   env:
+    - name: KAFKA_BEKREFTELSE_STREAM_SUFFIX
+      value: bekreftelse-beta-v2
+    - name: KAFKA_VARSEL_HENDELSE_STREAM_SUFFIX
+      value: varsel-hendelser-beta-v3
+    - name: KAFKA_PAW_ARBEIDSOKERPERIODE_TOPIC
+      value: paw.arbeidssokerperioder-v1
+    - name: KAFKA_PAW_ARBEIDSOKER_BEKREFTELSE_HENDELSESLOGG_TOPIC
+      value: paw.arbeidssoker-bekreftelse-hendelseslogg-beta-v2
+    - name: KAFKA_TMS_AAPEN_BRUKERVARSEL_TOPIC
+      value: min-side.aapen-brukervarsel-v1
+    - name: KAFKA_TMS_AAPEN_VARSEL_HENDELSE_TOPIC
+      value: min-side.aapen-varsel-hendelse-v1
     - name: KAFKA_KEYS_SCOPE
       value: api://dev-gcp.paw.paw-kafka-key-generator/.default
     - name: VARSEL_LINK
@@ -41,6 +53,12 @@ spec:
   kafka:
     pool: {{ kafka }}
     streams: true
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_17
+        tier: db-f1-micro
+        databases:
+          - name: pawbekreftelseminsideoppgaver
   accessPolicy:
     outbound:
       rules:

@@ -10,19 +10,6 @@
         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
     </appender>
 
-    <appender name="SECURE_LOG_JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>/secure-logs/secure.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>/secure-logs/secure.log.%i</fileNamePattern>
-            <minIndex>1</minIndex>
-            <maxIndex>1</maxIndex>
-        </rollingPolicy>
-        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <maxFileSize>50MB</maxFileSize>
-        </triggeringPolicy>
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
-    </appender>
-
     <if condition='"${NAIS_CLUSTER_NAME}" == "NAIS_CLUSTER_NAME_IS_UNDEFINED"'>
         <then>
             <root level="INFO">
@@ -34,9 +21,6 @@
             <logger name="no.nav.paw" level="DEBUG"/>
         </then>
         <else>
-            <logger name="tjenestekall" level="DEBUG" additivity="false">
-                <appender-ref ref="SECURE_LOG_JSON"/>
-            </logger>
             <root level="INFO">
                 <appender-ref ref="STDOUT_JSON"/>
             </root>
