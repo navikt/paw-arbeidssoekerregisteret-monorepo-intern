@@ -2,7 +2,7 @@ syncFilePath = "/var/run/secrets/paw-arbeidssoekere-synk-jobb-csv/v1.csv"
 
 [defaultVerdier]
 periodeTilstand = "STARTET"
-forhaandsgodkjentAvAnsatt = false
+forhaandsgodkjentAvAnsatt = true
 
 [apiInngang]
 baseUrl = "http://paw-arbeidssokerregisteret-api-inngang"
