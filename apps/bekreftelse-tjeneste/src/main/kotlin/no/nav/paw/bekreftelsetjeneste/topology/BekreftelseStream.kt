@@ -13,6 +13,7 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
+import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.metrics.tellBekreftelseMottatt
 import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
 import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
@@ -39,7 +40,8 @@ import java.util.*
 
 fun StreamsBuilder.buildBekreftelseStream(
     prometheusMeterRegistry: PrometheusMeterRegistry,
-    applicationConfig: ApplicationConfig
+    applicationConfig: ApplicationConfig,
+    bekreftelseKonfigurasjon: BekreftelseKonfigurasjon
 ) {
     with(applicationConfig.kafkaTopology) {
         stream<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>(bekreftelseTopic)
@@ -53,7 +55,7 @@ fun StreamsBuilder.buildBekreftelseStream(
                     ::bekreftelsePunctuator
                         .partially1(internStateStoreName)
                         .partially1(bekreftelsePaaVegneAvStateStoreName)
-                        .partially1(applicationConfig.bekreftelseKonfigurasjon)
+                        .partially1(bekreftelseKonfigurasjon)
                 ),
             ) { record ->
                 val bekreftelseTilstandStateStore = getStateStore<BekreftelseTilstandStateStore>(internStateStoreName)

@@ -1,9 +1,3 @@
-[bekreftelseKonfigurasjon]
-migreringstidspunkt = "${BEKREFTELSE_MIGRERINGSTIDSPUNKT}"
-interval = "${BEKREFTELSE_INTERVAL}"
-graceperiode = "${BEKREFTELSE_GRACEPERIODE}"
-tilgjengeligOffset = "${BEKREFTELSE_TILGJENGELIG_OFFSET}"
-
 [kafkaTopology]
 applicationIdSuffix = "${KAFKA_STREAMS_ID_SUFFIX}"
 internStateStoreName = "intern-tilstand"

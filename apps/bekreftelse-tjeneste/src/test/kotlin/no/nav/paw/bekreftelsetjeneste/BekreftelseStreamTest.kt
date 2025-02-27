@@ -47,7 +47,7 @@ class BekreftelseStreamTest : FreeSpec({
     "Mottatt melding med tilhørende tilstand GracePeriodeUtloept skal tilstand være uendret og hendelselogg skal være tom" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
-                val (_, interval, graceperiode, tilgjengeligOffset, varselFoerGraceperiodeUtloept) = applicationConfig.bekreftelseKonfigurasjon
+                val (_, interval, graceperiode, tilgjengeligOffset, varselFoerGraceperiodeUtloept) = bekreftelseKonfigurasjon
                 (varselFoerGraceperiodeUtloept.multipliedBy(2) + 5.seconds) shouldBeGreaterThan graceperiode
                 val (id, key, periode) = periode(
                     identitetsnummer = identitetsnummer,
@@ -117,7 +117,7 @@ class BekreftelseStreamTest : FreeSpec({
     "Mottatt melding med tilhørende tilstand av typen VenterSvar skal oppdatere tilstand til Levert og sende BekreftelseMeldingMottatt hendelse" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
-                val (_, interval, _, tilgjengeligOffset, _) = applicationConfig.bekreftelseKonfigurasjon
+                val (_, interval, _, tilgjengeligOffset, _) = bekreftelseKonfigurasjon
                 val (id, key, periode) = periode(
                     identitetsnummer = identitetsnummer,
                     startetMetadata = metadata(tidspunkt = startTime)
@@ -184,7 +184,7 @@ class BekreftelseStreamTest : FreeSpec({
     "Mottatt melding med tilhørende tilstand KlarForUtfylling skal oppdatere tilstand til Levert og sende BekreftelseMeldingMottatt og BaOmAaAvsluttePeriode hendelse om svaret er at bruker ikke vil fortsette som arbeidssøker" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
-                val (_, interval, _, tilgjengeligOffset, _) = applicationConfig.bekreftelseKonfigurasjon
+                val (_, interval, _, tilgjengeligOffset, _) = bekreftelseKonfigurasjon
                 val (id, key, periode) = periode(
                     identitetsnummer = identitetsnummer,
                     startetMetadata = metadata(tidspunkt = startTime)

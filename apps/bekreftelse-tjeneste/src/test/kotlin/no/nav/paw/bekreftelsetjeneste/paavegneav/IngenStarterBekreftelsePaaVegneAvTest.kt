@@ -15,7 +15,7 @@ import java.time.Instant
 class IngenStarterBekreftelsePaaVegneAvTest : FreeSpec({
     val startTime = Instant.parse("2024-01-02T08:00:00Z")
     with(ApplicationTestContext(initialWallClockTime = startTime)) {
-        val grace = applicationConfig.bekreftelseKonfigurasjon.graceperiode
+        val grace = bekreftelseKonfigurasjon.graceperiode
         with(kafkaKeyContext()) {
             "Applikasjonstest hvor ingen andre starter bekreftelsePaaVegneAv" - {
                 "Bruker avslutter via bekreftelse" - {

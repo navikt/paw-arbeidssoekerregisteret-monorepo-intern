@@ -15,8 +15,8 @@ import no.nav.paw.test.days
 
 class AndreStarterBekreftelsePaaVegneAvMenDetSendesAldriInnNoeTest: FreeSpec({
     with(ApplicationTestContext()) {
-        val intervall = applicationConfig.bekreftelseKonfigurasjon.interval
-        val grace = applicationConfig.bekreftelseKonfigurasjon.graceperiode
+        val intervall = bekreftelseKonfigurasjon.interval
+        val grace = bekreftelseKonfigurasjon.graceperiode
         with(kafkaKeyContext()) {
             "Applikasjonstest hvor noen starter bekreftelsePaaVegneAv rett etter at perioden er lest, men stopper igjen før en eneste" +
                     " bekreftelse er levert" - {

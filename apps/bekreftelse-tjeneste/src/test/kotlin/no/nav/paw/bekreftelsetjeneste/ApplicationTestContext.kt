@@ -13,6 +13,8 @@ import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.bekreftelsetjeneste.paavegneav.BekreftelsePaaVegneAvSerde
 import no.nav.paw.bekreftelsetjeneste.config.APPLICATION_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
+import no.nav.paw.bekreftelsetjeneste.config.BEKREFTELSE_CONFIG_FILE_NAME
+import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.context.ApplicationContext
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstandSerde
 import no.nav.paw.bekreftelsetjeneste.topology.buildTopology
@@ -33,7 +35,10 @@ import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
 
-class ApplicationTestContext(initialWallClockTime: Instant = Instant.now()) {
+class ApplicationTestContext(
+    initialWallClockTime: Instant = Instant.now(),
+    val bekreftelseKonfigurasjon: BekreftelseKonfigurasjon = loadNaisOrLocalConfiguration<BekreftelseKonfigurasjon>(BEKREFTELSE_CONFIG_FILE_NAME)
+) {
     val bekreftelsePaaVegneAvTopicSerde: Serde<PaaVegneAv> = opprettSerde()
     val bekreftelseSerde: Serde<Bekreftelse> = opprettSerde()
     val periodeTopicSerde: Serde<Periode> = opprettSerde()
@@ -41,6 +46,7 @@ class ApplicationTestContext(initialWallClockTime: Instant = Instant.now()) {
     val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG_FILE_NAME)
     val kafkaKeysClient = inMemoryKafkaKeysMock()
     val applicationContext = ApplicationContext(
+        bekreftelseKonfigurasjon = bekreftelseKonfigurasjon,
         applicationConfig = applicationConfig,
         prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
         healthIndicatorRepository = HealthIndicatorRepository(),

@@ -37,7 +37,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                     interval,
                     graceperiode,
                     tilgjengeligOffset,
-                    varselFoerGraceperiodeUtloept) = applicationConfig.bekreftelseKonfigurasjon
+                    varselFoerGraceperiodeUtloept) = bekreftelseKonfigurasjon
                 val (id, key, periode) = periode(
                     identitetsnummer = identitetsnummer,
                     startetMetadata = metadata(tidspunkt = startTime)
@@ -170,7 +170,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
     "BekreftelsePunctuator håndterer BekreftelseMeldingMottatt hendelse" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
-                val (_, interval, graceperiode, tilgjengeligOffset, _) = applicationConfig.bekreftelseKonfigurasjon
+                val (_, interval, graceperiode, tilgjengeligOffset, _) = bekreftelseKonfigurasjon
                 val (_, key, periode) = periode(
                     identitetsnummer = identitetsnummer,
                     startetMetadata = metadata(tidspunkt = startTime)
@@ -222,7 +222,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
     "BekreftelsePunctuator håndterer BaOmAaAvslutePeriode hendelse" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
-                val (_, interval, graceperiode, tilgjengeligOffset, _) = applicationConfig.bekreftelseKonfigurasjon
+                val (_, interval, graceperiode, tilgjengeligOffset, _) = bekreftelseKonfigurasjon
                 val (_, key, periode) = periode(
                     identitetsnummer = identitetsnummer,
                     startetMetadata = metadata(tidspunkt = startTime)
@@ -275,7 +275,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
         "IkkeKlarForUtfylling" {
             with(ApplicationTestContext(initialWallClockTime = startTime)) {
                 with(kafkaKeyContext()) {
-                    val (_, interval, _, _, _) = applicationConfig.bekreftelseKonfigurasjon
+                    val (_, interval, _, _, _) = bekreftelseKonfigurasjon
                     val (id, key, periode) = periode(
                         identitetsnummer = identitetsnummer,
                         startetMetadata = metadata(tidspunkt = startTime)
@@ -314,7 +314,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
         "KlarForUtfylling og BekreftelseTilgjengelig" {
             with(ApplicationTestContext(initialWallClockTime = startTime)) {
                 with(kafkaKeyContext()) {
-                    val (_, interval, _, tilgjengeligOffset, _) = applicationConfig.bekreftelseKonfigurasjon
+                    val (_, interval, _, tilgjengeligOffset, _) = bekreftelseKonfigurasjon
                     val (id, key, periode) = periode(
                         identitetsnummer = identitetsnummer,
                         startetMetadata = metadata(tidspunkt = startTime)
@@ -360,7 +360,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
         "VenterSvar og LeveringsfristUtloept" {
             with(ApplicationTestContext(initialWallClockTime = startTime)) {
                 with(kafkaKeyContext()) {
-                    val (_, interval, _, tilgjengeligOffset, _) = applicationConfig.bekreftelseKonfigurasjon
+                    val (_, interval, _, tilgjengeligOffset, _) = bekreftelseKonfigurasjon
                     val (id, key, periode) = periode(
                         identitetsnummer = identitetsnummer,
                         startetMetadata = metadata(tidspunkt = startTime)
@@ -415,7 +415,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
         "VenterSvar og RegisterGracePeriodeGjenstaaende" {
             with(ApplicationTestContext(initialWallClockTime = startTime)) {
                 with(kafkaKeyContext()) {
-                    val (_, interval, _, tilgjengeligOffset, varselFoerGraceperiodeUtloept) = applicationConfig.bekreftelseKonfigurasjon
+                    val (_, interval, _, tilgjengeligOffset, varselFoerGraceperiodeUtloept) = bekreftelseKonfigurasjon
                     val (id, key, periode) = periode(
                         identitetsnummer = identitetsnummer,
                         startetMetadata = metadata(tidspunkt = startTime)
@@ -468,7 +468,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
         "GracePeriodeUtloept og RegisterGracePeriodeUtloept" {
             with(ApplicationTestContext(initialWallClockTime = startTime)) {
                 with(kafkaKeyContext()) {
-                    val (_, interval, _, tilgjengeligOffset, varselFoerGraceperiodeUtloept) = applicationConfig.bekreftelseKonfigurasjon
+                    val (_, interval, _, tilgjengeligOffset, varselFoerGraceperiodeUtloept) = bekreftelseKonfigurasjon
                     val (id, key, periode) = periode(
                         identitetsnummer = identitetsnummer,
                         startetMetadata = metadata(tidspunkt = startTime)
@@ -526,7 +526,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
     "BekreftelsePunctuator sender RegisterGraceperiodeUtloept hendelse om første av to bekreftelser sin graceperiode utløper" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
-                val (_, interval, _, tilgjengeligOffset, varselFoerGraceperiodeUtloept) = applicationConfig.bekreftelseKonfigurasjon
+                val (_, interval, _, tilgjengeligOffset, varselFoerGraceperiodeUtloept) = bekreftelseKonfigurasjon
                 val (_, key, periode) = periode(
                     identitetsnummer = identitetsnummer,
                     startetMetadata = metadata(tidspunkt = startTime)
@@ -571,7 +571,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
     "BekreftelsePunctuator håndterer BekreftelsesMeldingMottatt hendelse for begge av to bekreftelser tilgjengelig når en bekreftelse har tilstand GracePeriodeVarselet" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
-                val (_, interval, _, tilgjengeligOffset, _) = applicationConfig.bekreftelseKonfigurasjon
+                val (_, interval, _, tilgjengeligOffset, _) = bekreftelseKonfigurasjon
                 val (_, key, periode) = periode(
                     identitetsnummer = identitetsnummer,
                     startetMetadata = metadata(tidspunkt = startTime)
@@ -652,7 +652,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
     "BekreftelsePunctuator håndterer BekreftelsesMeldingMottatt hendelse for begge av to bekreftelser tilgjengelig" {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
-                val (_, interval, _, tilgjengeligOffset, _) = applicationConfig.bekreftelseKonfigurasjon
+                val (_, interval, _, tilgjengeligOffset, _) = bekreftelseKonfigurasjon
                 val (_, key, periode) = periode(
                     identitetsnummer = identitetsnummer,
                     startetMetadata = metadata(tidspunkt = startTime)

@@ -8,6 +8,8 @@ import io.ktor.server.routing.routing
 import no.nav.paw.bekreftelsetjeneste.paavegneav.BekreftelsePaaVegneAvSerde
 import no.nav.paw.bekreftelsetjeneste.config.APPLICATION_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
+import no.nav.paw.bekreftelsetjeneste.config.BEKREFTELSE_CONFIG_FILE_NAME
+import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.config.SERVER_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelsetjeneste.config.ServerConfig
 import no.nav.paw.bekreftelsetjeneste.context.ApplicationContext
@@ -32,12 +34,13 @@ val logger = LoggerFactory.getLogger("bekreftelse.tjeneste.application")
 fun main() {
     val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG_FILE_NAME)
     val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG_FILE_NAME)
+    val bekreftelseKonfigurasjon = loadNaisOrLocalConfiguration<BekreftelseKonfigurasjon>(BEKREFTELSE_CONFIG_FILE_NAME)
 
     logger.info("Starter: ${currentRuntimeEnvironment.appNameOrDefaultForLocal()}")
     val keepGoing = AtomicBoolean(true)
     with(serverConfig) {
         embeddedServer(Netty, port = port) {
-            module(applicationConfig)
+            module(applicationConfig, bekreftelseKonfigurasjon)
         }.apply {
             addShutdownHook {
                 keepGoing.set(false)
@@ -48,8 +51,12 @@ fun main() {
     }
 }
 
-fun Application.module(applicationConfig: ApplicationConfig, keepGoing: AtomicBoolean = AtomicBoolean(true)) {
-    val applicationContext = ApplicationContext.create(applicationConfig)
+fun Application.module(
+    applicationConfig: ApplicationConfig,
+    bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
+    keepGoing: AtomicBoolean = AtomicBoolean(true)
+) {
+    val applicationContext = ApplicationContext.create(applicationConfig, bekreftelseKonfigurasjon)
     val stream = StreamsBuilder()
     stream.addStateStore(
         Stores.keyValueStoreBuilder(
@@ -73,7 +80,7 @@ fun Application.module(applicationConfig: ApplicationConfig, keepGoing: AtomicBo
         tilstandStoreName = applicationContext.applicationConfig.kafkaTopology.internStateStoreName,
         keepGoing = keepGoing,
         prometheusMeterRegistry = applicationContext.prometheusMeterRegistry,
-        bekreftelseKonfigurasjon = applicationContext.applicationConfig.bekreftelseKonfigurasjon
+        bekreftelseKonfigurasjon = applicationContext.bekreftelseKonfigurasjon
     )
         .stateGaugeTask
         .handle{ _, ex ->
