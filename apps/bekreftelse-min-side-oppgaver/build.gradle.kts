@@ -1,4 +1,3 @@
-
 plugins {
     kotlin("jvm")
     id("jib-distroless")
@@ -25,7 +24,7 @@ dependencies {
     implementation(libs.avro.kafkaStreamsSerde)
     implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
     implementation(libs.micrometer.registryPrometheus)
-    implementation("no.nav.tms.varsel:kotlin-builder:1.1.0")
+    implementation(libs.nav.tms.varsel.kotlinBuilder)
     testImplementation(libs.kafka.streams.test)
     testImplementation(libs.bundles.testLibsWithUnitTesting)
     testImplementation(project(":lib:kafka-key-generator-client"))
