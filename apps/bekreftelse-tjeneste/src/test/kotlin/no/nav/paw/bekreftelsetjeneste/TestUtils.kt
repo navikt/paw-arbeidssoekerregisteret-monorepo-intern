@@ -2,10 +2,25 @@ package no.nav.paw.bekreftelsetjeneste
 
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
+import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
+import no.nav.paw.bekreftelse.internehendelser.BekreftelsePaaVegneAvStartet
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
+import no.nav.paw.bekreftelse.internehendelser.EksternGracePeriodeUtloept
+import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
+import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
+import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjenstaaendeTid
+import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import no.nav.paw.test.days
+import java.time.Duration
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 val standardIntervaller = BekreftelseKonfigurasjon(
@@ -87,3 +102,122 @@ fun BekreftelseKonfigurasjon.gracePeriodeUtloeper(startTid: Instant): Instant =
 fun BekreftelseKonfigurasjon.tilgjengelig(startTid: Instant): Instant = startTid.plus(interval).plus(tilgjengeligOffset)
 
 fun BekreftelseKonfigurasjon.frist(startTid: Instant): Instant = startTid.plus(interval)
+fun ApplicationTestContext.internt_varsel_hendelse_skal_være_publisert(gjenstaaendeTid: Duration) {
+    withClue("Bekreftelse hendelse er publisert") {
+        bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
+    }
+    withClue("Bekreftelse hendelse skal være RegisterGracePeriodeGjenstaaendeTid med gjenstående tid $gjenstaaendeTid") {
+        val kv = bekreftelseHendelseloggTopicOut.readKeyValue()
+        kv.value.shouldBeInstanceOf<RegisterGracePeriodeGjenstaaendeTid>().gjenstaandeTid shouldBe gjenstaaendeTid
+    }
+}
+
+fun ApplicationTestContext.bekreftelse_siste_frist_utloept(sisteFrist: Instant) {
+    withClue("Bekreftelse hendelse er publisert") {
+        bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
+    }
+    withClue("Bekreftelse hendelse skal være RegisterGracePeriodeUtloept klokken $sisteFrist") {
+        val kv = bekreftelseHendelseloggTopicOut.readKeyValue()
+        kv.value.shouldBeInstanceOf<RegisterGracePeriodeUtloept>()
+    }
+}
+
+fun ApplicationTestContext.bekreftelse_venter_på_svar(fristUtloept: Instant) {
+    withClue("Bekreftelse hendelse er publisert") {
+        bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
+    }
+    withClue("Bekreftelse hendelse skal være LeveringsfristUtloept klokken $fristUtloept") {
+        val kv = bekreftelseHendelseloggTopicOut.readKeyValue()
+        val hendelse = kv.value.shouldBeInstanceOf<LeveringsfristUtloept>()
+        hendelse.leveringsfrist shouldBe fristUtloept
+    }
+}
+
+fun ApplicationTestContext.bekreftelse_er_tilgjengelig(
+    fra: Instant,
+    til: Instant
+) {
+    withClue("Bekreftelse hendelse er publisert") {
+        bekreftelseHendelseloggTopicOut.isEmpty shouldBe false
+    }
+    val bekreftelseTilgjengelig = withClue("Hendelsen er av type BekreftelseTilgjengelig") {
+        val kv = bekreftelseHendelseloggTopicOut.readKeyValue()
+        kv.value.shouldBeInstanceOf<BekreftelseTilgjengelig>()
+    }
+    withClue("Fra og til for bekreftelsen er riktig") {
+        bekreftelseTilgjengelig.gjelderFra shouldBe fra
+        bekreftelseTilgjengelig.gjelderTil shouldBe til
+    }
+}
+
+fun ApplicationTestContext.ingen_flere_hendelser() {
+    withClue("Ingen flere hendelser skal være publisert klokken ${wallclock.get()}") {
+        bekreftelseHendelseloggTopicOut.isEmpty shouldBe true
+    }
+}
+
+fun ApplicationTestContext.ingen_bekreftelser_skal_være_publisert() {
+    withClue("Ingen bekreftelser skal være publisert klokken ${wallclock.get()}") {
+        bekreftelseHendelseloggTopicOut.isEmpty shouldBe true
+    }
+}
+
+fun ApplicationTestContext.vi_stiller_klokken_frem(tid: Duration) {
+    testDriver.advanceWallClockTime(tid)
+}
+
+fun setOppTest(
+    datoOgKlokkeslettVedStart: Instant,
+    bekreftelseIntervall: Duration,
+    tilgjengeligOffset: Duration,
+    innleveringsfrist: Duration
+): ApplicationTestContext {
+    return ApplicationTestContext(
+        initialWallClockTime = datoOgKlokkeslettVedStart,
+        bekreftelseKonfigurasjon = BekreftelseKonfigurasjon(
+            migreringstidspunkt = datoOgKlokkeslettVedStart - 30.dager,
+            interval = bekreftelseIntervall,
+            graceperiode = innleveringsfrist,
+            tilgjengeligOffset = tilgjengeligOffset
+        )
+    )
+}
+
+val Int.dager: Duration get() = Duration.ofDays(this.toLong())
+val Int.timer: Duration get() = Duration.ofHours(this.toLong())
+private val format = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
+val String.timestamp: Instant get() = LocalDateTime.parse(this, format).atZone(ZoneId.systemDefault()).toInstant()
+private val prettyPrintFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("cccc dd.MM.yyyy HH:mm ('uke' w)")
+val Instant.prettyPrint: String get() = LocalDateTime.ofInstant(this, ZoneId.systemDefault()).format(prettyPrintFormat)
+    .replace("Monday", "Mandag")
+    .replace("Tuesday", "Tirsdag")
+    .replace("Wednesday", "Onsdag")
+    .replace("Thursday", "Torsdag")
+    .replace("Friday", "Fredag")
+    .replace("Saturday", "Lørdag")
+    .replace("Sunday", "Søndag")
+
+fun BekreftelseHendelse.prettyPrint(): String {
+    val name = this::class.java.simpleName
+    val header = "${name.first().lowercase()}${name.drop(1).map { if (it.isUpperCase()) " ${it.lowercase()}" else it }.joinToString("")}"
+        .replace("oe", "ø")
+        .replace("aa", "å")
+        .replace("ae", "æ")
+        .replace("grace periode", "siste frist")
+    val detaljer = when (this) {
+        is BaOmAaAvsluttePeriode -> null
+        is BekreftelseMeldingMottatt -> null
+        is BekreftelsePaaVegneAvStartet -> null
+        is BekreftelseTilgjengelig -> "\tgjelder, fra: ${this.gjelderFra.prettyPrint}, til: ${this.gjelderTil.prettyPrint}"
+        is EksternGracePeriodeUtloept -> TODO()
+        is LeveringsfristUtloept -> "\tfrist utløpt: ${this.leveringsfrist.prettyPrint}"
+        is PeriodeAvsluttet -> null
+        is RegisterGracePeriodeGjenstaaendeTid -> "\tgjenstående tid: ${this.gjenstaandeTid}"
+        is RegisterGracePeriodeUtloept -> "\tperiode avsluttes"
+    }
+    return if (detaljer == null) {
+        header
+    } else {
+        "$header\n$detaljer"
+    }
+}

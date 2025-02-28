@@ -1,5 +1,6 @@
 package no.nav.paw.bekreftelsetjeneste
 
+import arrow.atomic.update
 import io.confluent.kafka.schemaregistry.testutil.MockSchemaRegistry
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
@@ -32,13 +33,17 @@ import org.apache.kafka.streams.TopologyTestDriver
 import org.apache.kafka.streams.state.Stores
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.Duration
+import java.time.Duration.between
 import java.time.Instant
 import java.util.*
+import java.util.concurrent.atomic.AtomicReference
 
 class ApplicationTestContext(
     initialWallClockTime: Instant = Instant.now(),
     val bekreftelseKonfigurasjon: BekreftelseKonfigurasjon = loadNaisOrLocalConfiguration<BekreftelseKonfigurasjon>(BEKREFTELSE_CONFIG_FILE_NAME)
 ) {
+    val wallclock = AtomicReference(initialWallClockTime)
     val bekreftelsePaaVegneAvTopicSerde: Serde<PaaVegneAv> = opprettSerde()
     val bekreftelseSerde: Serde<Bekreftelse> = opprettSerde()
     val periodeTopicSerde: Serde<Periode> = opprettSerde()
@@ -54,6 +59,19 @@ class ApplicationTestContext(
     )
 
     val logger: Logger = LoggerFactory.getLogger(ApplicationTestContext::class.java)
+
+    fun tidspunkt(): String = wallclock.get().prettyPrint
+
+    fun still_klokken_frem_til(tidspunkt: Instant) {
+        val duration = between(wallclock.get(), tidspunkt)
+        require(duration >= Duration.ZERO) { "Tidspunkt kan ikke være i fortiden" }
+        still_klokken_frem(duration)
+    }
+
+    fun still_klokken_frem(duration: Duration) {
+        wallclock.update { it.plus(duration) }
+        testDriver.advanceWallClockTime(duration)
+    }
 
     val topology = StreamsBuilder()
         .addStateStore(
