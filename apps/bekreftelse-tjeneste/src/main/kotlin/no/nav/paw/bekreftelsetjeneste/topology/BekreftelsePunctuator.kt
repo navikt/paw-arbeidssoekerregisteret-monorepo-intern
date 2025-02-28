@@ -12,6 +12,7 @@ import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
 import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
 import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
+import no.nav.paw.bekreftelsetjeneste.logger
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import no.nav.paw.collections.toPawNonEmptyListOrNull
 import org.apache.kafka.streams.KeyValue

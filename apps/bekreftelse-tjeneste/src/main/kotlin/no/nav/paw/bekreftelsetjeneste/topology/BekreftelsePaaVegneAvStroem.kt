@@ -9,6 +9,7 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Stopp
+import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.paavegneav.*
 import no.nav.paw.bekreftelsetjeneste.config.KafkaTopologyConfig
 import no.nav.paw.bekreftelsetjeneste.metrics.tellPaVegneAv
@@ -22,6 +23,7 @@ import java.time.Instant
 import java.util.*
 
 fun StreamsBuilder.byggBekreftelsePaaVegneAvStroem(
+    bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
     registry: PrometheusMeterRegistry,
     kafkaTopologyConfig: KafkaTopologyConfig,
     bekreftelseHendelseSerde: BekreftelseHendelseSerde
@@ -43,7 +45,8 @@ fun StreamsBuilder.byggBekreftelsePaaVegneAvStroem(
                 ansvarlige = paaVegneAvTilstand?.paaVegneAvList?.map { it.loesning } ?: emptyList()
             )
             haandterBekreftelsePaaVegneAvEndret(
-                wallclock = WallClock(Instant.now()),
+                wallclock = WallClock(Instant.ofEpochMilli(this.currentSystemTimeMs())),
+                bekreftelseKonfigurasjon = bekreftelseKonfigurasjon,
                 bekreftelseTilstand = bekreftelseTilstand,
                 paaVegneAvTilstand = paaVegneAvTilstand,
                 paaVegneAvHendelse = message

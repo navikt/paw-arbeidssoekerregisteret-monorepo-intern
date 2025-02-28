@@ -12,10 +12,12 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
+import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloeptEtterEksternInnsamling
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelse.melding.v1.vo.Svar
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
+import no.nav.paw.bekreftelse.paavegneav.v1.vo.Stopp
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -35,7 +37,7 @@ fun main() {
         )
     ) {
         val opploesning = Duration.ofSeconds(60)
-        val stoppTid = "01.06.2025 00:00".timestamp
+        val stoppTid = "02.05.2025 00:00".timestamp
         with(KafkaKeyContext(this.kafkaKeysClient)) {
             val periode = periode(
                 identitetsnummer = identietsnummer,
@@ -123,7 +125,8 @@ fun ApplicationTestContext.run(
         if (!bekreftelseHendelseloggTopicOut.isEmpty) {
             val kv = bekreftelseHendelseloggTopicOut.readKeyValue()
             when (val hendelse = kv.value) {
-                is RegisterGracePeriodeUtloept -> {
+                is RegisterGracePeriodeUtloept,
+                is RegisterGracePeriodeUtloeptEtterEksternInnsamling -> {
                     perioder
                         .first { it.id == kv.value.periodeId }
                         .let { periode ->
@@ -144,7 +147,7 @@ fun ApplicationTestContext.run(
         }
         still_klokken_frem(opploesning)
         counter++
-        if (counter % 100000 == 0) {
+        if (counter % 1000 == 0) {
             println("Tidspunkt: ${wallclock.get().prettyPrint}")
         }
     }

@@ -9,6 +9,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.bekreftelse.internehendelser.baOmAaAvsluttePeriodeHendelsesType
+import no.nav.paw.bekreftelse.internehendelser.registerGracePeriodeUtloeptEtterEksternInnsamlingHendelseType
 import no.nav.paw.bekreftelse.internehendelser.registerGracePeriodeUtloeptHendelseType
 import no.nav.paw.bekreftelseutgang.config.ApplicationConfig
 import no.nav.paw.bekreftelseutgang.tilstand.InternTilstand
@@ -57,6 +58,16 @@ fun processBekreftelseHendelse(
                 id = applicationConfig.getAppImage()
             ),
             aarsak = "Graceperiode utløpt"
+        )
+        registerGracePeriodeUtloeptEtterEksternInnsamlingHendelseType -> avsluttetHendelse(
+            identitetsnummer = identitetsnummer,
+            periodeId = bekreftelseHendelse.periodeId,
+            arbeidssoekerId = bekreftelseHendelse.arbeidssoekerId,
+            utfoertAv = Bruker(
+                type = BrukerType.SYSTEM,
+                id = applicationConfig.getAppImage()
+            ),
+            aarsak = "Graceperiode utløpt etter ekstern innsamling"
         )
         baOmAaAvsluttePeriodeHendelsesType -> avsluttetHendelse(
             identitetsnummer = identitetsnummer,

@@ -13,6 +13,7 @@ import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
 import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjenstaaendeTid
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
+import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloeptEtterEksternInnsamling
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import no.nav.paw.test.days
@@ -214,6 +215,7 @@ fun BekreftelseHendelse.prettyPrint(): String {
         is PeriodeAvsluttet -> null
         is RegisterGracePeriodeGjenstaaendeTid -> "\tgjenstående tid: ${this.gjenstaandeTid}"
         is RegisterGracePeriodeUtloept -> "\tperiode avsluttes"
+        is RegisterGracePeriodeUtloeptEtterEksternInnsamling -> null
     }
     return if (detaljer == null) {
         header

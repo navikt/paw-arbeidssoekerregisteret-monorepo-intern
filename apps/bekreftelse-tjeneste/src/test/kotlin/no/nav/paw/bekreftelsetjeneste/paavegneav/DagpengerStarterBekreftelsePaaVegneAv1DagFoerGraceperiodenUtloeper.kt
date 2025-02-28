@@ -34,7 +34,8 @@ class DagpengerStarterBekreftelsePaaVegneAv1DagFoerGraceperiodenUtloeper : FreeS
             wallclock = WallClock(intervaller.gracePeriodeUtloeper(periodeStart) - 1.days),
             bekreftelseTilstand = tilstand,
             paaVegneAvTilstand = null,
-            paaVegneAvHendelse = dagpengerStarterBekreftelsePaaVegneAv
+            paaVegneAvHendelse = dagpengerStarterBekreftelsePaaVegneAv,
+            bekreftelseKonfigurasjon = intervaller
         )
         "BekreftelsePaaVegneAv skal skrives til key-value store" {
             handlinger.assertExactlyOne<Handling, SkrivPaaVegneAvTilstand> {

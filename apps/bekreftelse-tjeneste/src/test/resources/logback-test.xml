@@ -19,5 +19,6 @@
 
     <logger name="punctuator.bekreftelse" level="trace"/>
     <logger name="org.apache.kafka" level="WARN"/>
-    <logger name="bekreftelse" level="INFO"/>
+    <logger name="bekreftelse" level="trace"/>
+    <logger name="bekreftelse.tjeneste.punctuator" level="warn"/>
 </configuration>

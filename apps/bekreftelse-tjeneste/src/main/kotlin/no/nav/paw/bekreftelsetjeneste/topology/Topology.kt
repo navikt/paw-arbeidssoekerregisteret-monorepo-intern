@@ -22,7 +22,8 @@ fun StreamsBuilder.buildTopology(
     byggBekreftelsePaaVegneAvStroem(
         registry = applicationContext.prometheusMeterRegistry,
         kafkaTopologyConfig = applicationContext.applicationConfig.kafkaTopology,
-        bekreftelseHendelseSerde = applicationContext.bekreftelseHendelseSerde
+        bekreftelseHendelseSerde = applicationContext.bekreftelseHendelseSerde,
+        bekreftelseKonfigurasjon = applicationContext.bekreftelseKonfigurasjon
     )
     return build()
 }
