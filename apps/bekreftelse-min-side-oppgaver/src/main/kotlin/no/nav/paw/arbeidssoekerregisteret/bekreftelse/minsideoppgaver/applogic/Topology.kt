@@ -64,7 +64,6 @@ fun StreamsBuilder.bekreftelseKafkaTopology(
                 }
             }
 
-        /*
         stream(bekreftelseHendelseTopic, Consumed.with(Serdes.Long(), BekreftelseHendelseSerde()))
             .mapWithContext("bekreftelse-hendelse-mottatt", STATE_STORE_NAME.value) { hendelse ->
                 varselService.mottaBekreftelseHendelse(hendelse)
@@ -93,8 +92,8 @@ fun StreamsBuilder.bekreftelseKafkaTopology(
                 melding.varselId.toString() to melding.value
             }
             .foreach { key, meldinger ->
-                logger.debug("Sender meldinger: key: {}, value: {}", key, meldinger)
-            }*/
+                logger.debug("Skal sende meldinger: key: {}, value: {}", key, meldinger)
+            }
         // TODO: Disablet midlertidig .to(tmsVarselTopic, Produced.with(Serdes.String(), Serdes.String()))
     }
     return this
