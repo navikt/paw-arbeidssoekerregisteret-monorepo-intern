@@ -6,7 +6,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import no.nav.paw.bekreftelse.internehendelser.BekreftelsePaaVegneAvStartet
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
-import no.nav.paw.bekreftelsetjeneste.*
+import no.nav.paw.bekreftelsetjeneste.testutils.*
 import no.nav.paw.bekreftelsetjeneste.tilstand.leggTilNyEllerOppdaterBekreftelse
 import no.nav.paw.bekreftelsetjeneste.tilstand.sisteTilstand
 import no.nav.paw.test.days

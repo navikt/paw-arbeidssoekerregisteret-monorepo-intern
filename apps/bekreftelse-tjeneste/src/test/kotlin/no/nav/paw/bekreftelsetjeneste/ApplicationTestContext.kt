@@ -17,6 +17,7 @@ import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
 import no.nav.paw.bekreftelsetjeneste.config.BEKREFTELSE_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.context.ApplicationContext
+import no.nav.paw.bekreftelsetjeneste.testutils.prettyPrint
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstandSerde
 import no.nav.paw.bekreftelsetjeneste.topology.buildTopology
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration

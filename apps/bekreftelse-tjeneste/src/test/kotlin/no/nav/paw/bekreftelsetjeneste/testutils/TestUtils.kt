@@ -1,4 +1,4 @@
-package no.nav.paw.bekreftelsetjeneste
+package no.nav.paw.bekreftelsetjeneste.testutils
 
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
@@ -14,6 +14,7 @@ import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjenstaaendeTid
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloeptEtterEksternInnsamling
+import no.nav.paw.bekreftelsetjeneste.ApplicationTestContext
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import no.nav.paw.test.days

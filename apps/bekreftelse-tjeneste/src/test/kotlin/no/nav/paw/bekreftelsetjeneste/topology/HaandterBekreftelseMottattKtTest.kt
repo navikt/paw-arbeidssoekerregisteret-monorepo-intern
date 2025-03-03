@@ -4,8 +4,8 @@ import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
-import no.nav.paw.bekreftelsetjeneste.bekreftelse
-import no.nav.paw.bekreftelsetjeneste.standardIntervaller
+import no.nav.paw.bekreftelsetjeneste.testutils.bekreftelse
+import no.nav.paw.bekreftelsetjeneste.testutils.standardIntervaller
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternBekreftelsePaaVegneAvStartet
 import no.nav.paw.bekreftelsetjeneste.tilstand.Levert
 import no.nav.paw.test.days

@@ -7,9 +7,9 @@ import no.nav.paw.bekreftelsetjeneste.paavegneav.InternPaaVegneAv
 import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
 import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
 import no.nav.paw.bekreftelsetjeneste.paavegneav.opprettPaaVegneAvTilstand
-import no.nav.paw.bekreftelsetjeneste.bekreftelse
-import no.nav.paw.bekreftelsetjeneste.bekreftelseTilstand
-import no.nav.paw.bekreftelsetjeneste.standardIntervaller
+import no.nav.paw.bekreftelsetjeneste.testutils.bekreftelse
+import no.nav.paw.bekreftelsetjeneste.testutils.bekreftelseTilstand
+import no.nav.paw.bekreftelsetjeneste.testutils.standardIntervaller
 import no.nav.paw.bekreftelsetjeneste.topology.prosesserBekreftelseOgPaaVegneAvTilstand
 import no.nav.paw.test.days
 import no.nav.paw.test.seconds

@@ -8,6 +8,7 @@ import no.nav.paw.arbeidssoekerregisteret.testdata.kafkaKeyContext
 import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.periode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelsePaaVegneAvStartet
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
+import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloeptEtterEksternInnsamling
 import no.nav.paw.bekreftelsetjeneste.ApplicationTestContext
 import no.nav.paw.test.assertEvent
 import no.nav.paw.test.assertNoMessage
@@ -43,11 +44,11 @@ class AndreStarterBekreftelsePaaVegneAvMenDetSendesAldriInnNoeTest: FreeSpec({
                     testDriver.advanceWallClockTime(grace + 1.days)
                     bekreftelseHendelseloggTopicOut.assertNoMessage()
                 }
-                "Når andre stopper bekreftelsePaaVegneAv blir en ny bekreftelse tilgjengelig" {
+                "Når andre stopper bekreftelsePaaVegneAv og det er over inervall + grace siden sist leverte intervall sluttet det sendes ut RegisterGracePeriodeUtloeptEtterEksternInnsamling" {
                     bekreftelsePaaVegneAvTopic.pipeInput(key, stoppPaaVegneAv(periodeId = periode.id))
                     testDriver.advanceWallClockTime(1.days)
-                    bekreftelseHendelseloggTopicOut.assertEvent { hendelse: BekreftelseTilgjengelig ->
-                        hendelse.gjelderFra shouldBe periode.startet.tidspunkt
+                    bekreftelseHendelseloggTopicOut.assertEvent { hendelse: RegisterGracePeriodeUtloeptEtterEksternInnsamling ->
+                        hendelse.periodeId shouldBe periode.id
                     }
                 }
             }

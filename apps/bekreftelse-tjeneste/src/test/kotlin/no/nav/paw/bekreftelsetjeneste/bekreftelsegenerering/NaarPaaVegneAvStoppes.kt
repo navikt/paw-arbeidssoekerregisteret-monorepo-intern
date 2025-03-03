@@ -7,10 +7,10 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
-import no.nav.paw.bekreftelsetjeneste.gracePeriodeUtloeper
-import no.nav.paw.bekreftelsetjeneste.bekreftelseTilstand
-import no.nav.paw.bekreftelsetjeneste.standardIntervaller
-import no.nav.paw.bekreftelsetjeneste.tilgjengelig
+import no.nav.paw.bekreftelsetjeneste.testutils.gracePeriodeUtloeper
+import no.nav.paw.bekreftelsetjeneste.testutils.bekreftelseTilstand
+import no.nav.paw.bekreftelsetjeneste.testutils.standardIntervaller
+import no.nav.paw.bekreftelsetjeneste.testutils.tilgjengelig
 import no.nav.paw.bekreftelsetjeneste.tilstand.IkkeKlarForUtfylling
 import no.nav.paw.bekreftelsetjeneste.tilstand.KlarForUtfylling
 import no.nav.paw.bekreftelsetjeneste.topology.prosesserBekreftelseOgPaaVegneAvTilstand
