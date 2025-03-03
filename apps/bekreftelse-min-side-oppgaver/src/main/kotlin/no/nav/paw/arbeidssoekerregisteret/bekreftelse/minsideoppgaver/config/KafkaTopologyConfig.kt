@@ -1,8 +1,11 @@
 package no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config
 
+import java.time.Duration
+
 const val KAFKA_TOPICS_CONFIG = "kafka_topology_config.toml"
 
 data class KafkaTopologyConfig(
+    val shutdownTimeout: Duration = Duration.ofSeconds(5),
     val bekreftelseStreamSuffix: String,
     val varselHendelseStreamSuffix: String,
     val periodeTopic: String,

@@ -39,7 +39,7 @@ fun Application.module(applicationContext: ApplicationContext) {
         val additionalMeterBinders = kafkaStreamsList.map { KafkaStreamsMetrics(it) }
         installMetricsPlugin(prometheusMeterRegistry, additionalMeterBinders)
         installDatabasePlugin(dataSource)
-        installKafkaStreamsPlugins(kafkaStreamsList)
+        installKafkaStreamsPlugins(kafkaStreamsList, kafkaStreamsShutdownTimeout)
         configureRouting(healthIndicatorRepository, prometheusMeterRegistry)
     }
 }

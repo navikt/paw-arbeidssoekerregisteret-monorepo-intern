@@ -9,12 +9,7 @@ import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.b
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.internStateStore
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.varselHendelserKafkaTopology
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.varselbygger.VarselMeldingBygger
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.KAFKA_TOPICS_CONFIG
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.KafkaTopologyConfig
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.MIN_SIDE_VARSEL_CONFIG
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.MinSideVarselConfig
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.SERVER_CONFIG
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.ServerConfig
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.*
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.repository.PeriodeRepository
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.repository.VarselRepository
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.service.VarselService
@@ -34,6 +29,7 @@ import no.nav.paw.kafka.factory.KafkaStreamsFactory
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
+import java.time.Duration
 import javax.sql.DataSource
 
 data class ApplicationContext(
@@ -41,7 +37,8 @@ data class ApplicationContext(
     val dataSource: DataSource,
     val prometheusMeterRegistry: PrometheusMeterRegistry,
     val healthIndicatorRepository: HealthIndicatorRepository,
-    val kafkaStreamsList: List<KafkaStreams>
+    val kafkaStreamsList: List<KafkaStreams>,
+    val kafkaStreamsShutdownTimeout: Duration
 ) {
     companion object {
         fun build(): ApplicationContext {
@@ -83,7 +80,8 @@ data class ApplicationContext(
                 dataSource = dataSource,
                 prometheusMeterRegistry = prometheusMeterRegistry,
                 healthIndicatorRepository = healthIndicatorRepository,
-                kafkaStreamsList = listOf(bekreftelseKafkaStreams) // TODO: Legge til varsel-hendelse-stream
+                kafkaStreamsList = listOf(bekreftelseKafkaStreams), // TODO: Legge til varsel-hendelse-stream
+                kafkaStreamsShutdownTimeout = kafkaTopicsConfig.shutdownTimeout
             )
         }
     }
