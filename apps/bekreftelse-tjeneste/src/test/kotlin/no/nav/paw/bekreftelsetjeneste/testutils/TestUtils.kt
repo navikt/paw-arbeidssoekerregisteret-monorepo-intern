@@ -188,7 +188,7 @@ fun setOppTest(
 val Int.dager: Duration get() = Duration.ofDays(this.toLong())
 val Int.timer: Duration get() = Duration.ofHours(this.toLong())
 private val format = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
-val String.timestamp: Instant get() = LocalDateTime.parse(this, format).atZone(ZoneId.systemDefault()).toInstant()
+val String.timestamp: Instant get() = LocalDateTime.parse(this, format).atZone(ZoneId.of("Europe/Oslo")).toInstant()
 private val prettyPrintFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("cccc dd.MM.yyyy HH:mm ('uke' w)")
 val Instant.prettyPrint: String get() = LocalDateTime.ofInstant(this, ZoneId.systemDefault()).format(prettyPrintFormat)
     .replace("Monday", "Mandag")
