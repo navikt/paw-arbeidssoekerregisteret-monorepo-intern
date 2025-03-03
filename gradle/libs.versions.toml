@@ -12,19 +12,20 @@ graphqlClientVersion = "8.3.0"
 orgApacheKafkaVersion = "3.8.1"
 ioConfluentKafkaVersion = "7.8.1"
 orgApacheAvroVersion = "1.12.0"
-comFasterxmlJacksonVersion = "2.18.2"
+comFasterxmlJacksonVersion = "2.18.3"
 kotlinExposedVersion = "0.59.0"
 logstashVersion = "8.0"
 logbackVersion = "1.5.17"
 kotestVersion = "5.9.1"
-mockkVersion = "1.13.16"
+mockkVersion = "1.13.17"
 testContainersVersion = "1.20.5"
 micrometerVersion = "1.14.4"
 otelTargetSdkVersion = "1.47.0"
 otelInstrumentationVersion = "2.13.2"
 coroutinesVersion = "1.10.1"
 postgresDriverVersion = "42.7.5"
-flywayVersion = "11.3.3"
+h2DatabaseVersion = "2.3.232"
+flywayVersion = "11.3.4"
 hikariVersion = "6.2.1"
 kotlinxCoroutinesVersion = "1.10.1"
 kotlinxSerializationJsonVersion = "1.8.0"
@@ -98,6 +99,7 @@ database-postgres-driver = { group = "org.postgresql", name = "postgresql", vers
 database-flyway-core = { group = "org.flywaydb", name = "flyway-core", version.ref = "flywayVersion" }
 database-flyway-postgres = { group = "org.flywaydb", name = "flyway-database-postgresql", version.ref = "flywayVersion" }
 database-hikari-connectionPool = { group = "com.zaxxer", name = "HikariCP", version.ref = "hikariVersion" }
+database-h2 = { group = "com.h2database", name = "h2", version.ref = "h2DatabaseVersion" }
 nav-common-tokenClient = { group = "no.nav.common", name = "token-client", version.ref = "noNavCommonVersion" }
 nav-common-log = { group = "no.nav.common", name = "log", version.ref = "noNavCommonVersion" }
 nav-common-auditLog = { group = "no.nav.common", name = "audit-log", version.ref = "noNavCommonVersion" }

@@ -41,6 +41,12 @@ spec:
     requests:
       memory: 256Mi
       cpu: 25m
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_17
+        tier: db-f1-micro
+        databases:
+          - name: pawbekreftelseminsideoppgaver
   accessPolicy:
     outbound:
       rules:
