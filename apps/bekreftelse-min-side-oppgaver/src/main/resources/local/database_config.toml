@@ -1,0 +1,5 @@
+host = "localhost"
+port = 5432
+username = "paw_bekreftelse_min_side_oppgaver"
+password = "Paw1234"
+database = "pawbekreftelseminsideoppgaver"

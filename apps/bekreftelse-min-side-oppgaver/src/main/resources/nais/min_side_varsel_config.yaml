@@ -1,6 +1,8 @@
 standardSpraak:
   kode: nb
 link: ${VARSEL_LINK}
+prefererteKanaler:
+  - SMS
 tekster:
   - spraak:
       kode: nb
