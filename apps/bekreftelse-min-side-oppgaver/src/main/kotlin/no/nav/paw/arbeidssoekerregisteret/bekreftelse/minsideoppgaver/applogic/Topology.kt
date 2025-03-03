@@ -21,6 +21,7 @@ import no.nav.paw.serialization.kafka.buildJacksonSerde
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.Consumed
+import org.apache.kafka.streams.kstream.Produced
 import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.state.KeyValueStore
 import org.apache.kafka.streams.state.Stores
@@ -91,10 +92,10 @@ fun StreamsBuilder.bekreftelseKafkaTopology(
             .mapKeyAndValue("map_til_utgaaende") { _, melding ->
                 melding.varselId.toString() to melding.value
             }
-            .foreach { key, meldinger ->
+            .peek { key, meldinger ->
                 logger.debug("Skal sende meldinger: key: {}, value: {}", key, meldinger)
             }
-        // TODO: Disablet midlertidig .to(tmsVarselTopic, Produced.with(Serdes.String(), Serdes.String()))
+            .to(tmsVarselTopic, Produced.with(Serdes.String(), Serdes.String()))
     }
     return this
 }
