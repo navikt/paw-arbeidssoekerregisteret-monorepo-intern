@@ -21,7 +21,7 @@ class TopologyTest : FreeSpec({
                 initDatabase()
             }
 
-            "Skal ignorere urelevante hendelser".config(enabled = false) {
+            "Skal ignorere urelevante hendelser" {
                 bekreftelseHendelseTopic.pipeInput(
                     baOmAaAvsluttePeriode1.key,
                     baOmAaAvsluttePeriode1.value
@@ -56,7 +56,7 @@ class TopologyTest : FreeSpec({
                 varselRepository.countAll() shouldBe 0
             }
 
-            "Verifiser standard applikasjonsflyt".config(enabled = false) {
+            "Verifiser standard applikasjonsflyt" {
                 periodeTopic.pipeInput(aapenPeriode1)
                 periodeRepository.countAll() shouldBe 1
                 varselRepository.countAll() shouldBe 0
@@ -130,6 +130,7 @@ class TopologyTest : FreeSpec({
                 tmsVarselHendelseTopic.pipeInput(oppgaveVarselHendelse2a)
                 tmsVarselHendelseTopic.pipeInput(oppgaveVarselHendelse2b)
                 tmsVarselHendelseTopic.pipeInput(oppgaveVarselHendelse2c)
+                tmsVarselHendelseTopic.pipeInput(oppgaveVarselHendelse2d)
                 val varselRow5 = varselRepository.findByBekreftelseId(bekreftelseTilgjengelig1b.value.bekreftelseId)
                 varselRow5 shouldNotBe null
                 varselRow5?.bekreftelseId shouldBe bekreftelseTilgjengelig1b.value.bekreftelseId

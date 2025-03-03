@@ -11,8 +11,7 @@ data class PeriodeRow(
     val startetTimestamp: Instant,
     val avsluttetTimestamp: Instant?,
     val insertedTimestamp: Instant,
-    val updatedTimestamp: Instant?,
-    val varsler: List<VarselRow>
+    val updatedTimestamp: Instant?
 )
 
 data class InsertPeriodeRow(
@@ -27,14 +26,13 @@ data class UpdatePeriodeRow(
     val avsluttetTimestamp: Instant?
 )
 
-fun ResultRow.asPeriodeRow(varselRows: List<VarselRow>): PeriodeRow = PeriodeRow(
+fun ResultRow.asPeriodeRow(): PeriodeRow = PeriodeRow(
     periodeId = this[PeriodeTable.periodeId],
     identitetsnummer = this[PeriodeTable.identitetsnummer],
     startetTimestamp = this[PeriodeTable.startetTimestamp],
     avsluttetTimestamp = this[PeriodeTable.avsluttetTimestamp],
     insertedTimestamp = this[PeriodeTable.insertedTimestamp],
     updatedTimestamp = this[PeriodeTable.updatedTimestamp],
-    varsler = varselRows
 )
 
 fun Periode.asInsertPeriodeRow(): InsertPeriodeRow = InsertPeriodeRow(

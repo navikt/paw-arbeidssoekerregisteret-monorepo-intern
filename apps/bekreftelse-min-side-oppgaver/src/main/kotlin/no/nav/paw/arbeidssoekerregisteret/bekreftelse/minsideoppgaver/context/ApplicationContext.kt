@@ -66,21 +66,21 @@ data class ApplicationContext(
                 varselService = varselService,
                 varselMeldingBygger = varselMeldingBygger
             )
-            /*val varselHendelseKafkaStreams = buildVarselHendelseKafkaStreams(
+            val varselHendelseKafkaStreams = buildVarselHendelseKafkaStreams(
                 serverConfig = serverConfig,
                 kafkaConfig = kafkaConfig,
                 kafkaTopologyConfig = kafkaTopicsConfig,
                 meterRegistry = prometheusMeterRegistry,
                 healthIndicatorRepository = healthIndicatorRepository,
                 varselService = varselService
-            )*/
+            )
 
             return ApplicationContext(
                 serverConfig = serverConfig,
                 dataSource = dataSource,
                 prometheusMeterRegistry = prometheusMeterRegistry,
                 healthIndicatorRepository = healthIndicatorRepository,
-                kafkaStreamsList = listOf(bekreftelseKafkaStreams), // TODO: Legge til varsel-hendelse-stream
+                kafkaStreamsList = listOf(bekreftelseKafkaStreams, varselHendelseKafkaStreams),
                 kafkaStreamsShutdownTimeout = kafkaTopicsConfig.shutdownTimeout
             )
         }

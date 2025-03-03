@@ -55,20 +55,18 @@ fun StreamsBuilder.bekreftelseKafkaTopology(
         stream<Long, Periode>(periodeTopic)
             .filter { _, periode -> periode.avsluttet == null }
             .genericProcess<Long, Periode, Long, Unit>("lagre_periode_data", STATE_STORE_NAME.value) { (_, periode) ->
-                varselService.mottaPeriode(periode)
-
                 val stateStore = getStateStore(STATE_STORE_NAME)
                 val gjeldeneTilstand = stateStore[periode.id]
                 val nyTilstand = periode.asInternTilstand(gjeldeneTilstand)
                 if (nyTilstand != gjeldeneTilstand) {
                     stateStore.put(periode.id, nyTilstand)
                 }
+
+                varselService.mottaPeriode(periode)
             }
 
         stream(bekreftelseHendelseTopic, Consumed.with(Serdes.Long(), BekreftelseHendelseSerde()))
             .mapWithContext("bekreftelse-hendelse-mottatt", STATE_STORE_NAME.value) { hendelse ->
-                varselService.mottaBekreftelseHendelse(hendelse)
-
                 val stateStore = getStateStore(STATE_STORE_NAME)
                 val gjeldeneTilstand = stateStore[hendelse.periodeId]
                 if (gjeldeneTilstand == null) {
@@ -78,15 +76,15 @@ fun StreamsBuilder.bekreftelseKafkaTopology(
                         hendelse.hendelseId,
                         hendelse.periodeId
                     )
-                    emptyList()
                 } else {
-                    val (nyTilstand, meldinger) = gjeldeneTilstand.asOppgaveMeldinger(hendelse, varselMeldingBygger)
+                    val (nyTilstand, _) = gjeldeneTilstand.asOppgaveMeldinger(hendelse, varselMeldingBygger)
                     when {
                         nyTilstand == null -> stateStore.delete(hendelse.periodeId)
                         nyTilstand != gjeldeneTilstand -> stateStore.put(hendelse.periodeId, nyTilstand)
                     }
-                    meldinger
                 }
+
+                varselService.mottaBekreftelseHendelse(hendelse)
             }
             .flatMapValues { _, meldinger -> meldinger }
             .mapKeyAndValue("map_til_utgaaende") { _, melding ->

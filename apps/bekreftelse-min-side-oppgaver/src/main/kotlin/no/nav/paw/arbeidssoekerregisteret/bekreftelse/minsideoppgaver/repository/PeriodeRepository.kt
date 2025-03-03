@@ -1,12 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.repository
 
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.model.InsertPeriodeRow
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.model.PeriodeRow
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.model.PeriodeTable
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.model.UpdatePeriodeRow
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.model.VarselTable
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.model.asPeriodeRow
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.model.asVarselRow
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.model.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
@@ -23,15 +17,10 @@ class PeriodeRepository {
     }
 
     fun findByPeriodeId(periodeId: UUID): PeriodeRow? = transaction {
-        val periodeResultRow = PeriodeTable.selectAll()
+        PeriodeTable.selectAll()
             .where { PeriodeTable.periodeId eq periodeId }
+            .map { it.asPeriodeRow() }
             .singleOrNull()
-        periodeResultRow?.let {
-            val varslerRows = VarselTable.selectAll()
-                .where { VarselTable.periodeId eq periodeId }
-                .map { it.asVarselRow() }
-            it.asPeriodeRow(varslerRows)
-        }
     }
 
     fun insert(periode: InsertPeriodeRow): Int = transaction {
