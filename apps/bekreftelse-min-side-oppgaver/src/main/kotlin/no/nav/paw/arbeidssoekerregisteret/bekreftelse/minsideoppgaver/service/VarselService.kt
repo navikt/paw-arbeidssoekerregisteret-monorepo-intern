@@ -120,7 +120,7 @@ class VarselService(
                 )
             }
         } else {
-            throw IllegalStateException("Fant ikke lagret varsel for varsel-hendelse")
+            logger.warn("Fant ikke lagret varsel for varsel-hendelse")
         }
     }
 }

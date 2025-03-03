@@ -58,7 +58,7 @@ dependencies {
     testImplementation(project(":lib:kafka-key-generator-client"))
     testImplementation(libs.bundles.testLibsWithUnitTesting)
     testImplementation(libs.kafka.streams.test)
-    testImplementation("com.h2database:h2:2.3.232") // TODO: Legg inn i Gradle libs
+    testImplementation(libs.database.h2)
 }
 
 tasks.withType<Test>().configureEach {

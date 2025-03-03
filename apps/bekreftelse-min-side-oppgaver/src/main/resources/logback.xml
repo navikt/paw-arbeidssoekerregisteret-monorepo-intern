@@ -10,6 +10,21 @@
         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
     </appender>
 
+    <if condition='"${NAIS_CLUSTER_NAME}" == "prod-gcp"'>
+        <then>
+            <root level="INFO">
+                <appender-ref ref="STDOUT_JSON"/>
+            </root>
+        </then>
+    </if>
+    <if condition='"${NAIS_CLUSTER_NAME}" == "dev-gcp"'>
+        <then>
+            <root level="INFO">
+                <appender-ref ref="STDOUT_JSON"/>
+            </root>
+            <logger name="no.nav.paw" level="DEBUG"/>
+        </then>
+    </if>
     <if condition='"${NAIS_CLUSTER_NAME}" == "NAIS_CLUSTER_NAME_IS_UNDEFINED"'>
         <then>
             <root level="INFO">
@@ -20,13 +35,5 @@
             <logger name="io.confluent.kafka.serializers" level="WARN"/>
             <logger name="no.nav.paw" level="DEBUG"/>
         </then>
-        <else>
-            <root level="INFO">
-                <appender-ref ref="STDOUT_JSON"/>
-            </root>
-            <logger name="org.apache.kafka.streams" level="WARN"/>
-            <logger name="org.apache.kafka.clients" level="WARN"/>
-            <logger name="io.confluent.kafka.serializers" level="WARN"/>
-        </else>
     </if>
 </configuration>
