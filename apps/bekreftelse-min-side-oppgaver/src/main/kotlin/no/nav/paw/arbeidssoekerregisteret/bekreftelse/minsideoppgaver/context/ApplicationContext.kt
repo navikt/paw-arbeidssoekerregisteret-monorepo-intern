@@ -66,14 +66,14 @@ data class ApplicationContext(
                 varselService = varselService,
                 varselMeldingBygger = varselMeldingBygger
             )
-            val varselHendelseKafkaStreams = buildVarselHendelseKafkaStreams(
+            /*val varselHendelseKafkaStreams = buildVarselHendelseKafkaStreams(
                 serverConfig = serverConfig,
                 kafkaConfig = kafkaConfig,
                 kafkaTopologyConfig = kafkaTopicsConfig,
                 meterRegistry = prometheusMeterRegistry,
                 healthIndicatorRepository = healthIndicatorRepository,
                 varselService = varselService
-            )
+            )*/
 
             return ApplicationContext(
                 serverConfig = serverConfig,
