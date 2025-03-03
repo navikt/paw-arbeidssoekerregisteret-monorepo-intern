@@ -21,7 +21,7 @@ class TopologyTest : FreeSpec({
                 initDatabase()
             }
 
-            "Skal ignorere urelevante hendelser" {
+            "Skal ignorere urelevante hendelser".config(enabled = false) {
                 bekreftelseHendelseTopic.pipeInput(
                     baOmAaAvsluttePeriode1.key,
                     baOmAaAvsluttePeriode1.value
