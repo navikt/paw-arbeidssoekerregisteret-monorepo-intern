@@ -9,8 +9,8 @@ arrowVersion = "2.0.1"
 arrowJacksonIntegrationVersion = "0.15.1"
 comSksamuelHopliteVersion = "2.9.0"
 graphqlClientVersion = "8.3.0"
-orgApacheKafkaVersion = "3.8.1"
-ioConfluentKafkaVersion = "7.8.1"
+orgApacheKafkaVersion = "3.9.0"
+ioConfluentKafkaVersion = "7.9.0"
 orgApacheAvroVersion = "1.12.0"
 comFasterxmlJacksonVersion = "2.18.3"
 kotlinExposedVersion = "0.59.0"
@@ -34,7 +34,6 @@ ktorVersion = "3.1.1"
 [libraries]
 coroutinesCore = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutinesVersion" }
 arrow-core-core = { group = "io.arrow-kt", name = "arrow-core", version.ref = "arrowVersion" }
-arrow-core-serialization = { group = "io.arrow-kt", name = "arrow-core-serialization", version.ref = "arrowVersion" }
 arrow-functions = { group = "io.arrow-kt", name = "arrow-functions", version.ref = "arrowVersion" }
 arrow-integration-jackson = { group = "io.arrow-kt", name = "arrow-integrations-jackson-module", version.ref = "arrowJacksonIntegrationVersion" }
 logbackClassic = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logbackVersion" }
@@ -78,7 +77,6 @@ jackson-datatypeJsr310 = { group = "com.fasterxml.jackson.datatype", name = "jac
 jackson-dataformat-csv = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-csv", version.ref = "comFasterxmlJacksonVersion" }
 jackson-kotlin = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "comFasterxmlJacksonVersion" }
 jackson-core = { group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "comFasterxmlJacksonVersion" }
-graphql-client = { group = "com.expediagroup", name = "graphql-kotlin-client", version.ref = "graphqlClientVersion" }
 graphql-ktor-client = { group = "com.expediagroup", name = "graphql-kotlin-ktor-client", version.ref = "graphqlClientVersion" }
 hoplite-core = { group = "com.sksamuel.hoplite", name = "hoplite-core", version.ref = "comSksamuelHopliteVersion" }
 hoplite-toml = { group = "com.sksamuel.hoplite", name = "hoplite-toml", version.ref = "comSksamuelHopliteVersion" }
