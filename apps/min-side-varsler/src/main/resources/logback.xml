@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %5p %c{1}:%L - %m%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="STDOUT_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+    </appender>
+
+    <if condition='"${NAIS_CLUSTER_NAME}" == "prod-gcp"'>
+        <then>
+            <root level="INFO">
+                <appender-ref ref="STDOUT_JSON"/>
+            </root>
+        </then>
+    </if>
+    <if condition='"${NAIS_CLUSTER_NAME}" == "dev-gcp"'>
+        <then>
+            <root level="INFO">
+                <appender-ref ref="STDOUT_JSON"/>
+            </root>
+            <logger name="no.nav.paw" level="DEBUG"/>
+        </then>
+    </if>
+    <if condition='"${NAIS_CLUSTER_NAME}" == "NAIS_CLUSTER_NAME_IS_UNDEFINED"'>
+        <then>
+            <root level="INFO">
+                <appender-ref ref="STDOUT"/>
+            </root>
+            <logger name="org.apache.kafka.streams" level="WARN"/>
+            <logger name="org.apache.kafka.clients" level="WARN"/>
+            <logger name="io.confluent.kafka.serializers" level="WARN"/>
+            <logger name="no.nav.paw" level="DEBUG"/>
+        </then>
+    </if>
+</configuration>

@@ -57,7 +57,8 @@ include(
     "apps:bekreftelse-utgang",
     "apps:bekreftelse-hendelsefilter",
     "apps:tilgangskontroll",
-    "apps:dolly-api"
+    "apps:dolly-api",
+    "apps:min-side-varsler"
 )
 
 dependencyResolutionManagement {
