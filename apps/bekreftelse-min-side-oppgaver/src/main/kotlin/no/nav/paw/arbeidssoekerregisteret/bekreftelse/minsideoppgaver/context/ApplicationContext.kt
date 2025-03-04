@@ -65,6 +65,7 @@ data class ApplicationContext(
             val varselService = VarselService(periodeRepository, varselRepository, varselMeldingBygger)
 
             val bekreftelseKafkaStreams = buildBekreftelseKafkaStreams(
+                serverConfig = serverConfig,
                 kafkaConfig = kafkaConfig,
                 kafkaTopicsConfig = kafkaTopicsConfig,
                 meterRegistry = prometheusMeterRegistry,
@@ -94,6 +95,7 @@ data class ApplicationContext(
 }
 
 private fun buildBekreftelseKafkaStreams(
+    serverConfig: ServerConfig,
     kafkaConfig: KafkaConfig,
     kafkaTopicsConfig: KafkaTopologyConfig,
     meterRegistry: MeterRegistry,
@@ -104,6 +106,7 @@ private fun buildBekreftelseKafkaStreams(
     val kafkaTopology = StreamsBuilder()
         .internStateStore()
         .bekreftelseKafkaTopology(
+            runtimeEnvironment = serverConfig.runtimeEnvironment,
             kafkaTopicsConfig = kafkaTopicsConfig,
             meterRegistry = meterRegistry,
             varselService = varselService,

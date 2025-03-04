@@ -48,6 +48,7 @@ fun StreamsBuilder.internStateStore(): StreamsBuilder {
 }
 
 fun StreamsBuilder.bekreftelseKafkaTopology(
+    runtimeEnvironment: RuntimeEnvironment,
     kafkaTopicsConfig: KafkaTopologyConfig,
     meterRegistry: MeterRegistry,
     varselService: VarselService,
@@ -91,14 +92,12 @@ fun StreamsBuilder.bekreftelseKafkaTopology(
 
                 varselService.mottaBekreftelseHendelse(hendelse)
             }
+            .filter { _, _ -> skalSendeVarsler }
             .flatMapValues { _, meldinger -> meldinger }
+            .peek { _, melding -> meterRegistry.varselCounter(runtimeEnvironment, melding) }
             .mapKeyAndValue("map_til_utgaaende") { _, melding ->
                 melding.varselId.toString() to melding.value
             }
-            .peek { key, melding ->
-                logger.debug("Skal sende melding med key: {}, value: {}", key, melding)
-            }
-            .filter { _, _ -> skalSendeVarsler }
             .to(tmsVarselTopic, Produced.with(Serdes.String(), Serdes.String()))
     }
     return this
@@ -115,8 +114,7 @@ fun StreamsBuilder.varselHendelserKafkaTopology(
             .filter { _, hendelse -> hendelse.namespace == runtimeEnvironment.namespaceOrDefaultForLocal() }
             .peek { _, hendelse -> meterRegistry.varselHendelseCounter(hendelse) }
             .filter { _, hendelse -> hendelse.varseltype == VarselType.OPPGAVE }
-            .foreach { key, hendelse ->
-                logger.debug("Mottok varsel-hendelse: key: {}, value: {}", key, hendelse)
+            .foreach { _, hendelse ->
                 varselService.mottaVarselHendelse(hendelse)
             }
     }

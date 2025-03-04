@@ -105,6 +105,7 @@ data class TestContext(
             val bekreftelseTopology = StreamsBuilder()
                 .inMemStateStore()
                 .bekreftelseKafkaTopology(
+                    runtimeEnvironment = runtimeEnvironment,
                     kafkaTopicsConfig = kafkaTopologyConfig,
                     meterRegistry = prometheusMeterRegistry,
                     varselService = varselService,
