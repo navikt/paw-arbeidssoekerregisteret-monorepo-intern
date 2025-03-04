@@ -1,5 +1,5 @@
 [versions]
-noNavSecurityVersion = "5.0.17"
+noNavSecurityVersion = "5.0.19"
 noNavSecurityMockOauth2ServerVersion = "2.1.10"
 noNavCommonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
 noNavTmsVarselBuilderVersion = "1.1.0"
