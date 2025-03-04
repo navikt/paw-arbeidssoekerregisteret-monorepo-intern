@@ -56,7 +56,7 @@ private fun Producer<Long, Periode>.sendPeriode(topic: String): RecordMetadata? 
 }
 
 private fun Producer<Long, BekreftelseHendelse>.sendBekreftelseTilgjengelig(topic: String): RecordMetadata? {
-    val bekreftelseHendelse = TestData.bekreftelseTilgjengelig1c
+    val bekreftelseHendelse = TestData.bekreftelseTilgjengelig1a
     return send(ProducerRecord(topic, bekreftelseHendelse.key, bekreftelseHendelse.value)).get()
 }
 

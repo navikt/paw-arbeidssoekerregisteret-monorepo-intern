@@ -35,12 +35,7 @@ import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.utils.Time
-import org.apache.kafka.streams.KeyValue
-import org.apache.kafka.streams.StreamsBuilder
-import org.apache.kafka.streams.StreamsConfig
-import org.apache.kafka.streams.TestInputTopic
-import org.apache.kafka.streams.TestOutputTopic
-import org.apache.kafka.streams.TopologyTestDriver
+import org.apache.kafka.streams.*
 import org.apache.kafka.streams.state.KeyValueStore
 import org.apache.kafka.streams.state.internals.InMemoryKeyValueBytesStoreSupplier
 import org.apache.kafka.streams.state.internals.KeyValueStoreBuilder
@@ -93,7 +88,8 @@ data class TestContext(
                 periodeTopic = "periode-topic",
                 bekreftelseHendelseTopic = "bekreftelse-hendelse-topic",
                 tmsVarselTopic = "tms-oppgave-topic",
-                tmsVarselHendelseTopic = "tms-varsel-hendelse-topic"
+                tmsVarselHendelseTopic = "tms-varsel-hendelse-topic",
+                skalSendeVarsler = true
             )
         ): TestContext {
             val dataSource = buildHikariTestDataSource()

@@ -57,6 +57,7 @@ class VarselService(
                         )
                         val insertVarselRow = hendelse.asInsertVarselRow()
                         varselRepository.insert(insertVarselRow)
+
                         listOf(
                             varselMeldingBygger.opprettOppgave(
                                 periodeRow.identitetsnummer,
@@ -79,6 +80,7 @@ class VarselService(
                         hendelse.hendelseType
                     )
                     varselRepository.deleteByBekreftelseId(hendelse.bekreftelseId)
+
                     listOf(varselMeldingBygger.avsluttOppgave(hendelse.bekreftelseId))
                 } else {
                     logger.warn("Fant ingen varsel for bekreftelse-hendelse av type {}", hendelse.hendelseType)
@@ -94,6 +96,7 @@ class VarselService(
                 val varselRows = varselRepository.findByPeriodeId(hendelse.periodeId)
                 varselRepository.deleteByPeriodeId(hendelse.periodeId)
                 periodeRepository.deleteByPeriodeId(hendelse.periodeId)
+
                 varselRows.map { varselMeldingBygger.avsluttOppgave(it.bekreftelseId) }
             }
 

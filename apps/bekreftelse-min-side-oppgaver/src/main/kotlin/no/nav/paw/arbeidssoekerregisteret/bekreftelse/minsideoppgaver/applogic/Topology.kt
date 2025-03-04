@@ -35,6 +35,7 @@ fun ProcessorContext<*, *>.getStateStore(stateStoreName: StateStoreName): Intern
 
 private val logger = buildNamedLogger("bekreftelse.varsler.topology")
 
+// TODO: Skal slette bruk av Kafka Streams State Store
 fun StreamsBuilder.internStateStore(): StreamsBuilder {
     addStateStore(
         Stores.keyValueStoreBuilder(
@@ -53,13 +54,14 @@ fun StreamsBuilder.bekreftelseKafkaTopology(
 ): StreamsBuilder {
     with(kafkaTopicsConfig) {
         stream<Long, Periode>(periodeTopic)
-            .filter { _, periode -> periode.avsluttet == null }
             .genericProcess<Long, Periode, Long, Unit>("lagre_periode_data", STATE_STORE_NAME.value) { (_, periode) ->
-                val stateStore = getStateStore(STATE_STORE_NAME)
-                val gjeldeneTilstand = stateStore[periode.id]
-                val nyTilstand = periode.asInternTilstand(gjeldeneTilstand)
-                if (nyTilstand != gjeldeneTilstand) {
-                    stateStore.put(periode.id, nyTilstand)
+                if (periode.avsluttet == null) {
+                    val stateStore = getStateStore(STATE_STORE_NAME)
+                    val gjeldeneTilstand = stateStore[periode.id]
+                    val nyTilstand = periode.asInternTilstand(gjeldeneTilstand)
+                    if (nyTilstand != gjeldeneTilstand) {
+                        stateStore.put(periode.id, nyTilstand)
+                    }
                 }
 
                 varselService.mottaPeriode(periode)
@@ -90,9 +92,10 @@ fun StreamsBuilder.bekreftelseKafkaTopology(
             .mapKeyAndValue("map_til_utgaaende") { _, melding ->
                 melding.varselId.toString() to melding.value
             }
-            .peek { key, meldinger ->
-                logger.debug("Skal sende meldinger: key: {}, value: {}", key, meldinger)
+            .peek { key, melding ->
+                logger.debug("Skal sende melding med key: {}, value: {}", key, melding)
             }
+            .filter { _, _ -> skalSendeVarsler }
             .to(tmsVarselTopic, Produced.with(Serdes.String(), Serdes.String()))
     }
     return this
