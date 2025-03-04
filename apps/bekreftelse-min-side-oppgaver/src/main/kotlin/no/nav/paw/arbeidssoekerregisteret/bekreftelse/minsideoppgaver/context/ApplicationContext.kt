@@ -9,7 +9,12 @@ import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.b
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.internStateStore
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.varselHendelserKafkaTopology
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.applogic.varselbygger.VarselMeldingBygger
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.*
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.KAFKA_TOPICS_CONFIG
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.KafkaTopologyConfig
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.MIN_SIDE_VARSEL_CONFIG
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.MinSideVarselConfig
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.SERVER_CONFIG
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.repository.PeriodeRepository
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.repository.VarselRepository
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.minsideoppgaver.service.VarselService
@@ -62,6 +67,7 @@ data class ApplicationContext(
             val bekreftelseKafkaStreams = buildBekreftelseKafkaStreams(
                 kafkaConfig = kafkaConfig,
                 kafkaTopicsConfig = kafkaTopicsConfig,
+                meterRegistry = prometheusMeterRegistry,
                 healthIndicatorRepository = healthIndicatorRepository,
                 varselService = varselService,
                 varselMeldingBygger = varselMeldingBygger
@@ -90,6 +96,7 @@ data class ApplicationContext(
 private fun buildBekreftelseKafkaStreams(
     kafkaConfig: KafkaConfig,
     kafkaTopicsConfig: KafkaTopologyConfig,
+    meterRegistry: MeterRegistry,
     healthIndicatorRepository: HealthIndicatorRepository,
     varselService: VarselService,
     varselMeldingBygger: VarselMeldingBygger
@@ -98,6 +105,7 @@ private fun buildBekreftelseKafkaStreams(
         .internStateStore()
         .bekreftelseKafkaTopology(
             kafkaTopicsConfig = kafkaTopicsConfig,
+            meterRegistry = meterRegistry,
             varselService = varselService,
             varselMeldingBygger = varselMeldingBygger
         ).build()

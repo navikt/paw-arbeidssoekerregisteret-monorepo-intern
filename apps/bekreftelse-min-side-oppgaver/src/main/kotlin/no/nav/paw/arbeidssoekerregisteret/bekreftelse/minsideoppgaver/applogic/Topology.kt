@@ -49,11 +49,13 @@ fun StreamsBuilder.internStateStore(): StreamsBuilder {
 
 fun StreamsBuilder.bekreftelseKafkaTopology(
     kafkaTopicsConfig: KafkaTopologyConfig,
+    meterRegistry: MeterRegistry,
     varselService: VarselService,
     varselMeldingBygger: VarselMeldingBygger
 ): StreamsBuilder {
     with(kafkaTopicsConfig) {
         stream<Long, Periode>(periodeTopic)
+            .peek { _, periode -> meterRegistry.periodeCounter(periode) }
             .genericProcess<Long, Periode, Long, Unit>("lagre_periode_data", STATE_STORE_NAME.value) { (_, periode) ->
                 if (periode.avsluttet == null) {
                     val stateStore = getStateStore(STATE_STORE_NAME)
@@ -68,6 +70,7 @@ fun StreamsBuilder.bekreftelseKafkaTopology(
             }
 
         stream(bekreftelseHendelseTopic, Consumed.with(Serdes.Long(), BekreftelseHendelseSerde()))
+            .peek { _, hendelse -> meterRegistry.bekreftelseHendelseCounter(hendelse) }
             .mapWithContext("bekreftelse-hendelse-mottatt", STATE_STORE_NAME.value) { hendelse ->
                 val stateStore = getStateStore(STATE_STORE_NAME)
                 val gjeldeneTilstand = stateStore[hendelse.periodeId]
