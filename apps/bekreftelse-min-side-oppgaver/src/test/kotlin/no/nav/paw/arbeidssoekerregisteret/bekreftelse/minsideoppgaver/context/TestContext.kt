@@ -93,8 +93,7 @@ data class TestContext(
                 periodeTopic = "periode-topic",
                 bekreftelseHendelseTopic = "bekreftelse-hendelse-topic",
                 tmsVarselTopic = "tms-oppgave-topic",
-                tmsVarselHendelseTopic = "tms-varsel-hendelse-topic",
-                skalSendeVarsler = true
+                tmsVarselHendelseTopic = "tms-varsel-hendelse-topic"
             )
         ): TestContext {
             val dataSource = buildHikariTestDataSource()

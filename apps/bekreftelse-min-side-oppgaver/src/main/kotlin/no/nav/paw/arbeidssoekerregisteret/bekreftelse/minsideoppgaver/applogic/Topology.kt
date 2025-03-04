@@ -57,6 +57,7 @@ fun StreamsBuilder.bekreftelseKafkaTopology(
     with(kafkaTopicsConfig) {
         stream<Long, Periode>(periodeTopic)
             .peek { _, periode -> meterRegistry.periodeCounter(periode) }
+            .peek { _, periode -> logger.debug("Mottok periode: {}", periode) }
             .genericProcess<Long, Periode, Long, Unit>("lagre_periode_data", STATE_STORE_NAME.value) { (_, periode) ->
                 if (periode.avsluttet == null) {
                     val stateStore = getStateStore(STATE_STORE_NAME)
@@ -92,9 +93,9 @@ fun StreamsBuilder.bekreftelseKafkaTopology(
 
                 varselService.mottaBekreftelseHendelse(hendelse)
             }
-            .filter { _, _ -> skalSendeVarsler }
             .flatMapValues { _, meldinger -> meldinger }
             .peek { _, melding -> meterRegistry.varselCounter(runtimeEnvironment, melding) }
+            .peek { _, melding -> logger.debug("Sender varsel: {}", melding.value) }
             .mapKeyAndValue("map_til_utgaaende") { _, melding ->
                 melding.varselId.toString() to melding.value
             }
@@ -113,6 +114,7 @@ fun StreamsBuilder.varselHendelserKafkaTopology(
         stream(tmsVarselHendelseTopic, Consumed.with(Serdes.String(), VarselHendelseJsonSerde()))
             .filter { _, hendelse -> hendelse.namespace == runtimeEnvironment.namespaceOrDefaultForLocal() }
             .peek { _, hendelse -> meterRegistry.varselHendelseCounter(hendelse) }
+            .peek { _, hendelse -> logger.debug("Mottok varsel-hendelse: {}", hendelse) }
             .filter { _, hendelse -> hendelse.varseltype == VarselType.OPPGAVE }
             .foreach { _, hendelse ->
                 varselService.mottaVarselHendelse(hendelse)

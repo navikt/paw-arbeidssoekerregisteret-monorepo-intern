@@ -11,6 +11,5 @@ data class KafkaTopologyConfig(
     val periodeTopic: String,
     val bekreftelseHendelseTopic: String,
     val tmsVarselTopic: String,
-    val tmsVarselHendelseTopic: String,
-    val skalSendeVarsler: Boolean
+    val tmsVarselHendelseTopic: String
 )
