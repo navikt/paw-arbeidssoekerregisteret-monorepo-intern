@@ -3,9 +3,9 @@ package no.nav.paw.arbeidssoekerregisteret.utils
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.Tags
-import no.nav.paw.arbeidssoekerregisteret.model.OppgaveMelding
 import no.nav.paw.arbeidssoekerregisteret.model.VarselHendelse
 import no.nav.paw.arbeidssoekerregisteret.model.VarselKanal
+import no.nav.paw.arbeidssoekerregisteret.model.VarselMelding
 import no.nav.paw.arbeidssoekerregisteret.model.VarselStatus
 import no.nav.paw.arbeidssoekerregisteret.model.VarselType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
@@ -58,12 +58,13 @@ fun MeterRegistry.bekreftelseHendelseCounter(
 
 fun MeterRegistry.varselCounter(
     runtimeEnvironment: RuntimeEnvironment,
-    melding: OppgaveMelding
+    action: String,
+    melding: VarselMelding
 ) {
     kafkaCounter(
-        type = "varsel.hendelse",
-        action = "write",
-        target = "database",
+        type = "varsel",
+        action = action,
+        target = "kafka",
         eventTopic = "min-side.aapen-brukervarsel-v1",
         eventType = melding::class.java.name,
         eventName = melding::class.java.simpleName,

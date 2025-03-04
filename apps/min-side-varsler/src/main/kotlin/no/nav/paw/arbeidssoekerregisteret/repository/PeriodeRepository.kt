@@ -16,10 +16,6 @@ import java.util.*
 
 class PeriodeRepository {
 
-    fun countAll(): Long = transaction {
-        PeriodeTable.selectAll().count()
-    }
-
     fun findAll(): List<PeriodeRow> = transaction {
         PeriodeTable.selectAll()
             .map { it.asPeriodeRow() }

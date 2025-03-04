@@ -2,10 +2,12 @@ package no.nav.paw.arbeidssoekerregisteret.repository
 
 import no.nav.paw.arbeidssoekerregisteret.model.InsertVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.UpdateVarselRow
+import no.nav.paw.arbeidssoekerregisteret.model.VarselKilde
 import no.nav.paw.arbeidssoekerregisteret.model.VarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.VarselTable
 import no.nav.paw.arbeidssoekerregisteret.model.asVarselRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
@@ -15,10 +17,6 @@ import java.time.Instant
 import java.util.*
 
 class VarselRepository {
-
-    fun countAll(): Long = transaction {
-        VarselTable.selectAll().count()
-    }
 
     fun findAll(): List<VarselRow> = transaction {
         VarselTable.selectAll()
@@ -32,9 +30,12 @@ class VarselRepository {
             .firstOrNull()
     }
 
-    fun findByPeriodeId(periodeId: UUID): List<VarselRow> = transaction {
+    fun findByPeriodeIdAndVarselKilde(
+        periodeId: UUID,
+        varselKilde: VarselKilde
+    ): List<VarselRow> = transaction {
         VarselTable.selectAll()
-            .where { VarselTable.periodeId eq periodeId }
+            .where { (VarselTable.periodeId eq periodeId) and (VarselTable.varselKilde eq varselKilde) }
             .map { it.asVarselRow() }
     }
 
@@ -62,8 +63,11 @@ class VarselRepository {
         }
     }
 
-    fun deleteByPeriodeId(periodeId: UUID): Int = transaction {
-        VarselTable.deleteWhere { VarselTable.periodeId eq periodeId }
+    fun deleteByPeriodeIdAndVarselKilde(
+        periodeId: UUID,
+        varselKilde: VarselKilde
+    ): Int = transaction {
+        VarselTable.deleteWhere { (VarselTable.periodeId eq periodeId) and (VarselTable.varselKilde eq varselKilde) }
     }
 
     fun deleteByVarselId(varselId: UUID): Int = transaction {
