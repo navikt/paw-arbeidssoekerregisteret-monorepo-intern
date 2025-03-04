@@ -208,14 +208,14 @@ fun BekreftelseHendelse.prettyPrint(): String {
         .replace("grace periode", "siste frist")
     val detaljer = when (this) {
         is BaOmAaAvsluttePeriode -> null
-        is BekreftelseMeldingMottatt -> null
+        is BekreftelseMeldingMottatt -> "\tbekreftelse_id=${this.bekreftelseId}"
         is BekreftelsePaaVegneAvStartet -> null
-        is BekreftelseTilgjengelig -> "\tgjelder, fra: ${this.gjelderFra.prettyPrint}, til: ${this.gjelderTil.prettyPrint}"
+        is BekreftelseTilgjengelig -> "\tgjelder, fra: ${this.gjelderFra.prettyPrint}, til: ${this.gjelderTil.prettyPrint}, bekreftelse_id=${this.bekreftelseId}"
         is EksternGracePeriodeUtloept -> TODO()
-        is LeveringsfristUtloept -> "\tfrist utløpt: ${this.leveringsfrist.prettyPrint}"
+        is LeveringsfristUtloept -> "\tfrist utløpt: ${this.leveringsfrist.prettyPrint}, bekreftelse_id=${this.bekreftelseId}"
         is PeriodeAvsluttet -> null
-        is RegisterGracePeriodeGjenstaaendeTid -> "\tgjenstående tid: ${this.gjenstaandeTid}"
-        is RegisterGracePeriodeUtloept -> "\tperiode avsluttes"
+        is RegisterGracePeriodeGjenstaaendeTid -> "\tgjenstående tid: ${this.gjenstaandeTid}, bekreftelse_id=${this.bekreftelseId}"
+        is RegisterGracePeriodeUtloept -> "\tperiode avsluttes, bekreftelse_id=${this.bekreftelseId}"
         is RegisterGracePeriodeUtloeptEtterEksternInnsamling -> null
     }
     return if (detaljer == null) {

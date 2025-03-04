@@ -192,7 +192,10 @@ fun startPaaVegneAv(
                     is VenterSvar,
                     is KlarForUtfylling,
                     is GracePeriodeVarselet,
-                    is IkkeKlarForUtfylling -> bekreftelse + InternBekreftelsePaaVegneAvStartet(wallclock.value)
+                    is IkkeKlarForUtfylling -> {
+                        logger.info("Mottatt start på vegne av, oppdaterer bekreftelse: ${bekreftelse.bekreftelseId}")
+                        bekreftelse + InternBekreftelsePaaVegneAvStartet(wallclock.value)
+                    }
 
                     else -> bekreftelse
                 }

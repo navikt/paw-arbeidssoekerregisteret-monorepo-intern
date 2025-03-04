@@ -1,6 +1,6 @@
 package no.nav.paw.bekreftelsetjeneste.tilstand
 
-import arrow.core.NonEmptyList
+import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
 import no.nav.paw.collections.PawNonEmptyList
 import java.time.Duration
 import java.time.Instant
@@ -42,7 +42,7 @@ fun opprettFoersteBekreftelse(
 }
 
 fun PawNonEmptyList<Bekreftelse>.opprettNesteTilgjengeligeBekreftelse(
-    tilgjengeliggjort: Instant,
+    wallClock: WallClock,
     interval: Duration,
 ): Bekreftelse {
     val sisteBekreftelse = maxBy { it.gjelderTil }
@@ -51,7 +51,7 @@ fun PawNonEmptyList<Bekreftelse>.opprettNesteTilgjengeligeBekreftelse(
         gjelderFra = sisteBekreftelse.gjelderTil,
         gjelderTil = sluttTidForBekreftelsePeriode(sisteBekreftelse.gjelderTil, interval),
         tilstandsLogg = BekreftelseTilstandsLogg(
-            siste = KlarForUtfylling(tilgjengeliggjort),
+            siste = KlarForUtfylling(wallClock.value),
             tidligere = emptyList()
         )
     )

@@ -44,17 +44,22 @@ fun ApplicationTestContext.run(
                         bekreftelseTopic.pipeInput(immutableNeste.second.key, asTypedValue)
                     }
                 }
-                is PaaVegneAv -> bekreftelsePaaVegneAvTopic.pipeInput(immutableNeste.second.key, asTypedValue)
+
+                is PaaVegneAv -> {
+                    ventendeBekreftelser.removeIf { it.periodeId == asTypedValue.periodeId }
+                    bekreftelsePaaVegneAvTopic.pipeInput(immutableNeste.second.key, asTypedValue)
+                }
                 is BekreftelseMeldingMottatt -> ventendeBekreftelser.removeIf { it.bekreftelseId == asTypedValue.bekreftelseId }
                 else -> throw IllegalArgumentException("Ukjent type: ${asTypedValue::class.simpleName}")
             }
             neste = if (inputStream.hasNext()) inputStream.next() else null
         }
-        if (!bekreftelseHendelseloggTopicOut.isEmpty) {
+        while (!bekreftelseHendelseloggTopicOut.isEmpty) {
             val kv = bekreftelseHendelseloggTopicOut.readKeyValue()
             when (val hendelse = kv.value) {
                 is RegisterGracePeriodeUtloept,
-                is RegisterGracePeriodeUtloeptEtterEksternInnsamling -> {
+                is RegisterGracePeriodeUtloeptEtterEksternInnsamling,
+                is BaOmAaAvsluttePeriode -> {
                     perioder
                         .first { it.id == kv.value.periodeId }
                         .let { periode ->
@@ -66,10 +71,13 @@ fun ApplicationTestContext.run(
                             )
                         }.also { periodeTopic.pipeInput(kv.key, it) }
                 }
+
                 is BekreftelseTilgjengelig -> {
+                    logger.info("Bekreftelse tilgjengelig: ${hendelse.bekreftelseId} => ${hendelse.gjelderFra} - ${hendelse.gjelderTil}")
                     ventendeBekreftelser.add(hendelse)
                 }
-                else -> { }
+
+                else -> {}
             }
             hendelser.add(wallclock.get() to kv.value)
         }

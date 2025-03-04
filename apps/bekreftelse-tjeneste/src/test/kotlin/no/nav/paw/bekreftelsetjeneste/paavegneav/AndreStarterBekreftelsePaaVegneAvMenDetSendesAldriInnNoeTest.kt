@@ -19,10 +19,13 @@ class AndreStarterBekreftelsePaaVegneAvMenDetSendesAldriInnNoeTest: FreeSpec({
         val intervall = bekreftelseKonfigurasjon.interval
         val grace = bekreftelseKonfigurasjon.graceperiode
         with(kafkaKeyContext()) {
+            logger.info("Intervall: ${intervall.toDays()} dager")
+            logger.info("Grace: ${grace.toDays()} dager")
             "Applikasjonstest hvor noen starter bekreftelsePaaVegneAv rett etter at perioden er lest, men stopper igjen før en eneste" +
                     " bekreftelse er levert" - {
                 val (id, key, periode) = periode(identitetsnummer = "12345678902")
                 "Når perioden opprettes skal det ikke skje noe" {
+                    logger.info("Startet periode klokken ${wallclock.get()}, periode start tid: ${periode.startet.tidspunkt}")
                     periodeTopic.pipeInput(key, periode)
                     bekreftelseHendelseloggTopicOut.assertNoMessage()
                 }
@@ -37,16 +40,18 @@ class AndreStarterBekreftelsePaaVegneAvMenDetSendesAldriInnNoeTest: FreeSpec({
                     bekreftelseHendelseloggTopicOut.assertNoMessage()
                 }
                 "Når leveringsfristen utløper når andre har bekreftelsePaaVegneAv skjer det ingenting" {
-                    testDriver.advanceWallClockTime(intervall + 1.days)
+                    still_klokken_frem(intervall + 1.days)
+                        .also { logger.info("Klokken er $it") }
                     bekreftelseHendelseloggTopicOut.assertNoMessage()
                 }
                 "Når grace perioden utløpet når andre har bekreftelsePaaVegneAv skjer det ingenting" {
-                    testDriver.advanceWallClockTime(grace + 1.days)
+                    still_klokken_frem(grace + 1.days)
+                        .also { logger.info("Klokken er $it") }
                     bekreftelseHendelseloggTopicOut.assertNoMessage()
                 }
                 "Når andre stopper bekreftelsePaaVegneAv og det er over inervall + grace siden sist leverte intervall sluttet det sendes ut RegisterGracePeriodeUtloeptEtterEksternInnsamling" {
+                    still_klokken_frem_til(periode.startet.tidspunkt + 28.days)
                     bekreftelsePaaVegneAvTopic.pipeInput(key, stoppPaaVegneAv(periodeId = periode.id))
-                    testDriver.advanceWallClockTime(1.days)
                     bekreftelseHendelseloggTopicOut.assertEvent { hendelse: RegisterGracePeriodeUtloeptEtterEksternInnsamling ->
                         hendelse.periodeId shouldBe periode.id
                     }

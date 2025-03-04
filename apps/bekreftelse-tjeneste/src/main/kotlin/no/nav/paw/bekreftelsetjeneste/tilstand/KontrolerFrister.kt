@@ -1,6 +1,6 @@
 package no.nav.paw.bekreftelsetjeneste.tilstand
 
-import arrow.core.NonEmptyList
+import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
 import no.nav.paw.collections.PawNonEmptyList
 import org.slf4j.LoggerFactory
 import java.time.Duration
@@ -42,7 +42,7 @@ fun Bekreftelse.harGraceperiodeUtloept(now: Instant, graceperiode: Duration): Bo
 
 
 fun PawNonEmptyList<Bekreftelse>.skalOppretteNyBekreftelse(
-    now: Instant,
+    wallclock: WallClock,
     interval: Duration,
     tilgjengeligOffset: Duration
 ): Boolean =
@@ -54,7 +54,7 @@ fun PawNonEmptyList<Bekreftelse>.skalOppretteNyBekreftelse(
         } &&
             maxBy { it.gjelderTil }
                 .let {
-                    now.isAfter(it.gjelderTil.plus(interval.minus(tilgjengeligOffset)))
+                    wallclock.value.isAfter(it.gjelderTil.plus(interval.minus(tilgjengeligOffset)))
                 }
 
 

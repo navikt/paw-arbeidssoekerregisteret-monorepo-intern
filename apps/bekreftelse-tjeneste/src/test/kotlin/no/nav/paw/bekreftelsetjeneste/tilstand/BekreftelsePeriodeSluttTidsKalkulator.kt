@@ -2,6 +2,7 @@ package no.nav.paw.bekreftelsetjeneste.tilstand
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
+import no.nav.paw.bekreftelsetjeneste.testutils.timestamp
 import java.time.Duration
 import java.time.Instant
 
@@ -24,7 +25,7 @@ class BekreftelsePeriodeSluttTidsKalkulator: FreeSpec({
             sluttTidForBekreftelsePeriode(
                 startTid = Instant.parse("2024-10-21T18:01:21Z"),
                 interval = `14 dagers intervall`
-            ) shouldBe Instant.parse("2024-11-03T23:00:00Z")
+            ) shouldBe "04.11.2024 00:00".timestamp
         }
     }
     "Når start ikke er en mandag, skal stopp bli 00:00:00 CET/CEST en mandag ${`14 dagers intervall`.toDays()+1}-${`14 dagers intervall`.toDays()+6} dager senere" - {
@@ -36,9 +37,9 @@ class BekreftelsePeriodeSluttTidsKalkulator: FreeSpec({
         }
         "Når start er 29. mars blir stopp 14. april" {
             sluttTidForBekreftelsePeriode(
-                startTid = Instant.parse("2024-03-29T23:01:21Z"),
+                startTid = "29.03.2024 01:21".timestamp,
                 interval = `14 dagers intervall`
-            ) shouldBe Instant.parse("2024-04-14T22:00:00Z")
+            ) shouldBe "15.04.2024 00:00".timestamp
         }
     }
 })

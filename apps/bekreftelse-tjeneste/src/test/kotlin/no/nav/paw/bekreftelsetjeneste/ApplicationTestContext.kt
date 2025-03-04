@@ -69,9 +69,10 @@ class ApplicationTestContext(
         still_klokken_frem(duration)
     }
 
-    fun still_klokken_frem(duration: Duration) {
+    fun still_klokken_frem(duration: Duration): Instant {
         wallclock.update { it.plus(duration) }
         testDriver.advanceWallClockTime(duration)
+        return wallclock.get()
     }
 
     val topology = StreamsBuilder()

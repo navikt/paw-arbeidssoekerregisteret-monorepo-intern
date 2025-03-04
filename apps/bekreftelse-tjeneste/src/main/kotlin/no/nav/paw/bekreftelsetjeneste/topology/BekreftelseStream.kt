@@ -17,6 +17,7 @@ import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.metrics.tellBekreftelseMottatt
 import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
 import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
+import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
 import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.GracePeriodeVarselet
@@ -58,6 +59,7 @@ fun StreamsBuilder.buildBekreftelseStream(
                         .partially1(bekreftelseKonfigurasjon)
                 ),
             ) { record ->
+                val wallClock = WallClock(Instant.ofEpochMilli(currentSystemTimeMs()))
                 val bekreftelseTilstandStateStore = getStateStore<BekreftelseTilstandStateStore>(internStateStoreName)
                 val paaVegneAvTilstandStateStore =
                     getStateStore<PaaVegneAvTilstandStateStore>(bekreftelsePaaVegneAvStateStoreName)
@@ -81,6 +83,7 @@ fun StreamsBuilder.buildBekreftelseStream(
                     }
                     else -> {
                         haandterBekreftelseMottatt(
+                            wallClock,
                             gjeldendeTilstand,
                             paaVegneAvTilstand,
                             melding
@@ -110,6 +113,7 @@ fun retrieveState(
 }
 
 fun processPawNamespace(
+    wallClock: WallClock,
     hendelse: no.nav.paw.bekreftelse.melding.v1.Bekreftelse,
     gjeldeneTilstand: BekreftelseTilstand,
     paaVegneAvTilstand: PaaVegneAvTilstand?
@@ -137,7 +141,7 @@ fun processPawNamespace(
                     harAnsvar = registeretHarAnsvar,
                     tilstand = sisteTilstand
                 )
-                val (hendelser, oppdatertBekreftelse) = behandleGyldigSvar(gjeldeneTilstand, hendelse, bekreftelse)
+                val (hendelser, oppdatertBekreftelse) = behandleGyldigSvar(wallClock, gjeldeneTilstand, hendelse, bekreftelse)
                 gjeldeneTilstand.oppdaterBekreftelse(oppdatertBekreftelse) to hendelser
             }
 
@@ -158,19 +162,20 @@ fun processPawNamespace(
 fun BekreftelseTilstand.findBekreftelse(id: UUID): Bekreftelse? = bekreftelser.find { it.bekreftelseId == id }
 
 fun behandleGyldigSvar(
+    wallClock: WallClock,
     gjeldeneTilstand: BekreftelseTilstand,
     record: no.nav.paw.bekreftelse.melding.v1.Bekreftelse,
     bekreftelse: Bekreftelse
 ): Pair<List<BekreftelseHendelse>, Bekreftelse> {
     val arbeidssoekerId = gjeldeneTilstand.periode.arbeidsoekerId
-    val oppdatertBekreftelse = bekreftelse + Levert(Instant.now())
+    val oppdatertBekreftelse = bekreftelse + Levert(wallClock.value)
     val vilFortsette = record.svar.vilFortsetteSomArbeidssoeker
     val baOmAaAvslutte = if (!vilFortsette) {
         val baOmAaAvslutteHendelse = BaOmAaAvsluttePeriode(
             hendelseId = UUID.randomUUID(),
             periodeId = record.periodeId,
             arbeidssoekerId = arbeidssoekerId,
-            hendelseTidspunkt = Instant.now()
+            hendelseTidspunkt = wallClock.value
         )
         baOmAaAvslutteHendelse
     } else null

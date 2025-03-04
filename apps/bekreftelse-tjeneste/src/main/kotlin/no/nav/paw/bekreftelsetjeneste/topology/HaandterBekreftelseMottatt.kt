@@ -6,6 +6,7 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
 import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
+import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import kotlin.reflect.KClass
 
@@ -16,13 +17,14 @@ val maksAntallBekreftelserEtterStatus = mapOf(
 )
 
 fun haandterBekreftelseMottatt(
+    wallClock: WallClock,
     gjeldendeTilstand: BekreftelseTilstand,
     paaVegneAvTilstand: PaaVegneAvTilstand?,
     melding: no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 ): Pair<BekreftelseTilstand, List<BekreftelseHendelse>> {
     val (tilstand, hendelser) =
         if (melding.bekreftelsesloesning == Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET) {
-            processPawNamespace(melding, gjeldendeTilstand, paaVegneAvTilstand)
+            processPawNamespace(wallClock, melding, gjeldendeTilstand, paaVegneAvTilstand)
         } else {
             if (harAnsvar(melding.bekreftelsesloesning, paaVegneAvTilstand)) {
                 log(
