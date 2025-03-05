@@ -65,7 +65,7 @@ class BrukerKommerTilbakeEnDagFoerFristUtenAaHaLevertNoe : FreeSpec({
                     periodeId = periode.value.id,
                     bekreftelsesloesning = no.nav.paw.bekreftelse.paavegneav.v1.vo.Bekreftelsesloesning.DAGPENGER
                 )),
-                "01.04.2025 09:01".timestamp to ValueWithKafkaKeyData(periode.id, periode.key, bekreftelseMelding(
+                "05.04.2025 09:01".timestamp to ValueWithKafkaKeyData(periode.id, periode.key, bekreftelseMelding(
                     periodeId = periode.value.id,
                     harJobbetIDennePerioden = true,
                     vilFortsetteSomArbeidssoeker = true,
@@ -117,11 +117,17 @@ class BrukerKommerTilbakeEnDagFoerFristUtenAaHaLevertNoe : FreeSpec({
                 }
             }
         )
+        forventer<RegisterGracePeriodeGjenstaaendeTid>(
+            kilde,
+            inputHendelser,
+            fra = "03.04.2025 13:00".timestamp,
+            til = "03.04.2025 13:20".timestamp,
+        )
         forventer<BekreftelseMeldingMottatt>(
             kilde,
             inputHendelser,
-            fra = "01.04.2025 09:01".timestamp,
-            til = "01.04.2025 09:07".timestamp,
+            fra = "05.04.2025 09:01".timestamp,
+            til = "05.04.2025 09:07".timestamp,
             asserts = { publiserteBekreftelser ->
                 publiserteBekreftelser.size shouldBe 1
                 publiserteBekreftelser.first() should { bekreftelse ->
