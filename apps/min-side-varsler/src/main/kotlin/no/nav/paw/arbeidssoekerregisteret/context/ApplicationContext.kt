@@ -61,7 +61,12 @@ data class ApplicationContext(
 
             val varselMeldingBygger = VarselMeldingBygger(serverConfig.runtimeEnvironment, minSideVarselConfig)
 
-            val varselService = VarselService(periodeRepository, varselRepository, varselMeldingBygger)
+            val varselService = VarselService(
+                meterRegistry = prometheusMeterRegistry,
+                periodeRepository = periodeRepository,
+                varselRepository = varselRepository,
+                varselMeldingBygger = varselMeldingBygger
+            )
 
             val bekreftelseKafkaStreams = buildBekreftelseKafkaStreams(
                 serverConfig = serverConfig,

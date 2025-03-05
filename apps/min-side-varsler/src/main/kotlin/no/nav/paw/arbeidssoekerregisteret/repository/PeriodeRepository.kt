@@ -20,6 +20,11 @@ class PeriodeRepository {
         PeriodeTable.selectAll().count()
     }
 
+    fun findAll(): List<PeriodeRow> = transaction {
+        PeriodeTable.selectAll()
+            .map { it.asPeriodeRow() }
+    }
+
     fun findByPeriodeId(periodeId: UUID): PeriodeRow? = transaction {
         PeriodeTable.selectAll()
             .where { PeriodeTable.periodeId eq periodeId }

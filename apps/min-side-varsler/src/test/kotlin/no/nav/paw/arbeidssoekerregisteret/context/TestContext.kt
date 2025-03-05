@@ -8,18 +8,18 @@ import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import no.nav.paw.arbeidssoekerregisteret.utils.VarselHendelseJsonSerde
-import no.nav.paw.arbeidssoekerregisteret.topology.bekreftelseKafkaTopology
-import no.nav.paw.arbeidssoekerregisteret.topology.varselHendelserKafkaTopology
-import no.nav.paw.arbeidssoekerregisteret.model.VarselMeldingBygger
 import no.nav.paw.arbeidssoekerregisteret.config.KafkaTopologyConfig
 import no.nav.paw.arbeidssoekerregisteret.config.MIN_SIDE_VARSEL_CONFIG
 import no.nav.paw.arbeidssoekerregisteret.config.MinSideVarselConfig
 import no.nav.paw.arbeidssoekerregisteret.model.VarselHendelse
+import no.nav.paw.arbeidssoekerregisteret.model.VarselMeldingBygger
 import no.nav.paw.arbeidssoekerregisteret.repository.PeriodeRepository
 import no.nav.paw.arbeidssoekerregisteret.repository.VarselRepository
 import no.nav.paw.arbeidssoekerregisteret.service.VarselService
 import no.nav.paw.arbeidssoekerregisteret.testdata.KafkaKeyContext
+import no.nav.paw.arbeidssoekerregisteret.topology.bekreftelseKafkaTopology
+import no.nav.paw.arbeidssoekerregisteret.topology.varselHendelserKafkaTopology
+import no.nav.paw.arbeidssoekerregisteret.utils.VarselHendelseJsonSerde
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
@@ -52,6 +52,8 @@ data class TestContext(
     val periodeRepository: PeriodeRepository,
     val varselRepository: VarselRepository,
     val varselService: VarselService,
+    val bekreftelseTopologyTestDriver: TopologyTestDriver,
+    val varselTopologyTestDriver: TopologyTestDriver,
     val periodeTopic: TestInputTopic<Long, Periode>,
     val bekreftelseHendelseTopic: TestInputTopic<Long, BekreftelseHendelse>,
     val tmsVarselTopic: TestOutputTopic<String, String>,
@@ -91,7 +93,12 @@ data class TestContext(
             val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
             val periodeRepository = PeriodeRepository()
             val varselRepository = VarselRepository()
-            val varselService = VarselService(periodeRepository, varselRepository, varselMeldingBygger)
+            val varselService = VarselService(
+                meterRegistry = prometheusMeterRegistry,
+                periodeRepository = periodeRepository,
+                varselRepository = varselRepository,
+                varselMeldingBygger = varselMeldingBygger
+            )
             val bekreftelseTopology = StreamsBuilder()
                 .bekreftelseKafkaTopology(
                     runtimeEnvironment = runtimeEnvironment,
@@ -143,6 +150,8 @@ data class TestContext(
                 periodeRepository = periodeRepository,
                 varselRepository = varselRepository,
                 varselService = varselService,
+                bekreftelseTopologyTestDriver = bekreftelseTopologyTestDriver,
+                varselTopologyTestDriver = varselTopologyTestDriver,
                 periodeTopic = periodeInputTopic,
                 bekreftelseHendelseTopic = bekreftelseHendelseTopic,
                 tmsVarselTopic = tmsVarselTopic,

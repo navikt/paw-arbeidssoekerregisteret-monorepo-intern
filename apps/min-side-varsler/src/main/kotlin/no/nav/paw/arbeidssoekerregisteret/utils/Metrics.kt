@@ -17,30 +17,34 @@ import no.nav.paw.config.env.namespaceOrDefaultForLocal
 private const val METRIC_PREFIX = "paw_min_side_varsler"
 
 fun MeterRegistry.periodeCounter(
+    action: String,
     periode: Periode
 ) {
     counter(
         "${METRIC_PREFIX}_antall_operasjoner",
         Tags.of(
+            Tag.of("type", "periode"),
             Tag.of("source", "kafka"),
             Tag.of("target", "database"),
-            Tag.of("action", "read"),
+            Tag.of("action", action),
             Tag.of("event.topic", "paw.arbeidssokerperioder-v1"),
-            Tag.of("event.name", "periode"),
-            Tag.of("event.status", if (periode.avsluttet == null) "aapen" else "lukket")
+            Tag.of("event.name", periode::class.java.simpleName),
+            Tag.of("event.type", if (periode.avsluttet == null) "periode.startet" else "periode.avsluttet")
         )
     ).increment()
 }
 
 fun MeterRegistry.bekreftelseHendelseCounter(
+    action: String,
     hendelse: BekreftelseHendelse
 ) {
     counter(
         "${METRIC_PREFIX}_antall_operasjoner",
         Tags.of(
+            Tag.of("type", "bekreftelse"),
             Tag.of("source", "kafka"),
             Tag.of("target", "database"),
-            Tag.of("action", "read"),
+            Tag.of("action", action),
             Tag.of("event.topic", "paw.arbeidssoker-bekreftelse-hendelseslogg-v1"),
             Tag.of("event.name", hendelse::class.java.simpleName),
             Tag.of("event.type", hendelse.hendelseType)
@@ -55,6 +59,7 @@ fun MeterRegistry.varselCounter(
     counter(
         "${METRIC_PREFIX}_antall_operasjoner",
         Tags.of(
+            Tag.of("type", "varsel"),
             Tag.of("source", "kafka"),
             Tag.of("target", "kafka"),
             Tag.of("action", "write"),
@@ -75,6 +80,7 @@ fun MeterRegistry.varselHendelseCounter(
     counter(
         "${METRIC_PREFIX}_antall_operasjoner",
         Tags.of(
+            Tag.of("type", "varsel.hendelse"),
             Tag.of("source", "kafka"),
             Tag.of("target", "database"),
             Tag.of("action", "read"),

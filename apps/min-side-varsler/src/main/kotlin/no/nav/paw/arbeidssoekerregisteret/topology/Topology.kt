@@ -30,13 +30,13 @@ fun StreamsBuilder.bekreftelseKafkaTopology(
 ): StreamsBuilder {
     with(kafkaTopicsConfig) {
         stream<Long, Periode>(periodeTopic)
-            .peek { _, periode -> meterRegistry.periodeCounter(periode) }
+            .peek { _, periode -> meterRegistry.periodeCounter("read", periode) }
             .foreach { _, periode ->
                 varselService.mottaPeriode(periode)
             }
 
         stream(bekreftelseHendelseTopic, Consumed.with(Serdes.Long(), BekreftelseHendelseSerde()))
-            .peek { _, hendelse -> meterRegistry.bekreftelseHendelseCounter(hendelse) }
+            .peek { _, hendelse -> meterRegistry.bekreftelseHendelseCounter("read", hendelse) }
             .flatMapValues { _, hendelse ->
                 varselService.mottaBekreftelseHendelse(hendelse)
             }

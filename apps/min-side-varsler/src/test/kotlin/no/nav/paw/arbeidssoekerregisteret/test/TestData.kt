@@ -9,7 +9,17 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Bruker
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
-import no.nav.paw.bekreftelse.internehendelser.*
+import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
+import no.nav.paw.bekreftelse.internehendelser.BekreftelsePaaVegneAvStartet
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
+import no.nav.paw.bekreftelse.internehendelser.EksternGracePeriodeUtloept
+import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
+import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
+import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjenstaaendeTid
+import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
+import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloeptEtterEksternInnsamling
 import no.nav.paw.config.env.appNameOrDefaultForLocal
 import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.config.env.namespaceOrDefaultForLocal
@@ -17,6 +27,8 @@ import org.apache.kafka.streams.test.TestRecord
 import java.time.Duration
 import java.time.Instant
 import java.util.*
+import java.util.stream.LongStream
+import kotlin.random.Random
 
 object TestData {
     val runtimeEnvironment = currentRuntimeEnvironment
@@ -287,6 +299,34 @@ object TestData {
         startet: Metadata = metadata(tidspunkt = Instant.now().minus(Duration.ofDays(30))),
         avsluttet: Metadata = metadata(),
     ): Periode = Periode(id, identitetsnummer, startet, avsluttet)
+
+    fun aapenPeriodeRecords(antall: Long): List<TestRecord<Long, Periode>> {
+        val startTidspunkt = Instant.now()
+        return LongStream.rangeClosed(1, antall).boxed()
+            .map { key ->
+                val deltaTid = Duration.ofDays(Random.nextLong(from = 1, until = 365))
+                key to startTidspunkt.plus(deltaTid)
+            }
+            .map { (key, tidspunkt) ->
+                key to aapenPeriode(id = UUID.randomUUID(), startet = metadata(tidspunkt = tidspunkt))
+            }
+            .map { (key, periode) ->
+                TestRecord(key, periode, periode.startet.tidspunkt)
+            }.toList()
+    }
+
+    fun TestRecord<Long, Periode>.bekreftelseTilgjengeligRecord(): TestRecord<Long, BekreftelseHendelse> {
+        val deltaTid = Duration.ofDays(Random.nextLong(from = 1, until = 365))
+        val gjelderFra = value().startet.tidspunkt.plus(deltaTid)
+        val value = bekreftelseTilgjengelig(
+            periodeId = value().id,
+            bekreftelseId = UUID.randomUUID(),
+            gjelderFra = gjelderFra,
+            gjelderTil = gjelderFra.plus(Duration.ofDays(14)),
+            hendelseTidspunkt = gjelderFra
+        )
+        return TestRecord(key(), value, value.hendelseTidspunkt)
+    }
 
     fun bekreftelseTilgjengelig(
         hendelseId: UUID = UUID.randomUUID(),

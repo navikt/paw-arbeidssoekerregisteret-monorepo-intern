@@ -20,6 +20,11 @@ class VarselRepository {
         VarselTable.selectAll().count()
     }
 
+    fun findAll(): List<VarselRow> = transaction {
+        VarselTable.selectAll()
+            .map { it.asVarselRow() }
+    }
+
     fun findByVarselId(varselId: UUID): VarselRow? = transaction {
         VarselTable.selectAll()
             .where { VarselTable.varselId eq varselId }

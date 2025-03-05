@@ -2,6 +2,7 @@ package no.nav.paw.arbeidssoekerregisteret.topology
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.core.spec.style.FreeSpec
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -178,6 +179,21 @@ class TopologyTest : FreeSpec({
                 tmsVarselTopic.isEmpty shouldBe true
                 periodeRepository.countAll() shouldBe 0
                 varselRepository.countAll() shouldBe 0
+            }
+
+            "Skal motta perioder og bekreftelse-hendelser i korrekt rekkefølge".config(enabled = false) {
+                val periodeRecords = aapenPeriodeRecords(10)
+                periodeRecords.forEach { periodeRecord ->
+                    periodeTopic.pipeInput(periodeRecord)
+                    bekreftelseHendelseTopic.pipeInput(periodeRecord.bekreftelseTilgjengeligRecord())
+                }
+
+                val periodeRows = periodeRepository.findAll()
+                val varselRows = varselRepository.findAll()
+                logger.info("Perioder: {}", periodeRows)
+                logger.info("Varsler: {}", varselRows)
+                periodeRows shouldHaveSize 10
+                varselRows shouldHaveSize 10
             }
         }
     }
