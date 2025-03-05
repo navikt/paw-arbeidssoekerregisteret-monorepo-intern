@@ -114,7 +114,10 @@ class VarselService(
                     hendelse.hendelseType,
                     hendelse.periodeId
                 )
+
                 val periodeRow = periodeRepository.findByPeriodeId(hendelse.periodeId)
+                val varselRows = varselRepository.findByPeriodeId(hendelse.periodeId)
+
                 if (periodeRow == null) {
                     logger.warn(
                         "Fant ingen periode for hendelse {} og periode {}",
@@ -124,22 +127,21 @@ class VarselService(
                     meterRegistry.bekreftelseHendelseCounter("fail", hendelse)
                 } else {
                     meterRegistry.bekreftelseHendelseCounter("delete", hendelse)
-                    periodeRepository.deleteByPeriodeId(hendelse.periodeId)
                 }
 
-                val varselRows = varselRepository.findByPeriodeId(hendelse.periodeId)
                 if (varselRows.isEmpty()) {
                     logger.warn(
                         "Fant ingen varsler for hendelse {} og periode {}",
                         hendelse.hendelseType,
                         hendelse.periodeId
                     )
+                    periodeRepository.deleteByPeriodeId(hendelse.periodeId)
                     emptyList()
                 } else {
                     varselRepository.deleteByPeriodeId(hendelse.periodeId)
+                    periodeRepository.deleteByPeriodeId(hendelse.periodeId)
                     varselRows.map { varselMeldingBygger.avsluttOppgave(it.varselId) }
                 }
-
             }
 
             else -> {
