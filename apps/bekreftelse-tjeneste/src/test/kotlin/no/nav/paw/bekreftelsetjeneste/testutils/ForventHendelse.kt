@@ -14,7 +14,6 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-@OptIn(ExperimentalContracts::class)
 inline fun <reified A : BekreftelseHendelse> FreeSpec.forventer(
     kilde: MutableList<Pair<Instant, BekreftelseHendelse>>,
     input: MutableList<Pair<Instant, ValueWithKafkaKeyData<*>>> = mutableListOf(),
@@ -22,9 +21,6 @@ inline fun <reified A : BekreftelseHendelse> FreeSpec.forventer(
     til: Instant,
     crossinline asserts: (List<A>) -> Unit = {}
 ) {
-    contract {
-        callsInPlace(asserts, InvocationKind.AT_MOST_ONCE)
-    }
     val kandidater = kilde.toList().filter { (tidspunkt, _) -> tidspunkt == fra || (tidspunkt.isAfter(fra) && tidspunkt.isBefore(til)) }
     val resultat = kandidater.singleOrNull { it.second is A }
     val inputHendelser =

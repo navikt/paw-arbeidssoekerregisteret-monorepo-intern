@@ -89,7 +89,7 @@ class BrukerKommerTilbakeEnDagFoerFristUtenAaHaLevertNoe : FreeSpec({
             fra = "15.03.2025 09:12".timestamp,
             til = "15.03.2025 09:18".timestamp
         )
-        val bekreftelseId2803: UUID
+        var bekreftelseId2803: UUID? = null
         forventer<BekreftelseTilgjengelig>(
             kilde,
             inputHendelser,
@@ -129,7 +129,7 @@ class BrukerKommerTilbakeEnDagFoerFristUtenAaHaLevertNoe : FreeSpec({
                 }
             }
         )
-        val bekreftelseId1104: UUID
+        var bekreftelseId1104: UUID? = null
         forventer<BekreftelseTilgjengelig>(
             kilde,
             inputHendelser,

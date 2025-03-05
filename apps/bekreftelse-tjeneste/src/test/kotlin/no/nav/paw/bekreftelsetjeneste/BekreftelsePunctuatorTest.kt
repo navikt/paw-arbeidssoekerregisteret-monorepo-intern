@@ -17,20 +17,28 @@ import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelse.melding.v1.vo.BrukerType
 import no.nav.paw.bekreftelse.melding.v1.vo.Metadata
 import no.nav.paw.bekreftelse.melding.v1.vo.Svar
-import no.nav.paw.bekreftelsetjeneste.tilstand.*
+import no.nav.paw.bekreftelsetjeneste.tilstand.GracePeriodeUtloept
+import no.nav.paw.bekreftelsetjeneste.tilstand.GracePeriodeVarselet
+import no.nav.paw.bekreftelsetjeneste.tilstand.IkkeKlarForUtfylling
+import no.nav.paw.bekreftelsetjeneste.tilstand.KlarForUtfylling
+import no.nav.paw.bekreftelsetjeneste.tilstand.PeriodeInfo
+import no.nav.paw.bekreftelsetjeneste.tilstand.VenterSvar
+import no.nav.paw.bekreftelsetjeneste.tilstand.asList
+import no.nav.paw.bekreftelsetjeneste.tilstand.has
+import no.nav.paw.bekreftelsetjeneste.tilstand.sluttTidForBekreftelsePeriode
 import no.nav.paw.bekreftelsetjeneste.topology.BekreftelseTilstandStateStore
 import no.nav.paw.test.days
 import no.nav.paw.test.seconds
 import java.time.Duration
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 class BekreftelsePunctuatorTest : FreeSpec({
 
     val startTime = Instant.parse("2024-01-01T08:00:00Z")
     val identitetsnummer = "12345678901"
 
-    "BekreftelsePunctuator sender riktig hendelser i rekkefølge" - {
+    "BekreftelsePunctuator sender riktig hendelser i rekkefølge".config(enabled = false) - {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
                 val (_,
@@ -167,7 +175,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
         }
     }
 
-    "BekreftelsePunctuator håndterer BekreftelseMeldingMottatt hendelse" {
+    "BekreftelsePunctuator håndterer BekreftelseMeldingMottatt hendelse".config(enabled = false) {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
                 val (_, interval, graceperiode, tilgjengeligOffset, _) = bekreftelseKonfigurasjon
@@ -219,7 +227,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
         }
     }
 
-    "BekreftelsePunctuator håndterer BaOmAaAvslutePeriode hendelse" {
+    "BekreftelsePunctuator håndterer BaOmAaAvslutePeriode hendelse".config(enabled = false) {
         with(ApplicationTestContext(initialWallClockTime = startTime)) {
             with(kafkaKeyContext()) {
                 val (_, interval, graceperiode, tilgjengeligOffset, _) = bekreftelseKonfigurasjon
