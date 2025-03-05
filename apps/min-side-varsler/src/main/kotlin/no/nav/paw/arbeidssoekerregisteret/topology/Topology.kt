@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssoekerregisteret.topology
 
 import io.micrometer.core.instrument.MeterRegistry
-import no.nav.paw.arbeidssoekerregisteret.config.KafkaTopologyConfig
+import no.nav.paw.arbeidssoekerregisteret.config.ApplicationConfig
 import no.nav.paw.arbeidssoekerregisteret.service.VarselService
 import no.nav.paw.arbeidssoekerregisteret.utils.VarselHendelseJsonSerde
 import no.nav.paw.arbeidssoekerregisteret.utils.bekreftelseHendelseCounter
@@ -22,7 +22,7 @@ import org.apache.kafka.streams.kstream.ValueJoiner
 
 fun StreamsBuilder.periodeKafkaTopology(
     runtimeEnvironment: RuntimeEnvironment,
-    kafkaTopicsConfig: KafkaTopologyConfig,
+    kafkaTopicsConfig: ApplicationConfig,
     meterRegistry: MeterRegistry,
     varselService: VarselService
 ): StreamsBuilder {
@@ -45,7 +45,7 @@ class BekreftelseValueJoiner : ValueJoiner<BekreftelseHendelse, Periode, Pair<Pe
 
 fun StreamsBuilder.bekreftelseKafkaTopology(
     runtimeEnvironment: RuntimeEnvironment,
-    kafkaTopicsConfig: KafkaTopologyConfig,
+    kafkaTopicsConfig: ApplicationConfig,
     meterRegistry: MeterRegistry,
     varselService: VarselService
 ): StreamsBuilder {
@@ -70,7 +70,7 @@ fun StreamsBuilder.bekreftelseKafkaTopology(
 
 fun StreamsBuilder.varselHendelserKafkaTopology(
     runtimeEnvironment: RuntimeEnvironment,
-    kafkaTopicsConfig: KafkaTopologyConfig,
+    kafkaTopicsConfig: ApplicationConfig,
     meterRegistry: MeterRegistry,
     varselService: VarselService
 ): StreamsBuilder {

@@ -1,10 +1,11 @@
 package no.nav.paw.arbeidssoekerregisteret.repository
 
 import no.nav.paw.arbeidssoekerregisteret.model.InsertVarselRow
+import no.nav.paw.arbeidssoekerregisteret.model.Paging
 import no.nav.paw.arbeidssoekerregisteret.model.UpdateVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.VarselKilde
 import no.nav.paw.arbeidssoekerregisteret.model.VarselRow
-import no.nav.paw.arbeidssoekerregisteret.model.VarselTable
+import no.nav.paw.arbeidssoekerregisteret.model.VarslerTable
 import no.nav.paw.arbeidssoekerregisteret.model.asVarselRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
@@ -18,29 +19,45 @@ import java.util.*
 
 class VarselRepository {
 
-    fun findAll(): List<VarselRow> = transaction {
-        VarselTable.selectAll()
+    fun findAll(paging: Paging = Paging()): List<VarselRow> = transaction {
+        VarslerTable.selectAll()
+            .orderBy(VarslerTable.hendelseTimestamp, paging.ordering)
+            .limit(paging.size).offset(paging.offset)
             .map { it.asVarselRow() }
     }
 
     fun findByVarselId(varselId: UUID): VarselRow? = transaction {
-        VarselTable.selectAll()
-            .where { VarselTable.varselId eq varselId }
+        VarslerTable.selectAll()
+            .where { VarslerTable.varselId eq varselId }
             .map { it.asVarselRow() }
             .firstOrNull()
     }
 
+    fun findByPeriodeId(
+        periodeId: UUID,
+        paging: Paging = Paging(),
+    ): List<VarselRow> = transaction {
+        VarslerTable.selectAll()
+            .where { VarslerTable.periodeId eq periodeId }
+            .orderBy(VarslerTable.hendelseTimestamp, paging.ordering)
+            .limit(paging.size).offset(paging.offset)
+            .map { it.asVarselRow() }
+    }
+
     fun findByPeriodeIdAndVarselKilde(
         periodeId: UUID,
-        varselKilde: VarselKilde
+        varselKilde: VarselKilde,
+        paging: Paging = Paging(),
     ): List<VarselRow> = transaction {
-        VarselTable.selectAll()
-            .where { (VarselTable.periodeId eq periodeId) and (VarselTable.varselKilde eq varselKilde) }
+        VarslerTable.selectAll()
+            .where { (VarslerTable.periodeId eq periodeId) and (VarslerTable.varselKilde eq varselKilde) }
+            .orderBy(VarslerTable.hendelseTimestamp, paging.ordering)
+            .limit(paging.size).offset(paging.offset)
             .map { it.asVarselRow() }
     }
 
     fun insert(varsel: InsertVarselRow): Int = transaction {
-        VarselTable.insert {
+        VarslerTable.insert {
             it[periodeId] = varsel.periodeId
             it[varselId] = varsel.varselId
             it[varselKilde] = varsel.varselKilde
@@ -53,8 +70,8 @@ class VarselRepository {
     }
 
     fun update(varsel: UpdateVarselRow): Int = transaction {
-        VarselTable.update({
-            VarselTable.varselId eq varsel.varselId
+        VarslerTable.update({
+            VarslerTable.varselId eq varsel.varselId
         }) {
             it[varselStatus] = varsel.varselStatus
             it[hendelseNavn] = varsel.hendelseName
@@ -67,10 +84,10 @@ class VarselRepository {
         periodeId: UUID,
         varselKilde: VarselKilde
     ): Int = transaction {
-        VarselTable.deleteWhere { (VarselTable.periodeId eq periodeId) and (VarselTable.varselKilde eq varselKilde) }
+        VarslerTable.deleteWhere { (VarslerTable.periodeId eq periodeId) and (VarslerTable.varselKilde eq varselKilde) }
     }
 
     fun deleteByVarselId(varselId: UUID): Int = transaction {
-        VarselTable.deleteWhere { VarselTable.varselId eq varselId }
+        VarslerTable.deleteWhere { VarslerTable.varselId eq varselId }
     }
 }

@@ -1,8 +1,8 @@
 package no.nav.paw.arbeidssoekerregisteret.producer
 
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerializer
-import no.nav.paw.arbeidssoekerregisteret.config.KAFKA_TOPICS_CONFIG
-import no.nav.paw.arbeidssoekerregisteret.config.KafkaTopologyConfig
+import no.nav.paw.arbeidssoekerregisteret.config.APPLICATION_CONFIG
+import no.nav.paw.arbeidssoekerregisteret.config.ApplicationConfig
 import no.nav.paw.arbeidssoekerregisteret.model.VarselEventName
 import no.nav.paw.arbeidssoekerregisteret.model.VarselHendelse
 import no.nav.paw.arbeidssoekerregisteret.model.VarselType
@@ -27,7 +27,7 @@ class VarselHendelseSerializer : JacksonSerializer<VarselHendelse>()
 private fun <K, V> Producer<K, V>.send(topic: String, key: K, value: V) = send(ProducerRecord(topic, key, value)).get()
 
 fun main() {
-    val kafkaTopicsConfig = loadNaisOrLocalConfiguration<KafkaTopologyConfig>(KAFKA_TOPICS_CONFIG)
+    val kafkaTopicsConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG)
     val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG)
     val kafkaFactory = KafkaFactory(kafkaConfig)
 

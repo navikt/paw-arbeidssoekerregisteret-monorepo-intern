@@ -3,7 +3,7 @@ package no.nav.paw.arbeidssoekerregisteret.model
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.timestamp
 
-object PeriodeTable : Table("perioder") {
+object PerioderTable : Table("perioder") {
     val periodeId = uuid("periode_id")
     val identitetsnummer = varchar("identitetsnummer", 20)
     val startetTimestamp = timestamp("startet_timestamp")

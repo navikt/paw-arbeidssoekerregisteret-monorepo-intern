@@ -1,13 +1,17 @@
 package no.nav.paw.arbeidssoekerregisteret.service
 
 import io.micrometer.core.instrument.MeterRegistry
+import no.nav.paw.arbeidssoekerregisteret.api.models.VarselResponse
 import no.nav.paw.arbeidssoekerregisteret.exception.PeriodeIkkeFunnetException
+import no.nav.paw.arbeidssoekerregisteret.exception.VarselIkkeFunnetException
+import no.nav.paw.arbeidssoekerregisteret.model.Paging
 import no.nav.paw.arbeidssoekerregisteret.model.VarselHendelse
 import no.nav.paw.arbeidssoekerregisteret.model.VarselKilde
 import no.nav.paw.arbeidssoekerregisteret.model.VarselMelding
 import no.nav.paw.arbeidssoekerregisteret.model.VarselMeldingBygger
 import no.nav.paw.arbeidssoekerregisteret.model.asInsertPeriodeRow
 import no.nav.paw.arbeidssoekerregisteret.model.asInsertVarselRow
+import no.nav.paw.arbeidssoekerregisteret.model.asResponse
 import no.nav.paw.arbeidssoekerregisteret.model.asUpdatePeriodeRow
 import no.nav.paw.arbeidssoekerregisteret.model.asUpdateVarselRow
 import no.nav.paw.arbeidssoekerregisteret.repository.PeriodeRepository
@@ -32,6 +36,17 @@ class VarselService(
     private val varselMeldingBygger: VarselMeldingBygger
 ) {
     private val logger = buildLogger
+
+    fun hentVarsel(varselId: UUID): VarselResponse = transaction {
+        varselRepository.findByVarselId(varselId)?.asResponse() ?: throw VarselIkkeFunnetException("Varsel ikke funnet")
+    }
+
+    fun finnVarsler(
+        periodeId: UUID,
+        paging: Paging = Paging()
+    ): List<VarselResponse> = transaction {
+        varselRepository.findByPeriodeId(periodeId, paging).map { it.asResponse() }
+    }
 
     fun mottaPeriode(periode: Periode): List<VarselMelding> = transaction {
         try {
@@ -120,7 +135,7 @@ class VarselService(
                             varselMeldingBygger.opprettBekreftelseTilgjengeligOppgave(
                                 varselId = hendelse.bekreftelseId,
                                 identitetsnummer = periode.identitetsnummer,
-                                gjelderTil = hendelse.gjelderTil
+                                utsettEksternVarslingTil = hendelse.gjelderTil // TODO: Kalkuler SMS-dato
                             )
                         )
                     }

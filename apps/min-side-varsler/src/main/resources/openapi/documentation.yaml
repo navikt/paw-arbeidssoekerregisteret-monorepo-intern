@@ -1,0 +1,370 @@
+openapi: "3.0.3"
+info:
+  title: "paw-arbeidssoekerregisteret-min-side-varsler API"
+  description: "Arbeidssøkerregisterets API for Min Side varsler"
+  version: "1.0.0"
+servers:
+  - url: "http://paw-arbeidssoekerregisteret-min-side-varsler"
+    description: "NAIS"
+paths:
+  /api/v1/varsler/{varselId}:
+    get:
+      operationId: getVarsel
+      description: "Endepunkt for å hente varsel for en arbeidssøker"
+      parameters:
+        - name: "traceparent"
+          in: "header"
+          required: false
+          description: "https://www.w3.org/TR/trace-context/#traceparent-header-field-values"
+          schema:
+            type: "string"
+            format: "traceparent"
+        - name: "varselId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VarselResponse"
+        "403":
+          description: "Forbidden"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/v1/varsler:
+    get:
+      operationId: getVarsler
+      description: "Endepunkt for å finne varsler for en arbeidssøker"
+      parameters:
+        - name: "traceparent"
+          in: "header"
+          required: false
+          description: "https://www.w3.org/TR/trace-context/#traceparent-header-field-values"
+          schema:
+            type: "string"
+            format: "traceparent"
+        - name: "periodeId"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/VarselResponse"
+        "403":
+          description: "Forbidden"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/v1/bestillinger/{bestillingId}:
+    get:
+      operationId: getBestilling
+      description: "Endepunkt for å hente bestilling på varsler for arbeidssøkere"
+      parameters:
+        - name: "traceparent"
+          in: "header"
+          required: false
+          description: "https://www.w3.org/TR/trace-context/#traceparent-header-field-values"
+          schema:
+            type: "string"
+            format: "traceparent"
+        - name: "bestillingId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BestillingResponse"
+        "403":
+          description: "Forbidden"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+    put:
+      operationId: putBestilling
+      description: "Endepunkt for å bekrefte bestilling på varsler for arbeidssøkere"
+      parameters:
+        - name: "traceparent"
+          in: "header"
+          required: false
+          description: "https://www.w3.org/TR/trace-context/#traceparent-header-field-values"
+          schema:
+            type: "string"
+            format: "traceparent"
+        - name: "bestillingId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BestillingResponse"
+        "403":
+          description: "Forbidden"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/v1/bestillinger:
+    post:
+      operationId: postBestilling
+      description: "Endepunkt for å opprette ventende bestilling på varsler for arbeidssøkere"
+      parameters:
+        - name: "traceparent"
+          in: "header"
+          required: false
+          description: "https://www.w3.org/TR/trace-context/#traceparent-header-field-values"
+          schema:
+            type: "string"
+            format: "traceparent"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BestillingResponse"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "403":
+          description: "Forbidden"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /internal/isAlive:
+    get:
+      operationId: getIsAlive
+      description: "Service is alive probe"
+      responses:
+        "503":
+          description: "Service Unavailable"
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+        "200":
+          description: "OK"
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /internal/isReady:
+    get:
+      operationId: getIsReady
+      description: "Service is ready probe"
+      responses:
+        "503":
+          description: "Service Unavailable"
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+        "200":
+          description: "OK"
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /internal/metrics:
+    get:
+      operationId: getMetrics
+      description: "Prometheus metrics"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "string"
+components:
+  schemas:
+    BestillingResponse:
+      type: "object"
+      properties:
+        bestillingId:
+          type: "string"
+          format: "uuid"
+        bestiller:
+          type: "string"
+        status:
+          $ref: "#/components/schemas/BestillingStatus"
+        varslerTotalt:
+          type: integer
+          format: int64
+        varslerSendt:
+          type: integer
+          format: int64
+        varslerFeilet:
+          type: integer
+          format: int64
+        insertedTimestamp:
+          type: "string"
+          format: "date-time"
+        updatedTimestamp:
+          type: "string"
+          format: "date-time"
+      required:
+        - "bestillingId"
+        - "bestiller"
+        - "status"
+        - "varslerTotalt"
+        - "varslerSendt"
+        - "varslerFeilet"
+        - "insertedTimestamp"
+      example:
+        bestillingId: "84201f96-363b-4aab-a589-89fa4b9b1feb"
+        status: "VENTER"
+        insertedTimestamp: "2020-02-02T11:22:33.444Z"
+        updatedTimestamp: "2020-02-02T12:22:33.444Z"
+    VarselResponse:
+      type: "object"
+      properties:
+        periodeId:
+          type: "string"
+          format: "uuid"
+        varselId:
+          type: "string"
+          format: "uuid"
+        varselKilde:
+          $ref: "#/components/schemas/VarselKilde"
+        varselType:
+          $ref: "#/components/schemas/VarselType"
+        varselStatus:
+          $ref: "#/components/schemas/VarselStatus"
+        hendelseName:
+          $ref: "#/components/schemas/HendelseName"
+        hendelseTimestamp:
+          type: "string"
+          format: "date-time"
+        insertedTimestamp:
+          type: "string"
+          format: "date-time"
+        updatedTimestamp:
+          type: "string"
+          format: "date-time"
+      required:
+        - "periodeId"
+        - "varselId"
+        - "varselKilde"
+        - "varselType"
+        - "varselStatus"
+        - "hendelseName"
+        - "insertedTimestamp"
+        - "hendelseTimestamp"
+      example:
+        periodeId: "84201f96-363b-4aab-a589-89fa4b9b1feb"
+        varselId: "ec6b5a10-b67c-42c1-b6e7-a642c36bd78e"
+        varselKilde: "BEKREFTELSE_TILGJENGELIG"
+        varselType: "OPPGAVE"
+        varselStatus: "VENTER"
+        hendelseName: "OPPRETTET"
+        hendelseTimestamp: "2020-02-02T11:22:33.444Z"
+        insertedTimestamp: "2020-02-02T12:22:33.444Z"
+        updatedTimestamp: "2020-02-02T13:22:33.444Z"
+    VarselKilde:
+      type: "string"
+      enum:
+        - "UKJENT"
+        - "PERIODE_AVSLUTTET"
+        - "BEKREFTELSE_TILGJENGELIG"
+        - "MANUELL_VARSLING"
+    VarselType:
+      type: "string"
+      enum:
+        - "UKJENT"
+        - "BESKJED"
+        - "OPPGAVE"
+        - "INNBOKS"
+    VarselStatus:
+      type: "string"
+      enum:
+        - "UKJENT"
+        - "VENTER"
+        - "BESTILT"
+        - "SENDT"
+        - "FEILET"
+        - "KANSELLERT"
+        - "FERDIGSTILT"
+    HendelseName:
+      type: "string"
+      enum:
+        - "UKJENT"
+        - "OPPRETTET"
+        - "AKTIVERT"
+        - "INAKTIVERT"
+        - "SLETTET"
+        - "EKSTERN_STATUS_OPPDATERT"
+    BestillingStatus:
+      type: "string"
+      enum:
+        - "VENTER"
+        - "BEKREFTET"
+        - "AKTIV"
+        - "SENDT"
+        - "IGNORERT"
+        - "FEILET"
+    ProblemDetails:
+      type: object
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        type:
+          type: "string"
+          format: "uri"
+        status:
+          type: "integer"
+        title:
+          type: "string"
+        detail:
+          type: "string"
+        instance:
+          type: "string"
+      required:
+        - id
+        - type
+        - status
+        - title
+        - detail
+        - instance
+      example:
+        id: "3cd944fb-6187-41a8-91b2-b172f2baf890"
+        type: "urn:paw:sikkerhet:bruker-har-ikke-tilgang"
+        status: 403
+        title: "Forbidden"
+        detail: "Bruker har ikke tilgang"
+        instance: "/api/endpoint"
+    HealthStatus:
+      type: "string"
+      enum:
+        - "UNKNOWN"
+        - "HEALTHY"
+        - "UNHEALTHY"

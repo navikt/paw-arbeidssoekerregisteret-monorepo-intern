@@ -41,7 +41,7 @@ class VarselMeldingBygger(
     fun opprettBekreftelseTilgjengeligOppgave(
         varselId: UUID,
         identitetsnummer: String,
-        gjelderTil: Instant
+        utsettEksternVarslingTil: Instant
     ): OpprettOppgave {
         val minSideVarsel = minSideVarselConfig.bekreftelseTilgjengelig
         return opprettOppgave(
@@ -50,7 +50,22 @@ class VarselMeldingBygger(
             sensitivitet = minSideVarsel.sensitivitet.asSensitivitet(),
             link = minSideVarsel.link,
             tekster = minSideVarsel.asTekster(),
-            eksternVarsling = minSideVarsel.eksterntVarsel?.asEksternVarslingBestilling(gjelderTil)
+            eksternVarsling = minSideVarsel.eksterntVarsel?.asEksternVarslingBestilling(utsettEksternVarslingTil)
+        )
+    }
+
+    fun opprettManueltVarsel(
+        varselId: UUID,
+        identitetsnummer: String
+    ): OpprettBeskjed {
+        val minSideVarsel = minSideVarselConfig.manueltVarsel
+        return opprettBeskjed(
+            varselId = varselId,
+            identitetsnummer = identitetsnummer,
+            sensitivitet = minSideVarsel.sensitivitet.asSensitivitet(),
+            link = minSideVarsel.link,
+            tekster = minSideVarsel.asTekster(),
+            eksternVarsling = minSideVarsel.eksterntVarsel?.asEksternVarslingBestilling()
         )
     }
 

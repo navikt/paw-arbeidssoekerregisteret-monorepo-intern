@@ -1,8 +1,19 @@
 package no.nav.paw.arbeidssoekerregisteret.test
 
+import no.nav.paw.arbeidssoekerregisteret.model.BestillingStatus
+import no.nav.paw.arbeidssoekerregisteret.model.BestiltVarselStatus
+import no.nav.paw.arbeidssoekerregisteret.model.InsertBestillingRow
+import no.nav.paw.arbeidssoekerregisteret.model.InsertBestiltVarselRow
+import no.nav.paw.arbeidssoekerregisteret.model.InsertPeriodeRow
+import no.nav.paw.arbeidssoekerregisteret.model.InsertVarselRow
+import no.nav.paw.arbeidssoekerregisteret.model.UpdateBestillingRow
+import no.nav.paw.arbeidssoekerregisteret.model.UpdateBestiltVarselRow
+import no.nav.paw.arbeidssoekerregisteret.model.UpdatePeriodeRow
+import no.nav.paw.arbeidssoekerregisteret.model.UpdateVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.VarselEventName
 import no.nav.paw.arbeidssoekerregisteret.model.VarselHendelse
 import no.nav.paw.arbeidssoekerregisteret.model.VarselKanal
+import no.nav.paw.arbeidssoekerregisteret.model.VarselKilde
 import no.nav.paw.arbeidssoekerregisteret.model.VarselStatus
 import no.nav.paw.arbeidssoekerregisteret.model.VarselType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Bruker
@@ -37,41 +48,103 @@ import no.nav.paw.bekreftelse.internehendelser.vo.Bruker as InternBekreftelseBru
 object TestData {
     val runtimeEnvironment = currentRuntimeEnvironment
 
-    fun Periode.asRecord(key: Long = Random.nextLong()): TestRecord<Long, Periode> =
-        TestRecord(key, this)
+    fun randomFnr(
+        minYear: Year = Year.now().minusYears(18),
+        maxYear: Year = Year.now().minusYears(100)
+    ): String {
+        val formatter = DateTimeFormatter.ofPattern("ddMMyy")
+        val randomYear = Random.nextInt(maxYear.value, minYear.value)
+        val randomEpochSecond = Random.nextLong(0, Instant.now().epochSecond)
+        val randomBirthday = LocalDate.ofInstant(Instant.ofEpochSecond(randomEpochSecond), ZoneOffset.UTC)
+            .withYear(randomYear)
+        return formatter.format(randomBirthday) + Random.nextInt(10000, 99999).toString()
+    }
 
-    fun BekreftelseTilgjengelig.asRecord(key: Long = Random.nextLong()): TestRecord<Long, BekreftelseHendelse> =
-        TestRecord(key, this)
+    fun insertPeriodeRow(
+        periodeId: UUID = UUID.randomUUID(),
+        identitetsnummer: String = randomFnr(),
+        startetTimestamp: Instant = Instant.now()
+    ): InsertPeriodeRow = InsertPeriodeRow(
+        periodeId = periodeId,
+        identitetsnummer = identitetsnummer,
+        startetTimestamp = startetTimestamp
+    )
 
-    fun BekreftelseMeldingMottatt.asRecord(key: Long = Random.nextLong()): TestRecord<Long, BekreftelseHendelse> =
-        TestRecord(key, this)
+    fun updatePeriodeRow(
+        periodeId: UUID = UUID.randomUUID(),
+        identitetsnummer: String = randomFnr(),
+        avsluttetTimestamp: Instant = Instant.now()
+    ): UpdatePeriodeRow = UpdatePeriodeRow(
+        periodeId = periodeId,
+        identitetsnummer = identitetsnummer,
+        avsluttetTimestamp = avsluttetTimestamp
+    )
 
-    fun PeriodeAvsluttet.asRecord(key: Long = Random.nextLong()): TestRecord<Long, BekreftelseHendelse> =
-        TestRecord(key, this)
+    fun insertVarselRow(
+        periodeId: UUID = UUID.randomUUID(),
+        varselId: UUID = UUID.randomUUID(),
+        varselKilde: VarselKilde = VarselKilde.UKJENT,
+        varselType: VarselType = VarselType.UKJENT,
+        varselStatus: VarselStatus = VarselStatus.UKJENT,
+        hendelseName: VarselEventName = VarselEventName.UKJENT,
+        hendelseTimestamp: Instant = Instant.now()
+    ): InsertVarselRow = InsertVarselRow(
+        periodeId = periodeId,
+        varselId = varselId,
+        varselKilde = varselKilde,
+        varselType = varselType,
+        varselStatus = varselStatus,
+        hendelseName = hendelseName,
+        hendelseTimestamp = hendelseTimestamp
+    )
 
-    fun BaOmAaAvsluttePeriode.asRecord(key: Long = Random.nextLong()): TestRecord<Long, BekreftelseHendelse> =
-        TestRecord(key, this)
+    fun updateVarselRow(
+        varselId: UUID = UUID.randomUUID(),
+        varselStatus: VarselStatus = VarselStatus.UKJENT,
+        hendelseName: VarselEventName = VarselEventName.UKJENT,
+        hendelseTimestamp: Instant = Instant.now()
+    ): UpdateVarselRow = UpdateVarselRow(
+        varselId = varselId,
+        varselStatus = varselStatus,
+        hendelseName = hendelseName,
+        hendelseTimestamp = hendelseTimestamp
+    )
 
-    fun LeveringsfristUtloept.asRecord(key: Long = Random.nextLong()): TestRecord<Long, BekreftelseHendelse> =
-        TestRecord(key, this)
+    fun insertBestillingRow(
+        bestillingId: UUID = UUID.randomUUID(),
+        bestiller: String = "NAV1234"
+    ): InsertBestillingRow = InsertBestillingRow(
+        bestillingId = bestillingId,
+        bestiller = bestiller
+    )
 
-    fun RegisterGracePeriodeUtloept.asRecord(key: Long = Random.nextLong()): TestRecord<Long, BekreftelseHendelse> =
-        TestRecord(key, this)
+    fun updateBestillingRow(
+        bestillingId: UUID = UUID.randomUUID(),
+        status: BestillingStatus = BestillingStatus.BEKREFTET
+    ): UpdateBestillingRow = UpdateBestillingRow(
+        bestillingId = bestillingId,
+        status = status
+    )
 
-    fun RegisterGracePeriodeUtloeptEtterEksternInnsamling.asRecord(key: Long = Random.nextLong()): TestRecord<Long, BekreftelseHendelse> =
-        TestRecord(key, this)
+    fun insertBestiltVarselRow(
+        bestillingId: UUID = UUID.randomUUID(),
+        periodeId: UUID = UUID.randomUUID(),
+        varselId: UUID = UUID.randomUUID(),
+        identitetsnummer: String = randomFnr()
+    ): InsertBestiltVarselRow = InsertBestiltVarselRow(
+        bestillingId = bestillingId,
+        periodeId = periodeId,
+        varselId = varselId,
+        identitetsnummer = identitetsnummer
+    )
 
-    fun RegisterGracePeriodeGjenstaaendeTid.asRecord(key: Long = Random.nextLong()): TestRecord<Long, BekreftelseHendelse> =
-        TestRecord(key, this)
-
-    fun BekreftelsePaaVegneAvStartet.asRecord(key: Long = Random.nextLong()): TestRecord<Long, BekreftelseHendelse> =
-        TestRecord(key, this)
-
-    fun EksternGracePeriodeUtloept.asRecord(key: Long = Random.nextLong()): TestRecord<Long, BekreftelseHendelse> =
-        TestRecord(key, this)
-
-    fun VarselHendelse.asRecord(): TestRecord<String, VarselHendelse> =
-        TestRecord(this.varselId, this)
+    fun updateBestiltVarselRow(
+        varselId: UUID = UUID.randomUUID(),
+        status: BestiltVarselStatus = BestiltVarselStatus.AKTIV
+    ): UpdateBestiltVarselRow = UpdateBestiltVarselRow(
+        varselId = varselId,
+        status = status
+    )
 
     fun bruker(
         type: BrukerType = BrukerType.SYSTEM,
@@ -277,15 +350,39 @@ object TestData {
         tidspunkt = tidspunkt
     )
 
-    fun randomFnr(
-        minYear: Year = Year.now().minusYears(18),
-        maxYear: Year = Year.now().minusYears(100)
-    ): String {
-        val formatter = DateTimeFormatter.ofPattern("ddMMyy")
-        val randomYear = Random.nextInt(maxYear.value, minYear.value)
-        val randomEpochSecond = Random.nextLong(0, Instant.now().epochSecond)
-        val randomBirthday = LocalDate.ofInstant(Instant.ofEpochSecond(randomEpochSecond), ZoneOffset.UTC)
-            .withYear(randomYear)
-        return formatter.format(randomBirthday) + Random.nextInt(10000, 99999).toString()
-    }
+    fun Periode.asRecord(key: Long = Random.nextLong()): TestRecord<Long, Periode> =
+        TestRecord(key, this)
+
+    fun BekreftelseTilgjengelig.asRecord(key: Long = Random.nextLong()): TestRecord<Long, BekreftelseHendelse> =
+        TestRecord(key, this)
+
+    fun BekreftelseMeldingMottatt.asRecord(key: Long = Random.nextLong()): TestRecord<Long, BekreftelseHendelse> =
+        TestRecord(key, this)
+
+    fun PeriodeAvsluttet.asRecord(key: Long = Random.nextLong()): TestRecord<Long, BekreftelseHendelse> =
+        TestRecord(key, this)
+
+    fun BaOmAaAvsluttePeriode.asRecord(key: Long = Random.nextLong()): TestRecord<Long, BekreftelseHendelse> =
+        TestRecord(key, this)
+
+    fun LeveringsfristUtloept.asRecord(key: Long = Random.nextLong()): TestRecord<Long, BekreftelseHendelse> =
+        TestRecord(key, this)
+
+    fun RegisterGracePeriodeUtloept.asRecord(key: Long = Random.nextLong()): TestRecord<Long, BekreftelseHendelse> =
+        TestRecord(key, this)
+
+    fun RegisterGracePeriodeUtloeptEtterEksternInnsamling.asRecord(key: Long = Random.nextLong()): TestRecord<Long, BekreftelseHendelse> =
+        TestRecord(key, this)
+
+    fun RegisterGracePeriodeGjenstaaendeTid.asRecord(key: Long = Random.nextLong()): TestRecord<Long, BekreftelseHendelse> =
+        TestRecord(key, this)
+
+    fun BekreftelsePaaVegneAvStartet.asRecord(key: Long = Random.nextLong()): TestRecord<Long, BekreftelseHendelse> =
+        TestRecord(key, this)
+
+    fun EksternGracePeriodeUtloept.asRecord(key: Long = Random.nextLong()): TestRecord<Long, BekreftelseHendelse> =
+        TestRecord(key, this)
+
+    fun VarselHendelse.asRecord(): TestRecord<String, VarselHendelse> =
+        TestRecord(this.varselId, this)
 }

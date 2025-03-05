@@ -54,7 +54,7 @@ enum class VarselType(@get:JsonValue val value: String) {
 enum class VarselKilde {
     PERIODE_AVSLUTTET,
     BEKREFTELSE_TILGJENGELIG,
-    MANUELL_PUBLISERING,
+    MANUELL_VARSLING,
 
     @JsonEnumDefaultValue
     UKJENT
