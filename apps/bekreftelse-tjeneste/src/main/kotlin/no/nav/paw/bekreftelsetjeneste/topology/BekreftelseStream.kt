@@ -75,7 +75,7 @@ fun StreamsBuilder.buildBekreftelseStream(
                 val hendelser = when (gjeldendeTilstand) {
                     null -> {
                         logWarning(
-                            Loesning.from(Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET),
+                            Loesning.from(record.value().bekreftelsesloesning),
                             bekreftelseLevertAction,
                             Feil.PERIODE_IKKE_FUNNET
                         )

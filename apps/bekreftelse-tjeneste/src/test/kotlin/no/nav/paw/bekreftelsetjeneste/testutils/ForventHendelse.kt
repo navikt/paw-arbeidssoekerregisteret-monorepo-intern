@@ -23,7 +23,7 @@ inline fun <reified A : BekreftelseHendelse> FreeSpec.forventer(
     crossinline asserts: (List<A>) -> Unit = {}
 ) {
     contract {
-        callsInPlace(asserts, InvocationKind.EXACTLY_ONCE)
+        callsInPlace(asserts, InvocationKind.AT_MOST_ONCE)
     }
     val kandidater = kilde.toList().filter { (tidspunkt, _) -> tidspunkt == fra || (tidspunkt.isAfter(fra) && tidspunkt.isBefore(til)) }
     val resultat = kandidater.singleOrNull { it.second is A }
