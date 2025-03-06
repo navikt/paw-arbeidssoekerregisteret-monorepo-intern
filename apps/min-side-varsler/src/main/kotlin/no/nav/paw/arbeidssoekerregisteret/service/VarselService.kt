@@ -46,11 +46,11 @@ class VarselService(
         }
     }
 
-    fun mottaBekreftelseHendelse(hendelse: BekreftelseHendelse): List<OppgaveMelding> = transaction {
+    fun mottaBekreftelseHendelse(value: Pair<Periode?, BekreftelseHendelse?>): List<OppgaveMelding> = transaction {
+        val (periode, hendelse) = value
         when (hendelse) {
             is BekreftelseTilgjengelig -> {
-                val periodeRow = periodeRepository.findByPeriodeId(hendelse.periodeId)
-                if (periodeRow != null) {
+                if (periode != null) {
                     val varselRow = varselRepository.findByVarselId(hendelse.bekreftelseId)
                     if (varselRow != null) {
                         logger.warn(
@@ -74,7 +74,7 @@ class VarselService(
 
                         listOf(
                             varselMeldingBygger.opprettOppgave(
-                                periodeRow.identitetsnummer,
+                                periode.identitetsnummer,
                                 hendelse.bekreftelseId,
                                 hendelse.gjelderTil
                             )
@@ -82,7 +82,7 @@ class VarselService(
                     }
                 } else {
                     logger.warn(
-                        "Fant ingen aktiv periode for hendelse {} og periode {}",
+                        "Ingen periode mottatt for hendelse {} med periode {}",
                         hendelse.hendelseType,
                         hendelse.periodeId
                     )
@@ -109,44 +109,30 @@ class VarselService(
             }
 
             is PeriodeAvsluttet -> {
-                logger.debug(
-                    "Avlutter og sletter alle varsler for hendelse {} og periode {}",
-                    hendelse.hendelseType,
-                    hendelse.periodeId
-                )
-
-                val periodeRow = periodeRepository.findByPeriodeId(hendelse.periodeId)
                 val varselRows = varselRepository.findByPeriodeId(hendelse.periodeId)
-
-                if (periodeRow == null) {
-                    logger.warn(
-                        "Fant ingen periode for hendelse {} og periode {}",
-                        hendelse.hendelseType,
-                        hendelse.periodeId
-                    )
-                    meterRegistry.bekreftelseHendelseCounter("fail", hendelse)
-                } else {
-                    meterRegistry.bekreftelseHendelseCounter("delete", hendelse)
-                }
-
                 if (varselRows.isEmpty()) {
                     logger.warn(
                         "Fant ingen varsler for hendelse {} og periode {}",
                         hendelse.hendelseType,
                         hendelse.periodeId
                     )
-                    periodeRepository.deleteByPeriodeId(hendelse.periodeId)
                     emptyList()
                 } else {
+                    logger.debug(
+                        "Avlutter og sletter alle varsler for hendelse {} og periode {}",
+                        hendelse.hendelseType,
+                        hendelse.periodeId
+                    )
                     varselRepository.deleteByPeriodeId(hendelse.periodeId)
-                    periodeRepository.deleteByPeriodeId(hendelse.periodeId)
                     varselRows.map { varselMeldingBygger.avsluttOppgave(it.varselId) }
                 }
             }
 
             else -> {
-                logger.debug("Ignorerer hendelse {}", hendelse.hendelseType)
-                meterRegistry.bekreftelseHendelseCounter("ignore", hendelse)
+                if (hendelse != null) {
+                    logger.debug("Ignorerer hendelse {}", hendelse.hendelseType)
+                    meterRegistry.bekreftelseHendelseCounter("ignore", hendelse)
+                }
                 emptyList()
             }
         }

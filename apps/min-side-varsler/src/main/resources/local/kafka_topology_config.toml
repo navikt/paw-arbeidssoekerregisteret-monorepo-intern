@@ -1,3 +1,4 @@
+periodeStreamSuffix = "periode-v1"
 bekreftelseStreamSuffix = "bekreftelse-v1"
 varselHendelseStreamSuffix = "varsel-hendelser-v1"
 periodeTopic = "paw.arbeidssokerperioder-v1"

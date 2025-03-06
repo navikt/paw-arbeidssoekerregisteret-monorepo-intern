@@ -44,9 +44,9 @@ fun main() {
     )
 
     //periodeKafkaProducer.sendPeriode(kafkaTopicsConfig.periodeTopic)
-    //bekreftelseKafkaProducer.sendBekreftelseTilgjengelig(kafkaTopicsConfig.bekreftelseHendelseTopic)
+    bekreftelseKafkaProducer.sendBekreftelseTilgjengelig(kafkaTopicsConfig.bekreftelseHendelseTopic)
     //bekreftelseKafkaProducer.sendBekreftelseMeldingMottatt(kafkaTopicsConfig.bekreftelseHendelseTopic)
-    bekreftelseKafkaProducer.sendPeriodeAvsluttet(kafkaTopicsConfig.bekreftelseHendelseTopic)
+    //bekreftelseKafkaProducer.sendPeriodeAvsluttet(kafkaTopicsConfig.bekreftelseHendelseTopic)
     //varselKafkaProducer.sendVarselHendelse(kafkaTopicsConfig.tmsVarselHendelseTopic)
 }
 

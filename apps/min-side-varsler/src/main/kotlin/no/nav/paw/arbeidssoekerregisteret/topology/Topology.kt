@@ -10,20 +10,18 @@ import no.nav.paw.arbeidssoekerregisteret.utils.periodeCounter
 import no.nav.paw.arbeidssoekerregisteret.utils.varselCounter
 import no.nav.paw.arbeidssoekerregisteret.utils.varselHendelseCounter
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.config.env.RuntimeEnvironment
 import no.nav.paw.config.env.namespaceOrDefaultForLocal
-import no.nav.paw.logging.logger.buildNamedLogger
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.Produced
+import org.apache.kafka.streams.kstream.ValueJoiner
 
-private val logger = buildNamedLogger("bekreftelse.varsler.topology")
-
-fun StreamsBuilder.bekreftelseKafkaTopology(
-    runtimeEnvironment: RuntimeEnvironment,
+fun StreamsBuilder.periodeKafkaTopology(
     kafkaTopicsConfig: KafkaTopologyConfig,
     meterRegistry: MeterRegistry,
     varselService: VarselService
@@ -34,11 +32,35 @@ fun StreamsBuilder.bekreftelseKafkaTopology(
             .foreach { _, periode ->
                 varselService.mottaPeriode(periode)
             }
+    }
+    return this
+}
 
-        stream(bekreftelseHendelseTopic, Consumed.with(Serdes.Long(), BekreftelseHendelseSerde()))
-            .peek { _, hendelse -> meterRegistry.bekreftelseHendelseCounter("read", hendelse) }
-            .flatMapValues { _, hendelse ->
-                varselService.mottaBekreftelseHendelse(hendelse)
+class BekreftelseValueJoiner : ValueJoiner<BekreftelseHendelse, Periode, Pair<Periode?, BekreftelseHendelse?>> {
+    override fun apply(bekreftelse: BekreftelseHendelse?, periode: Periode?): Pair<Periode?, BekreftelseHendelse?> {
+        return periode to bekreftelse
+    }
+}
+
+fun StreamsBuilder.bekreftelseKafkaTopology(
+    runtimeEnvironment: RuntimeEnvironment,
+    kafkaTopicsConfig: KafkaTopologyConfig,
+    meterRegistry: MeterRegistry,
+    varselService: VarselService
+): StreamsBuilder {
+    with(kafkaTopicsConfig) {
+        val periodeTable = table<Long, Periode>(periodeTopic)
+        val bekreftelseStream = stream(
+            bekreftelseHendelseTopic,
+            Consumed.with(Serdes.Long(), BekreftelseHendelseSerde())
+        )
+
+        bekreftelseStream.leftJoin(periodeTable, BekreftelseValueJoiner())
+            .peek { _, (_, hendelse) ->
+                if (hendelse != null) meterRegistry.bekreftelseHendelseCounter("read", hendelse)
+            }
+            .flatMapValues { _, value ->
+                varselService.mottaBekreftelseHendelse(value)
             }
             .peek { _, melding -> meterRegistry.varselCounter(runtimeEnvironment, melding) }
             .filter { _, _ -> false } // TODO: Disable utsending av varsler
@@ -57,7 +79,7 @@ fun StreamsBuilder.varselHendelserKafkaTopology(
     with(kafkaTopicsConfig) {
         stream(tmsVarselHendelseTopic, Consumed.with(Serdes.String(), VarselHendelseJsonSerde()))
             .filter { _, hendelse -> hendelse.namespace == runtimeEnvironment.namespaceOrDefaultForLocal() }
-            .peek { _, hendelse -> meterRegistry.varselHendelseCounter(hendelse) }
+            .peek { _, hendelse -> meterRegistry.varselHendelseCounter("read", hendelse) }
             .filter { _, hendelse -> hendelse.varseltype == VarselType.OPPGAVE }
             .foreach { _, hendelse ->
                 varselService.mottaVarselHendelse(hendelse)

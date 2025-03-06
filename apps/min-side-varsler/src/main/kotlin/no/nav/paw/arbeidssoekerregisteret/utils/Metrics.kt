@@ -20,79 +20,106 @@ fun MeterRegistry.periodeCounter(
     action: String,
     periode: Periode
 ) {
-    counter(
-        "${METRIC_PREFIX}_antall_operasjoner",
-        Tags.of(
-            Tag.of("type", "periode"),
-            Tag.of("source", "kafka"),
-            Tag.of("target", "database"),
-            Tag.of("action", action),
-            Tag.of("event.topic", "paw.arbeidssokerperioder-v1"),
-            Tag.of("event.name", periode::class.java.simpleName),
-            Tag.of("event.type", if (periode.avsluttet == null) "periode.startet" else "periode.avsluttet")
-        )
-    ).increment()
+    kafkaCounter(
+        type = "periode",
+        action = action,
+        target = "database",
+        eventTopic = "paw.arbeidssokerperioder-v1",
+        eventType = periode::class.java.name,
+        eventName = if (periode.avsluttet == null) "periode.startet" else "periode.avsluttet"
+    )
 }
 
 fun MeterRegistry.bekreftelseHendelseCounter(
     action: String,
     hendelse: BekreftelseHendelse
 ) {
-    counter(
-        "${METRIC_PREFIX}_antall_operasjoner",
-        Tags.of(
-            Tag.of("type", "bekreftelse"),
-            Tag.of("source", "kafka"),
-            Tag.of("target", "database"),
-            Tag.of("action", action),
-            Tag.of("event.topic", "paw.arbeidssoker-bekreftelse-hendelseslogg-v1"),
-            Tag.of("event.name", hendelse::class.java.simpleName),
-            Tag.of("event.type", hendelse.hendelseType)
-        )
-    ).increment()
+    kafkaCounter(
+        type = "bekreftelse",
+        action = action,
+        target = "database",
+        eventTopic = "paw.arbeidssoker-bekreftelse-hendelseslogg-v1",
+        eventType = hendelse::class.java.name,
+        eventName = hendelse.hendelseType
+    )
 }
 
 fun MeterRegistry.varselCounter(
     runtimeEnvironment: RuntimeEnvironment,
     melding: OppgaveMelding
 ) {
-    counter(
-        "${METRIC_PREFIX}_antall_operasjoner",
-        Tags.of(
-            Tag.of("type", "varsel"),
-            Tag.of("source", "kafka"),
-            Tag.of("target", "kafka"),
-            Tag.of("action", "write"),
-            Tag.of("event.topic", "min-side.aapen-brukervarsel-v1"),
-            Tag.of("event.name", melding::class.java.simpleName),
-            Tag.of("event.status", VarselStatus.UKJENT.value),
-            Tag.of("event.type", VarselType.OPPGAVE.value),
-            Tag.of("event.channel", VarselKanal.SMS.value),
-            Tag.of("event.namespace", runtimeEnvironment.namespaceOrDefaultForLocal()),
-            Tag.of("event.app", runtimeEnvironment.appNameOrDefaultForLocal()),
+    kafkaCounter(
+        type = "varsel.hendelse",
+        action = "write",
+        target = "database",
+        eventTopic = "min-side.aapen-brukervarsel-v1",
+        eventType = melding::class.java.name,
+        eventName = melding::class.java.simpleName,
+        extraTags = Tags.of(
+            Tag.of("varsel.type", VarselType.OPPGAVE.value),
+            Tag.of("varsel.status", VarselStatus.UKJENT.value),
+            Tag.of("varsel.kanal", VarselKanal.SMS.value),
+            Tag.of("varsel.renotifikasjon", "null"),
+            Tag.of("varsel.sendtSomBatch", "null"),
+            Tag.of("varsel.namespace", runtimeEnvironment.namespaceOrDefaultForLocal()),
+            Tag.of("varsel.app", runtimeEnvironment.appNameOrDefaultForLocal())
         )
-    ).increment()
+    )
 }
 
 fun MeterRegistry.varselHendelseCounter(
+    action: String,
     hendelse: VarselHendelse
+) {
+    kafkaCounter(
+        type = "varsel.hendelse",
+        action = action,
+        target = "database",
+        eventTopic = "min-side.aapen-varsel-hendelse-v1",
+        eventType = hendelse::class.java.name,
+        eventName = hendelse.eventName.value,
+        extraTags = Tags.of(
+            Tag.of("varsel.type", hendelse.varseltype.value),
+            Tag.of("varsel.status", hendelse.status?.value ?: "null"),
+            Tag.of("varsel.kanal", hendelse.kanal?.value ?: "null"),
+            Tag.of("varsel.renotifikasjon", hendelse.renotifikasjon?.toString() ?: "null"),
+            Tag.of("varsel.sendtSomBatch", hendelse.sendtSomBatch?.toString() ?: "null"),
+            Tag.of("varsel.namespace", hendelse.namespace),
+            Tag.of("varsel.app", hendelse.appnavn)
+        )
+    )
+}
+
+fun MeterRegistry.kafkaCounter(
+    type: String,
+    action: String,
+    target: String,
+    eventTopic: String,
+    eventType: String,
+    eventName: String,
+    extraTags: Tags = Tags.empty()
+) = genericCounter(
+    type, action, "kafka", target, Tags.of(
+        Tag.of("event.topic", eventTopic),
+        Tag.of("event.type", eventType),
+        Tag.of("event.name", eventName)
+    ).and(extraTags)
+)
+
+fun MeterRegistry.genericCounter(
+    type: String,
+    action: String,
+    source: String,
+    target: String,
+    extraTags: Tags = Tags.empty()
 ) {
     counter(
         "${METRIC_PREFIX}_antall_operasjoner",
         Tags.of(
-            Tag.of("type", "varsel.hendelse"),
-            Tag.of("source", "kafka"),
-            Tag.of("target", "database"),
-            Tag.of("action", "read"),
-            Tag.of("event.topic", "min-side.aapen-varsel-hendelse-v1"),
-            Tag.of("event.name", hendelse.eventName.value),
-            Tag.of("event.status", hendelse.status?.value ?: "null"),
-            Tag.of("event.type", hendelse.varseltype.value),
-            Tag.of("event.channel", hendelse.kanal?.value ?: "null"),
-            Tag.of("event.renotifikasjon", hendelse.renotifikasjon?.toString() ?: "null"),
-            Tag.of("event.sendtSomBatch", hendelse.sendtSomBatch?.toString() ?: "null"),
-            Tag.of("event.namespace", hendelse.namespace),
-            Tag.of("event.app", hendelse.appnavn),
-        )
+            Tag.of("type", type),
+            Tag.of("action", action),
+            Tag.of("source", source),
+            Tag.of("target", target)
+        ).and(extraTags)
     ).increment()
 }

@@ -81,6 +81,7 @@ data class TestContext(
             ),
             kafkaKeyContext: KafkaKeyContext = KafkaKeyContext(inMemoryKafkaKeysMock()),
             kafkaTopologyConfig: KafkaTopologyConfig = KafkaTopologyConfig(
+                periodeStreamSuffix = "periode-v1",
                 bekreftelseStreamSuffix = "bekreftelse-v1",
                 varselHendelseStreamSuffix = "varsel-hendelse-v1",
                 periodeTopic = "periode-topic",

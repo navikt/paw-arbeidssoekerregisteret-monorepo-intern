@@ -11,7 +11,7 @@ CREATE TABLE perioder
 
 CREATE TABLE varsler
 (
-    periode_id         UUID REFERENCES perioder (periode_id),
+    periode_id         UUID UNIQUE  NOT NULL,
     varsel_id          UUID UNIQUE  NOT NULL,
     varsel_kilde       VARCHAR(50)  NOT NULL,
     varsel_type        VARCHAR(50)  NOT NULL,
@@ -20,5 +20,5 @@ CREATE TABLE varsler
     hendelse_timestamp TIMESTAMP(6) NOT NULL,
     inserted_timestamp TIMESTAMP(6) NOT NULL,
     updated_timestamp  TIMESTAMP(6),
-    PRIMARY KEY (periode_id, varsel_id)
+    PRIMARY KEY (varsel_id)
 );
