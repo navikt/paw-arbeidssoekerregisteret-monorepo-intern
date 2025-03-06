@@ -21,6 +21,7 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
 import no.nav.paw.logging.logger.buildLogger
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.slf4j.MDC
 import java.util.*
 
 class VarselService(
@@ -32,136 +33,164 @@ class VarselService(
     private val logger = buildLogger
 
     fun mottaPeriode(periode: Periode) = transaction {
-        val periodeRow = periodeRepository.findByPeriodeId(periode.id)
-        if (periodeRow != null) {
-            logger.warn("Oppdaterer innslag for periode {}", periode.id)
-            meterRegistry.periodeCounter("update", periode)
-            val updatePeriodeRow = periode.asUpdatePeriodeRow()
-            periodeRepository.update(updatePeriodeRow)
-        } else {
-            logger.debug("Oppretter innslag for periode {}", periode.id)
-            meterRegistry.periodeCounter("insert", periode)
-            val insertPeriodeRow = periode.asInsertPeriodeRow()
-            periodeRepository.insert(insertPeriodeRow)
+        try {
+            MDC.put("x_event_name", if (periode.avsluttet == null) "periode.startet" else "periode.avsluttet")
+            val periodeRow = periodeRepository.findByPeriodeId(periode.id)
+            if (periodeRow != null) {
+                logger.debug("Oppdaterer periode {}", periode.id)
+                meterRegistry.periodeCounter("update", periode)
+                val updatePeriodeRow = periode.asUpdatePeriodeRow()
+                periodeRepository.update(updatePeriodeRow)
+            } else {
+                logger.debug("Oppretter periode {}", periode.id)
+                meterRegistry.periodeCounter("insert", periode)
+                val insertPeriodeRow = periode.asInsertPeriodeRow()
+                periodeRepository.insert(insertPeriodeRow)
+            }
+        } finally {
+            MDC.remove("x_event_name")
         }
     }
 
     fun mottaBekreftelseHendelse(value: Pair<Periode?, BekreftelseHendelse?>): List<OppgaveMelding> = transaction {
-        val (periode, hendelse) = value
-        when (hendelse) {
-            is BekreftelseTilgjengelig -> {
-                if (periode != null) {
-                    val varselRow = varselRepository.findByVarselId(hendelse.bekreftelseId)
-                    if (varselRow != null) {
-                        logger.warn(
-                            "Ignorerer hendelse {} siden varsel allerede finnes",
-                            hendelse.hendelseType
-                        )
-                        meterRegistry.bekreftelseHendelseCounter("ignore", hendelse)
-                        emptyList()
+        try {
+            val (periode, hendelse) = value
+            MDC.put("x_event_name", hendelse?.hendelseType ?: "null")
+
+            when (hendelse) {
+                is BekreftelseTilgjengelig -> {
+                    if (periode != null) {
+                        val varselRow = varselRepository.findByVarselId(hendelse.bekreftelseId)
+                        if (varselRow != null) {
+                            logger.warn(
+                                "Ignorerer siden varsel allerede finnes for hendelse {} og periode {}",
+                                hendelse.hendelseType,
+                                hendelse.periodeId
+                            )
+                            meterRegistry.bekreftelseHendelseCounter("ignore", hendelse)
+                            emptyList()
+                        } else {
+                            logger.debug(
+                                "Bestiller og oppretter varsel for hendelse {} og periode {}",
+                                hendelse.hendelseType,
+                                hendelse.periodeId
+                            )
+                            meterRegistry.bekreftelseHendelseCounter("insert", hendelse)
+                            val insertVarselRow = hendelse.asInsertVarselRow(
+                                varselKilde = VarselKilde.BEKREFTELSE_TILGJENGELIG,
+                                varselType = VarselType.OPPGAVE,
+                            )
+                            varselRepository.insert(insertVarselRow)
+
+                            listOf(
+                                varselMeldingBygger.opprettOppgave(
+                                    periode.identitetsnummer,
+                                    hendelse.bekreftelseId,
+                                    hendelse.gjelderTil
+                                )
+                            )
+                        }
                     } else {
-                        logger.debug(
-                            "Bestiller og oppretter varsel for hendelse {} og periode {}",
+                        logger.warn(
+                            "Ingen periode mottatt for hendelse {} med periode {}",
                             hendelse.hendelseType,
                             hendelse.periodeId
                         )
-                        meterRegistry.bekreftelseHendelseCounter("insert", hendelse)
-                        val insertVarselRow = hendelse.asInsertVarselRow(
-                            varselKilde = VarselKilde.BEKREFTELSE_TILGJENGELIG,
-                            varselType = VarselType.OPPGAVE,
-                        )
-                        varselRepository.insert(insertVarselRow)
-
-                        listOf(
-                            varselMeldingBygger.opprettOppgave(
-                                periode.identitetsnummer,
-                                hendelse.bekreftelseId,
-                                hendelse.gjelderTil
-                            )
-                        )
+                        meterRegistry.bekreftelseHendelseCounter("fail", hendelse)
+                        emptyList()
                     }
-                } else {
-                    logger.warn(
-                        "Ingen periode mottatt for hendelse {} med periode {}",
-                        hendelse.hendelseType,
-                        hendelse.periodeId
-                    )
-                    meterRegistry.bekreftelseHendelseCounter("fail", hendelse)
+                }
+
+                is BekreftelseMeldingMottatt -> {
+                    val varselRow = varselRepository.findByVarselId(hendelse.bekreftelseId)
+                    if (varselRow != null) {
+                        logger.debug(
+                            "Avslutter og sletter varsel for hendelse {} og periode {}",
+                            hendelse.hendelseType,
+                            hendelse.periodeId
+                        )
+                        meterRegistry.bekreftelseHendelseCounter("delete", hendelse)
+                        varselRepository.deleteByVarselId(hendelse.bekreftelseId)
+                        listOf(varselMeldingBygger.avsluttOppgave(hendelse.bekreftelseId))
+                    } else {
+                        logger.warn(
+                            "Fant ingen varsel for hendelse {} og periode {}",
+                            hendelse.hendelseType,
+                            hendelse.periodeId
+                        )
+                        meterRegistry.bekreftelseHendelseCounter("fail", hendelse)
+                        emptyList()
+                    }
+                }
+
+                is PeriodeAvsluttet -> {
+                    val varselRows = varselRepository.findByPeriodeId(hendelse.periodeId)
+                    if (varselRows.isEmpty()) {
+                        logger.warn(
+                            "Fant ingen varsler for hendelse {} og periode {}",
+                            hendelse.hendelseType,
+                            hendelse.periodeId
+                        )
+                        meterRegistry.bekreftelseHendelseCounter("fail", hendelse)
+                        emptyList()
+                    } else {
+                        logger.debug(
+                            "Avlutter og sletter alle varsler for hendelse {} og periode {}",
+                            hendelse.hendelseType,
+                            hendelse.periodeId
+                        )
+                        meterRegistry.bekreftelseHendelseCounter("delete", hendelse)
+                        varselRepository.deleteByPeriodeId(hendelse.periodeId)
+                        varselRows.map { varselMeldingBygger.avsluttOppgave(it.varselId) }
+                    }
+                }
+
+                else -> {
+                    if (hendelse != null) {
+                        logger.debug("Ignorerer hendelse {}", hendelse.hendelseType)
+                        meterRegistry.bekreftelseHendelseCounter("ignore", hendelse)
+                    } else {
+                        logger.debug("Ignorerer hendelse som er null")
+                        meterRegistry.bekreftelseHendelseCounter("ignore", "null", "bekreftelse.null")
+                    }
                     emptyList()
                 }
             }
-
-            is BekreftelseMeldingMottatt -> {
-                val varselRow = varselRepository.findByVarselId(hendelse.bekreftelseId)
-                if (varselRow != null) {
-                    logger.debug(
-                        "Avslutter og sletter varsel for varsel for hendelse {}",
-                        hendelse.hendelseType
-                    )
-                    meterRegistry.bekreftelseHendelseCounter("delete", hendelse)
-                    varselRepository.deleteByVarselId(hendelse.bekreftelseId)
-                    listOf(varselMeldingBygger.avsluttOppgave(hendelse.bekreftelseId))
-                } else {
-                    logger.warn("Fant ingen varsel for hendelse {}", hendelse.hendelseType)
-                    meterRegistry.bekreftelseHendelseCounter("fail", hendelse)
-                    emptyList()
-                }
-            }
-
-            is PeriodeAvsluttet -> {
-                val varselRows = varselRepository.findByPeriodeId(hendelse.periodeId)
-                if (varselRows.isEmpty()) {
-                    logger.warn(
-                        "Fant ingen varsler for hendelse {} og periode {}",
-                        hendelse.hendelseType,
-                        hendelse.periodeId
-                    )
-                    emptyList()
-                } else {
-                    logger.debug(
-                        "Avlutter og sletter alle varsler for hendelse {} og periode {}",
-                        hendelse.hendelseType,
-                        hendelse.periodeId
-                    )
-                    varselRepository.deleteByPeriodeId(hendelse.periodeId)
-                    varselRows.map { varselMeldingBygger.avsluttOppgave(it.varselId) }
-                }
-            }
-
-            else -> {
-                if (hendelse != null) {
-                    logger.debug("Ignorerer hendelse {}", hendelse.hendelseType)
-                    meterRegistry.bekreftelseHendelseCounter("ignore", hendelse)
-                }
-                emptyList()
-            }
+        } finally {
+            MDC.remove("x_event_name")
         }
     }
 
     fun mottaVarselHendelse(hendelse: VarselHendelse) = transaction {
-        val varselRow = varselRepository.findByVarselId(UUID.fromString(hendelse.varselId))
-        if (varselRow != null) {
-            if (varselRow.hendelseTimestamp.isBefore(hendelse.tidspunkt)) {
-                logger.debug(
-                    "Oppdaterer varsel for hendelse {} med type {} og status {}",
-                    VarselHendelse::class.java.simpleName,
-                    hendelse.varseltype,
-                    hendelse.status
-                )
-                val updateVarselRow = hendelse.asUpdateVarselRow()
-                varselRepository.update(updateVarselRow)
+        try {
+            MDC.put("x_event_name", "varsel.${hendelse.eventName.value}")
+
+            val varselRow = varselRepository.findByVarselId(UUID.fromString(hendelse.varselId))
+            if (varselRow != null) {
+                if (varselRow.hendelseTimestamp.isBefore(hendelse.tidspunkt)) {
+                    logger.debug(
+                        "Oppdaterer varsel for hendelse {} med type {} og status {}",
+                        VarselHendelse::class.java.simpleName,
+                        hendelse.varseltype,
+                        hendelse.status
+                    )
+                    val updateVarselRow = hendelse.asUpdateVarselRow()
+                    varselRepository.update(updateVarselRow)
+                } else {
+                    logger.warn(
+                        "Ignorerer hendelse {} med type {} og status {} siden lagret varsel {} er nyere enn hendelse {}",
+                        VarselHendelse::class.java.simpleName,
+                        hendelse.varseltype,
+                        hendelse.status,
+                        varselRow.hendelseTimestamp,
+                        hendelse.tidspunkt
+                    )
+                }
             } else {
-                logger.warn(
-                    "Ignorerer hendelse {} med type {} og status {} siden lagret varsel {} er nyere enn hendelse {}",
-                    VarselHendelse::class.java.simpleName,
-                    hendelse.varseltype,
-                    hendelse.status,
-                    varselRow.hendelseTimestamp,
-                    hendelse.tidspunkt
-                )
+                logger.warn("Fant ikke lagret varsel for hendelse {}", VarselHendelse::class.java.simpleName)
             }
-        } else {
-            logger.warn("Fant ikke lagret varsel for hendelse {}", VarselHendelse::class.java.simpleName)
+        } finally {
+            MDC.remove("x_event_name")
         }
     }
 }

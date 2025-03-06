@@ -34,13 +34,25 @@ fun MeterRegistry.bekreftelseHendelseCounter(
     action: String,
     hendelse: BekreftelseHendelse
 ) {
+    bekreftelseHendelseCounter(
+        action = action,
+        eventType = hendelse::class.java.name,
+        eventName = hendelse.hendelseType
+    )
+}
+
+fun MeterRegistry.bekreftelseHendelseCounter(
+    action: String,
+    eventType: String,
+    eventName: String
+) {
     kafkaCounter(
         type = "bekreftelse",
         action = action,
         target = "database",
         eventTopic = "paw.arbeidssoker-bekreftelse-hendelseslogg-v1",
-        eventType = hendelse::class.java.name,
-        eventName = hendelse.hendelseType
+        eventType = eventType,
+        eventName = eventName
     )
 }
 
