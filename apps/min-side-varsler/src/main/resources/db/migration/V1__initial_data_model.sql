@@ -11,7 +11,7 @@ CREATE TABLE perioder
 
 CREATE TABLE varsler
 (
-    periode_id         UUID UNIQUE  NOT NULL,
+    periode_id         UUID         NOT NULL,
     varsel_id          UUID UNIQUE  NOT NULL,
     varsel_kilde       VARCHAR(50)  NOT NULL,
     varsel_type        VARCHAR(50)  NOT NULL,
@@ -22,3 +22,5 @@ CREATE TABLE varsler
     updated_timestamp  TIMESTAMP(6),
     PRIMARY KEY (varsel_id)
 );
+
+CREATE index varsler_periode_id_idx ON varsler (periode_id);
