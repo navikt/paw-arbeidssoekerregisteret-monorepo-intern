@@ -19,9 +19,9 @@ spec:
       memory: 256Mi
   env:
     - name: KAFKA_PERIODE_STREAM_SUFFIX
-      value: periode-beta-v1
+      value: periode-beta-v2
     - name: KAFKA_BEKREFTELSE_STREAM_SUFFIX
-      value: bekreftelse-beta-v4
+      value: bekreftelse-beta-v5
     - name: KAFKA_VARSEL_HENDELSE_STREAM_SUFFIX
       value: varsel-hendelser-beta-v1
     - name: KAFKA_PAW_ARBEIDSOKERPERIODE_TOPIC
