@@ -44,7 +44,7 @@ inline fun <reified A : BekreftelseHendelse> FreeSpec.forventer(
 fun Pair<Instant, ValueWithKafkaKeyData<*>>.prettyPrint() = when (val value = second.value) {
     is Periode -> "${first.prettyPrint}: periode startet"
     is PaaVegneAv -> "${first.prettyPrint}: på veiene av: ${value.handling::class.simpleName}(${value.bekreftelsesloesning.name})"
-    is Bekreftelse -> "${first.prettyPrint}: bekreftelse levert, ønsker å fortsette: ${if (value.svar.vilFortsetteSomArbeidssoeker) "Ja" else "Nei"}"
+    is Bekreftelse -> "${first.prettyPrint}: [${value.bekreftelsesloesning.name}] bekreftelse levert, ønsker å fortsette: ${if (value.svar.vilFortsetteSomArbeidssoeker) "Ja" else "Nei"}"
     null -> "${first.prettyPrint}: null"
     else -> "${first.prettyPrint}: ${value::class.simpleName}"
 }

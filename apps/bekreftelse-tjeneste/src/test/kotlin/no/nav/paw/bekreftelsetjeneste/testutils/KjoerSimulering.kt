@@ -5,6 +5,7 @@ import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.metadata
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.bekreftelse.internehendelser.*
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
+import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bekreftelsetjeneste.ApplicationTestContext
 import java.time.Duration
@@ -28,7 +29,7 @@ fun ApplicationTestContext.run(
                 null -> {}
                 is Periode -> periodeTopic.pipeInput(immutableNeste.second.key, asTypedValue)
                 is Bekreftelse -> {
-                    if (ventendeBekreftelser.isNotEmpty()) {
+                    if (asTypedValue.bekreftelsesloesning == Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET && ventendeBekreftelser.isNotEmpty()) {
                         with(ventendeBekreftelser.removeFirst()) {
                             bekreftelseTopic.pipeInput(
                                 immutableNeste.second.key, Bekreftelse(
