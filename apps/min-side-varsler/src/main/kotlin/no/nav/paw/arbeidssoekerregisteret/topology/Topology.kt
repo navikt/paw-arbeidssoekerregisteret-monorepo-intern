@@ -29,9 +29,7 @@ fun StreamsBuilder.periodeKafkaTopology(
     with(kafkaTopicsConfig) {
         stream<Long, Periode>(periodeTopic)
             .peek { _, periode -> meterRegistry.periodeCounter("read", periode) }
-            .foreach { _, periode ->
-                varselService.mottaPeriode(periode)
-            }
+            .foreach { _, periode -> varselService.mottaPeriode(periode) }
     }
     return this
 }
@@ -61,7 +59,6 @@ fun StreamsBuilder.bekreftelseKafkaTopology(
             }
             .flatMapValues { _, value -> varselService.mottaBekreftelseHendelse(value) }
             .peek { _, melding -> meterRegistry.varselCounter(runtimeEnvironment, melding) }
-            .filter { _, _ -> false } // TODO: Disable utsending av varsler
             .map { _, melding -> KeyValue.pair(melding.varselId.toString(), melding.value) }
             .to(tmsVarselTopic, Produced.with(Serdes.String(), Serdes.String()))
     }
