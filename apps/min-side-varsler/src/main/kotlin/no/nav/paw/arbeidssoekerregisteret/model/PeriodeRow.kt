@@ -17,7 +17,8 @@ data class PeriodeRow(
 data class InsertPeriodeRow(
     val periodeId: UUID,
     val identitetsnummer: String,
-    val startetTimestamp: Instant
+    val startetTimestamp: Instant,
+    val avsluttetTimestamp: Instant?
 )
 
 data class UpdatePeriodeRow(
@@ -38,7 +39,8 @@ fun ResultRow.asPeriodeRow(): PeriodeRow = PeriodeRow(
 fun Periode.asInsertPeriodeRow(): InsertPeriodeRow = InsertPeriodeRow(
     periodeId = this.id,
     identitetsnummer = this.identitetsnummer,
-    startetTimestamp = this.startet.tidspunkt
+    startetTimestamp = this.startet.tidspunkt,
+    avsluttetTimestamp = this.avsluttet?.tidspunkt
 )
 
 fun Periode.asUpdatePeriodeRow(): UpdatePeriodeRow = UpdatePeriodeRow(

@@ -59,9 +59,7 @@ fun StreamsBuilder.bekreftelseKafkaTopology(
             .peek { _, (_, hendelse) ->
                 if (hendelse != null) meterRegistry.bekreftelseHendelseCounter("read", hendelse)
             }
-            .flatMapValues { _, value ->
-                varselService.mottaBekreftelseHendelse(value)
-            }
+            .flatMapValues { _, value -> varselService.mottaBekreftelseHendelse(value) }
             .peek { _, melding -> meterRegistry.varselCounter(runtimeEnvironment, melding) }
             .filter { _, _ -> false } // TODO: Disable utsending av varsler
             .map { _, melding -> KeyValue.pair(melding.varselId.toString(), melding.value) }

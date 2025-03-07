@@ -84,14 +84,14 @@ data class ApplicationContext(
                 healthIndicatorRepository = healthIndicatorRepository,
                 varselService = varselService
             )
-            /*val varselHendelseKafkaStreams = buildVarselHendelseKafkaStreams(
+            val varselHendelseKafkaStreams = buildVarselHendelseKafkaStreams(
                 serverConfig = serverConfig,
                 kafkaConfig = kafkaConfig,
                 kafkaTopologyConfig = kafkaTopicsConfig,
                 meterRegistry = prometheusMeterRegistry,
                 healthIndicatorRepository = healthIndicatorRepository,
                 varselService = varselService
-            )*/ // TODO: Disable lesing av varsel-hendelser
+            )
 
             return ApplicationContext(
                 serverConfig = serverConfig,
@@ -100,7 +100,8 @@ data class ApplicationContext(
                 healthIndicatorRepository = healthIndicatorRepository,
                 kafkaStreamsList = listOf(
                     periodeKafkaStreams,
-                    bekreftelseKafkaStreams
+                    bekreftelseKafkaStreams,
+                    varselHendelseKafkaStreams
                 ),
                 kafkaStreamsShutdownTimeout = kafkaTopicsConfig.shutdownTimeout
             )

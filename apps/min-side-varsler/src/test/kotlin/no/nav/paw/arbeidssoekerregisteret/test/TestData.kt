@@ -27,7 +27,6 @@ import org.apache.kafka.streams.test.TestRecord
 import java.time.Duration
 import java.time.Instant
 import java.util.*
-import java.util.stream.LongStream
 import kotlin.random.Random
 
 object TestData {
@@ -59,216 +58,194 @@ object TestData {
     val bekreftelseId4 = UUID.fromString("a59581e6-c9be-4aec-b9f4-c635f1826c71")
     val bekreftelseId5 = UUID.fromString("de94b7ab-360f-4e5f-9ad1-3dc572b3e6a5")
 
-    val aapenPeriode1 = TestRecord(
-        kafkaKey1, aapenPeriode(
-            id = periodeId1,
-            identitetsnummer = identitetsnummer1,
-            startet = metadata(tidspunkt = Instant.now().minus(Duration.ofHours(1))),
-        )
+    fun Periode.asRecord(key: Long = longKey()): TestRecord<Long, Periode> =
+        TestRecord(key, this)
+
+    fun BekreftelseTilgjengelig.asRecord(key: Long = longKey()): TestRecord<Long, BekreftelseHendelse> =
+        TestRecord(key, this)
+
+    fun BekreftelseMeldingMottatt.asRecord(key: Long = longKey()): TestRecord<Long, BekreftelseHendelse> =
+        TestRecord(key, this)
+
+    fun PeriodeAvsluttet.asRecord(key: Long = longKey()): TestRecord<Long, BekreftelseHendelse> =
+        TestRecord(key, this)
+
+    fun BaOmAaAvsluttePeriode.asRecord(key: Long = longKey()): TestRecord<Long, BekreftelseHendelse> =
+        TestRecord(key, this)
+
+    fun LeveringsfristUtloept.asRecord(key: Long = longKey()): TestRecord<Long, BekreftelseHendelse> =
+        TestRecord(key, this)
+
+    fun RegisterGracePeriodeUtloept.asRecord(key: Long = longKey()): TestRecord<Long, BekreftelseHendelse> =
+        TestRecord(key, this)
+
+    fun RegisterGracePeriodeUtloeptEtterEksternInnsamling.asRecord(key: Long = longKey()): TestRecord<Long, BekreftelseHendelse> =
+        TestRecord(key, this)
+
+    fun RegisterGracePeriodeGjenstaaendeTid.asRecord(key: Long = longKey()): TestRecord<Long, BekreftelseHendelse> =
+        TestRecord(key, this)
+
+    fun BekreftelsePaaVegneAvStartet.asRecord(key: Long = longKey()): TestRecord<Long, BekreftelseHendelse> =
+        TestRecord(key, this)
+
+    fun EksternGracePeriodeUtloept.asRecord(key: Long = longKey()): TestRecord<Long, BekreftelseHendelse> =
+        TestRecord(key, this)
+
+    fun VarselHendelse.asRecord(): TestRecord<String, VarselHendelse> =
+        TestRecord(this.varselId, this)
+
+    val aapenPeriode1 = aapenPeriode(
+        id = periodeId1,
+        identitetsnummer = identitetsnummer1,
+        startet = metadata(tidspunkt = Instant.now().minus(Duration.ofHours(1))),
     )
-    val aapenPeriode2 = TestRecord(
-        kafkaKey2, aapenPeriode(
-            id = periodeId2,
-            identitetsnummer = identitetsnummer2,
-            startet = metadata(tidspunkt = Instant.now().minus(Duration.ofHours(2)))
-        )
+    val aapenPeriode2 = aapenPeriode(
+        id = periodeId2,
+        identitetsnummer = identitetsnummer2,
+        startet = metadata(tidspunkt = Instant.now().minus(Duration.ofHours(2)))
     )
-    val aapenPeriode3 = TestRecord(
-        kafkaKey3, aapenPeriode(
-            id = periodeId3,
-            identitetsnummer = identitetsnummer3,
-            startet = metadata(tidspunkt = Instant.now().minus(Duration.ofHours(3)))
-        )
-    )
-    val aapenPeriode4 = TestRecord(
-        kafkaKey4, aapenPeriode(
-            id = periodeId4, identitetsnummer = identitetsnummer4,
-            startet = metadata(tidspunkt = Instant.now().minus(Duration.ofHours(4)))
-        )
-    )
-    val aapenPeriode5 = TestRecord(
-        kafkaKey5, aapenPeriode(
-            id = periodeId5, identitetsnummer = identitetsnummer5,
-            startet = metadata(tidspunkt = Instant.now().minus(Duration.ofHours(5)))
-        )
+    val aapenPeriode3 = aapenPeriode(
+        id = periodeId3,
+        identitetsnummer = identitetsnummer3,
+        startet = metadata(tidspunkt = Instant.now().minus(Duration.ofHours(2)))
     )
 
-    val lukketPeriode1 = TestRecord(
-        kafkaKey1, lukketPeriode(
-            id = periodeId1,
-            identitetsnummer = identitetsnummer1,
-            startet = metadata(tidspunkt = Instant.now().minus(Duration.ofHours(1))),
-            avsluttet = metadata(tidspunkt = Instant.now())
-        )
+    val lukketPeriode1 = lukketPeriode(
+        id = periodeId1,
+        identitetsnummer = identitetsnummer1,
+        startet = metadata(tidspunkt = Instant.now().minus(Duration.ofHours(1))),
+        avsluttet = metadata(tidspunkt = Instant.now())
     )
-    val lukketPeriode2 = TestRecord(
-        kafkaKey2, lukketPeriode(
-            id = periodeId2,
-            identitetsnummer = identitetsnummer2,
-            startet = metadata(tidspunkt = Instant.now().minus(Duration.ofHours(2))),
-            avsluttet = metadata(tidspunkt = Instant.now())
-        )
+    val lukketPeriode2 = lukketPeriode(
+        id = periodeId2,
+        identitetsnummer = identitetsnummer2,
+        startet = metadata(tidspunkt = Instant.now().minus(Duration.ofHours(2))),
+        avsluttet = metadata(tidspunkt = Instant.now())
     )
-
-    val bekreftelseTilgjengelig1a = TestRecord(
-        kafkaKey1, bekreftelseTilgjengelig(
-            periodeId = periodeId1,
-            bekreftelseId = bekreftelseId1,
-            arbeidssoekerId = arbeidssoekerId1,
-            hendelseTidspunkt = Instant.now().minus(Duration.ofMinutes(50))
-        )
-    )
-    val bekreftelseTilgjengelig1b = TestRecord(
-        kafkaKey2, bekreftelseTilgjengelig(
-            periodeId = periodeId1,
-            bekreftelseId = bekreftelseId2,
-            arbeidssoekerId = arbeidssoekerId1,
-            hendelseTidspunkt = Instant.now().minus(Duration.ofMinutes(40))
-        )
-    )
-    val bekreftelseTilgjengelig1c = TestRecord(
-        kafkaKey2, bekreftelseTilgjengelig(
-            periodeId = periodeId1,
-            bekreftelseId = bekreftelseId3,
-            arbeidssoekerId = arbeidssoekerId1,
-            hendelseTidspunkt = Instant.now().minus(Duration.ofMinutes(30))
-        )
-    )
-    val bekreftelseMeldingMottatt1 = TestRecord(
-        kafkaKey1, bekreftelseMeldingMottatt(
-            periodeId = periodeId1,
-            bekreftelseId = bekreftelseId1,
-            arbeidssoekerId = arbeidssoekerId1,
-        )
-    )
-    val baOmAaAvsluttePeriode1 = TestRecord(
-        kafkaKey1, baOmAaAvsluttePeriode(
-            periodeId = periodeId1,
-            arbeidssoekerId = arbeidssoekerId1
-        )
-    )
-    val bekreftelsePaaVegneAvStartet1 = TestRecord(
-        kafkaKey1, bekreftelsePaaVegneAvStartet(
-            periodeId = periodeId1,
-            arbeidssoekerId = arbeidssoekerId1
-        )
-    )
-    val registerGracePeriodeUtloept1 = TestRecord(
-        kafkaKey1, registerGracePeriodeUtloept(
-            periodeId = periodeId1,
-            arbeidssoekerId = arbeidssoekerId1,
-            bekreftelseId = bekreftelseId1
-        )
-    )
-    val registerGracePeriodeUtloeptEtterEksternInnsamling1 = TestRecord(
-        kafkaKey1, registerGracePeriodeUtloeptEtterEksternInnsamling(
-            periodeId = periodeId1,
-            arbeidssoekerId = arbeidssoekerId1
-        )
-    )
-    val registerGracePeriodeGjenstaaendeTid1 = TestRecord(
-        kafkaKey1, registerGracePeriodeGjenstaaendeTid(
-            periodeId = periodeId1,
-            arbeidssoekerId = arbeidssoekerId1,
-            bekreftelseId = bekreftelseId1
-        )
-    )
-    val eksternGracePeriodeUtloept1 = TestRecord(
-        kafkaKey1, eksternGracePeriodeUtloept(
-            periodeId = periodeId1,
-            arbeidssoekerId = arbeidssoekerId1
-        )
-    )
-    val leveringsfristUtloept1 = TestRecord(
-        kafkaKey1, leveringsfristUtloept(
-            periodeId = periodeId1,
-            arbeidssoekerId = arbeidssoekerId1
-        )
-    )
-    val periodeAvsluttet1 = TestRecord(
-        kafkaKey1, periodeAvsluttet(
-            periodeId = periodeId1,
-            arbeidssoekerId = arbeidssoekerId1
-        )
+    val lukketPeriode3 = lukketPeriode(
+        id = periodeId3,
+        identitetsnummer = identitetsnummer3,
+        startet = metadata(tidspunkt = Instant.now().minus(Duration.ofHours(2))),
+        avsluttet = metadata(tidspunkt = Instant.now())
     )
 
-    val oppgaveVarselHendelse1a = TestRecord(
-        bekreftelseId1.toString(), varselHendelse(
-            eventName = VarselEventName.OPPRETTET,
-            varselId = bekreftelseId1.toString(),
-            varseltype = VarselType.OPPGAVE,
-            tidspunkt = Instant.now().minus(Duration.ofMinutes(5))
-        )
+    val bekreftelseTilgjengelig1a = bekreftelseTilgjengelig(
+        periodeId = periodeId1,
+        bekreftelseId = bekreftelseId1,
+        arbeidssoekerId = arbeidssoekerId1,
+        hendelseTidspunkt = Instant.now().minus(Duration.ofMinutes(50))
     )
-    val oppgaveVarselHendelse1b = TestRecord(
-        bekreftelseId1.toString(), varselHendelse(
-            eventName = VarselEventName.EKSTERN_STATUS_OPPDATERT,
-            varselId = bekreftelseId1.toString(),
-            status = VarselStatus.BESTILT,
-            varseltype = VarselType.OPPGAVE,
-            tidspunkt = Instant.now().minus(Duration.ofMinutes(4))
-        )
+    val bekreftelseTilgjengelig1b = bekreftelseTilgjengelig(
+        periodeId = periodeId1,
+        bekreftelseId = bekreftelseId2,
+        arbeidssoekerId = arbeidssoekerId1,
+        hendelseTidspunkt = Instant.now().minus(Duration.ofMinutes(40))
     )
-    val oppgaveVarselHendelse1c = TestRecord(
-        bekreftelseId1.toString(), varselHendelse(
-            eventName = VarselEventName.EKSTERN_STATUS_OPPDATERT,
-            varselId = bekreftelseId1.toString(),
-            status = VarselStatus.SENDT,
-            varseltype = VarselType.OPPGAVE,
-            tidspunkt = Instant.now().minus(Duration.ofMinutes(3))
-        )
+    val bekreftelseTilgjengelig1c = bekreftelseTilgjengelig(
+        periodeId = periodeId1,
+        bekreftelseId = bekreftelseId3,
+        arbeidssoekerId = arbeidssoekerId1,
+        hendelseTidspunkt = Instant.now().minus(Duration.ofMinutes(30))
     )
-    val oppgaveVarselHendelse1d = TestRecord(
-        bekreftelseId1.toString(), varselHendelse(
-            eventName = VarselEventName.EKSTERN_STATUS_OPPDATERT,
-            varselId = bekreftelseId1.toString(),
-            status = VarselStatus.FERDIGSTILT,
-            varseltype = VarselType.OPPGAVE,
-            tidspunkt = Instant.now().minus(Duration.ofMinutes(2))
-        )
+    val bekreftelseMeldingMottatt1 = bekreftelseMeldingMottatt(
+        periodeId = periodeId1,
+        bekreftelseId = bekreftelseId1,
+        arbeidssoekerId = arbeidssoekerId1,
     )
-    val oppgaveVarselHendelse1e = TestRecord(
-        bekreftelseId1.toString(), varselHendelse(
-            eventName = VarselEventName.INAKTIVERT,
-            varselId = bekreftelseId1.toString(),
-            varseltype = VarselType.OPPGAVE,
-            tidspunkt = Instant.now().minus(Duration.ofMinutes(1))
-        )
+    val baOmAaAvsluttePeriode1 = baOmAaAvsluttePeriode(
+        periodeId = periodeId1,
+        arbeidssoekerId = arbeidssoekerId1
     )
-    val oppgaveVarselHendelse2a = TestRecord(
-        bekreftelseId2.toString(), varselHendelse(
-            eventName = VarselEventName.OPPRETTET,
-            varselId = bekreftelseId2.toString(),
-            status = VarselStatus.VENTER,
-            varseltype = VarselType.OPPGAVE,
-            tidspunkt = Instant.now().minus(Duration.ofMinutes(3))
-        )
+    val bekreftelsePaaVegneAvStartet1 = bekreftelsePaaVegneAvStartet(
+        periodeId = periodeId1,
+        arbeidssoekerId = arbeidssoekerId1
     )
-    val oppgaveVarselHendelse2b = TestRecord(
-        bekreftelseId1.toString(), varselHendelse(
-            eventName = VarselEventName.EKSTERN_STATUS_OPPDATERT,
-            varselId = bekreftelseId2.toString(),
-            status = VarselStatus.BESTILT,
-            varseltype = VarselType.OPPGAVE,
-            tidspunkt = Instant.now().minus(Duration.ofMinutes(2))
-        )
+    val registerGracePeriodeUtloept1 = registerGracePeriodeUtloept(
+        periodeId = periodeId1,
+        arbeidssoekerId = arbeidssoekerId1,
+        bekreftelseId = bekreftelseId1
     )
-    val oppgaveVarselHendelse2c = TestRecord(
-        bekreftelseId1.toString(), varselHendelse(
-            eventName = VarselEventName.EKSTERN_STATUS_OPPDATERT,
-            varselId = bekreftelseId2.toString(),
-            status = VarselStatus.FEILET,
-            varseltype = VarselType.OPPGAVE,
-            tidspunkt = Instant.now().minus(Duration.ofMinutes(1))
-        )
+    val registerGracePeriodeUtloeptEtterEksternInnsamling1 = registerGracePeriodeUtloeptEtterEksternInnsamling(
+        periodeId = periodeId1,
+        arbeidssoekerId = arbeidssoekerId1
     )
-    val oppgaveVarselHendelse2d = TestRecord(
-        bekreftelseId1.toString(), varselHendelse(
-            eventName = VarselEventName.INAKTIVERT,
-            varselId = bekreftelseId2.toString(),
-            varseltype = VarselType.OPPGAVE,
-            tidspunkt = Instant.now().minus(Duration.ofMinutes(10))
-        )
+    val registerGracePeriodeGjenstaaendeTid1 = registerGracePeriodeGjenstaaendeTid(
+        periodeId = periodeId1,
+        arbeidssoekerId = arbeidssoekerId1,
+        bekreftelseId = bekreftelseId1
+    )
+    val eksternGracePeriodeUtloept1 = eksternGracePeriodeUtloept(
+        periodeId = periodeId1,
+        arbeidssoekerId = arbeidssoekerId1
+    )
+    val leveringsfristUtloept1 = leveringsfristUtloept(
+        periodeId = periodeId1,
+        arbeidssoekerId = arbeidssoekerId1
+    )
+    val periodeAvsluttet1 = periodeAvsluttet(
+        periodeId = periodeId1,
+        arbeidssoekerId = arbeidssoekerId1
+    )
+
+    val oppgaveVarselHendelse1a = varselHendelse(
+        eventName = VarselEventName.OPPRETTET,
+        varselId = bekreftelseId1.toString(),
+        varseltype = VarselType.OPPGAVE,
+        tidspunkt = Instant.now().minus(Duration.ofMinutes(5))
+    )
+    val oppgaveVarselHendelse1b = varselHendelse(
+        eventName = VarselEventName.EKSTERN_STATUS_OPPDATERT,
+        varselId = bekreftelseId1.toString(),
+        status = VarselStatus.BESTILT,
+        varseltype = VarselType.OPPGAVE,
+        tidspunkt = Instant.now().minus(Duration.ofMinutes(4))
+    )
+    val oppgaveVarselHendelse1c = varselHendelse(
+        eventName = VarselEventName.EKSTERN_STATUS_OPPDATERT,
+        varselId = bekreftelseId1.toString(),
+        status = VarselStatus.SENDT,
+        varseltype = VarselType.OPPGAVE,
+        tidspunkt = Instant.now().minus(Duration.ofMinutes(3))
+    )
+    val oppgaveVarselHendelse1d = varselHendelse(
+        eventName = VarselEventName.EKSTERN_STATUS_OPPDATERT,
+        varselId = bekreftelseId1.toString(),
+        status = VarselStatus.FERDIGSTILT,
+        varseltype = VarselType.OPPGAVE,
+        tidspunkt = Instant.now().minus(Duration.ofMinutes(2))
+    )
+    val oppgaveVarselHendelse1e = varselHendelse(
+        eventName = VarselEventName.INAKTIVERT,
+        varselId = bekreftelseId1.toString(),
+        varseltype = VarselType.OPPGAVE,
+        tidspunkt = Instant.now().minus(Duration.ofMinutes(1))
+    )
+    val oppgaveVarselHendelse2a = varselHendelse(
+        eventName = VarselEventName.OPPRETTET,
+        varselId = bekreftelseId2.toString(),
+        status = VarselStatus.VENTER,
+        varseltype = VarselType.OPPGAVE,
+        tidspunkt = Instant.now().minus(Duration.ofMinutes(3))
+    )
+    val oppgaveVarselHendelse2b = varselHendelse(
+        eventName = VarselEventName.EKSTERN_STATUS_OPPDATERT,
+        varselId = bekreftelseId2.toString(),
+        status = VarselStatus.BESTILT,
+        varseltype = VarselType.OPPGAVE,
+        tidspunkt = Instant.now().minus(Duration.ofMinutes(2))
+    )
+    val oppgaveVarselHendelse2c = varselHendelse(
+        eventName = VarselEventName.EKSTERN_STATUS_OPPDATERT,
+        varselId = bekreftelseId2.toString(),
+        status = VarselStatus.FEILET,
+        varseltype = VarselType.OPPGAVE,
+        tidspunkt = Instant.now().minus(Duration.ofMinutes(1))
+    )
+    val oppgaveVarselHendelse2d = varselHendelse(
+        eventName = VarselEventName.INAKTIVERT,
+        varselId = bekreftelseId2.toString(),
+        varseltype = VarselType.OPPGAVE,
+        tidspunkt = Instant.now().minus(Duration.ofMinutes(10))
     )
 
     fun bruker(
@@ -299,34 +276,6 @@ object TestData {
         startet: Metadata = metadata(tidspunkt = Instant.now().minus(Duration.ofDays(30))),
         avsluttet: Metadata = metadata(),
     ): Periode = Periode(id, identitetsnummer, startet, avsluttet)
-
-    fun aapenPeriodeRecords(antall: Long): List<TestRecord<Long, Periode>> {
-        val startTidspunkt = Instant.now()
-        return LongStream.rangeClosed(1, antall).boxed()
-            .map { key ->
-                val deltaTid = Duration.ofDays(Random.nextLong(from = 1, until = 365))
-                key to startTidspunkt.plus(deltaTid)
-            }
-            .map { (key, tidspunkt) ->
-                key to aapenPeriode(id = UUID.randomUUID(), startet = metadata(tidspunkt = tidspunkt))
-            }
-            .map { (key, periode) ->
-                TestRecord(key, periode, periode.startet.tidspunkt)
-            }.toList()
-    }
-
-    fun TestRecord<Long, Periode>.bekreftelseTilgjengeligRecord(): TestRecord<Long, BekreftelseHendelse> {
-        val deltaTid = Duration.ofDays(Random.nextLong(from = 1, until = 365))
-        val gjelderFra = value().startet.tidspunkt.plus(deltaTid)
-        val value = bekreftelseTilgjengelig(
-            periodeId = value().id,
-            bekreftelseId = UUID.randomUUID(),
-            gjelderFra = gjelderFra,
-            gjelderTil = gjelderFra.plus(Duration.ofDays(14)),
-            hendelseTidspunkt = gjelderFra
-        )
-        return TestRecord(key(), value, value.hendelseTidspunkt)
-    }
 
     fun bekreftelseTilgjengelig(
         hendelseId: UUID = UUID.randomUUID(),
@@ -495,4 +444,6 @@ object TestData {
         appnavn = appnavn,
         tidspunkt = tidspunkt
     )
+
+    fun longKey(): Long = Random.nextLong()
 }

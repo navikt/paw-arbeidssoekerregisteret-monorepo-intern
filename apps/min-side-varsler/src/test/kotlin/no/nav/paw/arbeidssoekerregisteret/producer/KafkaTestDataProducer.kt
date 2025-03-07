@@ -5,6 +5,7 @@ import no.nav.paw.arbeidssoekerregisteret.config.KAFKA_TOPICS_CONFIG
 import no.nav.paw.arbeidssoekerregisteret.config.KafkaTopologyConfig
 import no.nav.paw.arbeidssoekerregisteret.model.VarselHendelse
 import no.nav.paw.arbeidssoekerregisteret.test.TestData
+import no.nav.paw.arbeidssoekerregisteret.test.TestData.asRecord
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerializer
@@ -51,26 +52,26 @@ fun main() {
 }
 
 private fun Producer<Long, Periode>.sendPeriode(topic: String): RecordMetadata? {
-    val periode = TestData.aapenPeriode1
-    return send(ProducerRecord(topic, periode.key, periode.value)).get()
+    val record = TestData.aapenPeriode1.asRecord(TestData.kafkaKey1)
+    return send(ProducerRecord(topic, record.key, record.value)).get()
 }
 
 private fun Producer<Long, BekreftelseHendelse>.sendBekreftelseTilgjengelig(topic: String): RecordMetadata? {
-    val bekreftelseHendelse = TestData.bekreftelseTilgjengelig1a
-    return send(ProducerRecord(topic, bekreftelseHendelse.key, bekreftelseHendelse.value)).get()
+    val record = TestData.bekreftelseTilgjengelig1a.asRecord(TestData.kafkaKey1)
+    return send(ProducerRecord(topic, record.key, record.value)).get()
 }
 
 private fun Producer<Long, BekreftelseHendelse>.sendBekreftelseMeldingMottatt(topic: String): RecordMetadata? {
-    val bekreftelseHendelse = TestData.bekreftelseMeldingMottatt1
-    return send(ProducerRecord(topic, bekreftelseHendelse.key, bekreftelseHendelse.value)).get()
+    val record = TestData.bekreftelseMeldingMottatt1.asRecord(TestData.kafkaKey1)
+    return send(ProducerRecord(topic, record.key, record.value)).get()
 }
 
 private fun Producer<Long, BekreftelseHendelse>.sendPeriodeAvsluttet(topic: String): RecordMetadata? {
-    val bekreftelseHendelse = TestData.periodeAvsluttet1
-    return send(ProducerRecord(topic, bekreftelseHendelse.key, bekreftelseHendelse.value)).get()
+    val record = TestData.periodeAvsluttet1.asRecord(TestData.kafkaKey1)
+    return send(ProducerRecord(topic, record.key, record.value)).get()
 }
 
 private fun Producer<String, VarselHendelse>.sendVarselHendelse(topic: String): RecordMetadata? {
-    val varselHendelse = TestData.oppgaveVarselHendelse1a
-    return send(ProducerRecord(topic, varselHendelse.key, varselHendelse.value)).get()
+    val record = TestData.oppgaveVarselHendelse1a.asRecord()
+    return send(ProducerRecord(topic, record.key, record.value)).get()
 }

@@ -18,6 +18,7 @@ import no.nav.paw.arbeidssoekerregisteret.repository.VarselRepository
 import no.nav.paw.arbeidssoekerregisteret.service.VarselService
 import no.nav.paw.arbeidssoekerregisteret.testdata.KafkaKeyContext
 import no.nav.paw.arbeidssoekerregisteret.topology.bekreftelseKafkaTopology
+import no.nav.paw.arbeidssoekerregisteret.topology.periodeKafkaTopology
 import no.nav.paw.arbeidssoekerregisteret.topology.varselHendelserKafkaTopology
 import no.nav.paw.arbeidssoekerregisteret.utils.VarselHendelseJsonSerde
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
@@ -39,6 +40,7 @@ import org.apache.kafka.streams.TestOutputTopic
 import org.apache.kafka.streams.TopologyTestDriver
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.Duration
@@ -55,21 +57,25 @@ data class TestContext(
     val bekreftelseTopologyTestDriver: TopologyTestDriver,
     val varselTopologyTestDriver: TopologyTestDriver,
     val periodeTopic: TestInputTopic<Long, Periode>,
+    val periodeVarselTopic: TestOutputTopic<String, String>,
     val bekreftelseHendelseTopic: TestInputTopic<Long, BekreftelseHendelse>,
-    val tmsVarselTopic: TestOutputTopic<String, String>,
-    val tmsVarselHendelseTopic: TestInputTopic<String, VarselHendelse>,
+    val bekreftelseVarselTopic: TestOutputTopic<String, String>,
+    val varselHendelseTopic: TestInputTopic<String, VarselHendelse>,
     val kafkaKeyContext: KafkaKeyContext
 ) {
     operator fun <K, V> KeyValue<K, V>.component1(): K = key
     operator fun <K, V> KeyValue<K, V>.component2(): V = value
 
     fun initDatabase() {
+        val database = Database.connect(dataSource)
+        transaction {
+            exec("DROP ALL OBJECTS")
+        }
         Flyway.configure()
             .dataSource(dataSource)
             .baselineOnMigrate(true)
             .load()
             .migrate()
-        Database.connect(dataSource)
     }
 
     companion object {
@@ -100,14 +106,15 @@ data class TestContext(
                 varselRepository = varselRepository,
                 varselMeldingBygger = varselMeldingBygger
             )
-            val bekreftelseTopology = StreamsBuilder()
-                .bekreftelseKafkaTopology(
-                    runtimeEnvironment = runtimeEnvironment,
+            val periodeTopology = StreamsBuilder()
+                .periodeKafkaTopology(
                     kafkaTopicsConfig = kafkaTopologyConfig,
                     meterRegistry = prometheusMeterRegistry,
                     varselService = varselService
                 )
-                .varselHendelserKafkaTopology(
+                .build()
+            val bekreftelseTopology = StreamsBuilder()
+                .bekreftelseKafkaTopology(
                     runtimeEnvironment = runtimeEnvironment,
                     kafkaTopicsConfig = kafkaTopologyConfig,
                     meterRegistry = prometheusMeterRegistry,
@@ -123,25 +130,31 @@ data class TestContext(
                 )
                 .build()
 
+            val periodeTopologyTestDriver = TopologyTestDriver(periodeTopology, kafkaStreamProperties)
             val bekreftelseTopologyTestDriver = TopologyTestDriver(bekreftelseTopology, kafkaStreamProperties)
             val varselTopologyTestDriver = TopologyTestDriver(varselTopology, kafkaStreamProperties)
 
-            val periodeInputTopic = bekreftelseTopologyTestDriver.createInputTopic(
+            val periodeInputTopic = periodeTopologyTestDriver.createInputTopic(
                 kafkaTopologyConfig.periodeTopic,
                 Serdes.Long().serializer(),
                 createAvroSerde<Periode>().serializer()
+            )
+            val periodeVarselTopic = periodeTopologyTestDriver.createOutputTopic(
+                kafkaTopologyConfig.tmsVarselTopic,
+                Serdes.String().deserializer(),
+                Serdes.String().deserializer()
             )
             val bekreftelseHendelseTopic = bekreftelseTopologyTestDriver.createInputTopic(
                 kafkaTopologyConfig.bekreftelseHendelseTopic,
                 Serdes.Long().serializer(),
                 BekreftelseHendelseSerde().serializer(),
             )
-            val tmsVarselTopic = bekreftelseTopologyTestDriver.createOutputTopic(
+            val bekreftelseVarselTopic = bekreftelseTopologyTestDriver.createOutputTopic(
                 kafkaTopologyConfig.tmsVarselTopic,
                 Serdes.String().deserializer(),
                 Serdes.String().deserializer()
             )
-            val tmsVarselHendelseTopic = varselTopologyTestDriver.createInputTopic(
+            val varselHendelseTopic = varselTopologyTestDriver.createInputTopic(
                 kafkaTopologyConfig.tmsVarselHendelseTopic,
                 Serdes.String().serializer(),
                 VarselHendelseJsonSerde().serializer()
@@ -154,9 +167,10 @@ data class TestContext(
                 bekreftelseTopologyTestDriver = bekreftelseTopologyTestDriver,
                 varselTopologyTestDriver = varselTopologyTestDriver,
                 periodeTopic = periodeInputTopic,
+                periodeVarselTopic = periodeVarselTopic,
                 bekreftelseHendelseTopic = bekreftelseHendelseTopic,
-                tmsVarselTopic = tmsVarselTopic,
-                tmsVarselHendelseTopic = tmsVarselHendelseTopic,
+                bekreftelseVarselTopic = bekreftelseVarselTopic,
+                varselHendelseTopic = varselHendelseTopic,
                 kafkaKeyContext = kafkaKeyContext
             )
         }

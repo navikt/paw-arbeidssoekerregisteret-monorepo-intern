@@ -37,6 +37,7 @@ class PeriodeRepository {
             it[periodeId] = periode.periodeId
             it[identitetsnummer] = periode.identitetsnummer
             it[startetTimestamp] = periode.startetTimestamp
+            it[avsluttetTimestamp] = periode.avsluttetTimestamp
             it[insertedTimestamp] = Instant.now()
         }.insertedCount
     }
