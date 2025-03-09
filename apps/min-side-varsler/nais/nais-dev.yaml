@@ -32,7 +32,9 @@ spec:
       value: min-side.aapen-brukervarsel-v1
     - name: KAFKA_TMS_AAPEN_VARSEL_HENDELSE_TOPIC
       value: min-side.aapen-varsel-hendelse-v1
-    - name: VARSEL_LINK
+    - name: PERIODE_AVSLUTTET_VARSEL_LINK
+      value: https://www.ansatt.dev.nav.no/arbeidssoekerregisteret
+    - name: BEKREFTELSE_TILGJENGELIG_VARSEL_LINK
       value: https://www.ansatt.dev.nav.no/arbeidssoekerregisteret/bekreftelse
   liveness:
     path: /internal/isAlive

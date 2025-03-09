@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.model
 
+import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import org.jetbrains.exposed.sql.ResultRow
 import java.time.Instant
@@ -46,14 +47,21 @@ fun ResultRow.asVarselRow(): VarselRow = VarselRow(
     updatedTimestamp = this[VarselTable.updatedTimestamp]
 )
 
-fun BekreftelseTilgjengelig.asInsertVarselRow(
-    varselKilde: VarselKilde,
-    varselType: VarselType,
-) = InsertVarselRow(
+fun Periode.asInsertVarselRow() = InsertVarselRow(
+    periodeId = this.id,
+    varselId = this.id,
+    varselKilde = VarselKilde.PERIODE_AVSLUTTET,
+    varselType = VarselType.BESKJED,
+    varselStatus = VarselStatus.UKJENT,
+    hendelseName = VarselEventName.UKJENT,
+    hendelseTimestamp = this.avsluttet?.tidspunkt ?: Instant.now()
+)
+
+fun BekreftelseTilgjengelig.asInsertVarselRow() = InsertVarselRow(
     periodeId = this.periodeId,
     varselId = this.bekreftelseId,
-    varselKilde = varselKilde,
-    varselType = varselType,
+    varselKilde = VarselKilde.BEKREFTELSE_TILGJENGELIG,
+    varselType = VarselType.OPPGAVE,
     varselStatus = VarselStatus.UKJENT,
     hendelseName = VarselEventName.UKJENT,
     hendelseTimestamp = this.hendelseTidspunkt

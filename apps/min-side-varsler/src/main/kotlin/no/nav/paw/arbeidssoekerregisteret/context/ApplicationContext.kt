@@ -70,6 +70,7 @@ data class ApplicationContext(
             )
 
             val periodeKafkaStreams = buildPeriodeKafkaStreams(
+                serverConfig = serverConfig,
                 kafkaConfig = kafkaConfig,
                 kafkaTopicsConfig = kafkaTopicsConfig,
                 meterRegistry = prometheusMeterRegistry,
@@ -110,6 +111,7 @@ data class ApplicationContext(
 }
 
 private fun buildPeriodeKafkaStreams(
+    serverConfig: ServerConfig,
     kafkaConfig: KafkaConfig,
     kafkaTopicsConfig: KafkaTopologyConfig,
     meterRegistry: MeterRegistry,
@@ -118,6 +120,7 @@ private fun buildPeriodeKafkaStreams(
 ): KafkaStreams {
     val kafkaTopology = StreamsBuilder()
         .periodeKafkaTopology(
+            runtimeEnvironment = serverConfig.runtimeEnvironment,
             kafkaTopicsConfig = kafkaTopicsConfig,
             meterRegistry = meterRegistry,
             varselService = varselService

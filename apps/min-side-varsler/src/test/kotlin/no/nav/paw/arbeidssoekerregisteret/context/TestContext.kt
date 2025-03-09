@@ -58,6 +58,7 @@ data class TestContext(
     val varselTopologyTestDriver: TopologyTestDriver,
     val periodeTopic: TestInputTopic<Long, Periode>,
     val periodeVarselTopic: TestOutputTopic<String, String>,
+    val bekreftelsePeriodeTopic: TestInputTopic<Long, Periode>,
     val bekreftelseHendelseTopic: TestInputTopic<Long, BekreftelseHendelse>,
     val bekreftelseVarselTopic: TestOutputTopic<String, String>,
     val varselHendelseTopic: TestInputTopic<String, VarselHendelse>,
@@ -108,6 +109,7 @@ data class TestContext(
             )
             val periodeTopology = StreamsBuilder()
                 .periodeKafkaTopology(
+                    runtimeEnvironment = runtimeEnvironment,
                     kafkaTopicsConfig = kafkaTopologyConfig,
                     meterRegistry = prometheusMeterRegistry,
                     varselService = varselService
@@ -144,10 +146,15 @@ data class TestContext(
                 Serdes.String().deserializer(),
                 Serdes.String().deserializer()
             )
+            val bekreftelsePeriodeTopic = bekreftelseTopologyTestDriver.createInputTopic(
+                kafkaTopologyConfig.periodeTopic,
+                Serdes.Long().serializer(),
+                createAvroSerde<Periode>().serializer()
+            )
             val bekreftelseHendelseTopic = bekreftelseTopologyTestDriver.createInputTopic(
                 kafkaTopologyConfig.bekreftelseHendelseTopic,
                 Serdes.Long().serializer(),
-                BekreftelseHendelseSerde().serializer(),
+                BekreftelseHendelseSerde().serializer()
             )
             val bekreftelseVarselTopic = bekreftelseTopologyTestDriver.createOutputTopic(
                 kafkaTopologyConfig.tmsVarselTopic,
@@ -168,6 +175,7 @@ data class TestContext(
                 varselTopologyTestDriver = varselTopologyTestDriver,
                 periodeTopic = periodeInputTopic,
                 periodeVarselTopic = periodeVarselTopic,
+                bekreftelsePeriodeTopic = bekreftelsePeriodeTopic,
                 bekreftelseHendelseTopic = bekreftelseHendelseTopic,
                 bekreftelseVarselTopic = bekreftelseVarselTopic,
                 varselHendelseTopic = varselHendelseTopic,
