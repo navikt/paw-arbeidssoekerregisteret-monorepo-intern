@@ -4,6 +4,7 @@ import io.ktor.server.auth.principal
 import io.ktor.server.request.path
 import io.ktor.server.routing.RoutingContext
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import no.nav.paw.arbeidssokerregisteret.utils.AzureACR
 import no.nav.paw.arbeidssokerregisteret.utils.AzureAzpName
 import no.nav.paw.arbeidssokerregisteret.utils.AzureName
 import no.nav.paw.arbeidssokerregisteret.utils.AzureNavIdent
@@ -21,7 +22,9 @@ data class RequestScope(
     val callId: String?,
     val traceparent: String?,
     val navConsumerId: String?
-)
+) {
+    val issuer: String = claims.issuer
+}
 
 @WithSpan
 fun RoutingContext.requestScope(): RequestScope {
@@ -34,6 +37,7 @@ fun RoutingContext.requestScope(): RequestScope {
             AzureNavIdent,
             AzureRoles,
             AzureAzpName,
+            AzureACR,
             TokenXPID,
             TokenXACR
         ) ?: ResolvedClaims()

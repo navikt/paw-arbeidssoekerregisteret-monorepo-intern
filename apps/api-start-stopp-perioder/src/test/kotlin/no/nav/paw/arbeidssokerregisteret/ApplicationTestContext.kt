@@ -25,7 +25,7 @@ import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HarOpplysninger
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.arbeidssokerregisteret.services.PersonInfoService
 import no.nav.paw.arbeidssokerregisteret.testdata.mustBe
@@ -56,24 +56,23 @@ fun HttpClientConfig<out io.ktor.client.engine.HttpClientEngineConfig>.defaultCo
 }
 
 
-fun MockOAuth2Server.personToken(id: String, acr: String = "idporten-loa-high"): SignedJWT = issueToken(
-    claims = mapOf(
-        "acr" to acr,
-        "pid" to id
-    )
-)
+fun MockOAuth2Server.personToken(id: String, acr: String = "idporten-loa-high"): Pair<Map<String, Any>, SignedJWT> =
+    mapOf(
+    "acr" to acr,
+    "pid" to id
+).let { it.plus("issuer" to "tokenx") to issueToken(claims = it) }
 
-fun MockOAuth2Server.ansattToken(navAnsatt: NavAnsatt): SignedJWT = issueToken(
-    claims = mapOf(
+fun MockOAuth2Server.ansattToken(navAnsatt: NavAnsatt): Pair<Map<String, Any>, SignedJWT> =
+    mapOf(
         "oid" to navAnsatt.azureId,
         "NAVident" to navAnsatt.ident
-    )
-)
+    ).let { it.plus("issuer" to "azure") to issueToken(claims = it) }
 
 
 fun verify(
     actual: ProducerRecord<Long, Hendelse>?,
-    expected: ProducerRecord<Long, out Hendelse>
+    expected: ProducerRecord<Long, out Hendelse>,
+    brukerAuth: Map<String, Any>?
 ) {
     if (actual == null) {
         fail("Forventet at melding skulle bli produsert, men ingen melding ble funnet")
@@ -85,6 +84,16 @@ fun verify(
     actualValue.id shouldBe expectedValue.id
     actualValue.identitetsnummer shouldBe expectedValue.identitetsnummer
     actualValue.metadata.utfoertAv.id shouldBe expectedValue.metadata.utfoertAv.id
+    if (brukerAuth == null) {
+        actualValue.metadata.utfoertAv.sikkerhetsnivaa shouldBe null
+    } else {
+        if (brukerAuth["issuer"] == "azure") {
+            actualValue.metadata.utfoertAv.type shouldBe BrukerType.VEILEDER
+        } else {
+            actualValue.metadata.utfoertAv.type shouldBe BrukerType.SLUTTBRUKER
+        }
+        actualValue.metadata.utfoertAv.sikkerhetsnivaa shouldBe "${brukerAuth["issuer"]}:${brukerAuth["acr"] ?: "undefined"}"
+    }
     actualValue.metadata.utfoertAv.type shouldBe expectedValue.metadata.utfoertAv.type
     actualValue.metadata.tidspunktFraKilde?.avviksType shouldBe expectedValue.metadata.tidspunktFraKilde?.avviksType
     actualValue.metadata.tidspunktFraKilde?.tidspunkt mustBe expectedValue.metadata.tidspunktFraKilde?.tidspunkt

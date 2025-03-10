@@ -18,6 +18,8 @@ data class SecurityContext(
     val accessToken: AccessToken
 )
 
+fun AccessToken.sikkerhetsnivaa(): String = "${issuer.name}:${claims.getOrNull(ACR) ?: "undefined"}"
+
 fun ApplicationCall.resolveSecurityContext(): SecurityContext {
     val principal = principal<TokenValidationContextPrincipal>()
     val tokenContext = principal?.context
@@ -31,7 +33,7 @@ fun ApplicationCall.resolveSecurityContext(): SecurityContext {
             logger.debug("TokenX token -> Sluttbruker")
             Sluttbruker(
                 ident = accessToken.claims.getOrThrow(PID),
-                sikkerhetsnivaa = accessToken.claims.getOrNull(ACR)
+                sikkerhetsnivaa = accessToken.sikkerhetsnivaa(),
             )
         }
 
@@ -43,11 +45,11 @@ fun ApplicationCall.resolveSecurityContext(): SecurityContext {
                     Anonym(accessToken.claims.getOrThrow(OID))
                 } else {
                     logger.debug("AzureAd M2M token -> NavAnsatt")
-                    NavAnsatt(accessToken.claims.getOrThrow(OID), navIdentHeader)
+                    NavAnsatt(accessToken.claims.getOrThrow(OID), ident = navIdentHeader, sikkerhetsnivaa = accessToken.sikkerhetsnivaa())
                 }
             } else {
                 logger.debug("AzureAd token -> NavAnsatt")
-                NavAnsatt(accessToken.claims.getOrThrow(OID), accessToken.claims.getOrThrow(NavIdent))
+                NavAnsatt(accessToken.claims.getOrThrow(OID), accessToken.claims.getOrThrow(NavIdent), accessToken.sikkerhetsnivaa())
             }
         }
 
@@ -55,7 +57,7 @@ fun ApplicationCall.resolveSecurityContext(): SecurityContext {
             logger.debug("IdPorten token -> Sluttbruker")
             Sluttbruker(
                 ident = accessToken.claims.getOrThrow(PID),
-                sikkerhetsnivaa = accessToken.claims.getOrNull(ACR)
+                sikkerhetsnivaa = accessToken.sikkerhetsnivaa()
             )
         }
 

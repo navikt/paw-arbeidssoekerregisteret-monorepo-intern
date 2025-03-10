@@ -62,6 +62,8 @@ class ApiV2TestCaseRunner : FreeSpec({
                 "Test  API V2 ${testCase::class.simpleName?.readable()}" - {
                     "Verifiser API V2" - {
                         with(initTestCaseContext(InngangsReglerV2)) {
+                            val testConfiguration = TestCaseBuilder(mockOAuthServer, autorisasjonService)
+                                .also { testCase.configure(it) }
                             "Verifiser API response" {
                                 testApplication {
                                     application {
@@ -79,13 +81,11 @@ class ApiV2TestCaseRunner : FreeSpec({
                                     val person = (testCase as? StartPeriodeTestCase)?.person
                                     logger.info("Running test for $id")
                                     personInfoService.setPersonInfo(id, person)
-                                    val testConfiguration = TestCaseBuilder(mockOAuthServer, autorisasjonService)
-                                        .also { testCase.configure(it) }
                                     val statusV2 =
                                         client.startStoppPeriode(
                                             periodeTilstand = testCase.tilstand,
                                             identitetsnummer = id,
-                                            token = testConfiguration.authToken,
+                                            token = testConfiguration.authToken?.second,
                                             godkjent = (testCase as? StartPeriodeTestCase)?.forhaandsGodkjent ?: false,
                                             feilretting = testCase.feilretting
                                         )
@@ -119,7 +119,8 @@ class ApiV2TestCaseRunner : FreeSpec({
                                 if (expectedRecord != null) {
                                     verify(
                                         actual = producer.next(),
-                                        expected = expectedRecord
+                                        expected = expectedRecord,
+                                        brukerAuth = testConfiguration.authToken?.first
                                     )
                                     producer.next().shouldBeNull()
                                 } else {

@@ -47,5 +47,5 @@ class TestCaseBuilder(
     val mockOAuth2Server: MockOAuth2Server,
     val autorisasjonService: AutorisasjonService
 ) {
-    var authToken: SignedJWT? = null
+    var authToken: Pair<Map<String, Any>, SignedJWT>? = null
 }

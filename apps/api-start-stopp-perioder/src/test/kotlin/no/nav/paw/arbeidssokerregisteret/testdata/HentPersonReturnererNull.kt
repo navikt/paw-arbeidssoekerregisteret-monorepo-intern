@@ -25,7 +25,7 @@ data object HentPersonReturnererNull : StartPeriodeTestCase {
     override val person = null
 
     override val configure: TestCaseBuilder.() -> Unit = {
-        authToken = mockOAuth2Server.personToken(id)
+        authToken = mockOAuth2Server.personToken(id, "Level4")
     }
 
     override val producesHttpResponse: HttpStatusCode = HttpStatusCode.Forbidden
@@ -58,7 +58,7 @@ data object HentPersonReturnererNull : StartPeriodeTestCase {
                 utfoertAv = Bruker(
                     id = id,
                     type = BrukerType.SLUTTBRUKER,
-                    sikkerhetsnivaa = "idporten-loa-high"
+                    sikkerhetsnivaa = ""
                 ),
                 aarsak = "any",
                 tidspunktFraKilde = null

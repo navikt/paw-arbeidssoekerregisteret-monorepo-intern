@@ -11,6 +11,6 @@ data class Sluttbruker(
 
 fun sluttbruker(claims: ResolvedClaims): Sluttbruker? {
     val identitetsnummer = claims[TokenXPID]
-    val sikkerhetsnivaa = claims[TokenXACR]
+    val sikkerhetsnivaa = "${claims.issuer}:${claims[TokenXACR] ?: "undefined"}"
     return identitetsnummer?.let { Sluttbruker(it, sikkerhetsnivaa) }
 }

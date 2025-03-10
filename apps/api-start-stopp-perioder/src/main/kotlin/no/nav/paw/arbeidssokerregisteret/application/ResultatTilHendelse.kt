@@ -24,6 +24,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.OpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.TidspunktFraKilde
+import no.nav.paw.arbeidssokerregisteret.utils.AzureACR
 import no.nav.paw.collections.PawNonEmptyList
 import java.time.Instant
 import java.util.*
@@ -150,13 +151,13 @@ fun RequestScope.brukerFraClaims(): Bruker {
         Bruker(
             type = BrukerType.VEILEDER,
             id = it.ident,
-            sikkerhetsnivaa = null
+            sikkerhetsnivaa = "${claims.issuer}:${claims[AzureACR] ?: "undefined"}"
         )
     } ?: m2mToken(claims)?.let {
         Bruker(
             type = BrukerType.SYSTEM,
             id = it.tjeneste,
-            sikkerhetsnivaa = null
+            sikkerhetsnivaa = "${claims.issuer}:${claims[AzureACR] ?: "undefined"}"
         )
     } ?: throw IllegalStateException("Kunne ikke finne bruker i claims")
 }

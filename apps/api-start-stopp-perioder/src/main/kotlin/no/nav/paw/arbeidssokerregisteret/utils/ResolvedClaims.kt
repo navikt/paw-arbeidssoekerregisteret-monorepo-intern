@@ -7,6 +7,8 @@ class ResolvedClaims private constructor(
 ) {
     constructor() : this(emptyMap())
 
+    val issuer: String = map.keys.firstOrNull()?.issuer ?: "undefined"
+
     override fun toString(): String {
         return map.map { (key, value) -> "${key}=$value" }
             .let { "ResolvedClaims($it)" }
