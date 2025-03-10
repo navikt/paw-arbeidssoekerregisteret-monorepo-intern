@@ -17,6 +17,7 @@ import no.nav.paw.bekreftelse.melding.v1.vo.BrukerType
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.metrics.tellBekreftelseMottatt
+import no.nav.paw.bekreftelsetjeneste.metrics.tellBekreftelseUtgaaendeHendelse
 import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
 import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
 import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
@@ -102,6 +103,7 @@ fun StreamsBuilder.buildBekreftelseStream(
                 }
                 forwardHendelser(record, hendelser, this::forward)
             }
+            .peek { _, utgaaendeHendelse ->  prometheusMeterRegistry.tellBekreftelseUtgaaendeHendelse(utgaaendeHendelse) }
             .to(bekreftelseHendelseloggTopic, Produced.with(Serdes.Long(), BekreftelseHendelseSerde()))
     }
 }

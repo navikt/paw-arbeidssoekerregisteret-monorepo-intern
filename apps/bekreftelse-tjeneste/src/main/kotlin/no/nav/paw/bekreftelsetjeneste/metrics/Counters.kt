@@ -3,16 +3,16 @@ package no.nav.paw.bekreftelsetjeneste.metrics
 import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.Tags
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Stopp
-import no.nav.paw.bekreftelsetjeneste.metrics.Labels.Companion.ansvarlig
-import no.nav.paw.bekreftelsetjeneste.paavegneav.InternPaaVegneAv
 import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
 import java.time.Duration
 import java.time.Instant
 
+private const val bekreftelseUtgaaendeHendelseCounter = "arbeidssoekerregisteret_bekreftelse_utgaaende_hendelse_v1"
 
 private const val bekreftelseMottattCounter = "arbeidssoekerregisteret_bekreftelse_mottatt_v1"
 private const val paaVegneAvMottattCounter = "arbeidssoekerregisteret_paa_vegne_av_mottatt_v1"
@@ -23,6 +23,14 @@ private const val PERIODE_FUNNET = "periode_funnet"
 private const val HAR_ANSVAR = "har_ansvar"
 private const val HANDLING = "handling"
 
+fun PrometheusMeterRegistry.tellBekreftelseUtgaaendeHendelse(
+    bekreftelseHendelse: BekreftelseHendelse
+) {
+    val tags = Tags.of(
+        Tag.of("hendelse_type", bekreftelseHendelse.hendelseType)
+    )
+    counter(bekreftelseUtgaaendeHendelseCounter, tags).increment()
+}
 
 fun PrometheusMeterRegistry.tellBekreftelseMottatt(
     bekreftelse: Bekreftelse,
