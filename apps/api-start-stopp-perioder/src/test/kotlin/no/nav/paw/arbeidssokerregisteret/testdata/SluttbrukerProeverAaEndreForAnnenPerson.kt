@@ -54,7 +54,8 @@ data object SluttbrukerProeverAaEndreForAnnenPerson : StartPeriodeTestCase {
                 kilde = "paw-arbeidssokerregisteret-api-start-stopp-perioder",
                 utfoertAv = Bruker(
                     id = autentiserBruker,
-                    type = BrukerType.SLUTTBRUKER
+                    type = BrukerType.SLUTTBRUKER,
+                    sikkerhetsnivaa = "idporten-loa-high"
                 ),
                 aarsak = "any",
                 tidspunktFraKilde = null

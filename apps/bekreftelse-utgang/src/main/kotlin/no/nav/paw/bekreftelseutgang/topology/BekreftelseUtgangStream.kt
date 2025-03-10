@@ -6,8 +6,11 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
+import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
+import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
+import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloeptEtterEksternInnsamling
 import no.nav.paw.bekreftelse.internehendelser.baOmAaAvsluttePeriodeHendelsesType
 import no.nav.paw.bekreftelse.internehendelser.registerGracePeriodeUtloeptEtterEksternInnsamlingHendelseType
 import no.nav.paw.bekreftelse.internehendelser.registerGracePeriodeUtloeptHendelseType
@@ -48,36 +51,45 @@ fun processBekreftelseHendelse(
     identitetsnummer: String,
     applicationConfig: ApplicationConfig,
 ): Avsluttet? {
-    return when(bekreftelseHendelse.hendelseType) {
-        registerGracePeriodeUtloeptHendelseType -> avsluttetHendelse(
+    return when(bekreftelseHendelse) {
+        is RegisterGracePeriodeUtloept -> avsluttetHendelse(
             identitetsnummer = identitetsnummer,
             periodeId = bekreftelseHendelse.periodeId,
             arbeidssoekerId = bekreftelseHendelse.arbeidssoekerId,
             utfoertAv = Bruker(
                 type = BrukerType.SYSTEM,
-                id = applicationConfig.getAppImage()
+                id = applicationConfig.getAppImage(),
+                sikkerhetsnivaa = null
             ),
-            aarsak = "Graceperiode utløpt"
+            aarsak = "[Bekreftelse] ikke levert innen fristen"
         )
-        registerGracePeriodeUtloeptEtterEksternInnsamlingHendelseType -> avsluttetHendelse(
+        is RegisterGracePeriodeUtloeptEtterEksternInnsamling -> avsluttetHendelse(
             identitetsnummer = identitetsnummer,
             periodeId = bekreftelseHendelse.periodeId,
             arbeidssoekerId = bekreftelseHendelse.arbeidssoekerId,
             utfoertAv = Bruker(
                 type = BrukerType.SYSTEM,
-                id = applicationConfig.getAppImage()
+                id = applicationConfig.getAppImage(),
+                sikkerhetsnivaa = null
             ),
-            aarsak = "Graceperiode utløpt etter ekstern innsamling"
+            aarsak = "[Bekreftelse:ytelse/støtte] Ikke levert innen fristen"
         )
-        baOmAaAvsluttePeriodeHendelsesType -> avsluttetHendelse(
+        is BaOmAaAvsluttePeriode -> avsluttetHendelse(
             identitetsnummer = identitetsnummer,
             periodeId = bekreftelseHendelse.periodeId,
             arbeidssoekerId = bekreftelseHendelse.arbeidssoekerId,
             utfoertAv = Bruker(
-                type = BrukerType.SLUTTBRUKER,
-                id = identitetsnummer
+                type = when(bekreftelseHendelse.utfoertAv.type) {
+                    no.nav.paw.bekreftelse.internehendelser.vo.BrukerType.UDEFINERT -> BrukerType.UDEFINERT
+                    no.nav.paw.bekreftelse.internehendelser.vo.BrukerType.UKJENT_VERDI -> BrukerType.UKJENT_VERDI
+                    no.nav.paw.bekreftelse.internehendelser.vo.BrukerType.SYSTEM -> BrukerType.SYSTEM
+                    no.nav.paw.bekreftelse.internehendelser.vo.BrukerType.SLUTTBRUKER -> BrukerType.SLUTTBRUKER
+                    no.nav.paw.bekreftelse.internehendelser.vo.BrukerType.VEILEDER -> BrukerType.VEILEDER
+                },
+                id = bekreftelseHendelse.utfoertAv.id,
+                sikkerhetsnivaa = bekreftelseHendelse.utfoertAv.sikkerhetsnivaa
             ),
-            aarsak = "Svarte NEI på spørsmål 'Vil du fortsatt være registrert som arbeidssøker?'"
+            aarsak = "[Bekreftelse] Ønsket ikke lenger å være arbeidssøker"
         )
         else -> null
     }

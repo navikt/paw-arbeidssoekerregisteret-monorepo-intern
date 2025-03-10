@@ -43,7 +43,7 @@ data object IkkeEuEoesBrukerIkkeBosatt : StartPeriodeTestCase {
     )
 
     override val configure: TestCaseBuilder.() -> Unit = {
-        authToken = mockOAuth2Server.personToken(id)
+        authToken = mockOAuth2Server.personToken(id, "idporten-loa-high")
     }
 
     override val producesHttpResponse: HttpStatusCode = HttpStatusCode.Forbidden
@@ -79,7 +79,8 @@ data object IkkeEuEoesBrukerIkkeBosatt : StartPeriodeTestCase {
                 kilde = "paw-arbeidssokerregisteret-api-start-stopp-perioder",
                 utfoertAv = Bruker(
                     id = id,
-                    type = BrukerType.SLUTTBRUKER
+                    type = BrukerType.SLUTTBRUKER,
+                    sikkerhetsnivaa = "idporten-loa-high"
                 ),
                 aarsak = "any",
                 tidspunktFraKilde = null

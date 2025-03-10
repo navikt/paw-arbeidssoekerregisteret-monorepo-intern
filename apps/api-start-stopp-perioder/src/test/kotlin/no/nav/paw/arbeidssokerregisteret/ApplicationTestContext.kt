@@ -56,9 +56,9 @@ fun HttpClientConfig<out io.ktor.client.engine.HttpClientEngineConfig>.defaultCo
 }
 
 
-fun MockOAuth2Server.personToken(id: String): SignedJWT = issueToken(
+fun MockOAuth2Server.personToken(id: String, acr: String = "idporten-loa-high"): SignedJWT = issueToken(
     claims = mapOf(
-        "acr" to "idporten-loa-high",
+        "acr" to acr,
         "pid" to id
     )
 )

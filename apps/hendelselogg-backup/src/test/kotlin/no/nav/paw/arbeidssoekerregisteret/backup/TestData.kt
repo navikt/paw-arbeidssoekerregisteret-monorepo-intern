@@ -99,7 +99,8 @@ fun metadata(
     tidspunkt = Instant.now().truncatedTo(ChronoUnit.MILLIS),
     utfoertAv = Bruker(
         id = nextLong(0, 20).toString(),
-        type = BrukerType.entries.toTypedArray().random()
+        type = BrukerType.entries.toTypedArray().random(),
+        sikkerhetsnivaa = "idporten-loa-high"
     ),
     kilde = "test",
     aarsak = "tester",

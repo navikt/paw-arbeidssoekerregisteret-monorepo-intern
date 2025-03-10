@@ -192,5 +192,6 @@ val Int.dager: Duration get() = Duration.ofDays(this.toLong())
 
 val bruker = Bruker(
     BrukerType.SYSTEM,
-    "junit"
+    "junit",
+    null
 )

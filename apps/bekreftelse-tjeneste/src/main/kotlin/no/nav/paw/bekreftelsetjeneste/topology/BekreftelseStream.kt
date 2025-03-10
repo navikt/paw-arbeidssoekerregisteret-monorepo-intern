@@ -11,7 +11,9 @@ import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
+import no.nav.paw.bekreftelse.internehendelser.vo.Bruker
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
+import no.nav.paw.bekreftelse.melding.v1.vo.BrukerType
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.metrics.tellBekreftelseMottatt
@@ -38,6 +40,7 @@ import org.apache.kafka.streams.processor.api.Record
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
+import no.nav.paw.bekreftelse.internehendelser.vo.BrukerType as InterntBrukerType
 
 fun StreamsBuilder.buildBekreftelseStream(
     prometheusMeterRegistry: PrometheusMeterRegistry,
@@ -171,13 +174,17 @@ fun behandleGyldigSvar(
     val oppdatertBekreftelse = bekreftelse + Levert(wallClock.value)
     val vilFortsette = record.svar.vilFortsetteSomArbeidssoeker
     val baOmAaAvslutte = if (!vilFortsette) {
-        val baOmAaAvslutteHendelse = BaOmAaAvsluttePeriode(
+        BaOmAaAvsluttePeriode(
             hendelseId = UUID.randomUUID(),
             periodeId = record.periodeId,
             arbeidssoekerId = arbeidssoekerId,
-            hendelseTidspunkt = wallClock.value
+            hendelseTidspunkt = wallClock.value,
+            utfoertAv = Bruker(
+                type = record.svar.sendtInnAv.utfoertAv.type.tilInternBrukerType(),
+                id = record.svar.sendtInnAv.utfoertAv.id,
+                sikkerhetsnivaa = record.svar.sendtInnAv.utfoertAv.sikkerhetsnivaa
+            )
         )
-        baOmAaAvslutteHendelse
     } else null
 
     val meldingMottatt = BekreftelseMeldingMottatt(
@@ -189,6 +196,15 @@ fun behandleGyldigSvar(
     )
     return listOfNotNull(meldingMottatt, baOmAaAvslutte) to oppdatertBekreftelse
 }
+
+fun BrukerType.tilInternBrukerType(): InterntBrukerType =
+    when (this) {
+        BrukerType.UKJENT_VERDI -> InterntBrukerType.UKJENT_VERDI
+        BrukerType.UDEFINERT -> InterntBrukerType.UDEFINERT
+        BrukerType.VEILEDER -> InterntBrukerType.VEILEDER
+        BrukerType.SYSTEM -> InterntBrukerType.SYSTEM
+        BrukerType.SLUTTBRUKER -> InterntBrukerType.SLUTTBRUKER
+    }
 
 fun forwardHendelser(
     record: Record<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>,

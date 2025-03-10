@@ -40,7 +40,8 @@ class DataFunctionsTest : FreeSpec({
                     tidspunkt = Instant.now().truncatedTo(ChronoUnit.MILLIS),
                     utfoertAv = Bruker(
                         type = BrukerType.SLUTTBRUKER,
-                        id = "12345678901"
+                        id = "12345678901",
+                        sikkerhetsnivaa = "idporten-loa-high"
                     ),
                     kilde = "unit-test",
                     aarsak = "tester",

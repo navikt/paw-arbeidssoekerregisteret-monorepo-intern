@@ -27,6 +27,7 @@ data object AzureOID : SingeClaim<UUID>("azure", "oid", Any::asUUID)
 data object AzureRoles : ListClaim<String>("azure", "roles", Any::asListOfStrings)
 data object AzureAzpName : SingeClaim<String>("azure", "azp_name", Any::toString)
 data object TokenXPID : SingeClaim<Identitetsnummer>("tokenx", "pid", Any::asIdentitetsnummer)
+data object TokenXACR : SingeClaim<String>("tokenx", "acr", Any::toString)
 
 private fun Any.asUUID(): UUID = UUID.fromString(this.toString())
 private fun Any.asIdentitetsnummer(): Identitetsnummer = Identitetsnummer(this.toString())

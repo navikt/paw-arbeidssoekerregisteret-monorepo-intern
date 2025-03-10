@@ -10,6 +10,7 @@ sealed class Bruker<ID : Any>(
 data class Sluttbruker(
     override val ident: Identitetsnummer,
     val alleIdenter: Set<Identitetsnummer> = hashSetOf(ident),
+    val sikkerhetsnivaa: String?
 ) : Bruker<Identitetsnummer>(ident)
 
 data class NavAnsatt(val oid: UUID, override val ident: String) : Bruker<String>(ident)

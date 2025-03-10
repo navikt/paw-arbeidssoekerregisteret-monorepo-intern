@@ -16,9 +16,9 @@ import java.time.Instant
 
 fun Bruker<*>.asBekreftelseBruker(): no.nav.paw.bekreftelse.melding.v1.vo.Bruker {
     return when (this) {
-        is Sluttbruker -> no.nav.paw.bekreftelse.melding.v1.vo.Bruker(BrukerType.SLUTTBRUKER, ident.verdi)
-        is NavAnsatt -> no.nav.paw.bekreftelse.melding.v1.vo.Bruker(BrukerType.VEILEDER, ident)
-        is Anonym -> no.nav.paw.bekreftelse.melding.v1.vo.Bruker(BrukerType.SYSTEM, ident)
+        is Sluttbruker -> no.nav.paw.bekreftelse.melding.v1.vo.Bruker(BrukerType.SLUTTBRUKER, ident.verdi, sikkerhetsnivaa)
+        is NavAnsatt -> no.nav.paw.bekreftelse.melding.v1.vo.Bruker(BrukerType.VEILEDER, ident, null)
+        is Anonym -> no.nav.paw.bekreftelse.melding.v1.vo.Bruker(BrukerType.SYSTEM, ident, null)
         else -> throw IngenTilgangException("Ukjent brukergruppe")
     }
 }

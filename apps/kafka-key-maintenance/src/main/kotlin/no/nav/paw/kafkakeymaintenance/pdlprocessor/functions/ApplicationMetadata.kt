@@ -18,7 +18,8 @@ fun metadata(
         tidspunkt = tidspunkt,
         utfoertAv = Bruker(
             type = BrukerType.SYSTEM,
-            id = systemId
+            id = systemId,
+            sikkerhetsnivaa = null
         ),
         kilde = kilde,
         aarsak = "Id oppdatering",

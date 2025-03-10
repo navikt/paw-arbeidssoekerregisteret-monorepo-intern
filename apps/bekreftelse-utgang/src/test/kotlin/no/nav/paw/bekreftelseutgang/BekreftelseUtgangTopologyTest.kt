@@ -9,6 +9,8 @@ import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.periode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
+import no.nav.paw.bekreftelse.internehendelser.vo.Bruker
+import no.nav.paw.bekreftelse.internehendelser.vo.BrukerType
 import no.nav.paw.bekreftelseutgang.tilstand.InternTilstand
 import no.nav.paw.bekreftelseutgang.tilstand.StateStore
 import java.time.Duration
@@ -44,7 +46,7 @@ class BekreftelseUtgangTopologyTest : FreeSpec({
                 val (id, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
                 periodeTopic.pipeInput(key, periode)
 
-                val baOmAaAvslutteHendelse = baOmAaAvslutteHendelse(periodeId = periode.id, arbeidssoekerId = id)
+                val baOmAaAvslutteHendelse = baOmAaAvslutteHendelse(periodeId = periode.id, arbeidssoekerId = id,)
                 bekreftelseHendelseLoggTopic.pipeInput(key, baOmAaAvslutteHendelse)
 
                 hendelseLoggTopicOut.isEmpty shouldBe false
@@ -164,11 +166,20 @@ class BekreftelseUtgangTopologyTest : FreeSpec({
 
 })
 
-fun baOmAaAvslutteHendelse(periodeId: UUID, arbeidssoekerId: Long) = BaOmAaAvsluttePeriode(
+fun baOmAaAvslutteHendelse(
+    periodeId: UUID,
+    arbeidssoekerId: Long,
+    utfoertAv: Bruker = Bruker(
+        type = BrukerType.SLUTTBRUKER,
+        id = "12345678901",
+        sikkerhetsnivaa = "idporten-loa-high"
+    )
+) = BaOmAaAvsluttePeriode(
     hendelseId = UUID.randomUUID(),
     periodeId = periodeId,
     arbeidssoekerId = arbeidssoekerId,
     hendelseTidspunkt = Instant.now(),
+    utfoertAv = utfoertAv
 )
 
 fun graceperiodeUtloeptHendelse(periodeId: UUID, arbeidssoekerId: Long, hendelseTidspunkt: Instant = Instant.now()) = RegisterGracePeriodeUtloept(

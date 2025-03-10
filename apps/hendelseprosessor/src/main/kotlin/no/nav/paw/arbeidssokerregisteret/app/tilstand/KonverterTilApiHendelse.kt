@@ -19,7 +19,7 @@ import java.util.*
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvviksType as ApiAvviksType
 import no.nav.paw.arbeidssokerregisteret.api.v1.TidspunktFraKilde as ApiTidspunktFraKilde
 
-fun Bruker.api(): ApiBruker = ApiBruker(type.api(), id)
+fun Bruker.api(): ApiBruker = ApiBruker(type.api(), id, sikkerhetsnivaa)
 
 fun BrukerType.api(): ApiBrukerType =
     when (this) {

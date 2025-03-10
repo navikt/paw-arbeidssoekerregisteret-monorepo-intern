@@ -3,7 +3,9 @@ package no.nav.paw.bekreftelsetjeneste.topology
 import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
+import no.nav.paw.bekreftelse.internehendelser.vo.Bruker
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
+import no.nav.paw.bekreftelse.melding.v1.vo.BrukerType
 import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
 import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
 import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
@@ -51,7 +53,19 @@ fun haandterBekreftelseMottatt(
                                 hendelseId = melding.id,
                                 periodeId = melding.periodeId,
                                 arbeidssoekerId = gjeldendeTilstand.periode.arbeidsoekerId,
-                                hendelseTidspunkt = melding.svar.sendtInnAv.tidspunkt
+                                hendelseTidspunkt = melding.svar.sendtInnAv.tidspunkt,
+                                utfoertAv = Bruker(
+                                    type = when (melding.svar.sendtInnAv.utfoertAv.type) {
+                                        null -> no.nav.paw.bekreftelse.internehendelser.vo.BrukerType.UDEFINERT
+                                        BrukerType.UKJENT_VERDI -> no.nav.paw.bekreftelse.internehendelser.vo.BrukerType.UKJENT_VERDI
+                                        BrukerType.UDEFINERT -> no.nav.paw.bekreftelse.internehendelser.vo.BrukerType.UDEFINERT
+                                        BrukerType.VEILEDER -> no.nav.paw.bekreftelse.internehendelser.vo.BrukerType.VEILEDER
+                                        BrukerType.SYSTEM -> no.nav.paw.bekreftelse.internehendelser.vo.BrukerType.SYSTEM
+                                        BrukerType.SLUTTBRUKER -> no.nav.paw.bekreftelse.internehendelser.vo.BrukerType.SLUTTBRUKER
+                                    },
+                                    id = melding.svar.sendtInnAv.utfoertAv.id,
+                                    sikkerhetsnivaa = melding.svar.sendtInnAv.utfoertAv.sikkerhetsnivaa
+                                )
                             )
                         }
                 )

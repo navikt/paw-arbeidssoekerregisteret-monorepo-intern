@@ -100,6 +100,7 @@ fun opprettTestMetadata(tidspunkt: Instant) =
         utfoertAv = Bruker(
             type = BrukerType.UDEFINERT,
             id = "12345678901",
+            sikkerhetsnivaa = null
         ),
         kilde = "test",
         aarsak = "test",

@@ -65,7 +65,8 @@ data object AnsattRegistrererIkkeEuEoesBrukerIkkeBosattMedForhaandgodkjenning : 
                 kilde = "paw-arbeidssokerregisteret-api-start-stopp-perioder",
                 utfoertAv = Bruker(
                     id = ansatt.ident,
-                    type = BrukerType.VEILEDER
+                    type = BrukerType.VEILEDER,
+                    sikkerhetsnivaa = null
                 ),
                 aarsak = "any",
                 tidspunktFraKilde = null

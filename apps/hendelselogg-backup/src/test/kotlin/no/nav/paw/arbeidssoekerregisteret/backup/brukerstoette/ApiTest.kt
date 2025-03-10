@@ -133,7 +133,8 @@ class ApiTest : FreeSpec({
                         tidspunkt = Instant.now().truncatedTo(ChronoUnit.MILLIS),
                         utfoertAv = Bruker(
                             type = BrukerType.SYSTEM,
-                            id = "system"
+                            id = "system",
+                            sikkerhetsnivaa = null
                         ),
                         kilde = "system",
                         aarsak = "test"

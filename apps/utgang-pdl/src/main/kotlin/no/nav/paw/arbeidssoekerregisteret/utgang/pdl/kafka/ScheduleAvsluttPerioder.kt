@@ -219,7 +219,8 @@ fun genererAvsluttetHendelseRecord(
             kilde = "paw-arbeidssoekerregisteret-utgang-pdl",
             utfoertAv = Bruker(
                 type = BrukerType.SYSTEM,
-                id = ApplicationInfo.id
+                id = ApplicationInfo.id,
+                sikkerhetsnivaa = null
             )
         ),
         opplysninger = detaljer.filterIsInstance<DomeneOpplysning>().map(::domeneOpplysningTilHendelseOpplysning).toSet()

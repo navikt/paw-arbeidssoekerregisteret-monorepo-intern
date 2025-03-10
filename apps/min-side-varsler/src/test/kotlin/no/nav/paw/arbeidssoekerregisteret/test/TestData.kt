@@ -32,6 +32,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.random.Random
+import no.nav.paw.bekreftelse.internehendelser.vo.Bruker as InternBekreftelseBruker
 
 object TestData {
     val runtimeEnvironment = currentRuntimeEnvironment
@@ -74,8 +75,9 @@ object TestData {
 
     fun bruker(
         type: BrukerType = BrukerType.SYSTEM,
-        id: String = "test"
-    ): Bruker = Bruker(type, id)
+        id: String = "test",
+        sikkerhetsnivaa: String? = null
+    ): Bruker = Bruker(type, id, sikkerhetsnivaa)
 
     fun metadata(
         tidspunkt: Instant = Instant.now(),
@@ -137,12 +139,18 @@ object TestData {
         hendelseId: UUID = UUID.randomUUID(),
         periodeId: UUID = UUID.randomUUID(),
         arbeidssoekerId: Long = Random.nextLong(),
-        hendelseTidspunkt: Instant = Instant.now()
+        hendelseTidspunkt: Instant = Instant.now(),
+        utfoertAv: InternBekreftelseBruker = InternBekreftelseBruker(
+            type = no.nav.paw.bekreftelse.internehendelser.vo.BrukerType.SYSTEM,
+            id = "test",
+            sikkerhetsnivaa = null
+        )
     ): BaOmAaAvsluttePeriode = BaOmAaAvsluttePeriode(
         hendelseId = hendelseId,
         periodeId = periodeId,
         arbeidssoekerId = arbeidssoekerId,
-        hendelseTidspunkt = hendelseTidspunkt
+        hendelseTidspunkt = hendelseTidspunkt,
+        utfoertAv = utfoertAv
     )
 
     fun bekreftelsePaaVegneAvStartet(

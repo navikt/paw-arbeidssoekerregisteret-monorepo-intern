@@ -12,7 +12,7 @@ import java.time.Instant
 import java.util.*
 
 object TestData {
-    val bruker = Bruker(BrukerType.SLUTTBRUKER, "1234")
+    val bruker = Bruker(BrukerType.SLUTTBRUKER, "1234", "idporten-loa-high")
     val sendtInAv = Metadata(Instant.now(), bruker, "kilde", "aarsak")
     val svar = Svar(sendtInAv, Instant.now(), Instant.now(), false, true)
     val bekreftelse1 = Bekreftelse(

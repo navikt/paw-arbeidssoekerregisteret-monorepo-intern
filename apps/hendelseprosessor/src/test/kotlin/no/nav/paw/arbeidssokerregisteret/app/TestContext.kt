@@ -25,7 +25,7 @@ class TestContext(private val producer: KafkaProducer<Long, Hendelse>, private v
                     identitetsnummer = identitetsnummer,
                     metadata = Metadata(
                         tidspunkt = Instant.now(),
-                        utfoertAv = Bruker(BrukerType.SLUTTBRUKER, "test"),
+                        utfoertAv = Bruker(BrukerType.SLUTTBRUKER, "test", "idporten-loa-high"),
                         kilde = "unit-test",
                         aarsak = "tester"
                     )
@@ -47,7 +47,7 @@ class TestContext(private val producer: KafkaProducer<Long, Hendelse>, private v
                     opplysningerOmArbeidssoeker = OpplysningerOmArbeidssoeker(
                         metadata = Metadata(
                             tidspunkt = Instant.now(),
-                            utfoertAv = Bruker(BrukerType.SLUTTBRUKER, "test"),
+                            utfoertAv = Bruker(BrukerType.SLUTTBRUKER, "test", "idporten-loa-high"),
                             kilde = "unit-test",
                             aarsak = "tester"
                         ),
@@ -98,7 +98,7 @@ class TestContext(private val producer: KafkaProducer<Long, Hendelse>, private v
                     opplysningerOmArbeidssoeker = OpplysningerOmArbeidssoeker(
                         metadata = Metadata(
                             tidspunkt = Instant.now(),
-                            utfoertAv = Bruker(BrukerType.SLUTTBRUKER, "test"),
+                            utfoertAv = Bruker(BrukerType.SLUTTBRUKER, "test", "idporten-loa-high"),
                             kilde = "unit-test",
                             aarsak = "tester"
                         ),
@@ -141,7 +141,7 @@ class TestContext(private val producer: KafkaProducer<Long, Hendelse>, private v
                     identitetsnummer = identitetsnummer,
                     metadata = Metadata(
                         tidspunkt = Instant.now(),
-                        utfoertAv = Bruker(BrukerType.SYSTEM, "test"),
+                        utfoertAv = Bruker(BrukerType.SYSTEM, "test", null),
                         kilde = "unit-test",
                         aarsak = "tester"
                     )

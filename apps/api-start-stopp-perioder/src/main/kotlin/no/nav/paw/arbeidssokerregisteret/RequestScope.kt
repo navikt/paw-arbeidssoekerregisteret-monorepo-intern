@@ -10,6 +10,7 @@ import no.nav.paw.arbeidssokerregisteret.utils.AzureNavIdent
 import no.nav.paw.arbeidssokerregisteret.utils.AzureOID
 import no.nav.paw.arbeidssokerregisteret.utils.AzureRoles
 import no.nav.paw.arbeidssokerregisteret.utils.ResolvedClaims
+import no.nav.paw.arbeidssokerregisteret.utils.TokenXACR
 import no.nav.paw.arbeidssokerregisteret.utils.TokenXPID
 import no.nav.paw.arbeidssokerregisteret.utils.resolveClaims
 import no.nav.security.token.support.v3.TokenValidationContextPrincipal
@@ -19,7 +20,7 @@ data class RequestScope(
     val claims: ResolvedClaims,
     val callId: String?,
     val traceparent: String?,
-    val navConsumerId: String?,
+    val navConsumerId: String?
 )
 
 @WithSpan
@@ -33,7 +34,8 @@ fun RoutingContext.requestScope(): RequestScope {
             AzureNavIdent,
             AzureRoles,
             AzureAzpName,
-            TokenXPID
+            TokenXPID,
+            TokenXACR
         ) ?: ResolvedClaims()
     val headers = call.request.headers
     return RequestScope(

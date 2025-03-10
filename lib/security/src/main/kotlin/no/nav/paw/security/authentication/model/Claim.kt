@@ -19,6 +19,7 @@ sealed class ListClaim<A : Any>(
     override val resolve: (Any) -> List<A>
 ) : Claim<List<A>>(name, resolve)
 
+data object ACR : SingleClaim<String>("acr", { it.toString() })
 data object PID : SingleClaim<Identitetsnummer>("pid", { Identitetsnummer(it.toString()) })
 data object OID : SingleClaim<UUID>("oid", { UUID.fromString(it.toString()) })
 data object Name : SingleClaim<String>("name", { it.toString() })

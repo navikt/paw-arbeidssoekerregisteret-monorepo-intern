@@ -330,7 +330,7 @@ class TopologyTest : FreeSpec({
                     val key = Random.nextLong()
                     val aapenPeriode = aapenPeriode()
                     bekreftelsePeriodeTopic.pipeInput(aapenPeriode.asRecord(key))
-                    val hendelse1 = baOmAaAvsluttePeriode(periodeId = aapenPeriode.id)
+                    val hendelse1 = baOmAaAvsluttePeriode(periodeId = aapenPeriode.id,)
                     bekreftelseHendelseTopic.pipeInput(hendelse1.asRecord(key = key))
                     val hendelse2 = leveringsfristUtloept(periodeId = aapenPeriode.id)
                     bekreftelseHendelseTopic.pipeInput(hendelse2.asRecord(key = key))

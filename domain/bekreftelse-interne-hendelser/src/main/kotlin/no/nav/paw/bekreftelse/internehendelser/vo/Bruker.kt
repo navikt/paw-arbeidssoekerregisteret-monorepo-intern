@@ -1,4 +1,4 @@
-package no.nav.paw.arbeidssokerregisteret.intern.v1.vo
+package no.nav.paw.bekreftelse.internehendelser.vo
 
 data class Bruker(
     val type: BrukerType,

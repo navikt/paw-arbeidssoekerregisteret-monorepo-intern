@@ -28,7 +28,8 @@ fun avsluttet(topic: String, periodeId: UUID, hendelse: GyldigHendelse): Avslutt
             kilde = "topic:$topic",
             utfoertAv = Bruker(
                 type = BrukerType.SYSTEM,
-                id = ApplicationInfo.id
+                id = ApplicationInfo.id,
+                sikkerhetsnivaa = null
             ),
             tidspunktFraKilde = TidspunktFraKilde(
                 tidspunkt = hendelse.formidlingsgruppeEndret,

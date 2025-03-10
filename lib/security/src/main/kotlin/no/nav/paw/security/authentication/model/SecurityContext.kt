@@ -29,7 +29,10 @@ fun ApplicationCall.resolveSecurityContext(): SecurityContext {
     val bruker = when (accessToken.issuer) {
         is TokenX -> {
             logger.debug("TokenX token -> Sluttbruker")
-            Sluttbruker(accessToken.claims.getOrThrow(PID))
+            Sluttbruker(
+                ident = accessToken.claims.getOrThrow(PID),
+                sikkerhetsnivaa = accessToken.claims.getOrNull(ACR)
+            )
         }
 
         is AzureAd -> {
@@ -50,7 +53,10 @@ fun ApplicationCall.resolveSecurityContext(): SecurityContext {
 
         is IdPorten -> {
             logger.debug("IdPorten token -> Sluttbruker")
-            Sluttbruker(accessToken.claims.getOrThrow(PID))
+            Sluttbruker(
+                ident = accessToken.claims.getOrThrow(PID),
+                sikkerhetsnivaa = accessToken.claims.getOrNull(ACR)
+            )
         }
 
         is MaskinPorten -> {

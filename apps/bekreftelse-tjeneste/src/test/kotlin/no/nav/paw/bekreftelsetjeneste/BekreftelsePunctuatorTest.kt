@@ -198,7 +198,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                         Svar(
                             Metadata(
                                 Instant.now(), no.nav.paw.bekreftelse.melding.v1.vo.Bruker(
-                                    BrukerType.SLUTTBRUKER, "12345678901"
+                                    BrukerType.SLUTTBRUKER, "12345678901", "idporten-loa-high"
                                 ), "test", "test"
                             ),
                             periode.startet.tidspunkt,
@@ -249,7 +249,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                         Svar(
                             Metadata(
                                 Instant.now(), no.nav.paw.bekreftelse.melding.v1.vo.Bruker(
-                                    BrukerType.SLUTTBRUKER, "12345678901"
+                                    BrukerType.SLUTTBRUKER, "12345678901", "idporten-loa-high"
                                 ), "test", "test"
                             ),
                             periode.startet.tidspunkt,
@@ -618,7 +618,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                     Svar(
                         Metadata(
                             Instant.now(), no.nav.paw.bekreftelse.melding.v1.vo.Bruker(
-                                BrukerType.SLUTTBRUKER, identitetsnummer
+                                BrukerType.SLUTTBRUKER, identitetsnummer, "idporten-loa-high"
                             ), "test", "test"
                         ),
                         bekreftelse1.gjelderFra,
@@ -635,7 +635,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                     Svar(
                         Metadata(
                             Instant.now(), no.nav.paw.bekreftelse.melding.v1.vo.Bruker(
-                                BrukerType.SLUTTBRUKER, identitetsnummer
+                                BrukerType.SLUTTBRUKER, identitetsnummer, "idporten-loa-high"
                             ), "test", "test"
                         ),
                         bekreftelse2.gjelderFra,
@@ -699,7 +699,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                     Svar(
                         Metadata(
                             Instant.now(), no.nav.paw.bekreftelse.melding.v1.vo.Bruker(
-                                BrukerType.SLUTTBRUKER, identitetsnummer
+                                BrukerType.SLUTTBRUKER, identitetsnummer, "idporten-loa-high"
                             ), "test", "test"
                         ),
                         bekreftelse1.gjelderFra,
@@ -716,7 +716,7 @@ class BekreftelsePunctuatorTest : FreeSpec({
                     Svar(
                         Metadata(
                             Instant.now(), no.nav.paw.bekreftelse.melding.v1.vo.Bruker(
-                                BrukerType.SLUTTBRUKER, identitetsnummer
+                                BrukerType.SLUTTBRUKER, identitetsnummer, "idporten-loa-high"
                             ), "test", "test"
                         ),
                         bekreftelse2.gjelderFra,

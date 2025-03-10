@@ -98,7 +98,8 @@ data object SvenskBrukerBosattISverigeUnder18aarMedStatusIkkeBosatt : StartPerio
                 kilde = "paw-arbeidssokerregisteret-api-start-stopp-perioder",
                 utfoertAv = Bruker(
                     id = id,
-                    type = BrukerType.SLUTTBRUKER
+                    type = BrukerType.SLUTTBRUKER,
+                    sikkerhetsnivaa = "idporten-loa-high"
                 ),
                 aarsak = "any",
                 tidspunktFraKilde = null

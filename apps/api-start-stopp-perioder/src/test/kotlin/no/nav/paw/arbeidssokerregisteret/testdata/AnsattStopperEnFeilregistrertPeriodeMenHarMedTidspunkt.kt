@@ -61,6 +61,7 @@ data object AnsattStopperEnFeilregistrertPeriodeMenHarMedTidspunkt : StoppPeriod
                 utfoertAv = Bruker(
                     id = ansatt.ident,
                     type = BrukerType.VEILEDER,
+                    sikkerhetsnivaa = null
                 ),
                 aarsak = "any",
                 tidspunktFraKilde = TidspunktFraKilde(

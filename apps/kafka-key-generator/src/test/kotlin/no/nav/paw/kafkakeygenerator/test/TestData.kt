@@ -153,7 +153,7 @@ object TestData {
     fun getMetadata(): Metadata =
         Metadata(
             tidspunkt = Instant.now(),
-            utfoertAv = Bruker(type = BrukerType.SYSTEM, id = "paw"),
+            utfoertAv = Bruker(type = BrukerType.SYSTEM, id = "paw", sikkerhetsnivaa = null),
             kilde = "paw",
             aarsak = "test"
         )

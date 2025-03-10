@@ -49,7 +49,8 @@ fun ArbeidssoekerregistreringRequest.toMetadata(): HendelseMetadata = HendelseMe
     tidspunkt = Instant.now(),
     utfoertAv = Bruker(
         id = identitetsnummer,
-        type = utfoertAv!!.asHendelseBrukerType()
+        type = utfoertAv!!.asHendelseBrukerType(),
+        sikkerhetsnivaa = null
     ),
     kilde = kilde!!,
     aarsak = aarsak!!
@@ -59,7 +60,8 @@ fun hentAvsluttetMetadata() = HendelseMetadata(
     tidspunkt = Instant.now(),
     utfoertAv = Bruker(
         id = "null",
-        type = HendelseBrukerType.SYSTEM
+        type = HendelseBrukerType.SYSTEM,
+        sikkerhetsnivaa = null
     ),
     kilde = "Dolly",
     aarsak = "Avsluttet i Dolly"

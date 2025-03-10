@@ -13,6 +13,7 @@ import org.apache.kafka.streams.test.TestRecord
 import java.time.Duration
 import java.time.Instant
 import java.util.*
+import no.nav.paw.bekreftelse.internehendelser.vo.Bruker as InterntBekreftelseBruker
 
 object TestData {
     val runtimeEnvironment = currentRuntimeEnvironment
@@ -257,8 +258,15 @@ object TestData {
 
     fun bruker(
         type: BrukerType = BrukerType.SYSTEM,
-        id: String = "test"
-    ): Bruker = Bruker(type, id)
+        id: String = "test",
+        sikkerhetsnivaa: String = "idporten-loa-high"
+    ): Bruker = Bruker(type, id, sikkerhetsnivaa)
+
+    fun internBekfretelseBruker(
+        type: no.nav.paw.bekreftelse.internehendelser.vo.BrukerType = no.nav.paw.bekreftelse.internehendelser.vo.BrukerType.SLUTTBRUKER,
+        id: String = "12345678901",
+        sikkerhetsnivaa: String? = "idporten-loa-substantial"
+    ): InterntBekreftelseBruker = InterntBekreftelseBruker(type, id, sikkerhetsnivaa)
 
     fun metadata(
         tidspunkt: Instant = Instant.now(),
@@ -320,12 +328,14 @@ object TestData {
         hendelseId: UUID = UUID.randomUUID(),
         periodeId: UUID = periodeId1,
         arbeidssoekerId: Long = arbeidssoekerId1,
-        hendelseTidspunkt: Instant = Instant.now()
+        hendelseTidspunkt: Instant = Instant.now(),
+        utfoertAv: InterntBekreftelseBruker = internBekfretelseBruker()
     ): BaOmAaAvsluttePeriode = BaOmAaAvsluttePeriode(
         hendelseId = hendelseId,
         periodeId = periodeId,
         arbeidssoekerId = arbeidssoekerId,
-        hendelseTidspunkt = hendelseTidspunkt
+        hendelseTidspunkt = hendelseTidspunkt,
+        utfoertAv = utfoertAv
     )
 
     fun bekreftelsePaaVegneAvStartet(

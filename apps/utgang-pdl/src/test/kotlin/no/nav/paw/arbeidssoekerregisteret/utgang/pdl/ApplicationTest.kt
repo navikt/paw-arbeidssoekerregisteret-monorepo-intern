@@ -44,7 +44,8 @@ class ApplicationTest : FreeSpec({
                         Instant.now(),
                         BrukerIntern(
                             BrukerTypeIntern.SLUTTBRUKER,
-                            identitetsnummer
+                            identitetsnummer,
+                            "idporten-loa-high"
                         ),
                         "",
                         ""
@@ -61,7 +62,8 @@ class ApplicationTest : FreeSpec({
                         Instant.now(),
                         Bruker(
                             BrukerType.SLUTTBRUKER,
-                            identitetsnummer
+                            identitetsnummer,
+                            "idporten-loa-high"
                         ),
                         "",
                         "",
@@ -99,7 +101,8 @@ class ApplicationTest : FreeSpec({
                         Instant.now(),
                         BrukerIntern(
                             BrukerTypeIntern.SLUTTBRUKER,
-                            identitetsnummer
+                            identitetsnummer,
+                            "idporten-loa-high"
                         ),
                         "",
                         ""
@@ -116,7 +119,8 @@ class ApplicationTest : FreeSpec({
                         Instant.now(),
                         Bruker(
                             BrukerType.SLUTTBRUKER,
-                            identitetsnummer
+                            identitetsnummer,
+                            "idporten-loa-high"
                         ),
                         "",
                         "",
@@ -152,7 +156,8 @@ class ApplicationTest : FreeSpec({
                         Instant.now(),
                         Bruker(
                             BrukerType.SLUTTBRUKER,
-                            identitetsnummer
+                            identitetsnummer,
+                            "idporten-loa-high"
                         ),
                         "",
                         "",
@@ -170,7 +175,8 @@ class ApplicationTest : FreeSpec({
                         Instant.now(),
                         Bruker(
                             BrukerType.SLUTTBRUKER,
-                            identitetsnummer
+                            identitetsnummer,
+                            "idporten-loa-high"
                         ),
                         "",
                         "",
@@ -207,7 +213,8 @@ class ApplicationTest : FreeSpec({
                         Instant.now(),
                         BrukerIntern(
                             BrukerTypeIntern.VEILEDER,
-                            "1234"
+                            "1234",
+                            null
                         ),
                         "",
                         ""
@@ -228,7 +235,8 @@ class ApplicationTest : FreeSpec({
                         Instant.now(),
                         Bruker(
                             BrukerType.SLUTTBRUKER,
-                            identitetsnummer
+                            identitetsnummer,
+                            "idporten-loa-high"
                         ),
                         "",
                         "",
@@ -265,7 +273,8 @@ class ApplicationTest : FreeSpec({
                         Instant.now(),
                         BrukerIntern(
                             BrukerTypeIntern.SLUTTBRUKER,
-                            identitetsnummer
+                            identitetsnummer,
+                            "idporten-loa-high"
                         ),
                         "",
                         ""
@@ -286,7 +295,8 @@ class ApplicationTest : FreeSpec({
                         Instant.now(),
                         Bruker(
                             BrukerType.SLUTTBRUKER,
-                            identitetsnummer
+                            identitetsnummer,
+                            "idporten-loa-high"
                         ),
                         "",
                         "",
@@ -324,7 +334,8 @@ class ApplicationTest : FreeSpec({
                         Instant.now(),
                         BrukerIntern(
                             BrukerTypeIntern.SLUTTBRUKER,
-                            identitetsnummer
+                            identitetsnummer,
+                            "idporten-loa-high"
                         ),
                         "",
                         ""
@@ -344,7 +355,8 @@ class ApplicationTest : FreeSpec({
                         Instant.now(),
                         Bruker(
                             BrukerType.SLUTTBRUKER,
-                            identitetsnummer
+                            identitetsnummer,
+                            "idporten-loa-high"
                         ),
                         "",
                         "",
@@ -382,7 +394,8 @@ class ApplicationTest : FreeSpec({
                         Instant.now(),
                         BrukerIntern(
                             BrukerTypeIntern.SLUTTBRUKER,
-                            identitetsnummer
+                            identitetsnummer,
+                            "idporten-loa-high"
                         ),
                         "",
                         ""
@@ -421,7 +434,8 @@ class ApplicationTest : FreeSpec({
                         Instant.now(),
                         BrukerIntern(
                             BrukerTypeIntern.SLUTTBRUKER,
-                            identitetsnummer
+                            identitetsnummer,
+                            "idporten-loa-high"
                         ),
                         "",
                         ""
@@ -460,7 +474,8 @@ class ApplicationTest : FreeSpec({
                         Instant.now(),
                         BrukerIntern(
                             BrukerTypeIntern.SLUTTBRUKER,
-                            identitetsnummer
+                            identitetsnummer,
+                            "idporten-loa-high"
                         ),
                         "",
                         ""
@@ -478,7 +493,8 @@ class ApplicationTest : FreeSpec({
                         Instant.now(),
                         Bruker(
                             BrukerType.SLUTTBRUKER,
-                            identitetsnummer
+                            identitetsnummer,
+                            "idporten-loa-high"
                         ),
                         "",
                         "",

@@ -143,17 +143,20 @@ fun RequestScope.brukerFraClaims(): Bruker {
     return sluttbruker(claims)?.let {
         Bruker(
             type = BrukerType.SLUTTBRUKER,
-            id = it.identitetsnummer.verdi
+            id = it.identitetsnummer.verdi,
+            sikkerhetsnivaa = it.sikkerhetsnivaa
         )
     } ?: navAnsatt(claims)?.let {
         Bruker(
             type = BrukerType.VEILEDER,
-            id = it.ident
+            id = it.ident,
+            sikkerhetsnivaa = null
         )
     } ?: m2mToken(claims)?.let {
         Bruker(
             type = BrukerType.SYSTEM,
-            id = it.tjeneste
+            id = it.tjeneste,
+            sikkerhetsnivaa = null
         )
     } ?: throw IllegalStateException("Kunne ikke finne bruker i claims")
 }

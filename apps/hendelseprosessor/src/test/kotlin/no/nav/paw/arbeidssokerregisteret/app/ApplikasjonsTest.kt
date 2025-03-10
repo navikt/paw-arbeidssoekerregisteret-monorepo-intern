@@ -74,7 +74,8 @@ class ApplikasjonsTest : FreeSpec({
                 Instant.now(),
                 Bruker(
                     type = BrukerType.SYSTEM,
-                    id = "test"
+                    id = "test",
+                    sikkerhetsnivaa = null
                 ),
                 kilde = "unit-test",
                 aarsak = "tester",
@@ -120,7 +121,7 @@ class ApplikasjonsTest : FreeSpec({
                 identitetsnummer = identitetnummer,
                 metadata = Metadata(
                     tidspunkt = Instant.now(),
-                    utfoertAv = Bruker(type = BrukerType.SYSTEM, id = "test"),
+                    utfoertAv = Bruker(type = BrukerType.SYSTEM, id = "test", sikkerhetsnivaa = null),
                     kilde = "unit-test",
                     aarsak = "tester"
                 )
@@ -135,7 +136,7 @@ class ApplikasjonsTest : FreeSpec({
             identitetsnummer = identitetnummer,
             metadata = Metadata(
                 tidspunkt = Instant.now(),
-                utfoertAv = Bruker(type = BrukerType.VEILEDER, id = "en_som_fikser_ting"),
+                utfoertAv = Bruker(type = BrukerType.VEILEDER, id = "en_som_fikser_ting", sikkerhetsnivaa = null),
                 kilde = "unit-test2",
                 aarsak = "teknisk feil i systemet",
                 tidspunktFraKilde = TidspunktFraKilde(
@@ -193,7 +194,7 @@ class ApplikasjonsTest : FreeSpec({
                 identitetsnummer = identitetnummer,
                 metadata = Metadata(
                     Instant.now(),
-                    Bruker(BrukerType.SYSTEM, "test"),
+                    Bruker(BrukerType.SYSTEM, "test", null),
                     "unit-test",
                     "tester"
                 ),
@@ -211,7 +212,7 @@ class ApplikasjonsTest : FreeSpec({
                 identitetsnummer = identitetnummer,
                 metadata = Metadata(
                     Instant.now(),
-                    Bruker(BrukerType.SYSTEM, "test"),
+                    Bruker(BrukerType.SYSTEM, "test", null),
                     "unit-test",
                     "tester"
                 )
@@ -241,7 +242,7 @@ class ApplikasjonsTest : FreeSpec({
                 id = UUID.randomUUID(),
                 metadata = Metadata(
                     opplysningerTidspunkt,
-                    Bruker(BrukerType.SYSTEM, "test"),
+                    Bruker(BrukerType.SYSTEM, "test", null),
                     "unit-test",
                     "tester"
                 ),
@@ -281,7 +282,7 @@ class ApplikasjonsTest : FreeSpec({
                 identitetsnummer = identitetnummer,
                 metadata = Metadata(
                     tidspunkt = opplysningerTidspunkt.plus(opplysningerTilPeriodeVindu.minusSeconds(1)),
-                    utfoertAv = Bruker(BrukerType.SLUTTBRUKER, "123456788901"),
+                    utfoertAv = Bruker(BrukerType.SLUTTBRUKER, "123456788901", null),
                     kilde = "unit-test",
                     aarsak = "tester"
                 )
@@ -324,7 +325,7 @@ class ApplikasjonsTest : FreeSpec({
                 identitetsnummer = identitetnummer,
                 metadata = Metadata(
                     Instant.now(),
-                    Bruker(BrukerType.SYSTEM, "test"),
+                    Bruker(BrukerType.SYSTEM, "test", null),
                     "unit-test",
                     "tester"
                 ),
@@ -349,7 +350,7 @@ class ApplikasjonsTest : FreeSpec({
                 identitetsnummer = identitetnummer,
                 metadata = Metadata(
                     Instant.now(),
-                    Bruker(BrukerType.SYSTEM, "test"),
+                    Bruker(BrukerType.SYSTEM, "test", null),
                     "unit-test",
                     "tester"
                 ),
@@ -363,7 +364,7 @@ class ApplikasjonsTest : FreeSpec({
                 identitetsnummer = identitetnummer,
                 metadata = Metadata(
                     tidspunkt = opplysningerTidspunkt.plus(opplysningerTilPeriodeVindu.minusSeconds(1)),
-                    utfoertAv = Bruker(BrukerType.SLUTTBRUKER, "123456788901"),
+                    utfoertAv = Bruker(BrukerType.SLUTTBRUKER, "123456788901", "idporten-loa-high"),
                     kilde = "unit-test",
                     aarsak = "tester"
                 )
@@ -379,7 +380,7 @@ class ApplikasjonsTest : FreeSpec({
                 identitetsnummer = identitetnummer,
                 metadata = Metadata(
                     tidspunkt = opplysningerTidspunkt.plus(opplysningerTilPeriodeVindu.minusSeconds(1)),
-                    utfoertAv = Bruker(BrukerType.SLUTTBRUKER, "123456788901"),
+                    utfoertAv = Bruker(BrukerType.SLUTTBRUKER, "123456788901", "idporten-loa-high"),
                     kilde = "unit-test",
                     aarsak = "tester"
                 )
@@ -392,7 +393,7 @@ class ApplikasjonsTest : FreeSpec({
                 identitetsnummer = identitetnummer,
                 metadata = Metadata(
                     Instant.now(),
-                    Bruker(BrukerType.SYSTEM, "test"),
+                    Bruker(BrukerType.SYSTEM, "test", null),
                     "unit-test",
                     "tester"
                 ),
@@ -415,7 +416,7 @@ fun opplysningerMottatt(id: Long, identitetnummer: String, timestamp: Instant) =
             id = UUID.randomUUID(),
             metadata = Metadata(
                 timestamp,
-                Bruker(BrukerType.SYSTEM, "test"),
+                Bruker(BrukerType.SYSTEM, "test", null),
                 "unit-test",
                 "tester"
             ),

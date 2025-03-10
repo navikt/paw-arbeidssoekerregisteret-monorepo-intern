@@ -49,7 +49,8 @@ fun Bruker.tilAvroBruker(): no.nav.paw.arbeidssokerregisteret.api.v1.Bruker =
             BrukerType.SLUTTBRUKER -> no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType.SLUTTBRUKER
             BrukerType.VEILEDER -> no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType.VEILEDER
         },
-        id
+        id,
+        sikkerhetsnivaa
     )
 
 fun TidspunktFraKilde.tilAvroTidspunktFraKilde(): no.nav.paw.arbeidssokerregisteret.api.v1.TidspunktFraKilde =

@@ -24,10 +24,12 @@ fun systemBruker(system: String): Bruker = bruker(id = system, type = BrukerType
 
 fun bruker (
     id: String = "09876543211",
-    type: BrukerType = BrukerType.SLUTTBRUKER
+    type: BrukerType = BrukerType.SLUTTBRUKER,
+    sikkerhetsnivaa: String? = "idporten-loa-high"
 ): Bruker = Bruker(
     id = id,
-    type = type
+    type = type,
+    sikkerhetsnivaa = sikkerhetsnivaa
 )
 
 fun feilregistrering(): TidspunktFraKilde = tidsPunktFraKilde(avviksType = AvviksType.SLETTET)
