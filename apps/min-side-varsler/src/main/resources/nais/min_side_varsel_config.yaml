@@ -13,6 +13,7 @@ periodeAvsluttet:
   eksterntVarsel:
     prefererteKanaler:
       - SMS
+      - EPOST
 
 bekreftelseTilgjengelig:
   link: ${BEKREFTELSE_TILGJENGELIG_VARSEL_LINK}
@@ -22,13 +23,17 @@ bekreftelseTilgjengelig:
   tekster:
     - spraak:
         kode: nb
-      tekst: Det er på tide å bekrefte arbeidssøkerperioden din i NAV.
+      tekst: Bekreft at du vil være registrert som arbeidssøker.
     - spraak:
         kode: en
-      tekst: It is time to confirm your jobseeker period in NAV.
+      tekst: Confirm that you want to remain a jobseeker.
   eksterntVarsel:
     prefererteKanaler:
       - SMS
+      - EPOST
+    smsTekst: Hei! Ønsker du fortsatt å være registrert som arbeidssøker? Logg inn på Nav så snart som mulig for å bekrefte at du vil være registrert. Hilsen Nav
+    epostTittel: Du har fått en melding fra Nav
+    epostTekst: Hei!\nØnsker du fortsatt å være registrert som arbeidssøker hos Nav? Logg inn på Nav så snart som mulig for å bekrefte at du vil være registrert som arbeidssøker.\nHilsen Nav
 
 manueltVarsel:
   link: ${MANUELT_VARSEL_LINK}

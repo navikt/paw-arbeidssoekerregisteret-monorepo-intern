@@ -34,6 +34,9 @@ enum class VarselSensitivitet {
 
 data class EksterntVarsel(
     val prefererteKanaler: List<EksternVarselKanal>,
+    val smsTekst: String? = null,
+    val epostTittel: String? = null,
+    val epostTekst: String? = null,
     val kanBatches: Boolean = true
 ) {
     init {
@@ -75,6 +78,9 @@ fun EksterntVarsel.asEksternVarslingBestilling(
     utsettSendingTil: Instant? = null,
 ) = EksternVarslingBestilling(
     prefererteKanaler = this.prefererteKanaler.map { it.asEksternKanal() },
+    smsVarslingstekst = this.smsTekst,
+    epostVarslingstittel = this.epostTittel,
+    epostVarslingstekst = this.epostTekst,
     kanBatches = this.kanBatches,
     utsettSendingTil = utsettSendingTil?.atZone(ZoneId.systemDefault())
 )

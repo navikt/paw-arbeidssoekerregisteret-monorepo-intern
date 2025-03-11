@@ -78,32 +78,31 @@ fun main() {
             identitetsnummer = identitetsnummer1
         )
         val lukketPeriode = TestData.lukketPeriode(
-            id = aapenPeriode.id,
-            identitetsnummer = aapenPeriode.identitetsnummer,
-            startet = aapenPeriode.startet
+            id = periodeId1,
+            identitetsnummer = identitetsnummer1,
         )
         val bekreftelseTilgjengelig = TestData.bekreftelseTilgjengelig(
-            periodeId = aapenPeriode.id,
+            periodeId = periodeId1,
             bekreftelseId = bekreftelseId1,
             arbeidssoekerId = arbeidssoekerId1
         )
         val bekreftelseMeldingMottatt = TestData.bekreftelseMeldingMottatt(
-            periodeId = bekreftelseTilgjengelig.periodeId,
-            bekreftelseId = bekreftelseTilgjengelig.bekreftelseId,
-            arbeidssoekerId = bekreftelseTilgjengelig.arbeidssoekerId
+            periodeId = periodeId1,
+            bekreftelseId = bekreftelseId1,
+            arbeidssoekerId = arbeidssoekerId1
         )
         val periodeAvsluttet = TestData.periodeAvsluttet(
-            periodeId = bekreftelseTilgjengelig.periodeId,
-            arbeidssoekerId = bekreftelseTilgjengelig.arbeidssoekerId
+            periodeId = periodeId1,
+            arbeidssoekerId = arbeidssoekerId1
         )
         val varselHendelse = TestData.varselHendelse(
             eventName = VarselEventName.OPPRETTET,
-            varselId = bekreftelseTilgjengelig.bekreftelseId.toString(),
+            varselId = bekreftelseId1.toString(),
             varseltype = VarselType.OPPGAVE
         )
 
-        periodeKafkaProducer.send(periodeTopic, key1, lukketPeriode)
-        //bekreftelseHendelseKafkaProducer.send(bekreftelseHendelseTopic, key1, bekreftelseTilgjengelig)
+        //periodeKafkaProducer.send(periodeTopic, key1, lukketPeriode)
+        bekreftelseHendelseKafkaProducer.send(bekreftelseHendelseTopic, key1, bekreftelseTilgjengelig)
         //bekreftelseHendelseKafkaProducer.send(bekreftelseHendelseTopic, key1, bekreftelseMeldingMottatt)
         //bekreftelseHendelseKafkaProducer.send(bekreftelseHendelseTopic, key1, periodeAvsluttet)
         //varselHendelseKafkaProducer.send(tmsVarselHendelseTopic, varselHendelse.varselId, varselHendelse)

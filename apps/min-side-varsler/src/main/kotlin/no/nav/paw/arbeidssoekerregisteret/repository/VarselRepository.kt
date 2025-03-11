@@ -6,6 +6,7 @@ import no.nav.paw.arbeidssoekerregisteret.model.UpdateVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.VarselKilde
 import no.nav.paw.arbeidssoekerregisteret.model.VarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.VarslerTable
+import no.nav.paw.arbeidssoekerregisteret.model.asSortOrder
 import no.nav.paw.arbeidssoekerregisteret.model.asVarselRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
@@ -19,10 +20,10 @@ import java.util.*
 
 class VarselRepository {
 
-    fun findAll(paging: Paging = Paging()): List<VarselRow> = transaction {
+    fun findAll(paging: Paging = Paging.none()): List<VarselRow> = transaction {
         VarslerTable.selectAll()
-            .orderBy(VarslerTable.hendelseTimestamp, paging.ordering)
-            .limit(paging.size).offset(paging.offset)
+            .orderBy(VarslerTable.hendelseTimestamp, paging.order.asSortOrder())
+            .offset(paging.offset).limit(paging.size)
             .map { it.asVarselRow() }
     }
 
@@ -35,24 +36,24 @@ class VarselRepository {
 
     fun findByPeriodeId(
         periodeId: UUID,
-        paging: Paging = Paging(),
+        paging: Paging = Paging.none(),
     ): List<VarselRow> = transaction {
         VarslerTable.selectAll()
             .where { VarslerTable.periodeId eq periodeId }
-            .orderBy(VarslerTable.hendelseTimestamp, paging.ordering)
-            .limit(paging.size).offset(paging.offset)
+            .orderBy(VarslerTable.hendelseTimestamp, paging.order.asSortOrder())
+            .offset(paging.offset).limit(paging.size)
             .map { it.asVarselRow() }
     }
 
     fun findByPeriodeIdAndVarselKilde(
         periodeId: UUID,
         varselKilde: VarselKilde,
-        paging: Paging = Paging(),
+        paging: Paging = Paging.none(),
     ): List<VarselRow> = transaction {
         VarslerTable.selectAll()
             .where { (VarslerTable.periodeId eq periodeId) and (VarslerTable.varselKilde eq varselKilde) }
-            .orderBy(VarslerTable.hendelseTimestamp, paging.ordering)
-            .limit(paging.size).offset(paging.offset)
+            .orderBy(VarslerTable.hendelseTimestamp, paging.order.asSortOrder())
+            .offset(paging.offset).limit(paging.size)
             .map { it.asVarselRow() }
     }
 

@@ -6,6 +6,7 @@ import no.nav.paw.arbeidssoekerregisteret.model.PeriodeRow
 import no.nav.paw.arbeidssoekerregisteret.model.PerioderTable
 import no.nav.paw.arbeidssoekerregisteret.model.UpdatePeriodeRow
 import no.nav.paw.arbeidssoekerregisteret.model.asPeriodeRow
+import no.nav.paw.arbeidssoekerregisteret.model.asSortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
@@ -17,10 +18,10 @@ import java.util.*
 
 class PeriodeRepository {
 
-    fun findAll(paging: Paging = Paging()): List<PeriodeRow> = transaction {
+    fun findAll(paging: Paging = Paging.none()): List<PeriodeRow> = transaction {
         PerioderTable.selectAll()
-            .orderBy(PerioderTable.startetTimestamp, paging.ordering)
-            .limit(paging.size).offset(paging.offset)
+            .orderBy(PerioderTable.startetTimestamp, paging.order.asSortOrder())
+            .offset(paging.offset).limit(paging.size)
             .map { it.asPeriodeRow() }
     }
 

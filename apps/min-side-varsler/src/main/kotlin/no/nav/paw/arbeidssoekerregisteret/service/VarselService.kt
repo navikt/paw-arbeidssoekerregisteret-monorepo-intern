@@ -43,7 +43,7 @@ class VarselService(
 
     fun finnVarsler(
         periodeId: UUID,
-        paging: Paging = Paging()
+        paging: Paging = Paging.none()
     ): List<VarselResponse> = transaction {
         varselRepository.findByPeriodeId(periodeId, paging).map { it.asResponse() }
     }

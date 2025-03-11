@@ -6,13 +6,17 @@ periodeAvsluttet:
   tekster:
     - spraak:
         kode: nb
-      tekst: Arbeidssøkerperioden ble avsluttet hos NAV.
+      tekst: Du er ikke lengre registrert som arbeidssøker.
     - spraak:
         kode: en
-      tekst: Your jobseeker period was ended at NAV.
+      tekst: You are no longer registered as a jobseeker.
   eksterntVarsel:
     prefererteKanaler:
       - SMS
+      - EPOST
+    smsTekst: Du er ikke lengre registrert som arbeidssøker. Hilsen Nav
+    epostTittel: Du har fått en melding fra Nav
+    epostTekst: Hei!\nDu er ikke lengre registrert som arbeidssøker.\nHilsen Nav
 
 bekreftelseTilgjengelig:
   link: http://localhost:8080/minside/bekreftelse
@@ -22,13 +26,17 @@ bekreftelseTilgjengelig:
   tekster:
     - spraak:
         kode: nb
-      tekst: Det er på tide å bekrefte arbeidssøkerperioden din i NAV.
+      tekst: Bekreft at du vil være registrert som arbeidssøker.
     - spraak:
         kode: en
-      tekst: It is time to confirm your jobseeker period in NAV.
+      tekst: Confirm that you want to remain registered as a jobseeker.
   eksterntVarsel:
     prefererteKanaler:
       - SMS
+      - EPOST
+    smsTekst: Hei! Ønsker du fortsatt å være registrert som arbeidssøker? Logg inn på Nav så snart som mulig for å bekrefte at du vil være registrert. Hilsen Nav
+    epostTittel: Du har fått en melding fra Nav
+    epostTekst: Hei!\nØnsker du fortsatt å være registrert som arbeidssøker hos Nav? Logg inn på Nav så snart som mulig for å bekrefte at du vil være registrert som arbeidssøker.\nHilsen Nav
 
 manueltVarsel:
   link: http://localhost:8080/minside

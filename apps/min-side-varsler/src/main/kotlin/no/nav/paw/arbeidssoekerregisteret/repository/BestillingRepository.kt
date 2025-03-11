@@ -7,6 +7,7 @@ import no.nav.paw.arbeidssoekerregisteret.model.InsertBestillingRow
 import no.nav.paw.arbeidssoekerregisteret.model.Paging
 import no.nav.paw.arbeidssoekerregisteret.model.UpdateBestillingRow
 import no.nav.paw.arbeidssoekerregisteret.model.asBestillingRow
+import no.nav.paw.arbeidssoekerregisteret.model.asSortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
@@ -18,21 +19,21 @@ import java.util.*
 
 class BestillingRepository {
 
-    fun findAll(paging: Paging = Paging()): List<BestillingRow> = transaction {
+    fun findAll(paging: Paging = Paging.none()): List<BestillingRow> = transaction {
         BestillingerTable.selectAll()
-            .orderBy(BestillingerTable.insertedTimestamp, paging.ordering)
-            .limit(paging.size).offset(paging.offset)
+            .orderBy(BestillingerTable.insertedTimestamp, paging.order.asSortOrder())
+            .offset(paging.offset).limit(paging.size)
             .map { it.asBestillingRow() }
     }
 
     fun findByStatus(
         status: BestillingStatus,
-        paging: Paging = Paging()
+        paging: Paging = Paging.none()
     ): List<BestillingRow> = transaction {
         BestillingerTable.selectAll()
             .where { BestillingerTable.status eq status }
-            .orderBy(BestillingerTable.insertedTimestamp, paging.ordering)
-            .limit(paging.size).offset(paging.offset)
+            .orderBy(BestillingerTable.insertedTimestamp, paging.order.asSortOrder())
+            .offset(paging.offset).limit(paging.size)
             .map { it.asBestillingRow() }
     }
 

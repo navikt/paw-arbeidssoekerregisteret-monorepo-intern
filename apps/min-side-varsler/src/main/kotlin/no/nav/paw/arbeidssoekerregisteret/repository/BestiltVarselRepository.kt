@@ -1,12 +1,13 @@
 package no.nav.paw.arbeidssoekerregisteret.repository
 
-import no.nav.paw.arbeidssoekerregisteret.model.InsertBestiltVarselRow
-import no.nav.paw.arbeidssoekerregisteret.model.BestilteVarslerTable
 import no.nav.paw.arbeidssoekerregisteret.model.BestiltVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.BestiltVarselStatus
+import no.nav.paw.arbeidssoekerregisteret.model.BestilteVarslerTable
+import no.nav.paw.arbeidssoekerregisteret.model.InsertBestiltVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.Paging
 import no.nav.paw.arbeidssoekerregisteret.model.UpdateBestiltVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.asBestiltVarselRow
+import no.nav.paw.arbeidssoekerregisteret.model.asSortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
@@ -19,10 +20,10 @@ import java.util.*
 
 class BestiltVarselRepository {
 
-    fun findAll(paging: Paging = Paging()): List<BestiltVarselRow> = transaction {
+    fun findAll(paging: Paging = Paging.none()): List<BestiltVarselRow> = transaction {
         BestilteVarslerTable.selectAll()
-            .orderBy(BestilteVarslerTable.insertedTimestamp, paging.ordering)
-            .limit(paging.size).offset(paging.offset)
+            .orderBy(BestilteVarslerTable.insertedTimestamp, paging.order.asSortOrder())
+            .offset(paging.offset).limit(paging.size)
             .map { it.asBestiltVarselRow() }
     }
 
@@ -35,18 +36,19 @@ class BestiltVarselRepository {
 
     fun findByBestillingId(
         bestillingId: UUID,
-        paging: Paging = Paging(),
+        paging: Paging = Paging.none(),
     ): List<BestiltVarselRow> = transaction {
         BestilteVarslerTable.selectAll()
             .where { BestilteVarslerTable.bestillingId eq bestillingId }
-            .orderBy(BestilteVarslerTable.insertedTimestamp, paging.ordering)
-            .limit(paging.size).offset(paging.offset)
+            .orderBy(BestilteVarslerTable.insertedTimestamp, paging.order.asSortOrder())
+            .offset(paging.offset).limit(paging.size)
             .map { it.asBestiltVarselRow() }
     }
 
     fun insert(varsel: InsertBestiltVarselRow): Int = transaction {
         BestilteVarslerTable.insert {
             it[bestillingId] = varsel.bestillingId
+            it[periodeId] = varsel.periodeId
             it[varselId] = varsel.varselId
             it[identitetsnummer] = varsel.identitetsnummer
             it[status] = BestiltVarselStatus.VENTER
