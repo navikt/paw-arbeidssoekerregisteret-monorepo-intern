@@ -14,7 +14,7 @@ import no.nav.paw.error.plugin.installErrorHandlingPlugin
 import no.nav.paw.kafka.plugin.installKafkaStreamsPlugins
 import no.nav.paw.logging.logger.buildApplicationLogger
 import no.nav.paw.logging.plugin.installLoggingPlugin
-import no.nav.paw.metrics.plugin.installMetricsPlugin
+import no.nav.paw.metrics.plugin.installWebAppMetricsPlugin
 import no.nav.paw.security.authentication.plugin.installAuthenticationPlugin
 import no.nav.paw.serialization.plugin.installContentNegotiationPlugin
 
@@ -45,7 +45,7 @@ fun Application.module(applicationContext: ApplicationContext) {
         installContentNegotiationPlugin()
         installErrorHandlingPlugin()
         val additionalMeterBinders = kafkaStreamsList.map { KafkaStreamsMetrics(it) }
-        installMetricsPlugin(prometheusMeterRegistry, additionalMeterBinders)
+        installWebAppMetricsPlugin(prometheusMeterRegistry, additionalMeterBinders)
         installAuthenticationPlugin(securityConfig.authProviders)
         installDatabasePlugin(dataSource)
         installKafkaStreamsPlugins(kafkaStreamsList, kafkaShutdownTimeout)

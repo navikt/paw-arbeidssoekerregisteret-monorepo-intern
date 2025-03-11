@@ -42,6 +42,3 @@ manueltVarsel:
     - spraak:
         kode: en
       tekst: This is a test of a manual notification from NAV.
-  eksterntVarsel:
-    prefererteKanaler:
-      - SMS
