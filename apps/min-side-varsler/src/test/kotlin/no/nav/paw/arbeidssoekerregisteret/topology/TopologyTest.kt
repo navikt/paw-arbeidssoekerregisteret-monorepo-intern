@@ -8,6 +8,7 @@ import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.beInstanceOf
+import no.nav.paw.arbeidssoekerregisteret.context.KafkaTestContext
 import no.nav.paw.arbeidssoekerregisteret.context.TestContext
 import no.nav.paw.arbeidssoekerregisteret.exception.PeriodeIkkeFunnetException
 import no.nav.paw.arbeidssoekerregisteret.model.VarselEventName
@@ -25,11 +26,9 @@ import java.time.Instant
 import kotlin.random.Random
 
 class TopologyTest : FreeSpec({
-    with(TestContext.build()) {
+    with(KafkaTestContext.buildWithH2()) {
         with(TestData) {
-            beforeTest {
-                initDatabase()
-            }
+            beforeTest { initDatabase() }
 
             "Verifiser håndtering av perioder" - {
                 "Normal rekkefølge med åpen før lukket periode" {
@@ -330,7 +329,7 @@ class TopologyTest : FreeSpec({
                     val key = Random.nextLong()
                     val aapenPeriode = aapenPeriode()
                     bekreftelsePeriodeTopic.pipeInput(aapenPeriode.asRecord(key))
-                    val hendelse1 = baOmAaAvsluttePeriode(periodeId = aapenPeriode.id,)
+                    val hendelse1 = baOmAaAvsluttePeriode(periodeId = aapenPeriode.id)
                     bekreftelseHendelseTopic.pipeInput(hendelse1.asRecord(key = key))
                     val hendelse2 = leveringsfristUtloept(periodeId = aapenPeriode.id)
                     bekreftelseHendelseTopic.pipeInput(hendelse2.asRecord(key = key))

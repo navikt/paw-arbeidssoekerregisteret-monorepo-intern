@@ -46,7 +46,7 @@ class VarselMeldingByggerTest : FreeSpec({
                 val resultat = varselMeldingBygger.opprettBekreftelseTilgjengeligOppgave(
                     varselId = hendelse.bekreftelseId,
                     identitetsnummer = identitetsnummer,
-                    gjelderTil = hendelse.gjelderTil
+                    utsettEksternVarslingTil = hendelse.gjelderTil
                 )
                 resultat.varselId shouldBe hendelse.bekreftelseId
                 resultat.value should { json ->

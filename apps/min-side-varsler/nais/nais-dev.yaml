@@ -36,6 +36,8 @@ spec:
       value: https://www.ansatt.dev.nav.no/arbeidssoekerregisteret
     - name: BEKREFTELSE_TILGJENGELIG_VARSEL_LINK
       value: https://www.ansatt.dev.nav.no/arbeidssoekerregisteret/bekreftelse
+    - name: MANUELT_VARSEL_LINK
+      value: https://www.intern.dev.nav.no/minside
   liveness:
     path: /internal/isAlive
     initialDelay: 10

@@ -1,8 +1,9 @@
 package no.nav.paw.arbeidssoekerregisteret.repository
 
 import no.nav.paw.arbeidssoekerregisteret.model.InsertPeriodeRow
+import no.nav.paw.arbeidssoekerregisteret.model.Paging
 import no.nav.paw.arbeidssoekerregisteret.model.PeriodeRow
-import no.nav.paw.arbeidssoekerregisteret.model.PeriodeTable
+import no.nav.paw.arbeidssoekerregisteret.model.PerioderTable
 import no.nav.paw.arbeidssoekerregisteret.model.UpdatePeriodeRow
 import no.nav.paw.arbeidssoekerregisteret.model.asPeriodeRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -16,20 +17,22 @@ import java.util.*
 
 class PeriodeRepository {
 
-    fun findAll(): List<PeriodeRow> = transaction {
-        PeriodeTable.selectAll()
+    fun findAll(paging: Paging = Paging()): List<PeriodeRow> = transaction {
+        PerioderTable.selectAll()
+            .orderBy(PerioderTable.startetTimestamp, paging.ordering)
+            .limit(paging.size).offset(paging.offset)
             .map { it.asPeriodeRow() }
     }
 
     fun findByPeriodeId(periodeId: UUID): PeriodeRow? = transaction {
-        PeriodeTable.selectAll()
-            .where { PeriodeTable.periodeId eq periodeId }
+        PerioderTable.selectAll()
+            .where { PerioderTable.periodeId eq periodeId }
             .map { it.asPeriodeRow() }
             .singleOrNull()
     }
 
     fun insert(periode: InsertPeriodeRow): Int = transaction {
-        PeriodeTable.insert {
+        PerioderTable.insert {
             it[periodeId] = periode.periodeId
             it[identitetsnummer] = periode.identitetsnummer
             it[startetTimestamp] = periode.startetTimestamp
@@ -39,8 +42,8 @@ class PeriodeRepository {
     }
 
     fun update(periode: UpdatePeriodeRow): Int = transaction {
-        PeriodeTable.update({
-            PeriodeTable.periodeId eq periode.periodeId
+        PerioderTable.update({
+            PerioderTable.periodeId eq periode.periodeId
         }) {
             it[identitetsnummer] = periode.identitetsnummer
             it[avsluttetTimestamp] = periode.avsluttetTimestamp
@@ -49,6 +52,6 @@ class PeriodeRepository {
     }
 
     fun deleteByPeriodeId(periodeId: UUID): Int = transaction {
-        PeriodeTable.deleteWhere { PeriodeTable.periodeId eq periodeId }
+        PerioderTable.deleteWhere { PerioderTable.periodeId eq periodeId }
     }
 }

@@ -9,31 +9,31 @@ data class PeriodeRow(
     val periodeId: UUID,
     val identitetsnummer: String,
     val startetTimestamp: Instant,
-    val avsluttetTimestamp: Instant?,
+    val avsluttetTimestamp: Instant? = null,
     val insertedTimestamp: Instant,
-    val updatedTimestamp: Instant?
+    val updatedTimestamp: Instant? = null,
 )
 
 data class InsertPeriodeRow(
     val periodeId: UUID,
     val identitetsnummer: String,
     val startetTimestamp: Instant,
-    val avsluttetTimestamp: Instant?
+    val avsluttetTimestamp: Instant? = null
 )
 
 data class UpdatePeriodeRow(
     val periodeId: UUID,
     val identitetsnummer: String,
-    val avsluttetTimestamp: Instant?
+    val avsluttetTimestamp: Instant? = null
 )
 
 fun ResultRow.asPeriodeRow(): PeriodeRow = PeriodeRow(
-    periodeId = this[PeriodeTable.periodeId],
-    identitetsnummer = this[PeriodeTable.identitetsnummer],
-    startetTimestamp = this[PeriodeTable.startetTimestamp],
-    avsluttetTimestamp = this[PeriodeTable.avsluttetTimestamp],
-    insertedTimestamp = this[PeriodeTable.insertedTimestamp],
-    updatedTimestamp = this[PeriodeTable.updatedTimestamp],
+    periodeId = this[PerioderTable.periodeId],
+    identitetsnummer = this[PerioderTable.identitetsnummer],
+    startetTimestamp = this[PerioderTable.startetTimestamp],
+    avsluttetTimestamp = this[PerioderTable.avsluttetTimestamp],
+    insertedTimestamp = this[PerioderTable.insertedTimestamp],
+    updatedTimestamp = this[PerioderTable.updatedTimestamp],
 )
 
 fun Periode.asInsertPeriodeRow(): InsertPeriodeRow = InsertPeriodeRow(

@@ -11,7 +11,8 @@ const val MIN_SIDE_VARSEL_CONFIG = "min_side_varsel_config.yaml"
 
 data class MinSideVarselConfig(
     val periodeAvsluttet: MinSideVarsel,
-    val bekreftelseTilgjengelig: MinSideVarsel
+    val bekreftelseTilgjengelig: MinSideVarsel,
+    val manueltVarsel: MinSideVarsel
 )
 
 data class MinSideVarsel(

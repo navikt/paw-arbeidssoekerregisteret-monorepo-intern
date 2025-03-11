@@ -29,3 +29,19 @@ bekreftelseTilgjengelig:
   eksterntVarsel:
     prefererteKanaler:
       - SMS
+
+manueltVarsel:
+  link: http://localhost:8080/minside
+  sensitivitet: SUBSTANTIAL
+  standardSpraak:
+    kode: nb
+  tekster:
+    - spraak:
+        kode: nb
+      tekst: Dette er en test av manuelt varsel fra NAV.
+    - spraak:
+        kode: en
+      tekst: This is a test of a manual notification from NAV.
+  eksterntVarsel:
+    prefererteKanaler:
+      - SMS

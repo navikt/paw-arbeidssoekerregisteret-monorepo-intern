@@ -15,7 +15,7 @@ data class VarselRow(
     val hendelseName: VarselEventName,
     val hendelseTimestamp: Instant,
     val insertedTimestamp: Instant,
-    val updatedTimestamp: Instant?
+    val updatedTimestamp: Instant? = null
 )
 
 data class InsertVarselRow(
@@ -36,15 +36,15 @@ data class UpdateVarselRow(
 )
 
 fun ResultRow.asVarselRow(): VarselRow = VarselRow(
-    periodeId = this[VarselTable.periodeId],
-    varselId = this[VarselTable.varselId],
-    varselKilde = this[VarselTable.varselKilde],
-    varselType = this[VarselTable.varselType],
-    varselStatus = this[VarselTable.varselStatus],
-    hendelseName = this[VarselTable.hendelseNavn],
-    hendelseTimestamp = this[VarselTable.hendelseTimestamp],
-    insertedTimestamp = this[VarselTable.insertedTimestamp],
-    updatedTimestamp = this[VarselTable.updatedTimestamp]
+    periodeId = this[VarslerTable.periodeId],
+    varselId = this[VarslerTable.varselId],
+    varselKilde = this[VarslerTable.varselKilde],
+    varselType = this[VarslerTable.varselType],
+    varselStatus = this[VarslerTable.varselStatus],
+    hendelseName = this[VarslerTable.hendelseNavn],
+    hendelseTimestamp = this[VarslerTable.hendelseTimestamp],
+    insertedTimestamp = this[VarslerTable.insertedTimestamp],
+    updatedTimestamp = this[VarslerTable.updatedTimestamp]
 )
 
 fun Periode.asInsertVarselRow() = InsertVarselRow(

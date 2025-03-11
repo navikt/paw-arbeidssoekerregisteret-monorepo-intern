@@ -4,15 +4,18 @@ import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import no.nav.paw.arbeidssoekerregisteret.config.KAFKA_TOPICS_CONFIG
-import no.nav.paw.arbeidssoekerregisteret.config.KafkaTopologyConfig
+import no.nav.paw.arbeidssoekerregisteret.config.APPLICATION_CONFIG
+import no.nav.paw.arbeidssoekerregisteret.config.ApplicationConfig
 import no.nav.paw.arbeidssoekerregisteret.config.MIN_SIDE_VARSEL_CONFIG
 import no.nav.paw.arbeidssoekerregisteret.config.MinSideVarselConfig
 import no.nav.paw.arbeidssoekerregisteret.config.SERVER_CONFIG
 import no.nav.paw.arbeidssoekerregisteret.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.model.VarselMeldingBygger
+import no.nav.paw.arbeidssoekerregisteret.repository.BestillingRepository
+import no.nav.paw.arbeidssoekerregisteret.repository.BestiltVarselRepository
 import no.nav.paw.arbeidssoekerregisteret.repository.PeriodeRepository
 import no.nav.paw.arbeidssoekerregisteret.repository.VarselRepository
+import no.nav.paw.arbeidssoekerregisteret.service.BestillingService
 import no.nav.paw.arbeidssoekerregisteret.service.VarselService
 import no.nav.paw.arbeidssoekerregisteret.topology.bekreftelseKafkaTopology
 import no.nav.paw.arbeidssoekerregisteret.topology.periodeKafkaTopology
@@ -28,10 +31,16 @@ import no.nav.paw.health.model.HealthStatus
 import no.nav.paw.health.model.LivenessHealthIndicator
 import no.nav.paw.health.model.ReadinessHealthIndicator
 import no.nav.paw.health.repository.HealthIndicatorRepository
+import no.nav.paw.kafka.config.KAFKA_CONFIG
 import no.nav.paw.kafka.config.KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG
 import no.nav.paw.kafka.config.KafkaConfig
+import no.nav.paw.kafka.factory.KafkaFactory
 import no.nav.paw.kafka.factory.KafkaStreamsFactory
+import no.nav.paw.security.authentication.config.SECURITY_CONFIG
+import no.nav.paw.security.authentication.config.SecurityConfig
+import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.common.serialization.Serdes
+import org.apache.kafka.common.serialization.StringSerializer
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
 import java.time.Duration
@@ -39,18 +48,25 @@ import javax.sql.DataSource
 
 data class ApplicationContext(
     val serverConfig: ServerConfig,
+    val applicationConfig: ApplicationConfig,
+    val securityConfig: SecurityConfig,
     val dataSource: DataSource,
     val prometheusMeterRegistry: PrometheusMeterRegistry,
     val healthIndicatorRepository: HealthIndicatorRepository,
+    val varselService: VarselService,
+    val bestillingService: BestillingService,
+    val kafkaProducerList: List<Producer<*, *>>,
     val kafkaStreamsList: List<KafkaStreams>,
-    val kafkaStreamsShutdownTimeout: Duration
+    val kafkaShutdownTimeout: Duration
 ) {
     companion object {
         fun build(): ApplicationContext {
             val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG)
+            val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG)
             val databaseConfig = loadNaisOrLocalConfiguration<DatabaseConfig>(DATABASE_CONFIG)
-            val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG)
-            val kafkaTopicsConfig = loadNaisOrLocalConfiguration<KafkaTopologyConfig>(KAFKA_TOPICS_CONFIG)
+            val securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>(SECURITY_CONFIG)
+            val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
+            val kafkaStreamsConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG)
             val minSideVarselConfig = loadNaisOrLocalConfiguration<MinSideVarselConfig>(MIN_SIDE_VARSEL_CONFIG)
 
             val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
@@ -59,8 +75,17 @@ data class ApplicationContext(
             val dataSource = createHikariDataSource(databaseConfig)
             val periodeRepository = PeriodeRepository()
             val varselRepository = VarselRepository()
+            val bestillingRepository = BestillingRepository()
+            val bestiltVarselRepository = BestiltVarselRepository()
 
             val varselMeldingBygger = VarselMeldingBygger(serverConfig.runtimeEnvironment, minSideVarselConfig)
+
+            val kafkaFactory = KafkaFactory(kafkaConfig)
+            val varselKafkaProducer = kafkaFactory.createProducer<String, String>(
+                clientId = applicationConfig.varselProducerId,
+                keySerializer = StringSerializer::class,
+                valueSerializer = StringSerializer::class
+            )
 
             val varselService = VarselService(
                 meterRegistry = prometheusMeterRegistry,
@@ -68,27 +93,37 @@ data class ApplicationContext(
                 varselRepository = varselRepository,
                 varselMeldingBygger = varselMeldingBygger
             )
+            val bestillingService = BestillingService(
+                serverConfig = serverConfig,
+                applicationConfig = applicationConfig,
+                meterRegistry = prometheusMeterRegistry,
+                bestillingRepository = bestillingRepository,
+                bestiltVarselRepository = bestiltVarselRepository,
+                varselRepository = varselRepository,
+                varselKafkaProducer = varselKafkaProducer,
+                varselMeldingBygger = varselMeldingBygger
+            )
 
             val periodeKafkaStreams = buildPeriodeKafkaStreams(
                 serverConfig = serverConfig,
-                kafkaConfig = kafkaConfig,
-                kafkaTopicsConfig = kafkaTopicsConfig,
+                applicationConfig = applicationConfig,
+                kafkaConfig = kafkaStreamsConfig,
                 meterRegistry = prometheusMeterRegistry,
                 healthIndicatorRepository = healthIndicatorRepository,
                 varselService = varselService
             )
             val bekreftelseKafkaStreams = buildBekreftelseKafkaStreams(
                 serverConfig = serverConfig,
-                kafkaConfig = kafkaConfig,
-                kafkaTopicsConfig = kafkaTopicsConfig,
+                applicationConfig = applicationConfig,
+                kafkaConfig = kafkaStreamsConfig,
                 meterRegistry = prometheusMeterRegistry,
                 healthIndicatorRepository = healthIndicatorRepository,
                 varselService = varselService
             )
             val varselHendelseKafkaStreams = buildVarselHendelseKafkaStreams(
                 serverConfig = serverConfig,
-                kafkaConfig = kafkaConfig,
-                kafkaTopologyConfig = kafkaTopicsConfig,
+                applicationConfig = applicationConfig,
+                kafkaConfig = kafkaStreamsConfig,
                 meterRegistry = prometheusMeterRegistry,
                 healthIndicatorRepository = healthIndicatorRepository,
                 varselService = varselService
@@ -96,15 +131,20 @@ data class ApplicationContext(
 
             return ApplicationContext(
                 serverConfig = serverConfig,
+                applicationConfig = applicationConfig,
+                securityConfig = securityConfig,
                 dataSource = dataSource,
                 prometheusMeterRegistry = prometheusMeterRegistry,
                 healthIndicatorRepository = healthIndicatorRepository,
+                varselService = varselService,
+                bestillingService = bestillingService,
+                kafkaProducerList = listOf(varselKafkaProducer),
                 kafkaStreamsList = listOf(
                     periodeKafkaStreams,
                     bekreftelseKafkaStreams,
                     varselHendelseKafkaStreams
                 ),
-                kafkaStreamsShutdownTimeout = kafkaTopicsConfig.shutdownTimeout
+                kafkaShutdownTimeout = applicationConfig.shutdownTimeout
             )
         }
     }
@@ -112,8 +152,8 @@ data class ApplicationContext(
 
 private fun buildPeriodeKafkaStreams(
     serverConfig: ServerConfig,
+    applicationConfig: ApplicationConfig,
     kafkaConfig: KafkaConfig,
-    kafkaTopicsConfig: KafkaTopologyConfig,
     meterRegistry: MeterRegistry,
     healthIndicatorRepository: HealthIndicatorRepository,
     varselService: VarselService
@@ -121,11 +161,11 @@ private fun buildPeriodeKafkaStreams(
     val kafkaTopology = StreamsBuilder()
         .periodeKafkaTopology(
             runtimeEnvironment = serverConfig.runtimeEnvironment,
-            kafkaTopicsConfig = kafkaTopicsConfig,
+            kafkaTopicsConfig = applicationConfig,
             meterRegistry = meterRegistry,
             varselService = varselService
         ).build()
-    val kafkaStreamsFactory = KafkaStreamsFactory(kafkaTopicsConfig.periodeStreamSuffix, kafkaConfig)
+    val kafkaStreamsFactory = KafkaStreamsFactory(applicationConfig.periodeStreamSuffix, kafkaConfig)
         .withDefaultKeySerde(Serdes.Long()::class)
         .withDefaultValueSerde(SpecificAvroSerde::class)
         .withExactlyOnce()
@@ -141,8 +181,8 @@ private fun buildPeriodeKafkaStreams(
 
 private fun buildBekreftelseKafkaStreams(
     serverConfig: ServerConfig,
+    applicationConfig: ApplicationConfig,
     kafkaConfig: KafkaConfig,
-    kafkaTopicsConfig: KafkaTopologyConfig,
     meterRegistry: MeterRegistry,
     healthIndicatorRepository: HealthIndicatorRepository,
     varselService: VarselService
@@ -150,11 +190,11 @@ private fun buildBekreftelseKafkaStreams(
     val kafkaTopology = StreamsBuilder()
         .bekreftelseKafkaTopology(
             runtimeEnvironment = serverConfig.runtimeEnvironment,
-            kafkaTopicsConfig = kafkaTopicsConfig,
+            kafkaTopicsConfig = applicationConfig,
             meterRegistry = meterRegistry,
             varselService = varselService
         ).build()
-    val kafkaStreamsFactory = KafkaStreamsFactory(kafkaTopicsConfig.bekreftelseStreamSuffix, kafkaConfig)
+    val kafkaStreamsFactory = KafkaStreamsFactory(applicationConfig.bekreftelseStreamSuffix, kafkaConfig)
         .withDefaultKeySerde(Serdes.Long()::class)
         .withDefaultValueSerde(SpecificAvroSerde::class)
         .withExactlyOnce()
@@ -170,8 +210,8 @@ private fun buildBekreftelseKafkaStreams(
 
 private fun buildVarselHendelseKafkaStreams(
     serverConfig: ServerConfig,
+    applicationConfig: ApplicationConfig,
     kafkaConfig: KafkaConfig,
-    kafkaTopologyConfig: KafkaTopologyConfig,
     meterRegistry: MeterRegistry,
     healthIndicatorRepository: HealthIndicatorRepository,
     varselService: VarselService
@@ -179,12 +219,12 @@ private fun buildVarselHendelseKafkaStreams(
     val kafkaTopology = StreamsBuilder()
         .varselHendelserKafkaTopology(
             runtimeEnvironment = serverConfig.runtimeEnvironment,
-            kafkaTopicsConfig = kafkaTopologyConfig,
+            kafkaTopicsConfig = applicationConfig,
             meterRegistry = meterRegistry,
             varselService = varselService
         )
         .build()
-    val kafkaStreamsFactory = KafkaStreamsFactory(kafkaTopologyConfig.varselHendelseStreamSuffix, kafkaConfig)
+    val kafkaStreamsFactory = KafkaStreamsFactory(applicationConfig.varselHendelseStreamSuffix, kafkaConfig)
         .withDefaultKeySerde(Serdes.String()::class)
         .withDefaultValueSerde(VarselHendelseJsonSerde::class)
     return KafkaStreams(kafkaTopology, kafkaStreamsFactory.properties)

@@ -7,11 +7,16 @@ import io.ktor.server.netty.Netty
 import io.micrometer.core.instrument.binder.kafka.KafkaStreamsMetrics
 import no.nav.paw.arbeidssoekerregisteret.context.ApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.plugin.configureRouting
+import no.nav.paw.arbeidssoekerregisteret.plugin.installScheduledTaskPlugin
 import no.nav.paw.config.env.appNameOrDefaultForLocal
 import no.nav.paw.database.plugin.installDatabasePlugin
+import no.nav.paw.error.plugin.installErrorHandlingPlugin
 import no.nav.paw.kafka.plugin.installKafkaStreamsPlugins
 import no.nav.paw.logging.logger.buildApplicationLogger
+import no.nav.paw.logging.plugin.installLoggingPlugin
 import no.nav.paw.metrics.plugin.installMetricsPlugin
+import no.nav.paw.security.authentication.plugin.installAuthenticationPlugin
+import no.nav.paw.serialization.plugin.installContentNegotiationPlugin
 
 fun main() {
     val logger = buildApplicationLogger
@@ -36,10 +41,15 @@ fun main() {
 
 fun Application.module(applicationContext: ApplicationContext) {
     with(applicationContext) {
+        installLoggingPlugin()
+        installContentNegotiationPlugin()
+        installErrorHandlingPlugin()
         val additionalMeterBinders = kafkaStreamsList.map { KafkaStreamsMetrics(it) }
         installMetricsPlugin(prometheusMeterRegistry, additionalMeterBinders)
+        installAuthenticationPlugin(securityConfig.authProviders)
         installDatabasePlugin(dataSource)
-        installKafkaStreamsPlugins(kafkaStreamsList, kafkaStreamsShutdownTimeout)
-        configureRouting(healthIndicatorRepository, prometheusMeterRegistry)
+        installKafkaStreamsPlugins(kafkaStreamsList, kafkaShutdownTimeout)
+        installScheduledTaskPlugin(applicationConfig, bestillingService)
+        configureRouting(healthIndicatorRepository, prometheusMeterRegistry, varselService, bestillingService)
     }
 }
