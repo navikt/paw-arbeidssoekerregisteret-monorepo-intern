@@ -3,6 +3,7 @@ package no.nav.paw.arbeidssokerregisteret.app.metrics
 import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.Tags
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import no.nav.paw.arbeidssokerregisteret.app.streamLogger
 import no.nav.paw.arbeidssokerregisteret.profilering.ModuleInfo
 import no.nav.paw.arbeidssokerregisteret.profilering.getModuleInfo
 import java.util.concurrent.atomic.AtomicLong
@@ -23,8 +24,10 @@ fun PrometheusMeterRegistry.registerAvroSchemaGauges(metricName: String, info: M
         ),
         buildTime
     ) { bt ->
+        streamLogger.info("AvroSchemaGauge for $metricName: $bt")
         (System.currentTimeMillis() - bt.get()).toDouble()
     }
+    streamLogger.info("Registerte AvroSchemaGauge {} => {}", metricName, info)
 }
 
 fun PrometheusMeterRegistry.registerMainAvroSchemaGauges(): ModuleInfo? =
