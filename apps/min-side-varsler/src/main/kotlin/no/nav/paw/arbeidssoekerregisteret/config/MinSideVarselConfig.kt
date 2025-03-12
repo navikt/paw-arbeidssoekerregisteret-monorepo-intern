@@ -33,19 +33,15 @@ enum class VarselSensitivitet {
 }
 
 data class EksterntVarsel(
-    val prefererteKanaler: List<EksternVarselKanal>,
+    val preferertKanal: EksternVarselKanal,
     val smsTekst: String? = null,
     val epostTittel: String? = null,
     val epostTekst: String? = null,
     val kanBatches: Boolean = true
-) {
-    init {
-        require(prefererteKanaler.isNotEmpty()) { "Ingen kanaler konfigurert" }
-    }
-}
+)
 
 enum class EksternVarselKanal {
-    SMS, EPOST
+    SMS, EPOST, BETINGET_SMS
 }
 
 data class Spraakkode(
@@ -72,12 +68,13 @@ fun VarselSensitivitet.asSensitivitet() = when (this) {
 fun EksternVarselKanal.asEksternKanal() = when (this) {
     EksternVarselKanal.SMS -> EksternKanal.SMS
     EksternVarselKanal.EPOST -> EksternKanal.EPOST
+    EksternVarselKanal.BETINGET_SMS -> EksternKanal.BETINGET_SMS
 }
 
 fun EksterntVarsel.asEksternVarslingBestilling(
     utsettSendingTil: Instant? = null,
 ) = EksternVarslingBestilling(
-    prefererteKanaler = this.prefererteKanaler.map { it.asEksternKanal() },
+    prefererteKanaler = listOf(this.preferertKanal.asEksternKanal()),
     smsVarslingstekst = this.smsTekst,
     epostVarslingstittel = this.epostTittel,
     epostVarslingstekst = this.epostTekst,

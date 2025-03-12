@@ -53,7 +53,6 @@ include(
     "apps:kafka-key-maintenance",
     "apps:bekreftelse-tjeneste",
     "apps:bekreftelse-api",
-    "apps:bekreftelse-min-side-oppgaver",
     "apps:bekreftelse-utgang",
     "apps:bekreftelse-hendelsefilter",
     "apps:tilgangskontroll",

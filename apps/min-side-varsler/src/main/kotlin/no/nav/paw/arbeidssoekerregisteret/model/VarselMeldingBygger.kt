@@ -34,7 +34,7 @@ class VarselMeldingBygger(
             sensitivitet = minSideVarsel.sensitivitet.asSensitivitet(),
             link = minSideVarsel.link,
             tekster = minSideVarsel.asTekster(),
-            eksternVarsling = minSideVarsel.eksterntVarsel?.asEksternVarslingBestilling()
+            eksterntVarsel = minSideVarsel.eksterntVarsel?.asEksternVarslingBestilling()
         )
     }
 
@@ -50,7 +50,7 @@ class VarselMeldingBygger(
             sensitivitet = minSideVarsel.sensitivitet.asSensitivitet(),
             link = minSideVarsel.link,
             tekster = minSideVarsel.asTekster(),
-            eksternVarsling = minSideVarsel.eksterntVarsel?.asEksternVarslingBestilling(utsettEksternVarslingTil)
+            eksterntVarsel = minSideVarsel.eksterntVarsel?.asEksternVarslingBestilling(utsettEksternVarslingTil)
         )
     }
 
@@ -65,7 +65,7 @@ class VarselMeldingBygger(
             sensitivitet = minSideVarsel.sensitivitet.asSensitivitet(),
             link = minSideVarsel.link,
             tekster = minSideVarsel.asTekster(),
-            eksternVarsling = minSideVarsel.eksterntVarsel?.asEksternVarslingBestilling()
+            eksterntVarsel = minSideVarsel.eksterntVarsel?.asEksternVarslingBestilling()
         )
     }
 
@@ -75,20 +75,18 @@ class VarselMeldingBygger(
         sensitivitet: Sensitivitet,
         link: URI? = null,
         tekster: List<Tekst>,
-        eksternVarsling: EksternVarslingBestilling? = null,
-        gjelderTilTidspunkt: Instant? = null
-    ): OpprettBeskjed =
-        VarselActionBuilder.opprett {
-            this.varselId = varselId.toString()
-            this.ident = identitetsnummer
-            this.sensitivitet = sensitivitet
-            this.type = Varseltype.Beskjed
-            this.link = link?.toString()
-            this.produsent = runtimeEnvironment.asProdusent()
-            this.tekster.addAll(tekster)
-            this.eksternVarsling = eksternVarsling
-            this.aktivFremTil = gjelderTilTidspunkt?.atZone(ZoneId.systemDefault())
-        }.let { OpprettBeskjed(varselId, it) }
+        eksterntVarsel: EksternVarslingBestilling? = null,
+        aktivFremTil: Instant? = null
+    ): OpprettBeskjed = opprettVarsel(
+        varselId = varselId,
+        identitetsnummer = identitetsnummer,
+        sensitivitet = sensitivitet,
+        type = Varseltype.Beskjed,
+        link = link,
+        tekster = tekster,
+        eksterntVarsel = eksterntVarsel,
+        aktivFremTil = aktivFremTil
+    ).let { OpprettBeskjed(varselId, it) }
 
     fun opprettOppgave(
         varselId: UUID,
@@ -96,20 +94,46 @@ class VarselMeldingBygger(
         sensitivitet: Sensitivitet,
         link: URI? = null,
         tekster: List<Tekst>,
-        eksternVarsling: EksternVarslingBestilling? = null,
-        gjelderTilTidspunkt: Instant? = null
-    ): OpprettOppgave =
-        VarselActionBuilder.opprett {
-            this.varselId = varselId.toString()
-            this.ident = identitetsnummer
-            this.sensitivitet = sensitivitet
-            this.type = Varseltype.Oppgave
-            this.link = link?.toString()
-            this.produsent = runtimeEnvironment.asProdusent()
-            this.tekster.addAll(tekster)
-            this.eksternVarsling = eksternVarsling
-            this.aktivFremTil = gjelderTilTidspunkt?.atZone(ZoneId.systemDefault())
-        }.let { OpprettOppgave(varselId, it) }
+        eksterntVarsel: EksternVarslingBestilling? = null,
+        aktivFremTil: Instant? = null
+    ): OpprettOppgave = opprettVarsel(
+        varselId = varselId,
+        identitetsnummer = identitetsnummer,
+        sensitivitet = sensitivitet,
+        type = Varseltype.Oppgave,
+        link = link,
+        tekster = tekster,
+        eksterntVarsel = eksterntVarsel,
+        aktivFremTil = aktivFremTil
+    ).let { OpprettOppgave(varselId, it) }
+
+    private fun opprettVarsel(
+        varselId: UUID,
+        identitetsnummer: String,
+        sensitivitet: Sensitivitet,
+        type: Varseltype,
+        link: URI? = null,
+        tekster: List<Tekst>,
+        eksterntVarsel: EksternVarslingBestilling? = null,
+        aktivFremTil: Instant? = null
+    ): String = VarselActionBuilder.opprett {
+        this.varselId = varselId.toString()
+        this.ident = identitetsnummer
+        this.sensitivitet = sensitivitet
+        this.type = type
+        this.link = link?.toString()
+        this.produsent = runtimeEnvironment.asProdusent()
+        this.tekster.addAll(tekster)
+        this.eksternVarsling {
+            preferertKanal = eksterntVarsel?.prefererteKanaler?.first()
+            smsVarslingstekst = eksterntVarsel?.smsVarslingstekst
+            epostVarslingstittel = eksterntVarsel?.epostVarslingstittel
+            epostVarslingstekst = eksterntVarsel?.epostVarslingstekst
+            kanBatches = eksterntVarsel?.kanBatches
+            utsettSendingTil = eksterntVarsel?.utsettSendingTil
+        }
+        this.aktivFremTil = aktivFremTil?.atZone(ZoneId.systemDefault())
+    }
 
     fun avsluttVarsel(varselId: UUID): AvsluttVarsel =
         VarselActionBuilder.inaktiver {
