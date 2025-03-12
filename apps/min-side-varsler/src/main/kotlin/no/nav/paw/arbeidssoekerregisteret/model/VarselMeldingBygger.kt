@@ -14,7 +14,6 @@ import no.nav.tms.varsel.action.Sensitivitet
 import no.nav.tms.varsel.action.Tekst
 import no.nav.tms.varsel.action.Varseltype
 import no.nav.tms.varsel.builder.VarselActionBuilder
-import java.net.URI
 import java.time.Instant
 import java.time.ZoneId
 import java.util.*
@@ -73,7 +72,7 @@ class VarselMeldingBygger(
         varselId: UUID,
         identitetsnummer: String,
         sensitivitet: Sensitivitet,
-        link: URI? = null,
+        link: String? = null,
         tekster: List<Tekst>,
         eksterntVarsel: EksternVarslingBestilling? = null,
         aktivFremTil: Instant? = null
@@ -92,7 +91,7 @@ class VarselMeldingBygger(
         varselId: UUID,
         identitetsnummer: String,
         sensitivitet: Sensitivitet,
-        link: URI? = null,
+        link: String? = null,
         tekster: List<Tekst>,
         eksterntVarsel: EksternVarslingBestilling? = null,
         aktivFremTil: Instant? = null
@@ -112,7 +111,7 @@ class VarselMeldingBygger(
         identitetsnummer: String,
         sensitivitet: Sensitivitet,
         type: Varseltype,
-        link: URI? = null,
+        link: String? = null,
         tekster: List<Tekst>,
         eksterntVarsel: EksternVarslingBestilling? = null,
         aktivFremTil: Instant? = null
@@ -121,7 +120,7 @@ class VarselMeldingBygger(
         this.ident = identitetsnummer
         this.sensitivitet = sensitivitet
         this.type = type
-        this.link = link?.toString()
+        this.link = if (link.isNullOrBlank()) null else link
         this.produsent = runtimeEnvironment.asProdusent()
         this.tekster.addAll(tekster)
         this.eksternVarsling {

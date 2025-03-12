@@ -97,7 +97,6 @@ jobs:
 #      - name: Deploy to GCP
 #        uses: nais/deploy/actions/deploy@v2
 #        env:
-#          TEAM: paw
 #          CLUSTER: prod-gcp
 #          RESOURCE: ./apps/${{ env.MODULE }}/nais/nais-prod.yaml
 #          VAR: image=${{ needs.build.outputs.image }},kafka=nav-prod

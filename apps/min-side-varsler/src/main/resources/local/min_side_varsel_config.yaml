@@ -48,10 +48,10 @@ manueltVarsel:
   tekster:
     - spraak:
         kode: nb
-      tekst: Endring i meldekort for arbeidssøkere fra 20. mars.
+      tekst: Endringer for deg som sender meldekort fra 20. mars.
     - spraak:
         kode: nn
-      tekst: Endring i meldekort for arbeidssøkere fra 20. mars. [nn]
+      tekst: Endring i meldekort for arbeidssøkjarar frå 20. mars.
     - spraak:
         kode: en
-      tekst: Endring i meldekort for arbeidssøkere fra 20. mars. [en]
+      tekst: Changes in employment status form for job seekers from March 20th.

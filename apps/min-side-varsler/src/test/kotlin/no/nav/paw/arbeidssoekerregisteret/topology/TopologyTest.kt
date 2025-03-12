@@ -9,7 +9,6 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.beInstanceOf
 import no.nav.paw.arbeidssoekerregisteret.context.KafkaTestContext
-import no.nav.paw.arbeidssoekerregisteret.context.TestContext
 import no.nav.paw.arbeidssoekerregisteret.exception.PeriodeIkkeFunnetException
 import no.nav.paw.arbeidssoekerregisteret.model.VarselEventName
 import no.nav.paw.arbeidssoekerregisteret.model.VarselKilde
@@ -74,6 +73,9 @@ class TopologyTest : FreeSpec({
                     varselRow1?.varselType shouldBe VarselType.BESKJED
                     varselRow1?.hendelseName shouldBe VarselEventName.UKJENT
                     varselRow1?.varselStatus shouldBe VarselStatus.UKJENT
+
+                    periodeTopic.pipeInput(lukketPeriode.asRecord(key))
+                    periodeVarselTopic.isEmpty shouldBe true
                 }
 
                 "Motsatt rekkefølge med lukket før åpen periode" {

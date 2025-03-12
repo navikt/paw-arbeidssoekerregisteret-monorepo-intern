@@ -9,6 +9,14 @@ import java.time.ZoneId
 
 const val MIN_SIDE_VARSEL_CONFIG = "min_side_varsel_config.yaml"
 
+private fun String?.isURI(): Boolean {
+    return try {
+        this.isNullOrBlank() || URI.create(this) != null
+    } catch (e: IllegalArgumentException) {
+        false
+    }
+}
+
 data class MinSideVarselConfig(
     val periodeAvsluttet: MinSideVarsel,
     val bekreftelseTilgjengelig: MinSideVarsel,
@@ -16,13 +24,14 @@ data class MinSideVarselConfig(
 )
 
 data class MinSideVarsel(
-    val link: URI,
+    val link: String? = null,
     val sensitivitet: VarselSensitivitet,
     val standardSpraak: Spraakkode,
     val tekster: List<VarselTekst>,
     val eksterntVarsel: EksterntVarsel?
 ) {
     init {
+        require(link.isURI()) { "Link er ikke en URI" }
         require(tekster.isNotEmpty()) { "Ingen tekster konfigurert" }
     }
 }

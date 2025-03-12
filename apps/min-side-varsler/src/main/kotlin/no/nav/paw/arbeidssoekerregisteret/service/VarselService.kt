@@ -78,18 +78,28 @@ class VarselService(
 
             if (periode.avsluttet != null) {
                 if (applicationConfig.periodeVarslerEnabled) {
-                    MDC.put("x_action", "insert")
-                    logger.debug(
-                        "Oppretter og bestiller varsel for avsluttet periode {}",
-                        periode.id
-                    )
-                    val insertVarselRow = periode.asInsertVarselRow()
-                    varselRepository.insert(insertVarselRow)
-                    val varsel = varselMeldingBygger.opprettPeriodeAvsluttetBeskjed(
-                        varselId = periode.id,
-                        identitetsnummer = periode.identitetsnummer
-                    )
-                    listOf(varsel)
+                    val varselRow = varselRepository.findByVarselId(periode.id)
+                    if (varselRow != null) {
+                        MDC.put("x_action", "ignore")
+                        logger.debug(
+                            "Varsel eksisterer allerede for avsluttet periode {}",
+                            periode.id
+                        )
+                        emptyList()
+                    } else {
+                        MDC.put("x_action", "insert")
+                        logger.debug(
+                            "Oppretter og bestiller varsel for avsluttet periode {}",
+                            periode.id
+                        )
+                        val insertVarselRow = periode.asInsertVarselRow()
+                        varselRepository.insert(insertVarselRow)
+                        val varsel = varselMeldingBygger.opprettPeriodeAvsluttetBeskjed(
+                            varselId = periode.id,
+                            identitetsnummer = periode.identitetsnummer
+                        )
+                        listOf(varsel)
+                    }
                 } else {
                     MDC.put("x_action", "ignore")
                     logger.warn("Utsendelse av varsler ved avsluttet periode er deaktivert")
