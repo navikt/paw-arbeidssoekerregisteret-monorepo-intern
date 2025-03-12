@@ -15,6 +15,7 @@ data class KafkaTopologyConfig(
 )
 
 data class BekreftelseKlient(
+    val versjon: Int,
     val bekreftelsesloesning: String,
     val paaVegneAvSourceTopic: String,
     val bekreftelseSourceTopic: String
@@ -28,10 +29,10 @@ data class BekreftelseKlient(
 }
 
 val BekreftelseKlient.bekreftelseApplicationIdSuffix: ApplicationIdSuffix
-    get() = ApplicationIdSuffix("bekreftelse-${bekreftelsesloesning}")
+    get() = ApplicationIdSuffix("bekreftelse-${bekreftelsesloesning}-${versjon}")
 
 val BekreftelseKlient.bekreftelsePaaVegneAvApplicationIdSuffix: ApplicationIdSuffix
-    get() = ApplicationIdSuffix("bekreftelse-paavegneav-${bekreftelsesloesning}")
+    get() = ApplicationIdSuffix("bekreftelse-paavegneav-${bekreftelsesloesning}-${versjon}")
 
 @JvmInline
 value class ApplicationIdSuffix(val value: String)

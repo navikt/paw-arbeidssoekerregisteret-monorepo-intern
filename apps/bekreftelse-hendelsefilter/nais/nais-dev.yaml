@@ -10,17 +10,17 @@ spec:
   port: 8080
   env:
     - name: KAFKA_BEKREFTELSE_TARGET_TOPIC
-      value: "paw.arbeidssoker-bekreftelse-beta-v3"
+      value: "paw.arbeidssoker-bekreftelse-v1"
     - name: KAFKA_BEKREFTELSE_PAAVEGNEAV_TARGET_TOPIC
-      value: "paw.arbeidssoker-bekreftelse-paavegneav-beta-v2"
+      value: "paw.arbeidssoker-bekreftelse-paavegneav-v1"
     - name: KAFKA_TEAMDAGPENGER_BEKREFTELSE_SOURCE_TOPIC
-      value: "paw.arbeidssoker-bekreftelse-teamdagpenger-beta-v1"
+      value: "paw.arbeidssoker-bekreftelse-teamdagpenger-v1"
     - name: KAFKA_TEAMDAGPENGER_BEKREFTELSE_PAAVEGNEAV_SOURCE_TOPIC
-      value: "paw.arbeidssoker-bekreftelse-paavegneav-teamdagpenger-beta-v1"
+      value: "paw.arbeidssoker-bekreftelse-paavegneav-teamdagpenger-v1"
     - name: KAFKA_FRISKMELDT_TIL_ARBEIDSFORMIDLING_BEKREFTELSE_SOURCE_TOPIC
-      value: "paw.arbeidssoker-bekreftelse-friskmeldt-til-arbeidsformidling-beta-v1"
+      value: "paw.arbeidssoker-bekreftelse-friskmeldt-til-arbeidsformidling-v1"
     - name: KAFKA_FRISKMELDT_TIL_ARBEIDSFORMIDLING_BEKREFTELSE_PAAVEGNEAV_SOURCE_TOPIC
-      value: "paw.arbeidssoker-bekreftelse-paavegneav-friskmeldt-til-arbeidsformidling-beta-v1"
+      value: "paw.arbeidssoker-bekreftelse-paavegneav-friskmeldt-til-arbeidsformidling-v1"
   replicas:
     min: 1
     max: 1

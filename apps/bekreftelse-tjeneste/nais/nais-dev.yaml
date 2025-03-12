@@ -10,15 +10,15 @@ spec:
   port: 8080
   env:
     - name: KAFKA_STREAMS_ID_SUFFIX
-      value: "v4"
+      value: "v5"
     - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_TOPIC
-      value: "paw.arbeidssoker-bekreftelse-beta-v3"
+      value: "paw.arbeidssoker-bekreftelse-v1"
     - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_HENDELSELOGG_TOPIC
-      value: "paw.arbeidssoker-bekreftelse-hendelseslogg-beta-v2"
+      value: "paw.arbeidssoker-bekreftelse-hendelseslogg-v1"
     - name: KAFKA_PAW_ARBEIDSSOKERPERIODER_TOPIC
       value: "paw.arbeidssokerperioder-v1"
     - name: KAFKA_PAW_BEKREFTELSE_PAA_VEGNE_AV_TOPIC
-      value: "paw.arbeidssoker-bekreftelse-paavegneav-beta-v2"
+      value: "paw.arbeidssoker-bekreftelse-paavegneav-v1"
     - name: KAFKA_PUNCTUATOR_INTERVAL
       value: "PT1M"
     - name: BEKREFTELSE_MIGRERINGSTIDSPUNKT
