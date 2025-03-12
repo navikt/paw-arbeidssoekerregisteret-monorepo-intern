@@ -37,9 +37,9 @@ const val kafkaKonfigurasjonsfil = "kafka_konfigurasjon.toml"
 const val applicationLogicConfigFile = "application_logic_config.toml"
 
 typealias StreamHendelse = Hendelse
-val streamLogger = LoggerFactory.getLogger("App")
 
 fun main() {
+    val streamLogger = LoggerFactory.getLogger("App")
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val moduleInfo = prometheusMeterRegistry.registerMainAvroSchemaGauges()
     val kafkaKonfigurasjon = loadNaisOrLocalConfiguration<KafkaKonfigurasjon>(kafkaKonfigurasjonsfil)
