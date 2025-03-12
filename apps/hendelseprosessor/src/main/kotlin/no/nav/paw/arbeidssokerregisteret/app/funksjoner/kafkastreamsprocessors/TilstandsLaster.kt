@@ -76,9 +76,8 @@ class TilstandsLaster(
     }
 
     override fun close() {
-        keepGoing.set(false)
         super.close()
-        tilstandsDb?.close()
+        keepGoing.set(false)
         tilstandsDb = null
         context = null
     }

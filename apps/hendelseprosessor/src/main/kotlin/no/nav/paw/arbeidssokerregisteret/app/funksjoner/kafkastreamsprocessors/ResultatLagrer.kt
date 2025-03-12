@@ -52,7 +52,6 @@ class ResultatLagrer(
 
     override fun close() {
         super.close()
-        tilstandsDb?.close()
         tilstandsDb = null
         context = null
     }
