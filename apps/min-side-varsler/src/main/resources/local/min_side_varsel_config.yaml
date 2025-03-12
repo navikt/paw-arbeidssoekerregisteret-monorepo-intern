@@ -12,7 +12,7 @@ periodeAvsluttet:
       tekst: Du er ikke lenger registrert som arbeidssøker. [nn]
     - spraak:
         kode: en
-      tekst: Du er ikke lenger registrert som arbeidssøker. [en]
+      tekst: You are no longer registered as job seeker
   eksterntVarsel:
     preferertKanal: BETINGET_SMS
     smsTekst: Du er ikke lengre registrert som arbeidssøker. Hilsen Nav

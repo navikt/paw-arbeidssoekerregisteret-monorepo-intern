@@ -13,6 +13,7 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.config.env.RuntimeEnvironment
 import no.nav.paw.config.env.namespaceOrDefaultForLocal
+import no.nav.paw.logging.logger.buildApplicationLogger
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.StreamsBuilder
@@ -20,13 +21,15 @@ import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.Produced
 import org.apache.kafka.streams.kstream.ValueJoiner
 
+private val logger = buildApplicationLogger
+
 fun StreamsBuilder.periodeKafkaTopology(
     runtimeEnvironment: RuntimeEnvironment,
-    kafkaTopicsConfig: ApplicationConfig,
+    applicationConfig: ApplicationConfig,
     meterRegistry: MeterRegistry,
     varselService: VarselService
 ): StreamsBuilder {
-    with(kafkaTopicsConfig) {
+    with(applicationConfig) {
         stream<Long, Periode>(periodeTopic)
             .peek { _, periode -> meterRegistry.periodeCounter("read", periode) }
             .flatMapValues { _, periode -> varselService.mottaPeriode(periode) }
@@ -45,11 +48,11 @@ class BekreftelseValueJoiner : ValueJoiner<BekreftelseHendelse, Periode, Pair<Pe
 
 fun StreamsBuilder.bekreftelseKafkaTopology(
     runtimeEnvironment: RuntimeEnvironment,
-    kafkaTopicsConfig: ApplicationConfig,
+    applicationConfig: ApplicationConfig,
     meterRegistry: MeterRegistry,
     varselService: VarselService
 ): StreamsBuilder {
-    with(kafkaTopicsConfig) {
+    with(applicationConfig) {
         val periodeTable = table<Long, Periode>(periodeTopic)
         val bekreftelseStream = stream(
             bekreftelseHendelseTopic,
@@ -70,11 +73,11 @@ fun StreamsBuilder.bekreftelseKafkaTopology(
 
 fun StreamsBuilder.varselHendelserKafkaTopology(
     runtimeEnvironment: RuntimeEnvironment,
-    kafkaTopicsConfig: ApplicationConfig,
+    applicationConfig: ApplicationConfig,
     meterRegistry: MeterRegistry,
     varselService: VarselService
 ): StreamsBuilder {
-    with(kafkaTopicsConfig) {
+    with(applicationConfig) {
         stream(tmsVarselHendelseTopic, Consumed.with(Serdes.String(), VarselHendelseJsonSerde()))
             .filter { _, hendelse -> hendelse.namespace == runtimeEnvironment.namespaceOrDefaultForLocal() }
             .peek { _, hendelse -> meterRegistry.varselHendelseCounter("read", hendelse) }

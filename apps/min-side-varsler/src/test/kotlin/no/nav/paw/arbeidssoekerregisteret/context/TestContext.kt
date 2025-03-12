@@ -93,7 +93,7 @@ open class TestContext(
         bestillingService = bestillingService,
         kafkaProducerList = listOf(),
         kafkaStreamsList = listOf(),
-        kafkaShutdownTimeout = applicationConfig.shutdownTimeout
+        kafkaShutdownTimeout = applicationConfig.kafkaShutdownTimeout
     )
 
     fun ApplicationTestBuilder.configureTestApplication() {
@@ -158,6 +158,7 @@ open class TestContext(
                 minSideVarselConfig = loadNaisOrLocalConfiguration<MinSideVarselConfig>(MIN_SIDE_VARSEL_CONFIG)
             )
             val varselService = VarselService(
+                applicationConfig = applicationConfig,
                 meterRegistry = prometheusMeterRegistry,
                 periodeRepository = periodeRepository,
                 varselRepository = varselRepository,

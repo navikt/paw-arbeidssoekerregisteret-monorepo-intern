@@ -1,3 +1,6 @@
+periodeVarslerEnabled = "${PERIODE_VARSLER_ENABLED}"
+bekreftelseVarslerEnabled = "${BEKREFTELSE_VARSLER_ENABLED}"
+manuelleVarslerEnabled = "${MANUELLE_VARSLER_ENABLED}"
 varselProducerId = "${NAIS_APP_NAME}-varsel-producer-v1"
 periodeStreamSuffix = "${KAFKA_PERIODE_STREAM_SUFFIX}"
 bekreftelseStreamSuffix = "${KAFKA_BEKREFTELSE_STREAM_SUFFIX}"

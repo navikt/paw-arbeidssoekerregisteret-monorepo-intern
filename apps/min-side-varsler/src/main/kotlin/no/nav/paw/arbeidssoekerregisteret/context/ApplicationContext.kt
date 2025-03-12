@@ -43,6 +43,7 @@ import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.serialization.StringSerializer
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
+import org.slf4j.LoggerFactory
 import java.time.Duration
 import javax.sql.DataSource
 
@@ -61,6 +62,7 @@ data class ApplicationContext(
 ) {
     companion object {
         fun build(): ApplicationContext {
+            val logger = LoggerFactory.getLogger(ApplicationContext::class.java)
             val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG)
             val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG)
             val databaseConfig = loadNaisOrLocalConfiguration<DatabaseConfig>(DATABASE_CONFIG)
@@ -68,6 +70,12 @@ data class ApplicationContext(
             val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
             val kafkaStreamsConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG)
             val minSideVarselConfig = loadNaisOrLocalConfiguration<MinSideVarselConfig>(MIN_SIDE_VARSEL_CONFIG)
+
+            with(applicationConfig) {
+                if (!periodeVarslerEnabled) logger.warn("Utsendelse av varsler ved avsluttet periode er deaktivert")
+                if (!bekreftelseVarslerEnabled) logger.warn("Utsendelse av varsler ved tilgjengelig bekreftelse er deaktivert")
+                if (!manuelleVarslerEnabled) logger.warn("Utsendelse av manuelle varsler er deaktivert")
+            }
 
             val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
             val healthIndicatorRepository = HealthIndicatorRepository()
@@ -88,6 +96,7 @@ data class ApplicationContext(
             )
 
             val varselService = VarselService(
+                applicationConfig = applicationConfig,
                 meterRegistry = prometheusMeterRegistry,
                 periodeRepository = periodeRepository,
                 varselRepository = varselRepository,
@@ -144,7 +153,7 @@ data class ApplicationContext(
                     bekreftelseKafkaStreams,
                     varselHendelseKafkaStreams
                 ),
-                kafkaShutdownTimeout = applicationConfig.shutdownTimeout
+                kafkaShutdownTimeout = applicationConfig.kafkaShutdownTimeout
             )
         }
     }
@@ -161,7 +170,7 @@ private fun buildPeriodeKafkaStreams(
     val kafkaTopology = StreamsBuilder()
         .periodeKafkaTopology(
             runtimeEnvironment = serverConfig.runtimeEnvironment,
-            kafkaTopicsConfig = applicationConfig,
+            applicationConfig = applicationConfig,
             meterRegistry = meterRegistry,
             varselService = varselService
         ).build()
@@ -190,7 +199,7 @@ private fun buildBekreftelseKafkaStreams(
     val kafkaTopology = StreamsBuilder()
         .bekreftelseKafkaTopology(
             runtimeEnvironment = serverConfig.runtimeEnvironment,
-            kafkaTopicsConfig = applicationConfig,
+            applicationConfig = applicationConfig,
             meterRegistry = meterRegistry,
             varselService = varselService
         ).build()
@@ -219,7 +228,7 @@ private fun buildVarselHendelseKafkaStreams(
     val kafkaTopology = StreamsBuilder()
         .varselHendelserKafkaTopology(
             runtimeEnvironment = serverConfig.runtimeEnvironment,
-            kafkaTopicsConfig = applicationConfig,
+            applicationConfig = applicationConfig,
             meterRegistry = meterRegistry,
             varselService = varselService
         )

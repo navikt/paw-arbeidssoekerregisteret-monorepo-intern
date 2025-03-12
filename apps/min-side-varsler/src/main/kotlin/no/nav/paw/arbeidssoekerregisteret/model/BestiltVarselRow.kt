@@ -30,6 +30,7 @@ enum class BestiltVarselStatus {
     VENTER,
     AKTIV,
     SENDT,
+    IGNORERT,
     FEILET
 }
 

@@ -29,18 +29,18 @@ class BestiltVarselRepositoryTest : FreeSpec({
                 val bestiltVarselRows2 = bestiltVarselRepository.findAll(paging)
                 bestiltVarselRows2 shouldHaveSize 10
                 bestiltVarselRows1.map { it.varselId } shouldContainAll bestiltVarselRows2.map { it.varselId }
-                paging = paging.advance()
+                paging = paging.stepBySize()
                 val bestiltVarselRows3 = bestiltVarselRepository.findAll(paging)
                 bestiltVarselRows3 shouldHaveSize 10
                 bestiltVarselRows1.map { it.varselId } shouldContainAll bestiltVarselRows3.map { it.varselId }
                 bestiltVarselRows2.map { it.varselId } shouldNotContainAnyOf bestiltVarselRows3.map { it.varselId }
-                paging = paging.advance()
+                paging = paging.stepBySize()
                 val bestiltVarselRows4 = bestiltVarselRepository.findAll(paging)
                 bestiltVarselRows4 shouldHaveSize 10
                 bestiltVarselRows1.map { it.varselId } shouldContainAll bestiltVarselRows4.map { it.varselId }
                 bestiltVarselRows2.map { it.varselId } shouldNotContainAnyOf bestiltVarselRows4.map { it.varselId }
                 bestiltVarselRows3.map { it.varselId } shouldNotContainAnyOf bestiltVarselRows4.map { it.varselId }
-                paging = paging.advance()
+                paging = paging.stepBySize()
                 val bestiltVarselRows5 = bestiltVarselRepository.findAll(paging)
                 bestiltVarselRows5 shouldHaveSize 0
             }

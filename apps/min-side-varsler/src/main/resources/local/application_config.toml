@@ -1,3 +1,6 @@
+periodeVarslerEnabled = true
+bekreftelseVarslerEnabled = true
+manuelleVarslerEnabled = true
 varselProducerId = "paw-arbeidssoekerregisteret-min-side-varsler-varsel-producer-v1"
 periodeStreamSuffix = "periode-v1"
 bekreftelseStreamSuffix = "bekreftelse-v1"

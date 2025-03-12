@@ -69,6 +69,9 @@ class BestillingService(
         if (bestillinger.isEmpty()) {
             logger.info("Ingen ventende manuelle varselbestillinger funnet")
         } else {
+            if (!applicationConfig.manuelleVarslerEnabled) {
+                logger.warn("Utsendelse av manuelle varsler er deaktivert")
+            }
             bestillinger
                 .map { UpdateBestillingRow(it.bestillingId, BestillingStatus.AKTIV) }
                 .forEach { bestillingRepository.update(it) }
@@ -87,11 +90,13 @@ class BestillingService(
         val status = if (varslinger.isEmpty()) {
             BestillingStatus.IGNORERT
         } else {
-            varslinger
-                // TODO: Paging
-                .map { prosesserBestiltVarsel(it) }
-                .filter { it.status != BestiltVarselStatus.SENDT }
-                .let { if (it.isEmpty()) BestillingStatus.SENDT else BestillingStatus.FEILET }
+            val varselStatuser = varslinger.map { prosesserBestiltVarsel(it) }.map { it.status }
+            if (varselStatuser.all { it == BestiltVarselStatus.IGNORERT }) {
+                BestillingStatus.IGNORERT
+            } else {
+                varselStatuser.filter { it != BestiltVarselStatus.SENDT }
+                    .let { if (it.isEmpty()) BestillingStatus.SENDT else BestillingStatus.FEILET }
+            }
         }
         logger.info(
             "Prosessering av varselbestilling {} fullførte med status {}",
@@ -103,16 +108,20 @@ class BestillingService(
 
     private fun prosesserBestiltVarsel(varsel: BestiltVarselRow): BestiltVarselRow {
         try {
-            logger.debug("Sender manuelt varsel {}", varsel.varselId)
-            val insertVarselRow = varsel.asInsertVarselRow()
-            varselRepository.insert(insertVarselRow)
-            val melding = varselMeldingBygger.opprettManueltVarsel(varsel.varselId, varsel.identitetsnummer)
-            meterRegistry.varselCounter(serverConfig.runtimeEnvironment, "write", melding)
-            varselKafkaProducer.sendVarsel(applicationConfig.tmsVarselTopic, melding)
-            logger.debug("Manuelt varsel ble sendt")
-            bestiltVarselRepository.update(UpdateBestiltVarselRow(varsel.varselId, BestiltVarselStatus.SENDT))
+            logger.debug("Prosesserer manuelt varsel {}", varsel.varselId)
+            if (applicationConfig.manuelleVarslerEnabled) {
+                val insertVarselRow = varsel.asInsertVarselRow()
+                varselRepository.insert(insertVarselRow)
+                val melding = varselMeldingBygger.opprettManueltVarsel(varsel.varselId, varsel.identitetsnummer)
+                meterRegistry.varselCounter(serverConfig.runtimeEnvironment, "write", melding)
+                varselKafkaProducer.sendVarsel(applicationConfig.tmsVarselTopic, melding)
+                logger.debug("Sendte manuelt varsel {}", varsel.varselId)
+                bestiltVarselRepository.update(UpdateBestiltVarselRow(varsel.varselId, BestiltVarselStatus.SENDT))
+            } else {
+                bestiltVarselRepository.update(UpdateBestiltVarselRow(varsel.varselId, BestiltVarselStatus.IGNORERT))
+            }
         } catch (e: Exception) {
-            logger.debug("Manuelt varsel feilet", e)
+            logger.debug("Sending av manuelt varsel feilet", e)
             bestiltVarselRepository.update(UpdateBestiltVarselRow(varsel.varselId, BestiltVarselStatus.FEILET))
         }
         return bestiltVarselRepository.findByVarselId(varsel.varselId)

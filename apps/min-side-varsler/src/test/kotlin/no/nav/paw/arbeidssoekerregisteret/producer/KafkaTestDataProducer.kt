@@ -27,7 +27,7 @@ class VarselHendelseSerializer : JacksonSerializer<VarselHendelse>()
 private fun <K, V> Producer<K, V>.send(topic: String, key: K, value: V) = send(ProducerRecord(topic, key, value)).get()
 
 fun main() {
-    val kafkaTopicsConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG)
+    val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG)
     val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG)
     val kafkaFactory = KafkaFactory(kafkaConfig)
 
@@ -47,7 +47,7 @@ fun main() {
         valueSerializer = VarselHendelseSerializer::class
     )
 
-    with(kafkaTopicsConfig) {
+    with(applicationConfig) {
         val key1 = -10001L
         val key2 = -10002L
         val key3 = -10003L
@@ -82,9 +82,9 @@ fun main() {
             identitetsnummer = identitetsnummer1,
         )
         val bekreftelseTilgjengelig = TestData.bekreftelseTilgjengelig(
-            periodeId = periodeId1,
-            bekreftelseId = bekreftelseId1,
-            arbeidssoekerId = arbeidssoekerId1
+            periodeId = periodeId2,
+            bekreftelseId = bekreftelseId2,
+            arbeidssoekerId = arbeidssoekerId2
         )
         val bekreftelseMeldingMottatt = TestData.bekreftelseMeldingMottatt(
             periodeId = periodeId1,

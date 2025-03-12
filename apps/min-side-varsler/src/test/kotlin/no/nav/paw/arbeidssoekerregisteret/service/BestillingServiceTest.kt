@@ -25,26 +25,18 @@ class BestillingServiceTest : FreeSpec({
                 bestillingRepository.findAll() shouldHaveSize 0
                 bestiltVarselRepository.findAll() shouldHaveSize 0
 
-                val insertPeriode1 = insertPeriodeRow()
-                val insertPeriode2 = insertPeriodeRow()
-                val insertPeriode3 = insertPeriodeRow()
-                val insertPeriode4 = insertPeriodeRow()
-                val insertPeriode5 = insertPeriodeRow()
-                val insertPeriode6 = insertPeriodeRow()
-                val insertPeriode7 = insertPeriodeRow()
-                val updatePeriode6 = updatePeriodeRow(insertPeriode6.periodeId, insertPeriode6.identitetsnummer)
-                val updatePeriode7 = updatePeriodeRow(insertPeriode7.periodeId, insertPeriode7.identitetsnummer)
-                periodeRepository.insert(insertPeriode1)
-                periodeRepository.insert(insertPeriode2)
-                periodeRepository.insert(insertPeriode3)
-                periodeRepository.insert(insertPeriode4)
-                periodeRepository.insert(insertPeriode5)
-                periodeRepository.insert(insertPeriode6)
-                periodeRepository.insert(insertPeriode7)
-                periodeRepository.update(updatePeriode6)
-                periodeRepository.update(updatePeriode7)
+                val insertPeriodeRows = (1..42).map { insertPeriodeRow() }
+                val insertPeriode43 = insertPeriodeRow()
+                val insertPeriode44 = insertPeriodeRow()
+                val updatePeriode43 = updatePeriodeRow(insertPeriode43.periodeId, insertPeriode43.identitetsnummer)
+                val updatePeriode44 = updatePeriodeRow(insertPeriode44.periodeId, insertPeriode44.identitetsnummer)
+                insertPeriodeRows.forEach { periodeRepository.insert(it) }
+                periodeRepository.insert(insertPeriode43)
+                periodeRepository.insert(insertPeriode44)
+                periodeRepository.update(updatePeriode43)
+                periodeRepository.update(updatePeriode44)
 
-                periodeRepository.findAll() shouldHaveSize 7
+                periodeRepository.findAll() shouldHaveSize 44
                 varselRepository.findAll() shouldHaveSize 0
                 bestillingRepository.findAll() shouldHaveSize 0
                 bestiltVarselRepository.findAll() shouldHaveSize 0
@@ -56,7 +48,7 @@ class BestillingServiceTest : FreeSpec({
                 bestillingResponse1.varslerSendt shouldBe 0
                 bestillingResponse1.varslerFeilet shouldBe 0
 
-                periodeRepository.findAll() shouldHaveSize 7
+                periodeRepository.findAll() shouldHaveSize 44
                 varselRepository.findAll() shouldHaveSize 0
                 bestillingRepository.findAll() shouldHaveSize 1
                 bestiltVarselRepository.findAll() shouldHaveSize 0
@@ -65,15 +57,15 @@ class BestillingServiceTest : FreeSpec({
                 bestillingResponse2.bestillingId shouldBe bestillingResponse1.bestillingId
                 bestillingResponse2.bestiller shouldBe bestiller
                 bestillingResponse2.status shouldBe BestillingStatus.BEKREFTET
-                bestillingResponse2.varslerTotalt shouldBe 5
+                bestillingResponse2.varslerTotalt shouldBe 42
                 bestillingResponse2.varslerSendt shouldBe 0
                 bestillingResponse2.varslerFeilet shouldBe 0
 
-                periodeRepository.findAll() shouldHaveSize 7
+                periodeRepository.findAll() shouldHaveSize 44
                 varselRepository.findAll() shouldHaveSize 0
                 bestillingRepository.findAll() shouldHaveSize 1
                 val bestilteVarsler1 = bestiltVarselRepository.findAll()
-                bestilteVarsler1 shouldHaveSize 5
+                bestilteVarsler1 shouldHaveSize 42
                 bestilteVarsler1.forEach { it.status shouldBe BestiltVarselStatus.VENTER }
 
                 bestillingService.prosesserBestillinger()
@@ -81,21 +73,26 @@ class BestillingServiceTest : FreeSpec({
                 bestillingResponse3.bestillingId shouldBe bestillingResponse1.bestillingId
                 bestillingResponse3.bestiller shouldBe bestiller
                 bestillingResponse3.status shouldBe BestillingStatus.SENDT
-                bestillingResponse3.varslerTotalt shouldBe 5
-                bestillingResponse3.varslerSendt shouldBe 5
+                bestillingResponse3.varslerTotalt shouldBe 42
+                bestillingResponse3.varslerSendt shouldBe 42
                 bestillingResponse3.varslerFeilet shouldBe 0
 
-                periodeRepository.findAll() shouldHaveSize 7
+                periodeRepository.findAll() shouldHaveSize 44
                 val varsler1 = varselRepository.findAll()
-                varsler1 shouldHaveSize 5
-                varsler1.forEach { it.varselType shouldBe VarselType.BESKJED }
-                varsler1.forEach { it.varselKilde shouldBe VarselKilde.MANUELL_VARSLING }
-                varsler1.forEach { it.varselStatus shouldBe VarselStatus.UKJENT }
-                varsler1.forEach { it.hendelseName shouldBe VarselEventName.UKJENT }
+                varsler1 shouldHaveSize 42
+                varsler1.forEach {
+                    it.varselType shouldBe VarselType.BESKJED
+                    it.varselKilde shouldBe VarselKilde.MANUELL_VARSLING
+                    it.varselStatus shouldBe VarselStatus.UKJENT
+                    it.hendelseName shouldBe VarselEventName.UKJENT
+                }
                 bestillingRepository.findAll() shouldHaveSize 1
                 val bestilteVarsler2 = bestiltVarselRepository.findAll()
-                bestilteVarsler2 shouldHaveSize 5
-                bestilteVarsler2.forEach { it.status shouldBe BestiltVarselStatus.SENDT }
+                bestilteVarsler2 shouldHaveSize 42
+                bestilteVarsler2.forEach {
+                    it.bestillingId shouldBe bestillingResponse1.bestillingId
+                    it.status shouldBe BestiltVarselStatus.SENDT
+                }
             }
         }
     }

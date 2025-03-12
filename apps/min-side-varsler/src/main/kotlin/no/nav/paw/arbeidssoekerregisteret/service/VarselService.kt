@@ -2,6 +2,7 @@ package no.nav.paw.arbeidssoekerregisteret.service
 
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.api.models.VarselResponse
+import no.nav.paw.arbeidssoekerregisteret.config.ApplicationConfig
 import no.nav.paw.arbeidssoekerregisteret.exception.PeriodeIkkeFunnetException
 import no.nav.paw.arbeidssoekerregisteret.exception.VarselIkkeFunnetException
 import no.nav.paw.arbeidssoekerregisteret.model.Paging
@@ -30,6 +31,7 @@ import org.slf4j.MDC
 import java.util.*
 
 class VarselService(
+    private val applicationConfig: ApplicationConfig,
     private val meterRegistry: MeterRegistry,
     private val periodeRepository: PeriodeRepository,
     private val varselRepository: VarselRepository,
@@ -50,7 +52,9 @@ class VarselService(
 
     fun mottaPeriode(periode: Periode): List<VarselMelding> = transaction {
         try {
-            MDC.put("x_event_name", if (periode.avsluttet == null) "periode.startet" else "periode.avsluttet")
+            val eventName = if (periode.avsluttet == null) "periode.startet" else "periode.avsluttet"
+            MDC.put("x_event_name", eventName)
+            logger.debug("Prosesserer hendelse {}", eventName)
             val periodeRow = periodeRepository.findByPeriodeId(periode.id)
             if (periodeRow != null) {
                 if (periodeRow.avsluttetTimestamp != null) {
@@ -73,19 +77,24 @@ class VarselService(
             }
 
             if (periode.avsluttet != null) {
-                MDC.put("x_action", "insert")
-                logger.debug(
-                    "Oppretter og bestiller varsel for avsluttet periode {}",
-                    periode.id
-                )
-                val insertVarselRow = periode.asInsertVarselRow()
-                varselRepository.insert(insertVarselRow)
-                listOf(
-                    varselMeldingBygger.opprettPeriodeAvsluttetBeskjed(
+                if (applicationConfig.periodeVarslerEnabled) {
+                    MDC.put("x_action", "insert")
+                    logger.debug(
+                        "Oppretter og bestiller varsel for avsluttet periode {}",
+                        periode.id
+                    )
+                    val insertVarselRow = periode.asInsertVarselRow()
+                    varselRepository.insert(insertVarselRow)
+                    val varsel = varselMeldingBygger.opprettPeriodeAvsluttetBeskjed(
                         varselId = periode.id,
                         identitetsnummer = periode.identitetsnummer
                     )
-                )
+                    listOf(varsel)
+                } else {
+                    MDC.put("x_action", "ignore")
+                    logger.warn("Utsendelse av varsler ved avsluttet periode er deaktivert")
+                    emptyList()
+                }
             } else {
                 emptyList()
             }
@@ -101,6 +110,8 @@ class VarselService(
             val eventType = if (hendelse != null) hendelse::class.java.name else "null"
             val eventName = hendelse?.hendelseType ?: "bekreftelse.null"
             MDC.put("x_event_name", eventName)
+            logger.debug("Prosesserer hendelse {}", eventName)
+
             if (periode == null) {
                 MDC.put("x_action", "fail")
                 logger.warn("Ingen periode mottatt for hendelse {}", eventName)
@@ -121,23 +132,27 @@ class VarselService(
                         meterRegistry.bekreftelseHendelseCounter("ignore", hendelse)
                         emptyList()
                     } else {
-                        MDC.put("x_action", "insert")
-                        logger.debug(
-                            "Oppretter og bestiller varsel for hendelse {} og periode {}",
-                            hendelse.hendelseType,
-                            hendelse.periodeId
-                        )
-                        meterRegistry.bekreftelseHendelseCounter("insert", hendelse)
-                        val insertVarselRow = hendelse.asInsertVarselRow()
-                        varselRepository.insert(insertVarselRow)
-
-                        listOf(
-                            varselMeldingBygger.opprettBekreftelseTilgjengeligOppgave(
+                        if (applicationConfig.bekreftelseVarslerEnabled) {
+                            MDC.put("x_action", "insert")
+                            logger.debug(
+                                "Oppretter og bestiller varsel for hendelse {} og periode {}",
+                                hendelse.hendelseType,
+                                hendelse.periodeId
+                            )
+                            meterRegistry.bekreftelseHendelseCounter("insert", hendelse)
+                            val insertVarselRow = hendelse.asInsertVarselRow()
+                            varselRepository.insert(insertVarselRow)
+                            val varsel = varselMeldingBygger.opprettBekreftelseTilgjengeligOppgave(
                                 varselId = hendelse.bekreftelseId,
                                 identitetsnummer = periode.identitetsnummer,
                                 utsettEksternVarslingTil = hendelse.gjelderTil // TODO: Kalkuler SMS-dato
                             )
-                        )
+                            listOf(varsel)
+                        } else {
+                            MDC.put("x_action", "ignore")
+                            logger.warn("Utsendelse av varsler ved tilgjengelig bekreftelse er deaktivert")
+                            emptyList()
+                        }
                     }
                 }
 
@@ -214,8 +229,9 @@ class VarselService(
 
     fun mottaVarselHendelse(hendelse: VarselHendelse) = transaction {
         try {
-            MDC.put("x_event_name", "varsel.${hendelse.eventName.value}")
-
+            val eventName = "varsel.${hendelse.eventName.value}"
+            MDC.put("x_event_name", eventName)
+            logger.debug("Prosesserer hendelse {}", eventName)
             val varselRow = varselRepository.findByVarselId(UUID.fromString(hendelse.varselId))
             if (varselRow != null) {
                 if (hendelse.tidspunkt.isAfter(varselRow.hendelseTimestamp)) {
