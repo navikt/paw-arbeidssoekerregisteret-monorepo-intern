@@ -30,6 +30,7 @@ import no.nav.paw.bekreftelse.api.utils.setUpdateActionAttribute
 import no.nav.paw.bekreftelse.api.utils.updateBekreftelseHendelseCounter
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
+import no.nav.paw.bekreftelse.internehendelser.BekreftelsePaaVegneAvStartet
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
 import no.nav.paw.bekreftelse.internehendelser.meldingMottattHendelseType
@@ -125,7 +126,9 @@ class BekreftelseService(
             is BekreftelseMeldingMottatt -> {
                 processBekreftelseMeldingMottatt(hendelse)
             }
-
+            is BekreftelsePaaVegneAvStartet -> {
+                processBekreftelsePaaVegneAvStartet(hendelse)
+            }
             is PeriodeAvsluttet -> {
                 processPeriodeAvsluttet(hendelse)
             }
@@ -178,6 +181,16 @@ class BekreftelseService(
     private fun processBekreftelseMeldingMottatt(hendelse: BekreftelseMeldingMottatt) {
         val currentSpan = Span.current()
         val rowsAffected = bekreftelseRepository.deleteByBekreftelseId(hendelse.bekreftelseId)
+        currentSpan.setEventAttribute(hendelse.hendelseType)
+        currentSpan.setDeleteActionAttribute()
+        meterRegistry.deleteBekreftelseHendelseCounter(hendelse.hendelseType, rowsAffected)
+        logger.debug("Slettet bekreftelse(r) av type {} (rows affected {})", hendelse.hendelseType, rowsAffected)
+    }
+
+    @WithSpan(value = "processBekreftelsePaaVegneAvStartet", kind = SpanKind.INTERNAL)
+    private fun processBekreftelsePaaVegneAvStartet(hendelse: BekreftelsePaaVegneAvStartet) {
+        val currentSpan = Span.current()
+        val rowsAffected = bekreftelseRepository.deleteByPeriodeId(hendelse.periodeId)
         currentSpan.setEventAttribute(hendelse.hendelseType)
         currentSpan.setDeleteActionAttribute()
         meterRegistry.deleteBekreftelseHendelseCounter(hendelse.hendelseType, rowsAffected)
