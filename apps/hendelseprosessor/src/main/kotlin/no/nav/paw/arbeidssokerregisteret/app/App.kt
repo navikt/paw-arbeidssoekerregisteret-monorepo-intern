@@ -86,7 +86,7 @@ fun main() {
         mapper = ::withMetricsInfoMapper
     )
     kafkaStreams.setUncaughtExceptionHandler { throwable ->
-        streamLogger.error("Uventet feil", throwable)
+        streamLogger.error("Uventet feil: {}", throwable.message, throwable)
         StreamsUncaughtExceptionHandler.StreamThreadExceptionResponse.SHUTDOWN_APPLICATION
     }
     kafkaStreams.start()
