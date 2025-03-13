@@ -78,4 +78,6 @@ spec:
   accessPolicy:
     inbound:
       rules:
+        - application: azure-token-generator
+          namespace: nais
         - application: paw-brukerstotte
