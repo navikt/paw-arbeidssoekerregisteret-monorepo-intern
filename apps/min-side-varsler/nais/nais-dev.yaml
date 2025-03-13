@@ -17,6 +17,8 @@ spec:
     requests:
       memory: 512Mi
       cpu: 20m
+  ingresses:
+    - https://varsler-arbeidssoekerregisteret.intern.dev.nav.no
   env:
     - name: KAFKA_PERIODE_STREAM_SUFFIX
       value: "periode-v1"
@@ -39,7 +41,7 @@ spec:
     - name: MANUELT_VARSEL_LINK
       value: "https://www.ansatt.dev.nav.no/arbeidssoekerregisteret"
     - name: PERIODE_VARSLER_ENABLED
-      value: "true"
+      value: "false"
     - name: BEKREFTELSE_VARSLER_ENABLED
       value: "true"
     - name: MANUELLE_VARSLER_ENABLED

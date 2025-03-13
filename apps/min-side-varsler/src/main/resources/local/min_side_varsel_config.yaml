@@ -9,15 +9,15 @@ periodeAvsluttet:
       tekst: Du er ikke lenger registrert som arbeidssøker.
     - spraak:
         kode: nn
-      tekst: Du er ikke lenger registrert som arbeidssøker. [nn]
+      tekst: Du er ikkje lenger registrert som arbeidssøkjar
     - spraak:
         kode: en
       tekst: You are no longer registered as job seeker
   eksterntVarsel:
     preferertKanal: BETINGET_SMS
-    smsTekst: Du er ikke lengre registrert som arbeidssøker. Hilsen Nav
+    smsTekst: Hei! Du er ikke lenger registrert som arbeidssøker hos Nav. Logg inn på Nav sine nettsider for mer informasjon. Hilsen Nav
     epostTittel: Du har fått en melding fra Nav
-    epostTekst: <html><body><p>Hei!</p><p>Du er ikke lengre registrert som arbeidssøker.</p><p>Hilsen Nav</p></body></html>
+    epostTekst: <html><body><p>Hei!</p><p>Du er ikke lenger registrert som arbeidssøker hos Nav. Logg inn på Nav sine nettsider for mer informasjon.</p><p>Hilsen Nav</p></body></html>
 
 bekreftelseTilgjengelig:
   link: http://localhost:8080/minside/bekreftelse
@@ -30,10 +30,10 @@ bekreftelseTilgjengelig:
       tekst: Bekreft at du vil være registrert som arbeidssøker.
     - spraak:
         kode: nn
-      tekst: Bekreft at du vil være registrert som arbeidssøker. [nn]
+      tekst: Stadfest at du vil vere arbeidssøkjar
     - spraak:
         kode: en
-      tekst: Bekreft at du vil være registrert som arbeidssøker. [en]
+      tekst: Confirm your status as a jobseeker
   eksterntVarsel:
     preferertKanal: BETINGET_SMS
     smsTekst: Hei! Ønsker du fortsatt å være registrert som arbeidssøker? Logg inn på Nav så snart som mulig for å bekrefte at du vil være registrert. Hilsen Nav
