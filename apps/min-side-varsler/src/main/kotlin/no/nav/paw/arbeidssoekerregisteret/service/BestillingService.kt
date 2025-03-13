@@ -125,7 +125,7 @@ class BestillingService(
         val varsel = bestiltVarselRepository.findByVarselId(varselId)
             ?: throw VarselIkkeFunnetException("Manuelt varsel ikke funnet")
         try {
-            logger.debug("Prosesserer manuelt varsel {}", varselId)
+            logger.info("Prosesserer manuelt varsel {}", varselId)
             if (applicationConfig.manuelleVarslerEnabled) {
                 val insertVarselRow = varsel.asInsertVarselRow()
                 varselRepository.insert(insertVarselRow)
@@ -143,7 +143,7 @@ class BestillingService(
                 )
             }
         } catch (e: Exception) {
-            logger.debug("Sending av manuelt varsel feilet", e)
+            logger.error("Sending av manuelt varsel feilet", e)
             bestiltVarselRepository.update(UpdateBestiltVarselRow(varsel.varselId, BestiltVarselStatus.FEILET))
         }
         bestiltVarselRepository.findByVarselId(varsel.varselId)
