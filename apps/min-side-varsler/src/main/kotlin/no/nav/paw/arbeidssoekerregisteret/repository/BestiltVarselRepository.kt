@@ -9,6 +9,7 @@ import no.nav.paw.arbeidssoekerregisteret.model.Paging
 import no.nav.paw.arbeidssoekerregisteret.model.UpdateBestiltVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.asBestiltVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.asSortOrder
+import no.nav.paw.arbeidssoekerregisteret.model.asVarselId
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
@@ -47,6 +48,18 @@ class BestiltVarselRepository {
             .orderBy(BestilteVarslerTable.insertedTimestamp, paging.order.asSortOrder())
             .offset(paging.offset).limit(paging.size)
             .map { it.asBestiltVarselRow() }
+    }
+
+    @WithSpan("findVarselIdByBestillingId")
+    fun findVarselIdByBestillingId(
+        bestillingId: UUID,
+        paging: Paging = Paging.none(),
+    ): List<UUID> = transaction {
+        BestilteVarslerTable.selectAll()
+            .where { BestilteVarslerTable.bestillingId eq bestillingId }
+            .orderBy(BestilteVarslerTable.insertedTimestamp, paging.order.asSortOrder())
+            .offset(paging.offset).limit(paging.size)
+            .map { it.asVarselId() }
     }
 
     @WithSpan("insert")

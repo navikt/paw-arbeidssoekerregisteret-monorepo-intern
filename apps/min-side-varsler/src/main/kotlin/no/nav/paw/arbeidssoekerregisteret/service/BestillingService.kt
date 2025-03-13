@@ -86,17 +86,19 @@ class BestillingService(
     }
 
     @WithSpan("prosesserBestilling")
-    private fun prosesserBestilling(bestilling: BestillingRow) = transaction {
-        val varslinger = bestiltVarselRepository.findByBestillingId(bestilling.bestillingId)
+    private fun prosesserBestilling(bestilling: BestillingRow) {
+        val varselIdList = bestiltVarselRepository.findVarselIdByBestillingId(bestilling.bestillingId)
         logger.info(
             "Prosesserer {} varslinger for varselbestilling {}",
-            varslinger.size,
+            varselIdList.size,
             bestilling.bestillingId
         )
-        val status = if (varslinger.isEmpty()) {
+        val status = if (varselIdList.isEmpty()) {
             BestillingStatus.IGNORERT
         } else {
-            val varselStatuser = varslinger.map { prosesserBestiltVarsel(it) }.map { it.status }
+            val varselStatuser = varselIdList
+                .map { prosesserBestiltVarsel(it) }
+                .map { it.status }
             if (varselStatuser.all { it == BestiltVarselStatus.IGNORERT }) {
                 BestillingStatus.IGNORERT
             } else {
@@ -113,9 +115,11 @@ class BestillingService(
     }
 
     @WithSpan("prosesserBestiltVarsel")
-    private fun prosesserBestiltVarsel(varsel: BestiltVarselRow): BestiltVarselRow {
+    private fun prosesserBestiltVarsel(varselId: UUID): BestiltVarselRow = transaction {
+        val varsel = bestiltVarselRepository.findByVarselId(varselId)
+            ?: throw VarselIkkeFunnetException("Manuelt varsel ikke funnet")
         try {
-            logger.debug("Prosesserer manuelt varsel {}", varsel.varselId)
+            logger.debug("Prosesserer manuelt varsel {}", varselId)
             if (applicationConfig.manuelleVarslerEnabled) {
                 val insertVarselRow = varsel.asInsertVarselRow()
                 varselRepository.insert(insertVarselRow)
@@ -125,13 +129,18 @@ class BestillingService(
                 logger.debug("Sendte manuelt varsel {}", varsel.varselId)
                 bestiltVarselRepository.update(UpdateBestiltVarselRow(varsel.varselId, BestiltVarselStatus.SENDT))
             } else {
-                bestiltVarselRepository.update(UpdateBestiltVarselRow(varsel.varselId, BestiltVarselStatus.IGNORERT))
+                bestiltVarselRepository.update(
+                    UpdateBestiltVarselRow(
+                        varsel.varselId,
+                        BestiltVarselStatus.IGNORERT
+                    )
+                )
             }
         } catch (e: Exception) {
             logger.debug("Sending av manuelt varsel feilet", e)
             bestiltVarselRepository.update(UpdateBestiltVarselRow(varsel.varselId, BestiltVarselStatus.FEILET))
         }
-        return bestiltVarselRepository.findByVarselId(varsel.varselId)
+        bestiltVarselRepository.findByVarselId(varsel.varselId)
             ?: throw VarselIkkeFunnetException("Manuelt varsel ikke funnet")
     }
 }

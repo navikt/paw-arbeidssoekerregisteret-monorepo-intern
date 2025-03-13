@@ -44,6 +44,8 @@ fun ResultRow.asBestiltVarselRow(): BestiltVarselRow = BestiltVarselRow(
     updatedTimestamp = this[BestilteVarslerTable.updatedTimestamp]
 )
 
+fun ResultRow.asVarselId(): UUID = this[BestilteVarslerTable.varselId]
+
 fun BestiltVarselRow.asInsertVarselRow(): InsertVarselRow = InsertVarselRow(
     periodeId = periodeId,
     varselId = varselId,
