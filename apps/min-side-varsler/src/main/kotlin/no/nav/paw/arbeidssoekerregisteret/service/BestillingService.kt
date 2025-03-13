@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssoekerregisteret.service
 
 import io.micrometer.core.instrument.MeterRegistry
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssoekerregisteret.api.models.BestillingResponse
 import no.nav.paw.arbeidssoekerregisteret.config.ApplicationConfig
 import no.nav.paw.arbeidssoekerregisteret.config.ServerConfig
@@ -38,6 +39,7 @@ class BestillingService(
 ) {
     private val logger = buildApplicationLogger
 
+    @WithSpan("hentBestilling")
     fun hentBestilling(bestillingId: UUID): BestillingResponse = transaction {
         val bestilling = bestillingRepository.findByBestillingId(bestillingId)
             ?: throw BestillingIkkeFunnetException("Bestilling ikke funnet")
@@ -47,6 +49,7 @@ class BestillingService(
         bestilling.asResponse(totalCount, sendtCount, feiletCount)
     }
 
+    @WithSpan("opprettBestilling")
     fun opprettBestilling(bestiller: String): BestillingResponse = transaction {
         val bestillingId = UUID.randomUUID()
         bestillingRepository.insert(InsertBestillingRow(bestillingId, bestiller))
@@ -54,6 +57,7 @@ class BestillingService(
             ?: throw BestillingIkkeFunnetException("Bestilling ikke funnet")
     }
 
+    @WithSpan("bekreftBestilling")
     fun bekreftBestilling(bestillingId: UUID): BestillingResponse = transaction {
         val bestilling = bestillingRepository.findByBestillingId(bestillingId)
             ?: throw BestillingIkkeFunnetException("Bestilling ikke funnet")
@@ -64,6 +68,7 @@ class BestillingService(
         hentBestilling(bestillingId)
     }
 
+    @WithSpan("prosesserBestillinger")
     fun prosesserBestillinger() = transaction {
         val bestillinger = bestillingRepository.findByStatus(BestillingStatus.BEKREFTET)
         if (bestillinger.isEmpty()) {
@@ -80,6 +85,7 @@ class BestillingService(
         }
     }
 
+    @WithSpan("prosesserBestilling")
     private fun prosesserBestilling(bestilling: BestillingRow) {
         val varslinger = bestiltVarselRepository.findByBestillingId(bestilling.bestillingId)
         logger.info(
@@ -106,6 +112,7 @@ class BestillingService(
         bestillingRepository.update(UpdateBestillingRow(bestilling.bestillingId, status))
     }
 
+    @WithSpan("prosesserBestiltVarsel")
     private fun prosesserBestiltVarsel(varsel: BestiltVarselRow): BestiltVarselRow {
         try {
             logger.debug("Prosesserer manuelt varsel {}", varsel.varselId)

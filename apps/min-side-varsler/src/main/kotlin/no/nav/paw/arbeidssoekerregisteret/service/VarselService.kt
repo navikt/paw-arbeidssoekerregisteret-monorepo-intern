@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssoekerregisteret.service
 
 import io.micrometer.core.instrument.MeterRegistry
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssoekerregisteret.api.models.VarselResponse
 import no.nav.paw.arbeidssoekerregisteret.config.ApplicationConfig
 import no.nav.paw.arbeidssoekerregisteret.exception.PeriodeIkkeFunnetException
@@ -44,10 +45,12 @@ class VarselService(
 ) {
     private val logger = buildLogger
 
+    @WithSpan("hentVarsel")
     fun hentVarsel(varselId: UUID): VarselResponse = transaction {
         varselRepository.findByVarselId(varselId)?.asResponse() ?: throw VarselIkkeFunnetException("Varsel ikke funnet")
     }
 
+    @WithSpan("finnVarsler")
     fun finnVarsler(
         periodeId: UUID,
         paging: Paging = Paging.none()
@@ -55,6 +58,7 @@ class VarselService(
         varselRepository.findByPeriodeId(periodeId, paging).map { it.asResponse() }
     }
 
+    @WithSpan("mottaPeriode")
     fun mottaPeriode(periode: Periode): List<VarselMelding> = transaction {
         try {
             val eventName = if (periode.avsluttet == null) "periode.startet" else "periode.avsluttet"
@@ -119,6 +123,7 @@ class VarselService(
         }
     }
 
+    @WithSpan("mottaBekreftelseHendelse")
     fun mottaBekreftelseHendelse(value: Pair<Periode?, BekreftelseHendelse?>): List<VarselMelding> = transaction {
         try {
             val (periode, hendelse) = value
@@ -242,6 +247,7 @@ class VarselService(
         }
     }
 
+    @WithSpan("mottaVarselHendelse")
     fun mottaVarselHendelse(hendelse: VarselHendelse) = transaction {
         try {
             val eventName = "varsel.${hendelse.eventName.value}"

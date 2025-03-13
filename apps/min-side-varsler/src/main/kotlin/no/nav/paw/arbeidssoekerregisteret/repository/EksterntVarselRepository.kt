@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.repository
 
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssoekerregisteret.model.EksterneVarslerTable
 import no.nav.paw.arbeidssoekerregisteret.model.EksterntVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.InsertEksterntVarselRow
@@ -16,6 +17,7 @@ import java.util.*
 
 class EksterntVarselRepository {
 
+    @WithSpan("findAll")
     fun findAll(paging: Paging = Paging.none()): List<EksterntVarselRow> = transaction {
         EksterneVarslerTable.selectAll()
             .orderBy(EksterneVarslerTable.hendelseTimestamp, paging.order.asSortOrder())
@@ -23,6 +25,7 @@ class EksterntVarselRepository {
             .map { it.asEksterntVarselRow() }
     }
 
+    @WithSpan("findByVarselId")
     fun findByVarselId(varselId: UUID): EksterntVarselRow? = transaction {
         EksterneVarslerTable.selectAll()
             .where { EksterneVarslerTable.varselId eq varselId }
@@ -30,6 +33,7 @@ class EksterntVarselRepository {
             .firstOrNull()
     }
 
+    @WithSpan("insert")
     fun insert(varsel: InsertEksterntVarselRow): Int = transaction {
         EksterneVarslerTable.insert {
             it[varselId] = varsel.varselId
@@ -41,6 +45,7 @@ class EksterntVarselRepository {
         }.insertedCount
     }
 
+    @WithSpan("update")
     fun update(varsel: UpdateEksterntVarselRow): Int = transaction {
         EksterneVarslerTable.update({
             EksterneVarslerTable.varselId eq varsel.varselId

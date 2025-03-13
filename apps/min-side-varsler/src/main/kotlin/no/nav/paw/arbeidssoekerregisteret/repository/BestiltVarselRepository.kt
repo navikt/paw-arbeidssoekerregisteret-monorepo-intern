@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.repository
 
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssoekerregisteret.model.BestiltVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.BestiltVarselStatus
 import no.nav.paw.arbeidssoekerregisteret.model.BestilteVarslerTable
@@ -20,6 +21,7 @@ import java.util.*
 
 class BestiltVarselRepository {
 
+    @WithSpan("findAll")
     fun findAll(paging: Paging = Paging.none()): List<BestiltVarselRow> = transaction {
         BestilteVarslerTable.selectAll()
             .orderBy(BestilteVarslerTable.insertedTimestamp, paging.order.asSortOrder())
@@ -27,6 +29,7 @@ class BestiltVarselRepository {
             .map { it.asBestiltVarselRow() }
     }
 
+    @WithSpan("findByVarselId")
     fun findByVarselId(varselId: UUID): BestiltVarselRow? = transaction {
         BestilteVarslerTable.selectAll()
             .where { BestilteVarslerTable.varselId eq varselId }
@@ -34,6 +37,7 @@ class BestiltVarselRepository {
             .firstOrNull()
     }
 
+    @WithSpan("findByBestillingId")
     fun findByBestillingId(
         bestillingId: UUID,
         paging: Paging = Paging.none(),
@@ -45,6 +49,7 @@ class BestiltVarselRepository {
             .map { it.asBestiltVarselRow() }
     }
 
+    @WithSpan("insert")
     fun insert(varsel: InsertBestiltVarselRow): Int = transaction {
         BestilteVarslerTable.insert {
             it[bestillingId] = varsel.bestillingId
@@ -56,6 +61,7 @@ class BestiltVarselRepository {
         }.insertedCount
     }
 
+    @WithSpan("update")
     fun update(varsel: UpdateBestiltVarselRow): Int = transaction {
         BestilteVarslerTable.update({
             BestilteVarslerTable.varselId eq varsel.varselId
@@ -65,20 +71,24 @@ class BestiltVarselRepository {
         }
     }
 
+    @WithSpan("deleteByBestillingId")
     fun deleteByBestillingId(bestillingId: UUID): Int = transaction {
         BestilteVarslerTable.deleteWhere { BestilteVarslerTable.bestillingId eq bestillingId }
     }
 
+    @WithSpan("deleteByVarselId")
     fun deleteByVarselId(varselId: UUID): Int = transaction {
         BestilteVarslerTable.deleteWhere { BestilteVarslerTable.varselId eq varselId }
     }
 
+    @WithSpan("countByBestillingId")
     fun countByBestillingId(bestillingId: UUID): Long = transaction {
         BestilteVarslerTable.selectAll()
             .where { BestilteVarslerTable.bestillingId eq bestillingId }
             .count()
     }
 
+    @WithSpan("countByBestillingIdAndStatus")
     fun countByBestillingIdAndStatus(
         bestillingId: UUID,
         status: BestiltVarselStatus
@@ -88,6 +98,7 @@ class BestiltVarselRepository {
             .count()
     }
 
+    @WithSpan("insertAktivePerioder")
     fun insertAktivePerioder(bestillingId: UUID) = transaction {
         val status = BestiltVarselStatus.VENTER.name
         exec(

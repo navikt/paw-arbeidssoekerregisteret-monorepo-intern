@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.repository
 
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssoekerregisteret.model.EksterneVarslerTable
 import no.nav.paw.arbeidssoekerregisteret.model.InsertVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.Paging
@@ -22,6 +23,7 @@ import java.util.*
 
 class VarselRepository {
 
+    @WithSpan("findAll")
     fun findAll(paging: Paging = Paging.none()): List<VarselRow> = transaction {
         VarslerTable.join(EksterneVarslerTable, JoinType.LEFT, VarslerTable.varselId, EksterneVarslerTable.varselId)
             .selectAll()
@@ -30,6 +32,7 @@ class VarselRepository {
             .map { it.asVarselRow() }
     }
 
+    @WithSpan("findByVarselId")
     fun findByVarselId(varselId: UUID): VarselRow? = transaction {
         VarslerTable.join(EksterneVarslerTable, JoinType.LEFT, VarslerTable.varselId, EksterneVarslerTable.varselId)
             .selectAll()
@@ -38,6 +41,7 @@ class VarselRepository {
             .firstOrNull()
     }
 
+    @WithSpan("findByPeriodeId")
     fun findByPeriodeId(
         periodeId: UUID,
         paging: Paging = Paging.none(),
@@ -50,6 +54,7 @@ class VarselRepository {
             .map { it.asVarselRow() }
     }
 
+    @WithSpan("findByPeriodeIdAndVarselKilde")
     fun findByPeriodeIdAndVarselKilde(
         periodeId: UUID,
         varselKilde: VarselKilde,
@@ -63,6 +68,7 @@ class VarselRepository {
             .map { it.asVarselRow() }
     }
 
+    @WithSpan("insert")
     fun insert(varsel: InsertVarselRow): Int = transaction {
         VarslerTable.insert {
             it[periodeId] = varsel.periodeId
@@ -76,6 +82,7 @@ class VarselRepository {
         }.insertedCount
     }
 
+    @WithSpan("update")
     fun update(varsel: UpdateVarselRow): Int = transaction {
         VarslerTable.update({
             VarslerTable.varselId eq varsel.varselId
@@ -87,6 +94,7 @@ class VarselRepository {
         }
     }
 
+    @WithSpan("deleteByPeriodeIdAndVarselKilde")
     fun deleteByPeriodeIdAndVarselKilde(
         periodeId: UUID,
         varselKilde: VarselKilde
@@ -94,6 +102,7 @@ class VarselRepository {
         VarslerTable.deleteWhere { (VarslerTable.periodeId eq periodeId) and (VarslerTable.varselKilde eq varselKilde) }
     }
 
+    @WithSpan("deleteByVarselId")
     fun deleteByVarselId(varselId: UUID): Int = transaction {
         VarslerTable.deleteWhere { VarslerTable.varselId eq varselId }
     }

@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.repository
 
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssoekerregisteret.model.InsertPeriodeRow
 import no.nav.paw.arbeidssoekerregisteret.model.Paging
 import no.nav.paw.arbeidssoekerregisteret.model.PeriodeRow
@@ -18,6 +19,7 @@ import java.util.*
 
 class PeriodeRepository {
 
+    @WithSpan("findAll")
     fun findAll(paging: Paging = Paging.none()): List<PeriodeRow> = transaction {
         PerioderTable.selectAll()
             .orderBy(PerioderTable.startetTimestamp, paging.order.asSortOrder())
@@ -25,6 +27,7 @@ class PeriodeRepository {
             .map { it.asPeriodeRow() }
     }
 
+    @WithSpan("findByPeriodeId")
     fun findByPeriodeId(periodeId: UUID): PeriodeRow? = transaction {
         PerioderTable.selectAll()
             .where { PerioderTable.periodeId eq periodeId }
@@ -32,6 +35,7 @@ class PeriodeRepository {
             .singleOrNull()
     }
 
+    @WithSpan("insert")
     fun insert(periode: InsertPeriodeRow): Int = transaction {
         PerioderTable.insert {
             it[periodeId] = periode.periodeId
@@ -42,6 +46,7 @@ class PeriodeRepository {
         }.insertedCount
     }
 
+    @WithSpan("update")
     fun update(periode: UpdatePeriodeRow): Int = transaction {
         PerioderTable.update({
             PerioderTable.periodeId eq periode.periodeId
@@ -52,6 +57,7 @@ class PeriodeRepository {
         }
     }
 
+    @WithSpan("deleteByPeriodeId")
     fun deleteByPeriodeId(periodeId: UUID): Int = transaction {
         PerioderTable.deleteWhere { PerioderTable.periodeId eq periodeId }
     }

@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.repository
 
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssoekerregisteret.model.BestillingRow
 import no.nav.paw.arbeidssoekerregisteret.model.BestillingStatus
 import no.nav.paw.arbeidssoekerregisteret.model.BestillingerTable
@@ -19,6 +20,7 @@ import java.util.*
 
 class BestillingRepository {
 
+    @WithSpan("findAll")
     fun findAll(paging: Paging = Paging.none()): List<BestillingRow> = transaction {
         BestillingerTable.selectAll()
             .orderBy(BestillingerTable.insertedTimestamp, paging.order.asSortOrder())
@@ -26,6 +28,7 @@ class BestillingRepository {
             .map { it.asBestillingRow() }
     }
 
+    @WithSpan("findAll")
     fun findByStatus(
         status: BestillingStatus,
         paging: Paging = Paging.none()
@@ -37,6 +40,7 @@ class BestillingRepository {
             .map { it.asBestillingRow() }
     }
 
+    @WithSpan("findByBestillingId")
     fun findByBestillingId(bestillingId: UUID): BestillingRow? = transaction {
         BestillingerTable.selectAll()
             .where { BestillingerTable.bestillingId eq bestillingId }
@@ -44,6 +48,7 @@ class BestillingRepository {
             .singleOrNull()
     }
 
+    @WithSpan("insert")
     fun insert(bestilling: InsertBestillingRow): Int = transaction {
         BestillingerTable.insert {
             it[bestillingId] = bestilling.bestillingId
@@ -53,6 +58,7 @@ class BestillingRepository {
         }.insertedCount
     }
 
+    @WithSpan("update")
     fun update(bestilling: UpdateBestillingRow): Int = transaction {
         BestillingerTable.update({
             BestillingerTable.bestillingId eq bestilling.bestillingId
@@ -62,6 +68,7 @@ class BestillingRepository {
         }
     }
 
+    @WithSpan("deleteByBestillingId")
     fun deleteByBestillingId(bestillingId: UUID): Int = transaction {
         BestillingerTable.deleteWhere { BestillingerTable.bestillingId eq bestillingId }
     }
