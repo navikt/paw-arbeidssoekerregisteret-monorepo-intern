@@ -41,11 +41,11 @@ spec:
     - name: MANUELT_VARSEL_LINK
       value: "https://www.ansatt.dev.nav.no/arbeidssoekerregisteret"
     - name: PERIODE_VARSLER_ENABLED
-      value: "false"
+      value: "true"
     - name: BEKREFTELSE_VARSLER_ENABLED
       value: "true"
     - name: MANUELLE_VARSLER_ENABLED
-      value: "true"
+      value: "false"
   liveness:
     path: /internal/isAlive
     initialDelay: 10
