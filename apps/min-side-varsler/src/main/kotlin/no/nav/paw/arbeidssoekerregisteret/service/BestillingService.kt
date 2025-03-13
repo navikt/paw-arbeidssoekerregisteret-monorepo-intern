@@ -69,7 +69,7 @@ class BestillingService(
     }
 
     @WithSpan("prosesserBestillinger")
-    fun prosesserBestillinger() = transaction {
+    fun prosesserBestillinger() {
         val bestillinger = bestillingRepository.findByStatus(BestillingStatus.BEKREFTET)
         if (bestillinger.isEmpty()) {
             logger.info("Ingen ventende manuelle varselbestillinger funnet")
@@ -77,16 +77,16 @@ class BestillingService(
             if (!applicationConfig.manuelleVarslerEnabled) {
                 logger.warn("Utsendelse av manuelle varsler er deaktivert")
             }
+            logger.info("Starter prosessering av {} manuelle varselbestillinger", bestillinger.size)
             bestillinger
                 .map { UpdateBestillingRow(it.bestillingId, BestillingStatus.AKTIV) }
                 .forEach { bestillingRepository.update(it) }
-            logger.info("Starter prosessering av {} manuelle varselbestillinger", bestillinger.size)
             bestillinger.forEach { prosesserBestilling(it) }
         }
     }
 
     @WithSpan("prosesserBestilling")
-    private fun prosesserBestilling(bestilling: BestillingRow) {
+    private fun prosesserBestilling(bestilling: BestillingRow) = transaction {
         val varslinger = bestiltVarselRepository.findByBestillingId(bestilling.bestillingId)
         logger.info(
             "Prosesserer {} varslinger for varselbestilling {}",
