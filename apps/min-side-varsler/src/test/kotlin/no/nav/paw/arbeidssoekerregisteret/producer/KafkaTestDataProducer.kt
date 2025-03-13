@@ -5,6 +5,7 @@ import no.nav.paw.arbeidssoekerregisteret.config.APPLICATION_CONFIG
 import no.nav.paw.arbeidssoekerregisteret.config.ApplicationConfig
 import no.nav.paw.arbeidssoekerregisteret.model.VarselEventName
 import no.nav.paw.arbeidssoekerregisteret.model.VarselHendelse
+import no.nav.paw.arbeidssoekerregisteret.model.VarselStatus
 import no.nav.paw.arbeidssoekerregisteret.model.VarselType
 import no.nav.paw.arbeidssoekerregisteret.test.TestData
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
@@ -82,9 +83,9 @@ fun main() {
             identitetsnummer = identitetsnummer1,
         )
         val bekreftelseTilgjengelig = TestData.bekreftelseTilgjengelig(
-            periodeId = periodeId2,
-            bekreftelseId = bekreftelseId2,
-            arbeidssoekerId = arbeidssoekerId2
+            periodeId = periodeId1,
+            bekreftelseId = bekreftelseId1,
+            arbeidssoekerId = arbeidssoekerId1
         )
         val bekreftelseMeldingMottatt = TestData.bekreftelseMeldingMottatt(
             periodeId = periodeId1,
@@ -96,15 +97,16 @@ fun main() {
             arbeidssoekerId = arbeidssoekerId1
         )
         val varselHendelse = TestData.varselHendelse(
-            eventName = VarselEventName.OPPRETTET,
+            eventName = VarselEventName.AKTIVERT,
             varselId = bekreftelseId1.toString(),
-            varseltype = VarselType.OPPGAVE
+            varseltype = VarselType.OPPGAVE,
+            status = VarselStatus.VENTER
         )
 
         //periodeKafkaProducer.send(periodeTopic, key1, lukketPeriode)
-        bekreftelseHendelseKafkaProducer.send(bekreftelseHendelseTopic, key1, bekreftelseTilgjengelig)
+        //bekreftelseHendelseKafkaProducer.send(bekreftelseHendelseTopic, key1, bekreftelseTilgjengelig)
         //bekreftelseHendelseKafkaProducer.send(bekreftelseHendelseTopic, key1, bekreftelseMeldingMottatt)
         //bekreftelseHendelseKafkaProducer.send(bekreftelseHendelseTopic, key1, periodeAvsluttet)
-        //varselHendelseKafkaProducer.send(tmsVarselHendelseTopic, varselHendelse.varselId, varselHendelse)
+        varselHendelseKafkaProducer.send(tmsVarselHendelseTopic, varselHendelse.varselId, varselHendelse)
     }
 }

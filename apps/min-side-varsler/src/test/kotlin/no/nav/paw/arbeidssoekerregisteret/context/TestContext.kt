@@ -20,6 +20,7 @@ import no.nav.paw.arbeidssoekerregisteret.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.model.VarselMeldingBygger
 import no.nav.paw.arbeidssoekerregisteret.repository.BestillingRepository
 import no.nav.paw.arbeidssoekerregisteret.repository.BestiltVarselRepository
+import no.nav.paw.arbeidssoekerregisteret.repository.EksterntVarselRepository
 import no.nav.paw.arbeidssoekerregisteret.repository.PeriodeRepository
 import no.nav.paw.arbeidssoekerregisteret.repository.VarselRepository
 import no.nav.paw.arbeidssoekerregisteret.route.bestillingerRoutes
@@ -65,6 +66,7 @@ open class TestContext(
     open val prometheusMeterRegistry: PrometheusMeterRegistry,
     open val periodeRepository: PeriodeRepository,
     open val varselRepository: VarselRepository,
+    open val eksternVarselRepository: EksterntVarselRepository,
     open val bestillingRepository: BestillingRepository,
     open val bestiltVarselRepository: BestiltVarselRepository,
     open val varselService: VarselService,
@@ -150,6 +152,7 @@ open class TestContext(
             val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
             val periodeRepository = PeriodeRepository()
             val varselRepository = VarselRepository()
+            val eksternVarselRepository = EksterntVarselRepository()
             val bestillingRepository = BestillingRepository()
             val bestiltVarselRepository = BestiltVarselRepository()
             val varselKafkaProducer = MockProducer(true, StringSerializer(), StringSerializer())
@@ -162,6 +165,7 @@ open class TestContext(
                 meterRegistry = prometheusMeterRegistry,
                 periodeRepository = periodeRepository,
                 varselRepository = varselRepository,
+                eksterntVarselRepository = eksternVarselRepository,
                 varselMeldingBygger = varselMeldingBygger
             )
             val bestillingService = BestillingService(
@@ -185,6 +189,7 @@ open class TestContext(
                 prometheusMeterRegistry = prometheusMeterRegistry,
                 periodeRepository = periodeRepository,
                 varselRepository = varselRepository,
+                eksternVarselRepository = eksternVarselRepository,
                 bestillingRepository = bestillingRepository,
                 bestiltVarselRepository = bestiltVarselRepository,
                 varselService = varselService,

@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.repository
 
+import no.nav.paw.arbeidssoekerregisteret.model.EksterneVarslerTable
 import no.nav.paw.arbeidssoekerregisteret.model.InsertVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.Paging
 import no.nav.paw.arbeidssoekerregisteret.model.UpdateVarselRow
@@ -8,6 +9,7 @@ import no.nav.paw.arbeidssoekerregisteret.model.VarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.VarslerTable
 import no.nav.paw.arbeidssoekerregisteret.model.asSortOrder
 import no.nav.paw.arbeidssoekerregisteret.model.asVarselRow
+import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
@@ -21,14 +23,16 @@ import java.util.*
 class VarselRepository {
 
     fun findAll(paging: Paging = Paging.none()): List<VarselRow> = transaction {
-        VarslerTable.selectAll()
+        VarslerTable.join(EksterneVarslerTable, JoinType.LEFT, VarslerTable.varselId, EksterneVarslerTable.varselId)
+            .selectAll()
             .orderBy(VarslerTable.hendelseTimestamp, paging.order.asSortOrder())
             .offset(paging.offset).limit(paging.size)
             .map { it.asVarselRow() }
     }
 
     fun findByVarselId(varselId: UUID): VarselRow? = transaction {
-        VarslerTable.selectAll()
+        VarslerTable.join(EksterneVarslerTable, JoinType.LEFT, VarslerTable.varselId, EksterneVarslerTable.varselId)
+            .selectAll()
             .where { VarslerTable.varselId eq varselId }
             .map { it.asVarselRow() }
             .firstOrNull()
@@ -38,7 +42,8 @@ class VarselRepository {
         periodeId: UUID,
         paging: Paging = Paging.none(),
     ): List<VarselRow> = transaction {
-        VarslerTable.selectAll()
+        VarslerTable.join(EksterneVarslerTable, JoinType.LEFT, VarslerTable.varselId, EksterneVarslerTable.varselId)
+            .selectAll()
             .where { VarslerTable.periodeId eq periodeId }
             .orderBy(VarslerTable.hendelseTimestamp, paging.order.asSortOrder())
             .offset(paging.offset).limit(paging.size)
@@ -50,7 +55,8 @@ class VarselRepository {
         varselKilde: VarselKilde,
         paging: Paging = Paging.none(),
     ): List<VarselRow> = transaction {
-        VarslerTable.selectAll()
+        VarslerTable.join(EksterneVarslerTable, JoinType.LEFT, VarslerTable.varselId, EksterneVarslerTable.varselId)
+            .selectAll()
             .where { (VarslerTable.periodeId eq periodeId) and (VarslerTable.varselKilde eq varselKilde) }
             .orderBy(VarslerTable.hendelseTimestamp, paging.order.asSortOrder())
             .offset(paging.offset).limit(paging.size)

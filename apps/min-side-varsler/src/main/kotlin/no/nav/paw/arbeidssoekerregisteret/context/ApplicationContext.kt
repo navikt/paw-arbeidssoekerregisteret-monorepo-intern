@@ -13,6 +13,7 @@ import no.nav.paw.arbeidssoekerregisteret.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.model.VarselMeldingBygger
 import no.nav.paw.arbeidssoekerregisteret.repository.BestillingRepository
 import no.nav.paw.arbeidssoekerregisteret.repository.BestiltVarselRepository
+import no.nav.paw.arbeidssoekerregisteret.repository.EksterntVarselRepository
 import no.nav.paw.arbeidssoekerregisteret.repository.PeriodeRepository
 import no.nav.paw.arbeidssoekerregisteret.repository.VarselRepository
 import no.nav.paw.arbeidssoekerregisteret.service.BestillingService
@@ -83,6 +84,7 @@ data class ApplicationContext(
             val dataSource = createHikariDataSource(databaseConfig)
             val periodeRepository = PeriodeRepository()
             val varselRepository = VarselRepository()
+            val eksterntVarselRepository = EksterntVarselRepository()
             val bestillingRepository = BestillingRepository()
             val bestiltVarselRepository = BestiltVarselRepository()
 
@@ -100,6 +102,7 @@ data class ApplicationContext(
                 meterRegistry = prometheusMeterRegistry,
                 periodeRepository = periodeRepository,
                 varselRepository = varselRepository,
+                eksterntVarselRepository = eksterntVarselRepository,
                 varselMeldingBygger = varselMeldingBygger
             )
             val bestillingService = BestillingService(

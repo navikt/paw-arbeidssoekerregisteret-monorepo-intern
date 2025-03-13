@@ -150,6 +150,7 @@ class TopologyTest : FreeSpec({
                     varselRow1?.varselType shouldBe VarselType.OPPGAVE
                     varselRow1?.hendelseName shouldBe VarselEventName.UKJENT
                     varselRow1?.varselStatus shouldBe VarselStatus.UKJENT
+                    varselRow1?.eksterntVarsel shouldBe null
 
                     val oppgaveVarselHendelse1 = varselHendelse(
                         eventName = VarselEventName.OPPRETTET,
@@ -197,6 +198,10 @@ class TopologyTest : FreeSpec({
                     varselRow2?.varselType shouldBe VarselType.OPPGAVE
                     varselRow2?.hendelseName shouldBe VarselEventName.INAKTIVERT
                     varselRow2?.varselStatus shouldBe VarselStatus.UKJENT
+                    varselRow2?.eksterntVarsel shouldNotBe null
+                    varselRow2?.eksterntVarsel?.varselType shouldBe VarselType.OPPGAVE
+                    varselRow2?.eksterntVarsel?.hendelseName shouldBe VarselEventName.EKSTERN_STATUS_OPPDATERT
+                    varselRow2?.eksterntVarsel?.varselStatus shouldBe VarselStatus.FERDIGSTILT
 
                     val bekreftelseMeldingMottatt = bekreftelseMeldingMottatt(
                         periodeId = aapenPeriode.id,
@@ -211,9 +216,8 @@ class TopologyTest : FreeSpec({
                         value.eventName shouldBe EventType.Inaktiver
                     }
                     bekreftelseVarselTopic.isEmpty shouldBe true
-                    varselRepository.findAll() shouldHaveSize 0
-                    val varselRow3 = varselRepository.findByVarselId(bekreftelseTilgjengelig.bekreftelseId)
-                    varselRow3 shouldBe null
+                    varselRepository.findAll() shouldHaveSize 1 // TODO P.g.a. deaktivert sletting
+                    eksternVarselRepository.findAll() shouldHaveSize 1 // TODO P.g.a. deaktivert sletting
                 }
 
                 "To bekreftelser tilgjengelig så periode avsluttet" {
@@ -242,6 +246,7 @@ class TopologyTest : FreeSpec({
                     varselRow4?.varselType shouldBe VarselType.OPPGAVE
                     varselRow4?.hendelseName shouldBe VarselEventName.UKJENT
                     varselRow4?.varselStatus shouldBe VarselStatus.UKJENT
+                    varselRow4?.eksterntVarsel shouldBe null
 
                     val oppgaveVarselHendelse1 = varselHendelse(
                         eventName = VarselEventName.OPPRETTET,
@@ -279,8 +284,12 @@ class TopologyTest : FreeSpec({
                     varselRow5?.varselId shouldBe bekreftelseTilgjengelig1.bekreftelseId
                     varselRow5?.varselKilde shouldBe VarselKilde.BEKREFTELSE_TILGJENGELIG
                     varselRow5?.varselType shouldBe VarselType.OPPGAVE
-                    varselRow5?.hendelseName shouldBe VarselEventName.EKSTERN_STATUS_OPPDATERT
-                    varselRow5?.varselStatus shouldBe VarselStatus.FEILET
+                    varselRow5?.hendelseName shouldBe VarselEventName.OPPRETTET
+                    varselRow5?.varselStatus shouldBe VarselStatus.VENTER
+                    varselRow5?.eksterntVarsel shouldNotBe null
+                    varselRow5?.eksterntVarsel?.varselType shouldBe VarselType.OPPGAVE
+                    varselRow5?.eksterntVarsel?.hendelseName shouldBe VarselEventName.EKSTERN_STATUS_OPPDATERT
+                    varselRow5?.eksterntVarsel?.varselStatus shouldBe VarselStatus.FEILET
 
                     val bekreftelseTilgjengelig2 = bekreftelseTilgjengelig(
                         periodeId = aapenPeriode.id,
@@ -304,6 +313,7 @@ class TopologyTest : FreeSpec({
                     varselRow6?.varselType shouldBe VarselType.OPPGAVE
                     varselRow6?.hendelseName shouldBe VarselEventName.UKJENT
                     varselRow6?.varselStatus shouldBe VarselStatus.UKJENT
+                    varselRow6?.eksterntVarsel shouldBe null
 
                     val periodeAvsluttet = periodeAvsluttet(
                         periodeId = aapenPeriode.id,
@@ -324,7 +334,8 @@ class TopologyTest : FreeSpec({
                     }
                     bekreftelseVarselTopic.isEmpty shouldBe true
                     periodeRepository.findAll() shouldHaveSize 0
-                    varselRepository.findAll() shouldHaveSize 0
+                    varselRepository.findAll() shouldHaveSize 2  // TODO P.g.a. deaktivert sletting
+                    eksternVarselRepository.findAll() shouldHaveSize 1  // TODO P.g.a. deaktivert sletting
                 }
 
                 "Skal ignorere urelevante hendelser" {
@@ -349,6 +360,7 @@ class TopologyTest : FreeSpec({
                     bekreftelseVarselTopic.isEmpty shouldBe true
                     periodeRepository.findAll() shouldHaveSize 0
                     varselRepository.findAll() shouldHaveSize 0
+                    eksternVarselRepository.findAll() shouldHaveSize 0
                 }
 
                 "Skal feile om periode ikke er mottatt" {

@@ -6,15 +6,19 @@ import no.nav.paw.arbeidssoekerregisteret.config.ApplicationConfig
 import no.nav.paw.arbeidssoekerregisteret.exception.PeriodeIkkeFunnetException
 import no.nav.paw.arbeidssoekerregisteret.exception.VarselIkkeFunnetException
 import no.nav.paw.arbeidssoekerregisteret.model.Paging
+import no.nav.paw.arbeidssoekerregisteret.model.VarselEventName
 import no.nav.paw.arbeidssoekerregisteret.model.VarselHendelse
 import no.nav.paw.arbeidssoekerregisteret.model.VarselKilde
 import no.nav.paw.arbeidssoekerregisteret.model.VarselMelding
 import no.nav.paw.arbeidssoekerregisteret.model.VarselMeldingBygger
+import no.nav.paw.arbeidssoekerregisteret.model.asInsertEksterntVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.asInsertPeriodeRow
 import no.nav.paw.arbeidssoekerregisteret.model.asInsertVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.asResponse
+import no.nav.paw.arbeidssoekerregisteret.model.asUpdateEksterntVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.asUpdatePeriodeRow
 import no.nav.paw.arbeidssoekerregisteret.model.asUpdateVarselRow
+import no.nav.paw.arbeidssoekerregisteret.repository.EksterntVarselRepository
 import no.nav.paw.arbeidssoekerregisteret.repository.PeriodeRepository
 import no.nav.paw.arbeidssoekerregisteret.repository.VarselRepository
 import no.nav.paw.arbeidssoekerregisteret.utils.bekreftelseHendelseCounter
@@ -35,6 +39,7 @@ class VarselService(
     private val meterRegistry: MeterRegistry,
     private val periodeRepository: PeriodeRepository,
     private val varselRepository: VarselRepository,
+    private val eksterntVarselRepository: EksterntVarselRepository,
     private val varselMeldingBygger: VarselMeldingBygger
 ) {
     private val logger = buildLogger
@@ -176,7 +181,7 @@ class VarselService(
                             hendelse.periodeId
                         )
                         meterRegistry.bekreftelseHendelseCounter("delete", hendelse)
-                        varselRepository.deleteByVarselId(hendelse.bekreftelseId)
+                        //varselRepository.deleteByVarselId(hendelse.bekreftelseId)
                         listOf(varselMeldingBygger.avsluttVarsel(hendelse.bekreftelseId))
                     } else {
                         MDC.put("x_action", "fail")
@@ -212,10 +217,10 @@ class VarselService(
                             hendelse.periodeId
                         )
                         meterRegistry.bekreftelseHendelseCounter("delete", hendelse)
-                        varselRepository.deleteByPeriodeIdAndVarselKilde(
+                        /*varselRepository.deleteByPeriodeIdAndVarselKilde(
                             periodeId = hendelse.periodeId,
                             varselKilde = VarselKilde.BEKREFTELSE_TILGJENGELIG
-                        )
+                        )*/
                         varselRows.map { varselMeldingBygger.avsluttVarsel(it.varselId) }
                     }
                 }
@@ -242,30 +247,70 @@ class VarselService(
             val eventName = "varsel.${hendelse.eventName.value}"
             MDC.put("x_event_name", eventName)
             logger.debug("Prosesserer hendelse {}", eventName)
-            val varselRow = varselRepository.findByVarselId(UUID.fromString(hendelse.varselId))
+            val varselId = UUID.fromString(hendelse.varselId)
+            val varselRow = varselRepository.findByVarselId(varselId)
             if (varselRow != null) {
-                if (hendelse.tidspunkt.isAfter(varselRow.hendelseTimestamp)) {
-                    MDC.put("x_action", "update")
-                    logger.debug(
-                        "Oppdaterer varsel for hendelse {} med type {} og status {}",
-                        VarselHendelse::class.java.simpleName,
-                        hendelse.varseltype,
-                        hendelse.status
-                    )
-                    meterRegistry.varselHendelseCounter("update", hendelse)
-                    val updateVarselRow = hendelse.asUpdateVarselRow()
-                    varselRepository.update(updateVarselRow)
+                if (hendelse.eventName == VarselEventName.EKSTERN_STATUS_OPPDATERT) {
+                    if (varselRow.eksterntVarsel != null) {
+                        if (hendelse.tidspunkt.isAfter(varselRow.eksterntVarsel.hendelseTimestamp)) {
+                            MDC.put("x_action", "update")
+                            logger.debug(
+                                "Oppdaterer eksternt varsel for hendelse {} med type {} og status {}",
+                                VarselHendelse::class.java.simpleName,
+                                hendelse.varseltype,
+                                hendelse.status
+                            )
+                            meterRegistry.varselHendelseCounter("update", hendelse)
+                            val updateEksterntVarselRow = hendelse.asUpdateEksterntVarselRow()
+                            eksterntVarselRepository.update(updateEksterntVarselRow)
+                        } else {
+                            MDC.put("x_action", "ignore")
+                            logger.warn(
+                                "Ignorerer hendelse {} med type {} og status {} siden hendelse {} er eldre enn lagret eksternt varsel {}",
+                                VarselHendelse::class.java.simpleName,
+                                hendelse.varseltype,
+                                hendelse.status,
+                                hendelse.tidspunkt,
+                                varselRow.hendelseTimestamp
+                            )
+                            meterRegistry.varselHendelseCounter("ignore", hendelse)
+                        }
+                    } else {
+                        MDC.put("x_action", "insert")
+                        logger.debug(
+                            "Oppretter eksternt varsel for hendelse {} med type {} og status {}",
+                            VarselHendelse::class.java.simpleName,
+                            hendelse.varseltype,
+                            hendelse.status
+                        )
+                        meterRegistry.varselHendelseCounter("insert", hendelse)
+                        val insertEksterntVarselRow = hendelse.asInsertEksterntVarselRow()
+                        eksterntVarselRepository.insert(insertEksterntVarselRow)
+                    }
                 } else {
-                    MDC.put("x_action", "ignore")
-                    logger.warn(
-                        "Ignorerer hendelse {} med type {} og status {} siden hendelse {} er eldre enn lagret varsel {}",
-                        VarselHendelse::class.java.simpleName,
-                        hendelse.varseltype,
-                        hendelse.status,
-                        hendelse.tidspunkt,
-                        varselRow.hendelseTimestamp
-                    )
-                    meterRegistry.varselHendelseCounter("ignore", hendelse)
+                    if (hendelse.tidspunkt.isAfter(varselRow.hendelseTimestamp)) {
+                        MDC.put("x_action", "update")
+                        logger.debug(
+                            "Oppdaterer varsel for hendelse {} med type {} og status {}",
+                            VarselHendelse::class.java.simpleName,
+                            hendelse.varseltype,
+                            hendelse.status
+                        )
+                        meterRegistry.varselHendelseCounter("update", hendelse)
+                        val updateVarselRow = hendelse.asUpdateVarselRow()
+                        varselRepository.update(updateVarselRow)
+                    } else {
+                        MDC.put("x_action", "ignore")
+                        logger.warn(
+                            "Ignorerer hendelse {} med type {} og status {} siden hendelse {} er eldre enn lagret varsel {}",
+                            VarselHendelse::class.java.simpleName,
+                            hendelse.varseltype,
+                            hendelse.status,
+                            hendelse.tidspunkt,
+                            varselRow.hendelseTimestamp
+                        )
+                        meterRegistry.varselHendelseCounter("ignore", hendelse)
+                    }
                 }
             } else {
                 MDC.put("x_action", "fail")

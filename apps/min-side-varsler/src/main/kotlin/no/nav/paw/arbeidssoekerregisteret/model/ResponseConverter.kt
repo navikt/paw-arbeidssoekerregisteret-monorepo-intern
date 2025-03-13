@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssoekerregisteret.model
 
 import no.nav.paw.arbeidssoekerregisteret.api.models.BestillingResponse
+import no.nav.paw.arbeidssoekerregisteret.api.models.EksterntVarselResponse
 import no.nav.paw.arbeidssoekerregisteret.api.models.HendelseName
 import no.nav.paw.arbeidssoekerregisteret.api.models.VarselResponse
 
@@ -9,6 +10,15 @@ fun VarselRow.asResponse() = VarselResponse(
     periodeId = this.periodeId,
     varselKilde = this.varselKilde.asResponse(),
     varselType = this.varselType.asResponse(),
+    varselStatus = this.varselStatus.asResponse(),
+    hendelseName = this.hendelseName.asResponse(),
+    hendelseTimestamp = this.hendelseTimestamp,
+    insertedTimestamp = this.insertedTimestamp,
+    updatedTimestamp = this.updatedTimestamp,
+    eksterntVarsel = this.eksterntVarsel?.asResponse()
+)
+
+fun EksterntVarselRow.asResponse() = EksterntVarselResponse(
     varselStatus = this.varselStatus.asResponse(),
     hendelseName = this.hendelseName.asResponse(),
     hendelseTimestamp = this.hendelseTimestamp,

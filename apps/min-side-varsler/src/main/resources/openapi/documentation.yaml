@@ -270,6 +270,8 @@ components:
         updatedTimestamp:
           type: "string"
           format: "date-time"
+        eksterntVarsel:
+          $ref: "#/components/schemas/EksterntVarselResponse"
       required:
         - "periodeId"
         - "varselId"
@@ -286,6 +288,33 @@ components:
         varselType: "OPPGAVE"
         varselStatus: "VENTER"
         hendelseName: "OPPRETTET"
+        hendelseTimestamp: "2020-02-02T11:22:33.444Z"
+        insertedTimestamp: "2020-02-02T12:22:33.444Z"
+        updatedTimestamp: "2020-02-02T13:22:33.444Z"
+    EksterntVarselResponse:
+      type: "object"
+      properties:
+        varselStatus:
+          $ref: "#/components/schemas/VarselStatus"
+        hendelseName:
+          $ref: "#/components/schemas/HendelseName"
+        hendelseTimestamp:
+          type: "string"
+          format: "date-time"
+        insertedTimestamp:
+          type: "string"
+          format: "date-time"
+        updatedTimestamp:
+          type: "string"
+          format: "date-time"
+      required:
+        - "varselStatus"
+        - "hendelseName"
+        - "insertedTimestamp"
+        - "hendelseTimestamp"
+      example:
+        varselStatus: "VENTER"
+        hendelseName: "EKSTERN_STATUS_OPPDATERT"
         hendelseTimestamp: "2020-02-02T11:22:33.444Z"
         insertedTimestamp: "2020-02-02T12:22:33.444Z"
         updatedTimestamp: "2020-02-02T13:22:33.444Z"

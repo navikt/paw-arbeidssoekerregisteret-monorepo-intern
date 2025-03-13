@@ -9,6 +9,7 @@ import no.nav.paw.arbeidssoekerregisteret.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.model.VarselHendelse
 import no.nav.paw.arbeidssoekerregisteret.repository.BestillingRepository
 import no.nav.paw.arbeidssoekerregisteret.repository.BestiltVarselRepository
+import no.nav.paw.arbeidssoekerregisteret.repository.EksterntVarselRepository
 import no.nav.paw.arbeidssoekerregisteret.repository.PeriodeRepository
 import no.nav.paw.arbeidssoekerregisteret.repository.VarselRepository
 import no.nav.paw.arbeidssoekerregisteret.service.BestillingService
@@ -25,7 +26,12 @@ import no.nav.security.mock.oauth2.MockOAuth2Server
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.*
+import org.apache.kafka.streams.KeyValue
+import org.apache.kafka.streams.StreamsBuilder
+import org.apache.kafka.streams.StreamsConfig
+import org.apache.kafka.streams.TestInputTopic
+import org.apache.kafka.streams.TestOutputTopic
+import org.apache.kafka.streams.TopologyTestDriver
 import java.util.*
 import javax.sql.DataSource
 import kotlin.collections.set
@@ -40,6 +46,7 @@ class KafkaTestContext(
     override val prometheusMeterRegistry: PrometheusMeterRegistry,
     override val periodeRepository: PeriodeRepository,
     override val varselRepository: VarselRepository,
+    override val eksternVarselRepository: EksterntVarselRepository,
     override val bestillingRepository: BestillingRepository,
     override val bestiltVarselRepository: BestiltVarselRepository,
     override val varselService: VarselService,
@@ -60,6 +67,7 @@ class KafkaTestContext(
     prometheusMeterRegistry = prometheusMeterRegistry,
     periodeRepository = periodeRepository,
     varselRepository = varselRepository,
+    eksternVarselRepository = eksternVarselRepository,
     bestillingRepository = bestillingRepository,
     bestiltVarselRepository = bestiltVarselRepository,
     bestillingService = bestillingService,
@@ -147,6 +155,7 @@ class KafkaTestContext(
                     prometheusMeterRegistry = prometheusMeterRegistry,
                     periodeRepository = periodeRepository,
                     varselRepository = varselRepository,
+                    eksternVarselRepository = eksternVarselRepository,
                     bestillingRepository = bestillingRepository,
                     bestiltVarselRepository = bestiltVarselRepository,
                     varselService = varselService,
