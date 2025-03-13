@@ -62,7 +62,8 @@ private fun VarselEventName.asResponse(): HendelseName = when (this) {
 fun BestillingRow.asResponse(
     varslerTotalt: Long,
     varslerSendt: Long,
-    varslerFeilet: Long
+    varslerFeilet: Long,
+    varslerIgnorert: Long
 ): BestillingResponse = BestillingResponse(
     bestillingId = this.bestillingId,
     bestiller = this.bestiller,
@@ -70,6 +71,7 @@ fun BestillingRow.asResponse(
     varslerTotalt = varslerTotalt,
     varslerSendt = varslerSendt,
     varslerFeilet = varslerFeilet,
+    varslerIgnorert = varslerIgnorert,
     insertedTimestamp = this.insertedTimestamp,
     updatedTimestamp = this.updatedTimestamp
 )

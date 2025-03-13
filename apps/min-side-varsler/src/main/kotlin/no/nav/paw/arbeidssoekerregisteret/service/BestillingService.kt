@@ -43,17 +43,22 @@ class BestillingService(
     fun hentBestilling(bestillingId: UUID): BestillingResponse = transaction {
         val bestilling = bestillingRepository.findByBestillingId(bestillingId)
             ?: throw BestillingIkkeFunnetException("Bestilling ikke funnet")
-        val totalCount = bestiltVarselRepository.countByBestillingId(bestillingId)
-        val sendtCount = bestiltVarselRepository.countByBestillingIdAndStatus(bestillingId, BestiltVarselStatus.SENDT)
-        val feiletCount = bestiltVarselRepository.countByBestillingIdAndStatus(bestillingId, BestiltVarselStatus.FEILET)
-        bestilling.asResponse(totalCount, sendtCount, feiletCount)
+        val totalCount = bestiltVarselRepository
+            .countByBestillingId(bestillingId)
+        val sendtCount = bestiltVarselRepository
+            .countByBestillingIdAndStatus(bestillingId, BestiltVarselStatus.SENDT)
+        val feiletCount = bestiltVarselRepository
+            .countByBestillingIdAndStatus(bestillingId, BestiltVarselStatus.FEILET)
+        val ignorertCount = bestiltVarselRepository
+            .countByBestillingIdAndStatus(bestillingId, BestiltVarselStatus.IGNORERT)
+        bestilling.asResponse(totalCount, sendtCount, feiletCount, ignorertCount)
     }
 
     @WithSpan("opprettBestilling")
     fun opprettBestilling(bestiller: String): BestillingResponse = transaction {
         val bestillingId = UUID.randomUUID()
         bestillingRepository.insert(InsertBestillingRow(bestillingId, bestiller))
-        bestillingRepository.findByBestillingId(bestillingId)?.asResponse(0, 0, 0)
+        bestillingRepository.findByBestillingId(bestillingId)?.asResponse(0, 0, 0, 0)
             ?: throw BestillingIkkeFunnetException("Bestilling ikke funnet")
     }
 

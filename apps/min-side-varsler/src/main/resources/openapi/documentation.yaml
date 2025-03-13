@@ -225,6 +225,9 @@ components:
         varslerFeilet:
           type: integer
           format: int64
+        varslerIgnorert:
+          type: integer
+          format: int64
         insertedTimestamp:
           type: "string"
           format: "date-time"
@@ -238,6 +241,7 @@ components:
         - "varslerTotalt"
         - "varslerSendt"
         - "varslerFeilet"
+        - "varslerIgnorert"
         - "insertedTimestamp"
       example:
         bestillingId: "84201f96-363b-4aab-a589-89fa4b9b1feb"
