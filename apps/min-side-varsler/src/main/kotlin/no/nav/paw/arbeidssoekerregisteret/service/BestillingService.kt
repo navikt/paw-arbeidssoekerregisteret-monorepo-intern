@@ -87,7 +87,8 @@ class BestillingService(
 
     @WithSpan("prosesserBestilling")
     private fun prosesserBestilling(bestilling: BestillingRow) {
-        val varselIdList = bestiltVarselRepository.findVarselIdByBestillingId(bestilling.bestillingId)
+        val varselIdList = bestiltVarselRepository
+            .findVarselIdByBestillingIdAndStatus(bestilling.bestillingId, BestiltVarselStatus.VENTER)
         logger.info(
             "Prosesserer {} varslinger for varselbestilling {}",
             varselIdList.size,

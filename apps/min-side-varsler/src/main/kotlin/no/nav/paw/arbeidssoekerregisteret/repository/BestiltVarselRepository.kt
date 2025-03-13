@@ -51,12 +51,13 @@ class BestiltVarselRepository {
     }
 
     @WithSpan("findVarselIdByBestillingId")
-    fun findVarselIdByBestillingId(
+    fun findVarselIdByBestillingIdAndStatus(
         bestillingId: UUID,
+        status: BestiltVarselStatus,
         paging: Paging = Paging.none(),
     ): List<UUID> = transaction {
         BestilteVarslerTable.selectAll()
-            .where { BestilteVarslerTable.bestillingId eq bestillingId }
+            .where { (BestilteVarslerTable.bestillingId eq bestillingId) and (BestilteVarslerTable.status eq status) }
             .orderBy(BestilteVarslerTable.insertedTimestamp, paging.order.asSortOrder())
             .offset(paging.offset).limit(paging.size)
             .map { it.asVarselId() }
