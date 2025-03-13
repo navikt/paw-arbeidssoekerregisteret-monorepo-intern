@@ -68,3 +68,5 @@ spec:
           - application: paw-arbeidssoekerregisteret-utgang-formidlingsgruppe
           - application: paw-arbeidssoekerregisteret-hendelselogg-backup
           - application: paw-arbeidssoekerregisteret-api-bekreftelse
+          - application: flex-arbeidssokerregister-oppdatering
+            namespace: flex
