@@ -1,8 +1,5 @@
 package no.nav.paw.bekreftelsetjeneste.tilstand
 
-import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
-import no.nav.paw.collections.PawNonEmptyList
-import java.time.Duration
 import java.time.Instant
 import java.util.*
 
@@ -22,37 +19,3 @@ fun Bekreftelse.sisteTilstand(): BekreftelseTilstandStatus = tilstandsLogg.siste
 
 operator fun Bekreftelse.plus(bekreftelseTilstandStatus: BekreftelseTilstandStatus): Bekreftelse =
     copy(tilstandsLogg = tilstandsLogg + bekreftelseTilstandStatus)
-
-fun opprettFoersteBekreftelse(
-    tidligsteStartTidspunktForBekreftelse: Instant,
-    periode: PeriodeInfo,
-    interval: Duration
-): Bekreftelse {
-    val start = kalkulerInitiellStartTidForBekreftelsePeriode(
-        tidligsteStartTidspunkt = tidligsteStartTidspunktForBekreftelse,
-        periodeStart = periode.startet,
-        interval = interval
-    )
-    return Bekreftelse(
-        BekreftelseTilstandsLogg(IkkeKlarForUtfylling(periode.startet), emptyList()),
-        bekreftelseId = UUID.randomUUID(),
-        gjelderFra = start,
-        gjelderTil = sluttTidForBekreftelsePeriode(start, interval)
-    )
-}
-
-fun PawNonEmptyList<Bekreftelse>.opprettNesteTilgjengeligeBekreftelse(
-    wallClock: WallClock,
-    interval: Duration,
-): Bekreftelse {
-    val sisteBekreftelse = maxBy { it.gjelderTil }
-    return Bekreftelse(
-        bekreftelseId = UUID.randomUUID(),
-        gjelderFra = sisteBekreftelse.gjelderTil,
-        gjelderTil = sluttTidForBekreftelsePeriode(sisteBekreftelse.gjelderTil, interval),
-        tilstandsLogg = BekreftelseTilstandsLogg(
-            siste = KlarForUtfylling(wallClock.value),
-            tidligere = emptyList()
-        )
-    )
-}

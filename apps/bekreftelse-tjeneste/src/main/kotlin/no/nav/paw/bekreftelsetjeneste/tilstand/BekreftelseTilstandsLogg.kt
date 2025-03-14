@@ -23,7 +23,11 @@ operator fun BekreftelseTilstandsLogg.plus(bekreftelseTilstandStatus: Bekreftels
             }
         }
         .let { alle ->
-            val siste = alle.maxBy { it.timestamp }
+            val siste = if (bekreftelseTilstandStatus.timestamp == siste.timestamp) {
+                bekreftelseTilstandStatus
+            } else {
+                alle.maxBy { it.timestamp }
+            }
             val tidligere = alle.filterNot { it == siste }.sortedBy { it.timestamp }
             BekreftelseTilstandsLogg(siste, tidligere)
         }

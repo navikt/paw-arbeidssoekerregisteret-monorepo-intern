@@ -18,7 +18,12 @@ fun StreamsBuilder.buildTopology(
     applicationContext: ApplicationContext
 ): Topology {
     buildPeriodeStream(applicationContext.applicationConfig, applicationContext.kafkaKeysClient)
-    buildBekreftelseStream(applicationContext.prometheusMeterRegistry, applicationContext.applicationConfig, applicationContext.bekreftelseKonfigurasjon)
+    buildBekreftelseStream(
+        prometheusMeterRegistry = applicationContext.prometheusMeterRegistry,
+        applicationConfig = applicationContext.applicationConfig,
+        bekreftelseKonfigurasjon = applicationContext.bekreftelseKonfigurasjon,
+        oddetallPartallMap = applicationContext.oddetallPartallMap
+    )
     byggBekreftelsePaaVegneAvStroem(
         registry = applicationContext.prometheusMeterRegistry,
         kafkaTopologyConfig = applicationContext.applicationConfig.kafkaTopology,

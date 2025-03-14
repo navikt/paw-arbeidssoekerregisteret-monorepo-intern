@@ -17,6 +17,8 @@ import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
 import no.nav.paw.bekreftelsetjeneste.config.BEKREFTELSE_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.context.ApplicationContext
+import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.OddetallPartallMap
+import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.StatiskMapOddetallPartallMap
 import no.nav.paw.bekreftelsetjeneste.testutils.prettyPrint
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstandSerde
 import no.nav.paw.bekreftelsetjeneste.topology.buildTopology
@@ -42,7 +44,8 @@ import java.util.concurrent.atomic.AtomicReference
 
 class ApplicationTestContext(
     initialWallClockTime: Instant = Instant.now(),
-    val bekreftelseKonfigurasjon: BekreftelseKonfigurasjon = loadNaisOrLocalConfiguration<BekreftelseKonfigurasjon>(BEKREFTELSE_CONFIG_FILE_NAME)
+    val bekreftelseKonfigurasjon: BekreftelseKonfigurasjon = loadNaisOrLocalConfiguration<BekreftelseKonfigurasjon>(BEKREFTELSE_CONFIG_FILE_NAME),
+    oddetallPartallMap: OddetallPartallMap = StatiskMapOddetallPartallMap(emptySequence())
 ) {
     val wallclock = AtomicReference(initialWallClockTime)
     val bekreftelsePaaVegneAvTopicSerde: Serde<PaaVegneAv> = opprettSerde()
@@ -56,7 +59,8 @@ class ApplicationTestContext(
         applicationConfig = applicationConfig,
         prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
         healthIndicatorRepository = HealthIndicatorRepository(),
-        kafkaKeysClient = kafkaKeysClient
+        kafkaKeysClient = kafkaKeysClient,
+        oddetallPartallMap = oddetallPartallMap
     )
 
     val logger: Logger = LoggerFactory.getLogger(ApplicationTestContext::class.java)

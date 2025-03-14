@@ -9,10 +9,14 @@ object Partallsuke: Ukenummer
 object Oddetallsuke: Ukenummer
 object Ukjent: Ukenummer
 
-class OddetallPartallMap(kilde: Sequence<Pair<Identitetsnummer, Ukenummer>>) {
+interface OddetallPartallMap {
+    operator fun get(identitetsnummer: Identitetsnummer): Ukenummer
+}
+
+class StatiskMapOddetallPartallMap(kilde: Sequence<Pair<Identitetsnummer, Ukenummer>>): OddetallPartallMap {
     private val data = kilde.toMap()
 
-    operator fun get(identitetsnummer: Identitetsnummer): Ukenummer = data[identitetsnummer] ?: Ukjent
+    override operator fun get(identitetsnummer: Identitetsnummer): Ukenummer = data[identitetsnummer] ?: Ukjent
 }
 
 fun oddetallPartallMapFraCsvFil(
@@ -37,4 +41,4 @@ fun oddetallPartallMapFraCsvFil(
                     oddetall -> Oddetallsuke
                     else -> throw IllegalArgumentException("Linje $index: Ukjent ukenummer verdi: $ukenummer")
                 }
-            }.let(::OddetallPartallMap)
+            }.let(::StatiskMapOddetallPartallMap)

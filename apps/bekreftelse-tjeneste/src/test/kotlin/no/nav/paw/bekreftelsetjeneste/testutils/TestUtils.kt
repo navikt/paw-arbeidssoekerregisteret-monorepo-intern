@@ -16,24 +16,27 @@ import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloeptEtterEksternInnsamling
 import no.nav.paw.bekreftelsetjeneste.ApplicationTestContext
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
+import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.OddetallPartallMap
+import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.StatiskMapOddetallPartallMap
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import no.nav.paw.test.days
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
 
 val standardIntervaller = BekreftelseKonfigurasjon(
-    migreringstidspunkt = Instant.parse("2024-09-29T22:00:00Z"),
+    tidligsteBekreftelsePeriodeStart = LocalDate.parse("2024-09-29"),
     interval = 14.days,
     tilgjengeligOffset = 3.days,
     graceperiode = 7.days,
     varselFoerGraceperiodeUtloept = 3.days
 )
 
-inline fun <T1: Any, reified T2: T1> List<T1>.assertExactlyOne(f: T2.() -> Unit) =
+inline fun <T1 : Any, reified T2 : T1> List<T1>.assertExactlyOne(f: T2.() -> Unit) =
     filterIsInstance<T2>()
         .let {
             withClue("Expected exactly one ${T2::class.simpleName} but found ${it.size}") {
@@ -89,7 +92,7 @@ fun BekreftelseKonfigurasjon.bekreftelse(
                 siste = it.last(),
                 tidligere = it.dropLast(1)
             )
-    },
+        },
     bekreftelseId = UUID.randomUUID(),
     gjelderFra = gjelderFra,
     gjelderTil = gjelderTil
@@ -170,18 +173,22 @@ fun ApplicationTestContext.vi_stiller_klokken_frem(tid: Duration) {
 
 fun setOppTest(
     datoOgKlokkeslettVedStart: Instant,
+    tidlistBekreftelsePeriodeStart: LocalDate? = null,
     bekreftelseIntervall: Duration,
     tilgjengeligOffset: Duration,
-    innleveringsfrist: Duration
+    innleveringsfrist: Duration,
+    oddetallPartallMap: OddetallPartallMap = StatiskMapOddetallPartallMap(emptySequence())
 ): ApplicationTestContext {
     return ApplicationTestContext(
         initialWallClockTime = datoOgKlokkeslettVedStart,
         bekreftelseKonfigurasjon = BekreftelseKonfigurasjon(
-            migreringstidspunkt = datoOgKlokkeslettVedStart - 30.dager,
+            tidligsteBekreftelsePeriodeStart = tidlistBekreftelsePeriodeStart
+                ?: (datoOgKlokkeslettVedStart - 30.dager).atZone(ZoneId.of("Europe/Oslo")).toLocalDate(),
             interval = bekreftelseIntervall,
             graceperiode = innleveringsfrist,
-            tilgjengeligOffset = tilgjengeligOffset
-        )
+            tilgjengeligOffset = tilgjengeligOffset,
+        ),
+        oddetallPartallMap = oddetallPartallMap
     )
 }
 
@@ -190,18 +197,21 @@ val Int.timer: Duration get() = Duration.ofHours(this.toLong())
 private val format = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
 val String.timestamp: Instant get() = LocalDateTime.parse(this, format).atZone(ZoneId.of("Europe/Oslo")).toInstant()
 private val prettyPrintFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("cccc dd.MM.yyyy HH:mm ('uke' w)")
-val Instant.prettyPrint: String get() = LocalDateTime.ofInstant(this, ZoneId.systemDefault()).format(prettyPrintFormat)
-    .replace("Monday", "Mandag")
-    .replace("Tuesday", "Tirsdag")
-    .replace("Wednesday", "Onsdag")
-    .replace("Thursday", "Torsdag")
-    .replace("Friday", "Fredag")
-    .replace("Saturday", "Lørdag")
-    .replace("Sunday", "Søndag")
+val Instant.prettyPrint: String
+    get() = LocalDateTime.ofInstant(this, ZoneId.systemDefault()).format(prettyPrintFormat)
+        .replace("Monday", "Mandag")
+        .replace("Tuesday", "Tirsdag")
+        .replace("Wednesday", "Onsdag")
+        .replace("Thursday", "Torsdag")
+        .replace("Friday", "Fredag")
+        .replace("Saturday", "Lørdag")
+        .replace("Sunday", "Søndag")
 
 fun BekreftelseHendelse.prettyPrint(): String {
     val name = this::class.java.simpleName
-    val header = "${name.first().lowercase()}${name.drop(1).map { if (it.isUpperCase()) " ${it.lowercase()}" else it }.joinToString("")}"
+    val header = "${name.first().lowercase()}${
+        name.drop(1).map { if (it.isUpperCase()) " ${it.lowercase()}" else it }.joinToString("")
+    }"
         .replace("oe", "ø")
         .replace("aa", "å")
         .replace("ae", "æ")

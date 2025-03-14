@@ -2,6 +2,7 @@ package no.nav.paw.bekreftelsetjeneste.paavegneav
 
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import no.nav.paw.bekreftelse.internehendelser.BekreftelsePaaVegneAvStartet
@@ -23,6 +24,11 @@ class DagpengerStarterBekreftelsePaaVegneAv1DagFoerGraceperiodenUtloeper : FreeS
         val tilstand = initiellTilstand.leggTilNyEllerOppdaterBekreftelse(
             intervaller.bekreftelse(
                 gjelderFra = periodeStart,
+                gracePeriodeUtloept = null
+            )
+        ).leggTilNyEllerOppdaterBekreftelse(
+            intervaller.bekreftelse(
+                gjelderFra = periodeStart + intervaller.interval,
                 gracePeriodeUtloept = null
             )
         )
@@ -58,12 +64,11 @@ class DagpengerStarterBekreftelsePaaVegneAv1DagFoerGraceperiodenUtloeper : FreeS
                 hendelse.periodeId shouldBe tilstand.periode.periodeId
             }
         }
-        "Åpne bekreftelser settes til InternBekreftelsePaaVegneAvStartet" {
+        "Åpne bekreftelser slettes fra intern tilstand" {
             withClue("Handlinger inneholdt ikke skriving av intern tilstand med forventet status: ${handlinger.filterIsInstance<SkrivBekreftelseTilstand>()}") {
                 handlinger.assertExactlyOne<Handling, SkrivBekreftelseTilstand> {
                     id shouldBe tilstand.periode.periodeId
-                    value.bekreftelser.size shouldBe 1
-                    value.bekreftelser.first().sisteTilstand().shouldBeInstanceOf<no.nav.paw.bekreftelsetjeneste.tilstand.InternBekreftelsePaaVegneAvStartet>()
+                    value.bekreftelser.shouldBeEmpty()
                 }
             }
         }

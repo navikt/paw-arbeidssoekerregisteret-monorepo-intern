@@ -20,10 +20,12 @@ sealed interface BekreftelseTilstandStatus {
     val timestamp: Instant
 }
 
+sealed interface VenterPaaSvar
+
 data class GracePeriodeUtloept(override val timestamp: Instant) : BekreftelseTilstandStatus
-data class GracePeriodeVarselet(override val timestamp: Instant) : BekreftelseTilstandStatus
+data class GracePeriodeVarselet(override val timestamp: Instant) : BekreftelseTilstandStatus, VenterPaaSvar
 data class IkkeKlarForUtfylling(override val timestamp: Instant) : BekreftelseTilstandStatus
-data class KlarForUtfylling(override val timestamp: Instant) : BekreftelseTilstandStatus
+data class KlarForUtfylling(override val timestamp: Instant) : BekreftelseTilstandStatus, VenterPaaSvar
 data class Levert(override val timestamp: Instant) : BekreftelseTilstandStatus
-data class VenterSvar(override val timestamp: Instant) : BekreftelseTilstandStatus
+data class VenterSvar(override val timestamp: Instant) : BekreftelseTilstandStatus, VenterPaaSvar
 data class InternBekreftelsePaaVegneAvStartet(override val timestamp: Instant) : BekreftelseTilstandStatus

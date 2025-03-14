@@ -18,6 +18,8 @@ import no.nav.paw.bekreftelsetjeneste.plugins.buildKafkaStreams
 import no.nav.paw.bekreftelsetjeneste.plugins.configureKafka
 import no.nav.paw.bekreftelsetjeneste.plugins.configureMetrics
 import no.nav.paw.bekreftelsetjeneste.routes.metricsRoutes
+import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.OddetallPartallMap
+import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.StatiskMapOddetallPartallMap
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstandSerde
 import no.nav.paw.bekreftelsetjeneste.topology.buildTopology
 import no.nav.paw.config.env.appNameOrDefaultForLocal
@@ -40,7 +42,11 @@ fun main() {
     val keepGoing = AtomicBoolean(true)
     with(serverConfig) {
         embeddedServer(Netty, port = port) {
-            module(applicationConfig, bekreftelseKonfigurasjon)
+            module(
+                applicationConfig = applicationConfig,
+                bekreftelseKonfigurasjon = bekreftelseKonfigurasjon,
+                oddetallPartallMap = StatiskMapOddetallPartallMap(emptySequence())
+            )
         }.apply {
             addShutdownHook {
                 keepGoing.set(false)
@@ -54,9 +60,14 @@ fun main() {
 fun Application.module(
     applicationConfig: ApplicationConfig,
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
-    keepGoing: AtomicBoolean = AtomicBoolean(true)
+    keepGoing: AtomicBoolean = AtomicBoolean(true),
+    oddetallPartallMap: OddetallPartallMap
 ) {
-    val applicationContext = ApplicationContext.create(applicationConfig, bekreftelseKonfigurasjon)
+    val applicationContext = ApplicationContext.create(
+        applicationConfig = applicationConfig,
+        bekreftelseKonfigurasjon = bekreftelseKonfigurasjon,
+        oddetallPartallMap = oddetallPartallMap
+    )
     val stream = StreamsBuilder()
     stream.addStateStore(
         Stores.keyValueStoreBuilder(

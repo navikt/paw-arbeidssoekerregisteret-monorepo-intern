@@ -5,8 +5,6 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
-import io.opentelemetry.api.trace.SpanKind
-import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
@@ -21,6 +19,7 @@ import no.nav.paw.bekreftelsetjeneste.metrics.tellBekreftelseUtgaaendeHendelse
 import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
 import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
 import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
+import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.OddetallPartallMap
 import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.GracePeriodeVarselet
@@ -38,7 +37,6 @@ import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.Produced
 import org.apache.kafka.streams.processor.PunctuationType
 import org.apache.kafka.streams.processor.api.Record
-import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
 import no.nav.paw.bekreftelse.internehendelser.vo.BrukerType as InterntBrukerType
@@ -46,7 +44,8 @@ import no.nav.paw.bekreftelse.internehendelser.vo.BrukerType as InterntBrukerTyp
 fun StreamsBuilder.buildBekreftelseStream(
     prometheusMeterRegistry: PrometheusMeterRegistry,
     applicationConfig: ApplicationConfig,
-    bekreftelseKonfigurasjon: BekreftelseKonfigurasjon
+    bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
+    oddetallPartallMap: OddetallPartallMap
 ) {
     with(applicationConfig.kafkaTopology) {
         stream<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>(bekreftelseTopic)
@@ -61,6 +60,7 @@ fun StreamsBuilder.buildBekreftelseStream(
                         .partially1(internStateStoreName)
                         .partially1(bekreftelsePaaVegneAvStateStoreName)
                         .partially1(bekreftelseKonfigurasjon)
+                        .partially1(oddetallPartallMap)
                 ),
             ) { record ->
                 val wallClock = WallClock(Instant.ofEpochMilli(currentSystemTimeMs()))

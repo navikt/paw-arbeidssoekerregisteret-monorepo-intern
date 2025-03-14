@@ -3,6 +3,7 @@ package no.nav.paw.bekreftelsetjeneste.testcases
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldBe
 import no.nav.paw.arbeidssoekerregisteret.testdata.ValueWithKafkaKeyData
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
@@ -19,10 +20,11 @@ inline fun <reified A : BekreftelseHendelse> FreeSpec.forventer(
     input: MutableList<Pair<Instant, ValueWithKafkaKeyData<*>>> = mutableListOf(),
     fra: Instant,
     til: Instant,
+    antall: Int = 1,
     crossinline asserts: (List<A>) -> Unit = {}
 ) {
     val kandidater = kilde.toList().filter { (tidspunkt, _) -> tidspunkt == fra || (tidspunkt.isAfter(fra) && tidspunkt.isBefore(til)) }
-    val resultat = kandidater.singleOrNull { it.second is A }
+    val resultat = kandidater.filter { it.second is A }
     val inputHendelser =
         input.filter { it.first.isBefore(fra) || it.first == fra }
     input.removeAll(inputHendelser)
@@ -33,9 +35,9 @@ inline fun <reified A : BekreftelseHendelse> FreeSpec.forventer(
             "[UTC intervall ($fra-$til)]\nKilde: ${kilde}\nkandidater: ${kandidater}\nTidspunkt for ${A::class.simpleName}:\n\t${
             filtered.joinToString("\n\t", "\n\t") { it.first.prettyPrint }
         }") {
-            resultat.shouldNotBeNull()
+            resultat.size shouldBe antall
             asserts(filtered.map { it.second })
-            kilde.remove(resultat)
+            kilde.removeAll(resultat)
         }
     }
 

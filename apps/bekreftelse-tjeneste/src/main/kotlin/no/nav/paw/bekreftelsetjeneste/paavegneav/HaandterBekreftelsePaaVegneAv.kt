@@ -1,5 +1,6 @@
 package no.nav.paw.bekreftelsetjeneste.paavegneav
 
+import io.opentelemetry.api.trace.Span
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelsePaaVegneAvStartet
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloeptEtterEksternInnsamling
@@ -11,13 +12,10 @@ import no.nav.paw.bekreftelsetjeneste.logger
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.GracePeriodeVarselet
 import no.nav.paw.bekreftelsetjeneste.tilstand.IkkeKlarForUtfylling
-import no.nav.paw.bekreftelsetjeneste.tilstand.InternBekreftelsePaaVegneAvStartet
 import no.nav.paw.bekreftelsetjeneste.tilstand.KlarForUtfylling
 import no.nav.paw.bekreftelsetjeneste.tilstand.Levert
 import no.nav.paw.bekreftelsetjeneste.tilstand.VenterSvar
 import no.nav.paw.bekreftelsetjeneste.tilstand.has
-import no.nav.paw.bekreftelsetjeneste.tilstand.opprettFoersteBekreftelse
-import no.nav.paw.bekreftelsetjeneste.tilstand.plus
 import no.nav.paw.bekreftelsetjeneste.tilstand.sisteTilstand
 import no.nav.paw.bekreftelsetjeneste.topology.Feil
 import no.nav.paw.bekreftelsetjeneste.topology.log
@@ -55,6 +53,7 @@ fun haandterBekreftelsePaaVegneAvEndret(
             paaVegneAvTilstand = paaVegneAvTilstand,
             paaVegneAvHendelse = paaVegneAvHendelse
         )
+
         else -> emptyList()
     }.also { _ ->
         val action = when (paaVegneAvHendelse.handling) {
@@ -94,12 +93,12 @@ fun haandterStoppPaaVegneAv(
     val handlingerKnyttetTilFrister = if (bekreftelseTilstand != null) {
         verifiserBekreftelseFrist(bekreftelseTilstand, bekreftelseKonfigurasjon, wallclock, paaVegneAvHendelse)
     } else {
-        null
+        emptyList()
     }
     return stoppPaaVegneAv(
         paaVegneAvTilstand = paaVegneAvTilstand,
         paaVegneAvHendelse = paaVegneAvHendelse
-    ) + listOfNotNull(handlingerKnyttetTilFrister)
+    ) + handlingerKnyttetTilFrister
 }
 
 fun verifiserBekreftelseFrist(
@@ -107,31 +106,16 @@ fun verifiserBekreftelseFrist(
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
     wallclock: WallClock,
     paaVegneAvHendelse: PaaVegneAv
-): SendHendelse? {
-    val sisteLevering = bekreftelseTilstand?.bekreftelser
-        ?.filter { it.has<Levert>() }
-        ?.maxByOrNull { it.gjelderTil }
+): List<Handling> {
+    val sisteLevering = bekreftelseTilstand.bekreftelser
+        .filter { it.has<Levert>() }
+        .maxByOrNull { it.gjelderTil }
     val frist = bekreftelseKonfigurasjon.interval + bekreftelseKonfigurasjon.graceperiode
     val tidSidenFrist = sisteLevering?.let { between(it.gjelderTil, wallclock.value).toString() } ?: "null"
     logger.info("[${wallclock.value}]Siste levering: ${sisteLevering?.gjelderTil}, frist: $frist, tid siden frist: $tidSidenFrist")
     return when {
-        sisteLevering != null &&  between(sisteLevering.gjelderTil, wallclock.value) > frist -> {
-            SendHendelse(
-                RegisterGracePeriodeUtloeptEtterEksternInnsamling(
-                    hendelseId = UUID.randomUUID(),
-                    periodeId = paaVegneAvHendelse.periodeId,
-                    arbeidssoekerId = bekreftelseTilstand.periode.arbeidsoekerId,
-                    hendelseTidspunkt = wallclock.value
-                )
-            )
-        }
-
-        sisteLevering == null -> opprettFoersteBekreftelse(
-            tidligsteStartTidspunktForBekreftelse = bekreftelseKonfigurasjon.migreringstidspunkt,
-            periode = bekreftelseTilstand.periode,
-            interval = bekreftelseKonfigurasjon.interval
-        ).takeIf { between(it.gjelderTil, wallclock.value) > bekreftelseKonfigurasjon.graceperiode }
-            ?.let {
+        sisteLevering != null && between(sisteLevering.gjelderTil, wallclock.value) > frist -> {
+            listOf(
                 SendHendelse(
                     RegisterGracePeriodeUtloeptEtterEksternInnsamling(
                         hendelseId = UUID.randomUUID(),
@@ -140,8 +124,23 @@ fun verifiserBekreftelseFrist(
                         hendelseTidspunkt = wallclock.value
                     )
                 )
-            }
-        else -> null
+            )
+        }
+
+        sisteLevering == null && between(bekreftelseTilstand.periode.startet, wallclock.value) > frist -> {
+            listOf(
+                SendHendelse(
+                    RegisterGracePeriodeUtloeptEtterEksternInnsamling(
+                        hendelseId = UUID.randomUUID(),
+                        periodeId = paaVegneAvHendelse.periodeId,
+                        arbeidssoekerId = bekreftelseTilstand.periode.arbeidsoekerId,
+                        hendelseTidspunkt = wallclock.value
+                    )
+                )
+            )
+        }
+
+        else -> emptyList()
     }
 }
 
@@ -187,14 +186,14 @@ fun startPaaVegneAv(
 
     val oppdaterBekreftelseTilstand = bekreftelseTilstand?.let {
         val oppdaterteBekreftelser = it.bekreftelser
-            .map { bekreftelse ->
+            .mapNotNull { bekreftelse ->
                 when (bekreftelse.sisteTilstand()) {
                     is VenterSvar,
                     is KlarForUtfylling,
                     is GracePeriodeVarselet,
                     is IkkeKlarForUtfylling -> {
-                        logger.info("Mottatt start på vegne av, oppdaterer bekreftelse: ${bekreftelse.bekreftelseId}")
-                        bekreftelse + InternBekreftelsePaaVegneAvStartet(wallclock.value)
+                        logger.info("Mottatt start på vegne av, sletter bekreftelse: ${bekreftelse.bekreftelseId}")
+                        null
                     }
 
                     else -> bekreftelse

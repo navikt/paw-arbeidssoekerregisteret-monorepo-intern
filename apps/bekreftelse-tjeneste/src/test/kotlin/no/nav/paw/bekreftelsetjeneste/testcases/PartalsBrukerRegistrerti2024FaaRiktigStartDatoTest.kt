@@ -6,37 +6,35 @@ import io.kotest.matchers.shouldBe
 import no.nav.paw.arbeidssoekerregisteret.testdata.KafkaKeyContext
 import no.nav.paw.arbeidssoekerregisteret.testdata.ValueWithKafkaKeyData
 import no.nav.paw.arbeidssoekerregisteret.testdata.bekreftelse.bekreftelseMelding
-import no.nav.paw.arbeidssoekerregisteret.testdata.bekreftelse.startPaaVegneAv
-import no.nav.paw.arbeidssoekerregisteret.testdata.bekreftelse.stoppPaaVegneAv
 import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.metadata
 import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.periode
-import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
-import no.nav.paw.bekreftelse.internehendelser.BekreftelsePaaVegneAvStartet
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
-import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
 import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
-import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloeptEtterEksternInnsamling
-import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelsetjeneste.testutils.dager
 import no.nav.paw.bekreftelsetjeneste.testutils.run
 import no.nav.paw.bekreftelsetjeneste.testutils.setOppTest
 import no.nav.paw.bekreftelsetjeneste.testutils.timestamp
+import no.nav.paw.bekreftelsetjeneste.topology.DummyOddetallPartallMap
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 
-class BrukerRegistrerSegPaaEnMandagSvarerJaOgsaaNei : FreeSpec({
-    val identietsnummer = "12345678901"
-    val periodeStartet = "02.02.2025 12:06".timestamp //Første mandag i februar 2025
+class PartalsBrukerRegistrerti2024FaaRiktigStartDatoTest : FreeSpec({
+    val identietsnummer = "12345678902"
+    val periodeStartet = "02.02.2024 12:06".timestamp //Første mandag i februar 2025
     val interval = 14.dager
     val graceperiode = 7.dager
     val tilgjengeligOffset = 3.dager
     with(
         setOppTest(
-            datoOgKlokkeslettVedStart = periodeStartet,
+            datoOgKlokkeslettVedStart = "01.12.2024 00:00".timestamp,
+            tidlistBekreftelsePeriodeStart = LocalDate.parse("2025-03-10"),
             bekreftelseIntervall = interval,
             tilgjengeligOffset = tilgjengeligOffset,
-            innleveringsfrist = graceperiode
+            innleveringsfrist = graceperiode,
+            oddetallPartallMap = DummyOddetallPartallMap()
         )
     ) {
         val opploesning = Duration.ofSeconds(180)
@@ -47,24 +45,21 @@ class BrukerRegistrerSegPaaEnMandagSvarerJaOgsaaNei : FreeSpec({
                 startetMetadata = metadata(tidspunkt = periodeStartet)
             )
             val eksterneHendelser: List<Pair<Instant, ValueWithKafkaKeyData<*>>> = listOf(
-                "02.02.2025 12:06".timestamp to periode,
-                "08.02.2025 13:34".timestamp to ValueWithKafkaKeyData(
+                "02.02.2024 12:06".timestamp to periode,
+                "29.03.2025 13:34".timestamp to ValueWithKafkaKeyData(
                     periode.id, periode.key, bekreftelseMelding(
                         periodeId = periode.value.id,
-                        gjelderFra = periodeStartet,
-                        gjelderTil = "10.02.2025 00:00".timestamp,
+                        gjelderFra = "17.03.2025 00:00".timestamp,
+                        gjelderTil = "31.03.2025 00:00".timestamp,
                         harJobbetIDennePerioden = true,
                         vilFortsetteSomArbeidssoeker = true
                     )
                 ),
-                "22.02.2025 03:12".timestamp to ValueWithKafkaKeyData(
-                    periode.id, periode.key, bekreftelseMelding(
-                        periodeId = periode.value.id,
-                        gjelderFra = "10.02.2025 00:00".timestamp,
-                        gjelderTil = "24.02.2025 00:00".timestamp,
-                        harJobbetIDennePerioden = true,
-                        vilFortsetteSomArbeidssoeker = false
-                    )
+                "01.04.2025 03:12".timestamp to periode(
+                    periodeId = periode.value.id,
+                    identitetsnummer = periode.value.identitetsnummer,
+                    startetMetadata = periode.value.startet,
+                    avsluttetMetadata = metadata(tidspunkt = "01.04.2025 03:11".timestamp)
                 )
             )
             run(eksterneHendelser, stoppTid, opploesning) to eksterneHendelser
@@ -74,47 +69,28 @@ class BrukerRegistrerSegPaaEnMandagSvarerJaOgsaaNei : FreeSpec({
         forventer<BekreftelseTilgjengelig>(
             kilde,
             input,
-            fra = "07.02.2025 00:00".timestamp,
-            til = "07.02.2025 06:00".timestamp,
+            fra = "27.03.2025 23:00".timestamp,
+            til = "28.03.2025 06:00".timestamp,
             asserts = {
                 it.size shouldBe 1
-                it.first().gjelderFra shouldBe periodeStartet
-                it.first().gjelderTil shouldBe "10.02.2025 00:00".timestamp
+                it.first().gjelderFra shouldBe "17.03.2025 00:00".timestamp
+                it.first().gjelderTil shouldBe "31.03.2025 00:00".timestamp
             }
         )
         forventer<BekreftelseMeldingMottatt>(
             kilde,
             input,
-            fra = "08.02.2025 13:34".timestamp,
-            til = "08.02.2025 13:40".timestamp
-        )
-        forventer<BekreftelseTilgjengelig>(
-            kilde,
-            input,
-            fra = "21.02.2025 00:00".timestamp,
-            til = "21.02.2025 06:00".timestamp
-        )
-        forventer<BekreftelseMeldingMottatt>(
-            kilde,
-            input,
-            fra = "22.02.2025 03:12".timestamp,
-            til = "22.02.2025 03:18".timestamp
-        )
-        forventer<BaOmAaAvsluttePeriode>(
-            kilde,
-            input,
-            fra = "22.02.2025 03:12".timestamp,
-            til = "22.02.2025 03:18".timestamp
+            fra = "29.03.2025 13:34".timestamp,
+            til = "29.03.2025 13:40".timestamp
         )
         forventer<PeriodeAvsluttet>(
             kilde,
             input,
-            fra = "22.02.2025 03:12".timestamp,
-            til = "22.02.2025 03:25".timestamp
+            fra = "01.04.2025 03:12".timestamp,
+            til = "01.04.2025 03:18".timestamp
         )
         "Ingen flere hendelser inntraff" {
             kilde.shouldBeEmpty()
         }
     }
 })
-

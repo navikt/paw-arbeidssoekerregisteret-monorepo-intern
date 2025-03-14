@@ -14,6 +14,7 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelsePaaVegneAvStartet
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
 import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
+import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjenstaaendeTid
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloeptEtterEksternInnsamling
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelsetjeneste.testutils.dager
@@ -46,7 +47,7 @@ class BrukerSlutterAaSvareNaarAndreSamlerInnBekreftelser : FreeSpec({
             )
             val eksterneHendelser: List<Pair<Instant, ValueWithKafkaKeyData<*>>> = listOf(
                 "05.02.2025 15:26".timestamp to periode,
-                "22.02.2025 13:34".timestamp to ValueWithKafkaKeyData(
+                "15.02.2025 13:34".timestamp to ValueWithKafkaKeyData(
                     periode.id, periode.key, bekreftelseMelding(
                         periodeId = periode.value.id,
                         gjelderFra = periodeStartet,
@@ -55,7 +56,7 @@ class BrukerSlutterAaSvareNaarAndreSamlerInnBekreftelser : FreeSpec({
                         vilFortsetteSomArbeidssoeker = true
                     )
                 ),
-                "12.03.2025 09:12".timestamp to ValueWithKafkaKeyData(
+                "07.03.2025 09:12".timestamp to ValueWithKafkaKeyData(
                     periode.id, periode.key, startPaaVegneAv(
                         periodeId = periode.value.id,
                         bekreftelsesloesning = no.nav.paw.bekreftelse.paavegneav.v1.vo.Bekreftelsesloesning.DAGPENGER,
@@ -63,17 +64,17 @@ class BrukerSlutterAaSvareNaarAndreSamlerInnBekreftelser : FreeSpec({
                         interval = Duration.ofDays(14)
                     )
                 ),
-                "29.03.2025 12:01".timestamp to ValueWithKafkaKeyData(
+                "17.03.2025 12:01".timestamp to ValueWithKafkaKeyData(
                     periode.id, periode.key, bekreftelseMelding(
                         periodeId = periode.value.id,
-                        gjelderFra = "10.03.2025 00:00".timestamp,
-                        gjelderTil = "31.03.2025 00:00".timestamp,
+                        gjelderFra = "03.03.2025 00:00".timestamp,
+                        gjelderTil = "17.03.2025 00:00".timestamp,
                         harJobbetIDennePerioden = true,
                         vilFortsetteSomArbeidssoeker = true,
                         bekreftelsesloesning = Bekreftelsesloesning.DAGPENGER
                     )
                 ),
-                "21.04.2025 05:00".timestamp to ValueWithKafkaKeyData(
+                "08.04.2025 05:00".timestamp to ValueWithKafkaKeyData(
                     periode.id, periode.key, stoppPaaVegneAv(
                         periodeId = periode.value.id,
                         bekreftelsesloesning = no.nav.paw.bekreftelse.paavegneav.v1.vo.Bekreftelsesloesning.DAGPENGER
@@ -87,44 +88,50 @@ class BrukerSlutterAaSvareNaarAndreSamlerInnBekreftelser : FreeSpec({
         forventer<BekreftelseTilgjengelig>(
             kilde,
             input,
-            fra = "21.02.2025 00:00".timestamp,
-            til = "21.02.2025 06:00".timestamp
+            fra = "14.02.2025 00:00".timestamp,
+            til = "14.02.2025 06:00".timestamp
         )
         forventer<BekreftelseMeldingMottatt>(
             kilde,
             input,
-            fra = "22.02.2025 13:34".timestamp,
-            til = "22.02.2025 13:40".timestamp
+            fra = "15.02.2025 13:34".timestamp,
+            til = "15.02.2025 13:40".timestamp
         )
         forventer<BekreftelseTilgjengelig>(
             kilde,
             input,
-            fra = "07.03.2025 00:00".timestamp,
-            til = "07.03.2025 06:00".timestamp
+            fra = "28.02.2025 00:00".timestamp,
+            til = "28.02.2025 06:00".timestamp
         )
         forventer<LeveringsfristUtloept>(
             kilde,
             input,
-            fra = "10.03.2025 00:00".timestamp,
-            til = "10.03.2025 03:00".timestamp
+            fra = "03.03.2025 00:00".timestamp,
+            til = "03.03.2025 03:00".timestamp
+        )
+        forventer<RegisterGracePeriodeGjenstaaendeTid>(
+            kilde,
+            input,
+            fra = "06.03.2025 12:00".timestamp,
+            til = "06.03.2025 12:15".timestamp
         )
         forventer<BekreftelsePaaVegneAvStartet>(
             kilde,
             input,
-            fra = "12.03.2025 09:12".timestamp,
-            til = "12.03.2025 09:18".timestamp
+            fra = "07.03.2025 09:12".timestamp,
+            til = "07.03.2025 09:18".timestamp
         )
         forventer<RegisterGracePeriodeUtloeptEtterEksternInnsamling>(
             kilde,
             input,
-            fra = "21.04.2025 05:00".timestamp,
-            til = "21.04.2025 05:06".timestamp
+            fra = "08.04.2025 05:00".timestamp,
+            til = "08.04.2025 05:06".timestamp
         )
         forventer<PeriodeAvsluttet>(
             kilde,
             input,
-            fra = "21.04.2025 05:00".timestamp,
-            til = "21.04.2025 05:06".timestamp
+            fra = "08.04.2025 05:00".timestamp,
+            til = "08.04.2025 05:06".timestamp
         )
         "Ingen flere hendelser inntraff" {
             kilde.shouldBeEmpty()

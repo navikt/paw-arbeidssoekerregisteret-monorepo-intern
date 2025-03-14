@@ -8,6 +8,8 @@ import no.nav.paw.bekreftelsetjeneste.testutils.bekreftelse
 import no.nav.paw.bekreftelsetjeneste.testutils.standardIntervaller
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternBekreftelsePaaVegneAvStartet
 import no.nav.paw.bekreftelsetjeneste.tilstand.Levert
+import no.nav.paw.bekreftelsetjeneste.tilstand.filterByStatusAndCount
+import no.nav.paw.bekreftelsetjeneste.tilstand.maksAntallBekreftelserEtterStatus
 import no.nav.paw.test.days
 import no.nav.paw.test.seconds
 import java.time.Instant

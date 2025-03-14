@@ -29,17 +29,17 @@ class BekreftelsePeriodeSluttTidsKalkulator: FreeSpec({
         }
     }
     "Når start ikke er en mandag, skal stopp bli 00:00:00 CET/CEST en mandag ${`14 dagers intervall`.toDays()+1}-${`14 dagers intervall`.toDays()+6} dager senere" - {
-        "Når start er onsdag 3. juli, blir stopp søndag 21. juli" {
+        "Når start er onsdag 3. juli, blir stopp søndag 14. juli" {
             sluttTidForBekreftelsePeriode(
                 startTid = Instant.parse("2024-07-03T23:01:21Z"),
                 interval = `14 dagers intervall`
-            ) shouldBe Instant.parse("2024-07-21T22:00:00Z")
+            ) shouldBe Instant.parse("2024-07-14T22:00:00Z")
         }
-        "Når start er 29. mars blir stopp 14. april" {
+        "Når start er 29. mars blir stopp 7. april" {
             sluttTidForBekreftelsePeriode(
                 startTid = "29.03.2024 01:21".timestamp,
                 interval = `14 dagers intervall`
-            ) shouldBe "15.04.2024 00:00".timestamp
+            ) shouldBe "08.04.2024 00:00".timestamp
         }
     }
 })

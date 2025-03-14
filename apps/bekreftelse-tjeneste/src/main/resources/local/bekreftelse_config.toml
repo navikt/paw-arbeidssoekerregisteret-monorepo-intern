@@ -1,4 +1,4 @@
-migreringstidspunkt = "2020-01-06T23:00:00Z"
+tidligsteBekreftelsePeriodeStart = "2020-01-07"
 interval = "P14D"
 graceperiode = "P7D"
 tilgjengeligOffset = "P3D"
