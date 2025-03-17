@@ -52,7 +52,7 @@ class BekreftelseContext(
     operator fun get(identitetsnummer: Identitetsnummer): Ukenummer = oddetallPartallMap[identitetsnummer]
 
     fun tidligsteBekreftelsePeriodeStart(): Instant {
-        if (periodeInfo.startet.isAfter(
+        if (!periodeInfo.startet.isBefore(
                 konfigurasjon.tidligsteBekreftelsePeriodeStart.atStartOfDay(tidssone).toInstant()
             )
         ) {
