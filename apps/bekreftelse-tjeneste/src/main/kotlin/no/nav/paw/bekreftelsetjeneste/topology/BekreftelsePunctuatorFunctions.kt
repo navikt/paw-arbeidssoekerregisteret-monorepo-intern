@@ -1,6 +1,9 @@
 package no.nav.paw.bekreftelsetjeneste.topology
 
 import arrow.core.andThen
+import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanKind.INTERNAL
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
@@ -9,6 +12,7 @@ import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjenstaaendeT
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
 import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
+import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstandStatus
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstandsLogg
 import no.nav.paw.bekreftelsetjeneste.tilstand.GracePeriodeUtloept
 import no.nav.paw.bekreftelsetjeneste.tilstand.GracePeriodeVarselet
@@ -30,7 +34,8 @@ import java.util.*
 
 
 @WithSpan(
-
+    value = "punctuator_process bekreftelse_tilstand",
+    kind = INTERNAL
 )
 fun BekreftelseContext.prosesser(bekreftelseTilstand: BekreftelseTilstand): BekreftelseProsesseringsResultat =
     (::opprettInitielBekreftelse andThen
@@ -54,6 +59,15 @@ fun BekreftelseContext.opprettInitielBekreftelse(bekreftelser: List<Bekreftelse>
             startTid = fra,
             interval = konfigurasjon.interval
         )
+        Span.current().addEvent(
+            intern,
+            Attributes.of(
+                actionKey, bekreftelseOpprettetAction,
+                initielBekreftelseKey, true,
+                fraOgMedDagKey, fra.tilFraTilAttributeKeyValue(),
+                tilDagKey, til.tilFraTilAttributeKeyValue()
+            )
+        )
         pawNonEmptyListOf(
             Bekreftelse(
                 bekreftelseId = UUID.randomUUID(),
@@ -72,10 +86,21 @@ fun BekreftelseContext.opprettManglendeBekreftelser(bekreftelser: PawNonEmptyLis
     val siste = bekreftelser.maxBy { it.gjelderTil }
     val ventende = bekreftelser.toList().filter { it.sisteTilstand() is VenterPaaSvar }
     return if (siste.gjelderTil.isBefore(wallClock.value) && ventende.size < konfigurasjon.maksAntallVentendeBekreftelser) {
+        val fra = siste.gjelderTil
+        val til = sluttTidForBekreftelsePeriode(siste.gjelderTil, konfigurasjon.interval)
+        Span.current().addEvent(
+            intern,
+            Attributes.of(
+                actionKey, bekreftelseOpprettetAction,
+                initielBekreftelseKey, true,
+                fraOgMedDagKey, fra.tilFraTilAttributeKeyValue(),
+                tilDagKey, til.tilFraTilAttributeKeyValue()
+            )
+        )
         val neste = Bekreftelse(
             bekreftelseId = UUID.randomUUID(),
-            gjelderFra = siste.gjelderTil,
-            gjelderTil = sluttTidForBekreftelsePeriode(siste.gjelderTil, konfigurasjon.interval),
+            gjelderFra = fra,
+            gjelderTil = til,
             tilstandsLogg = BekreftelseTilstandsLogg(
                 siste = IkkeKlarForUtfylling(wallClock.value),
                 tidligere = emptyList()
@@ -91,7 +116,7 @@ fun BekreftelseContext.oppdaterBekreftelser(bekreftelser: PawNonEmptyList<Bekref
     bekreftelser.map { bekreftelse ->
         when {
             bekreftelse.erKlarForUtfylling(wallClock.value, konfigurasjon.tilgjengeligOffset) -> {
-                bekreftelse.plus(KlarForUtfylling(wallClock.value)) to BekreftelseTilgjengelig(
+                bekreftelse.setStatus(KlarForUtfylling(wallClock.value)) to BekreftelseTilgjengelig(
                     hendelseId = UUID.randomUUID(),
                     periodeId = periodeInfo.periodeId,
                     arbeidssoekerId = periodeInfo.arbeidsoekerId,
@@ -103,7 +128,7 @@ fun BekreftelseContext.oppdaterBekreftelser(bekreftelser: PawNonEmptyList<Bekref
             }
 
             bekreftelse.harFristUtloept(wallClock.value) -> {
-                bekreftelse.plus(VenterSvar(wallClock.value)) to LeveringsfristUtloept(
+                bekreftelse.setStatus(VenterSvar(wallClock.value)) to LeveringsfristUtloept(
                     hendelseId = UUID.randomUUID(),
                     periodeId = periodeInfo.periodeId,
                     arbeidssoekerId = periodeInfo.arbeidsoekerId,
@@ -117,7 +142,7 @@ fun BekreftelseContext.oppdaterBekreftelser(bekreftelser: PawNonEmptyList<Bekref
                 wallClock.value,
                 konfigurasjon.varselFoerGraceperiodeUtloept
             ) -> {
-                bekreftelse.plus(GracePeriodeVarselet(wallClock.value)) to RegisterGracePeriodeGjenstaaendeTid(
+                bekreftelse.setStatus(GracePeriodeVarselet(wallClock.value)) to RegisterGracePeriodeGjenstaaendeTid(
                     hendelseId = UUID.randomUUID(),
                     periodeId = periodeInfo.periodeId,
                     arbeidssoekerId = periodeInfo.arbeidsoekerId,
@@ -131,7 +156,7 @@ fun BekreftelseContext.oppdaterBekreftelser(bekreftelser: PawNonEmptyList<Bekref
             }
 
             bekreftelse.harGraceperiodeUtloept(wallClock.value, konfigurasjon.graceperiode) -> {
-                bekreftelse.plus(GracePeriodeUtloept(wallClock.value)) to RegisterGracePeriodeUtloept(
+                bekreftelse.setStatus(GracePeriodeUtloept(wallClock.value)) to RegisterGracePeriodeUtloept(
                     hendelseId = UUID.randomUUID(),
                     periodeId = periodeInfo.periodeId,
                     arbeidssoekerId = periodeInfo.arbeidsoekerId,
@@ -148,3 +173,15 @@ fun BekreftelseContext.oppdaterBekreftelser(bekreftelser: PawNonEmptyList<Bekref
         oppdaterteBekreftelser to hendelser
     }
 
+fun Bekreftelse.setStatus(nyStatus: BekreftelseTilstandStatus): Bekreftelse {
+    val siste = sisteTilstand()
+    Span.current().addEvent(
+        intern,
+        Attributes.of(
+            actionKey, bekreftelseSattStatusAction,
+            nyBekreftelseStatusKey, nyStatus::class.simpleName?.snakeCase() ?: "ukjent",
+            gjeldeneBekreftelseStatusKey, siste::class.simpleName?.snakeCase() ?: "ukjent"
+        )
+    )
+    return this + nyStatus
+}
