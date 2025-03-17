@@ -21,8 +21,8 @@ spec:
       value: "paw.arbeidssoker-bekreftelse-paavegneav-v1"
     - name: KAFKA_PUNCTUATOR_INTERVAL
       value: "PT1M"
-    - name: BEKREFTELSE_MIGRERINGSTIDSPUNKT
-      value: "2024-09-29T22:00:00Z"
+    - name: BEKREFTELSE_TIDLIGSTE_PERIODE_START
+      value: "2025-03-10"
     - name: BEKREFTELSE_INTERVAL
       value: "PT5M"
     - name: BEKREFTELSE_GRACEPERIODE

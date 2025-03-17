@@ -1,4 +1,4 @@
-migreringstidspunkt = "${BEKREFTELSE_MIGRERINGSTIDSPUNKT}"
+tidligsteBekreftelsePeriodeStart = "${BEKREFTELSE_TIDLIGSTE_PERIODE_START}"
 interval = "${BEKREFTELSE_INTERVAL}"
 graceperiode = "${BEKREFTELSE_GRACEPERIODE}"
 tilgjengeligOffset = "${BEKREFTELSE_TILGJENGELIG_OFFSET}"
