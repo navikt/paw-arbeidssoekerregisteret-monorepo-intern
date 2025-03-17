@@ -1,6 +1,7 @@
 package no.nav.paw.bekreftelsetjeneste.topology
 
 import arrow.core.andThen
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
@@ -28,6 +29,9 @@ import no.nav.paw.collections.pawNonEmptyListOf
 import java.util.*
 
 
+@WithSpan(
+
+)
 fun BekreftelseContext.prosesser(bekreftelseTilstand: BekreftelseTilstand): BekreftelseProsesseringsResultat =
     (::opprettInitielBekreftelse andThen
             ::opprettManglendeBekreftelser andThen

@@ -5,9 +5,7 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
-import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.api.trace.StatusCode
-import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.kafka.factory.PROMETHEUS_METER_REGISTRY
 import no.nav.paw.tracing.ClosableSpan
 import no.nav.paw.tracing.initSpan

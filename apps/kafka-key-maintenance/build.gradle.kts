@@ -17,6 +17,7 @@ dependencies {
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:kafka-key-generator-client"))
     implementation(project(":lib:error-handling"))
+    implementation(project(":lib:tracing"))
     implementation(kotlin("reflect"))
 
     implementation(libs.arrow.core.core)

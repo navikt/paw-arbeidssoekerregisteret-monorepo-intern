@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":lib:tracing"))
     compileOnly(project(":lib:kafka"))
     compileOnly(libs.ktor.server.cors)
     compileOnly(libs.ktor.server.statusPages)

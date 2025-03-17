@@ -29,6 +29,7 @@ include(
     "lib:aareg-client",
     "lib:tilgangskontroll-client",
     "lib:common-model",
+    "lib:tracing",
     // test
     "test:test-data-lib",
     "test:kafka-streams-test-functions",
