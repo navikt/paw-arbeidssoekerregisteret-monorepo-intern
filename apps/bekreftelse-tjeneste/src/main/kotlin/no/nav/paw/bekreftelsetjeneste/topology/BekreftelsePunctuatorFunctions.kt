@@ -6,14 +6,6 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjenstaaendeTid
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
-import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
-import no.nav.paw.bekreftelsetjeneste.config.tidligsteStartUke
-import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
-import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.OddetallPartallMap
-import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.Oddetallsuke
-import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.Partallsuke
-import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.Ukenummer
-import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.Ukjent
 import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstandsLogg
@@ -21,7 +13,6 @@ import no.nav.paw.bekreftelsetjeneste.tilstand.GracePeriodeUtloept
 import no.nav.paw.bekreftelsetjeneste.tilstand.GracePeriodeVarselet
 import no.nav.paw.bekreftelsetjeneste.tilstand.IkkeKlarForUtfylling
 import no.nav.paw.bekreftelsetjeneste.tilstand.KlarForUtfylling
-import no.nav.paw.bekreftelsetjeneste.tilstand.PeriodeInfo
 import no.nav.paw.bekreftelsetjeneste.tilstand.VenterPaaSvar
 import no.nav.paw.bekreftelsetjeneste.tilstand.VenterSvar
 import no.nav.paw.bekreftelsetjeneste.tilstand.erKlarForUtfylling
@@ -34,47 +25,8 @@ import no.nav.paw.bekreftelsetjeneste.tilstand.sisteTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.sluttTidForBekreftelsePeriode
 import no.nav.paw.collections.PawNonEmptyList
 import no.nav.paw.collections.pawNonEmptyListOf
-import no.nav.paw.model.Identitetsnummer
-import java.time.Instant
-import java.time.ZoneId
 import java.util.*
 
-private val tidssone = ZoneId.of("Europe/Oslo")
-
-class BekreftelseContext(
-    val konfigurasjon: BekreftelseKonfigurasjon,
-    val wallClock: WallClock,
-    val periodeInfo: PeriodeInfo,
-    private val oddetallPartallMap: OddetallPartallMap
-) {
-    val identitetsnummer = Identitetsnummer(periodeInfo.identitetsnummer)
-
-    operator fun get(identitetsnummer: Identitetsnummer): Ukenummer = oddetallPartallMap[identitetsnummer]
-
-    fun tidligsteBekreftelsePeriodeStart(): Instant {
-        if (!periodeInfo.startet.isBefore(
-                konfigurasjon.tidligsteBekreftelsePeriodeStart.atStartOfDay(tidssone).toInstant()
-            )
-        ) {
-            return periodeInfo.startet
-        }
-        val partallOddetall = this[identitetsnummer]
-        val tidligsteStartUke = when {
-            konfigurasjon.tidligsteStartUke % 2 == 0 -> Partallsuke
-            else -> Oddetallsuke
-        }
-        return if (partallOddetall == tidligsteStartUke || partallOddetall is Ukjent) {
-            konfigurasjon.tidligsteBekreftelsePeriodeStart.atStartOfDay(tidssone).toInstant()
-        } else {
-            konfigurasjon.tidligsteBekreftelsePeriodeStart.plusWeeks(1).atStartOfDay(tidssone).toInstant()
-        }
-    }
-}
-
-data class BekreftelseProsesseringsResultat(
-    val oppdatertTilstand: BekreftelseTilstand,
-    val hendelser: List<BekreftelseHendelse>
-)
 
 fun BekreftelseContext.prosesser(bekreftelseTilstand: BekreftelseTilstand): BekreftelseProsesseringsResultat =
     (::opprettInitielBekreftelse andThen
