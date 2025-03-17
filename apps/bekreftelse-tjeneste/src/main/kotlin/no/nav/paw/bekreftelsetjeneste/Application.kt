@@ -12,6 +12,7 @@ import no.nav.paw.bekreftelsetjeneste.config.BEKREFTELSE_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.config.SERVER_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelsetjeneste.config.ServerConfig
+import no.nav.paw.bekreftelsetjeneste.config.StaticConfigValues
 import no.nav.paw.bekreftelsetjeneste.context.ApplicationContext
 import no.nav.paw.bekreftelsetjeneste.metrics.TilstandsGauge
 import no.nav.paw.bekreftelsetjeneste.plugins.buildKafkaStreams
@@ -20,6 +21,7 @@ import no.nav.paw.bekreftelsetjeneste.plugins.configureMetrics
 import no.nav.paw.bekreftelsetjeneste.routes.metricsRoutes
 import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.OddetallPartallMap
 import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.StatiskMapOddetallPartallMap
+import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.oddetallPartallMapFraCsvFil
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstandSerde
 import no.nav.paw.bekreftelsetjeneste.topology.buildTopology
 import no.nav.paw.config.env.appNameOrDefaultForLocal
@@ -40,12 +42,21 @@ fun main() {
 
     logger.info("Starter: ${currentRuntimeEnvironment.appNameOrDefaultForLocal()}")
     val keepGoing = AtomicBoolean(true)
+    val oddetallPartallMap = oddetallPartallMapFraCsvFil(
+        header = false,
+        fil = StaticConfigValues.arenaSyncFile,
+        delimiter = ",",
+        identitetsnummerKolonne = 0,
+        ukenummerKolonne = 1,
+        partall = "P",
+        oddetall = "O"
+    )
     with(serverConfig) {
         embeddedServer(Netty, port = port) {
             module(
                 applicationConfig = applicationConfig,
                 bekreftelseKonfigurasjon = bekreftelseKonfigurasjon,
-                oddetallPartallMap = StatiskMapOddetallPartallMap(emptySequence())
+                oddetallPartallMap = oddetallPartallMap
             )
         }.apply {
             addShutdownHook {

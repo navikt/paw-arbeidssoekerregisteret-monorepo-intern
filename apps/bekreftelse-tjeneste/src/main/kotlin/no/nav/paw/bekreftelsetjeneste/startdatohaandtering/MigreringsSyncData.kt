@@ -36,9 +36,9 @@ fun oddetallPartallMapFraCsvFil(
             .onEachIndexed { index, line -> require(line.size > maxOf(identitetsnummerKolonne, ukenummerKolonne)) {"Linje $index mangler kolone(r)" } }
             .map { line  -> line.let { it[identitetsnummerKolonne].trim() to it[ukenummerKolonne].trim() } }
             .mapIndexed { index, (identitetsnummer, ukenummer) ->
-                identitetsnummer.asIdentitetsnummer() to when (ukenummer) {
-                    partall -> Partallsuke
-                    oddetall -> Oddetallsuke
+                identitetsnummer.asIdentitetsnummer() to when (ukenummer.uppercase()) {
+                    partall.uppercase() -> Partallsuke
+                    oddetall.uppercase() -> Oddetallsuke
                     else -> throw IllegalArgumentException("Linje $index: Ukjent ukenummer verdi: $ukenummer")
                 }
             }.let(::StatiskMapOddetallPartallMap)

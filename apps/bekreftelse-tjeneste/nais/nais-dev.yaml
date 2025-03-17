@@ -32,6 +32,9 @@ spec:
   azure:
     application:
       enabled: true
+  filesFrom:
+    - secret: paw-arbeidssoekere-bekreftelse-uke-sync
+      mountPath: /var/run/secrets/paw-arbeidssoekere-bekreftelse-uke-sync
   replicas:
     min: 1
     max: 1
