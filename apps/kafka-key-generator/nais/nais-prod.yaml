@@ -68,5 +68,9 @@ spec:
           - application: paw-arbeidssoekerregisteret-utgang-formidlingsgruppe
           - application: paw-arbeidssoekerregisteret-hendelselogg-backup
           - application: paw-arbeidssoekerregisteret-api-bekreftelse
+          - application: dp-rapportering-personregister
+            namespace: teamdagpenger
+          - application: dp-rapportering
+            namespace: teamdagpenger
           - application: flex-arbeidssokerregister-oppdatering
             namespace: flex
