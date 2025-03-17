@@ -3,6 +3,7 @@ package no.nav.paw.arbeidssokerregisteret.app.metrics
 import io.micrometer.core.instrument.Tag
 import no.nav.paw.arbeidssokerregisteret.PROSENT
 import no.nav.paw.arbeidssokerregisteret.STILLING_STYRK08
+import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandV1
 
 data class ArbeidssoekerSituasjonsMaaler(
@@ -25,7 +26,9 @@ fun arbeidssoekerSituasjonsMaaler(tilstand: TilstandV1): List<ArbeidssoekerSitua
     if (tilstand.gjeldenePeriode == null) return emptyList()
     if (tilstand.gjeldenePeriode.avsluttet != null) return emptyList()
     val varighet = durationToBucket(tilstand.gjeldenePeriode.startet.tidspunkt)
-    return tilstand.sisteOpplysningerOmArbeidssoeker
+    return tilstand
+        .takeIf { it.gjeldeneTilstand == GjeldeneTilstand.STARTET }
+        ?.sisteOpplysningerOmArbeidssoeker
         ?.jobbsituasjon
         ?.beskrivelser
         ?.map { jobbsituasjonMedDetaljer ->
