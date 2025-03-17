@@ -12,6 +12,7 @@ object Names {
     const val ARBEIDSSOEKER_ANTALL = "${PREFIX}_arbeidssoker_antall_v2"
     const val ARBEIDSSOEKER_JOBB_SITUASJON = "${PREFIX}_arbeidssoker_jobb_situasjon_v2"
     const val ANTALL_TILSTANDER = "${PREFIX}_arbeidssoker_antall_tilstander_v2"
+    const val MANGLER_OPPLYSNINGER = "${PREFIX}_arbeidssoker_mangler_opplysninger_v2"
 }
 
 object Labels {

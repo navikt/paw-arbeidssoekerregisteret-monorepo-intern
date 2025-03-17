@@ -5,6 +5,7 @@ import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker
+import no.nav.paw.arbeidssokerregisteret.app.config.ApplicationLogicConfig
 import no.nav.paw.arbeidssokerregisteret.app.config.KafkaKonfigurasjon
 import no.nav.paw.arbeidssokerregisteret.app.helse.Helse
 import no.nav.paw.arbeidssokerregisteret.app.helse.initKtor
@@ -56,6 +57,7 @@ fun main() {
             Time.SYSTEM
         )
     )
+    val appLogicCfg: ApplicationLogicConfig = loadNaisOrLocalConfiguration(applicationLogicConfigFile)
     val topology = topology(
         prometheusMeterRegistry = prometheusMeterRegistry,
         builder = strømBygger,
@@ -63,7 +65,7 @@ fun main() {
         innTopic = kafkaKonfigurasjon.streamKonfigurasjon.eventlogTopic,
         periodeTopic = kafkaKonfigurasjon.streamKonfigurasjon.periodeTopic,
         opplysningerOmArbeidssoekerTopic = kafkaKonfigurasjon.streamKonfigurasjon.opplysningerOmArbeidssoekerTopic,
-        applicationLogicConfig = loadNaisOrLocalConfiguration(applicationLogicConfigFile)
+        applicationLogicConfig = appLogicCfg
     )
 
     val kafkaStreams = KafkaStreams(topology, StreamsConfig(kafkaKonfigurasjon.properties))
@@ -83,7 +85,7 @@ fun main() {
             stateStore().all().asSequence()
                 .mapNotNull { it.value }
         },
-        mapper = ::withMetricsInfoMapper
+        mapper = (::withMetricsInfoMapper).withAppLogicCfg(appLogicCfg)
     )
     kafkaStreams.setUncaughtExceptionHandler { throwable ->
         streamLogger.error("Uventet feil: {}", throwable.message, throwable)

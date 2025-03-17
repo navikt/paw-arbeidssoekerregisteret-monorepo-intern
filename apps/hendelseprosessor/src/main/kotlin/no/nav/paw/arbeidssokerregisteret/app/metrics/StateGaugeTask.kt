@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.app.metrics
 
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import no.nav.paw.arbeidssokerregisteret.app.config.ApplicationLogicConfig
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandV1
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.errors.InvalidStateStoreException
@@ -48,7 +49,12 @@ fun <T1> initStateGaugeTask(
         }
     }
 
-fun withMetricsInfoMapper(tilstand: TilstandV1): List<WithMetricsInfo> =
+fun withMetricsInfoMapper(logicCfg: ApplicationLogicConfig, tilstand: TilstandV1): List<WithMetricsInfo> =
     arbeidssoekerSituasjonsMaaler(tilstand) +
             listOfNotNull(arbeidssokerMaaler(tilstand)) +
-            antallTilstanderMaaler(tilstand)
+            antallTilstanderMaaler(tilstand) +
+            manglerOpplysningerMaaler(logicCfg.inkluderOpplysningerInnenforTidsvindu, tilstand)
+
+fun ((ApplicationLogicConfig, TilstandV1) -> List<WithMetricsInfo>).withAppLogicCfg(appLogicCfg: ApplicationLogicConfig) = { tilstand: TilstandV1 ->
+    this(appLogicCfg, tilstand)
+}
