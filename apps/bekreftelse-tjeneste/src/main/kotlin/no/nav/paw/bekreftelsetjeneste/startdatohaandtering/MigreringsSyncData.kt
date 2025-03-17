@@ -1,5 +1,6 @@
 package no.nav.paw.bekreftelsetjeneste.startdatohaandtering
 
+import no.nav.paw.bekreftelsetjeneste.logger
 import no.nav.paw.model.Identitetsnummer
 import no.nav.paw.model.asIdentitetsnummer
 import java.nio.file.Path
@@ -14,7 +15,10 @@ interface OddetallPartallMap {
 }
 
 class StatiskMapOddetallPartallMap(kilde: Sequence<Pair<Identitetsnummer, Ukenummer>>): OddetallPartallMap {
-    private val data = kilde.toMap()
+    private val data = kilde.toMap().also { map ->
+        val size = map.size
+        logger.info("[Partall/Oddetal] Leste $size elementer fra CSV fil")
+    }
 
     override operator fun get(identitetsnummer: Identitetsnummer): Ukenummer = data[identitetsnummer] ?: Ukjent
 }
