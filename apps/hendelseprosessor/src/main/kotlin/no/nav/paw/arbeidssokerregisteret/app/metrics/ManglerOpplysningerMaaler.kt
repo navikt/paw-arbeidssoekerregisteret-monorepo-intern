@@ -30,10 +30,10 @@ fun manglerOpplysningerMaaler(opplysningTidsvindu: Duration, tilstand: TilstandV
                     startet == null -> null
                     sisteOpplysning == null -> ManglerOpplysningerMaaler(partition = tilstand.hendelseScope.partition, manglerOpplysninger = true)
                     else -> {
-                        val mangler =
+                        val harOpplysninger =
                             sisteOpplysning.isAfter(startet) ||
-                            !(opplysningTidsvindu.isWithinWindow(sisteOpplysning, startet))
-                        ManglerOpplysningerMaaler(partition = tilstand.hendelseScope.partition, manglerOpplysninger = mangler)
+                            (opplysningTidsvindu.isWithinWindow(sisteOpplysning, startet))
+                        ManglerOpplysningerMaaler(partition = tilstand.hendelseScope.partition, manglerOpplysninger = !harOpplysninger)
                     }
                 }
             }
