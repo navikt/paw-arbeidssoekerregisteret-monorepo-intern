@@ -95,7 +95,7 @@ fun BekreftelseContext.opprettManglendeBekreftelser(bekreftelser: PawNonEmptyLis
             intern,
             Attributes.of(
                 actionKey, bekreftelseOpprettetAction,
-                initielBekreftelseKey, true,
+                initielBekreftelseKey, false,
                 fraOgMedDagKey, fra.tilFraTilAttributeKeyValue(),
                 tilDagKey, til.tilFraTilAttributeKeyValue()
             )
