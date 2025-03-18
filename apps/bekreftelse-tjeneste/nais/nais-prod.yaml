@@ -28,7 +28,7 @@ spec:
     - name: BEKREFTELSE_GRACEPERIODE
       value: "P7D"
     - name: BEKREFTELSE_TILGJENGELIG_OFFSET
-      value: "P68H" # 2 døgn og 20 timer
+      value: "PT68H" # 2 døgn og 20 timer
   azure:
     application:
       enabled: true
