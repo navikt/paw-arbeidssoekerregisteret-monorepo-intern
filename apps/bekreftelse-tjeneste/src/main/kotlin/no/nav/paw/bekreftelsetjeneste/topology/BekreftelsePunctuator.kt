@@ -63,6 +63,7 @@ fun runPunctuator(
     timestamp: Instant,
     oddetallPartallMap: OddetallPartallMap
 ) {
+    punctuatorLogger.info("Starter Punctuator for partition: {}", ctx.taskId().partition())
     val bekreftelseTilstandStateStore: BekreftelseTilstandStateStore =
         ctx.getStateStore(bekreftelseTilstandStateStoreName)
     val paaVegneAvTilstandStateStore: PaaVegneAvTilstandStateStore = ctx.getStateStore(paaVegneAvTilstandStateStoreName)
@@ -81,9 +82,9 @@ fun runPunctuator(
                         totalt.incrementAndGet()
                         if (registeretHarAnsvaret) {
                             antallRegisterHarAnsvar.incrementAndGet()
-                            punctuatorLogger.trace("Periode {}, registeret har ansvar", tilstand.periode.periodeId)
+                            punctuatorLogger.trace("[partition: {}]Periode {}, registeret har ansvar", ctx.taskId().partition(), tilstand.periode.periodeId)
                         } else {
-                            punctuatorLogger.trace("Periode {}, registeret har ikke ansvar", tilstand.periode.periodeId)
+                            punctuatorLogger.trace("[partition: {}]Periode {}, registeret har ikke ansvar", ctx.taskId().partition(), tilstand.periode.periodeId)
                         }
                     }
                 }
@@ -106,7 +107,7 @@ fun runPunctuator(
                     }
                 }.also {
                     punctuatorLogger.info(
-                        "[{}ms - partition:{}] Punctator kjørt for {} perioder, {} av disse har registeret ansvar",
+                        "[{}ms - partition:{}] Punctator kjørt for {} perioder, {} av disse har registeret ansvar for",
                         between(startTid, Instant.now()).toMillis(),
                         ctx.taskId().partition(),
                         totalt.get(),
