@@ -34,10 +34,6 @@ import no.nav.paw.collections.pawNonEmptyListOf
 import java.util.*
 
 
-@WithSpan(
-    value = "punctuator_process bekreftelse_tilstand",
-    kind = INTERNAL
-)
 fun BekreftelseContext.prosesser(bekreftelseTilstand: BekreftelseTilstand): BekreftelseProsesseringsResultat =
     (::opprettInitielBekreftelse andThen
             ::opprettManglendeBekreftelser andThen

@@ -20,9 +20,11 @@ import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
 import org.slf4j.LoggerFactory
 import java.time.Duration
+import java.time.Duration.between
 import java.time.Instant
 import java.time.ZoneId
 import java.util.*
+import java.util.concurrent.atomic.AtomicLong
 
 private val punctuatorLogger = LoggerFactory.getLogger("bekreftelse.tjeneste.punctuator")
 
@@ -39,18 +41,50 @@ fun bekreftelsePunctuator(
     timestamp: Instant,
     ctx: ProcessorContext<Long, BekreftelseHendelse>
 ) {
-    val bekreftelseTilstandStateStore: BekreftelseTilstandStateStore = ctx.getStateStore(bekreftelseTilstandStateStoreName)
+    runPunctuator(
+        ctx,
+        bekreftelseTilstandStateStoreName,
+        paaVegneAvTilstandStateStoreName,
+        prometheusMeterRegistry,
+        bekreftelseKonfigurasjon,
+        timestamp,
+        oddetallPartallMap
+    )
+}
+
+//Bruk av 'partially1' på 'fun bekreftelsePunctuator' ser ut til å gjøre at trace koblingen forsvinner,
+//derfor er det laget en ny funksjon 'runPunctuator' som 'bekreftelsePunctuator' kaller på.
+@WithSpan(
+    value = "bekreftelse_punctuator",
+    kind = SpanKind.INTERNAL
+)
+fun runPunctuator(
+    ctx: ProcessorContext<Long, BekreftelseHendelse>,
+    bekreftelseTilstandStateStoreName: String,
+    paaVegneAvTilstandStateStoreName: String,
+    prometheusMeterRegistry: PrometheusMeterRegistry,
+    bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
+    timestamp: Instant,
+    oddetallPartallMap: OddetallPartallMap
+) {
+    val bekreftelseTilstandStateStore: BekreftelseTilstandStateStore =
+        ctx.getStateStore(bekreftelseTilstandStateStoreName)
     val paaVegneAvTilstandStateStore: PaaVegneAvTilstandStateStore = ctx.getStateStore(paaVegneAvTilstandStateStoreName)
     Span.current().setAttribute(AttributeKey.longKey("partition"), ctx.taskId().partition())
     bekreftelseTilstandStateStore
         .all()
         .use { states ->
+            val totalt = AtomicLong(0)
+            val antallRegisterHarAnsvar = AtomicLong(0)
+            val startTid = Instant.now()
             states
                 .asSequence()
                 .filter { (_, tilstand) ->
                     val paaVegneAv = paaVegneAvTilstandStateStore.get(tilstand.periode.periodeId)
                     (paaVegneAv == null).also { registeretHarAnsvaret ->
+                        totalt.incrementAndGet()
                         if (registeretHarAnsvaret) {
+                            antallRegisterHarAnsvar.incrementAndGet()
                             punctuatorLogger.trace("Periode {}, registeret har ansvar", tilstand.periode.periodeId)
                         } else {
                             punctuatorLogger.trace("Periode {}, registeret har ikke ansvar", tilstand.periode.periodeId)
@@ -72,6 +106,14 @@ fun bekreftelsePunctuator(
                         ctx.forward(Record(oppdatertTilstand.periode.recordKey, it, ctx.currentSystemTimeMs()))
                     }
                     bekreftelseTilstandStateStore.put(oppdatertTilstand.periode.periodeId, oppdatertTilstand)
+                }.also {
+                    punctuatorLogger.info(
+                        "[{}ms - partition:{}] Punctator kjørt for {} perioder, {} av disse har registeret ansvar",
+                        between(startTid, Instant.now()).toMillis(),
+                        ctx.taskId().partition(),
+                        totalt.get(),
+                        antallRegisterHarAnsvar.get()
+                    )
                 }
         }
 }
