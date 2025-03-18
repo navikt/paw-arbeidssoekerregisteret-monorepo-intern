@@ -1,0 +1,78 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  name: paw-arbeidssoekerregisteret-bekreftelse-tjeneste
+  namespace: paw
+  labels:
+    team: paw
+spec:
+  image: {{ image }}
+  port: 8080
+  env:
+    - name: KAFKA_STREAMS_ID_SUFFIX
+      value: "v5"
+    - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_TOPIC
+      value: "paw.arbeidssoker-bekreftelse-v1"
+    - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_HENDELSELOGG_TOPIC
+      value: "paw.arbeidssoker-bekreftelse-hendelseslogg-v1"
+    - name: KAFKA_PAW_ARBEIDSSOKERPERIODER_TOPIC
+      value: "paw.arbeidssokerperioder-v1"
+    - name: KAFKA_PAW_BEKREFTELSE_PAA_VEGNE_AV_TOPIC
+      value: "paw.arbeidssoker-bekreftelse-paavegneav-v1"
+    - name: KAFKA_PUNCTUATOR_INTERVAL
+      value: "PT15M"
+    - name: BEKREFTELSE_TIDLIGSTE_PERIODE_START
+      value: "2025-03-10"
+    - name: BEKREFTELSE_INTERVAL
+      value: "PT14D"
+    - name: BEKREFTELSE_GRACEPERIODE
+      value: "P7D"
+    - name: BEKREFTELSE_TILGJENGELIG_OFFSET
+      value: "P68H" # 2 døgn og 20 timer
+  azure:
+    application:
+      enabled: true
+  filesFrom:
+    - secret: paw-arbeidssoekere-bekreftelse-uke-sync-a
+      mountPath: /var/run/secrets/paw-arbeidssoekere-bekreftelse-uke-sync-a
+    - secret: paw-arbeidssoekere-bekreftelse-uke-sync-b
+      mountPath: /var/run/secrets/paw-arbeidssoekere-bekreftelse-uke-sync-b
+    - secret: paw-arbeidssoekere-bekreftelse-uke-sync-c
+      mountPath: /var/run/secrets/paw-arbeidssoekere-bekreftelse-uke-sync-c
+    - secret: paw-arbeidssoekere-bekreftelse-uke-sync-d
+      mountPath: /var/run/secrets/paw-arbeidssoekere-bekreftelse-uke-sync-d
+    - secret: paw-arbeidssoekere-bekreftelse-uke-sync-e
+      mountPath: /var/run/secrets/paw-arbeidssoekere-bekreftelse-uke-sync-e
+  replicas:
+    min: 6
+    max: 6
+  resources:
+    limits:
+      memory: 2048Mi
+    requests:
+      cpu: 20m
+      memory: 1024Mi
+  liveness:
+    path: /internal/isAlive
+    initialDelay: 10
+  readiness:
+    path: /internal/isReady
+    initialDelay: 10
+  prometheus:
+    enabled: true
+    path: /internal/metrics
+  observability:
+    logging:
+      destinations:
+        - id: loki
+    autoInstrumentation:
+      enabled: true
+      runtime: java
+  kafka:
+    pool: nav-prod
+    streams: true
+  accessPolicy:
+    outbound:
+      rules:
+        - application: paw-kafka-key-generator
+          namespace: paw

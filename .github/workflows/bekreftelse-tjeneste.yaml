@@ -81,23 +81,22 @@ jobs:
           RESOURCE: ./apps/${{ env.MODULE }}/nais/nais-dev.yaml
           VAR: image=${{ needs.build.outputs.image }}
 
-#  deploy-prod:
-#    if: github.ref == 'refs/heads/main'
-#    name: Deploy to prod-gcp
-#    needs:
-#      - build
-#      - deploy-dev
-#    permissions:
-#      contents: read
-#      id-token: write
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v4
-#      - name: Deploy to GCP
-#        uses: nais/deploy/actions/deploy@v2
-#        env:
-#          TEAM: paw
-#          CLUSTER: prod-gcp
-#          RESOURCE: ./apps/${{ env.MODULE }}/nais/nais-prod.yaml
-#          VAR: image=${{ needs.build.outputs.image }}
+  deploy-prod:
+    if: github.ref == 'refs/heads/main'
+    name: Deploy to dev-gcp
+    needs:
+      - build
+      - deploy-dev
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Deploy to GCP
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: prod-gcp
+          RESOURCE: ./apps/${{ env.MODULE }}/nais/nais-prod.yaml
+          VAR: image=${{ needs.build.outputs.image }}
