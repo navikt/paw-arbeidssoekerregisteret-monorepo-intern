@@ -28,10 +28,6 @@ import java.util.concurrent.atomic.AtomicLong
 
 private val punctuatorLogger = LoggerFactory.getLogger("bekreftelse.tjeneste.punctuator")
 
-@WithSpan(
-    value = "bekreftelse_punctuator",
-    kind = SpanKind.INTERNAL
-)
 fun bekreftelsePunctuator(
     prometheusMeterRegistry: PrometheusMeterRegistry,
     bekreftelseTilstandStateStoreName: String,
