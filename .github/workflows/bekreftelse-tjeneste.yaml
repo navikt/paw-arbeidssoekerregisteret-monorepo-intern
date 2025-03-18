@@ -83,7 +83,7 @@ jobs:
 
   deploy-prod:
     if: github.ref == 'refs/heads/main'
-    name: Deploy to dev-gcp
+    name: Deploy to prod-gcp
     needs:
       - build
       - deploy-dev

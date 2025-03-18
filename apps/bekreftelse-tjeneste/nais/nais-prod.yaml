@@ -24,7 +24,7 @@ spec:
     - name: BEKREFTELSE_TIDLIGSTE_PERIODE_START
       value: "2025-03-10"
     - name: BEKREFTELSE_INTERVAL
-      value: "PT14D"
+      value: "P14D"
     - name: BEKREFTELSE_GRACEPERIODE
       value: "P7D"
     - name: BEKREFTELSE_TILGJENGELIG_OFFSET
