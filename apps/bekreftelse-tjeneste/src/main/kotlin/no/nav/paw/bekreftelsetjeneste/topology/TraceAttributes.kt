@@ -21,6 +21,7 @@ val domainKey = AttributeKey.stringKey("domain")
 val actionKey = AttributeKey.stringKey("action")
 val fraOgMedDagKey = AttributeKey.stringKey("fra_og_meg_dag")
 val tilDagKey = AttributeKey.stringKey("til_dag")
+val generiskVerdiKey = AttributeKey.stringKey("verdi")
 
 private val fraTilKeyValueformatter = DateTimeFormatter.ofPattern("yyyyMMdd")
 val norskTid = ZoneId.of("Europe/Oslo")
@@ -34,6 +35,7 @@ val gjeldeneBekreftelseStatusKey = AttributeKey.stringKey("gjeldene_bekreftelse_
 const val bekreftelseLevertAction = "bekreftelse_levert"
 const val bekreftelseOpprettetAction = "bekreftelse_opprettet"
 const val bekreftelseSattStatusAction = "bekreftelse_satt_status"
+const val bekreftelseHentUke = "bekreftelse_hent_uke"
 
 
 //PaaVegneAv

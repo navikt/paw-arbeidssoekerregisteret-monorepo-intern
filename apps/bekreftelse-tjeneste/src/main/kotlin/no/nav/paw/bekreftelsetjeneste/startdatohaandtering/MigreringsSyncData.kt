@@ -1,6 +1,12 @@
 package no.nav.paw.bekreftelsetjeneste.startdatohaandtering
 
+import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.trace.Span
 import no.nav.paw.bekreftelsetjeneste.logger
+import no.nav.paw.bekreftelsetjeneste.topology.actionKey
+import no.nav.paw.bekreftelsetjeneste.topology.bekreftelseHentUke
+import no.nav.paw.bekreftelsetjeneste.topology.generiskVerdiKey
+import no.nav.paw.bekreftelsetjeneste.topology.intern
 import no.nav.paw.model.Identitetsnummer
 import no.nav.paw.model.asIdentitetsnummer
 import java.nio.file.Path
@@ -20,7 +26,18 @@ class StatiskMapOddetallPartallMap(kilde: Sequence<Pair<Identitetsnummer, Ukenum
         logger.info("[Partall/Oddetal] Leste $size elementer fra CSV fil")
     }
 
-    override operator fun get(identitetsnummer: Identitetsnummer): Ukenummer = data[identitetsnummer] ?: Ukjent
+    override operator fun get(identitetsnummer: Identitetsnummer): Ukenummer = (data[identitetsnummer] ?: Ukjent)
+        .also { resultat ->
+            Span.current().addEvent(
+                intern,
+                Attributes.of(
+                actionKey,
+                bekreftelseHentUke,
+                generiskVerdiKey,
+                    resultat::class.simpleName!!.lowercase()
+                )
+            )
+        }
 }
 
 fun oddetallPartallMapFraCsvFil(
