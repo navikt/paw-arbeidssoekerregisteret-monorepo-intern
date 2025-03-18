@@ -48,10 +48,10 @@ spec:
     max: 6
   resources:
     limits:
-      memory: 2048Mi
+      memory: 4096Mi
     requests:
       cpu: 20m
-      memory: 1024Mi
+      memory: 2048Mi
   liveness:
     path: /internal/isAlive
     initialDelay: 10
