@@ -4,6 +4,7 @@ import io.ktor.server.application.Application
 import io.ktor.server.routing.routing
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.api.docs.routes.apiDocsRoutes
+import no.nav.paw.arbeidssoekerregisteret.config.ApplicationConfig
 import no.nav.paw.arbeidssoekerregisteret.route.bestillingerRoutes
 import no.nav.paw.arbeidssoekerregisteret.route.varselRoutes
 import no.nav.paw.arbeidssoekerregisteret.service.BestillingService
@@ -13,6 +14,7 @@ import no.nav.paw.health.route.healthRoutes
 import no.nav.paw.metrics.route.metricsRoutes
 
 fun Application.configureRouting(
+    applicationConfig: ApplicationConfig,
     healthIndicatorRepository: HealthIndicatorRepository,
     prometheusMeterRegistry: PrometheusMeterRegistry,
     varselService: VarselService,
@@ -23,6 +25,6 @@ fun Application.configureRouting(
         metricsRoutes(prometheusMeterRegistry)
         apiDocsRoutes()
         varselRoutes(varselService)
-        bestillingerRoutes(bestillingService)
+        bestillingerRoutes(applicationConfig, bestillingService)
     }
 }

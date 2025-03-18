@@ -50,6 +50,12 @@ fun Application.module(applicationContext: ApplicationContext) {
         installDatabasePlugin(dataSource)
         installKafkaStreamsPlugins(kafkaStreamsList, kafkaShutdownTimeout)
         installScheduledTaskPlugin(applicationConfig, bestillingService)
-        configureRouting(healthIndicatorRepository, prometheusMeterRegistry, varselService, bestillingService)
+        configureRouting(
+            applicationConfig,
+            healthIndicatorRepository,
+            prometheusMeterRegistry,
+            varselService,
+            bestillingService
+        )
     }
 }

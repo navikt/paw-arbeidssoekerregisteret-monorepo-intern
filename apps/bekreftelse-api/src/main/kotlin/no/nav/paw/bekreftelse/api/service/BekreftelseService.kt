@@ -9,12 +9,12 @@ import no.nav.paw.bekreftelse.api.config.ServerConfig
 import no.nav.paw.bekreftelse.api.exception.DataIkkeFunnetForIdException
 import no.nav.paw.bekreftelse.api.exception.DataTilhoererIkkeBrukerException
 import no.nav.paw.bekreftelse.api.handler.KafkaProducerHandler
-import no.nav.paw.bekreftelse.api.models.MottaBekreftelseRequest
 import no.nav.paw.bekreftelse.api.model.TilgjengeligBekreftelserResponse
 import no.nav.paw.bekreftelse.api.model.asBekreftelse
 import no.nav.paw.bekreftelse.api.model.asBekreftelseBruker
 import no.nav.paw.bekreftelse.api.model.asBekreftelseRow
 import no.nav.paw.bekreftelse.api.model.asTilgjengeligBekreftelse
+import no.nav.paw.bekreftelse.api.models.MottaBekreftelseRequest
 import no.nav.paw.bekreftelse.api.repository.BekreftelseRepository
 import no.nav.paw.bekreftelse.api.utils.deleteBekreftelseHendelseCounter
 import no.nav.paw.bekreftelse.api.utils.ignoreBekreftelseHendeleCounter
@@ -53,15 +53,21 @@ class BekreftelseService(
     private val bekreftelseRepository: BekreftelseRepository,
 ) {
     private val logger = buildLogger
+    private val enabled = false // TODO: Fjern før prodsetting!!!!
 
     @WithSpan(value = "finnTilgjengeligBekreftelser")
     suspend fun finnTilgjengeligBekreftelser(identitetsnummer: Identitetsnummer): TilgjengeligBekreftelserResponse {
-        val kafkaKeysResponse = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
+        if (enabled) {
+            val kafkaKeysResponse = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
 
-        return transaction {
-            logger.info("Skal hente tilgjengelige bekreftelser")
-            val bekreftelser = bekreftelseRepository.findByArbeidssoekerId(kafkaKeysResponse.id)
-            bekreftelser.map { it.asTilgjengeligBekreftelse() }
+            return transaction {
+                logger.info("Skal hente tilgjengelige bekreftelser")
+                val bekreftelser = bekreftelseRepository.findByArbeidssoekerId(kafkaKeysResponse.id)
+                bekreftelser.map { it.asTilgjengeligBekreftelse() }
+            }
+        } else {
+            logger.warn("Returnerer hardkodet tom liste")
+            return emptyList()
         }
     }
 
@@ -126,9 +132,11 @@ class BekreftelseService(
             is BekreftelseMeldingMottatt -> {
                 processBekreftelseMeldingMottatt(hendelse)
             }
+
             is BekreftelsePaaVegneAvStartet -> {
                 processBekreftelsePaaVegneAvStartet(hendelse)
             }
+
             is PeriodeAvsluttet -> {
                 processPeriodeAvsluttet(hendelse)
             }

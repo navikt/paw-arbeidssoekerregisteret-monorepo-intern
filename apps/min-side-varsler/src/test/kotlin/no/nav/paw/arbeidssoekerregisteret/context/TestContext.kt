@@ -106,7 +106,7 @@ open class TestContext(
                 installAuthenticationPlugin(securityConfig.authProviders)
                 routing {
                     varselRoutes(varselService)
-                    bestillingerRoutes(bestillingService)
+                    bestillingerRoutes(applicationConfig, bestillingService)
                 }
             }
         }
