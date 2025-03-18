@@ -14,7 +14,7 @@ class MigreringsSyncKtTest: FreeSpec({
     "Vi kan lese inn en gyldig csv fil uten header: $testfil1" {
         val data = oddetallPartallMapFraCsvFil(
             header = false,
-            fil = testfil1,
+            filer = listOf(testfil1),
             delimiter = ",",
             identitetsnummerKolonne = 0,
             ukenummerKolonne = 1,
@@ -43,7 +43,7 @@ class MigreringsSyncKtTest: FreeSpec({
     "Vi kan lese inn en gyldig csv fil med header: $testfil1" {
         val data = oddetallPartallMapFraCsvFil(
             header = true,
-            fil = testfil2,
+            filer = listOf(testfil2),
             delimiter = ";",
             identitetsnummerKolonne = 1,
             ukenummerKolonne = 0,

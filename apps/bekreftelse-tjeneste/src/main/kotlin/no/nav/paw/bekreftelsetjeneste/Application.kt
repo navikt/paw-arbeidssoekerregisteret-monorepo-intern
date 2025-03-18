@@ -21,6 +21,7 @@ import no.nav.paw.bekreftelsetjeneste.plugins.configureMetrics
 import no.nav.paw.bekreftelsetjeneste.routes.metricsRoutes
 import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.OddetallPartallMap
 import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.StatiskMapOddetallPartallMap
+import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.finnFiler
 import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.oddetallPartallMapFraCsvFil
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstandSerde
 import no.nav.paw.bekreftelsetjeneste.topology.buildTopology
@@ -42,9 +43,11 @@ fun main() {
 
     logger.info("Starter: ${currentRuntimeEnvironment.appNameOrDefaultForLocal()}")
     val keepGoing = AtomicBoolean(true)
+    val syncFiler = finnFiler(StaticConfigValues.syncMappe)
+    logger.info("Følgende filer ble funnet: $syncFiler")
     val oddetallPartallMap = oddetallPartallMapFraCsvFil(
         header = false,
-        fil = StaticConfigValues.arenaSyncFile,
+        filer = syncFiler,
         delimiter = ",",
         identitetsnummerKolonne = 0,
         ukenummerKolonne = 1,
