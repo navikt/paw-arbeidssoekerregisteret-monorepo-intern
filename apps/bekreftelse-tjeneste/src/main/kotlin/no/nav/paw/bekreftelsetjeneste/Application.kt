@@ -48,7 +48,7 @@ fun main() {
     val oddetallPartallMap = oddetallPartallMapFraCsvFil(
         header = false,
         filer = syncFiler,
-        delimiter = ",",
+        delimiter = ";",
         identitetsnummerKolonne = 0,
         ukenummerKolonne = 1,
         partall = "P",
