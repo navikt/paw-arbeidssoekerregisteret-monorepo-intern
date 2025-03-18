@@ -1,5 +1,6 @@
 package no.nav.paw.bekreftelsetjeneste.topology
 
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.config.tidligsteStartUke
 import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
@@ -12,6 +13,7 @@ import java.time.ZoneId
 private val tidssone = ZoneId.of("Europe/Oslo")
 
 class BekreftelseContext(
+    val prometheusMeterRegistry: PrometheusMeterRegistry,
     val konfigurasjon: BekreftelseKonfigurasjon,
     val wallClock: WallClock,
     val periodeInfo: PeriodeInfo,

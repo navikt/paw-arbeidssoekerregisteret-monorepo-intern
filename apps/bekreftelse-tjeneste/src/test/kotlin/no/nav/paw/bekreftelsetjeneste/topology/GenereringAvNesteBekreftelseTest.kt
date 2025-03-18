@@ -3,6 +3,8 @@ package no.nav.paw.bekreftelsetjeneste.topology
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
 import no.nav.paw.bekreftelsetjeneste.testutils.timestamp
@@ -37,7 +39,8 @@ class GenereringAvNesteBekreftelseTest : FreeSpec({
             konfigurasjon = bekreftelseKonfigurasjon,
             wallClock = WallClock(tidspunkt.timestamp),
             periodeInfo = periodeInfo,
-            oddetallPartallMap = map
+            oddetallPartallMap = map,
+            prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
         )
     }
     "Vi skal opprette ny bekreftelse når" - {

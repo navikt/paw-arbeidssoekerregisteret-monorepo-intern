@@ -1,5 +1,6 @@
 package no.nav.paw.bekreftelsetjeneste.topology
 
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
@@ -30,6 +31,7 @@ private val punctuatorLogger = LoggerFactory.getLogger("bekreftelse.tjeneste.pun
     kind = SpanKind.INTERNAL
 )
 fun bekreftelsePunctuator(
+    prometheusMeterRegistry: PrometheusMeterRegistry,
     bekreftelseTilstandStateStoreName: String,
     paaVegneAvTilstandStateStoreName: String,
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
@@ -57,6 +59,7 @@ fun bekreftelsePunctuator(
                 }
                 .map { (_, tilstand) ->
                     val context = BekreftelseContext(
+                        prometheusMeterRegistry = prometheusMeterRegistry,
                         konfigurasjon = bekreftelseKonfigurasjon,
                         wallClock = WallClock(timestamp),
                         periodeInfo = tilstand.periode,

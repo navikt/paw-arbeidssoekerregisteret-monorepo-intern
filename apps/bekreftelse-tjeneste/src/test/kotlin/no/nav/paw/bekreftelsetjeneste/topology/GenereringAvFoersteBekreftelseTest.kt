@@ -4,6 +4,8 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
@@ -43,7 +45,8 @@ class GenereringAvFoersteBekreftelseTest : FreeSpec({
                     konfigurasjon = bekreftelseKonfigurasjon,
                     wallClock = WallClock(parse("2024-03-03T15:26:00Z")),
                     periodeInfo = periodeInfo,
-                    oddetallPartallMap = map
+                    oddetallPartallMap = map,
+                    prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
                 )
                 val (tilstand, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
                 tilstand.bekreftelser.size shouldBe 1
@@ -62,7 +65,8 @@ class GenereringAvFoersteBekreftelseTest : FreeSpec({
                     konfigurasjon = bekreftelseKonfigurasjon,
                     wallClock = WallClock(parse("2024-03-03T15:26:00Z")),
                     periodeInfo = periodeInfo,
-                    oddetallPartallMap = map
+                    oddetallPartallMap = map,
+                    prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
                 )
                 val (tilstand, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
                 tilstand.bekreftelser.size shouldBe 1
@@ -81,7 +85,8 @@ class GenereringAvFoersteBekreftelseTest : FreeSpec({
                     konfigurasjon = bekreftelseKonfigurasjon,
                     wallClock = WallClock(parse("2024-03-03T15:26:00Z")),
                     periodeInfo = periodeInfo,
-                    oddetallPartallMap = map
+                    oddetallPartallMap = map,
+                    prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
                 )
                 val (tilstand, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
                 tilstand.bekreftelser.size shouldBe 1
@@ -102,7 +107,8 @@ class GenereringAvFoersteBekreftelseTest : FreeSpec({
                     konfigurasjon = bekreftelseKonfigurasjon,
                     wallClock = WallClock(parse("2025-03-18T15:26:00Z")),
                     periodeInfo = periodeInfo,
-                    oddetallPartallMap = map
+                    oddetallPartallMap = map,
+                    prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
                 )
                 val (tilstand, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
                 tilstand.bekreftelser.size shouldBe 1
@@ -121,7 +127,8 @@ class GenereringAvFoersteBekreftelseTest : FreeSpec({
                     konfigurasjon = bekreftelseKonfigurasjon,
                     wallClock = WallClock(parse("2024-03-03T15:26:00Z")),
                     periodeInfo = periodeInfo,
-                    oddetallPartallMap = map
+                    oddetallPartallMap = map,
+                    prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
                 )
                 val (tilstand, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
                 tilstand.bekreftelser.size shouldBe 1
@@ -140,7 +147,8 @@ class GenereringAvFoersteBekreftelseTest : FreeSpec({
                     konfigurasjon = bekreftelseKonfigurasjon,
                     wallClock = WallClock(parse("2025-03-18T23:01:00Z")),
                     periodeInfo = periodeInfo,
-                    oddetallPartallMap = map
+                    oddetallPartallMap = map,
+                    prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
                 )
                 val (tilstand, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
                 tilstand.bekreftelser.size shouldBe 1
@@ -161,7 +169,8 @@ class GenereringAvFoersteBekreftelseTest : FreeSpec({
                     konfigurasjon = bekreftelseKonfigurasjon,
                     wallClock = WallClock(parse("2025-03-18T15:26:00Z")),
                     periodeInfo = periodeInfo,
-                    oddetallPartallMap = map
+                    oddetallPartallMap = map,
+                    prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
                 )
                 val (tilstand, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
                 tilstand.bekreftelser.size shouldBe 1
@@ -180,7 +189,8 @@ class GenereringAvFoersteBekreftelseTest : FreeSpec({
                     konfigurasjon = bekreftelseKonfigurasjon,
                     wallClock = WallClock(parse("2025-03-18T15:26:00Z")),
                     periodeInfo = periodeInfo,
-                    oddetallPartallMap = map
+                    oddetallPartallMap = map,
+                    prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
                 )
                 val (tilstand, hendelser) =
                     context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
@@ -200,7 +210,8 @@ class GenereringAvFoersteBekreftelseTest : FreeSpec({
                     konfigurasjon = bekreftelseKonfigurasjon,
                     wallClock = WallClock(parse("2025-03-18T23:01:00Z")),
                     periodeInfo = periodeInfo,
-                    oddetallPartallMap = map
+                    oddetallPartallMap = map,
+                    prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
                 )
                 val (tilstand, hendelser) =
                     context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))

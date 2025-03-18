@@ -57,6 +57,7 @@ fun StreamsBuilder.buildBekreftelseStream(
                     punctuationInterval,
                     PunctuationType.WALL_CLOCK_TIME,
                     ::bekreftelsePunctuator
+                        .partially1(prometheusMeterRegistry)
                         .partially1(internStateStoreName)
                         .partially1(bekreftelsePaaVegneAvStateStoreName)
                         .partially1(bekreftelseKonfigurasjon)
