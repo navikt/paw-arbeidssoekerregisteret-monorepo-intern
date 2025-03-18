@@ -5,6 +5,7 @@ import io.ktor.server.engine.addShutdownHook
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.routing.routing
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.bekreftelsetjeneste.paavegneav.BekreftelsePaaVegneAvSerde
 import no.nav.paw.bekreftelsetjeneste.config.APPLICATION_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
@@ -30,9 +31,11 @@ import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.health.route.healthRoutes
 import org.apache.kafka.common.serialization.Serdes
+import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.state.Stores
 import org.slf4j.LoggerFactory
+import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 
 val logger = LoggerFactory.getLogger("bekreftelse.tjeneste.application")
@@ -99,6 +102,7 @@ fun Application.module(
     )
     val kafkaTopology = stream.buildTopology(applicationContext)
     val kafkaStreams = buildKafkaStreams(applicationContext, kafkaTopology)
+    registerStreamStateGauge(applicationContext.prometheusMeterRegistry, kafkaStreams)
     TilstandsGauge(
         kafkaStreams = kafkaStreams,
         paaVegneAvStoreName = applicationContext.applicationConfig.kafkaTopology.bekreftelsePaaVegneAvStateStoreName,
@@ -122,5 +126,30 @@ fun Application.module(
     routing {
         healthRoutes(applicationContext.healthIndicatorRepository)
         metricsRoutes(applicationContext)
+    }
+}
+
+private fun registerStreamStateGauge(
+    prometheusMeterRegistry: PrometheusMeterRegistry,
+    kafkaStreams: KafkaStreams
+) {
+    prometheusMeterRegistry.gauge(
+        "paw_arbeidssokerregisteret_stream_state",
+        listOf(),
+        kafkaStreams
+    ) {
+        when (try {
+            kafkaStreams.state()
+        } catch (ex: TimeoutException) {
+            -1
+        }) {
+            KafkaStreams.State.RUNNING -> 0
+            KafkaStreams.State.CREATED -> 1
+            KafkaStreams.State.REBALANCING -> 2
+            KafkaStreams.State.PENDING_SHUTDOWN -> 3
+            KafkaStreams.State.NOT_RUNNING -> 4
+            KafkaStreams.State.ERROR -> -2
+            else -> 6
+        }.toDouble()
     }
 }
