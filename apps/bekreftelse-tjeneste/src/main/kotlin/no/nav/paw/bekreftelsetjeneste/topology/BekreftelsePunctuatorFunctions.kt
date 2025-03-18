@@ -10,6 +10,7 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjenstaaendeTid
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
+import no.nav.paw.bekreftelsetjeneste.metrics.tellBekreftelseHandling
 import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstandStatus
@@ -54,6 +55,7 @@ fun BekreftelseContext.opprettInitielBekreftelse(bekreftelser: List<Bekreftelse>
     return if (foerste != null) {
         pawNonEmptyListOf(foerste, bekreftelser.drop(1))
     } else {
+        prometheusMeterRegistry.tellBekreftelseHandling("initiell_bekreftelse_opprettet")
         val fra = tidligsteBekreftelsePeriodeStart()
         val til = sluttTidForBekreftelsePeriode(
             startTid = fra,
@@ -86,6 +88,7 @@ fun BekreftelseContext.opprettManglendeBekreftelser(bekreftelser: PawNonEmptyLis
     val siste = bekreftelser.maxBy { it.gjelderTil }
     val ventende = bekreftelser.toList().filter { it.sisteTilstand() is VenterPaaSvar }
     return if (siste.gjelderTil.isBefore(wallClock.value) && ventende.size < konfigurasjon.maksAntallVentendeBekreftelser) {
+        prometheusMeterRegistry.tellBekreftelseHandling("bekreftelse_opprettet")
         val fra = siste.gjelderTil
         val til = sluttTidForBekreftelsePeriode(siste.gjelderTil, konfigurasjon.interval)
         Span.current().addEvent(
@@ -116,6 +119,7 @@ fun BekreftelseContext.oppdaterBekreftelser(bekreftelser: PawNonEmptyList<Bekref
     bekreftelser.map { bekreftelse ->
         when {
             bekreftelse.erKlarForUtfylling(wallClock.value, konfigurasjon.tilgjengeligOffset) -> {
+                prometheusMeterRegistry.tellBekreftelseHandling("klar_for_utfylling")
                 bekreftelse.setStatus(KlarForUtfylling(wallClock.value)) to BekreftelseTilgjengelig(
                     hendelseId = UUID.randomUUID(),
                     periodeId = periodeInfo.periodeId,
@@ -128,6 +132,7 @@ fun BekreftelseContext.oppdaterBekreftelser(bekreftelser: PawNonEmptyList<Bekref
             }
 
             bekreftelse.harFristUtloept(wallClock.value) -> {
+                prometheusMeterRegistry.tellBekreftelseHandling("venter_svar")
                 bekreftelse.setStatus(VenterSvar(wallClock.value)) to LeveringsfristUtloept(
                     hendelseId = UUID.randomUUID(),
                     periodeId = periodeInfo.periodeId,
@@ -142,6 +147,7 @@ fun BekreftelseContext.oppdaterBekreftelser(bekreftelser: PawNonEmptyList<Bekref
                 wallClock.value,
                 konfigurasjon.varselFoerGraceperiodeUtloept
             ) -> {
+                prometheusMeterRegistry.tellBekreftelseHandling("varslet_om_graceperiode")
                 bekreftelse.setStatus(GracePeriodeVarselet(wallClock.value)) to RegisterGracePeriodeGjenstaaendeTid(
                     hendelseId = UUID.randomUUID(),
                     periodeId = periodeInfo.periodeId,
@@ -156,6 +162,7 @@ fun BekreftelseContext.oppdaterBekreftelser(bekreftelser: PawNonEmptyList<Bekref
             }
 
             bekreftelse.harGraceperiodeUtloept(wallClock.value, konfigurasjon.graceperiode) -> {
+                prometheusMeterRegistry.tellBekreftelseHandling("graceperiode_utloept")
                 bekreftelse.setStatus(GracePeriodeUtloept(wallClock.value)) to RegisterGracePeriodeUtloept(
                     hendelseId = UUID.randomUUID(),
                     periodeId = periodeInfo.periodeId,

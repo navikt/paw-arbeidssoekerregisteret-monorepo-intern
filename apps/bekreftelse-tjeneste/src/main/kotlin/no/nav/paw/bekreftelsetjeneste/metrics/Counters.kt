@@ -23,6 +23,17 @@ private const val PERIODE_FUNNET = "periode_funnet"
 private const val HAR_ANSVAR = "har_ansvar"
 private const val HANDLING = "handling"
 
+private const val GENRISK_BERKREFTELSE_HANDLING = "arbeidssoekerregisteret_bekreftelse_handling"
+
+fun PrometheusMeterRegistry.tellBekreftelseHandling(
+    handling: String
+) {
+    val tags = Tags.of(
+        Tag.of(HANDLING, handling)
+    )
+    counter(GENRISK_BERKREFTELSE_HANDLING, tags).increment()
+}
+
 fun PrometheusMeterRegistry.tellBekreftelseUtgaaendeHendelse(
     bekreftelseHendelse: BekreftelseHendelse
 ) {
