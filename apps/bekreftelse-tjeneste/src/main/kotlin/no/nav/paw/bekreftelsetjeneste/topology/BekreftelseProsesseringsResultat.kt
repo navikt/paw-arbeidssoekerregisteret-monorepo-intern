@@ -5,5 +5,6 @@ import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
 
 data class BekreftelseProsesseringsResultat(
     val oppdatertTilstand: BekreftelseTilstand,
+    val gjeldendeTilstand: BekreftelseTilstand,
     val hendelser: List<BekreftelseHendelse>
 )

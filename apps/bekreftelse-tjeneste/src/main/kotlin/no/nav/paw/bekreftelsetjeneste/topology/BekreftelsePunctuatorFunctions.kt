@@ -41,7 +41,8 @@ fun BekreftelseContext.prosesser(bekreftelseTilstand: BekreftelseTilstand): Bekr
             { (bekreftelser, hendelser) ->
                 BekreftelseProsesseringsResultat(
                     oppdatertTilstand = bekreftelseTilstand.copy(bekreftelser = bekreftelser.toList()),
-                    hendelser = hendelser
+                    hendelser = hendelser,
+                     gjeldendeTilstand = bekreftelseTilstand
                 )
             })(bekreftelseTilstand.bekreftelser)
 

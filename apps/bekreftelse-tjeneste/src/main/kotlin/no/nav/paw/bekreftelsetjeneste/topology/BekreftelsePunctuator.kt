@@ -97,11 +97,13 @@ fun runPunctuator(
                     )
                     context.prosesser(tilstand)
                 }
-                .forEach { (oppdatertTilstand, bekreftelseHendelser) ->
+                .forEach { (oppdatertTilstand, gjeldendeTilstand, bekreftelseHendelser) ->
                     bekreftelseHendelser.forEach {
                         ctx.forward(Record(oppdatertTilstand.periode.recordKey, it, ctx.currentSystemTimeMs()))
                     }
-                    bekreftelseTilstandStateStore.put(oppdatertTilstand.periode.periodeId, oppdatertTilstand)
+                    if (bekreftelseHendelser.isNotEmpty() || oppdatertTilstand != gjeldendeTilstand) {
+                        bekreftelseTilstandStateStore.put(oppdatertTilstand.periode.periodeId, oppdatertTilstand)
+                    }
                 }.also {
                     punctuatorLogger.info(
                         "[{}ms - partition:{}] Punctator kjørt for {} perioder, {} av disse har registeret ansvar",

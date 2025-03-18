@@ -48,7 +48,7 @@ class GenereringAvFoersteBekreftelseTest : FreeSpec({
                     oddetallPartallMap = map,
                     prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
                 )
-                val (tilstand, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
+                val (tilstand, _, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
                 tilstand.bekreftelser.size shouldBe 1
                 tilstand.bekreftelser.minBy { it.gjelderFra } should { bekreftelse ->
                     bekreftelse.gjelderFra shouldBe "2025-03-10".vedStartAvDagen()
@@ -68,7 +68,7 @@ class GenereringAvFoersteBekreftelseTest : FreeSpec({
                     oddetallPartallMap = map,
                     prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
                 )
-                val (tilstand, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
+                val (tilstand, _, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
                 tilstand.bekreftelser.size shouldBe 1
                 tilstand.bekreftelser.first() should { bekreftelse ->
                     bekreftelse.gjelderFra shouldBe "2025-03-10".vedStartAvDagen()
@@ -88,7 +88,7 @@ class GenereringAvFoersteBekreftelseTest : FreeSpec({
                     oddetallPartallMap = map,
                     prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
                 )
-                val (tilstand, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
+                val (tilstand, _, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
                 tilstand.bekreftelser.size shouldBe 1
                 tilstand.bekreftelser.first() should { bekreftelse ->
                     bekreftelse.gjelderFra shouldBe "2025-03-17".vedStartAvDagen()
@@ -110,7 +110,7 @@ class GenereringAvFoersteBekreftelseTest : FreeSpec({
                     oddetallPartallMap = map,
                     prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
                 )
-                val (tilstand, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
+                val (tilstand, _, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
                 tilstand.bekreftelser.size shouldBe 1
                 tilstand.bekreftelser.first() should { bekreftelse ->
                     bekreftelse.gjelderFra shouldBe "2025-03-10".vedStartAvDagen()
@@ -130,7 +130,7 @@ class GenereringAvFoersteBekreftelseTest : FreeSpec({
                     oddetallPartallMap = map,
                     prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
                 )
-                val (tilstand, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
+                val (tilstand, _, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
                 tilstand.bekreftelser.size shouldBe 1
                 tilstand.bekreftelser.first() should { bekreftelse ->
                     bekreftelse.gjelderFra shouldBe "2025-03-10".vedStartAvDagen()
@@ -150,7 +150,7 @@ class GenereringAvFoersteBekreftelseTest : FreeSpec({
                     oddetallPartallMap = map,
                     prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
                 )
-                val (tilstand, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
+                val (tilstand, _, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
                 tilstand.bekreftelser.size shouldBe 1
                 tilstand.bekreftelser.first() should { bekreftelse ->
                     bekreftelse.gjelderFra shouldBe "2025-03-17".vedStartAvDagen()
@@ -172,7 +172,7 @@ class GenereringAvFoersteBekreftelseTest : FreeSpec({
                     oddetallPartallMap = map,
                     prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
                 )
-                val (tilstand, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
+                val (tilstand, _, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
                 tilstand.bekreftelser.size shouldBe 1
                 tilstand.bekreftelser.first() should { bekreftelse ->
                     bekreftelse.gjelderFra shouldBe periodeInfo.startet
@@ -192,7 +192,7 @@ class GenereringAvFoersteBekreftelseTest : FreeSpec({
                     oddetallPartallMap = map,
                     prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
                 )
-                val (tilstand, hendelser) =
+                val (tilstand, _, hendelser) =
                     context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
                 tilstand.bekreftelser.size shouldBe 1
                 tilstand.bekreftelser.first() should { bekreftelse ->
@@ -213,7 +213,7 @@ class GenereringAvFoersteBekreftelseTest : FreeSpec({
                     oddetallPartallMap = map,
                     prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
                 )
-                val (tilstand, hendelser) =
+                val (tilstand, _, hendelser) =
                     context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
                 tilstand.bekreftelser.size shouldBe 1
                 tilstand.bekreftelser.first() should { bekreftelse ->
