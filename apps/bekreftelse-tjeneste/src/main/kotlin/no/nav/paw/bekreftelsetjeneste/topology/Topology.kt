@@ -17,7 +17,11 @@ typealias PaaVegneAvTilstandStateStore = KeyValueStore<UUID, PaaVegneAvTilstand>
 fun StreamsBuilder.buildTopology(
     applicationContext: ApplicationContext
 ): Topology {
-    buildPeriodeStream(applicationContext.applicationConfig, applicationContext.kafkaKeysClient)
+    buildPeriodeStream(
+        prometheusMeterRegistry = applicationContext.prometheusMeterRegistry,
+        applicationConfig = applicationContext.applicationConfig,
+        kafaKeysClient = applicationContext.kafkaKeysClient
+    )
     buildBekreftelseStream(
         prometheusMeterRegistry = applicationContext.prometheusMeterRegistry,
         applicationConfig = applicationContext.applicationConfig,

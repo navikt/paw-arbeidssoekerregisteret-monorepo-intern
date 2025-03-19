@@ -1,10 +1,12 @@
 package no.nav.paw.bekreftelsetjeneste.topology
 
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
+import no.nav.paw.bekreftelsetjeneste.metrics.tellBekreftelseUtgaaendeHendelse
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.opprettBekreftelseTilstand
 import no.nav.paw.kafka.processor.genericProcess
@@ -19,6 +21,7 @@ import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
 fun StreamsBuilder.buildPeriodeStream(
+    prometheusMeterRegistry: PrometheusMeterRegistry,
     applicationConfig: ApplicationConfig,
     kafaKeysClient: KafkaKeysClient
 ) {
@@ -38,7 +41,9 @@ fun StreamsBuilder.buildPeriodeStream(
                     periode.avsluttet() -> Action.DeleteStateAndEmit(arbeidsoekerId, periode)
                     currentState == null -> Action.UpdateState(
                         opprettBekreftelseTilstand(
-                            kafkaPartition = requireNotNull(recordMetadata().getOrNull()?.partition()) { "Forventer at kafka.partition er satt"},
+                            kafkaPartition = requireNotNull(
+                                recordMetadata().getOrNull()?.partition()
+                            ) { "Forventer at kafka.partition er satt" },
                             id = arbeidsoekerId,
                             key = kafkaKey,
                             periode = periode
@@ -73,7 +78,8 @@ fun StreamsBuilder.buildPeriodeStream(
                     Action.DoNothing -> {}
                     is Action.UpdateState -> keyValueStore.put(action.state.periode.periodeId, action.state)
                 }
-            }.to(bekreftelseHendelseloggTopic, Produced.with(Serdes.Long(), BekreftelseHendelseSerde()))
+            }.peek { _, value -> prometheusMeterRegistry.tellBekreftelseUtgaaendeHendelse(value) }
+            .to(bekreftelseHendelseloggTopic, Produced.with(Serdes.Long(), BekreftelseHendelseSerde()))
     }
 }
 
