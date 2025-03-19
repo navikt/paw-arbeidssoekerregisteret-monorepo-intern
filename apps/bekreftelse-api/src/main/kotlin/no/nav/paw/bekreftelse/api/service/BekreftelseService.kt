@@ -53,21 +53,15 @@ class BekreftelseService(
     private val bekreftelseRepository: BekreftelseRepository,
 ) {
     private val logger = buildLogger
-    private val enabled = false // TODO: Fjern før prodsetting!!!!
 
     @WithSpan(value = "finnTilgjengeligBekreftelser")
     suspend fun finnTilgjengeligBekreftelser(identitetsnummer: Identitetsnummer): TilgjengeligBekreftelserResponse {
-        if (enabled) {
-            val kafkaKeysResponse = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
+        val kafkaKeysResponse = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
 
-            return transaction {
-                logger.info("Skal hente tilgjengelige bekreftelser")
-                val bekreftelser = bekreftelseRepository.findByArbeidssoekerId(kafkaKeysResponse.id)
-                bekreftelser.map { it.asTilgjengeligBekreftelse() }
-            }
-        } else {
-            logger.warn("Returnerer hardkodet tom liste")
-            return emptyList()
+        return transaction {
+            logger.info("Henter tilgjengelige bekreftelser")
+            val bekreftelser = bekreftelseRepository.findByArbeidssoekerId(kafkaKeysResponse.id)
+            bekreftelser.map { it.asTilgjengeligBekreftelse() }
         }
     }
 
