@@ -26,7 +26,7 @@ fun kommendeBekrefteler(
         ?: return null
     val terskel = bekreftelseKonfigurasjon.tilgjengeligOffset.multipliedBy(2)
     if (neste.erKlarForUtfylling(now, terskel)) {
-        val dag = (Instant.now() - bekreftelseKonfigurasjon.tilgjengeligOffset)
+        val dag = (neste.gjelderTil - bekreftelseKonfigurasjon.tilgjengeligOffset)
             .let { LocalDateTime.ofInstant(it, norskTid) }
             .get(WeekFields.ISO.dayOfWeek())
             .let {
