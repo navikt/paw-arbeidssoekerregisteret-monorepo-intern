@@ -4,8 +4,7 @@ import no.nav.tms.varsel.action.EksternKanal
 import no.nav.tms.varsel.action.EksternVarslingBestilling
 import no.nav.tms.varsel.action.Sensitivitet
 import java.net.URI
-import java.time.Instant
-import java.time.ZoneId
+import java.time.ZonedDateTime
 
 const val MIN_SIDE_VARSEL_CONFIG = "min_side_varsel_config.yaml"
 
@@ -81,12 +80,12 @@ fun EksternVarselKanal.asEksternKanal() = when (this) {
 }
 
 fun EksterntVarsel.asEksternVarslingBestilling(
-    utsettSendingTil: Instant? = null,
+    utsettSendingTil: ZonedDateTime? = null,
 ) = EksternVarslingBestilling(
     prefererteKanaler = listOf(this.preferertKanal.asEksternKanal()),
     smsVarslingstekst = this.smsTekst,
     epostVarslingstittel = this.epostTittel,
     epostVarslingstekst = this.epostTekst,
     kanBatches = this.kanBatches,
-    utsettSendingTil = utsettSendingTil?.atZone(ZoneId.systemDefault())
+    utsettSendingTil = utsettSendingTil
 )

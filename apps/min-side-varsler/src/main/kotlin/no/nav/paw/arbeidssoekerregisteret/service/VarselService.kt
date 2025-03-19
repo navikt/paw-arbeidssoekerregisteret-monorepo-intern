@@ -23,6 +23,7 @@ import no.nav.paw.arbeidssoekerregisteret.repository.EksterntVarselRepository
 import no.nav.paw.arbeidssoekerregisteret.repository.PeriodeRepository
 import no.nav.paw.arbeidssoekerregisteret.repository.VarselRepository
 import no.nav.paw.arbeidssoekerregisteret.utils.bekreftelseHendelseCounter
+import no.nav.paw.arbeidssoekerregisteret.utils.tilNesteFredagKl9
 import no.nav.paw.arbeidssoekerregisteret.utils.periodeCounter
 import no.nav.paw.arbeidssoekerregisteret.utils.varselHendelseCounter
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
@@ -165,7 +166,7 @@ class VarselService(
                             val varsel = varselMeldingBygger.opprettBekreftelseTilgjengeligOppgave(
                                 varselId = hendelse.bekreftelseId,
                                 identitetsnummer = periode.identitetsnummer,
-                                utsettEksternVarslingTil = hendelse.gjelderTil // TODO: Kalkuler SMS-dato
+                                utsettEksternVarslingTil = hendelse.gjelderTil.tilNesteFredagKl9()
                             )
                             listOf(varsel)
                         } else {

@@ -48,18 +48,6 @@ import no.nav.paw.bekreftelse.internehendelser.vo.Bruker as InternBekreftelseBru
 object TestData {
     val runtimeEnvironment = currentRuntimeEnvironment
 
-    fun randomFnr(
-        minYear: Year = Year.now().minusYears(18),
-        maxYear: Year = Year.now().minusYears(100)
-    ): String {
-        val formatter = DateTimeFormatter.ofPattern("ddMMyy")
-        val randomYear = Random.nextInt(maxYear.value, minYear.value)
-        val randomEpochSecond = Random.nextLong(0, Instant.now().epochSecond)
-        val randomBirthday = LocalDate.ofInstant(Instant.ofEpochSecond(randomEpochSecond), ZoneOffset.UTC)
-            .withYear(randomYear)
-        return formatter.format(randomBirthday) + Random.nextInt(10000, 99999).toString()
-    }
-
     fun insertPeriodeRow(
         periodeId: UUID = UUID.randomUUID(),
         identitetsnummer: String = randomFnr(),

@@ -124,7 +124,7 @@ class TopologyTest : FreeSpec({
             }
 
             "Verifiser håndtering av bekreftelser" - {
-                "Bekreftelse tilgjengelig så bekreftelse motatt" {
+                "Bekreftelse tilgjengelig så bekreftelse mottatt" {
                     val key = Random.nextLong()
                     val aapenPeriode = aapenPeriode()
                     bekreftelsePeriodeTopic.pipeInput(aapenPeriode.asRecord(key))

@@ -16,6 +16,7 @@ import no.nav.tms.varsel.action.Varseltype
 import no.nav.tms.varsel.builder.VarselActionBuilder
 import java.time.Instant
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.*
 
 class VarselMeldingBygger(
@@ -40,7 +41,7 @@ class VarselMeldingBygger(
     fun opprettBekreftelseTilgjengeligOppgave(
         varselId: UUID,
         identitetsnummer: String,
-        utsettEksternVarslingTil: Instant
+        utsettEksternVarslingTil: ZonedDateTime
     ): OpprettOppgave {
         val minSideVarsel = minSideVarselConfig.bekreftelseTilgjengelig
         return opprettOppgave(
@@ -68,7 +69,7 @@ class VarselMeldingBygger(
         )
     }
 
-    fun opprettBeskjed(
+    private fun opprettBeskjed(
         varselId: UUID,
         identitetsnummer: String,
         sensitivitet: Sensitivitet,
@@ -87,7 +88,7 @@ class VarselMeldingBygger(
         aktivFremTil = aktivFremTil
     ).let { OpprettBeskjed(varselId, it) }
 
-    fun opprettOppgave(
+    private fun opprettOppgave(
         varselId: UUID,
         identitetsnummer: String,
         sensitivitet: Sensitivitet,
@@ -123,13 +124,15 @@ class VarselMeldingBygger(
         this.link = if (link.isNullOrBlank()) null else link
         this.produsent = runtimeEnvironment.asProdusent()
         this.tekster.addAll(tekster)
-        this.eksternVarsling {
-            preferertKanal = eksterntVarsel?.prefererteKanaler?.first()
-            smsVarslingstekst = eksterntVarsel?.smsVarslingstekst
-            epostVarslingstittel = eksterntVarsel?.epostVarslingstittel
-            epostVarslingstekst = eksterntVarsel?.epostVarslingstekst
-            kanBatches = eksterntVarsel?.kanBatches
-            utsettSendingTil = eksterntVarsel?.utsettSendingTil
+        if (eksterntVarsel != null) {
+            this.eksternVarsling {
+                preferertKanal = eksterntVarsel.prefererteKanaler.first()
+                smsVarslingstekst = eksterntVarsel.smsVarslingstekst
+                epostVarslingstittel = eksterntVarsel.epostVarslingstittel
+                epostVarslingstekst = eksterntVarsel.epostVarslingstekst
+                kanBatches = eksterntVarsel.kanBatches
+                utsettSendingTil = eksterntVarsel.utsettSendingTil
+            }
         }
         this.aktivFremTil = aktivFremTil?.atZone(ZoneId.systemDefault())
     }

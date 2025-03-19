@@ -26,6 +26,8 @@ class PeriodeAvroSerializer : SpecificAvroSerializer<Periode>()
 class VarselHendelseSerializer : JacksonSerializer<VarselHendelse>()
 
 private fun <K, V> Producer<K, V>.send(topic: String, key: K, value: V) = send(ProducerRecord(topic, key, value)).get()
+private fun <K, V> Producer<K, V>.send(topic: String, pair: Pair<K, V>) =
+    send(topic, pair.first, pair.second)
 
 fun main() {
     val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG)
@@ -74,39 +76,39 @@ fun main() {
         val bekreftelseId4 = UUID.fromString("a59581e6-c9be-4aec-b9f4-c635f1826c71")
         val bekreftelseId5 = UUID.fromString("de94b7ab-360f-4e5f-9ad1-3dc572b3e6a5")
 
-        val aapenPeriode = TestData.aapenPeriode(
+        val aapenPeriode = key1 to TestData.aapenPeriode(
             id = periodeId1,
             identitetsnummer = identitetsnummer1
         )
-        val lukketPeriode = TestData.lukketPeriode(
+        val lukketPeriode = key1 to TestData.lukketPeriode(
             id = periodeId1,
             identitetsnummer = identitetsnummer1,
         )
-        val bekreftelseTilgjengelig = TestData.bekreftelseTilgjengelig(
+        val bekreftelseTilgjengelig = key1 to TestData.bekreftelseTilgjengelig(
             periodeId = periodeId1,
             bekreftelseId = bekreftelseId1,
             arbeidssoekerId = arbeidssoekerId1
         )
-        val bekreftelseMeldingMottatt = TestData.bekreftelseMeldingMottatt(
+        val bekreftelseMeldingMottatt = key1 to TestData.bekreftelseMeldingMottatt(
             periodeId = periodeId1,
             bekreftelseId = bekreftelseId1,
             arbeidssoekerId = arbeidssoekerId1
         )
-        val periodeAvsluttet = TestData.periodeAvsluttet(
+        val periodeAvsluttet = key1 to TestData.periodeAvsluttet(
             periodeId = periodeId1,
             arbeidssoekerId = arbeidssoekerId1
         )
-        val varselHendelse = TestData.varselHendelse(
+        val varselHendelse = bekreftelseId1.toString() to TestData.varselHendelse(
             eventName = VarselEventName.AKTIVERT,
             varselId = bekreftelseId1.toString(),
             varseltype = VarselType.OPPGAVE,
             status = VarselStatus.VENTER
         )
 
-        //periodeKafkaProducer.send(periodeTopic, key1, lukketPeriode)
-        //bekreftelseHendelseKafkaProducer.send(bekreftelseHendelseTopic, key1, bekreftelseTilgjengelig)
-        //bekreftelseHendelseKafkaProducer.send(bekreftelseHendelseTopic, key1, bekreftelseMeldingMottatt)
-        //bekreftelseHendelseKafkaProducer.send(bekreftelseHendelseTopic, key1, periodeAvsluttet)
-        varselHendelseKafkaProducer.send(tmsVarselHendelseTopic, varselHendelse.varselId, varselHendelse)
+        //periodeKafkaProducer.send(periodeTopic, lukketPeriode)
+        bekreftelseHendelseKafkaProducer.send(bekreftelseHendelseTopic, bekreftelseTilgjengelig)
+        //bekreftelseHendelseKafkaProducer.send(bekreftelseHendelseTopic, bekreftelseMeldingMottatt)
+        //bekreftelseHendelseKafkaProducer.send(bekreftelseHendelseTopic, periodeAvsluttet)
+        //varselHendelseKafkaProducer.send(tmsVarselHendelseTopic, varselHendelse)
     }
 }
