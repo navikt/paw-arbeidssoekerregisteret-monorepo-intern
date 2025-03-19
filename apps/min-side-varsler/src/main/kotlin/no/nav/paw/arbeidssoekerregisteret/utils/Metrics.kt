@@ -3,6 +3,7 @@ package no.nav.paw.arbeidssoekerregisteret.utils
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.Tags
+import no.nav.paw.arbeidssoekerregisteret.model.VarselEventName
 import no.nav.paw.arbeidssoekerregisteret.model.VarselHendelse
 import no.nav.paw.arbeidssoekerregisteret.model.VarselKanal
 import no.nav.paw.arbeidssoekerregisteret.model.VarselMelding
@@ -16,22 +17,82 @@ import no.nav.paw.config.env.namespaceOrDefaultForLocal
 
 private const val METRIC_PREFIX = "paw_min_side_varsler"
 
+val Periode.eventName get() = if (avsluttet == null) "periode.startet" else "periode.avsluttet"
+
+enum class Type(val value: String) {
+    PERIODE("periode"),
+    BEKREFTELSE_HENDELSE("bekreftelse_hendelse"),
+    VARSEL("varsel"),
+    VARSEL_HENDELSE("varsel_hendelse");
+}
+
+enum class Action(val value: String) {
+    READ("read"),
+    WRITE("write"),
+    INSERT("insert"),
+    UPDATE("update"),
+    DELETE("delete"),
+    IGNORE("ignore"),
+    FAIL("fail");
+}
+
+enum class Source(val value: String) {
+    DATABASE("database"),
+    KAFKA("kafka");
+}
+
+enum class Target(val value: String) {
+    DATABASE("database"),
+    KAFKA("kafka");
+}
+
+enum class TagKey(val key: String) {
+    TYPE("x_type"),
+    ACTION("x_action"),
+    SOURCE("x_source"),
+    TARGET("x_target"),
+    EVENT_TOPIC("x_event_topic"),
+    EVENT_TYPE("x_event_type"),
+    EVENT_NAME("x_event_name"),
+    VARSEL_TYPE("x_varsel_type"),
+    VARSEL_STATUS("x_varsel_status"),
+    VARSEL_KANAL("x_varsel_kanal"),
+    VARSEL_RENOTIFIKASJON("x_varsel_renotifikasjon"),
+    VARSEL_SENDT_SOM_BATCH("x_varsel_sendt_som_batch"),
+    VARSEL_NAMESPACE("x_varsel_namespace"),
+    VARSEL_APP("x_varsel_app");
+
+    fun asTag(value: String): Tag = Tag.of(key, value)
+    fun asTag(boolean: Boolean?): Tag = Tag.of(key, boolean?.toString() ?: "null")
+    fun asTag(type: Type): Tag = Tag.of(key, type.value)
+    fun asTag(action: Action): Tag = Tag.of(key, action.value)
+    fun asTag(source: Source): Tag = Tag.of(key, source.value)
+    fun asTag(target: Target): Tag = Tag.of(key, target.value)
+    fun asTag(eventName: VarselEventName): Tag = Tag.of(key, eventName.value)
+    fun asTag(varselType: VarselType): Tag = Tag.of(key, varselType.value)
+    fun asTag(status: VarselStatus?): Tag = Tag.of(key, status?.value ?: "null")
+    fun asTag(kanal: VarselKanal?): Tag = Tag.of(key, kanal?.value ?: "null")
+}
+
 fun MeterRegistry.periodeCounter(
-    action: String,
+    action: Action,
     periode: Periode
 ) {
-    kafkaCounter(
-        type = "periode",
+    genericCounter(
+        type = Type.PERIODE,
         action = action,
-        target = "database",
-        eventTopic = "paw.arbeidssokerperioder-v1",
-        eventType = periode::class.java.name,
-        eventName = if (periode.avsluttet == null) "periode.startet" else "periode.avsluttet"
+        source = Source.KAFKA,
+        target = Target.DATABASE,
+        extraTags = Tags.of(
+            TagKey.EVENT_TOPIC.asTag("paw.arbeidssokerperioder-v1"),
+            TagKey.EVENT_TYPE.asTag(periode::class.java.name),
+            TagKey.EVENT_NAME.asTag(periode.eventName),
+        )
     )
 }
 
 fun MeterRegistry.bekreftelseHendelseCounter(
-    action: String,
+    action: Action,
     hendelse: BekreftelseHendelse
 ) {
     bekreftelseHendelseCounter(
@@ -42,97 +103,103 @@ fun MeterRegistry.bekreftelseHendelseCounter(
 }
 
 fun MeterRegistry.bekreftelseHendelseCounter(
-    action: String,
+    action: Action,
     eventType: String,
     eventName: String
 ) {
-    kafkaCounter(
-        type = "bekreftelse",
+    genericCounter(
+        type = Type.BEKREFTELSE_HENDELSE,
         action = action,
-        target = "database",
-        eventTopic = "paw.arbeidssoker-bekreftelse-hendelseslogg-v1",
-        eventType = eventType,
-        eventName = eventName
+        source = Source.KAFKA,
+        target = Target.DATABASE,
+        extraTags = Tags.of(
+            TagKey.EVENT_TOPIC.asTag("paw.arbeidssoker-bekreftelse-hendelseslogg-v1"),
+            TagKey.EVENT_TYPE.asTag(eventType),
+            TagKey.EVENT_NAME.asTag(eventName),
+        )
     )
+}
+
+fun MeterRegistry.beskjedVarselCounter(
+    runtimeEnvironment: RuntimeEnvironment,
+    source: Source,
+    melding: VarselMelding
+) {
+    varselCounter(runtimeEnvironment, source, VarselType.BESKJED, melding)
+}
+
+fun MeterRegistry.oppgaveVarselCounter(
+    runtimeEnvironment: RuntimeEnvironment,
+    source: Source,
+    melding: VarselMelding
+) {
+    varselCounter(runtimeEnvironment, source, VarselType.OPPGAVE, melding)
 }
 
 fun MeterRegistry.varselCounter(
     runtimeEnvironment: RuntimeEnvironment,
-    action: String,
+    source: Source,
+    varselType: VarselType,
     melding: VarselMelding
 ) {
-    kafkaCounter(
-        type = "varsel",
-        action = action,
-        target = "kafka",
-        eventTopic = "min-side.aapen-brukervarsel-v1",
-        eventType = melding::class.java.name,
-        eventName = melding::class.java.simpleName,
+    genericCounter(
+        type = Type.VARSEL,
+        action = Action.WRITE,
+        source = source,
+        target = Target.KAFKA,
         extraTags = Tags.of(
-            Tag.of("varsel.type", VarselType.OPPGAVE.value),
-            Tag.of("varsel.status", VarselStatus.UKJENT.value),
-            Tag.of("varsel.kanal", VarselKanal.SMS.value),
-            Tag.of("varsel.renotifikasjon", "null"),
-            Tag.of("varsel.sendtSomBatch", "null"),
-            Tag.of("varsel.namespace", runtimeEnvironment.namespaceOrDefaultForLocal()),
-            Tag.of("varsel.app", runtimeEnvironment.appNameOrDefaultForLocal())
+            TagKey.EVENT_TOPIC.asTag("min-side.aapen-brukervarsel-v1"),
+            TagKey.EVENT_TYPE.asTag(melding::class.java.name),
+            TagKey.EVENT_NAME.asTag(melding::class.java.simpleName),
+            TagKey.VARSEL_TYPE.asTag(varselType),
+            TagKey.VARSEL_STATUS.asTag(VarselStatus.UKJENT),
+            TagKey.VARSEL_KANAL.asTag(VarselKanal.SMS),
+            TagKey.VARSEL_RENOTIFIKASJON.asTag("null"),
+            TagKey.VARSEL_SENDT_SOM_BATCH.asTag("null"),
+            TagKey.VARSEL_NAMESPACE.asTag(runtimeEnvironment.namespaceOrDefaultForLocal()),
+            TagKey.VARSEL_APP.asTag(runtimeEnvironment.appNameOrDefaultForLocal())
         )
     )
 }
 
 fun MeterRegistry.varselHendelseCounter(
-    action: String,
+    action: Action,
     hendelse: VarselHendelse
 ) {
-    kafkaCounter(
-        type = "varsel.hendelse",
+    genericCounter(
+        type = Type.VARSEL_HENDELSE,
         action = action,
-        target = "database",
-        eventTopic = "min-side.aapen-varsel-hendelse-v1",
-        eventType = hendelse::class.java.name,
-        eventName = hendelse.eventName.value,
+        source = Source.KAFKA,
+        target = Target.DATABASE,
         extraTags = Tags.of(
-            Tag.of("varsel.type", hendelse.varseltype.value),
-            Tag.of("varsel.status", hendelse.status?.value ?: "null"),
-            Tag.of("varsel.kanal", hendelse.kanal?.value ?: "null"),
-            Tag.of("varsel.renotifikasjon", hendelse.renotifikasjon?.toString() ?: "null"),
-            Tag.of("varsel.sendtSomBatch", hendelse.sendtSomBatch?.toString() ?: "null"),
-            Tag.of("varsel.namespace", hendelse.namespace),
-            Tag.of("varsel.app", hendelse.appnavn)
+            TagKey.EVENT_TOPIC.asTag("min-side.aapen-varsel-hendelse-v1"),
+            TagKey.EVENT_TYPE.asTag(hendelse::class.java.name),
+            TagKey.EVENT_NAME.asTag(hendelse.eventName),
+            TagKey.VARSEL_TYPE.asTag(hendelse.varseltype),
+            TagKey.VARSEL_STATUS.asTag(hendelse.status),
+            TagKey.VARSEL_KANAL.asTag(hendelse.kanal),
+            TagKey.VARSEL_RENOTIFIKASJON.asTag(hendelse.renotifikasjon),
+            TagKey.VARSEL_SENDT_SOM_BATCH.asTag(hendelse.sendtSomBatch),
+            TagKey.VARSEL_NAMESPACE.asTag(hendelse.namespace),
+            TagKey.VARSEL_APP.asTag(hendelse.appnavn)
         )
     )
 }
 
-fun MeterRegistry.kafkaCounter(
-    type: String,
-    action: String,
-    target: String,
-    eventTopic: String,
-    eventType: String,
-    eventName: String,
-    extraTags: Tags = Tags.empty()
-) = genericCounter(
-    type, action, "kafka", target, Tags.of(
-        Tag.of("event.topic", eventTopic),
-        Tag.of("event.type", eventType),
-        Tag.of("event.name", eventName)
-    ).and(extraTags)
-)
-
 fun MeterRegistry.genericCounter(
-    type: String,
-    action: String,
-    source: String,
-    target: String,
+    type: Type,
+    action: Action,
+    source: Source,
+    target: Target,
     extraTags: Tags = Tags.empty()
 ) {
     counter(
         "${METRIC_PREFIX}_antall_operasjoner",
         Tags.of(
-            Tag.of("type", type),
-            Tag.of("action", action),
-            Tag.of("source", source),
-            Tag.of("target", target)
+            TagKey.TYPE.asTag(type),
+            TagKey.ACTION.asTag(action),
+            TagKey.SOURCE.asTag(source),
+            TagKey.TARGET.asTag(target)
         ).and(extraTags)
     ).increment()
 }

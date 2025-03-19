@@ -2,9 +2,14 @@ package no.nav.paw.arbeidssoekerregisteret.topology
 
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.config.ApplicationConfig
+import no.nav.paw.arbeidssoekerregisteret.model.VarselType
 import no.nav.paw.arbeidssoekerregisteret.service.VarselService
+import no.nav.paw.arbeidssoekerregisteret.utils.Action
+import no.nav.paw.arbeidssoekerregisteret.utils.Source
 import no.nav.paw.arbeidssoekerregisteret.utils.VarselHendelseJsonSerde
 import no.nav.paw.arbeidssoekerregisteret.utils.bekreftelseHendelseCounter
+import no.nav.paw.arbeidssoekerregisteret.utils.beskjedVarselCounter
+import no.nav.paw.arbeidssoekerregisteret.utils.oppgaveVarselCounter
 import no.nav.paw.arbeidssoekerregisteret.utils.periodeCounter
 import no.nav.paw.arbeidssoekerregisteret.utils.varselCounter
 import no.nav.paw.arbeidssoekerregisteret.utils.varselHendelseCounter
@@ -31,9 +36,11 @@ fun StreamsBuilder.periodeKafkaTopology(
 ): StreamsBuilder {
     with(applicationConfig) {
         stream<Long, Periode>(periodeTopic)
-            .peek { _, periode -> meterRegistry.periodeCounter("read", periode) }
+            .peek { _, periode -> meterRegistry.periodeCounter(Action.READ, periode) }
             .flatMapValues { _, periode -> varselService.mottaPeriode(periode) }
-            .peek { _, melding -> meterRegistry.varselCounter(runtimeEnvironment, "write", melding) }
+            .peek { _, melding ->
+                meterRegistry.beskjedVarselCounter(runtimeEnvironment, Source.KAFKA, melding)
+            }
             .map { _, melding -> KeyValue.pair(melding.varselId.toString(), melding.value) }
             .to(tmsVarselTopic, Produced.with(Serdes.String(), Serdes.String()))
     }
@@ -61,10 +68,10 @@ fun StreamsBuilder.bekreftelseKafkaTopology(
 
         bekreftelseStream.leftJoin(periodeTable, BekreftelseValueJoiner())
             .peek { _, (_, hendelse) ->
-                if (hendelse != null) meterRegistry.bekreftelseHendelseCounter("read", hendelse)
+                if (hendelse != null) meterRegistry.bekreftelseHendelseCounter(Action.READ, hendelse)
             }
             .flatMapValues { _, value -> varselService.mottaBekreftelseHendelse(value) }
-            .peek { _, melding -> meterRegistry.varselCounter(runtimeEnvironment, "write", melding) }
+            .peek { _, melding -> meterRegistry.oppgaveVarselCounter(runtimeEnvironment, Source.KAFKA, melding) }
             .map { _, melding -> KeyValue.pair(melding.varselId.toString(), melding.value) }
             .to(tmsVarselTopic, Produced.with(Serdes.String(), Serdes.String()))
     }
@@ -80,7 +87,7 @@ fun StreamsBuilder.varselHendelserKafkaTopology(
     with(applicationConfig) {
         stream(tmsVarselHendelseTopic, Consumed.with(Serdes.String(), VarselHendelseJsonSerde()))
             .filter { _, hendelse -> hendelse.namespace == runtimeEnvironment.namespaceOrDefaultForLocal() }
-            .peek { _, hendelse -> meterRegistry.varselHendelseCounter("read", hendelse) }
+            .peek { _, hendelse -> meterRegistry.varselHendelseCounter(Action.READ, hendelse) }
             .foreach { _, hendelse -> varselService.mottaVarselHendelse(hendelse) }
     }
     return this

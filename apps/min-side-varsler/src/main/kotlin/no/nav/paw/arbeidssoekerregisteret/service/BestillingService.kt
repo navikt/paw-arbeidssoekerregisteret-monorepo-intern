@@ -20,8 +20,9 @@ import no.nav.paw.arbeidssoekerregisteret.model.asResponse
 import no.nav.paw.arbeidssoekerregisteret.repository.BestillingRepository
 import no.nav.paw.arbeidssoekerregisteret.repository.BestiltVarselRepository
 import no.nav.paw.arbeidssoekerregisteret.repository.VarselRepository
+import no.nav.paw.arbeidssoekerregisteret.utils.Source
+import no.nav.paw.arbeidssoekerregisteret.utils.beskjedVarselCounter
 import no.nav.paw.arbeidssoekerregisteret.utils.sendVarsel
-import no.nav.paw.arbeidssoekerregisteret.utils.varselCounter
 import no.nav.paw.logging.logger.buildApplicationLogger
 import org.apache.kafka.clients.producer.Producer
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -130,7 +131,7 @@ class BestillingService(
                 val insertVarselRow = varsel.asInsertVarselRow()
                 varselRepository.insert(insertVarselRow)
                 val melding = varselMeldingBygger.opprettManueltVarsel(varsel.varselId, varsel.identitetsnummer)
-                meterRegistry.varselCounter(serverConfig.runtimeEnvironment, "write", melding)
+                meterRegistry.beskjedVarselCounter(serverConfig.runtimeEnvironment, Source.DATABASE, melding)
                 varselKafkaProducer.sendVarsel(applicationConfig.tmsVarselTopic, melding)
                 logger.debug("Sendte manuelt varsel {}", varsel.varselId)
                 bestiltVarselRepository.update(UpdateBestiltVarselRow(varsel.varselId, BestiltVarselStatus.SENDT))

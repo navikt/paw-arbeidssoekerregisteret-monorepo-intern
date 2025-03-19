@@ -37,10 +37,6 @@ import no.nav.paw.config.env.namespaceOrDefaultForLocal
 import org.apache.kafka.streams.test.TestRecord
 import java.time.Duration
 import java.time.Instant
-import java.time.LocalDate
-import java.time.Year
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.random.Random
 import no.nav.paw.bekreftelse.internehendelser.vo.Bruker as InternBekreftelseBruker
