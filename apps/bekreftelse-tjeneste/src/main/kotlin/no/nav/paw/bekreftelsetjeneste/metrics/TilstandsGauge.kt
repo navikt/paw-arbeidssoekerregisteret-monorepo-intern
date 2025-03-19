@@ -55,7 +55,10 @@ class TilstandsGauge(
         contentSupplier = ::contentSupplier,
         mapper = { (tilstand, ansvarlige) ->
             val now = Instant.now()
-            listOf(map(now, bekreftelseKonfigurasjon, tilstand, ansvarlige))
+            listOfNotNull(
+                map(now, bekreftelseKonfigurasjon, tilstand, ansvarlige),
+                kommendeBekrefteler(bekreftelseKonfigurasjon, now, tilstand, ansvarlige)
+            )
         }
     )
 
