@@ -1,18 +1,20 @@
 package no.nav.paw.bekreftelsetjeneste.topology
 
-import io.micrometer.core.instrument.Tag
-import io.micrometer.core.instrument.Tags
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import io.opentelemetry.api.trace.Span
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
-import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
-import no.nav.paw.bekreftelse.paavegneav.v1.vo.Stopp
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
-import no.nav.paw.bekreftelsetjeneste.paavegneav.*
 import no.nav.paw.bekreftelsetjeneste.config.KafkaTopologyConfig
+import no.nav.paw.bekreftelsetjeneste.metrics.tellBekreftelseUtgaaendeHendelse
 import no.nav.paw.bekreftelsetjeneste.metrics.tellPaVegneAv
+import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
+import no.nav.paw.bekreftelsetjeneste.paavegneav.SendHendelse
+import no.nav.paw.bekreftelsetjeneste.paavegneav.SkrivBekreftelseTilstand
+import no.nav.paw.bekreftelsetjeneste.paavegneav.SkrivPaaVegneAvTilstand
+import no.nav.paw.bekreftelsetjeneste.paavegneav.SlettPaaVegneAvTilstand
+import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
+import no.nav.paw.bekreftelsetjeneste.paavegneav.haandterBekreftelsePaaVegneAvEndret
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
 import no.nav.paw.kafka.processor.mapNonNull
 import org.apache.kafka.common.serialization.Serdes
@@ -60,6 +62,7 @@ fun StreamsBuilder.byggBekreftelsePaaVegneAvStroem(
             }.filterIsInstance<BekreftelseHendelse>()
         }
         .flatMapValues { _, value -> value }
+        .peek { _, value -> registry.tellBekreftelseUtgaaendeHendelse(value) }
         .to(
             kafkaTopologyConfig.bekreftelseHendelseloggTopic,
             Produced.with(Serdes.Long(), bekreftelseHendelseSerde)
