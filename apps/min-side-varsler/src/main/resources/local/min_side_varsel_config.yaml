@@ -1,33 +1,33 @@
 periodeAvsluttet:
-  link: http://localhost:8080/minside
+  link: http://localhost:8080/arbeidssoekerregisteret
   sensitivitet: SUBSTANTIAL
   standardSpraak:
     kode: nb
   tekster:
     - spraak:
         kode: nb
-      tekst: Du er ikke lenger registrert som arbeidssøker.
+      tekst: Du er ikke lenger registrert som arbeidssøker
     - spraak:
         kode: nn
       tekst: Du er ikkje lenger registrert som arbeidssøkjar
     - spraak:
         kode: en
-      tekst: You are no longer registered as job seeker
+      tekst: You are no longer registered as a job seeker
   eksterntVarsel:
     preferertKanal: BETINGET_SMS
     smsTekst: Hei! Du er ikke lenger registrert som arbeidssøker hos Nav. Logg inn på Nav sine nettsider for mer informasjon. Hilsen Nav
     epostTittel: Du har fått en melding fra Nav
-    epostTekst: <html><body><p>Hei!</p><p>Du er ikke lenger registrert som arbeidssøker hos Nav. Logg inn på Nav sine nettsider for mer informasjon.</p><p>Hilsen Nav</p></body></html>
+    epostTekst: Hei!<br>Du er ikke lenger registrert som arbeidssøker hos Nav. Logg inn på Nav sine nettsider for mer informasjon.<br>Hilsen Nav
 
 bekreftelseTilgjengelig:
-  link: http://localhost:8080/minside/bekreftelse
+  link: http://localhost:8080/arbeidssoekerregisteret/bekreftelse
   sensitivitet: SUBSTANTIAL
   standardSpraak:
     kode: nb
   tekster:
     - spraak:
         kode: nb
-      tekst: Bekreft at du vil være registrert som arbeidssøker.
+      tekst: Bekreft at du vil være registrert som arbeidssøker
     - spraak:
         kode: nn
       tekst: Stadfest at du vil vere arbeidssøkjar
@@ -38,20 +38,20 @@ bekreftelseTilgjengelig:
     preferertKanal: BETINGET_SMS
     smsTekst: Hei! Ønsker du fortsatt å være registrert som arbeidssøker? Logg inn på Nav så snart som mulig for å bekrefte at du vil være registrert. Hilsen Nav
     epostTittel: Du har fått en melding fra Nav
-    epostTekst: <html><body><p>Hei!</p><p>Ønsker du fortsatt å være registrert som arbeidssøker hos Nav? Logg inn på Nav så snart som mulig for å bekrefte at du vil være registrert som arbeidssøker.</p><p>Hilsen Nav</p></body></html>
+    epostTekst: Hei!<br>Ønsker du fortsatt å være registrert som arbeidssøker hos Nav? Logg inn på Nav sine nettsider så snart som mulig for å bekrefte at du vil være registrert som arbeidssøker.<br>Hilsen Nav
 
 manueltVarsel:
-  link: http://localhost:8080/minside
+  link: http://localhost:8080/arbeidssoekerregisteret
   sensitivitet: SUBSTANTIAL
   standardSpraak:
     kode: nb
   tekster:
     - spraak:
         kode: nb
-      tekst: Endringer for deg som sender meldekort fra 20. mars.
+      tekst: Endringer for deg som sender meldekort fra 20. mars
     - spraak:
         kode: nn
-      tekst: Endring i meldekort for arbeidssøkjarar frå 20. mars.
+      tekst: Endring i meldekort for arbeidssøkjarar frå 20. mars
     - spraak:
         kode: en
-      tekst: Changes in employment status form for job seekers from March 20th.
+      tekst: Changes in employment status form for job seekers from March 20th
