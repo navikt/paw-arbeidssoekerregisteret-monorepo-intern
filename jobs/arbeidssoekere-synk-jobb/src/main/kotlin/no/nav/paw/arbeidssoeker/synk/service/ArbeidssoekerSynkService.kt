@@ -62,6 +62,11 @@ class ArbeidssoekerSynkService(
         if (databaseRow == null) {
             logger.debug("Fant ingen innslag i databasen for version {}", version)
             logger.debug("Kaller API Inngang med tilstand {}", arbeidssoeker.periodeTilstand)
+            secureLogger.info(
+                "Kaller API Inngang med tilstand {} for arbeidssøker {}",
+                arbeidssoeker.periodeTilstand,
+                identitetsnummer
+            )
             val response = inngangHttpConsumer.opprettPeriode(arbeidssoeker.asOpprettPeriodeRequest())
             logger.traceAndLog(response.status)
 
@@ -70,6 +75,11 @@ class ArbeidssoekerSynkService(
         } else if (databaseRow.status.isNotSuccess()) {
             logger.debug("Fant innslag med status {} i databasen for version {}", databaseRow.status, version)
             logger.debug("Kaller API Inngang med tilstand {}", arbeidssoeker.periodeTilstand)
+            secureLogger.info(
+                "Kaller API Inngang med tilstand {} for arbeidssøker {}",
+                arbeidssoeker.periodeTilstand,
+                identitetsnummer
+            )
             val response = inngangHttpConsumer.opprettPeriode(arbeidssoeker.asOpprettPeriodeRequest())
             logger.traceAndLog(response.status)
 
