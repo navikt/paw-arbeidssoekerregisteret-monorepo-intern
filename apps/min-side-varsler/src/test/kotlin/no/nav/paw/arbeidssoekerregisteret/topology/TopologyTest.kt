@@ -338,39 +338,177 @@ class TopologyTest : FreeSpec({
                     eksternVarselRepository.findAll() shouldHaveSize 1  // TODO P.g.a. deaktivert sletting
                 }
 
+                "To bekreftelser tilgjengelig så på vegne av startet" {
+                    val key = Random.nextLong()
+                    val aapenPeriode = aapenPeriode()
+                    bekreftelsePeriodeTopic.pipeInput(aapenPeriode.asRecord(key))
+                    val bekreftelseTilgjengelig1 = bekreftelseTilgjengelig(
+                        periodeId = aapenPeriode.id,
+                        hendelseTidspunkt = Instant.now().minus(Duration.ofMinutes(20))
+                    )
+                    bekreftelseHendelseTopic.pipeInput(bekreftelseTilgjengelig1.asRecord(key))
+                    bekreftelseVarselTopic.isEmpty shouldBe false
+                    bekreftelseVarselTopic.readKeyValue() should { (key, stringValue) ->
+                        val value = objectMapper.readValue<OpprettVarsel>(stringValue)
+                        key shouldBe bekreftelseTilgjengelig1.bekreftelseId.toString()
+                        value.type shouldBe Varseltype.Oppgave
+                        value.ident shouldBe aapenPeriode.identitetsnummer
+                        value.eventName shouldBe EventType.Opprett
+                    }
+                    bekreftelseVarselTopic.isEmpty shouldBe true
+                    varselRepository.findAll() shouldHaveSize 1
+                    val varselRow4 = varselRepository.findByVarselId(bekreftelseTilgjengelig1.bekreftelseId)
+                    varselRow4 shouldNotBe null
+                    varselRow4?.varselId shouldBe bekreftelseTilgjengelig1.bekreftelseId
+                    varselRow4?.varselKilde shouldBe VarselKilde.BEKREFTELSE_TILGJENGELIG
+                    varselRow4?.varselType shouldBe VarselType.OPPGAVE
+                    varselRow4?.hendelseName shouldBe VarselEventName.UKJENT
+                    varselRow4?.varselStatus shouldBe VarselStatus.UKJENT
+                    varselRow4?.eksterntVarsel shouldBe null
+
+                    val oppgaveVarselHendelse1 = varselHendelse(
+                        eventName = VarselEventName.OPPRETTET,
+                        varselId = bekreftelseTilgjengelig1.bekreftelseId.toString(),
+                        status = VarselStatus.VENTER,
+                        varseltype = VarselType.OPPGAVE,
+                        tidspunkt = Instant.now().minus(Duration.ofMinutes(3))
+                    )
+                    varselHendelseTopic.pipeInput(oppgaveVarselHendelse1)
+                    val oppgaveVarselHendelse2 = varselHendelse(
+                        eventName = VarselEventName.EKSTERN_STATUS_OPPDATERT,
+                        varselId = bekreftelseTilgjengelig1.bekreftelseId.toString(),
+                        status = VarselStatus.BESTILT,
+                        varseltype = VarselType.OPPGAVE,
+                        tidspunkt = Instant.now().minus(Duration.ofMinutes(2))
+                    )
+                    varselHendelseTopic.pipeInput(oppgaveVarselHendelse2)
+                    val oppgaveVarselHendelse3 = varselHendelse(
+                        eventName = VarselEventName.EKSTERN_STATUS_OPPDATERT,
+                        varselId = bekreftelseTilgjengelig1.bekreftelseId.toString(),
+                        status = VarselStatus.FEILET,
+                        varseltype = VarselType.OPPGAVE,
+                        tidspunkt = Instant.now().minus(Duration.ofMinutes(1))
+                    )
+                    varselHendelseTopic.pipeInput(oppgaveVarselHendelse3)
+                    val oppgaveVarselHendelse4 = varselHendelse(
+                        eventName = VarselEventName.INAKTIVERT,
+                        varselId = bekreftelseTilgjengelig1.bekreftelseId.toString(),
+                        varseltype = VarselType.OPPGAVE,
+                        tidspunkt = Instant.now().minus(Duration.ofMinutes(10))
+                    )
+                    varselHendelseTopic.pipeInput(oppgaveVarselHendelse4)
+                    val varselRow5 = varselRepository.findByVarselId(bekreftelseTilgjengelig1.bekreftelseId)
+                    varselRow5 shouldNotBe null
+                    varselRow5?.varselId shouldBe bekreftelseTilgjengelig1.bekreftelseId
+                    varselRow5?.varselKilde shouldBe VarselKilde.BEKREFTELSE_TILGJENGELIG
+                    varselRow5?.varselType shouldBe VarselType.OPPGAVE
+                    varselRow5?.hendelseName shouldBe VarselEventName.OPPRETTET
+                    varselRow5?.varselStatus shouldBe VarselStatus.VENTER
+                    varselRow5?.eksterntVarsel shouldNotBe null
+                    varselRow5?.eksterntVarsel?.varselType shouldBe VarselType.OPPGAVE
+                    varselRow5?.eksterntVarsel?.hendelseName shouldBe VarselEventName.EKSTERN_STATUS_OPPDATERT
+                    varselRow5?.eksterntVarsel?.varselStatus shouldBe VarselStatus.FEILET
+
+                    val bekreftelseTilgjengelig2 = bekreftelseTilgjengelig(
+                        periodeId = aapenPeriode.id,
+                        hendelseTidspunkt = Instant.now().minus(Duration.ofMinutes(10))
+                    )
+                    bekreftelseHendelseTopic.pipeInput(bekreftelseTilgjengelig2.asRecord(key))
+                    bekreftelseVarselTopic.isEmpty shouldBe false
+                    bekreftelseVarselTopic.readKeyValue() should { (key, stringValue) ->
+                        val value = objectMapper.readValue<OpprettVarsel>(stringValue)
+                        key shouldBe bekreftelseTilgjengelig2.bekreftelseId.toString()
+                        value.type shouldBe Varseltype.Oppgave
+                        value.ident shouldBe aapenPeriode.identitetsnummer
+                        value.eventName shouldBe EventType.Opprett
+                    }
+                    bekreftelseVarselTopic.isEmpty shouldBe true
+                    varselRepository.findAll() shouldHaveSize 2
+                    val varselRow6 = varselRepository.findByVarselId(bekreftelseTilgjengelig2.bekreftelseId)
+                    varselRow6 shouldNotBe null
+                    varselRow6?.varselId shouldBe bekreftelseTilgjengelig2.bekreftelseId
+                    varselRow6?.varselKilde shouldBe VarselKilde.BEKREFTELSE_TILGJENGELIG
+                    varselRow6?.varselType shouldBe VarselType.OPPGAVE
+                    varselRow6?.hendelseName shouldBe VarselEventName.UKJENT
+                    varselRow6?.varselStatus shouldBe VarselStatus.UKJENT
+                    varselRow6?.eksterntVarsel shouldBe null
+
+                    val paaVegneAvStartet = bekreftelsePaaVegneAvStartet(
+                        periodeId = aapenPeriode.id,
+                        arbeidssoekerId = bekreftelseTilgjengelig1.arbeidssoekerId
+                    )
+                    bekreftelseHendelseTopic.pipeInput(paaVegneAvStartet.asRecord(key))
+                    bekreftelseVarselTopic.isEmpty shouldBe false
+                    bekreftelseVarselTopic.readKeyValue() should { (key, stringValue) ->
+                        val value = objectMapper.readValue<InaktiverVarsel>(stringValue)
+                        key shouldBe bekreftelseTilgjengelig1.bekreftelseId.toString()
+                        value.eventName shouldBe EventType.Inaktiver
+                    }
+                    bekreftelseVarselTopic.isEmpty shouldBe false
+                    bekreftelseVarselTopic.readKeyValue() should { (key, stringValue) ->
+                        val value = objectMapper.readValue<InaktiverVarsel>(stringValue)
+                        key shouldBe bekreftelseTilgjengelig2.bekreftelseId.toString()
+                        value.eventName shouldBe EventType.Inaktiver
+                    }
+                    bekreftelseVarselTopic.isEmpty shouldBe true
+                    periodeRepository.findAll() shouldHaveSize 0
+                    varselRepository.findAll() shouldHaveSize 2  // TODO P.g.a. deaktivert sletting
+                    eksternVarselRepository.findAll() shouldHaveSize 1  // TODO P.g.a. deaktivert sletting
+                }
+
                 "Skal ignorere urelevante hendelser" {
                     val key = Random.nextLong()
                     val aapenPeriode = aapenPeriode()
                     bekreftelsePeriodeTopic.pipeInput(aapenPeriode.asRecord(key))
+                    val bekreftelseTilgjengelig = bekreftelseTilgjengelig(periodeId = aapenPeriode.id)
+                    bekreftelseHendelseTopic.pipeInput(bekreftelseTilgjengelig.asRecord(key))
                     val hendelse1 = baOmAaAvsluttePeriode(periodeId = aapenPeriode.id)
                     bekreftelseHendelseTopic.pipeInput(hendelse1.asRecord(key = key))
-                    val hendelse2 = leveringsfristUtloept(periodeId = aapenPeriode.id)
+                    val hendelse2 = leveringsfristUtloept(
+                        periodeId = aapenPeriode.id,
+                        bekreftelseId = bekreftelseTilgjengelig.bekreftelseId
+                    )
                     bekreftelseHendelseTopic.pipeInput(hendelse2.asRecord(key = key))
-                    val hendelse3 = registerGracePeriodeUtloept(periodeId = aapenPeriode.id)
+                    val hendelse3 = registerGracePeriodeUtloept(
+                        periodeId = aapenPeriode.id,
+                        bekreftelseId = bekreftelseTilgjengelig.bekreftelseId
+                    )
                     bekreftelseHendelseTopic.pipeInput(hendelse3.asRecord(key = key))
                     val hendelse4 = registerGracePeriodeUtloeptEtterEksternInnsamling(periodeId = aapenPeriode.id)
                     bekreftelseHendelseTopic.pipeInput(hendelse4.asRecord(key = key))
-                    val hendelse5 = registerGracePeriodeGjenstaaendeTid(periodeId = aapenPeriode.id)
+                    val hendelse5 = registerGracePeriodeGjenstaaendeTid(
+                        periodeId = aapenPeriode.id,
+                        bekreftelseId = bekreftelseTilgjengelig.bekreftelseId
+                    )
                     bekreftelseHendelseTopic.pipeInput(hendelse5.asRecord(key = key))
-                    val hendelse6 = bekreftelsePaaVegneAvStartet(periodeId = aapenPeriode.id)
+                    val hendelse6 = eksternGracePeriodeUtloept(periodeId = aapenPeriode.id)
                     bekreftelseHendelseTopic.pipeInput(hendelse6.asRecord(key = key))
-                    val hendelse7 = eksternGracePeriodeUtloept(periodeId = aapenPeriode.id)
-                    bekreftelseHendelseTopic.pipeInput(hendelse7.asRecord(key = key))
 
-                    bekreftelseVarselTopic.isEmpty shouldBe true
+                    bekreftelseVarselTopic.isEmpty shouldBe false
+                    bekreftelseVarselTopic.readKeyValue() should { (key, stringValue) ->
+                        val value = objectMapper.readValue<InaktiverVarsel>(stringValue)
+                        key shouldBe bekreftelseTilgjengelig.bekreftelseId.toString()
+                        value.eventName shouldBe EventType.Opprett
+                    }
                     periodeRepository.findAll() shouldHaveSize 0
-                    varselRepository.findAll() shouldHaveSize 0
+                    varselRepository.findAll() shouldHaveSize 1
+                    val varselRow = varselRepository.findByVarselId(bekreftelseTilgjengelig.bekreftelseId)
+                    varselRow shouldNotBe null
+                    varselRow?.varselId shouldBe bekreftelseTilgjengelig.bekreftelseId
+                    varselRow?.varselKilde shouldBe VarselKilde.BEKREFTELSE_TILGJENGELIG
+                    varselRow?.varselType shouldBe VarselType.OPPGAVE
+                    varselRow?.hendelseName shouldBe VarselEventName.UKJENT
+                    varselRow?.varselStatus shouldBe VarselStatus.UKJENT
+                    varselRow?.eksterntVarsel shouldBe null
                     eksternVarselRepository.findAll() shouldHaveSize 0
                 }
 
                 "Skal feile om periode ikke er mottatt" {
                     val key = Random.nextLong()
                     val aapenPeriode = aapenPeriode()
-                    val bekreftelseTilgjengelig1 = bekreftelseTilgjengelig(
-                        periodeId = aapenPeriode.id,
-                    )
+                    val bekreftelseTilgjengelig = bekreftelseTilgjengelig(periodeId = aapenPeriode.id)
                     val exception = shouldThrow<StreamsException> {
-                        bekreftelseHendelseTopic.pipeInput(bekreftelseTilgjengelig1.asRecord(key))
+                        bekreftelseHendelseTopic.pipeInput(bekreftelseTilgjengelig.asRecord(key))
                     }
                     exception.cause should beInstanceOf<PeriodeIkkeFunnetException>()
                 }

@@ -18,6 +18,8 @@ import no.nav.paw.config.env.namespaceOrDefaultForLocal
 private const val METRIC_PREFIX = "paw_min_side_varsler"
 
 val Periode.eventName get() = if (avsluttet == null) "periode.startet" else "periode.avsluttet"
+val BekreftelseHendelse?.eventType get() = if (this != null) this::class.java.name else "null"
+val BekreftelseHendelse?.eventName get() = this?.hendelseType ?: "bekreftelse.null"
 
 enum class Type(val value: String) {
     PERIODE("periode"),

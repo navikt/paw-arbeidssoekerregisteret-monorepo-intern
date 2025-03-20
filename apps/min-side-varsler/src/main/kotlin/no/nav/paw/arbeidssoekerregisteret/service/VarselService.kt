@@ -26,12 +26,14 @@ import no.nav.paw.arbeidssoekerregisteret.utils.Action
 import no.nav.paw.arbeidssoekerregisteret.utils.action
 import no.nav.paw.arbeidssoekerregisteret.utils.bekreftelseHendelseCounter
 import no.nav.paw.arbeidssoekerregisteret.utils.eventName
+import no.nav.paw.arbeidssoekerregisteret.utils.eventType
 import no.nav.paw.arbeidssoekerregisteret.utils.periodeCounter
 import no.nav.paw.arbeidssoekerregisteret.utils.removeAll
 import no.nav.paw.arbeidssoekerregisteret.utils.varselHendelseCounter
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
+import no.nav.paw.bekreftelse.internehendelser.BekreftelsePaaVegneAvStartet
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
 import no.nav.paw.logging.logger.buildLogger
@@ -65,9 +67,10 @@ class VarselService(
 
     @WithSpan("mottaPeriode")
     fun mottaPeriode(periode: Periode): List<VarselMelding> = transaction {
+        val eventName = periode.eventName
         try {
-            mdc.eventName(periode.eventName)
-            logger.debug("Prosesserer hendelse {}", periode.eventName)
+            mdc.eventName(eventName)
+            logger.debug("Prosesserer hendelse {}", eventName)
             val periodeRow = periodeRepository.findByPeriodeId(periode.id)
             if (periodeRow != null) {
                 if (periodeRow.avsluttetTimestamp != null) {
@@ -128,8 +131,8 @@ class VarselService(
     fun mottaBekreftelseHendelse(value: Pair<Periode?, BekreftelseHendelse?>): List<VarselMelding> = transaction {
         try {
             val (periode, hendelse) = value
-            val eventType = if (hendelse != null) hendelse::class.java.name else "null"
-            val eventName = hendelse?.hendelseType ?: "bekreftelse.null"
+            val eventType = hendelse.eventType
+            val eventName = hendelse.eventName
             mdc.eventName(eventName)
             logger.debug("Prosesserer hendelse {}", eventName)
 
@@ -141,106 +144,116 @@ class VarselService(
             }
 
             when (hendelse) {
-                is BekreftelseTilgjengelig -> {
-                    val varselRow = varselRepository.findByVarselId(hendelse.bekreftelseId)
-                    if (varselRow != null) {
-                        mdc.action(Action.IGNORE)
-                        logger.warn(
-                            "Ignorerer siden varsel allerede finnes for hendelse {} og periode {}",
-                            hendelse.hendelseType,
-                            hendelse.periodeId
-                        )
-                        meterRegistry.bekreftelseHendelseCounter(Action.IGNORE, hendelse)
-                        emptyList()
-                    } else {
-                        if (applicationConfig.bekreftelseVarslerEnabled) {
-                            mdc.action(Action.INSERT)
-                            logger.debug(
-                                "Oppretter og bestiller varsel for hendelse {} og periode {}",
-                                hendelse.hendelseType,
-                                hendelse.periodeId
-                            )
-                            meterRegistry.bekreftelseHendelseCounter(Action.INSERT, hendelse)
-                            val insertVarselRow = hendelse.asInsertVarselRow()
-                            varselRepository.insert(insertVarselRow)
-                            val varsel = varselMeldingBygger.opprettBekreftelseTilgjengeligOppgave(periode, hendelse)
-                            listOf(varsel)
-                        } else {
-                            mdc.action(Action.IGNORE)
-                            logger.warn("Utsendelse av varsler ved tilgjengelig bekreftelse er deaktivert")
-                            emptyList()
-                        }
-                    }
-                }
+                is BekreftelseTilgjengelig -> mottaBekreftelseTilgjengelig(periode, hendelse)
 
-                is BekreftelseMeldingMottatt -> {
-                    val varselRow = varselRepository.findByVarselId(hendelse.bekreftelseId)
-                    if (varselRow != null) {
-                        mdc.action(Action.DELETE)
-                        logger.debug(
-                            "Avslutter og sletter varsel for hendelse {} og periode {}",
-                            hendelse.hendelseType,
-                            hendelse.periodeId
-                        )
-                        meterRegistry.bekreftelseHendelseCounter(Action.DELETE, hendelse)
-                        //varselRepository.deleteByVarselId(hendelse.bekreftelseId) TODO: Disablet sletting
-                        listOf(varselMeldingBygger.avsluttVarsel(hendelse.bekreftelseId))
-                    } else {
-                        mdc.action(Action.FAIL)
-                        logger.warn(
-                            "Fant ingen varsel for hendelse {} og periode {}",
-                            hendelse.hendelseType,
-                            hendelse.periodeId
-                        )
-                        meterRegistry.bekreftelseHendelseCounter(Action.FAIL, hendelse)
-                        emptyList()
-                    }
-                }
+                is BekreftelseMeldingMottatt -> mottaBekreftelseMeldingMottatt(hendelse)
 
-                is PeriodeAvsluttet -> {
-                    val varselRows = varselRepository.findByPeriodeIdAndVarselKilde(
-                        periodeId = hendelse.periodeId,
-                        varselKilde = VarselKilde.BEKREFTELSE_TILGJENGELIG
-                    )
-                    if (varselRows.isEmpty()) {
-                        mdc.action(Action.FAIL)
-                        logger.warn(
-                            "Fant ingen varsler for hendelse {} og periode {}",
-                            hendelse.hendelseType,
-                            hendelse.periodeId
-                        )
-                        meterRegistry.bekreftelseHendelseCounter(Action.FAIL, hendelse)
-                        emptyList()
-                    } else {
-                        mdc.action(Action.DELETE)
-                        logger.debug(
-                            "Avlutter og sletter alle varsler for hendelse {} og periode {}",
-                            hendelse.hendelseType,
-                            hendelse.periodeId
-                        )
-                        meterRegistry.bekreftelseHendelseCounter(Action.DELETE, hendelse)
-                        /*varselRepository.deleteByPeriodeIdAndVarselKilde(
-                            periodeId = hendelse.periodeId,
-                            varselKilde = VarselKilde.BEKREFTELSE_TILGJENGELIG
-                        ) TODO: Disablet sletting */
-                        varselRows.map { varselMeldingBygger.avsluttVarsel(it.varselId) }
-                    }
-                }
+                is PeriodeAvsluttet -> mottaPeriodeAvsluttetEllerPaaVegneAvStartet(hendelse)
 
-                else -> {
-                    if (hendelse != null) {
-                        logger.debug("Ignorerer hendelse {}", hendelse.hendelseType)
-                        meterRegistry.bekreftelseHendelseCounter(Action.IGNORE, hendelse)
-                    } else {
-                        logger.debug("Ignorerer hendelse som er null")
-                        meterRegistry.bekreftelseHendelseCounter(Action.IGNORE, eventType, eventName)
-                    }
-                    emptyList()
-                }
+                is BekreftelsePaaVegneAvStartet -> mottaPeriodeAvsluttetEllerPaaVegneAvStartet(hendelse)
+
+                else -> mottaAnnenBekreftelseHendelse(hendelse)
             }
         } finally {
             mdc.removeAll()
         }
+    }
+
+    private fun mottaBekreftelseTilgjengelig(periode: Periode, hendelse: BekreftelseTilgjengelig): List<VarselMelding> {
+        val varselRow = varselRepository.findByVarselId(hendelse.bekreftelseId)
+        if (varselRow != null) {
+            mdc.action(Action.IGNORE)
+            logger.warn(
+                "Ignorerer siden varsel allerede finnes for hendelse {} og periode {}",
+                hendelse.hendelseType,
+                hendelse.periodeId
+            )
+            meterRegistry.bekreftelseHendelseCounter(Action.IGNORE, hendelse)
+            return emptyList()
+        } else {
+            if (applicationConfig.bekreftelseVarslerEnabled) {
+                mdc.action(Action.INSERT)
+                logger.debug(
+                    "Oppretter og bestiller varsel for hendelse {} og periode {}",
+                    hendelse.hendelseType,
+                    hendelse.periodeId
+                )
+                meterRegistry.bekreftelseHendelseCounter(Action.INSERT, hendelse)
+                val insertVarselRow = hendelse.asInsertVarselRow()
+                varselRepository.insert(insertVarselRow)
+                val varsel = varselMeldingBygger.opprettBekreftelseTilgjengeligOppgave(periode, hendelse)
+                return listOf(varsel)
+            } else {
+                mdc.action(Action.IGNORE)
+                logger.warn("Utsendelse av varsler ved tilgjengelig bekreftelse er deaktivert")
+                return emptyList()
+            }
+        }
+    }
+
+    private fun mottaBekreftelseMeldingMottatt(hendelse: BekreftelseMeldingMottatt): List<VarselMelding> {
+        val varselRow = varselRepository.findByVarselId(hendelse.bekreftelseId)
+        if (varselRow != null) {
+            mdc.action(Action.DELETE)
+            logger.debug(
+                "Avslutter og sletter varsel for hendelse {} og periode {}",
+                hendelse.hendelseType,
+                hendelse.periodeId
+            )
+            meterRegistry.bekreftelseHendelseCounter(Action.DELETE, hendelse)
+            //varselRepository.deleteByVarselId(hendelse.bekreftelseId) TODO: Disablet sletting
+            return listOf(varselMeldingBygger.avsluttVarsel(hendelse.bekreftelseId))
+        } else {
+            mdc.action(Action.FAIL)
+            logger.warn(
+                "Fant ingen varsel for hendelse {} og periode {}",
+                hendelse.hendelseType,
+                hendelse.periodeId
+            )
+            meterRegistry.bekreftelseHendelseCounter(Action.FAIL, hendelse)
+            return emptyList()
+        }
+    }
+
+    private fun mottaPeriodeAvsluttetEllerPaaVegneAvStartet(hendelse: BekreftelseHendelse): List<VarselMelding> {
+        val varselRows = varselRepository.findByPeriodeIdAndVarselKilde(
+            periodeId = hendelse.periodeId,
+            varselKilde = VarselKilde.BEKREFTELSE_TILGJENGELIG
+        )
+        if (varselRows.isEmpty()) {
+            mdc.action(Action.FAIL)
+            logger.warn(
+                "Fant ingen varsler for hendelse {} og periode {}",
+                hendelse.hendelseType,
+                hendelse.periodeId
+            )
+            meterRegistry.bekreftelseHendelseCounter(Action.FAIL, hendelse)
+            return emptyList()
+        } else {
+            mdc.action(Action.DELETE)
+            logger.debug(
+                "Avlutter og sletter alle varsler for hendelse {} og periode {}",
+                hendelse.hendelseType,
+                hendelse.periodeId
+            )
+            meterRegistry.bekreftelseHendelseCounter(Action.DELETE, hendelse)
+            /*varselRepository.deleteByPeriodeIdAndVarselKilde(
+                periodeId = hendelse.periodeId,
+                varselKilde = VarselKilde.BEKREFTELSE_TILGJENGELIG
+            ) TODO: Disablet sletting */
+            return varselRows.map { varselMeldingBygger.avsluttVarsel(it.varselId) }
+        }
+    }
+
+    private fun mottaAnnenBekreftelseHendelse(hendelse: BekreftelseHendelse?): List<VarselMelding> {
+        if (hendelse != null) {
+            logger.debug("Ignorerer hendelse {}", hendelse.hendelseType)
+            meterRegistry.bekreftelseHendelseCounter(Action.IGNORE, hendelse)
+        } else {
+            logger.debug("Ignorerer hendelse som er null")
+            meterRegistry.bekreftelseHendelseCounter(Action.IGNORE, hendelse.eventType, hendelse.eventName)
+        }
+        return emptyList()
     }
 
     @WithSpan("mottaVarselHendelse")
