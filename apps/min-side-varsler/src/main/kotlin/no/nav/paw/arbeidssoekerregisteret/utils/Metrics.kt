@@ -22,7 +22,7 @@ val BekreftelseHendelse?.eventType: String get() = this?.let { it::class.java.na
 val BekreftelseHendelse?.eventName: String get() = this?.hendelseType ?: "bekreftelse.null"
 val VarselHendelse.verboseEventName: String get() = eventName.verboseName
 val VarselMelding.eventName: String get() = "varsel.sendt"
-val VarselEventName.verboseName: String get(): String = "varsel.${value}"
+val VarselEventName.verboseName: String get() = "varsel.$value"
 
 enum class Type(val value: String) {
     PERIODE("periode"),

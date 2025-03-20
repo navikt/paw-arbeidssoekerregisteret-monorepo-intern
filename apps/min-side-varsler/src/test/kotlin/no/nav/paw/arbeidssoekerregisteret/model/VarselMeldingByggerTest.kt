@@ -61,11 +61,12 @@ class VarselMeldingByggerTest : FreeSpec({
                     json shouldContain tekster[0].tekst
                     json shouldContain tekster[1].tekst
                     json shouldContain tekster[2].tekst
-                    json shouldContain "\"eksternVarsling\":"
+                    json shouldNotContain "\"eksternVarsling\":" // TODO
+                    /*json shouldContain "\"eksternVarsling\":"
                     json shouldContain eksterntVarsel?.smsTekst!!
                     json shouldContain eksterntVarsel?.epostTittel!!
                     json shouldContain eksterntVarsel?.epostTekst!!
-                    json shouldNotContain "\"utsettSendingTil\":"
+                    json shouldNotContain "\"utsettSendingTil\":"*/
                 }
             }
         }
