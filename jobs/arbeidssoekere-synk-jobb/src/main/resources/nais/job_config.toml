@@ -1,6 +1,6 @@
 jobEnabled = "${JOB_ENABLED}"
 
-syncFilePath = "/var/run/secrets/paw-arbeidssoekere-synk-jobb-csv/v2.csv"
+syncFilePath = "/var/run/secrets/paw-arbeidssoekere-synk-jobb-csv/whatever.csv"
 
 [defaultVerdier]
 periodeTilstand = "STOPPET"
