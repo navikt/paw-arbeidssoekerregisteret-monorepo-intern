@@ -43,6 +43,7 @@ import no.nav.paw.arbeidssoekerregisteret.utils.removeAll
 import no.nav.paw.arbeidssoekerregisteret.utils.updateAction
 import no.nav.paw.arbeidssoekerregisteret.utils.updatePeriodeCounter
 import no.nav.paw.arbeidssoekerregisteret.utils.updateVarselHendelseCounter
+import no.nav.paw.arbeidssoekerregisteret.utils.verboseEventName
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
@@ -273,7 +274,7 @@ class VarselService(
     @WithSpan("mottaVarselHendelse")
     fun mottaVarselHendelse(hendelse: VarselHendelse) = transaction {
         try {
-            val eventName = "varsel.${hendelse.eventName.value}"
+            val eventName = hendelse.verboseEventName
             mdc.eventName(eventName)
             mdc.readAction()
             logger.debug("Prosesserer hendelse {}", eventName)

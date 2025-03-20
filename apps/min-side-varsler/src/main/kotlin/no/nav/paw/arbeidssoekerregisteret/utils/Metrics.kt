@@ -20,6 +20,9 @@ private const val METRIC_PREFIX = "paw_min_side_varsler"
 val Periode.eventName get(): String = avsluttet?.let { "periode.avsluttet" } ?: "periode.startet"
 val BekreftelseHendelse?.eventType: String get() = this?.let { it::class.java.name } ?: "null"
 val BekreftelseHendelse?.eventName: String get() = this?.hendelseType ?: "bekreftelse.null"
+val VarselHendelse.verboseEventName: String get() = eventName.verboseName
+val VarselMelding.eventName: String get() = "varsel.sendt"
+val VarselEventName.verboseName: String get(): String = "varsel.${value}"
 
 enum class Type(val value: String) {
     PERIODE("periode"),
@@ -70,7 +73,7 @@ enum class TagKey(val key: String) {
     fun asTag(action: Action): Tag = Tag.of(key, action.value)
     fun asTag(source: Source): Tag = Tag.of(key, source.value)
     fun asTag(target: Target): Tag = Tag.of(key, target.value)
-    fun asTag(eventName: VarselEventName): Tag = Tag.of(key, eventName.value)
+    fun asTag(eventName: VarselEventName): Tag = Tag.of(key, eventName.verboseName)
     fun asTag(varselType: VarselType): Tag = Tag.of(key, varselType.value)
     fun asTag(status: VarselStatus?): Tag = Tag.of(key, status?.value ?: "null")
     fun asTag(kanal: VarselKanal?): Tag = Tag.of(key, kanal?.value ?: "null")
@@ -167,7 +170,7 @@ fun MeterRegistry.varselCounter(
         extraTags = Tags.of(
             TagKey.EVENT_TOPIC.asTag("min-side.aapen-brukervarsel-v1"),
             TagKey.EVENT_TYPE.asTag(melding::class.java.name),
-            TagKey.EVENT_NAME.asTag(melding::class.java.simpleName),
+            TagKey.EVENT_NAME.asTag(melding.eventName),
             TagKey.VARSEL_TYPE.asTag(varselType),
             TagKey.VARSEL_STATUS.asTag(VarselStatus.UKJENT),
             TagKey.VARSEL_KANAL.asTag(VarselKanal.SMS),
