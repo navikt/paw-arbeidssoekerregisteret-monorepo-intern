@@ -4,6 +4,7 @@ import no.nav.paw.arbeidssoeker.synk.model.ArbeidssoekerDatabaseRow
 import no.nav.paw.arbeidssoeker.synk.model.ArbeidssoekereSynkTable
 import no.nav.paw.arbeidssoeker.synk.model.asArbeidssoekereRow
 import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -36,8 +37,8 @@ class ArbeidssoekerSynkRepository {
         return transaction {
             ArbeidssoekereSynkTable.selectAll()
                 .where {
-                    ArbeidssoekereSynkTable.version eq version
-                    ArbeidssoekereSynkTable.identitetsnummer eq identitetsnummer
+                    (ArbeidssoekereSynkTable.version eq version) and
+                            (ArbeidssoekereSynkTable.identitetsnummer eq identitetsnummer)
                 }
                 .orderBy(ArbeidssoekereSynkTable.inserted to SortOrder.ASC)
                 .map { it.asArbeidssoekereRow() }
