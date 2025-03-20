@@ -34,6 +34,7 @@ val nyBekreftelseStatusKey = AttributeKey.stringKey("ny_bekreftelse_status")
 val gjeldeneBekreftelseStatusKey = AttributeKey.stringKey("gjeldene_bekreftelse_status")
 const val bekreftelseLevertAction = "bekreftelse_levert"
 const val bekreftelseOpprettetAction = "bekreftelse_opprettet"
+const val dummyBekreftelseOpprettetAction = "dummy_bekreftelse_opprettet"
 const val bekreftelseSattStatusAction = "bekreftelse_satt_status"
 const val bekreftelseHentUke = "bekreftelse_hent_uke"
 

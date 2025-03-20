@@ -44,5 +44,9 @@ class PawNonEmptyListTest: FreeSpec({
             val nonEmptyList = pawNonEmptyListOf(1, listOf(2, 3, 4, 5, 3, 2, 1))
             nonEmptyList.max() shouldBe 5
         }
+        "MinBy should return the min value" {
+            val nonEmptyList = pawNonEmptyListOf(1, listOf(2, 3, 4, 5, 3, -2, 1))
+            nonEmptyList.minBy { it } shouldBe -2
+        }
     }
 })

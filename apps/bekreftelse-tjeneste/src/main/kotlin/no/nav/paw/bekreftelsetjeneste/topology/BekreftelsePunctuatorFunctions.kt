@@ -10,6 +10,7 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjenstaaendeTid
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
+import no.nav.paw.bekreftelsetjeneste.logger
 import no.nav.paw.bekreftelsetjeneste.metrics.tellBekreftelseHandling
 import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
@@ -19,6 +20,7 @@ import no.nav.paw.bekreftelsetjeneste.tilstand.GracePeriodeUtloept
 import no.nav.paw.bekreftelsetjeneste.tilstand.GracePeriodeVarselet
 import no.nav.paw.bekreftelsetjeneste.tilstand.IkkeKlarForUtfylling
 import no.nav.paw.bekreftelsetjeneste.tilstand.KlarForUtfylling
+import no.nav.paw.bekreftelsetjeneste.tilstand.Levert
 import no.nav.paw.bekreftelsetjeneste.tilstand.VenterPaaSvar
 import no.nav.paw.bekreftelsetjeneste.tilstand.VenterSvar
 import no.nav.paw.bekreftelsetjeneste.tilstand.erKlarForUtfylling
@@ -31,11 +33,14 @@ import no.nav.paw.bekreftelsetjeneste.tilstand.sisteTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.sluttTidForBekreftelsePeriode
 import no.nav.paw.collections.PawNonEmptyList
 import no.nav.paw.collections.pawNonEmptyListOf
+import java.time.LocalDate
+import java.time.Month
 import java.util.*
 
 
 fun BekreftelseContext.prosesser(bekreftelseTilstand: BekreftelseTilstand): BekreftelseProsesseringsResultat =
     (::opprettInitielBekreftelse andThen
+            ::opprettSisteLeverteFoerMigrering andThen
             ::opprettManglendeBekreftelser andThen
             ::oppdaterBekreftelser andThen
             { (bekreftelser, hendelser) ->
@@ -47,8 +52,46 @@ fun BekreftelseContext.prosesser(bekreftelseTilstand: BekreftelseTilstand): Bekr
             })(bekreftelseTilstand.bekreftelser)
 
 
+fun opprettSisteLeverteFoerMigrering(bekreftelser: PawNonEmptyList<Bekreftelse>): PawNonEmptyList<Bekreftelse> {
+    val forsteBekreftelse = bekreftelser.minBy { it.gjelderFra }
+    val dato = when (forsteBekreftelse.gjelderFra) {
+        LocalDate.of(2025, Month.MARCH, 17)
+            .atStartOfDay(norskTid).toInstant() -> LocalDate.of(2025, Month.MARCH, 3)
+        LocalDate.of(2025, Month.MARCH, 10)
+            .atStartOfDay(norskTid).toInstant() -> LocalDate.of(2025, Month.MARCH, 10)
+        else -> null
+    }
+    return dato?.let { sisteLeverteBekreftelser ->
+        val tidspunkt = sisteLeverteBekreftelser
+            .atStartOfDay(norskTid)
+            .toInstant()
+        Bekreftelse(
+            tilstandsLogg = BekreftelseTilstandsLogg(
+                siste = Levert(tidspunkt),
+                tidligere = emptyList()
+            ),
+            bekreftelseId = UUID.randomUUID(),
+            gjelderFra = sisteLeverteBekreftelser.minusWeeks(2).atStartOfDay(norskTid).toInstant(),
+            gjelderTil = tidspunkt,
+            dummy = true
+        )
+    }?.let {
+        Span.current().addEvent(
+            intern,
+            Attributes.of(
+                actionKey, bekreftelseOpprettetAction,
+                initielBekreftelseKey, true,
+                fraOgMedDagKey,  it.gjelderFra.tilFraTilAttributeKeyValue(),
+                tilDagKey, it.gjelderTil.tilFraTilAttributeKeyValue()
+            )
+        )
+        bekreftelser + it
+    } ?: bekreftelser
+}
+
+
 fun BekreftelseContext.opprettInitielBekreftelse(bekreftelser: List<Bekreftelse>): PawNonEmptyList<Bekreftelse> {
-    val foerste = bekreftelser.firstOrNull()
+    val foerste = bekreftelser.firstOrNull { !it.dummy }
     return if (foerste != null) {
         pawNonEmptyListOf(foerste, bekreftelser.drop(1))
     } else {

@@ -13,6 +13,7 @@ interface PawNonEmptyList<A> {
     fun <R> flatMap(f: (A) -> PawNonEmptyList<R>): PawNonEmptyList<R>
 
     fun <T: Comparable<T>> maxBy(f: (A) -> T): A = toList().maxBy(f)
+    fun <T: Comparable<T>> minBy(f: (A) -> T): A = toList().minBy(f)
 
     infix operator fun plus(other: List<A>): PawNonEmptyList<A>
     infix operator fun plus(other: A): PawNonEmptyList<A>
