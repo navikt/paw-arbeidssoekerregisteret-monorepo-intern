@@ -12,11 +12,11 @@ spec:
     - name: KAFKA_BEKREFTELSE_TARGET_TOPIC
       value: "paw.arbeidssoker-bekreftelse-v1"
     - name: KAFKA_BEKREFTELSE_PAAVEGNEAV_TARGET_TOPIC
-      value: "paw.arbeidssoker-bekreftelse-paavegneav-v1"
+      value: "paw.arbeidssoker-bekreftelse-paavegneav-v2"
     - name: KAFKA_TEAMDAGPENGER_BEKREFTELSE_SOURCE_TOPIC
-      value: "paw.arbeidssoker-bekreftelse-teamdagpenger-v1"
+      value: "paw.arbeidssoker-bekreftelse-teamdagpenger-v2"
     - name: KAFKA_TEAMDAGPENGER_BEKREFTELSE_PAAVEGNEAV_SOURCE_TOPIC
-      value: "paw.arbeidssoker-bekreftelse-paavegneav-teamdagpenger-v1"
+      value: "paw.arbeidssoker-bekreftelse-paavegneav-teamdagpenger-v2"
     - name: KAFKA_FRISKMELDT_TIL_ARBEIDSFORMIDLING_BEKREFTELSE_SOURCE_TOPIC
       value: "paw.arbeidssoker-bekreftelse-friskmeldt-til-arbeidsformidling-v1"
     - name: KAFKA_FRISKMELDT_TIL_ARBEIDSFORMIDLING_BEKREFTELSE_PAAVEGNEAV_SOURCE_TOPIC
