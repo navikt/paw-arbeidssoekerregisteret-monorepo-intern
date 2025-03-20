@@ -17,9 +17,9 @@ import no.nav.paw.config.env.namespaceOrDefaultForLocal
 
 private const val METRIC_PREFIX = "paw_min_side_varsler"
 
-val Periode.eventName get() = if (avsluttet == null) "periode.startet" else "periode.avsluttet"
-val BekreftelseHendelse?.eventType get() = if (this != null) this::class.java.name else "null"
-val BekreftelseHendelse?.eventName get() = this?.hendelseType ?: "bekreftelse.null"
+val Periode.eventName get(): String = avsluttet?.let { "periode.avsluttet" } ?: "periode.startet"
+val BekreftelseHendelse?.eventType: String get() = this?.let { it::class.java.name } ?: "null"
+val BekreftelseHendelse?.eventName: String get() = this?.hendelseType ?: "bekreftelse.null"
 
 enum class Type(val value: String) {
     PERIODE("periode"),
@@ -76,6 +76,18 @@ enum class TagKey(val key: String) {
     fun asTag(kanal: VarselKanal?): Tag = Tag.of(key, kanal?.value ?: "null")
 }
 
+fun MeterRegistry.readPeriodeCounter(periode: Periode) =
+    periodeCounter(Action.READ, periode)
+
+fun MeterRegistry.insertPeriodeCounter(periode: Periode) =
+    periodeCounter(Action.INSERT, periode)
+
+fun MeterRegistry.updatePeriodeCounter(periode: Periode) =
+    periodeCounter(Action.UPDATE, periode)
+
+fun MeterRegistry.ignorePeriodeCounter(periode: Periode) =
+    periodeCounter(Action.IGNORE, periode)
+
 fun MeterRegistry.periodeCounter(
     action: Action,
     periode: Periode
@@ -93,21 +105,24 @@ fun MeterRegistry.periodeCounter(
     )
 }
 
-fun MeterRegistry.bekreftelseHendelseCounter(
-    action: Action,
-    hendelse: BekreftelseHendelse
-) {
-    bekreftelseHendelseCounter(
-        action = action,
-        eventType = hendelse::class.java.name,
-        eventName = hendelse.hendelseType
-    )
-}
+fun MeterRegistry.readBekreftelseHendelseCounter(hendelse: BekreftelseHendelse?) =
+    bekreftelseHendelseCounter(Action.READ, hendelse)
+
+fun MeterRegistry.insertBekreftelseHendelseCounter(hendelse: BekreftelseHendelse?) =
+    bekreftelseHendelseCounter(Action.INSERT, hendelse)
+
+fun MeterRegistry.deleteBekreftelseHendelseCounter(hendelse: BekreftelseHendelse?) =
+    bekreftelseHendelseCounter(Action.DELETE, hendelse)
+
+fun MeterRegistry.failBekreftelseHendelseCounter(hendelse: BekreftelseHendelse?) =
+    bekreftelseHendelseCounter(Action.FAIL, hendelse)
+
+fun MeterRegistry.ignoreBekreftelseHendelseCounter(hendelse: BekreftelseHendelse?) =
+    bekreftelseHendelseCounter(Action.IGNORE, hendelse)
 
 fun MeterRegistry.bekreftelseHendelseCounter(
     action: Action,
-    eventType: String,
-    eventName: String
+    hendelse: BekreftelseHendelse?
 ) {
     genericCounter(
         type = Type.BEKREFTELSE_HENDELSE,
@@ -116,8 +131,8 @@ fun MeterRegistry.bekreftelseHendelseCounter(
         target = Target.DATABASE,
         extraTags = Tags.of(
             TagKey.EVENT_TOPIC.asTag("paw.arbeidssoker-bekreftelse-hendelseslogg-v1"),
-            TagKey.EVENT_TYPE.asTag(eventType),
-            TagKey.EVENT_NAME.asTag(eventName),
+            TagKey.EVENT_TYPE.asTag(hendelse.eventType),
+            TagKey.EVENT_NAME.asTag(hendelse.eventName),
         )
     )
 }
@@ -163,6 +178,21 @@ fun MeterRegistry.varselCounter(
         )
     )
 }
+
+fun MeterRegistry.readVarselHendelseCounter(hendelse: VarselHendelse) =
+    varselHendelseCounter(Action.READ, hendelse)
+
+fun MeterRegistry.insertVarselHendelseCounter(hendelse: VarselHendelse) =
+    varselHendelseCounter(Action.INSERT, hendelse)
+
+fun MeterRegistry.updateVarselHendelseCounter(hendelse: VarselHendelse) =
+    varselHendelseCounter(Action.UPDATE, hendelse)
+
+fun MeterRegistry.ignoreVarselHendelseCounter(hendelse: VarselHendelse) =
+    varselHendelseCounter(Action.IGNORE, hendelse)
+
+fun MeterRegistry.failVarselHendelseCounter(hendelse: VarselHendelse) =
+    varselHendelseCounter(Action.FAIL, hendelse)
 
 fun MeterRegistry.varselHendelseCounter(
     action: Action,
