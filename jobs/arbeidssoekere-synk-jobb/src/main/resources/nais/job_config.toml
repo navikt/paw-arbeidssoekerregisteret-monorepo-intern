@@ -1,8 +1,10 @@
-syncFilePath = "/var/run/secrets/paw-arbeidssoekere-synk-jobb-csv/v1.csv"
+jobEnabled = "${JOB_ENABLED}"
+
+syncFilePath = "/var/run/secrets/paw-arbeidssoekere-synk-jobb-csv/v2.csv"
 
 [defaultVerdier]
-periodeTilstand = "STARTET"
-forhaandsgodkjentAvAnsatt = true
+periodeTilstand = "STOPPET"
+forhaandsgodkjentAvAnsatt = false
 
 [apiInngang]
 baseUrl = "http://paw-arbeidssokerregisteret-api-inngang"

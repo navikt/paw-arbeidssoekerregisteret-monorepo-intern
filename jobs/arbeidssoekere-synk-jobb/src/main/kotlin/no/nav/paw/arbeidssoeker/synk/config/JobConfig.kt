@@ -7,6 +7,7 @@ import no.nav.paw.config.env.currentRuntimeEnvironment
 const val JOB_CONFIG = "job_config.toml"
 
 data class JobConfig(
+    val jobEnabled: Boolean,
     val syncFilePath: String,
     val defaultVerdier: DefaultVerdier,
     val apiInngang: ApiInngangConfig,

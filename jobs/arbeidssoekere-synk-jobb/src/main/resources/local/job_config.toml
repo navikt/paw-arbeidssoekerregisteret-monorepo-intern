@@ -1,7 +1,9 @@
+jobEnabled = true
+
 syncFilePath = "/tmp/v1.csv"
 
 [defaultVerdier]
-periodeTilstand = "STARTET"
+periodeTilstand = "STOPPET"
 forhaandsgodkjentAvAnsatt = false
 
 [apiInngang]

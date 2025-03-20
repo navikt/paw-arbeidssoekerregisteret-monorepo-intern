@@ -23,44 +23,48 @@ import kotlin.system.exitProcess
 fun main() {
     val logger = buildApplicationLogger
 
-    try {
-        logger.info("Initialiserer jobb")
+    val jobConfig = loadNaisOrLocalConfiguration<JobConfig>(JOB_CONFIG)
+    val databaseConfig = loadNaisOrLocalConfiguration<DatabaseConfig>(DATABASE_CONFIG)
+    val azureAdM2MConfig = loadNaisOrLocalConfiguration<AzureAdM2MConfig>(AZURE_M2M_CONFIG)
 
-        val jobConfig = loadNaisOrLocalConfiguration<JobConfig>(JOB_CONFIG)
-        val databaseConfig = loadNaisOrLocalConfiguration<DatabaseConfig>(DATABASE_CONFIG)
-        val azureAdM2MConfig = loadNaisOrLocalConfiguration<AzureAdM2MConfig>(AZURE_M2M_CONFIG)
+    with(jobConfig) {
+        if (jobEnabled) {
+            try {
+                logger.info("Initialiserer jobb")
 
-        with(jobConfig) {
-            val arbeidssoekerSynkRepository = ArbeidssoekerSynkRepository()
-            val azureAdM2MTokenClient = createAzureAdM2MTokenClient(runtimeEnvironment, azureAdM2MConfig)
-            val inngangHttpConsumer = InngangHttpConsumer(apiInngang.baseUrl) {
-                azureAdM2MTokenClient.createMachineToMachineToken(apiInngang.scope)
+                val arbeidssoekerSynkRepository = ArbeidssoekerSynkRepository()
+                val azureAdM2MTokenClient = createAzureAdM2MTokenClient(runtimeEnvironment, azureAdM2MConfig)
+                val inngangHttpConsumer = InngangHttpConsumer(apiInngang.baseUrl) {
+                    azureAdM2MTokenClient.createMachineToMachineToken(apiInngang.scope)
+                }
+                val arbeidssoekerSynkService =
+                    ArbeidssoekerSynkService(jobConfig, arbeidssoekerSynkRepository, inngangHttpConsumer)
+
+                logger.info("Starter jobb")
+
+                val filePath = Paths.get(syncFilePath)
+                logger.info("Leser CSV-fil {} fra mappe {}", filePath.name, filePath.parent)
+
+                val rows = ArbeidssoekerCsvReader.readValues(filePath)
+                if (rows.hasNextValue()) {
+                    val dataSource = createHikariDataSource(databaseConfig)
+                    dataSource.flywayMigrate()
+                    Database.connect(dataSource)
+
+                    arbeidssoekerSynkService.synkArbeidssoekere(filePath.name, rows)
+                } else {
+                    logger.warn("CSV-fil {} fra mappe {} er tom", filePath.name, filePath.parent)
+                }
+
+                exitProcess(0)
+            } catch (throwable: Throwable) {
+                logger.error("Kjøring feilet", throwable)
+                exitProcess(1)
+            } finally {
+                logger.info("Avslutter jobb")
             }
-            val arbeidssoekerSynkService =
-                ArbeidssoekerSynkService(jobConfig, arbeidssoekerSynkRepository, inngangHttpConsumer)
-
-            logger.info("Starter jobb")
-
-            val filePath = Paths.get(syncFilePath)
-            logger.info("Leser CSV-fil {} fra mappe {}", filePath.name, filePath.parent)
-
-            val rows = ArbeidssoekerCsvReader.readValues(filePath)
-            if (rows.hasNextValue()) {
-                val dataSource = createHikariDataSource(databaseConfig)
-                dataSource.flywayMigrate()
-                Database.connect(dataSource)
-
-                arbeidssoekerSynkService.synkArbeidssoekere(filePath.name, rows)
-            } else {
-                logger.warn("CSV-fil {} fra mappe {} er tom", filePath.name, filePath.parent)
-            }
-
-            exitProcess(0)
+        } else {
+            logger.info("Jobb er inaktivert")
         }
-    } catch (throwable: Throwable) {
-        logger.error("Kjøring feilet", throwable)
-        exitProcess(1)
-    } finally {
-        logger.info("Avslutter jobb")
     }
 }
