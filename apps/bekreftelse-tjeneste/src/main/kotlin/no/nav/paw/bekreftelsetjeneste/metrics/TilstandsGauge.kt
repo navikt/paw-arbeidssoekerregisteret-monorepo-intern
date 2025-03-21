@@ -88,6 +88,7 @@ fun map(
     val dagerTilSisteFrist = with(gracePeriode.toDays()) {
         when {
             dagerSidenForfallIkkeLevert != null -> this - dagerSidenForfallIkkeLevert
+            ansvarlige.isEmpty() -> null
             dagerSidenSistLeverteAvsluttet != null -> this - dagerSidenSistLeverteAvsluttet
             else -> null
         }
