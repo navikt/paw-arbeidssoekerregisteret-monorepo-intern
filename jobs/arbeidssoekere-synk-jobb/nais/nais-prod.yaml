@@ -14,7 +14,7 @@ spec:
       memory: 256Mi
   env:
     - name: JOB_ENABLED
-      value: "false"
+      value: "true"
   secureLogs:
     enabled: true
   observability:

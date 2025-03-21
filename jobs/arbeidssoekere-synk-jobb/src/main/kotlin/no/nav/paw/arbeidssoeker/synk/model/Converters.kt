@@ -15,8 +15,8 @@ private val dateTimeFormatter = DateTimeFormatter.ofPattern(DATETIME_FORMAT)
 
 fun ArbeidssoekerFileRow.asArbeidssoeker(
     version: String,
-    periodeTilstand: PeriodeTilstand = PeriodeTilstand.STARTET,
-    forhaandsgodkjentAvAnsatt: Boolean = false
+    periodeTilstand: PeriodeTilstand,
+    forhaandsgodkjentAvAnsatt: Boolean
 ): Arbeidssoeker = Arbeidssoeker(
     version = version,
     identitetsnummer = identitetsnummer,
@@ -44,7 +44,7 @@ fun Arbeidssoeker.asFeilretting(): Feilretting? =
     tidspunktFraKilde?.let {
         Feilretting(
             feilType = FeilType.FeilTidspunkt,
-            melding = "Arbeidssøker migrert fra Arena",
+            melding = "Arbeidssøker korrigert etter feil i uttrekk fra Arena",
             tidspunkt = it
         )
     }
