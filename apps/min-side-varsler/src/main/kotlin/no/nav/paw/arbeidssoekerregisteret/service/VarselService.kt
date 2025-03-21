@@ -277,7 +277,7 @@ class VarselService(
             val eventName = hendelse.verboseEventName
             mdc.eventName(eventName)
             mdc.readAction()
-            logger.debug("Prosesserer hendelse {}", eventName)
+            logger.info("Prosesserer hendelse {}", eventName)
             val varselId = UUID.fromString(hendelse.varselId)
             val varselRow = varselRepository.findByVarselId(varselId)
             if (varselRow != null) {
@@ -285,7 +285,7 @@ class VarselService(
                     if (varselRow.eksterntVarsel != null) {
                         if (hendelse.tidspunkt.isAfter(varselRow.eksterntVarsel.hendelseTimestamp)) {
                             mdc.updateAction()
-                            logger.debug(
+                            logger.info(
                                 "Oppdaterer eksternt varsel for hendelse {} med type {} og status {}",
                                 VarselHendelse::class.java.simpleName,
                                 hendelse.varseltype,
@@ -308,7 +308,7 @@ class VarselService(
                         }
                     } else {
                         mdc.insertAction()
-                        logger.debug(
+                        logger.info(
                             "Oppretter eksternt varsel for hendelse {} med type {} og status {}",
                             VarselHendelse::class.java.simpleName,
                             hendelse.varseltype,
@@ -321,7 +321,7 @@ class VarselService(
                 } else {
                     if (hendelse.tidspunkt.isAfter(varselRow.hendelseTimestamp)) {
                         mdc.updateAction()
-                        logger.debug(
+                        logger.info(
                             "Oppdaterer varsel for hendelse {} med type {} og status {}",
                             VarselHendelse::class.java.simpleName,
                             hendelse.varseltype,

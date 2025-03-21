@@ -4,7 +4,6 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssoekerregisteret.api.models.BestillingResponse
 import no.nav.paw.arbeidssoekerregisteret.config.ApplicationConfig
-import no.nav.paw.arbeidssoekerregisteret.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.exception.BestillingIkkeFunnetException
 import no.nav.paw.arbeidssoekerregisteret.exception.VarselIkkeFunnetException
 import no.nav.paw.arbeidssoekerregisteret.model.BestillingRow
@@ -29,7 +28,6 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
 class BestillingService(
-    private val serverConfig: ServerConfig,
     private val applicationConfig: ApplicationConfig,
     private val meterRegistry: MeterRegistry,
     private val bestillingRepository: BestillingRepository,
@@ -131,7 +129,7 @@ class BestillingService(
                 val insertVarselRow = varsel.asInsertVarselRow()
                 varselRepository.insert(insertVarselRow)
                 val melding = varselMeldingBygger.opprettManueltVarsel(varsel.varselId, varsel.identitetsnummer)
-                meterRegistry.beskjedVarselCounter(serverConfig.runtimeEnvironment, Source.DATABASE, melding)
+                meterRegistry.beskjedVarselCounter(Source.DATABASE, melding)
                 varselKafkaProducer.sendVarsel(applicationConfig.tmsVarselTopic, melding)
                 logger.debug("Sendte manuelt varsel {}", varsel.varselId)
                 bestiltVarselRepository.update(UpdateBestiltVarselRow(varsel.varselId, BestiltVarselStatus.SENDT))

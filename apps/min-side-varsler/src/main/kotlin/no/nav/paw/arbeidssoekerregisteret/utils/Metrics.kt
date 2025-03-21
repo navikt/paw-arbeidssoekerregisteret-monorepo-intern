@@ -11,9 +11,6 @@ import no.nav.paw.arbeidssoekerregisteret.model.VarselStatus
 import no.nav.paw.arbeidssoekerregisteret.model.VarselType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
-import no.nav.paw.config.env.RuntimeEnvironment
-import no.nav.paw.config.env.appNameOrDefaultForLocal
-import no.nav.paw.config.env.namespaceOrDefaultForLocal
 
 private const val METRIC_PREFIX = "paw_min_side_varsler"
 
@@ -61,14 +58,9 @@ enum class TagKey(val key: String) {
     EVENT_NAME("x_event_name"),
     VARSEL_TYPE("x_varsel_type"),
     VARSEL_STATUS("x_varsel_status"),
-    VARSEL_KANAL("x_varsel_kanal"),
-    VARSEL_RENOTIFIKASJON("x_varsel_renotifikasjon"),
-    VARSEL_SENDT_SOM_BATCH("x_varsel_sendt_som_batch"),
-    VARSEL_NAMESPACE("x_varsel_namespace"),
-    VARSEL_APP("x_varsel_app");
+    VARSEL_KANAL("x_varsel_kanal");
 
     fun asTag(value: String): Tag = Tag.of(key, value)
-    fun asTag(boolean: Boolean?): Tag = Tag.of(key, boolean?.toString() ?: "null")
     fun asTag(type: Type): Tag = Tag.of(key, type.value)
     fun asTag(action: Action): Tag = Tag.of(key, action.value)
     fun asTag(source: Source): Tag = Tag.of(key, source.value)
@@ -104,6 +96,9 @@ fun MeterRegistry.periodeCounter(
             TagKey.EVENT_TOPIC.asTag("paw.arbeidssokerperioder-v1"),
             TagKey.EVENT_TYPE.asTag(periode::class.java.name),
             TagKey.EVENT_NAME.asTag(periode.eventName),
+            TagKey.VARSEL_TYPE.asTag("null"),
+            TagKey.VARSEL_STATUS.asTag("null"),
+            TagKey.VARSEL_KANAL.asTag("null")
         )
     )
 }
@@ -136,28 +131,28 @@ fun MeterRegistry.bekreftelseHendelseCounter(
             TagKey.EVENT_TOPIC.asTag("paw.arbeidssoker-bekreftelse-hendelseslogg-v1"),
             TagKey.EVENT_TYPE.asTag(hendelse.eventType),
             TagKey.EVENT_NAME.asTag(hendelse.eventName),
+            TagKey.VARSEL_TYPE.asTag("null"),
+            TagKey.VARSEL_STATUS.asTag("null"),
+            TagKey.VARSEL_KANAL.asTag("null")
         )
     )
 }
 
 fun MeterRegistry.beskjedVarselCounter(
-    runtimeEnvironment: RuntimeEnvironment,
     source: Source,
     melding: VarselMelding
 ) {
-    varselCounter(runtimeEnvironment, source, VarselType.BESKJED, melding)
+    varselCounter(source, VarselType.BESKJED, melding)
 }
 
 fun MeterRegistry.oppgaveVarselCounter(
-    runtimeEnvironment: RuntimeEnvironment,
     source: Source,
     melding: VarselMelding
 ) {
-    varselCounter(runtimeEnvironment, source, VarselType.OPPGAVE, melding)
+    varselCounter(source, VarselType.OPPGAVE, melding)
 }
 
 fun MeterRegistry.varselCounter(
-    runtimeEnvironment: RuntimeEnvironment,
     source: Source,
     varselType: VarselType,
     melding: VarselMelding
@@ -173,11 +168,7 @@ fun MeterRegistry.varselCounter(
             TagKey.EVENT_NAME.asTag(melding.eventName),
             TagKey.VARSEL_TYPE.asTag(varselType),
             TagKey.VARSEL_STATUS.asTag(VarselStatus.UKJENT),
-            TagKey.VARSEL_KANAL.asTag(VarselKanal.SMS),
-            TagKey.VARSEL_RENOTIFIKASJON.asTag("null"),
-            TagKey.VARSEL_SENDT_SOM_BATCH.asTag("null"),
-            TagKey.VARSEL_NAMESPACE.asTag(runtimeEnvironment.namespaceOrDefaultForLocal()),
-            TagKey.VARSEL_APP.asTag(runtimeEnvironment.appNameOrDefaultForLocal())
+            TagKey.VARSEL_KANAL.asTag(VarselKanal.SMS)
         )
     )
 }
@@ -212,11 +203,7 @@ fun MeterRegistry.varselHendelseCounter(
             TagKey.EVENT_NAME.asTag(hendelse.eventName),
             TagKey.VARSEL_TYPE.asTag(hendelse.varseltype),
             TagKey.VARSEL_STATUS.asTag(hendelse.status),
-            TagKey.VARSEL_KANAL.asTag(hendelse.kanal),
-            TagKey.VARSEL_RENOTIFIKASJON.asTag(hendelse.renotifikasjon),
-            TagKey.VARSEL_SENDT_SOM_BATCH.asTag(hendelse.sendtSomBatch),
-            TagKey.VARSEL_NAMESPACE.asTag(hendelse.namespace),
-            TagKey.VARSEL_APP.asTag(hendelse.appnavn)
+            TagKey.VARSEL_KANAL.asTag(hendelse.kanal)
         )
     )
 }

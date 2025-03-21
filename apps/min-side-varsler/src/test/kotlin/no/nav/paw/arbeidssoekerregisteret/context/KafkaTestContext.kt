@@ -87,7 +87,6 @@ class KafkaTestContext(
             with(TestContext.build(dataSource, resetDatabaseSql)) {
                 val periodeTopology = StreamsBuilder()
                     .periodeKafkaTopology(
-                        runtimeEnvironment = serverConfig.runtimeEnvironment,
                         applicationConfig = applicationConfig,
                         meterRegistry = prometheusMeterRegistry,
                         varselService = varselService
@@ -95,7 +94,6 @@ class KafkaTestContext(
                     .build()
                 val bekreftelseTopology = StreamsBuilder()
                     .bekreftelseKafkaTopology(
-                        runtimeEnvironment = serverConfig.runtimeEnvironment,
                         applicationConfig = applicationConfig,
                         meterRegistry = prometheusMeterRegistry,
                         varselService = varselService

@@ -105,7 +105,7 @@ fun main() {
             status = VarselStatus.VENTER
         )
 
-        periodeKafkaProducer.send(periodeTopic, lukketPeriode)
+        periodeKafkaProducer.send(periodeTopic, aapenPeriode)
         //bekreftelseHendelseKafkaProducer.send(bekreftelseHendelseTopic, bekreftelseTilgjengelig)
         //bekreftelseHendelseKafkaProducer.send(bekreftelseHendelseTopic, bekreftelseMeldingMottatt)
         //bekreftelseHendelseKafkaProducer.send(bekreftelseHendelseTopic, periodeAvsluttet)

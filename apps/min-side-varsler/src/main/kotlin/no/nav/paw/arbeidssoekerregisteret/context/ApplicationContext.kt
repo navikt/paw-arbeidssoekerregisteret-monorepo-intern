@@ -106,7 +106,6 @@ data class ApplicationContext(
                 varselMeldingBygger = varselMeldingBygger
             )
             val bestillingService = BestillingService(
-                serverConfig = serverConfig,
                 applicationConfig = applicationConfig,
                 meterRegistry = prometheusMeterRegistry,
                 bestillingRepository = bestillingRepository,
@@ -117,7 +116,6 @@ data class ApplicationContext(
             )
 
             val periodeKafkaStreams = buildPeriodeKafkaStreams(
-                serverConfig = serverConfig,
                 applicationConfig = applicationConfig,
                 kafkaConfig = kafkaStreamsConfig,
                 meterRegistry = prometheusMeterRegistry,
@@ -125,7 +123,6 @@ data class ApplicationContext(
                 varselService = varselService
             )
             val bekreftelseKafkaStreams = buildBekreftelseKafkaStreams(
-                serverConfig = serverConfig,
                 applicationConfig = applicationConfig,
                 kafkaConfig = kafkaStreamsConfig,
                 meterRegistry = prometheusMeterRegistry,
@@ -163,7 +160,6 @@ data class ApplicationContext(
 }
 
 private fun buildPeriodeKafkaStreams(
-    serverConfig: ServerConfig,
     applicationConfig: ApplicationConfig,
     kafkaConfig: KafkaConfig,
     meterRegistry: MeterRegistry,
@@ -172,7 +168,6 @@ private fun buildPeriodeKafkaStreams(
 ): KafkaStreams {
     val kafkaTopology = StreamsBuilder()
         .periodeKafkaTopology(
-            runtimeEnvironment = serverConfig.runtimeEnvironment,
             applicationConfig = applicationConfig,
             meterRegistry = meterRegistry,
             varselService = varselService
@@ -192,7 +187,6 @@ private fun buildPeriodeKafkaStreams(
 }
 
 private fun buildBekreftelseKafkaStreams(
-    serverConfig: ServerConfig,
     applicationConfig: ApplicationConfig,
     kafkaConfig: KafkaConfig,
     meterRegistry: MeterRegistry,
@@ -201,7 +195,6 @@ private fun buildBekreftelseKafkaStreams(
 ): KafkaStreams {
     val kafkaTopology = StreamsBuilder()
         .bekreftelseKafkaTopology(
-            runtimeEnvironment = serverConfig.runtimeEnvironment,
             applicationConfig = applicationConfig,
             meterRegistry = meterRegistry,
             varselService = varselService

@@ -23,7 +23,6 @@ import org.apache.kafka.streams.kstream.Produced
 import org.apache.kafka.streams.kstream.ValueJoiner
 
 fun StreamsBuilder.periodeKafkaTopology(
-    runtimeEnvironment: RuntimeEnvironment,
     applicationConfig: ApplicationConfig,
     meterRegistry: MeterRegistry,
     varselService: VarselService
@@ -32,7 +31,7 @@ fun StreamsBuilder.periodeKafkaTopology(
         stream<Long, Periode>(periodeTopic)
             .peek { _, periode -> meterRegistry.readPeriodeCounter(periode) }
             .flatMapValues { _, periode -> varselService.mottaPeriode(periode) }
-            .peek { _, melding -> meterRegistry.beskjedVarselCounter(runtimeEnvironment, Source.KAFKA, melding) }
+            .peek { _, melding -> meterRegistry.beskjedVarselCounter(Source.KAFKA, melding) }
             .map { _, melding -> KeyValue.pair(melding.varselId.toString(), melding.value) }
             .to(tmsVarselTopic, Produced.with(Serdes.String(), Serdes.String()))
     }
@@ -46,7 +45,6 @@ class BekreftelseValueJoiner : ValueJoiner<BekreftelseHendelse, Periode, Pair<Pe
 }
 
 fun StreamsBuilder.bekreftelseKafkaTopology(
-    runtimeEnvironment: RuntimeEnvironment,
     applicationConfig: ApplicationConfig,
     meterRegistry: MeterRegistry,
     varselService: VarselService
@@ -61,7 +59,7 @@ fun StreamsBuilder.bekreftelseKafkaTopology(
         bekreftelseStream.leftJoin(periodeTable, BekreftelseValueJoiner())
             .peek { _, (_, hendelse) -> meterRegistry.readBekreftelseHendelseCounter(hendelse) }
             .flatMapValues { _, value -> varselService.mottaBekreftelseHendelse(value) }
-            .peek { _, melding -> meterRegistry.oppgaveVarselCounter(runtimeEnvironment, Source.KAFKA, melding) }
+            .peek { _, melding -> meterRegistry.oppgaveVarselCounter(Source.KAFKA, melding) }
             .map { _, melding -> KeyValue.pair(melding.varselId.toString(), melding.value) }
             .to(tmsVarselTopic, Produced.with(Serdes.String(), Serdes.String()))
     }

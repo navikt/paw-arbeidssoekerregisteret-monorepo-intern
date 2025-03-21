@@ -169,7 +169,6 @@ open class TestContext(
                 varselMeldingBygger = varselMeldingBygger
             )
             val bestillingService = BestillingService(
-                serverConfig = serverConfig,
                 applicationConfig = applicationConfig,
                 meterRegistry = prometheusMeterRegistry,
                 bestillingRepository = bestillingRepository,
