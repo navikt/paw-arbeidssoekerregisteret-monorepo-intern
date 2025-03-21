@@ -55,17 +55,18 @@ class ArbeidssoekerSynkService(
     @Suppress("LoggingSimilarMessage")
     private fun prosesserArbeidssoeker(arbeidssoeker: Arbeidssoeker) {
         val (version, identitetsnummer) = arbeidssoeker
-        secureLogger.info("Prosesserer arbeidssøker {}", identitetsnummer)
+        logger.debug("Prosesserer arbeidssøker for versjon {}", version)
+        secureLogger.info("Prosesserer arbeidssøker {} for versjon {}", identitetsnummer, version)
 
-        logger.debug("Ser etter innslag i databasen for version {}", version)
         val databaseRow = arbeidssoekerSynkRepository.find(version, identitetsnummer)
         if (databaseRow == null) {
-            logger.debug("Fant ingen innslag i databasen for version {}", version)
-            logger.debug("Kaller API Inngang med tilstand {}", arbeidssoeker.periodeTilstand)
+            logger.debug("Fant ingen innslag i databasen for versjon {}", version)
+            logger.debug("Kaller API Inngang med tilstand {} og versjon {}", arbeidssoeker.periodeTilstand, version)
             secureLogger.info(
-                "Kaller API Inngang med tilstand {} for arbeidssøker {}",
+                "Kaller API Inngang med tilstand {} for arbeidssøker {} og versjon {}",
                 arbeidssoeker.periodeTilstand,
-                identitetsnummer
+                identitetsnummer,
+                version
             )
             val response = inngangHttpConsumer.opprettPeriode(arbeidssoeker.asOpprettPeriodeRequest())
             logger.traceAndLog(response.status)
@@ -74,11 +75,12 @@ class ArbeidssoekerSynkService(
             arbeidssoekerSynkRepository.insert(version, identitetsnummer, response.status.value)
         } else if (databaseRow.status.isNotSuccess()) {
             logger.debug("Fant innslag med status {} i databasen for version {}", databaseRow.status, version)
-            logger.debug("Kaller API Inngang med tilstand {}", arbeidssoeker.periodeTilstand)
+            logger.debug("Kaller API Inngang med tilstand {} og versjon {}", arbeidssoeker.periodeTilstand, version)
             secureLogger.info(
-                "Kaller API Inngang med tilstand {} for arbeidssøker {}",
+                "Kaller API Inngang igjen med tilstand {} for arbeidssøker {} og versjon {}",
                 arbeidssoeker.periodeTilstand,
-                identitetsnummer
+                identitetsnummer,
+                version
             )
             val response = inngangHttpConsumer.opprettPeriode(arbeidssoeker.asOpprettPeriodeRequest())
             logger.traceAndLog(response.status)
@@ -86,8 +88,13 @@ class ArbeidssoekerSynkService(
             logger.debug("Oppdaterer innslag med status {} i databasen for version {}", response.status.value, version)
             arbeidssoekerSynkRepository.update(version, identitetsnummer, response.status.value)
         } else {
-            logger.debug("Ignorerer fullført innslag med status {} i databasen", databaseRow.status)
-            secureLogger.info("Ignorerer arbeidssøker {}", identitetsnummer)
+            logger.debug("Ignorerer arbeidssøker med status {} for versjon {}", databaseRow.status, version)
+            secureLogger.info(
+                "Ignorerer arbeidssøker {} med status {} for versjon {}",
+                identitetsnummer,
+                databaseRow.status,
+                version
+            )
         }
     }
 }
