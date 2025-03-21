@@ -90,10 +90,11 @@ class ArbeidssoekerSynkService(
         } else {
             logger.debug("Ignorerer arbeidssøker med status {} for versjon {}", databaseRow.status, version)
             secureLogger.info(
-                "Ignorerer arbeidssøker {} med status {} for versjon {}",
+                "Ignorerer arbeidssøker {} med status {} for versjon {} (db versjon {})",
                 identitetsnummer,
                 databaseRow.status,
-                version
+                version,
+                databaseRow.version
             )
         }
     }
