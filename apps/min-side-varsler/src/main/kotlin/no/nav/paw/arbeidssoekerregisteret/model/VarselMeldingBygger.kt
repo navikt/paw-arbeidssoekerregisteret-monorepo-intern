@@ -28,10 +28,9 @@ class VarselMeldingBygger(
 ) {
     fun opprettPeriodeAvsluttetBeskjed(periode: Periode): OpprettBeskjed {
         val minSideVarsel = minSideVarselConfig.periodeAvsluttet
-        /*val eksterntVarsel = periode.avsluttet.utfoertAv.type
+        val eksterntVarsel = periode.avsluttet.utfoertAv.type
             .takeIf { it != BrukerType.SLUTTBRUKER }
-            ?.let { minSideVarsel.eksterntVarsel?.asEksternVarslingBestilling() }*/ //TODO
-        val eksterntVarsel = null
+            ?.let { minSideVarsel.eksterntVarsel?.asEksternVarslingBestilling() }
         return opprettBeskjed(
             varselId = periode.id,
             identitetsnummer = periode.identitetsnummer,
