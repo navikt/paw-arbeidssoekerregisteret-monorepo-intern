@@ -124,7 +124,7 @@ fun dagerSidenFrist(naaTid: Instant, tilstand: BekreftelseTilstand): Long? =
         .filter { it.sisteTilstand().utestaaende() }
         .minByOrNull { it.gjelderTil }
         ?.gjelderTil
-        ?.let { Duration.between(naaTid, it).toDays() }
+        ?.let { Duration.between(it, naaTid).toDays() }
 
 fun dagerSidenForfallSistLeverte(naaTid: Instant, tilstand: BekreftelseTilstand): Long? =
     tilstand.bekreftelser
