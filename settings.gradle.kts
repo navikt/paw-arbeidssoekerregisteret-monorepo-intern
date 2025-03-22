@@ -47,7 +47,6 @@ include(
     // apps
     "apps:api-start-stopp-perioder",
     "apps:hendelseprosessor",
-    "apps:utgang-formidlingsgruppe",
     "apps:hendelselogg-backup",
     "apps:utgang-pdl",
     "apps:kafka-key-generator",
