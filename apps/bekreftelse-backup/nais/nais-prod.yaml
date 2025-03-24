@@ -33,7 +33,7 @@ spec:
     limits:
       memory: 1024Mi
     requests:
-      memory: 384Mi
+      memory: 512Mi
       cpu: 40m
   gcp:
     sqlInstances:
