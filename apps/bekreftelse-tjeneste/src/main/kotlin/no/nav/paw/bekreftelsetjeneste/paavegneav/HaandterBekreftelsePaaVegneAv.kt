@@ -22,6 +22,7 @@ import no.nav.paw.bekreftelsetjeneste.topology.log
 import no.nav.paw.bekreftelsetjeneste.topology.logWarning
 import no.nav.paw.bekreftelsetjeneste.topology.paaVegneAvStartet
 import no.nav.paw.bekreftelsetjeneste.topology.paaVegneAvStoppet
+import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Duration.between
 import java.time.Instant
@@ -101,6 +102,7 @@ fun haandterStoppPaaVegneAv(
     ) + handlingerKnyttetTilFrister
 }
 
+private val stoppPaaVegneAvLogger = LoggerFactory.getLogger("stopp_paa_vegne_av")
 fun verifiserBekreftelseFrist(
     bekreftelseTilstand: BekreftelseTilstand,
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
@@ -141,6 +143,17 @@ fun verifiserBekreftelseFrist(
         }
 
         else -> emptyList()
+    }.also { resultat ->
+        val hendelse = resultat.firstOrNull()
+        stoppPaaVegneAvLogger.trace(
+            "sist_leverte_gjelder_til: {}, frist: {}, tid_siden_frist: {}, er_dummy: {}, avslutt_periode: {}, loesning: {}",
+            sisteLevering?.gjelderTil,
+            frist,
+            tidSidenFrist,
+            sisteLevering?.dummy ?: false,
+            hendelse != null,
+            paaVegneAvHendelse.bekreftelsesloesning.name
+        )
     }
 }
 
