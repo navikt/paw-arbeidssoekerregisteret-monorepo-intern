@@ -94,10 +94,12 @@ class ConsumerHandlerLogicTest : StringSpec({
         }
 
         every { context.bekreftelseConsumer.poll(pollTimeout) } answers {
+            callCounter.incrementAndGet()
             if (callCounter.get() == 2) bekreftelseRecords else ConsumerRecords.empty()
         }
 
         every { context.paaVegneAvConsumer.poll(pollTimeout) } answers {
+            callCounter.incrementAndGet()
             if (callCounter.get() == 3) {
                 // Setter shutdown signal etter 3. poll via reflection for å stoppe konsumentene
                 val shutdownField = ConsumerHandler::class.java.getDeclaredField("shutdownCalled")
