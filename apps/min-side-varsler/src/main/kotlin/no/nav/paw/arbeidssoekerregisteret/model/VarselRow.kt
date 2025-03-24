@@ -8,6 +8,7 @@ import java.util.*
 
 data class VarselRow(
     val periodeId: UUID,
+    val bekreftelseId: UUID? = null,
     val varselId: UUID,
     val varselKilde: VarselKilde,
     val varselType: VarselType,
@@ -21,6 +22,7 @@ data class VarselRow(
 
 data class InsertVarselRow(
     val periodeId: UUID,
+    val bekreftelseId: UUID? = null,
     val varselId: UUID,
     val varselKilde: VarselKilde,
     val varselType: VarselType,
@@ -38,6 +40,7 @@ data class UpdateVarselRow(
 
 fun ResultRow.asVarselRow(): VarselRow = VarselRow(
     periodeId = this[VarslerTable.periodeId],
+    bekreftelseId = this[VarslerTable.bekreftelseId],
     varselId = this[VarslerTable.varselId],
     varselKilde = this[VarslerTable.varselKilde],
     varselType = this[VarslerTable.varselType],
@@ -49,9 +52,9 @@ fun ResultRow.asVarselRow(): VarselRow = VarselRow(
     eksterntVarsel = this.asEksterntVarselRowOrNull()
 )
 
-fun Periode.asInsertVarselRow() = InsertVarselRow(
+fun Periode.asInsertVarselRow(varselId: UUID = UUID.randomUUID()) = InsertVarselRow(
     periodeId = this.id,
-    varselId = this.id,
+    varselId = varselId,
     varselKilde = VarselKilde.PERIODE_AVSLUTTET,
     varselType = VarselType.BESKJED,
     varselStatus = VarselStatus.UKJENT,
@@ -59,9 +62,10 @@ fun Periode.asInsertVarselRow() = InsertVarselRow(
     hendelseTimestamp = this.avsluttet?.tidspunkt ?: Instant.now()
 )
 
-fun BekreftelseTilgjengelig.asInsertVarselRow() = InsertVarselRow(
+fun BekreftelseTilgjengelig.asInsertVarselRow(varselId: UUID = UUID.randomUUID()) = InsertVarselRow(
     periodeId = this.periodeId,
-    varselId = this.bekreftelseId,
+    bekreftelseId = this.bekreftelseId,
+    varselId = varselId,
     varselKilde = VarselKilde.BEKREFTELSE_TILGJENGELIG,
     varselType = VarselType.OPPGAVE,
     varselStatus = VarselStatus.UKJENT,

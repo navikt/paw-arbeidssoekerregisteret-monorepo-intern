@@ -11,9 +11,7 @@ import no.nav.paw.arbeidssoekerregisteret.model.VarslerTable
 import no.nav.paw.arbeidssoekerregisteret.model.asSortOrder
 import no.nav.paw.arbeidssoekerregisteret.model.asVarselRow
 import org.jetbrains.exposed.sql.JoinType
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -37,6 +35,15 @@ class VarselRepository {
         VarslerTable.join(EksterneVarslerTable, JoinType.LEFT, VarslerTable.varselId, EksterneVarslerTable.varselId)
             .selectAll()
             .where { VarslerTable.varselId eq varselId }
+            .map { it.asVarselRow() }
+            .firstOrNull()
+    }
+
+    @WithSpan("findByVarselId")
+    fun findByBekreftelseId(bekreftelseId: UUID): VarselRow? = transaction {
+        VarslerTable.join(EksterneVarslerTable, JoinType.LEFT, VarslerTable.varselId, EksterneVarslerTable.varselId)
+            .selectAll()
+            .where { VarslerTable.bekreftelseId eq bekreftelseId }
             .map { it.asVarselRow() }
             .firstOrNull()
     }
@@ -72,6 +79,7 @@ class VarselRepository {
     fun insert(varsel: InsertVarselRow): Int = transaction {
         VarslerTable.insert {
             it[periodeId] = varsel.periodeId
+            it[bekreftelseId] = varsel.bekreftelseId
             it[varselId] = varsel.varselId
             it[varselKilde] = varsel.varselKilde
             it[varselType] = varsel.varselType
@@ -92,18 +100,5 @@ class VarselRepository {
             it[hendelseTimestamp] = varsel.hendelseTimestamp
             it[updatedTimestamp] = Instant.now()
         }
-    }
-
-    @WithSpan("deleteByPeriodeIdAndVarselKilde")
-    fun deleteByPeriodeIdAndVarselKilde(
-        periodeId: UUID,
-        varselKilde: VarselKilde
-    ): Int = transaction {
-        VarslerTable.deleteWhere { (VarslerTable.periodeId eq periodeId) and (VarslerTable.varselKilde eq varselKilde) }
-    }
-
-    @WithSpan("deleteByVarselId")
-    fun deleteByVarselId(varselId: UUID): Int = transaction {
-        VarslerTable.deleteWhere { VarslerTable.varselId eq varselId }
     }
 }

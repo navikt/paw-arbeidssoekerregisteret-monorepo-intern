@@ -5,6 +5,7 @@ import org.jetbrains.exposed.sql.javatime.timestamp
 
 object VarslerTable : Table("varsler") {
     val periodeId = uuid("periode_id")
+    val bekreftelseId = uuid("bekreftelse_id").nullable()
     val varselId = uuid("varsel_id")
     val varselKilde = enumerationByName<VarselKilde>("varsel_kilde", 50)
     val varselType = enumerationByName<VarselType>("varsel_type", 50)

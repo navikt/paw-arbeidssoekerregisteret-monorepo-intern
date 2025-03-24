@@ -10,6 +10,7 @@ import no.nav.paw.arbeidssoekerregisteret.config.MinSideVarselConfig
 import no.nav.paw.arbeidssoekerregisteret.test.TestData
 import no.nav.paw.arbeidssoekerregisteret.test.randomFnr
 import no.nav.paw.arbeidssoekerregisteret.test.tid
+import no.nav.paw.arbeidssoekerregisteret.utils.tilNesteFredagKl9
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.config.env.Local
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
@@ -28,12 +29,17 @@ class VarselMeldingByggerTest : FreeSpec({
 
         "Skal opprette beskjed for avsluttet periode av sluttbruker" {
             with(minSideVarselConfig.periodeAvsluttet) {
+                val varselId = UUID.randomUUID()
                 val periode = lukketPeriode(avsluttet = metadata(bruker = bruker(type = BrukerType.SLUTTBRUKER)))
-                val resultat = varselMeldingBygger.opprettPeriodeAvsluttetBeskjed(periode)
-                resultat.varselId shouldBe periode.id
+                val resultat = varselMeldingBygger.opprettPeriodeAvsluttetBeskjed(
+                    varselId = varselId,
+                    identitetsnummer = periode.identitetsnummer,
+                    avluttetAv = periode.avsluttet.utfoertAv.type
+                )
+                resultat.varselId shouldBe varselId
                 resultat.value should { json ->
                     json shouldContain "\"@event_name\":\"${EventType.Opprett.toJson()}\""
-                    json shouldContain "\"varselId\":\"${periode.id}\""
+                    json shouldContain "\"varselId\":\"${varselId}\""
                     json shouldContain "\"ident\":\"${periode.identitetsnummer}\""
                     json shouldContain "\"sensitivitet\":\"${Sensitivitet.Substantial.toJson()}\""
                     json shouldContain "\"type\":\"${Varseltype.Beskjed.toJson()}\""
@@ -48,12 +54,17 @@ class VarselMeldingByggerTest : FreeSpec({
 
         "Skal opprette beskjed for avsluttet periode av veileder" {
             with(minSideVarselConfig.periodeAvsluttet) {
+                val varselId = UUID.randomUUID()
                 val periode = lukketPeriode(avsluttet = metadata(bruker = bruker(type = BrukerType.VEILEDER)))
-                val resultat = varselMeldingBygger.opprettPeriodeAvsluttetBeskjed(periode)
-                resultat.varselId shouldBe periode.id
+                val resultat = varselMeldingBygger.opprettPeriodeAvsluttetBeskjed(
+                    varselId = varselId,
+                    identitetsnummer = periode.identitetsnummer,
+                    avluttetAv = periode.avsluttet.utfoertAv.type
+                )
+                resultat.varselId shouldBe varselId
                 resultat.value should { json ->
                     json shouldContain "\"@event_name\":\"${EventType.Opprett.toJson()}\""
-                    json shouldContain "\"varselId\":\"${periode.id}\""
+                    json shouldContain "\"varselId\":\"${varselId}\""
                     json shouldContain "\"ident\":\"${periode.identitetsnummer}\""
                     json shouldContain "\"sensitivitet\":\"${Sensitivitet.Substantial.toJson()}\""
                     json shouldContain "\"type\":\"${Varseltype.Beskjed.toJson()}\""
@@ -72,17 +83,22 @@ class VarselMeldingByggerTest : FreeSpec({
 
         "Skal opprette oppgave for bekreftelse tilgjengelig" {
             with(minSideVarselConfig.bekreftelseTilgjengelig) {
-                val periode = aapenPeriode()
+                val varselId = UUID.randomUUID()
+                val periode = aapenPeriode().asPeriodeHendelse()
                 val hendelse = bekreftelseTilgjengelig(
-                    periodeId = periode.id,
+                    periodeId = periode.periodeId,
                     gjelderFra = "07.03.2025 12:13".tid,
                     gjelderTil = "21.03.2025 14:15".tid
                 )
-                val resultat = varselMeldingBygger.opprettBekreftelseTilgjengeligOppgave(periode, hendelse)
-                resultat.varselId shouldBe hendelse.bekreftelseId
+                val resultat = varselMeldingBygger.opprettBekreftelseTilgjengeligOppgave(
+                    varselId = varselId,
+                    identitetsnummer = periode.identitetsnummer,
+                    utsettEksternVarslingTil = hendelse.gjelderTil.tilNesteFredagKl9()
+                )
+                resultat.varselId shouldBe varselId
                 resultat.value should { json ->
                     json shouldContain "\"@event_name\":\"${EventType.Opprett.toJson()}\""
-                    json shouldContain "\"varselId\":\"${hendelse.bekreftelseId}\""
+                    json shouldContain "\"varselId\":\"${varselId}\""
                     json shouldContain "\"ident\":\"${periode.identitetsnummer}\""
                     json shouldContain "\"sensitivitet\":\"${Sensitivitet.Substantial.toJson()}\""
                     json shouldContain "\"type\":\"${Varseltype.Oppgave.toJson()}\""

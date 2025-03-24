@@ -4,6 +4,7 @@ import no.nav.paw.arbeidssoekerregisteret.model.BestillingStatus
 import no.nav.paw.arbeidssoekerregisteret.model.BestiltVarselStatus
 import no.nav.paw.arbeidssoekerregisteret.model.InsertBestillingRow
 import no.nav.paw.arbeidssoekerregisteret.model.InsertBestiltVarselRow
+import no.nav.paw.arbeidssoekerregisteret.model.InsertEksterntVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.InsertPeriodeRow
 import no.nav.paw.arbeidssoekerregisteret.model.InsertVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.UpdateBestillingRow
@@ -89,6 +90,20 @@ object TestData {
         hendelseTimestamp: Instant = Instant.now()
     ): UpdateVarselRow = UpdateVarselRow(
         varselId = varselId,
+        varselStatus = varselStatus,
+        hendelseName = hendelseName,
+        hendelseTimestamp = hendelseTimestamp
+    )
+
+    fun insertEksterntVarselRow(
+        varselId: UUID = UUID.randomUUID(),
+        varselType: VarselType = VarselType.UKJENT,
+        varselStatus: VarselStatus = VarselStatus.UKJENT,
+        hendelseName: VarselEventName = VarselEventName.EKSTERN_STATUS_OPPDATERT,
+        hendelseTimestamp: Instant = Instant.now()
+    ): InsertEksterntVarselRow = InsertEksterntVarselRow(
+        varselId = varselId,
+        varselType = varselType,
         varselStatus = varselStatus,
         hendelseName = hendelseName,
         hendelseTimestamp = hendelseTimestamp

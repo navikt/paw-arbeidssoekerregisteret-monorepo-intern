@@ -5,7 +5,6 @@ import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.Tags
 import no.nav.paw.arbeidssoekerregisteret.model.VarselEventName
 import no.nav.paw.arbeidssoekerregisteret.model.VarselHendelse
-import no.nav.paw.arbeidssoekerregisteret.model.VarselKanal
 import no.nav.paw.arbeidssoekerregisteret.model.VarselMelding
 import no.nav.paw.arbeidssoekerregisteret.model.VarselStatus
 import no.nav.paw.arbeidssoekerregisteret.model.VarselType
@@ -57,8 +56,7 @@ enum class TagKey(val key: String) {
     EVENT_TYPE("x_event_type"),
     EVENT_NAME("x_event_name"),
     VARSEL_TYPE("x_varsel_type"),
-    VARSEL_STATUS("x_varsel_status"),
-    VARSEL_KANAL("x_varsel_kanal");
+    VARSEL_STATUS("x_varsel_status");
 
     fun asTag(value: String): Tag = Tag.of(key, value)
     fun asTag(type: Type): Tag = Tag.of(key, type.value)
@@ -68,7 +66,6 @@ enum class TagKey(val key: String) {
     fun asTag(eventName: VarselEventName): Tag = Tag.of(key, eventName.verboseName)
     fun asTag(varselType: VarselType): Tag = Tag.of(key, varselType.value)
     fun asTag(status: VarselStatus?): Tag = Tag.of(key, status?.value ?: "null")
-    fun asTag(kanal: VarselKanal?): Tag = Tag.of(key, kanal?.value ?: "null")
 }
 
 fun MeterRegistry.readPeriodeCounter(periode: Periode) =
@@ -97,8 +94,7 @@ fun MeterRegistry.periodeCounter(
             TagKey.EVENT_TYPE.asTag(periode::class.java.name),
             TagKey.EVENT_NAME.asTag(periode.eventName),
             TagKey.VARSEL_TYPE.asTag("null"),
-            TagKey.VARSEL_STATUS.asTag("null"),
-            TagKey.VARSEL_KANAL.asTag("null")
+            TagKey.VARSEL_STATUS.asTag("null")
         )
     )
 }
@@ -132,8 +128,7 @@ fun MeterRegistry.bekreftelseHendelseCounter(
             TagKey.EVENT_TYPE.asTag(hendelse.eventType),
             TagKey.EVENT_NAME.asTag(hendelse.eventName),
             TagKey.VARSEL_TYPE.asTag("null"),
-            TagKey.VARSEL_STATUS.asTag("null"),
-            TagKey.VARSEL_KANAL.asTag("null")
+            TagKey.VARSEL_STATUS.asTag("null")
         )
     )
 }
@@ -167,8 +162,7 @@ fun MeterRegistry.varselCounter(
             TagKey.EVENT_TYPE.asTag(melding::class.java.name),
             TagKey.EVENT_NAME.asTag(melding.eventName),
             TagKey.VARSEL_TYPE.asTag(varselType),
-            TagKey.VARSEL_STATUS.asTag(VarselStatus.UKJENT),
-            TagKey.VARSEL_KANAL.asTag(VarselKanal.SMS)
+            TagKey.VARSEL_STATUS.asTag(VarselStatus.UKJENT)
         )
     )
 }
@@ -202,8 +196,7 @@ fun MeterRegistry.varselHendelseCounter(
             TagKey.EVENT_TYPE.asTag(hendelse::class.java.name),
             TagKey.EVENT_NAME.asTag(hendelse.eventName),
             TagKey.VARSEL_TYPE.asTag(hendelse.varseltype),
-            TagKey.VARSEL_STATUS.asTag(hendelse.status),
-            TagKey.VARSEL_KANAL.asTag(hendelse.kanal)
+            TagKey.VARSEL_STATUS.asTag(hendelse.status)
         )
     )
 }

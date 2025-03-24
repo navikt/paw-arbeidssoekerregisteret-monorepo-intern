@@ -1,7 +1,9 @@
 package no.nav.paw.arbeidssoekerregisteret.utils
 
 import kotlinx.coroutines.runBlocking
+import no.nav.paw.arbeidssoekerregisteret.model.InternalState
 import no.nav.paw.arbeidssoekerregisteret.model.OpprettBeskjed
+import no.nav.paw.arbeidssoekerregisteret.model.PeriodeHendelse
 import no.nav.paw.arbeidssoekerregisteret.model.VarselHendelse
 import no.nav.paw.kafka.producer.sendDeferred
 import no.nav.paw.logging.logger.buildNamedLogger
@@ -11,7 +13,9 @@ import org.apache.kafka.clients.producer.ProducerRecord
 
 private val logger = buildNamedLogger("kafka.producer")
 
-class VarselHendelseJsonSerde : JacksonSerde<VarselHendelse>(VarselHendelse::class)
+class PeriodeHendelseSerde : JacksonSerde<PeriodeHendelse>(PeriodeHendelse::class)
+class VarselHendelseSerde : JacksonSerde<VarselHendelse>(VarselHendelse::class)
+class InternalStateSerde : JacksonSerde<InternalState>(InternalState::class)
 
 fun Producer<String, String>.sendVarsel(topic: String, varsel: OpprettBeskjed) =
     sendRecord(topic, varsel.varselId.toString(), varsel.value)
