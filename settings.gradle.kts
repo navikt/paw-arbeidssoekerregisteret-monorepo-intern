@@ -55,6 +55,7 @@ include(
     "apps:bekreftelse-api",
     "apps:bekreftelse-utgang",
     "apps:bekreftelse-hendelsefilter",
+    "apps:bekreftelse-backup",
     "apps:tilgangskontroll",
     "apps:dolly-api",
     "apps:min-side-varsler"

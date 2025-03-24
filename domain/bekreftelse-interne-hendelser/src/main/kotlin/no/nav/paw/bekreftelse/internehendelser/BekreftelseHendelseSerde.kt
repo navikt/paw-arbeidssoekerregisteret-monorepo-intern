@@ -8,6 +8,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
+import kotlin.reflect.KClass
 
 private val objectMapper: ObjectMapper = ObjectMapper()
     .registerKotlinModule().
@@ -27,6 +28,8 @@ class BekreftelseHendelseSerializer: Serializer<BekreftelseHendelse> {
     override fun serialize(topic: String?, data: BekreftelseHendelse?): ByteArray? {
         return data?.let { objectMapper.writeValueAsBytes(it) }
     }
+
+    fun serializeToString(data: BekreftelseHendelse): String = objectMapper.writeValueAsString(data)
 }
 
 class BekreftelseHendelseDeserializer: Deserializer<BekreftelseHendelse> {
@@ -49,5 +52,27 @@ class BekreftelseHendelseDeserializer: Deserializer<BekreftelseHendelse> {
             registerGracePeriodeUtloeptEtterEksternInnsamlingHendelseType -> objectMapper.readValue<RegisterGracePeriodeUtloeptEtterEksternInnsamling>(node.traverse())
             else -> throw IllegalArgumentException("Ukjent hendelseType: $hendelseType")
         }
+
+    fun deserializeFromString(json: String): BekreftelseHendelse {
+        val node = objectMapper.readTree(json)
+        val eventClass = eventTypeToClass(node.get("hendelseType")?.asText())
+        return objectMapper.treeToValue(node, eventClass.java)
+    }
 }
+
+fun eventTypeToClass(type: String?): KClass<out BekreftelseHendelse> =
+    when (type) {
+        null -> throw IllegalArgumentException("Hendelse mangler type")
+        leveringsfristUtloeptHendelseType -> LeveringsfristUtloept::class
+        eksternGracePeriodeUtloeptHendelseType -> EksternGracePeriodeUtloept::class
+        registerGracePeriodeUtloeptHendelseType -> RegisterGracePeriodeUtloept::class
+        bekreftelseTilgjengeligHendelseType -> BekreftelseTilgjengelig::class
+        meldingMottattHendelseType -> BekreftelseMeldingMottatt::class
+        periodeAvsluttetHendelsesType -> PeriodeAvsluttet::class
+        registerGracePeriodeGjenstaaendeTid -> RegisterGracePeriodeGjenstaaendeTid::class
+        baOmAaAvsluttePeriodeHendelsesType -> BaOmAaAvsluttePeriode::class
+        bekreftelsePaaVegneAvStartetHendelsesType -> BekreftelsePaaVegneAvStartet::class
+        registerGracePeriodeUtloeptEtterEksternInnsamlingHendelseType -> RegisterGracePeriodeUtloeptEtterEksternInnsamling::class
+        else -> throw IllegalArgumentException("Ukjent hendelse type: '$type'")
+    }
 
