@@ -92,7 +92,13 @@ fun haandterStoppPaaVegneAv(
     paaVegneAvHendelse: PaaVegneAv
 ): List<Handling> {
     val handlingerKnyttetTilFrister = if (bekreftelseTilstand != null) {
-        verifiserBekreftelseFrist(bekreftelseTilstand, bekreftelseKonfigurasjon, wallclock, paaVegneAvHendelse)
+        verifiserBekreftelseFrist(
+            bekreftelseTilstand = bekreftelseTilstand,
+            bekreftelseKonfigurasjon = bekreftelseKonfigurasjon,
+            wallclock = wallclock,
+            paaVegneAvHendelse = paaVegneAvHendelse,
+            periodeStartet = bekreftelseTilstand.periode.startet
+        )
     } else {
         emptyList()
     }
@@ -107,7 +113,8 @@ fun verifiserBekreftelseFrist(
     bekreftelseTilstand: BekreftelseTilstand,
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
     wallclock: WallClock,
-    paaVegneAvHendelse: PaaVegneAv
+    paaVegneAvHendelse: PaaVegneAv,
+    periodeStartet: Instant
 ): List<Handling> {
     val sisteLevering = bekreftelseTilstand.bekreftelser
         .filter { it.has<Levert>() }
@@ -146,13 +153,15 @@ fun verifiserBekreftelseFrist(
     }.also { resultat ->
         val hendelse = resultat.firstOrNull()
         stoppPaaVegneAvLogger.trace(
-            "sist_leverte_gjelder_til: {}, frist: {}, tid_siden_frist: {}, er_dummy: {}, avslutt_periode: {}, loesning: {}",
+            "sist_leverte: [{} -> {}], frist: {}, tid_siden_frist: {}, er_dummy: {}, avslutt_periode: {}, loesning: {}, periode_startet: {}",
+            sisteLevering?.gjelderFra,
             sisteLevering?.gjelderTil,
             frist,
             tidSidenFrist,
             sisteLevering?.dummy ?: false,
             hendelse != null,
-            paaVegneAvHendelse.bekreftelsesloesning.name
+            paaVegneAvHendelse.bekreftelsesloesning.name,
+            periodeStartet
         )
     }
 }
