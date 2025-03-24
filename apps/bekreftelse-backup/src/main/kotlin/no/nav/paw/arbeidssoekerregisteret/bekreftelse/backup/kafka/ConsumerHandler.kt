@@ -162,7 +162,7 @@ class ConsumerHandler(
     ) = ctx.writePaaVegneAvRecord(record)
 
     override fun close() {
-        logger.info("stopper consumer handler...")
+        logger.info("Stopper consumer handler...")
         shutdownCalled.set(true)
         executor.shutdown()
     }

@@ -19,10 +19,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.slf4j.LoggerFactory
 
 const val CURRENT_VERSION = 1
-/*const val BEKREFTELSE_HENDELSE_TOPIC = "paw.arbeidssoker-bekreftelse-hendelseslogg-v2"
-const val BEKREFTELSE_TOPIC = "paw.arbeidssoker-bekreftelse-v1"
-const val BEKREFTELSE_PAA_VEGNE_AV_TOPIC = "paw.arbeidssoker-bekreftelse-paavegneav-v2"*/
-const val CONSUMER_GROUP = "arbeidssoekerregisteret-bekftelselse-backup-$CURRENT_VERSION"
+const val CONSUMER_GROUP = "arbeidssoekerregisteret-bekreftelse-backup-$CURRENT_VERSION"
 const val ACTIVE_PARTITIONS_GAUGE = "paw_arbeidssoekerregisteret_bekreftelse_backup_active_partitions"
 const val RECORD_COUNTER = "paw_arbeidssoekerregisteret_bekreftelse_backup_records_written"
 const val HWM_GAUGE = "paw_arbeidssoekerregisteret_bekreftelse_backup_hwm"
