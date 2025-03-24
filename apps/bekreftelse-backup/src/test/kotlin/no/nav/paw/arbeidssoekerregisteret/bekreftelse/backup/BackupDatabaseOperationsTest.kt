@@ -41,6 +41,9 @@ class BackupDatabaseOperationsTest : StringSpec({
         hendelseConsumer = mockk(relaxed = true),
         bekreftelseConsumer = mockk(relaxed = true),
         paaVegneAvConsumer = mockk(relaxed = true),
+        hendelseTopic = "hendelse-test-topic",
+        bekreftelseTopic = "bekreftelse-test-topic",
+        paaVegneAvTopic = "paavegneav-test-topic",
     )
 
     beforeTest {

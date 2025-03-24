@@ -28,6 +28,9 @@ class HwmFunctionsTest : FreeSpec({
                     hendelseConsumer = mockk(),
                     bekreftelseConsumer = mockk(),
                     paaVegneAvConsumer = mockk(),
+                    hendelseTopic = "hendelse-test-topic",
+                    bekreftelseTopic = "bekreftelse-test-topic",
+                    paaVegneAvTopic = "paavegneav-test-topic",
                 )
             )
             val topic = "topic1"
@@ -116,6 +119,9 @@ class HwmFunctionsTest : FreeSpec({
                     hendelseConsumer = mockk(),
                     bekreftelseConsumer = mockk(),
                     paaVegneAvConsumer = mockk(),
+                    hendelseTopic = "hendelse-test-topic",
+                    bekreftelseTopic = "bekreftelse-test-topic",
+                    paaVegneAvTopic = "paavegneav-test-topic",
                 )
             )
             val topic = "topic1"

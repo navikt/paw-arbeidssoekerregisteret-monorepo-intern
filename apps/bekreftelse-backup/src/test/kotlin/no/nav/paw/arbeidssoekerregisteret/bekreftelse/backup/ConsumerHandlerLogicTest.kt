@@ -43,7 +43,10 @@ class ConsumerHandlerLogicTest : StringSpec({
         meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
         hendelseConsumer = mockk(relaxed = true),
         bekreftelseConsumer = mockk(relaxed = true),
-        paaVegneAvConsumer = mockk(relaxed = true)
+        paaVegneAvConsumer = mockk(relaxed = true),
+        hendelseTopic = "hendelse-test-topic",
+        bekreftelseTopic = "bekreftelse-test-topic",
+        paaVegneAvTopic = "paavegneav-test-topic",
     )
 
     val consumerHandler = ConsumerHandler(context)
@@ -59,17 +62,17 @@ class ConsumerHandlerLogicTest : StringSpec({
 
     "startConsumerTasks starter alle konsumenter og lytter etter meldinger" {
         val pollTimeout = Duration.ofMillis(100)
-        val hendelseTopicPartition = TopicPartition(BEKREFTELSE_HENDELSE_TOPIC, 0)
-        val bekreftelseTopicPartition = TopicPartition(BEKREFTELSE_TOPIC, 0)
-        val paaVegneAvTopicPartition = TopicPartition(BEKREFTELSE_PAA_VEGNE_AV_TOPIC, 0)
+        val hendelseTopicPartition = TopicPartition(context.hendelseTopic, 0)
+        val bekreftelseTopicPartition = TopicPartition(context.bekreftelseTopic, 0)
+        val paaVegneAvTopicPartition = TopicPartition(context.paaVegneAvTopic, 0)
 
         val hendelse = bekreftelseTilgjengelig() as BekreftelseHendelse
         val bekreftelseData = "bekreftelse data".toByteArray()
         val paaVegneAvData = "paa vegne av data".toByteArray()
 
-        val hendelseRecord = ConsumerRecord(BEKREFTELSE_HENDELSE_TOPIC, 0, 100L, 1234L, hendelse)
-        val bekreftelseRecord = ConsumerRecord(BEKREFTELSE_TOPIC, 0, 100L, 1234L, bekreftelseData)
-        val paaVegneAvRecord = ConsumerRecord(BEKREFTELSE_PAA_VEGNE_AV_TOPIC, 0, 100L, 1234L, paaVegneAvData)
+        val hendelseRecord = ConsumerRecord(context.hendelseTopic, 0, 100L, 1234L, hendelse)
+        val bekreftelseRecord = ConsumerRecord(context.bekreftelseTopic, 0, 100L, 1234L, bekreftelseData)
+        val paaVegneAvRecord = ConsumerRecord(context.paaVegneAvTopic, 0, 100L, 1234L, paaVegneAvData)
 
         val hendelsesRecords = ConsumerRecords(mapOf(hendelseTopicPartition to listOf(hendelseRecord)))
         val bekreftelseRecords = ConsumerRecords(mapOf(bekreftelseTopicPartition to listOf(bekreftelseRecord)))
@@ -77,9 +80,9 @@ class ConsumerHandlerLogicTest : StringSpec({
 
         transaction {
             val txContext = TransactionContext(context, this)
-            txContext.initHwm(1, BEKREFTELSE_HENDELSE_TOPIC)
-            txContext.initHwm(1, BEKREFTELSE_TOPIC)
-            txContext.initHwm(1, BEKREFTELSE_PAA_VEGNE_AV_TOPIC)
+            txContext.initHwm(1, context.hendelseTopic)
+            txContext.initHwm(1, context.bekreftelseTopic)
+            txContext.initHwm(1, context.paaVegneAvTopic)
         }
 
         val callCounter = AtomicInteger(0)
@@ -127,24 +130,24 @@ class ConsumerHandlerLogicTest : StringSpec({
 
             val hendelseHwm = BekreftelseHwmTable
                 .selectAll()
-                .first { it[BekreftelseHwmTable.topic] == BEKREFTELSE_HENDELSE_TOPIC }
+                .first { it[BekreftelseHwmTable.topic] == context.hendelseTopic }
             hendelseHwm[BekreftelseHwmTable.offset] shouldBe 100L
 
             val bekreftelseHwm = BekreftelseHwmTable
                 .selectAll()
-                .first { it[BekreftelseHwmTable.topic] == BEKREFTELSE_TOPIC }
+                .first { it[BekreftelseHwmTable.topic] == context.bekreftelseTopic }
             bekreftelseHwm[BekreftelseHwmTable.offset] shouldBe 100L
 
             val paaVegneAvHwm = BekreftelseHwmTable
                 .selectAll()
-                .first { it[BekreftelseHwmTable.topic] == BEKREFTELSE_PAA_VEGNE_AV_TOPIC }
+                .first { it[BekreftelseHwmTable.topic] == context.paaVegneAvTopic }
             paaVegneAvHwm[BekreftelseHwmTable.offset] shouldBe 100L
         }
 
         // Verifiser at alle consumers ble subscribed til riktige topics
-        verify { context.hendelseConsumer.subscribe(eq(listOf(BEKREFTELSE_HENDELSE_TOPIC)), any()) }
-        verify { context.bekreftelseConsumer.subscribe(eq(listOf(BEKREFTELSE_TOPIC)), any()) }
-        verify { context.paaVegneAvConsumer.subscribe(eq(listOf(BEKREFTELSE_PAA_VEGNE_AV_TOPIC)), any()) }
+        verify { context.hendelseConsumer.subscribe(eq(listOf(context.hendelseTopic)), any()) }
+        verify { context.bekreftelseConsumer.subscribe(eq(listOf(context.bekreftelseTopic)), any()) }
+        verify { context.paaVegneAvConsumer.subscribe(eq(listOf(context.paaVegneAvTopic)), any()) }
 
         // Verifiser at poll ble kalt på alle consumers
         verify(atLeast = 1) { context.hendelseConsumer.poll(pollTimeout) }
@@ -156,7 +159,7 @@ class ConsumerHandlerLogicTest : StringSpec({
         val hendelse = bekreftelseTilgjengelig()
 
         val record1 = ConsumerRecord<Long, BekreftelseHendelse>(
-            BEKREFTELSE_HENDELSE_TOPIC,
+            context.hendelseTopic,
             0,
             100L,
             5678L,
@@ -164,24 +167,24 @@ class ConsumerHandlerLogicTest : StringSpec({
         )
 
         val record2 = ConsumerRecord<Long, BekreftelseHendelse>(
-            BEKREFTELSE_HENDELSE_TOPIC,
+            context.hendelseTopic,
             0,
             101L,
             5679L,
             hendelse
         )
-        val topicPartition = TopicPartition(BEKREFTELSE_HENDELSE_TOPIC, 0)
+        val topicPartition = TopicPartition(context.hendelseTopic, 0)
         val records = ConsumerRecords(mapOf(topicPartition to listOf(record1, record2)))
 
         transaction {
             val txContext = TransactionContext(context, this)
-            txContext.initHwm(1, BEKREFTELSE_HENDELSE_TOPIC)
+            txContext.initHwm(1, context.hendelseTopic)
         }
 
         transaction {
             consumerHandler.processRecords(
                 records,
-                BEKREFTELSE_HENDELSE_TOPIC,
+                context.hendelseTopic,
                 consumerHandler::processHendelseRecord
             )
         }
@@ -198,7 +201,7 @@ class ConsumerHandlerLogicTest : StringSpec({
         transaction {
             consumerHandler.processRecords(
                 records,
-                BEKREFTELSE_HENDELSE_TOPIC,
+                context.hendelseTopic,
                 consumerHandler::processHendelseRecord
             )
         }
@@ -217,7 +220,7 @@ class ConsumerHandlerLogicTest : StringSpec({
         val hendelse = bekreftelseTilgjengelig()
 
         val hendelseRecord = ConsumerRecord<Long, BekreftelseHendelse>(
-            BEKREFTELSE_HENDELSE_TOPIC,
+            context.hendelseTopic,
             0,
             100L,
             5678L,
@@ -226,7 +229,7 @@ class ConsumerHandlerLogicTest : StringSpec({
 
         val bekreftelseData = "bekreftelse data".toByteArray()
         val bekreftelseRecord = ConsumerRecord<Long, ByteArray>(
-            BEKREFTELSE_TOPIC,
+            context.bekreftelseTopic,
             0,
             100L,
             5678L,
@@ -235,7 +238,7 @@ class ConsumerHandlerLogicTest : StringSpec({
 
         val paaVegneAvData = "paa vegne av data".toByteArray()
         val paaVegneAvRecord = ConsumerRecord<Long, ByteArray>(
-            BEKREFTELSE_PAA_VEGNE_AV_TOPIC,
+            context.paaVegneAvTopic,
             0,
             100L,
             5678L,
@@ -244,26 +247,26 @@ class ConsumerHandlerLogicTest : StringSpec({
 
         transaction {
             val txContext = TransactionContext(context, this)
-            txContext.initHwm(1, BEKREFTELSE_HENDELSE_TOPIC)
-            txContext.initHwm(1, BEKREFTELSE_TOPIC)
-            txContext.initHwm(1, BEKREFTELSE_PAA_VEGNE_AV_TOPIC)
+            txContext.initHwm(1, context.hendelseTopic)
+            txContext.initHwm(1, context.bekreftelseTopic)
+            txContext.initHwm(1, context.paaVegneAvTopic)
         }
 
         transaction {
             val txContext = TransactionContext(context, this)
-            txContext.updateHwm(0, 100L, BEKREFTELSE_HENDELSE_TOPIC)
+            txContext.updateHwm(0, 100L, context.hendelseTopic)
             consumerHandler.processHendelseRecord(txContext, hendelseRecord)
         }
 
         transaction {
             val txContext = TransactionContext(context, this)
-            txContext.updateHwm(0, 100L, BEKREFTELSE_TOPIC)
+            txContext.updateHwm(0, 100L, context.bekreftelseTopic)
             consumerHandler.processBekreftelseRecord(txContext, bekreftelseRecord)
         }
 
         transaction {
             val txContext = TransactionContext(context, this)
-            txContext.updateHwm(0, 100L, BEKREFTELSE_PAA_VEGNE_AV_TOPIC)
+            txContext.updateHwm(0, 100L, context.paaVegneAvTopic)
             consumerHandler.processPaaVegneAvRecord(txContext, paaVegneAvRecord)
         }
 
@@ -290,7 +293,7 @@ class ConsumerHandlerLogicTest : StringSpec({
 
         val records = hendelser.mapIndexed { index, hendelse ->
             ConsumerRecord<Long, BekreftelseHendelse>(
-                BEKREFTELSE_HENDELSE_TOPIC,
+                context.hendelseTopic,
                 0,
                 100L + index,
                 5000L + index,
@@ -298,18 +301,18 @@ class ConsumerHandlerLogicTest : StringSpec({
             )
         }
 
-        val topicPartition = TopicPartition(BEKREFTELSE_HENDELSE_TOPIC, 0)
+        val topicPartition = TopicPartition(context.hendelseTopic, 0)
         val consumerRecords = ConsumerRecords(mapOf(topicPartition to records))
 
         transaction {
             val txContext = TransactionContext(context, this)
-            txContext.initHwm(1, BEKREFTELSE_HENDELSE_TOPIC)
+            txContext.initHwm(1, context.hendelseTopic)
         }
 
         transaction {
             consumerHandler.processRecords(
                 consumerRecords,
-                BEKREFTELSE_HENDELSE_TOPIC,
+                context.hendelseTopic,
                 consumerHandler::processHendelseRecord
             )
         }
@@ -351,7 +354,7 @@ class ConsumerHandlerLogicTest : StringSpec({
         every {
             spyConsumerHandler.createConsumerFuture<BekreftelseHendelse>(
                 context.hendelseConsumer,
-                BEKREFTELSE_HENDELSE_TOPIC,
+                context.hendelseTopic,
                 pollTimeout,
                 any()
             )
@@ -360,9 +363,9 @@ class ConsumerHandlerLogicTest : StringSpec({
         // Initialiser HWM for alle topics
         transaction {
             val txContext = TransactionContext(context, this)
-            txContext.initHwm(1, BEKREFTELSE_HENDELSE_TOPIC)
-            txContext.initHwm(1, BEKREFTELSE_TOPIC)
-            txContext.initHwm(1, BEKREFTELSE_PAA_VEGNE_AV_TOPIC)
+            txContext.initHwm(1, context.hendelseTopic)
+            txContext.initHwm(1, context.bekreftelseTopic)
+            txContext.initHwm(1, context.paaVegneAvTopic)
         }
 
         // Start consumer tasks med spy-objektet

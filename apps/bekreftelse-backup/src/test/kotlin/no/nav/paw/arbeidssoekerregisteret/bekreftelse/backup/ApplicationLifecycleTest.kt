@@ -52,28 +52,30 @@ class ApplicationLifecycleTest : StringSpec({
             meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
             hendelseConsumer = mockk(relaxed = true),
             bekreftelseConsumer = mockk(relaxed = true),
-            paaVegneAvConsumer = mockk(relaxed = true)
+            paaVegneAvConsumer = mockk(relaxed = true),
+            hendelseTopic = "hendelse-test-topic",
+            bekreftelseTopic = "bekreftelse-test-topic",
+            paaVegneAvTopic = "paavegneav-test-topic",
         )
 
-        val topic = "test-topic"
-        val listener = HwmRebalanceListener(context, context.hendelseConsumer, topic)
+        val listener = HwmRebalanceListener(context, context.hendelseConsumer, context.hendelseTopic)
 
         transaction {
             val txContext = TransactionContext(context, this)
-            txContext.initHwm(3, topic)
+            txContext.initHwm(3, context.hendelseTopic)
         }
 
         val partitions = mutableListOf(
-            TopicPartition(topic, 0),
-            TopicPartition(topic, 1),
-            TopicPartition(topic, 2)
+            TopicPartition(context.hendelseTopic, 0),
+            TopicPartition(context.hendelseTopic, 1),
+            TopicPartition(context.hendelseTopic, 2)
         )
         listener.onPartitionsAssigned(partitions)
 
         listener.currentlyAssignedPartitions shouldBe setOf(0, 1, 2)
 
         val revokedPartitions = mutableListOf(
-            TopicPartition(topic, 1)
+            TopicPartition(context.hendelseTopic, 1)
         )
         listener.onPartitionsRevoked(revokedPartitions)
 
@@ -89,7 +91,10 @@ class ApplicationLifecycleTest : StringSpec({
                 meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
                 hendelseConsumer = mockk(relaxed = true),
                 bekreftelseConsumer = mockk(relaxed = true),
-                paaVegneAvConsumer = mockk(relaxed = true)
+                paaVegneAvConsumer = mockk(relaxed = true),
+                hendelseTopic = "hendelse-test-topic",
+                bekreftelseTopic = "bekreftelse-test-topic",
+                paaVegneAvTopic = "paavegneav-test-topic",
             )
         )
 

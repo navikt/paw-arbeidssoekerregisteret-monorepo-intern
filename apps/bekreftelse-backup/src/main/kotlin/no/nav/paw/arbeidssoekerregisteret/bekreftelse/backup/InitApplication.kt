@@ -3,6 +3,8 @@ package no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup
 import io.micrometer.core.instrument.Tag
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.config.APPLICATION_CONFIG
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.config.ApplicationConfig
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.database.*
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.vo.ApplicationContext
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseDeserializer
@@ -17,9 +19,9 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.slf4j.LoggerFactory
 
 const val CURRENT_VERSION = 1
-const val BEKREFTELSE_HENDELSE_TOPIC = "paw.arbeidssoker-bekreftelse-hendelseslogg-v2"
+/*const val BEKREFTELSE_HENDELSE_TOPIC = "paw.arbeidssoker-bekreftelse-hendelseslogg-v2"
 const val BEKREFTELSE_TOPIC = "paw.arbeidssoker-bekreftelse-v1"
-const val BEKREFTELSE_PAA_VEGNE_AV_TOPIC = "paw.arbeidssoker-bekreftelse-paavegneav-v2"
+const val BEKREFTELSE_PAA_VEGNE_AV_TOPIC = "paw.arbeidssoker-bekreftelse-paavegneav-v2"*/
 const val CONSUMER_GROUP = "arbeidssoekerregisteret-bekftelselse-backup-$CURRENT_VERSION"
 const val ACTIVE_PARTITIONS_GAUGE = "paw_arbeidssoekerregisteret_bekreftelse_backup_active_partitions"
 const val RECORD_COUNTER = "paw_arbeidssoekerregisteret_bekreftelse_backup_records_written"
@@ -28,6 +30,7 @@ const val HWM_GAUGE = "paw_arbeidssoekerregisteret_bekreftelse_backup_hwm"
 fun initApplication(): ApplicationContext {
     val logger = LoggerFactory.getLogger("bekreftelse-backup-init")
     logger.info("Initializing application...")
+    val appConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG)
     val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
 
     with(loadNaisOrLocalConfiguration<DatabaseConfig>("database_configuration.toml")) {
@@ -76,6 +79,9 @@ fun initApplication(): ApplicationContext {
         hendelseConsumer = hendelseConsumer,
         bekreftelseConsumer = bekreftelseConsumer,
         paaVegneAvConsumer = paaVegneAvConsumer,
+        hendelseTopic = appConfig.hendelseTopic,
+        bekreftelseTopic = appConfig.bekreftelseTopic,
+        paaVegneAvTopic = appConfig.paaVegneAvTopic
     )
 
     val topicPartitionsMap = mapOf(
