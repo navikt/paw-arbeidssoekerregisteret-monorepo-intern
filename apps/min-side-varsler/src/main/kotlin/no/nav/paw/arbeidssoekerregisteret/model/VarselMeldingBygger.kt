@@ -4,10 +4,7 @@ import no.nav.paw.arbeidssoekerregisteret.config.MinSideVarsel
 import no.nav.paw.arbeidssoekerregisteret.config.MinSideVarselConfig
 import no.nav.paw.arbeidssoekerregisteret.config.asEksternVarslingBestilling
 import no.nav.paw.arbeidssoekerregisteret.config.asSensitivitet
-import no.nav.paw.arbeidssoekerregisteret.utils.tilNesteFredagKl9
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
-import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
-import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.config.env.RuntimeEnvironment
 import no.nav.paw.config.env.appNameOrDefaultForLocal
 import no.nav.paw.config.env.clusterNameOrDefaultForLocal
@@ -20,20 +17,25 @@ import no.nav.tms.varsel.action.Varseltype
 import no.nav.tms.varsel.builder.VarselActionBuilder
 import java.time.Instant
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.*
 
 class VarselMeldingBygger(
     private val runtimeEnvironment: RuntimeEnvironment,
     private val minSideVarselConfig: MinSideVarselConfig
 ) {
-    fun opprettPeriodeAvsluttetBeskjed(periode: Periode): OpprettBeskjed {
+    fun opprettPeriodeAvsluttetBeskjed(
+        varselId: UUID,
+        identitetsnummer: String,
+        avluttetAv: BrukerType,
+    ): OpprettBeskjed {
         val minSideVarsel = minSideVarselConfig.periodeAvsluttet
-        val eksterntVarsel = periode.avsluttet.utfoertAv.type
+        val eksterntVarsel = avluttetAv
             .takeIf { it != BrukerType.SLUTTBRUKER }
             ?.let { minSideVarsel.eksterntVarsel?.asEksternVarslingBestilling() }
         return opprettBeskjed(
-            varselId = periode.id,
-            identitetsnummer = periode.identitetsnummer,
+            varselId = varselId,
+            identitetsnummer = identitetsnummer,
             sensitivitet = minSideVarsel.sensitivitet.asSensitivitet(),
             link = minSideVarsel.link,
             tekster = minSideVarsel.asTekster(),
@@ -41,12 +43,15 @@ class VarselMeldingBygger(
         )
     }
 
-    fun opprettBekreftelseTilgjengeligOppgave(periode: Periode, hendelse: BekreftelseTilgjengelig): OpprettOppgave {
+    fun opprettBekreftelseTilgjengeligOppgave(
+        varselId: UUID,
+        identitetsnummer: String,
+        utsettEksternVarslingTil: ZonedDateTime
+    ): OpprettOppgave {
         val minSideVarsel = minSideVarselConfig.bekreftelseTilgjengelig
-        val utsettEksternVarslingTil = hendelse.gjelderTil.tilNesteFredagKl9()
         return opprettOppgave(
-            varselId = hendelse.bekreftelseId,
-            identitetsnummer = periode.identitetsnummer,
+            varselId = varselId,
+            identitetsnummer = identitetsnummer,
             sensitivitet = minSideVarsel.sensitivitet.asSensitivitet(),
             link = minSideVarsel.link,
             tekster = minSideVarsel.asTekster(),

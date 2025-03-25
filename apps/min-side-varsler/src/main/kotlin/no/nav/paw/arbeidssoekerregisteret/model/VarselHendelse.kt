@@ -63,6 +63,7 @@ enum class VarselKilde {
 enum class VarselKanal(@get:JsonValue val value: String) {
     SMS("SMS"),
     EPOST("EPOST"),
+    BETINGET_SMS("BETINGET_SMS"),
 
     @JsonEnumDefaultValue
     UKJENT("UKJENT")

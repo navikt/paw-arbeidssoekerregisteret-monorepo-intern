@@ -14,10 +14,12 @@ import no.nav.paw.arbeidssoekerregisteret.repository.PeriodeRepository
 import no.nav.paw.arbeidssoekerregisteret.repository.VarselRepository
 import no.nav.paw.arbeidssoekerregisteret.service.BestillingService
 import no.nav.paw.arbeidssoekerregisteret.service.VarselService
+import no.nav.paw.arbeidssoekerregisteret.topology.INTERNAL_STATE_STORE
 import no.nav.paw.arbeidssoekerregisteret.topology.bekreftelseKafkaTopology
 import no.nav.paw.arbeidssoekerregisteret.topology.periodeKafkaTopology
 import no.nav.paw.arbeidssoekerregisteret.topology.varselHendelserKafkaTopology
-import no.nav.paw.arbeidssoekerregisteret.utils.VarselHendelseJsonSerde
+import no.nav.paw.arbeidssoekerregisteret.utils.InternalStateSerde
+import no.nav.paw.arbeidssoekerregisteret.utils.VarselHendelseSerde
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
@@ -32,6 +34,7 @@ import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.TestInputTopic
 import org.apache.kafka.streams.TestOutputTopic
 import org.apache.kafka.streams.TopologyTestDriver
+import org.apache.kafka.streams.state.Stores
 import java.util.*
 import javax.sql.DataSource
 import kotlin.collections.set
@@ -83,6 +86,17 @@ class KafkaTestContext(
         fun buildWithPostgres(): KafkaTestContext =
             build(buildPostgresDataSource(), listOf("DROP SCHEMA public CASCADE", "CREATE SCHEMA public"))
 
+        private fun StreamsBuilder.inMemoryInternalStateStore(): StreamsBuilder {
+            addStateStore(
+                Stores.keyValueStoreBuilder(
+                    Stores.inMemoryKeyValueStore(INTERNAL_STATE_STORE),
+                    Serdes.UUID(),
+                    InternalStateSerde()
+                )
+            )
+            return this
+        }
+
         private fun build(dataSource: DataSource, resetDatabaseSql: List<String>): KafkaTestContext {
             with(TestContext.build(dataSource, resetDatabaseSql)) {
                 val periodeTopology = StreamsBuilder()
@@ -93,6 +107,7 @@ class KafkaTestContext(
                     )
                     .build()
                 val bekreftelseTopology = StreamsBuilder()
+                    .inMemoryInternalStateStore()
                     .bekreftelseKafkaTopology(
                         applicationConfig = applicationConfig,
                         meterRegistry = prometheusMeterRegistry,
@@ -140,7 +155,7 @@ class KafkaTestContext(
                 val varselHendelseTopic = varselTopologyTestDriver.createInputTopic(
                     applicationConfig.tmsVarselHendelseTopic,
                     Serdes.String().serializer(),
-                    VarselHendelseJsonSerde().serializer()
+                    VarselHendelseSerde().serializer()
                 )
 
                 return KafkaTestContext(

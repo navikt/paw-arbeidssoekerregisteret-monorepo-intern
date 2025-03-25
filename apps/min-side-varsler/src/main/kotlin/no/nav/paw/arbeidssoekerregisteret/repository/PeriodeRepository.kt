@@ -8,8 +8,6 @@ import no.nav.paw.arbeidssoekerregisteret.model.PerioderTable
 import no.nav.paw.arbeidssoekerregisteret.model.UpdatePeriodeRow
 import no.nav.paw.arbeidssoekerregisteret.model.asPeriodeRow
 import no.nav.paw.arbeidssoekerregisteret.model.asSortOrder
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -55,10 +53,5 @@ class PeriodeRepository {
             it[avsluttetTimestamp] = periode.avsluttetTimestamp
             it[updatedTimestamp] = Instant.now()
         }
-    }
-
-    @WithSpan("deleteByPeriodeId")
-    fun deleteByPeriodeId(periodeId: UUID): Int = transaction {
-        PerioderTable.deleteWhere { PerioderTable.periodeId eq periodeId }
     }
 }

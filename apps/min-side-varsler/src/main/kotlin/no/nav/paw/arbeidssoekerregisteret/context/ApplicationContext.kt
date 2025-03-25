@@ -19,9 +19,10 @@ import no.nav.paw.arbeidssoekerregisteret.repository.VarselRepository
 import no.nav.paw.arbeidssoekerregisteret.service.BestillingService
 import no.nav.paw.arbeidssoekerregisteret.service.VarselService
 import no.nav.paw.arbeidssoekerregisteret.topology.bekreftelseKafkaTopology
+import no.nav.paw.arbeidssoekerregisteret.topology.internalStateStore
 import no.nav.paw.arbeidssoekerregisteret.topology.periodeKafkaTopology
 import no.nav.paw.arbeidssoekerregisteret.topology.varselHendelserKafkaTopology
-import no.nav.paw.arbeidssoekerregisteret.utils.VarselHendelseJsonSerde
+import no.nav.paw.arbeidssoekerregisteret.utils.VarselHendelseSerde
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.database.config.DATABASE_CONFIG
 import no.nav.paw.database.config.DatabaseConfig
@@ -175,7 +176,6 @@ private fun buildPeriodeKafkaStreams(
     val kafkaStreamsFactory = KafkaStreamsFactory(applicationConfig.periodeStreamSuffix, kafkaConfig)
         .withDefaultKeySerde(Serdes.Long()::class)
         .withDefaultValueSerde(SpecificAvroSerde::class)
-        .withExactlyOnce()
     return KafkaStreams(kafkaTopology, kafkaStreamsFactory.properties)
         .withApplicationTerminatingExceptionHandler()
         .withHealthIndicatorStateListener(
@@ -194,6 +194,7 @@ private fun buildBekreftelseKafkaStreams(
     varselService: VarselService
 ): KafkaStreams {
     val kafkaTopology = StreamsBuilder()
+        .internalStateStore()
         .bekreftelseKafkaTopology(
             applicationConfig = applicationConfig,
             meterRegistry = meterRegistry,
@@ -202,7 +203,6 @@ private fun buildBekreftelseKafkaStreams(
     val kafkaStreamsFactory = KafkaStreamsFactory(applicationConfig.bekreftelseStreamSuffix, kafkaConfig)
         .withDefaultKeySerde(Serdes.Long()::class)
         .withDefaultValueSerde(SpecificAvroSerde::class)
-        .withExactlyOnce()
     return KafkaStreams(kafkaTopology, kafkaStreamsFactory.properties)
         .withApplicationTerminatingExceptionHandler()
         .withHealthIndicatorStateListener(
@@ -231,7 +231,7 @@ private fun buildVarselHendelseKafkaStreams(
         .build()
     val kafkaStreamsFactory = KafkaStreamsFactory(applicationConfig.varselHendelseStreamSuffix, kafkaConfig)
         .withDefaultKeySerde(Serdes.String()::class)
-        .withDefaultValueSerde(VarselHendelseJsonSerde::class)
+        .withDefaultValueSerde(VarselHendelseSerde::class)
     return KafkaStreams(kafkaTopology, kafkaStreamsFactory.properties)
         .withApplicationTerminatingExceptionHandler()
         .withHealthIndicatorStateListener(

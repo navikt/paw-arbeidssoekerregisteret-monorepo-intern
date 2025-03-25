@@ -21,7 +21,7 @@ spec:
     - name: KAFKA_PERIODE_STREAM_SUFFIX
       value: "periode-v1"
     - name: KAFKA_BEKREFTELSE_STREAM_SUFFIX
-      value: "bekreftelse-v1"
+      value: "bekreftelse-v2"
     - name: KAFKA_VARSEL_HENDELSE_STREAM_SUFFIX
       value: "varsel-hendelser-v1"
     - name: KAFKA_PAW_ARBEIDSOKERPERIODE_TOPIC
