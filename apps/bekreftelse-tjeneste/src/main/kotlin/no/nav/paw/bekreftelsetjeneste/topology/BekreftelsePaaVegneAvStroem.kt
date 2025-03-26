@@ -3,6 +3,7 @@ package no.nav.paw.bekreftelsetjeneste.topology
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
+import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloeptEtterEksternInnsamling
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.config.KafkaTopologyConfig
@@ -25,6 +26,7 @@ import java.time.Instant
 import java.util.*
 
 fun StreamsBuilder.byggBekreftelsePaaVegneAvStroem(
+    deaktiverUtmeldingVedStopp: Boolean = false,
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
     registry: PrometheusMeterRegistry,
     kafkaTopologyConfig: KafkaTopologyConfig,
@@ -52,7 +54,7 @@ fun StreamsBuilder.byggBekreftelsePaaVegneAvStroem(
                 bekreftelseTilstand = bekreftelseTilstand,
                 paaVegneAvTilstand = paaVegneAvTilstand,
                 paaVegneAvHendelse = message
-            ).map { handling ->
+            ).mapNotNull { handling ->
                 when (handling) {
                     is SendHendelse -> handling.hendelse
                     is SkrivPaaVegneAvTilstand -> paaVegneAvTilstandStateStore.put(handling.id, handling.value)
@@ -62,6 +64,7 @@ fun StreamsBuilder.byggBekreftelsePaaVegneAvStroem(
             }.filterIsInstance<BekreftelseHendelse>()
         }
         .flatMapValues { _, value -> value }
+        .filter { _, value -> (!deaktiverUtmeldingVedStopp || value !is RegisterGracePeriodeUtloeptEtterEksternInnsamling) }
         .peek { _, value -> registry.tellBekreftelseUtgaaendeHendelse(value) }
         .to(
             kafkaTopologyConfig.bekreftelseHendelseloggTopic,

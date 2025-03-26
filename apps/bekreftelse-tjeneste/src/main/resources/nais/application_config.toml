@@ -1,3 +1,4 @@
+deaktiverUtmeldingVedStopp = true
 [kafkaTopology]
 applicationIdSuffix = "${KAFKA_STREAMS_ID_SUFFIX}"
 internStateStoreName = "intern-tilstand"

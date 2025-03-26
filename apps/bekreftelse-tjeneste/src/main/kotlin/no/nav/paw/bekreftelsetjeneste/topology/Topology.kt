@@ -29,6 +29,7 @@ fun StreamsBuilder.buildTopology(
         oddetallPartallMap = applicationContext.oddetallPartallMap
     )
     byggBekreftelsePaaVegneAvStroem(
+        deaktiverUtmeldingVedStopp = applicationContext.applicationConfig.deaktiverUtmeldingVedStopp,
         registry = applicationContext.prometheusMeterRegistry,
         kafkaTopologyConfig = applicationContext.applicationConfig.kafkaTopology,
         bekreftelseHendelseSerde = applicationContext.bekreftelseHendelseSerde,
