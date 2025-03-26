@@ -5,8 +5,6 @@ import java.time.Duration
 const val APPLICATION_CONFIG = "application_config.toml"
 
 data class ApplicationConfig(
-    val periodeVarslerEnabled: Boolean = true,
-    val bekreftelseVarslerEnabled: Boolean = true,
     val manuelleVarslerEnabled: Boolean = true,
     val varselProducerId: String,
     val periodeStreamSuffix: String,

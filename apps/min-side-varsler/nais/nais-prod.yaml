@@ -38,10 +38,6 @@ spec:
       value: "https://www.nav.no/arbeidssoekerregisteret/bekreftelse"
     - name: MANUELT_VARSEL_LINK
       value: "https://www.nav.no/arbeidssoekerregisteret"
-    - name: PERIODE_VARSLER_ENABLED
-      value: "true"
-    - name: BEKREFTELSE_VARSLER_ENABLED
-      value: "true"
     - name: MANUELLE_VARSLER_ENABLED
       value: "false"
   liveness:

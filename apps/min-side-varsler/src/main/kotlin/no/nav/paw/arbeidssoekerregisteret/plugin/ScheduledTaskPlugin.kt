@@ -27,11 +27,16 @@ fun Application.installScheduledTaskPlugin(
     applicationConfig: ApplicationConfig,
     bestillingService: BestillingService
 ) {
-    installScheduledTaskPlugin(
-        task = bestillingService::prosesserBestillinger,
-        delay = applicationConfig.manueltVarselSchedulingDelay,
-        period = applicationConfig.manueltVarselSchedulingPeriode
-    )
+    if (applicationConfig.manuelleVarslerEnabled) {
+        installScheduledTaskPlugin(
+            task = bestillingService::prosesserBestillinger,
+            delay = applicationConfig.manueltVarselSchedulingDelay,
+            period = applicationConfig.manueltVarselSchedulingPeriode
+        )
+        logger.info("Utsendelse av manuelle varsler er aktiv")
+    } else {
+        logger.info("Utsendelse av manuelle varsler er deaktivert")
+    }
 }
 
 fun Application.installScheduledTaskPlugin(

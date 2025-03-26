@@ -109,36 +109,30 @@ class VarselService(
             }
 
             if (periode.avsluttet != null) {
-                if (applicationConfig.periodeVarslerEnabled) {
-                    val varselRows = varselRepository
-                        .findByPeriodeIdAndVarselKilde(periode.id, VarselKilde.PERIODE_AVSLUTTET)
-                    if (varselRows.isNotEmpty()) {
-                        mdc.ignoreAction()
-                        logger.debug(
-                            "Varsel eksisterer allerede for avsluttet periode {}",
-                            periode.id
-                        )
-                        emptyList()
-                    } else {
-                        mdc.insertAction()
-                        logger.debug(
-                            "Oppretter og bestiller varsel for avsluttet periode {}",
-                            periode.id
-                        )
-                        val insertVarselRow = periode.asInsertVarselRow()
-                        varselRepository.insert(insertVarselRow)
-                        periode.avsluttet.utfoertAv.type
-                        val varsel = varselMeldingBygger.opprettPeriodeAvsluttetBeskjed(
-                            varselId = insertVarselRow.varselId,
-                            identitetsnummer = periode.identitetsnummer,
-                            avluttetAv = periode.avsluttet.utfoertAv.type
-                        )
-                        listOf(varsel)
-                    }
-                } else {
+                val varselRows = varselRepository
+                    .findByPeriodeIdAndVarselKilde(periode.id, VarselKilde.PERIODE_AVSLUTTET)
+                if (varselRows.isNotEmpty()) {
                     mdc.ignoreAction()
-                    logger.warn("Utsendelse av varsler ved avsluttet periode er deaktivert")
+                    logger.debug(
+                        "Varsel eksisterer allerede for avsluttet periode {}",
+                        periode.id
+                    )
                     emptyList()
+                } else {
+                    mdc.insertAction()
+                    logger.debug(
+                        "Oppretter og bestiller varsel for avsluttet periode {}",
+                        periode.id
+                    )
+                    val insertVarselRow = periode.asInsertVarselRow()
+                    varselRepository.insert(insertVarselRow)
+                    periode.avsluttet.utfoertAv.type
+                    val varsel = varselMeldingBygger.opprettPeriodeAvsluttetBeskjed(
+                        varselId = insertVarselRow.varselId,
+                        identitetsnummer = periode.identitetsnummer,
+                        avluttetAv = periode.avsluttet.utfoertAv.type
+                    )
+                    listOf(varsel)
                 }
             } else {
                 emptyList()
@@ -177,16 +171,6 @@ class VarselService(
         periode: PeriodeHendelse,
         hendelse: BekreftelseTilgjengelig
     ): List<VarselMelding> {
-        // TODO Deaktivere alle gamle varsler
-        val gammelVarselRow = varselRepository.findByVarselId(hendelse.bekreftelseId)
-        val avsluttGammeltVarsel: MutableList<VarselMelding> =
-            if (gammelVarselRow != null) {
-                logger.info("Inaktiverer varsel for bekreftelse {}", hendelse.bekreftelseId)
-                mutableListOf(varselMeldingBygger.avsluttVarsel(hendelse.bekreftelseId))
-            } else {
-                mutableListOf()
-            }
-
         val varselRow = varselRepository.findByBekreftelseId(hendelse.bekreftelseId)
         if (varselRow != null) {
             // TODO: Håndtere varsler som ikke er sendt pga feil når melding skulle legges på Kafka
@@ -198,30 +182,23 @@ class VarselService(
                 hendelse.periodeId
             )
             meterRegistry.ignoreBekreftelseHendelseCounter(hendelse)
-            return avsluttGammeltVarsel //emptyList() TODO
+            return emptyList()
         } else {
-            if (applicationConfig.bekreftelseVarslerEnabled) {
-                mdc.insertAction()
-                logger.debug(
-                    "Oppretter og bestiller varsel for hendelse {} og periode {}",
-                    hendelse.hendelseType,
-                    hendelse.periodeId
-                )
-                meterRegistry.insertBekreftelseHendelseCounter(hendelse)
-                val insertVarselRow = hendelse.asInsertVarselRow()
-                varselRepository.insert(insertVarselRow)
-                val varsel = varselMeldingBygger.opprettBekreftelseTilgjengeligOppgave(
-                    varselId = insertVarselRow.varselId,
-                    identitetsnummer = periode.identitetsnummer,
-                    utsettEksternVarslingTil = hendelse.gjelderTil.tilNesteFredagKl9()
-                )
-                avsluttGammeltVarsel.add(varsel)
-                return avsluttGammeltVarsel // listOf(varsel) TODO
-            } else {
-                mdc.ignoreAction()
-                logger.warn("Utsendelse av varsler ved tilgjengelig bekreftelse er deaktivert")
-                return avsluttGammeltVarsel // emptyList() TODO
-            }
+            mdc.insertAction()
+            logger.debug(
+                "Oppretter og bestiller varsel for hendelse {} og periode {}",
+                hendelse.hendelseType,
+                hendelse.periodeId
+            )
+            meterRegistry.insertBekreftelseHendelseCounter(hendelse)
+            val insertVarselRow = hendelse.asInsertVarselRow()
+            varselRepository.insert(insertVarselRow)
+            val varsel = varselMeldingBygger.opprettBekreftelseTilgjengeligOppgave(
+                varselId = insertVarselRow.varselId,
+                identitetsnummer = periode.identitetsnummer,
+                utsettEksternVarslingTil = hendelse.gjelderTil.tilNesteFredagKl9()
+            )
+            return listOf(varsel)
         }
     }
 
