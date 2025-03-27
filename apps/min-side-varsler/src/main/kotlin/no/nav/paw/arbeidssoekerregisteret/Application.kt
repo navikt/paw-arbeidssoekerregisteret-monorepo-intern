@@ -7,7 +7,7 @@ import io.ktor.server.netty.Netty
 import io.micrometer.core.instrument.binder.kafka.KafkaStreamsMetrics
 import no.nav.paw.arbeidssoekerregisteret.context.ApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.plugin.configureRouting
-import no.nav.paw.arbeidssoekerregisteret.plugin.installScheduledTaskPlugin
+import no.nav.paw.arbeidssoekerregisteret.plugin.installScheduledTaskPlugins
 import no.nav.paw.config.env.appNameOrDefaultForLocal
 import no.nav.paw.database.plugin.installDatabasePlugin
 import no.nav.paw.error.plugin.installErrorHandlingPlugin
@@ -49,7 +49,7 @@ fun Application.module(applicationContext: ApplicationContext) {
         installAuthenticationPlugin(securityConfig.authProviders)
         installDatabasePlugin(dataSource)
         installKafkaStreamsPlugins(kafkaStreamsList, kafkaShutdownTimeout)
-        installScheduledTaskPlugin(applicationConfig, bestillingService)
+        installScheduledTaskPlugins(applicationConfig, bestillingService)
         configureRouting(
             applicationConfig,
             healthIndicatorRepository,

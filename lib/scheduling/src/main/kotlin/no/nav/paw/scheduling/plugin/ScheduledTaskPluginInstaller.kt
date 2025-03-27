@@ -8,14 +8,14 @@ import io.ktor.server.application.install
 import java.time.Duration
 
 fun Application.installScheduledTaskPlugin(
-    pluginInstance: Any,
+    name: String = DEFAULT_SCHEDULED_TASK_NAME,
     task: (() -> Unit),
     interval: Duration,
     delay: Duration = Duration.ZERO,
     startEvent: EventDefinition<Application> = ApplicationStarted,
     stopEvent: EventDefinition<Application> = ApplicationStopping
 ) {
-    install(ScheduledTaskPlugin(pluginInstance)) {
+    install(ScheduledTaskPlugin(name)) {
         this.task = task
         this.delay = delay
         this.interval = interval

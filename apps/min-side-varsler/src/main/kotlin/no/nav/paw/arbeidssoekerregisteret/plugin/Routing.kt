@@ -1,6 +1,8 @@
 package no.nav.paw.arbeidssoekerregisteret.plugin
 
 import io.ktor.server.application.Application
+import io.ktor.server.application.install
+import io.ktor.server.routing.IgnoreTrailingSlash
 import io.ktor.server.routing.routing
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.api.docs.routes.apiDocsRoutes
@@ -20,6 +22,7 @@ fun Application.configureRouting(
     varselService: VarselService,
     bestillingService: BestillingService
 ) {
+    install(IgnoreTrailingSlash)
     routing {
         healthRoutes(healthIndicatorRepository)
         metricsRoutes(prometheusMeterRegistry)

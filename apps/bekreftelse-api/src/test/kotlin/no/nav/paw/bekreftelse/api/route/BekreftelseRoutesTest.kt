@@ -18,7 +18,7 @@ import io.mockk.runs
 import io.mockk.verify
 import no.nav.paw.bekreftelse.api.model.TilgjengeligBekreftelserResponse
 import no.nav.paw.bekreftelse.api.models.TilgjengeligeBekreftelserRequest
-import no.nav.paw.bekreftelse.api.context.ApplicationTestContext
+import no.nav.paw.bekreftelse.api.context.TestContext
 import no.nav.paw.bekreftelse.api.test.TestData
 import no.nav.paw.bekreftelse.api.test.issueAzureToken
 import no.nav.paw.bekreftelse.api.test.issueTokenXToken
@@ -32,7 +32,7 @@ import no.nav.paw.security.authorization.exception.UgyldigBearerTokenException
 
 
 class BekreftelseRoutesTest : FreeSpec({
-    with(ApplicationTestContext()) {
+    with(TestContext()) {
         beforeSpec {
             clearAllMocks()
             mockOAuth2Server.start()

@@ -11,33 +11,33 @@ import io.ktor.server.application.log
 import no.nav.paw.async.runner.ScheduledAsyncRunner
 import java.time.Duration
 
-private const val PLUGIN_NAME_SUFFIX = "ScheduledTaskPlugin"
+const val DEFAULT_SCHEDULED_TASK_NAME = ""
+private const val SCHEDULED_TASK_PLUGIN_SUFFIX = "ScheduledTaskPlugin"
 
 class ScheduledTaskPluginConfig {
     var task: (() -> Unit)? = null
     var interval: Duration? = null
-    var delay: Duration? = null
-    var startEvent: EventDefinition<Application>? = null
-    var stopEvent: EventDefinition<Application>? = null
+    var delay: Duration = Duration.ZERO
+    var startEvent: EventDefinition<Application> = ApplicationStarted
+    var stopEvent: EventDefinition<Application> = ApplicationStopping
 }
 
 @Suppress("FunctionName")
-fun ScheduledTaskPlugin(pluginInstance: Any): ApplicationPlugin<ScheduledTaskPluginConfig> {
-    val pluginName = "${pluginInstance}${PLUGIN_NAME_SUFFIX}"
+fun ScheduledTaskPlugin(
+    name: String = DEFAULT_SCHEDULED_TASK_NAME
+): ApplicationPlugin<ScheduledTaskPluginConfig> {
+    val pluginName = "$name$SCHEDULED_TASK_PLUGIN_SUFFIX"
     return createApplicationPlugin(pluginName, ::ScheduledTaskPluginConfig) {
         application.log.info("Installerer {}", pluginName)
         val task = requireNotNull(pluginConfig.task) { "Task er null" }
         val interval = requireNotNull(pluginConfig.interval) { "Interval er null" }
-        val delay = requireNotNull(pluginConfig.delay) { "Delay er null" }
-        val startEvent = pluginConfig.startEvent ?: ApplicationStarted
-        val stopEvent = pluginConfig.stopEvent ?: ApplicationStopping
-        val asyncRunner = ScheduledAsyncRunner<Unit>(interval, delay)
+        val asyncRunner = ScheduledAsyncRunner<Unit>(interval, pluginConfig.delay)
 
-        on(MonitoringEvent(startEvent)) {
+        on(MonitoringEvent(pluginConfig.startEvent)) {
             asyncRunner.run(task, {}) {}
         }
 
-        on(MonitoringEvent(stopEvent)) {
+        on(MonitoringEvent(pluginConfig.stopEvent)) {
             asyncRunner.abort {}
         }
     }

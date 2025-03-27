@@ -14,12 +14,12 @@ import no.nav.paw.bekreftelse.api.config.SERVER_CONFIG
 import no.nav.paw.bekreftelse.api.config.ServerConfig
 import no.nav.paw.bekreftelse.api.handler.KafkaConsumerHandler
 import no.nav.paw.bekreftelse.api.handler.KafkaProducerHandler
-import no.nav.paw.bekreftelse.api.plugin.installWebPlugins
+import no.nav.paw.bekreftelse.api.plugin.installCorsPlugins
 import no.nav.paw.bekreftelse.api.repository.BekreftelseRepository
 import no.nav.paw.bekreftelse.api.route.bekreftelseRoutes
-import no.nav.paw.bekreftelse.api.service.TestDataService
 import no.nav.paw.bekreftelse.api.service.AuthorizationService
 import no.nav.paw.bekreftelse.api.service.BekreftelseService
+import no.nav.paw.bekreftelse.api.service.TestDataService
 import no.nav.paw.bekreftelse.api.test.createAuthProviders
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
@@ -46,7 +46,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import javax.sql.DataSource
 
-class ApplicationTestContext {
+class TestContext {
 
     val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG)
     val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG)
@@ -95,16 +95,23 @@ class ApplicationTestContext {
     )
 
     fun ApplicationTestBuilder.configureTestApplication(bekreftelseService: BekreftelseService) {
-        val applicationContext = createApplicationContext(bekreftelseService)
+        with(createApplicationContext(bekreftelseService)) {
 
-        application {
-            installWebPlugins(applicationContext)
-            installContentNegotiationPlugin()
-            installErrorHandlingPlugin()
-            installAuthenticationPlugin(applicationContext.securityConfig.authProviders)
-            installDatabasePlugin(applicationContext.dataSource)
-            routing {
-                bekreftelseRoutes(applicationContext.authorizationService, applicationContext.bekreftelseService)
+            application {
+                installCorsPlugins(
+                    serverConfig = serverConfig,
+                    applicationConfig = applicationConfig,
+                )
+                installContentNegotiationPlugin()
+                installErrorHandlingPlugin()
+                installAuthenticationPlugin(providers = securityConfig.authProviders)
+                installDatabasePlugin(dataSource = dataSource)
+                routing {
+                    bekreftelseRoutes(
+                        authorizationService = authorizationService,
+                        bekreftelseService = bekreftelseService
+                    )
+                }
             }
         }
     }

@@ -5,22 +5,21 @@ import io.ktor.http.HttpMethod
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.plugins.cors.routing.CORS
-import io.ktor.server.routing.IgnoreTrailingSlash
+import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.config.AutorisasjonConfig
-import no.nav.paw.bekreftelse.api.context.ApplicationContext
+import no.nav.paw.bekreftelse.api.config.ServerConfig
 import no.nav.paw.config.env.Local
 import no.nav.paw.config.env.Nais
 
-fun Application.installWebPlugins(applicationContext: ApplicationContext) {
-    install(IgnoreTrailingSlash)
+fun Application.installCorsPlugins(
+    serverConfig: ServerConfig,
+    applicationConfig: ApplicationConfig
+) {
     install(CORS) {
-        val origins = applicationContext.applicationConfig.autorisasjon.getCorsAllowOrigins()
+        val origins = applicationConfig.autorisasjon.getCorsAllowOrigins()
 
-        when (applicationContext.serverConfig.runtimeEnvironment) {
-            is Nais -> {
-                origins.forEach { allowHost(it) }
-            }
-
+        when (serverConfig.runtimeEnvironment) {
+            is Nais -> origins.forEach { allowHost(it) }
             is Local -> anyHost()
         }
 
@@ -32,15 +31,11 @@ fun Application.installWebPlugins(applicationContext: ApplicationContext) {
         allowHeader(HttpHeaders.Authorization)
         allowHeader(HttpHeaders.ContentType)
         allowHeader(HttpHeaders.AccessControlAllowOrigin)
+        allowHeadersPrefixed("nav-")
 
         allowCredentials = true
-
-        allowHeadersPrefixed("nav-")
     }
 }
 
 private fun AutorisasjonConfig.getCorsAllowOrigins() =
-    corsAllowOrigins?.let { origins ->
-        origins.split(",")
-            .map { origin -> origin.trim() }
-    } ?: emptyList()
+    corsAllowOrigins?.split(",")?.map(String::trim) ?: emptyList()
