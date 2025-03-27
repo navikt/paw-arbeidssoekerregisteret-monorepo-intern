@@ -3,8 +3,11 @@ jobEnabled = true
 syncFilePath = "/tmp/v1.csv"
 
 [defaultVerdier]
-periodeTilstand = "STOPPET"
+periodeTilstand = "STOPPET" # STARTET / STOPPET
 forhaandsgodkjentAvAnsatt = false
+# Verdiene under benyttes kun om CSV-rad inneholder tidspunkt
+feilrettingFeiltype = "FEIL_TIDSPUNKT" # FEIL_TIDSPUNKT / FEIL_REGISTRERING
+feilrettingMelding = "Arbeidssøker migrert fra Arena"
 
 [apiInngang]
 baseUrl = "http://localhost:8090"

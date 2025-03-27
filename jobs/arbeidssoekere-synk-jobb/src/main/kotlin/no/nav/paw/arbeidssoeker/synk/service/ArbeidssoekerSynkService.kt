@@ -38,8 +38,7 @@ class ArbeidssoekerSynkService(
                 val fileRow = fileRows.nextValue()
                 val arbeidssoeker = fileRow.asArbeidssoeker(
                     version = version,
-                    periodeTilstand = defaultVerdier.periodeTilstand,
-                    forhaandsgodkjentAvAnsatt = defaultVerdier.forhaandsgodkjentAvAnsatt
+                    defaultVerdier = defaultVerdier
                 )
                 prosesserArbeidssoeker(arbeidssoeker)
             }

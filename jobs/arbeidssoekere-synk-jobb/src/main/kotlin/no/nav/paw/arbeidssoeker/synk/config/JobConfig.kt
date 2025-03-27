@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssoeker.synk.config
 
+import no.nav.paw.arbeidssoeker.synk.model.Feiltype
 import no.nav.paw.arbeidssoeker.synk.model.PeriodeTilstand
 import no.nav.paw.config.env.RuntimeEnvironment
 import no.nav.paw.config.env.currentRuntimeEnvironment
@@ -16,7 +17,9 @@ data class JobConfig(
 
 data class DefaultVerdier(
     val periodeTilstand: PeriodeTilstand,
-    val forhaandsgodkjentAvAnsatt: Boolean
+    val forhaandsgodkjentAvAnsatt: Boolean,
+    val feilrettingFeiltype: Feiltype,
+    val feilrettingMelding: String
 )
 
 data class ApiInngangConfig(

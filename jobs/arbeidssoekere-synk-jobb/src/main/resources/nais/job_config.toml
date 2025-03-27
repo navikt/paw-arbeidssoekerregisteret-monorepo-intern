@@ -3,8 +3,11 @@ jobEnabled = "${JOB_ENABLED}"
 syncFilePath = "/var/run/secrets/paw-arbeidssoekere-synk-jobb-csv/empty.csv"
 
 [defaultVerdier]
-periodeTilstand = "STOPPET"
+periodeTilstand = "STOPPET" # STARTET / STOPPET
 forhaandsgodkjentAvAnsatt = false
+# Verdiene under benyttes kun om CSV-rad inneholder tidspunkt
+feilrettingFeiltype = "FEIL_TIDSPUNKT" # FEIL_TIDSPUNKT / FEIL_REGISTRERING
+feilrettingMelding = "Arbeidssøker migrert fra Arena"
 
 [apiInngang]
 baseUrl = "http://paw-arbeidssokerregisteret-api-inngang"

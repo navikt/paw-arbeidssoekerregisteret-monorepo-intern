@@ -6,7 +6,7 @@ data class OpprettPeriodeRequest(
     val identitetsnummer: String,
     val periodeTilstand: OpprettPeriodeTilstand,
     val registreringForhaandsGodkjentAvAnsatt: Boolean? = null,
-    val feilretting: Feilretting? = null
+    val feilretting: OpprettPeriodeFeilretting? = null
 )
 
 enum class OpprettPeriodeTilstand(val value: String) {
@@ -14,13 +14,13 @@ enum class OpprettPeriodeTilstand(val value: String) {
     STOPPET("STOPPET");
 }
 
-data class Feilretting(
-    val feilType: FeilType,
+data class OpprettPeriodeFeilretting(
+    val feilType: OpprettPeriodeFeilType,
     val melding: String? = null,
     val tidspunkt: Instant? = null
 )
 
-enum class FeilType(val value: String) {
+enum class OpprettPeriodeFeilType(val value: String) {
     FeilTidspunkt("FeilTidspunkt"),
     Feilregistrering("Feilregistrering");
 }

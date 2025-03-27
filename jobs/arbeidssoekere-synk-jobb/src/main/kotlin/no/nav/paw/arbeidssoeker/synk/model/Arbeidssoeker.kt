@@ -19,11 +19,22 @@ data class Arbeidssoeker(
     val version: String,
     val identitetsnummer: String,
     val periodeTilstand: PeriodeTilstand,
-    val tidspunktFraKilde: Instant?,
     val forhaandsgodkjentAvAnsatt: Boolean,
+    val feilretting: Feilretting?,
 )
 
 enum class PeriodeTilstand {
     STARTET,
     STOPPET;
+}
+
+data class Feilretting(
+    val feiltype: Feiltype,
+    val melding: String,
+    val tidspunkt: Instant
+)
+
+enum class Feiltype {
+    FEIL_TIDSPUNKT,
+    FEIL_REGISTRERING;
 }

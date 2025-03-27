@@ -67,7 +67,6 @@ inline fun <reified T> OutgoingContent.readValue(): T {
         is OutgoingContent.NoContent -> error("OutgoingContent is NoContent")
         is OutgoingContent.ProtocolUpgrade -> error("OutgoingContent is ProtocolUpgrade")
         is OutgoingContent.ContentWrapper -> error("OutgoingContent is ContentWrapper")
-        else -> error("Not supported OutgoingContent type")
     }
     return buildObjectMapper.readValue<T>(byteReadChannel.asString())
 }

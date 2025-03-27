@@ -17,15 +17,17 @@ class ArbeidssoekerSynkServiceTest : FreeSpec({
         }
 
         "Skal lese CSV-fil" {
-            var responseMapping = mapOf(
-                "03017012345" to ErrorResponse.ikkeTilgang,
-                "06017012345" to ErrorResponse.avvist,
-                "08017012345" to ErrorResponse.ukjentFeil
+            setMockHttpClientResponses(
+                mapOf(
+                    "03017012345" to ErrorResponse.ikkeTilgang,
+                    "06017012345" to ErrorResponse.avvist,
+                    "08017012345" to ErrorResponse.ukjentFeil
+                )
             )
 
             val version = filePath.name
             var fileRows = ArbeidssoekerCsvReader.readValues(filePath)
-            initArbeidssoekerSynkService(responseMapping).synkArbeidssoekere(version, fileRows)
+            arbeidssoekerSynkService.synkArbeidssoekere(version, fileRows)
             var databaseRows = arbeidssoekerSynkRepository.find()
 
             databaseRows shouldHaveSize 10
@@ -60,14 +62,16 @@ class ArbeidssoekerSynkServiceTest : FreeSpec({
             databaseRows[9].identitetsnummer shouldBe "10017012345"
             databaseRows[9].status shouldBe HttpStatusCode.NoContent.value
 
-            responseMapping = mapOf(
-                "01017012345" to ErrorResponse.ikkeTilgang,
-                "02017012345" to ErrorResponse.avvist,
-                "08017012345" to ErrorResponse.ukjentFeil
+            setMockHttpClientResponses(
+                mapOf(
+                    "01017012345" to ErrorResponse.ikkeTilgang,
+                    "02017012345" to ErrorResponse.avvist,
+                    "08017012345" to ErrorResponse.ukjentFeil
+                )
             )
 
             fileRows = ArbeidssoekerCsvReader.readValues(filePath)
-            initArbeidssoekerSynkService(responseMapping).synkArbeidssoekere(filePath.name, fileRows)
+            arbeidssoekerSynkService.synkArbeidssoekere(filePath.name, fileRows)
             databaseRows = arbeidssoekerSynkRepository.find()
 
             databaseRows shouldHaveSize 10

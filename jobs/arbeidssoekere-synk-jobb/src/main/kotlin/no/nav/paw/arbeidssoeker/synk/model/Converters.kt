@@ -2,6 +2,7 @@ package no.nav.paw.arbeidssoeker.synk.model
 
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
+import no.nav.paw.arbeidssoeker.synk.config.DefaultVerdier
 import org.jetbrains.exposed.sql.ResultRow
 import java.time.Duration
 import java.time.Instant
@@ -13,40 +14,55 @@ private const val DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss"
 private val OSLO_ZONE_ID: ZoneId = ZoneId.of("Europe/Oslo")
 private val dateTimeFormatter = DateTimeFormatter.ofPattern(DATETIME_FORMAT)
 
+private fun String.asTidspunkt(): Instant {
+    return LocalDateTime.parse(this, dateTimeFormatter)
+        .atZone(OSLO_ZONE_ID)
+        .toInstant()
+}
+
 fun ArbeidssoekerFileRow.asArbeidssoeker(
     version: String,
-    periodeTilstand: PeriodeTilstand = PeriodeTilstand.STARTET,
-    forhaandsgodkjentAvAnsatt: Boolean = false
+    defaultVerdier: DefaultVerdier
 ): Arbeidssoeker = Arbeidssoeker(
     version = version,
     identitetsnummer = identitetsnummer,
-    periodeTilstand = periodeTilstand,
-    tidspunktFraKilde = tidspunktFraKilde?.ifBlank { null }?.let {
-        LocalDateTime.parse(it, dateTimeFormatter).atZone(OSLO_ZONE_ID).toInstant()
+    periodeTilstand = defaultVerdier.periodeTilstand,
+    feilretting = tidspunktFraKilde?.ifBlank { null }?.let {
+        Feilretting(
+            feiltype = defaultVerdier.feilrettingFeiltype,
+            melding = defaultVerdier.feilrettingMelding,
+            tidspunkt = it.asTidspunkt()
+        )
     },
-    forhaandsgodkjentAvAnsatt = forhaandsgodkjentAvAnsatt
+    forhaandsgodkjentAvAnsatt = defaultVerdier.forhaandsgodkjentAvAnsatt
 )
 
 fun Arbeidssoeker.asOpprettPeriodeRequest(): OpprettPeriodeRequest = OpprettPeriodeRequest(
     identitetsnummer = identitetsnummer,
-    periodeTilstand = asPeriodeTilstand(),
+    periodeTilstand = periodeTilstand.asOpprettPeriodeTilstand(),
     registreringForhaandsGodkjentAvAnsatt = forhaandsgodkjentAvAnsatt,
-    feilretting = asFeilretting()
+    feilretting = feilretting?.asOpprettPeriodeFeilretting()
 )
 
-fun Arbeidssoeker.asPeriodeTilstand(): OpprettPeriodeTilstand =
-    when (periodeTilstand) {
+fun PeriodeTilstand.asOpprettPeriodeTilstand(): OpprettPeriodeTilstand =
+    when (this) {
         PeriodeTilstand.STARTET -> OpprettPeriodeTilstand.STARTET
         PeriodeTilstand.STOPPET -> OpprettPeriodeTilstand.STOPPET
     }
 
-fun Arbeidssoeker.asFeilretting(): Feilretting? =
-    tidspunktFraKilde?.let {
-        Feilretting(
-            feilType = FeilType.FeilTidspunkt,
-            melding = "Arbeidssøker migrert fra Arena",
-            tidspunkt = it
+fun Feilretting.asOpprettPeriodeFeilretting(): OpprettPeriodeFeilretting =
+    this.let {
+        OpprettPeriodeFeilretting(
+            feilType = it.feiltype.asOpprettPeriodeFeilType(),
+            melding = it.melding,
+            tidspunkt = it.tidspunkt
         )
+    }
+
+fun Feiltype.asOpprettPeriodeFeilType(): OpprettPeriodeFeilType =
+    when (this) {
+        Feiltype.FEIL_REGISTRERING -> OpprettPeriodeFeilType.Feilregistrering
+        Feiltype.FEIL_TIDSPUNKT -> OpprettPeriodeFeilType.FeilTidspunkt
     }
 
 fun ResultRow.asArbeidssoekereRow(): ArbeidssoekerDatabaseRow = ArbeidssoekerDatabaseRow(

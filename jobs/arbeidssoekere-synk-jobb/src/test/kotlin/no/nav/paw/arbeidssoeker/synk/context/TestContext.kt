@@ -19,16 +19,23 @@ class TestContext {
     private val jobConfig = loadNaisOrLocalConfiguration<JobConfig>(JOB_CONFIG)
     val arbeidssoekerSynkRepository = ArbeidssoekerSynkRepository()
 
-    fun initArbeidssoekerSynkService(
-        responseMapping: Map<String, Pair<HttpStatusCode, String>>
-    ): ArbeidssoekerSynkService {
-        val mockHttpClient = buildMockHttpClient(responseMapping)
-        val inngangHttpConsumer = InngangHttpConsumer("http://whatever", mockHttpClient) { "dummy token" }
-        return ArbeidssoekerSynkService(
-            jobConfig = jobConfig,
-            arbeidssoekerSynkRepository = arbeidssoekerSynkRepository,
-            inngangHttpConsumer = inngangHttpConsumer
-        )
+    var arbeidssoekerSynkService = buildArbeidssoekerSynkService()
+
+    private fun buildArbeidssoekerSynkService(
+        responseMapping: Map<String, Pair<HttpStatusCode, String>> = emptyMap()
+    ): ArbeidssoekerSynkService = ArbeidssoekerSynkService(
+        jobConfig = jobConfig,
+        arbeidssoekerSynkRepository = arbeidssoekerSynkRepository,
+        inngangHttpConsumer = InngangHttpConsumer(
+            "http://whatever",
+            buildMockHttpClient(jobConfig, responseMapping)
+        ) { "dummy token" }
+    )
+
+    fun setMockHttpClientResponses(
+        responseMapping: Map<String, Pair<HttpStatusCode, String>> = emptyMap()
+    ) {
+        arbeidssoekerSynkService = buildArbeidssoekerSynkService(responseMapping)
     }
 
     fun initDatabase() {
