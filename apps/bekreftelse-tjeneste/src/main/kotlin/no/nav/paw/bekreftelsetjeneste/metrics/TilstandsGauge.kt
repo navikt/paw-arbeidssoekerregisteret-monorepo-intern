@@ -3,6 +3,7 @@ package no.nav.paw.bekreftelsetjeneste.metrics
 import io.micrometer.core.instrument.Tag
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
+import no.nav.paw.bekreftelsetjeneste.logger
 import no.nav.paw.bekreftelsetjeneste.paavegneav.InternPaaVegneAv
 import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
 import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
@@ -67,6 +68,11 @@ class TilstandsGauge(
         val tilstandStateStore = kafkaStreams.keyValueStateStore<UUID, BekreftelseTilstand>(tilstandStoreName)
         return tilstandStateStore.all()
             .asCloseableSequence()
+            .onEach { (_, value) ->
+                if (value.bekreftelser.size != value.bekreftelser.map { it.bekreftelseId }.toSet().size) {
+                    logger.warn("Oppdaget duplikat bekreftelse id")
+                }
+            }
             .map { (periodeId, tilstand) ->
                 tilstand to (paaVegneAvStateStore[periodeId]?.paaVegneAvList ?: emptyList())
             }
