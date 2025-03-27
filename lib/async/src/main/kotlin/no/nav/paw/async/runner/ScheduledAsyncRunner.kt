@@ -8,9 +8,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 open class ScheduledAsyncRunner<T>(
     private val interval: Duration,
     private val delay: Duration = Duration.ZERO,
-    private val keepRunning: AtomicBoolean = AtomicBoolean(true)
+    recursive: Boolean = false
 ) : AsyncRunner<T, Unit> {
     private val logger = LoggerFactory.getLogger(this.javaClass)
+    private val keepRunning: AtomicBoolean = AtomicBoolean(recursive)
     private val timer = Timer()
 
     override fun run(task: () -> T, onFailure: (Throwable) -> Unit, onSuccess: (T) -> Unit) {
@@ -30,7 +31,7 @@ open class ScheduledAsyncRunner<T>(
         private val task: () -> T,
         private val onSuccess: (T) -> Unit,
         private val onFailure: (Throwable) -> Unit,
-        private val keepRunning: AtomicBoolean = AtomicBoolean(true)
+        private val keepRunning: AtomicBoolean = AtomicBoolean(false)
     ) : TimerTask() {
         private val logger = LoggerFactory.getLogger(this.javaClass)
 

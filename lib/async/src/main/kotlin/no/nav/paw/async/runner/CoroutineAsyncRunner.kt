@@ -12,9 +12,10 @@ import java.util.concurrent.atomic.AtomicReference
 open class CoroutineAsyncRunner<T>(
     private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO),
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    private val keepRunning: AtomicBoolean = AtomicBoolean(true)
+    recursive: Boolean = false
 ) : AsyncRunner<T, Job> {
     private val logger = LoggerFactory.getLogger(this.javaClass)
+    private val keepRunning: AtomicBoolean = AtomicBoolean(recursive)
     private val jobRef: AtomicReference<Job> = AtomicReference(Job())
 
     override fun run(task: () -> T, onFailure: (Throwable) -> Unit, onSuccess: (T) -> Unit): Job {
