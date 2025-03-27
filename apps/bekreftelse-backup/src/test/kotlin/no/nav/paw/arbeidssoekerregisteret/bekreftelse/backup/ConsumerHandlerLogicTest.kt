@@ -47,6 +47,8 @@ class ConsumerHandlerLogicTest : StringSpec({
         hendelseTopic = "hendelse-test-topic",
         bekreftelseTopic = "bekreftelse-test-topic",
         paaVegneAvTopic = "paavegneav-test-topic",
+        azureConfig = mockk(relaxed = true),
+        kafkaKeysClient = mockk(relaxed = true),
     )
 
     val consumerHandler = ConsumerHandler(context)

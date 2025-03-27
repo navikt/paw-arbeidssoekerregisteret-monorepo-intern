@@ -7,6 +7,8 @@ metadata:
     team: paw
 spec:
   image: {{ image }}
+  ingresses:
+    - https://brukerstoette-arbeidssoekerregisteret-bekreftelse.intern.dev.nav.no
   port: 8080
   env:
     - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_HENDELSESLOGG_TOPIC
@@ -15,6 +17,8 @@ spec:
       value: "paw.arbeidssoker-bekreftelse-v1"
     - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_PAAVEGNEAV_TOPIC
       value: "paw.arbeidssoker-bekreftelse-paavegneav-v1"
+    - name: KAFKA_KEYS_SCOPE
+      value: "api://dev-gcp.paw.paw-kafka-key-generator/.default"
   replicas:
     min: 1
     max: 1
@@ -48,3 +52,12 @@ spec:
         tier: db-custom-1-3840
         databases:
           - name: bekreftelse-backup
+  accessPolicy:
+    inbound:
+      rules:
+        - application: paw-brukerstotte
+          namespace: paw
+    outbound:
+      rules:
+        - application: paw-kafka-key-generator
+          namespace: paw

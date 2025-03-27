@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup
 
 import io.micrometer.core.instrument.binder.kafka.KafkaClientMetrics
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.brukerstoette.BrukerstoetteService
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.kafka.ConsumerHandler
 import org.slf4j.LoggerFactory
 import java.time.Duration
@@ -31,7 +32,13 @@ fun main() {
                     KafkaClientMetrics(bekreftelseConsumer),
                     KafkaClientMetrics(paaVegneAvConsumer)
                 )
-                initKtor(meterRegistry, kafkaMetrics)
+
+                val service = BrukerstoetteService(
+                    applicationContext = applicationContext,
+                    kafkaKeysClient = kafkaKeysClient,
+                )
+
+                initKtor(meterRegistry, kafkaMetrics, azureConfig, service)
 
                 val consumerFuture = consumerHandler.startConsumerTasks(pollTimeout = Duration.ofMillis(100),)
 
