@@ -70,7 +70,7 @@ class TilstandsGauge(
             .asCloseableSequence()
             .onEach { (_, value) ->
                 if (value.bekreftelser.size != value.bekreftelser.map { it.bekreftelseId }.toSet().size) {
-                    logger.warn("Oppdaget duplikat bekreftelse id")
+                    logger.warn("Oppdaget duplikat bekreftelse id, id={}, status={}", value.periode.periodeId, value.bekreftelser.map { it.sisteTilstand()})
                 }
             }
             .map { (periodeId, tilstand) ->
