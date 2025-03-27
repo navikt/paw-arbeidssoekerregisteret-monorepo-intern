@@ -74,9 +74,11 @@ private val auditLogger = buildAuditLogger
 fun Route.configureBrukerstoetteRoutes(brukerstoetteService: BrukerstoetteService) {
     post("/arbeidssoeker/bekreftelse-hendelser") {
         runCatching {
-            val bruker = call.bruker<NavAnsatt>()
             val request: HendelserRequest = call.receive()
-            auditLogger.audit("Brukerstoette-bekreftelse-hendelser request med oid: ${bruker.oid}", aktorIdent = bruker.ident, sluttbrukerIdent = request.identitetsnummer)
+            if (currentRuntimeEnvironment is ProdGcp) {
+                val bruker = call.bruker<NavAnsatt>()
+                auditLogger.audit("Brukerstoette-bekreftelse-hendelser request med oid: ${bruker.oid}", aktorIdent = bruker.ident, sluttbrukerIdent = request.identitetsnummer)
+            }
             brukerstoetteService.hentBekreftelseHendelser(request.identitetsnummer)
         }.onSuccess { hendelser ->
             hendelser?.let { call.respond(it) } ?: call.respond(
