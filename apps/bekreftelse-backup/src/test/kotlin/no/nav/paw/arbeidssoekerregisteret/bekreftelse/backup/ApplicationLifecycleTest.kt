@@ -56,6 +56,8 @@ class ApplicationLifecycleTest : StringSpec({
             hendelseTopic = "hendelse-test-topic",
             bekreftelseTopic = "bekreftelse-test-topic",
             paaVegneAvTopic = "paavegneav-test-topic",
+            azureConfig = mockk(relaxed = true),
+            kafkaKeysClient = mockk(relaxed = true),
         )
 
         val listener = HwmRebalanceListener(context, context.hendelseConsumer, context.hendelseTopic)
@@ -95,6 +97,8 @@ class ApplicationLifecycleTest : StringSpec({
                 hendelseTopic = "hendelse-test-topic",
                 bekreftelseTopic = "bekreftelse-test-topic",
                 paaVegneAvTopic = "paavegneav-test-topic",
+                azureConfig = mockk(relaxed = true),
+                kafkaKeysClient = mockk(relaxed = true),
             )
         )
 

@@ -31,6 +31,8 @@ class HwmFunctionsTest : FreeSpec({
                     hendelseTopic = "hendelse-test-topic",
                     bekreftelseTopic = "bekreftelse-test-topic",
                     paaVegneAvTopic = "paavegneav-test-topic",
+                    azureConfig = mockk(relaxed = true),
+                    kafkaKeysClient = mockk(relaxed = true),
                 )
             )
             val topic = "topic1"
@@ -122,6 +124,8 @@ class HwmFunctionsTest : FreeSpec({
                     hendelseTopic = "hendelse-test-topic",
                     bekreftelseTopic = "bekreftelse-test-topic",
                     paaVegneAvTopic = "paavegneav-test-topic",
+                    azureConfig = mockk(relaxed = true),
+                    kafkaKeysClient = mockk(relaxed = true),
                 )
             )
             val topic = "topic1"

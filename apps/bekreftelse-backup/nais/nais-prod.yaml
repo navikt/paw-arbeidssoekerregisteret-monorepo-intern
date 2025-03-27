@@ -7,6 +7,8 @@ metadata:
     team: paw
 spec:
   image: {{ image }}
+  ingresses:
+    - https://brukerstoette-arbeidssoekerregisteret-bekreftelse.intern.nav.no
   port: 8080
   env:
     - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_HENDELSESLOGG_TOPIC
@@ -15,6 +17,8 @@ spec:
       value: "paw.arbeidssoker-bekreftelse-v1"
     - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_PAAVEGNEAV_TOPIC
       value: "paw.arbeidssoker-bekreftelse-paavegneav-v2"
+    - name: KAFKA_KEYS_SCOPE
+      value: "api://prod-gcp.paw.paw-kafka-key-generator/.default"
   replicas:
     min: 1
     max: 1
@@ -36,6 +40,12 @@ spec:
   azure:
     application:
       enabled: true
+      tenant: nav.no
+      claims:
+        extra:
+          - NAVident
+        groups:
+          - id: 88b552ab-2cd9-41e1-bd44-3868605d6f6a
   resources:
     limits:
       memory: 1024Mi
@@ -48,3 +58,12 @@ spec:
         tier: db-custom-1-6144
         databases:
           - name: bekreftelse-backup
+  accessPolicy:
+    inbound:
+      rules:
+        - application: paw-brukerstotte
+          namespace: paw
+    outbound:
+      rules:
+        - application: paw-kafka-key-generator
+          namespace: paw

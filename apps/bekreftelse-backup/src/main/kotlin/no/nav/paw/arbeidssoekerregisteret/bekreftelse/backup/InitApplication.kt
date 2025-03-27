@@ -5,13 +5,18 @@ import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.config.APPLICATION_CONFIG
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.config.ApplicationConfig
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.config.AzureConfig
+import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.config.m2mCfg
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.database.*
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.vo.ApplicationContext
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseDeserializer
+import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.kafka.config.KAFKA_CONFIG
 import no.nav.paw.kafka.config.KafkaConfig
 import no.nav.paw.kafka.factory.KafkaFactory
+import no.nav.paw.kafkakeygenerator.auth.azureAdM2MTokenClient
+import no.nav.paw.kafkakeygenerator.client.createKafkaKeyGeneratorClient
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
 import org.apache.kafka.common.serialization.LongDeserializer
 import org.jetbrains.exposed.sql.Database
@@ -29,6 +34,7 @@ fun initApplication(): ApplicationContext {
     logger.info("Initializing application...")
     val appConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG)
     val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
+    val azureConfig = loadNaisOrLocalConfiguration<AzureConfig>("azure.toml")
 
     with(loadNaisOrLocalConfiguration<DatabaseConfig>("database_configuration.toml")) {
         val ds = dataSource()
@@ -69,6 +75,9 @@ fun initApplication(): ApplicationContext {
 
     val meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
 
+    val azureTokenClient = azureAdM2MTokenClient(currentRuntimeEnvironment, azureConfig.m2mCfg)
+    val kafkaKeysClient = createKafkaKeyGeneratorClient(azureTokenClient)
+
     val context = ApplicationContext(
         logger = LoggerFactory.getLogger("bekreftelse-backup-context"),
         consumerVersion = CURRENT_VERSION,
@@ -78,7 +87,9 @@ fun initApplication(): ApplicationContext {
         paaVegneAvConsumer = paaVegneAvConsumer,
         hendelseTopic = appConfig.hendelseTopic,
         bekreftelseTopic = appConfig.bekreftelseTopic,
-        paaVegneAvTopic = appConfig.paaVegneAvTopic
+        paaVegneAvTopic = appConfig.paaVegneAvTopic,
+        azureConfig = azureConfig,
+        kafkaKeysClient = kafkaKeysClient,
     )
 
     val topicPartitionsMap = mapOf(
