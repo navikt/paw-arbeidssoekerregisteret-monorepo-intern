@@ -28,10 +28,11 @@ fun startPaaVegneAv(
 
 fun stoppPaaVegneAv(
     periodeId: UUID = UUID.randomUUID(),
-    bekreftelsesloesning: Bekreftelsesloesning = Bekreftelsesloesning.DAGPENGER
+    bekreftelsesloesning: Bekreftelsesloesning = Bekreftelsesloesning.DAGPENGER,
+    fristBrutt: Boolean = false
 ): PaaVegneAv =
     PaaVegneAv.newBuilder()
-        .setHandling(Stopp())
+        .setHandling(Stopp(fristBrutt))
         .setBekreftelsesloesning(bekreftelsesloesning)
         .setPeriodeId(periodeId)
         .build()

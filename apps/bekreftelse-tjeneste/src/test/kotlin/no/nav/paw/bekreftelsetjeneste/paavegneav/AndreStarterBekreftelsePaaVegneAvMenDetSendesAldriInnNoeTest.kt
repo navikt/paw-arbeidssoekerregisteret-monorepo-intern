@@ -49,9 +49,9 @@ class AndreStarterBekreftelsePaaVegneAvMenDetSendesAldriInnNoeTest: FreeSpec({
                         .also { logger.info("Klokken er $it") }
                     bekreftelseHendelseloggTopicOut.assertNoMessage()
                 }
-                "Når andre stopper bekreftelsePaaVegneAv og det er over inervall + grace siden sist leverte intervall sluttet det sendes ut RegisterGracePeriodeUtloeptEtterEksternInnsamling" {
+                "Når andre stopper bekreftelsePaaVegneAv med fristBrutt=true sendes det ut en RegisterGracePeriodeUtloeptEtterEksternInnsamling hendelse" {
                     still_klokken_frem_til(periode.startet.tidspunkt + 28.days)
-                    bekreftelsePaaVegneAvTopic.pipeInput(key, stoppPaaVegneAv(periodeId = periode.id))
+                    bekreftelsePaaVegneAvTopic.pipeInput(key, stoppPaaVegneAv(periodeId = periode.id, fristBrutt = true))
                     bekreftelseHendelseloggTopicOut.assertEvent { hendelse: RegisterGracePeriodeUtloeptEtterEksternInnsamling ->
                         hendelse.periodeId shouldBe periode.id
                     }

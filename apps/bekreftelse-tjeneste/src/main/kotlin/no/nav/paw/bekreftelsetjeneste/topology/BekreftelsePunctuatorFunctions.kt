@@ -89,11 +89,10 @@ fun opprettSisteLeverteFoerMigrering(bekreftelser: PawNonEmptyList<Bekreftelse>)
     } ?: bekreftelser
 }
 
-
 fun BekreftelseContext.opprettInitielBekreftelse(bekreftelser: List<Bekreftelse>): PawNonEmptyList<Bekreftelse> {
     val foerste = bekreftelser.firstOrNull { !it.dummy }
     return if (foerste != null) {
-        pawNonEmptyListOf(foerste, bekreftelser.drop(1))
+        pawNonEmptyListOf(foerste, bekreftelser.filter { it != foerste})
     } else {
         prometheusMeterRegistry.tellBekreftelseHandling("initiell_bekreftelse_opprettet")
         val fra = tidligsteBekreftelsePeriodeStart()

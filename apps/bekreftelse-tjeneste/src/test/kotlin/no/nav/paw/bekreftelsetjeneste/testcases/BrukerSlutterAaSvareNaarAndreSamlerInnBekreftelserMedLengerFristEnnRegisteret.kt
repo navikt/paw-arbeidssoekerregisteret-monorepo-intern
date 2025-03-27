@@ -24,7 +24,7 @@ import no.nav.paw.bekreftelsetjeneste.testutils.timestamp
 import java.time.Duration
 import java.time.Instant
 
-class BrukerSlutterAaSvareNaarAndreSamlerInnBekreftelser : FreeSpec({
+class BrukerSlutterAaSvareNaarAndreSamlerInnBekreftelserMedLengerFristEnnRegisteret : FreeSpec({
     val identietsnummer = "12345678901"
     val periodeStartet = "05.02.2025 15:26".timestamp //Første onsdag i februar 2025
     val interval = 14.dager
@@ -60,8 +60,8 @@ class BrukerSlutterAaSvareNaarAndreSamlerInnBekreftelser : FreeSpec({
                     periode.id, periode.key, startPaaVegneAv(
                         periodeId = periode.value.id,
                         bekreftelsesloesning = no.nav.paw.bekreftelse.paavegneav.v1.vo.Bekreftelsesloesning.DAGPENGER,
-                        grace = Duration.ofDays(7),
-                        interval = Duration.ofDays(14)
+                        grace = graceperiode + 1.dager,
+                        interval = interval
                     )
                 ),
                 "17.03.2025 12:01".timestamp to ValueWithKafkaKeyData(
@@ -77,7 +77,8 @@ class BrukerSlutterAaSvareNaarAndreSamlerInnBekreftelser : FreeSpec({
                 "08.04.2025 05:00".timestamp to ValueWithKafkaKeyData(
                     periode.id, periode.key, stoppPaaVegneAv(
                         periodeId = periode.value.id,
-                        bekreftelsesloesning = no.nav.paw.bekreftelse.paavegneav.v1.vo.Bekreftelsesloesning.DAGPENGER
+                        bekreftelsesloesning = no.nav.paw.bekreftelse.paavegneav.v1.vo.Bekreftelsesloesning.DAGPENGER,
+                        fristBrutt = true
                     )
                 )
             )
