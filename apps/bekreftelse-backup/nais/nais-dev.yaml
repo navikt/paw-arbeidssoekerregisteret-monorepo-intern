@@ -40,6 +40,9 @@ spec:
   azure:
     application:
       enabled: true
+      claims:
+        extra:
+          - NAVident
   resources:
     limits:
       memory: 1024Mi
