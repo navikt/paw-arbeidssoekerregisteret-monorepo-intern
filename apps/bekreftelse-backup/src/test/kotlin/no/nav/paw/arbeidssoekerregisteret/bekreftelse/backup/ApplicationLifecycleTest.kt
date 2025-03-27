@@ -56,7 +56,7 @@ class ApplicationLifecycleTest : StringSpec({
             hendelseTopic = "hendelse-test-topic",
             bekreftelseTopic = "bekreftelse-test-topic",
             paaVegneAvTopic = "paavegneav-test-topic",
-            azureConfig = mockk(relaxed = true),
+            securityConfig = mockk(relaxed = true),
             kafkaKeysClient = mockk(relaxed = true),
         )
 
@@ -97,7 +97,7 @@ class ApplicationLifecycleTest : StringSpec({
                 hendelseTopic = "hendelse-test-topic",
                 bekreftelseTopic = "bekreftelse-test-topic",
                 paaVegneAvTopic = "paavegneav-test-topic",
-                azureConfig = mockk(relaxed = true),
+                securityConfig = mockk(relaxed = true),
                 kafkaKeysClient = mockk(relaxed = true),
             )
         )

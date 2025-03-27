@@ -5,8 +5,6 @@ import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.config.APPLICATION_CONFIG
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.config.ApplicationConfig
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.config.AzureConfig
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.config.m2mCfg
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.database.*
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.vo.ApplicationContext
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseDeserializer
@@ -15,8 +13,12 @@ import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.kafka.config.KAFKA_CONFIG
 import no.nav.paw.kafka.config.KafkaConfig
 import no.nav.paw.kafka.factory.KafkaFactory
+import no.nav.paw.kafkakeygenerator.auth.AZURE_M2M_CONFIG
+import no.nav.paw.kafkakeygenerator.auth.AzureM2MConfig
 import no.nav.paw.kafkakeygenerator.auth.azureAdM2MTokenClient
 import no.nav.paw.kafkakeygenerator.client.createKafkaKeyGeneratorClient
+import no.nav.paw.security.authentication.config.SECURITY_CONFIG
+import no.nav.paw.security.authentication.config.SecurityConfig
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
 import org.apache.kafka.common.serialization.LongDeserializer
 import org.jetbrains.exposed.sql.Database
@@ -34,7 +36,8 @@ fun initApplication(): ApplicationContext {
     logger.info("Initializing application...")
     val appConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG)
     val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
-    val azureConfig = loadNaisOrLocalConfiguration<AzureConfig>("azure.toml")
+    val securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>(SECURITY_CONFIG)
+    val azureM2MConfig = loadNaisOrLocalConfiguration<AzureM2MConfig>(AZURE_M2M_CONFIG)
 
     with(loadNaisOrLocalConfiguration<DatabaseConfig>("database_configuration.toml")) {
         val ds = dataSource()
@@ -75,7 +78,7 @@ fun initApplication(): ApplicationContext {
 
     val meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
 
-    val azureTokenClient = azureAdM2MTokenClient(currentRuntimeEnvironment, azureConfig.m2mCfg)
+    val azureTokenClient = azureAdM2MTokenClient(currentRuntimeEnvironment, azureM2MConfig)
     val kafkaKeysClient = createKafkaKeyGeneratorClient(azureTokenClient)
 
     val context = ApplicationContext(
@@ -88,7 +91,7 @@ fun initApplication(): ApplicationContext {
         hendelseTopic = appConfig.hendelseTopic,
         bekreftelseTopic = appConfig.bekreftelseTopic,
         paaVegneAvTopic = appConfig.paaVegneAvTopic,
-        azureConfig = azureConfig,
+        securityConfig = securityConfig,
         kafkaKeysClient = kafkaKeysClient,
     )
 

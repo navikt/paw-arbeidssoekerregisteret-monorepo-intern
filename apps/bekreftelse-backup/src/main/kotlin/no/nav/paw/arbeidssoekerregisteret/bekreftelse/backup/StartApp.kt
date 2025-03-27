@@ -38,7 +38,7 @@ fun main() {
                     kafkaKeysClient = kafkaKeysClient,
                 )
 
-                initKtor(meterRegistry, kafkaMetrics, azureConfig, service)
+                initKtor(meterRegistry, kafkaMetrics, securityConfig, service)
 
                 val consumerFuture = consumerHandler.startConsumerTasks(pollTimeout = Duration.ofMillis(100),)
 

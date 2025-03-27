@@ -8,9 +8,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
-import io.ktor.server.auth.authenticate
-import io.ktor.server.auth.authentication
-import io.ktor.server.auth.principal
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.calllogging.CallLogging
@@ -28,15 +25,17 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.api.brukerstoette.models.Feil
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.api.brukerstoette.models.HendelserRequest
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.brukerstoette.BrukerstoetteService
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.config.AzureConfig
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.health.configureHealthRoutes
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.health.installMetrics
 import no.nav.paw.config.env.ProdGcp
 import no.nav.paw.config.env.currentRuntimeEnvironment
-import no.nav.security.token.support.v3.IssuerConfig
-import no.nav.security.token.support.v3.TokenSupportConfig
-import no.nav.security.token.support.v3.TokenValidationContextPrincipal
-import no.nav.security.token.support.v3.tokenValidationSupport
+import no.nav.paw.logging.logger.buildAuditLogger
+import no.nav.paw.security.authentication.config.SecurityConfig
+import no.nav.paw.security.authentication.model.AzureAd
+import no.nav.paw.security.authentication.model.NavAnsatt
+import no.nav.paw.security.authentication.model.bruker
+import no.nav.paw.security.authentication.plugin.autentisering
+import no.nav.paw.security.authentication.plugin.installAuthenticationPlugin
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 
@@ -45,21 +44,20 @@ private val errorLogger = LoggerFactory.getLogger("error_logger")
 fun initKtor(
     prometheusMeterRegistry: PrometheusMeterRegistry,
     binders: List<MeterBinder>,
-    azureConfig: AzureConfig,
+    securityConfig: SecurityConfig,
     brukerstoetteService: BrukerstoetteService
 ) {
     embeddedServer(Netty, port = 8080) {
-        configureHTTP(binders, prometheusMeterRegistry)
+        configureHTTP(binders, prometheusMeterRegistry, securityConfig)
         install(CallLogging) {
             level = Level.INFO
             filter { call -> call.request.path().startsWith("/api") }
         }
-        configureAuthentication(azureConfig)
         routing {
             swaggerUI(path = "docs/brukerstoette", swaggerFile = "openapi/Brukerstoette.yaml")
             configureHealthRoutes(prometheusMeterRegistry)
             if (currentRuntimeEnvironment is ProdGcp) {
-                authenticate("azure") {
+                autentisering(AzureAd) {
                     configureBrukerstoetteRoutes(brukerstoetteService)
                 }
             } else {
@@ -69,21 +67,13 @@ fun initKtor(
     }.start(wait = false)
 }
 
-private val auditLogger = LoggerFactory.getLogger("audit_logger")
+private val auditLogger = buildAuditLogger
 fun Route.configureBrukerstoetteRoutes(brukerstoetteService: BrukerstoetteService) {
     post("/api/v1/arbeidssoeker/bekreftelse-hendelser") {
         runCatching {
-            val principal = call.principal<TokenValidationContextPrincipal>()
-            val (navIdent, oid) = with(principal?.context) {
-                this?.issuers
-                    ?.firstOrNull { it.equals("azure", ignoreCase = true) }
-                    ?.let { issuer -> this.getClaims(issuer) }
-                    ?.let { claims ->
-                        claims.get("NAVident") to claims.get("oid")
-                    } ?: (null to null)
-            }
-            auditLogger.info("Brukerstoette request fra navIdent='$navIdent' med oid='$oid'")
+            val bruker = call.bruker<NavAnsatt>()
             val request: HendelserRequest = call.receive()
+            auditLogger.audit("Brukerstoette-bekreftelse-hendelser request med oid: ${bruker.oid}", aktorIdent = bruker.ident, sluttbrukerIdent = request.identitetsnummer)
             brukerstoetteService.hentBekreftelseHendelser(request.identitetsnummer)
         }.onSuccess { hendelser ->
             hendelser?.let { call.respond(it) } ?: call.respond(
@@ -104,11 +94,12 @@ fun Route.configureBrukerstoetteRoutes(brukerstoetteService: BrukerstoetteServic
     }
 }
 
-
 fun Application.configureHTTP(
     binders: List<MeterBinder>,
-    prometheusMeterRegistry: PrometheusMeterRegistry
+    prometheusMeterRegistry: PrometheusMeterRegistry,
+    securityConfig: SecurityConfig
 ) {
+    installAuthenticationPlugin(securityConfig.authProviders)
     installMetrics(binders, prometheusMeterRegistry)
     install(IgnoreTrailingSlash)
     install(ContentNegotiation) {
@@ -118,20 +109,5 @@ fun Application.configureHTTP(
             registerModule(JavaTimeModule())
             registerKotlinModule()
         }
-    }
-}
-
-fun Application.configureAuthentication(azureConfig: AzureConfig) {
-    authentication {
-        tokenValidationSupport(
-            name = azureConfig.name,
-            config = TokenSupportConfig(
-                IssuerConfig(
-                    name = azureConfig.name,
-                    discoveryUrl = azureConfig.discoveryUrl,
-                    acceptedAudience = listOf(azureConfig.clientId)
-                )
-            )
-        )
     }
 }
