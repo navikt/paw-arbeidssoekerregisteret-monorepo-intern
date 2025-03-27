@@ -1,11 +1,11 @@
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.9.0"
-    kotlin("jvm") version "2.1.10" apply false
-    kotlin("plugin.serialization") version "2.1.10" apply false
-    id("com.google.cloud.tools.jib") version "3.4.4" apply false
+    kotlin("jvm") version "2.1.20" apply false
+    kotlin("plugin.serialization") version "2.1.20" apply false
+    id("com.google.cloud.tools.jib") version "3.4.5" apply false
     id("org.openapi.generator") version "7.12.0" apply false
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1" apply false
-    id("com.expediagroup.graphql") version "8.3.0" apply false
+    id("com.expediagroup.graphql") version "8.4.0" apply false
 }
 
 rootProject.name = "paw-arbeidssoekerregisteret-monorepo-intern"
@@ -20,6 +20,7 @@ include(
     "lib:api-docs",
     "lib:security",
     "lib:database",
+    "lib:async",
     "lib:scheduling",
     "lib:http-client-utils",
     "lib:kafka",

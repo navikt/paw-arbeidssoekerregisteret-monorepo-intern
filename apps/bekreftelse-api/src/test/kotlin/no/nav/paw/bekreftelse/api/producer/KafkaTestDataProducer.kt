@@ -37,5 +37,5 @@ fun main() {
         gjelderTil = Instant.now().plus(Duration.ofDays(14)),
     )
 
-    kafkaProducer.send(ProducerRecord(topic, key, value))
+    kafkaProducer.send(ProducerRecord(topic, key, value)).get()
 }
