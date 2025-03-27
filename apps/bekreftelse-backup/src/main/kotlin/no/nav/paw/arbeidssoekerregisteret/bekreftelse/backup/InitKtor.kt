@@ -19,6 +19,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.IgnoreTrailingSlash
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
+import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.micrometer.core.instrument.binder.MeterBinder
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
@@ -56,12 +57,14 @@ fun initKtor(
         routing {
             swaggerUI(path = "docs/brukerstoette", swaggerFile = "openapi/Brukerstoette.yaml")
             configureHealthRoutes(prometheusMeterRegistry)
-            if (currentRuntimeEnvironment is ProdGcp) {
-                autentisering(AzureAd) {
+            route("/api/v1") {
+                if (currentRuntimeEnvironment is ProdGcp) {
+                    autentisering(AzureAd) {
+                        configureBrukerstoetteRoutes(brukerstoetteService)
+                    }
+                } else {
                     configureBrukerstoetteRoutes(brukerstoetteService)
                 }
-            } else {
-                configureBrukerstoetteRoutes(brukerstoetteService)
             }
         }
     }.start(wait = false)
@@ -69,7 +72,7 @@ fun initKtor(
 
 private val auditLogger = buildAuditLogger
 fun Route.configureBrukerstoetteRoutes(brukerstoetteService: BrukerstoetteService) {
-    post("/api/v1/arbeidssoeker/bekreftelse-hendelser") {
+    post("/arbeidssoeker/bekreftelse-hendelser") {
         runCatching {
             val bruker = call.bruker<NavAnsatt>()
             val request: HendelserRequest = call.receive()

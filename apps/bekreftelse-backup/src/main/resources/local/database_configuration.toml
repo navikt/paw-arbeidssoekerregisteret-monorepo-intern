@@ -1,5 +1,5 @@
 host = "localhost"
 port = 5432
-username = "admin"
-password = "admin"
+username = "bekreftelse_backup"
+password = "Paw1234"
 name = "bekreftelse_backup"

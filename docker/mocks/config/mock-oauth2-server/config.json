@@ -196,6 +196,21 @@
             "name": "Nav Navesen",
             "NAVident": "NAV12345"
           }
+        },
+        {
+          "requestParam": "client_id",
+          "match": "paw-arbeidssoekerregisteret-bekreftelse-backup",
+          "claims": {
+            "sub": "admin@paw-arbeidssoekerregisteret-bekreftelse-backup",
+            "aud": [
+              "paw-arbeidssoekerregisteret-bekreftelse-backup"
+            ],
+            "oid": "84a9421a-610d-4258-ac2c-bae144216f14",
+            "azp": "87f8731e-28bf-48c9-b1ef-585e147aa0ae",
+            "azp_name": "local:paw:paw-arbeidssoekerregisteret-bekreftelse-backup",
+            "name": "Nav Navesen",
+            "NAVident": "NAV12345"
+          }
         }
       ]
     },
