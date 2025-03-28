@@ -26,7 +26,6 @@ import java.time.Instant
 import java.util.*
 
 fun StreamsBuilder.byggBekreftelsePaaVegneAvStroem(
-    deaktiverUtmeldingVedStopp: Boolean = false,
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
     registry: PrometheusMeterRegistry,
     kafkaTopologyConfig: KafkaTopologyConfig,
@@ -64,7 +63,6 @@ fun StreamsBuilder.byggBekreftelsePaaVegneAvStroem(
             }.filterIsInstance<BekreftelseHendelse>()
         }
         .flatMapValues { _, value -> value }
-        .filter { _, value -> (!deaktiverUtmeldingVedStopp || value !is RegisterGracePeriodeUtloeptEtterEksternInnsamling) }
         .peek { _, value -> registry.tellBekreftelseUtgaaendeHendelse(value) }
         .to(
             kafkaTopologyConfig.bekreftelseHendelseloggTopic,

@@ -11,7 +11,6 @@ import java.time.Duration
 const val APPLICATION_CONFIG_FILE_NAME = "application_config.toml"
 
 data class ApplicationConfig(
-    val deaktiverUtmeldingVedStopp: Boolean,
     val kafkaTopology: KafkaTopologyConfig,
     val kafkaStreams: KafkaConfig,
     val azureM2M: AzureM2MConfig,

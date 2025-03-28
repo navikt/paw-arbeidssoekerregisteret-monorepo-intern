@@ -9,8 +9,6 @@ spec:
   image: {{ image }}
   port: 8080
   env:
-    - name: DEAKTIVER_UTMELDING_VED_STOPP
-      value: "true"
     - name: KAFKA_STREAMS_ID_SUFFIX
       value: "v6"
     - name: KAFKA_PAW_ARBEIDSSOKER_BEKREFTELSE_TOPIC

@@ -1,4 +1,3 @@
-deaktiverUtmeldingVedStopp = false
 [kafkaTopology]
 applicationIdSuffix = "v1"
 internStateStoreName = "intern-tilstand"
