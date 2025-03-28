@@ -22,6 +22,7 @@ private const val HAR_JOBBET = "har_jobbet"
 private const val PERIODE_FUNNET = "periode_funnet"
 private const val HAR_ANSVAR = "har_ansvar"
 private const val HANDLING = "handling"
+private const val FRIST_BRUTT = "frist_brutt"
 
 private const val GENRISK_BERKREFTELSE_HANDLING = "arbeidssoekerregisteret_bekreftelse_handling"
 
@@ -77,7 +78,8 @@ fun PrometheusMeterRegistry.tellPaVegneAv(
         Tag.of(PERIODE_FUNNET, periodeFunnet.toString()),
         Tag.of(Labels.ansvarlig, ansvarlig),
         Tag.of(Labels.antall_ansvarlige, antallAnsvarlige.toString()),
-        Tag.of(HAR_ANSVAR, (Loesning.from(paaVegneAv.bekreftelsesloesning) in ansvarlige).toString())
+        Tag.of(HAR_ANSVAR, (Loesning.from(paaVegneAv.bekreftelsesloesning) in ansvarlige).toString()),
+        Tag.of(FRIST_BRUTT, (paaVegneAv.handling as? Stopp)?.fristBrutt?.toString() ?: "NA")
     )
     counter(paaVegneAvMottattCounter, tags).increment()
 }

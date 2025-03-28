@@ -1,5 +1,8 @@
 package no.nav.paw.bekreftelsetjeneste.paavegneav
 
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.trace.Span
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloeptEtterEksternInnsamling
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Stopp
@@ -10,6 +13,11 @@ import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstandsLogg
 import no.nav.paw.bekreftelsetjeneste.tilstand.Levert
 import no.nav.paw.bekreftelsetjeneste.tilstand.leggTilNyEllerOppdaterBekreftelse
 import no.nav.paw.bekreftelsetjeneste.tilstand.sisteTilstand
+import no.nav.paw.bekreftelsetjeneste.topology.actionKey
+import no.nav.paw.bekreftelsetjeneste.topology.bekreftelseloesingKey
+import no.nav.paw.bekreftelsetjeneste.topology.domainKey
+import no.nav.paw.bekreftelsetjeneste.topology.intern
+import no.nav.paw.bekreftelsetjeneste.topology.paaVegneAvStoppet
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.*
@@ -37,6 +45,7 @@ fun haandterStoppPaaVegneAv(
                 paaVegneAvTilstand = paaVegneAvTilstand
             )
         }
+
         else -> {
             emptyList()
         }
@@ -49,8 +58,9 @@ fun haandterStoppPaaVegneAv(
             ?.let { Triple(it.gjelderFra, it.gjelderTil, it.dummy) }
 
         stoppPaaVegneAvLogger.trace(
-            "hadde_ansvar: {}, sist_leverte: [{} -> {}], er_dummy: {}, avslutt_periode: {}, loesning: {}, periode_startet: {}",
+            "hadde_ansvar: {}, frist_brutt: {}, sist_leverte: [{} -> {}], er_dummy: {}, avslutt_periode: {}, loesning: {}, periode_startet: {}",
             ansvar != null,
+            handling.fristBrutt,
             fraTilDummy?.first,
             fraTilDummy?.second,
             fraTilDummy?.third ?: false,
@@ -72,7 +82,21 @@ private fun stoppPaaVeieneAv(
 ): List<Handling> {
     val kanStoppe =
         (ansvar.intervall + ansvar.gracePeriode) >= (bekreftelseKonfigurasjon.interval + bekreftelseKonfigurasjon.graceperiode)
-    val utgaaendeHandling: Handling? = if (kanStoppe && handling.fristBrutt) {
+    val stoppPeriode = kanStoppe && handling.fristBrutt
+    Span.current().addEvent(
+        intern,
+        Attributes.builder()
+            .put(bekreftelseloesingKey, paaVegneAvHendelse.bekreftelsesloesning.name)
+            .put(domainKey, "bekreftelse")
+            .put(actionKey, paaVegneAvStoppet)
+            .put(AttributeKey.booleanKey("frist_brutt"), handling.fristBrutt)
+            .put(AttributeKey.booleanKey("kan_stoppe"), kanStoppe)
+            .put(AttributeKey.booleanKey("stopp_periode"), stoppPeriode)
+            .put(AttributeKey.stringKey("intervall"), ansvar.intervall.toString())
+            .put(AttributeKey.stringKey("grace_periode"), ansvar.gracePeriode.toString()
+        ).build()
+    )
+    val utgaaendeHandling: Handling? = if (stoppPeriode) {
         SendHendelse(
             RegisterGracePeriodeUtloeptEtterEksternInnsamling(
                 hendelseId = UUID.randomUUID(),
@@ -99,7 +123,7 @@ private fun stoppPaaVeieneAv(
                     )
                 )
             )
-        } else  null
+        } else null
     }
     val ansvarsHandling = fjaernLoesningFraAnsvarsliste(paaVegneAvTilstand, ansvar.loesning)
     return listOfNotNull(utgaaendeHandling, ansvarsHandling)
