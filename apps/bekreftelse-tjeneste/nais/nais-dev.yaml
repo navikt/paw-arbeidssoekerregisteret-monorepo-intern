@@ -26,7 +26,7 @@ spec:
     - name: BEKREFTELSE_INTERVAL
       value: "PT5M"
     - name: BEKREFTELSE_GRACEPERIODE
-      value: "PT10M"
+      value: "P1D"
     - name: BEKREFTELSE_TILGJENGELIG_OFFSET
       value: "PT2M"
   azure:
