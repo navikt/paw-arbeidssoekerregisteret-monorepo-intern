@@ -37,15 +37,19 @@ fun main() {
                 val inngangHttpConsumer = InngangHttpConsumer(apiInngang.baseUrl) {
                     azureAdM2MTokenClient.createMachineToMachineToken(apiInngang.scope)
                 }
-                val arbeidssoekerSynkService =
-                    ArbeidssoekerSynkService(jobConfig, arbeidssoekerSynkRepository, inngangHttpConsumer)
+                val arbeidssoekerSynkService = ArbeidssoekerSynkService(
+                    jobConfig = jobConfig,
+                    arbeidssoekerSynkRepository = arbeidssoekerSynkRepository,
+                    inngangHttpConsumer = inngangHttpConsumer
+                )
+                val csvReader = ArbeidssoekerCsvReader(jobConfig)
 
                 logger.info("Starter jobb")
 
-                val filePath = Paths.get(syncFilePath)
+                val filePath = Paths.get(jobConfig.csvFil.filsti)
                 logger.info("Leser CSV-fil {} fra mappe {}", filePath.name, filePath.parent)
 
-                val rows = ArbeidssoekerCsvReader.readValues(filePath)
+                val rows = csvReader.readValues(filePath)
                 if (rows.hasNextValue()) {
                     val dataSource = createHikariDataSource(databaseConfig)
                     dataSource.flywayMigrate()

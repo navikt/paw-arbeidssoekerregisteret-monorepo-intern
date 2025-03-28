@@ -1,6 +1,10 @@
 jobEnabled = true
 
-syncFilePath = "/tmp/v1.csv"
+[csvFil]
+filsti = "/tmp/v1.csv"
+kolonneSeparator = ";"
+innholderHeader = true
+inneholderKommentarer = true
 
 [defaultVerdier]
 periodeTilstand = "STOPPET" # STARTET / STOPPET

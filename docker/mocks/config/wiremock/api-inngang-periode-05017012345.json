@@ -1,10 +1,10 @@
 {
     "request": {
-        "method": "POST",
+        "method": "PUT",
         "urlPathPattern": "/api/v2/arbeidssoker/periode",
         "bodyPatterns": [
             {
-                "matchesJsonPath": "$[?(@.identitetsnummer == '03017012345')]"
+                "matchesJsonPath": "$[?(@.identitetsnummer == '05017012345')]"
             }
         ]
     },

@@ -4,14 +4,18 @@
         "urlPathPattern": "/api/v2/arbeidssoker/periode",
         "bodyPatterns": [
             {
-                "matchesJsonPath": "$[?(@.identitetsnummer == '02017012345')]"
+                "matchesJsonPath": "$[?(@.identitetsnummer == '06017012345')]"
             }
         ]
     },
     "response": {
-        "status": 204,
+        "status": 500,
         "headers": {
             "Content-Type": "application/json"
+        },
+        "jsonBody": {
+            "melding": "Dette gikk skikkelig dårlig",
+            "feilKode": "UKJENT_FEIL"
         }
     }
 }

@@ -8,6 +8,7 @@ import no.nav.paw.arbeidssoeker.synk.repository.ArbeidssoekerSynkRepository
 import no.nav.paw.arbeidssoeker.synk.service.ArbeidssoekerSynkService
 import no.nav.paw.arbeidssoeker.synk.test.buildMockHttpClient
 import no.nav.paw.arbeidssoeker.synk.test.createTestDataSource
+import no.nav.paw.arbeidssoeker.synk.utils.ArbeidssoekerCsvReader
 import no.nav.paw.arbeidssoeker.synk.utils.flywayMigrate
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import org.jetbrains.exposed.sql.Database
@@ -18,8 +19,8 @@ class TestContext {
     val filePath = fileUrl.toURI().toPath()
     private val jobConfig = loadNaisOrLocalConfiguration<JobConfig>(JOB_CONFIG)
     val arbeidssoekerSynkRepository = ArbeidssoekerSynkRepository()
-
     var arbeidssoekerSynkService = buildArbeidssoekerSynkService()
+    val csvReader = ArbeidssoekerCsvReader(jobConfig)
 
     private fun buildArbeidssoekerSynkService(
         responseMapping: Map<String, Pair<HttpStatusCode, String>> = emptyMap()

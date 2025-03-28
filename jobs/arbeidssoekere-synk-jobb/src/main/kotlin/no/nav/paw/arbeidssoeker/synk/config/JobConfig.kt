@@ -9,10 +9,17 @@ const val JOB_CONFIG = "job_config.toml"
 
 data class JobConfig(
     val jobEnabled: Boolean,
-    val syncFilePath: String,
+    val csvFil: CsvFilConfig,
     val defaultVerdier: DefaultVerdier,
     val apiInngang: ApiInngangConfig,
     val runtimeEnvironment: RuntimeEnvironment = currentRuntimeEnvironment
+)
+
+data class CsvFilConfig(
+    val filsti: String,
+    val kolonneSeparator: String,
+    val innholderHeader: Boolean,
+    val inneholderKommentarer: Boolean
 )
 
 data class DefaultVerdier(

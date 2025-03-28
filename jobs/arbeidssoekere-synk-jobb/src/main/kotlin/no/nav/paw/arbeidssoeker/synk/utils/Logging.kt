@@ -22,7 +22,6 @@ fun Logger.traceAndLog(status: HttpStatusCode) {
             setStatus(StatusCode.OK)
             debug("Opprettelse av periode fullførte OK")
         } else {
-            // TODO: Vurdere å ha en feilteller, og så avbryte om det blir for mange feil
             setAllAttributes(attributes)
             addEvent("error", attributes)
             setStatus(StatusCode.ERROR, status.toString())

@@ -6,7 +6,6 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.kafka.plugin.KafkaConsumerPlugin
 import no.nav.paw.kafkakeygenerator.config.KafkaTopologyConfig
 import no.nav.paw.kafkakeygenerator.service.KafkaConsumerService
-import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 
 fun Application.installKafkaPlugins(

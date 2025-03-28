@@ -6,7 +6,6 @@ import io.kotest.matchers.shouldBe
 import io.ktor.http.HttpStatusCode
 import no.nav.paw.arbeidssoeker.synk.context.TestContext
 import no.nav.paw.arbeidssoeker.synk.test.ErrorResponse
-import no.nav.paw.arbeidssoeker.synk.utils.ArbeidssoekerCsvReader
 import kotlin.io.path.name
 
 class ArbeidssoekerSynkServiceTest : FreeSpec({
@@ -26,7 +25,7 @@ class ArbeidssoekerSynkServiceTest : FreeSpec({
             )
 
             val version = filePath.name
-            var fileRows = ArbeidssoekerCsvReader.readValues(filePath)
+            var fileRows = csvReader.readValues(filePath)
             arbeidssoekerSynkService.synkArbeidssoekere(version, fileRows)
             var databaseRows = arbeidssoekerSynkRepository.find()
 
@@ -70,7 +69,7 @@ class ArbeidssoekerSynkServiceTest : FreeSpec({
                 )
             )
 
-            fileRows = ArbeidssoekerCsvReader.readValues(filePath)
+            fileRows = csvReader.readValues(filePath)
             arbeidssoekerSynkService.synkArbeidssoekere(filePath.name, fileRows)
             databaseRows = arbeidssoekerSynkRepository.find()
 

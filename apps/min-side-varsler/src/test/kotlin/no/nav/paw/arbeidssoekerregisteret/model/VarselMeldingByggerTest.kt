@@ -115,6 +115,40 @@ class VarselMeldingByggerTest : FreeSpec({
             }
         }
 
+        "Skal opprette oppgave for bekreftelse tilgjengelig på en fredag" {
+            with(minSideVarselConfig.bekreftelseTilgjengelig) {
+                val varselId = UUID.randomUUID()
+                val periode = aapenPeriode().asPeriodeHendelse()
+                val hendelse = bekreftelseTilgjengelig(
+                    periodeId = periode.periodeId,
+                    gjelderFra = "14.03.2025 23:39".tid,
+                    gjelderTil = "28.03.2025 02:01".tid
+                )
+                val resultat = varselMeldingBygger.opprettBekreftelseTilgjengeligOppgave(
+                    varselId = varselId,
+                    identitetsnummer = periode.identitetsnummer,
+                    utsettEksternVarslingTil = hendelse.gjelderTil.tilNesteFredagKl9()
+                )
+                resultat.varselId shouldBe varselId
+                resultat.value should { json ->
+                    json shouldContain "\"@event_name\":\"${EventType.Opprett.toJson()}\""
+                    json shouldContain "\"varselId\":\"${varselId}\""
+                    json shouldContain "\"ident\":\"${periode.identitetsnummer}\""
+                    json shouldContain "\"sensitivitet\":\"${Sensitivitet.Substantial.toJson()}\""
+                    json shouldContain "\"type\":\"${Varseltype.Oppgave.toJson()}\""
+                    json shouldContain "\"link\":\"${link}\""
+                    json shouldContain tekster[0].tekst
+                    json shouldContain tekster[1].tekst
+                    json shouldContain tekster[2].tekst
+                    json shouldContain "\"eksternVarsling\":"
+                    json shouldContain eksterntVarsel?.smsTekst!!
+                    json shouldContain eksterntVarsel?.epostTittel!!
+                    json shouldContain eksterntVarsel?.epostTekst!!
+                    json shouldContain "\"utsettSendingTil\":\"2025-04-04T09:00:00"
+                }
+            }
+        }
+
         "Skal opprette beskjed for manuelt varsel" {
             with(minSideVarselConfig.manueltVarsel) {
                 val varselId = UUID.randomUUID()
