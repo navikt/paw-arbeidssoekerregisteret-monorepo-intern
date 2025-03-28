@@ -28,7 +28,7 @@ spec:
     - name: BEKREFTELSE_INTERVAL
       value: "P14D"
     - name: BEKREFTELSE_GRACEPERIODE
-      value: "P7D"
+      value: "P8D"
     - name: BEKREFTELSE_TILGJENGELIG_OFFSET
       value: "PT68H" # 2 døgn og 20 timer
   azure:
