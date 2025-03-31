@@ -16,6 +16,7 @@ import no.nav.paw.bekreftelsetjeneste.config.ServerConfig
 import no.nav.paw.bekreftelsetjeneste.config.StaticConfigValues
 import no.nav.paw.bekreftelsetjeneste.context.ApplicationContext
 import no.nav.paw.bekreftelsetjeneste.metrics.TilstandsGauge
+import no.nav.paw.bekreftelsetjeneste.metrics.init
 import no.nav.paw.bekreftelsetjeneste.plugins.buildKafkaStreams
 import no.nav.paw.bekreftelsetjeneste.plugins.configureKafka
 import no.nav.paw.bekreftelsetjeneste.plugins.configureMetrics
@@ -119,7 +120,12 @@ fun Application.module(
                 logger.info("Metrics oppdateringer er avsluttet")
             }
         }
-
+    val utgangsStatistikkJobb = init(
+        registry = applicationContext.prometheusMeterRegistry,
+        kafkaStreams = kafkaStreams,
+        storeName = applicationContext.applicationConfig.kafkaTopology.internStateStoreName,
+        graceperiode = applicationContext.bekreftelseKonfigurasjon.graceperiode
+    )
     configureMetrics(applicationContext)
     configureKafka(applicationContext, kafkaStreams)
 
