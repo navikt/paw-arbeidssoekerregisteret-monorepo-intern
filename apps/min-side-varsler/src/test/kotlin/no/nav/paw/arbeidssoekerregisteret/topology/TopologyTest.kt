@@ -33,7 +33,7 @@ class TopologyTest : FreeSpec({
             beforeTest { initDatabase() }
 
             "Verifiser håndtering av perioder" - {
-                "Normal rekkefølge med åpen før lukket periode" {
+                "Normal rekkefølge med åpen før lukket periode av sluttbruker" {
                     val key = Random.nextLong()
                     val aapenPeriode = aapenPeriode()
                     periodeTopic.pipeInput(aapenPeriode.asRecord(key))
@@ -91,7 +91,61 @@ class TopologyTest : FreeSpec({
                     periodeVarselTopic.isEmpty shouldBe true
                 }
 
-                "Motsatt rekkefølge med lukket før åpen periode" {
+                "Normal rekkefølge med åpen før lukket periode av system" {
+                    val key = Random.nextLong()
+                    val aapenPeriode = aapenPeriode()
+                    periodeTopic.pipeInput(aapenPeriode.asRecord(key))
+                    val periodeRows1 = periodeRepository.findAll()
+                    periodeRows1 shouldHaveSize 1
+                    val periodeRow1 = periodeRows1[0]
+                    periodeRow1.periodeId shouldBe aapenPeriode.id
+                    periodeRow1.avsluttetTimestamp shouldBe null
+                    periodeRow1.updatedTimestamp shouldBe null
+                    periodeVarselTopic.isEmpty shouldBe true
+                    varselRepository.findAll() shouldHaveSize 0
+
+                    val lukketPeriode = lukketPeriode(
+                        id = aapenPeriode.id,
+                        identitetsnummer = aapenPeriode.identitetsnummer,
+                        startet = aapenPeriode.startet
+                    )
+                    periodeTopic.pipeInput(lukketPeriode.asRecord(key))
+                    val periodeRows2 = periodeRepository.findAll()
+                    periodeRows2 shouldHaveSize 1
+                    val periodeRow2 = periodeRows2[0]
+                    periodeRow2.periodeId shouldBe aapenPeriode.id
+                    periodeRow2.periodeId shouldBe lukketPeriode.id
+                    periodeRow2.avsluttetTimestamp shouldNotBe null
+                    periodeRow2.updatedTimestamp shouldNotBe null
+                    varselRepository.findAll() shouldHaveSize 1
+                    val varselRows1 = varselRepository.findByPeriodeId(lukketPeriode.id)
+                    varselRows1 shouldHaveSize 1
+                    val varselRow1 = varselRows1[0]
+                    varselRow1 shouldNotBe null
+                    varselRow1.periodeId shouldBe lukketPeriode.id
+                    varselRow1.bekreftelseId shouldBe null
+                    varselRow1.varselKilde shouldBe VarselKilde.PERIODE_AVSLUTTET
+                    varselRow1.varselType shouldBe VarselType.BESKJED
+                    varselRow1.hendelseName shouldBe VarselEventName.UKJENT
+                    varselRow1.varselStatus shouldBe VarselStatus.UKJENT
+                    periodeVarselTopic.isEmpty shouldBe false
+                    periodeVarselTopic.readKeyValue() should { (key, stringValue) ->
+                        val value = objectMapper.readValue<OpprettVarsel>(stringValue)
+                        key shouldBe varselRow1.varselId.toString()
+                        value.varselId shouldBe varselRow1.varselId.toString()
+                        value.type shouldBe Varseltype.Beskjed
+                        value.ident shouldBe lukketPeriode.identitetsnummer
+                        value.eventName shouldBe EventType.Opprett
+                        value.eksternVarsling shouldBe null
+                        // value.eksternVarsling shouldNotBe null TODO: midlertidig disablet
+                        // value.eksternVarsling!!.prefererteKanaler shouldContain EksternKanal.BETINGET_SMS
+                    }
+                    periodeVarselTopic.isEmpty shouldBe true
+                    periodeTopic.pipeInput(lukketPeriode.asRecord(key))
+                    periodeVarselTopic.isEmpty shouldBe true
+                }
+
+                "Motsatt rekkefølge med lukket før åpen periode av system" {
                     val key = Random.nextLong()
                     val lukketPeriode = lukketPeriode()
                     periodeTopic.pipeInput(lukketPeriode.asRecord(key))
@@ -119,8 +173,9 @@ class TopologyTest : FreeSpec({
                         value.type shouldBe Varseltype.Beskjed
                         value.ident shouldBe lukketPeriode.identitetsnummer
                         value.eventName shouldBe EventType.Opprett
-                        value.eksternVarsling shouldNotBe null
-                        value.eksternVarsling!!.prefererteKanaler shouldContain EksternKanal.BETINGET_SMS
+                        value.eksternVarsling shouldBe null
+                        // value.eksternVarsling shouldNotBe null TODO: midlertidig disablet
+                        // value.eksternVarsling!!.prefererteKanaler shouldContain EksternKanal.BETINGET_SMS
                     }
                     periodeVarselTopic.isEmpty shouldBe true
 

@@ -65,6 +65,20 @@ fun <K, V_IN, V_OUT> KStream<K, V_IN>.mapWithContext(
     return process(processor, Named.`as`(name), *stateStoreNames)
 }
 
+fun <K_IN, K_OUT, V> KStream<K_IN, V>.mapKey(
+    name: String,
+    vararg stateStoreNames: String,
+    function: ProcessorContext<K_OUT, V>.(K_IN, V) -> K_OUT
+): KStream<K_OUT, V> {
+    val processor = {
+        GenericProcessor<K_IN, V, K_OUT, V> { record ->
+            val result = function(record.key(), record.value())
+            forward(record.withKey(result))
+        }
+    }
+    return process(processor, Named.`as`(name), *stateStoreNames)
+}
+
 fun <K_IN, V_IN, K_OUT, V_OUT> KStream<K_IN, V_IN>.mapKeyAndValue(
     name: String,
     vararg stateStoreNames: String,

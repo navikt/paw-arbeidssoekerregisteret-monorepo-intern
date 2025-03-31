@@ -13,11 +13,11 @@ periodeAvsluttet:
     - spraak:
         kode: en
       tekst: You are no longer registered as a job seeker
-  eksterntVarsel:
-    preferertKanal: BETINGET_SMS
-    smsTekst: Hei! Du er ikke lenger registrert som arbeidssøker hos Nav. Logg inn på Nav sine nettsider for mer informasjon. Hilsen Nav
-    epostTittel: Du har fått en melding fra Nav
-    epostTekst: Hei!<br>Du er ikke lenger registrert som arbeidssøker hos Nav. Logg inn på Nav sine nettsider for mer informasjon.<br>Hilsen Nav
+#  eksterntVarsel: TODO: midlertidig disablet
+#    preferertKanal: BETINGET_SMS
+#    smsTekst: Hei! Du er ikke lenger registrert som arbeidssøker hos Nav. Logg inn på Nav sine nettsider for mer informasjon. Hilsen Nav
+#    epostTittel: Du har fått en melding fra Nav
+#    epostTekst: Hei!<br>Du er ikke lenger registrert som arbeidssøker hos Nav. Logg inn på Nav sine nettsider for mer informasjon.<br>Hilsen Nav
 
 bekreftelseTilgjengelig:
   link: http://localhost:8080/arbeidssoekerregisteret/bekreftelse

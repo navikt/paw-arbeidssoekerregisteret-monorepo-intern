@@ -24,19 +24,11 @@ docker compose -f ./mocks/docker-compose.yaml stop
 
 ## Slett containere
 ```bash
-docker compose -f ./postgres/docker-compose.yaml rm -s -v -f
+docker compose -f ./postgres/docker-compose.yaml down -v
 ```
 ```bash
-docker compose -f ./kafka/docker-compose.yaml rm -s -v -f
+docker compose -f ./kafka/docker-compose.yaml down -v
 ```
 ```bash
-docker compose -f ./mocks/docker-compose.yaml rm -s -v -f
-```
-
-## Slette volumer
-```bash
-docker volume rm postgres
-```
-```bash
-docker volume rm kafka-data kafka-secrets kafka-init-data kafka-init-secrets schema-registry-secrets
+docker compose -f ./mocks/docker-compose.yaml down -v
 ```
