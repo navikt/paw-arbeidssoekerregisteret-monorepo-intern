@@ -5,26 +5,17 @@ import io.ktor.http.HttpStatusCode
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feilretting
 import no.nav.paw.arbeidssokerregisteret.ansattToken
-import no.nav.paw.arbeidssokerregisteret.bosatt
-import no.nav.paw.arbeidssokerregisteret.bostedsadresse
 import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
-import no.nav.paw.arbeidssokerregisteret.folkeregisterpersonstatus
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.KalkulertAarsak
+import no.nav.paw.arbeidssokerregisteret.intern.v1.OppgittAarsak
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.TidspunktFraKilde
-import no.nav.paw.arbeidssokerregisteret.list
 import no.nav.paw.arbeidssokerregisteret.setHarTilgangTilBruker
-import no.nav.paw.arbeidssokerregisteret.statsborgerskap
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
-import no.nav.paw.pdl.graphql.generated.hentperson.Foedested
-import no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato
-import no.nav.paw.pdl.graphql.generated.hentperson.Person
-import no.nav.paw.pdl.graphql.generated.hentperson.Vegadresse
 import org.apache.kafka.clients.producer.ProducerRecord
-import java.time.Duration.ofDays
 import java.time.Instant
 import java.util.*
 
@@ -67,6 +58,8 @@ data object AnsattStopperEnFeilregistrertPeriode : StoppPeriodeTestCase {
                     avviksType = no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType.SLETTET
                 )
             ),
+            kalkulertAarsak = KalkulertAarsak.Udefinert,
+            oppgittAarsak = OppgittAarsak.Udefinert,
             opplysninger = setOf(
                 Opplysning.ANSATT_TILGANG,
                 Opplysning.TOKENX_PID_IKKE_FUNNET,

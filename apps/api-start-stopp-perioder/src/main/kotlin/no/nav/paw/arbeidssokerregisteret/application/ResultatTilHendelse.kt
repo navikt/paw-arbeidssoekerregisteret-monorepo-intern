@@ -14,9 +14,11 @@ import no.nav.paw.arbeidssokerregisteret.domain.m2mToken
 import no.nav.paw.arbeidssokerregisteret.domain.navAnsatt
 import no.nav.paw.arbeidssokerregisteret.domain.sluttbruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.KalkulertAarsak
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 import no.nav.paw.arbeidssokerregisteret.intern.v1.AvvistStoppAvPeriode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
+import no.nav.paw.arbeidssokerregisteret.intern.v1.OppgittAarsak
 import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
@@ -61,8 +63,28 @@ fun stoppResultatSomHendelse(
                 tidspunktFraKilde = feilretting.tidspunktFraKilde
             ),
             opplysninger = resultat.value.opplysning.map(::mapToHendelseOpplysning).toSet(),
+            kalkulertAarsak = resultat.value.regel.id.toAvsluttetAarsak(),
+            oppgittAarsak = OppgittAarsak.Udefinert
         )
     }
+
+fun RegelId.toAvsluttetAarsak(): KalkulertAarsak =
+    when (this) {
+        is IkkeFunnet -> KalkulertAarsak.IkkeFunnet
+        is Savnet -> KalkulertAarsak.Savnet
+        is Doed -> KalkulertAarsak.Doed
+        is Opphoert -> KalkulertAarsak.Opphoert
+        is Under18Aar -> KalkulertAarsak.Under18Aar
+        is IkkeBosattINorgeIHenholdTilFolkeregisterloven -> KalkulertAarsak.IkkeBosattINorgeIHenholdTilFolkeregisterloven
+        is ForhaandsgodkjentAvAnsatt -> KalkulertAarsak.ForhaandsgodkjentAvAnsatt
+        is Over18AarOgBosattEtterFregLoven -> KalkulertAarsak.Over18AarOgBosattEtterFregLoven
+        is UkjentAlder -> KalkulertAarsak.UkjentAlder
+        is EuEoesStatsborgerOver18Aar -> KalkulertAarsak.EuEoesStatsborgerOver18Aar
+        is ErStatsborgerILandMedAvtale -> KalkulertAarsak.ErStatsborgerILandMedAvtale
+        is EuEoesStatsborgerMenHarStatusIkkeBosatt -> KalkulertAarsak.EuEoesStatsborgerMenHarStatusIkkeBosatt
+        else -> KalkulertAarsak.Udefinert
+    }
+
 
 fun mapToHendelseOpplysning(opplysning: Opplysning): HendelseOpplysning =
     when (opplysning) {
