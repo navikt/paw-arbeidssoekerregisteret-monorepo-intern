@@ -8,12 +8,13 @@ private val logger = LoggerFactory.getLogger("no.nav.paw.logger.kafka.consumer")
 
 fun <K, V> KafkaConsumer<K, V>.defaultSuccessFunction(records: ConsumerRecords<K, V>) {
     if (!records.isEmpty) {
-        logger.debug("Kafka Consumer success. {} records processed", records.count())
-        this.commitSync()
+        logger.debug("Kafka Consumer {} processed {} records", groupMetadata().memberId(), records.count())
+        commitSync()
     }
 }
 
-fun defaultErrorFunction(throwable: Throwable) {
-    logger.error("Kafka Consumer failed", throwable)
+fun KafkaConsumer<*, *>.defaultErrorFunction(throwable: Throwable) {
+    val memberId = groupMetadata().memberId()
+    logger.error("Kafka Consumer $memberId failed", throwable)
     throw throwable
 }

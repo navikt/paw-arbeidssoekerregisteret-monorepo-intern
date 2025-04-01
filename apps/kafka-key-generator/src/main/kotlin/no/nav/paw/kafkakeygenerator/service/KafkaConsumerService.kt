@@ -50,8 +50,9 @@ class KafkaConsumerService(
     ) {
         records
             .onEach { record ->
-                logger.debug(
-                    "Mottok melding på topic: {}, partition: {}, offset {}",
+                logger.info(
+                    "Mottok hendelse av type {} på topic: {}, partition: {}, offset {}",
+                    record.value().hendelseType,
                     record.topic(),
                     record.partition(),
                     record.offset()

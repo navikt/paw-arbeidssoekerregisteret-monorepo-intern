@@ -4,6 +4,7 @@ plugins {
 
 
 dependencies {
+    api(project(":lib:async"))
     compileOnly(libs.ktor.server.core)
     compileOnly(libs.coroutinesCore)
     compileOnly(libs.avro.kafkaSerializer)

@@ -116,7 +116,13 @@ class BekreftelseService(
     fun processBekreftelseHendelse(record: ConsumerRecord<Long, BekreftelseHendelse>) {
         val hendelse = record.value()
         meterRegistry.receiveBekreftelseHendelseCounter(hendelse.hendelseType)
-        logger.debug("Mottok hendelse av type {}", hendelse.hendelseType)
+        logger.info(
+            "Mottok hendelse av type {} på topic: {}, partition: {}, offset {}",
+            hendelse.hendelseType,
+            record.topic(),
+            record.partition(),
+            record.offset()
+        )
 
         when (hendelse) {
             is BekreftelseTilgjengelig -> {
