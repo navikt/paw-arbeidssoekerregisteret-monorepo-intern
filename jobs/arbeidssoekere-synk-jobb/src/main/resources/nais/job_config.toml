@@ -1,14 +1,14 @@
 jobEnabled = "${JOB_ENABLED}"
 
 [csvFil]
-filsti = "/var/run/secrets/paw-arbeidssoekere-synk-jobb-csv/empty.csv"
+filsti = "/var/run/secrets/paw-arbeidssoekere-synk-jobb-csv/v6.csv"
 kolonneSeparator = ";"
-innholderHeader = true
-inneholderKommentarer = true
+innholderHeader = false
+inneholderKommentarer = false
 
 [defaultVerdier]
-periodeTilstand = "STOPPET" # STARTET / STOPPET
-forhaandsgodkjentAvAnsatt = false
+periodeTilstand = "STARTET" # STARTET / STOPPET
+forhaandsgodkjentAvAnsatt = true
 # Verdiene under benyttes kun om CSV-rad inneholder tidspunkt
 feilrettingFeiltype = "FEIL_TIDSPUNKT" # FEIL_TIDSPUNKT / FEIL_REGISTRERING
 feilrettingMelding = "Arbeidssøker migrert fra Arena"
