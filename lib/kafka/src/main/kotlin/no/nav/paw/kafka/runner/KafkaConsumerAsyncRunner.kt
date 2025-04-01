@@ -11,9 +11,9 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class KafkaConsumerAsyncRunner<K, V>(
-    private val consumeFunction: (ConsumerRecords<K, V>) -> Unit,
-    private val successFunction: (ConsumerRecords<K, V>) -> Unit,
-    private val errorFunction: (throwable: Throwable) -> Unit,
+    private val onConsume: (ConsumerRecords<K, V>) -> Unit,
+    private val onSuccess: (ConsumerRecords<K, V>) -> Unit,
+    private val onFailure: (throwable: Throwable) -> Unit,
     private val kafkaConsumer: KafkaConsumer<K, V>,
     private val kafkaTopics: Collection<String>,
     private val pollTimeout: Duration = Duration.ofMillis(100),
@@ -25,7 +25,7 @@ class KafkaConsumerAsyncRunner<K, V>(
 
     private fun consumeTask(): ConsumerRecords<K, V> {
         val records = kafkaConsumer.poll(pollTimeout)
-        consumeFunction(records)
+        onConsume(records)
         return records
     }
 
@@ -38,8 +38,8 @@ class KafkaConsumerAsyncRunner<K, V>(
         logger.info("Starter Kafka Consumer {}", instance)
         run(
             task = ::consumeTask,
-            onSuccess = successFunction,
-            onFailure = errorFunction
+            onSuccess = onSuccess,
+            onFailure = onFailure
         )
     }
 

@@ -16,7 +16,6 @@ import java.time.Instant
 import java.util.*
 
 fun main() {
-
     val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG)
     val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG_WITH_SCHEME_REG)
     val kafkaFactory = KafkaFactory(kafkaConfig)
@@ -26,16 +25,20 @@ fun main() {
         valueSerializer = BekreftelseHendelseSerializer::class
     )
 
-    val topic = applicationConfig.kafkaTopology.bekreftelseHendelsesloggTopic
-    val key = TestData.kafkaKey1
-    val value = TestData.nyBekreftelseTilgjengelig(
-        hendelseId = UUID.randomUUID(),
-        periodeId = TestData.periodeId1,
-        arbeidssoekerId = TestData.arbeidssoekerId1,
-        bekreftelseId = TestData.bekreftelseId1,
-        gjelderFra = Instant.now(),
-        gjelderTil = Instant.now().plus(Duration.ofDays(14)),
-    )
+    with(applicationConfig) {
+        with(TestData) {
+            val topic = kafkaTopology.bekreftelseHendelsesloggTopic
+            val key = key1
+            val value = nyBekreftelseTilgjengelig(
+                hendelseId = UUID.randomUUID(),
+                periodeId = periodeId1,
+                arbeidssoekerId = arbeidssoekerId1,
+                bekreftelseId = bekreftelseId1,
+                gjelderFra = Instant.now(),
+                gjelderTil = Instant.now().plus(Duration.ofDays(14)),
+            )
 
-    kafkaProducer.send(ProducerRecord(topic, key, value)).get()
+            kafkaProducer.send(ProducerRecord(topic, key, value)).get()
+        }
+    }
 }

@@ -24,8 +24,8 @@ fun Application.installKafkaPlugins(
         kafkaProducers = listOf(bekreftelseKafkaProducer)
     }
     install(KafkaConsumerPlugin<Long, BekreftelseHendelse>("BekreftelseHendelser")) {
-        this.consumeFunction = bekreftelseService::processBekreftelseHendelser
-        this.errorFunction = kafkaConsumerHandler::handleException
+        this.onConsume = bekreftelseService::processBekreftelseHendelser
+        this.onFailure = kafkaConsumerHandler::handleException
         this.kafkaConsumer = bekreftelseHendelseKafkaConsumer
         this.kafkaTopics = listOf(applicationConfig.kafkaTopology.bekreftelseHendelsesloggTopic)
     }

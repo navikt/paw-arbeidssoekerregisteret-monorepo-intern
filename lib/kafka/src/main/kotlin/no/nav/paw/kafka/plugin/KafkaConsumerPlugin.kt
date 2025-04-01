@@ -20,9 +20,9 @@ import java.util.concurrent.Executors
 private const val PLUGIN_NAME_SUFFIX = "KafkaConsumerPlugin"
 
 class KafkaConsumerPluginConfig<K, V> {
-    var consumeFunction: ((ConsumerRecords<K, V>) -> Unit)? = null
-    var successFunction: ((ConsumerRecords<K, V>) -> Unit)? = null
-    var errorFunction: ((throwable: Throwable) -> Unit)? = null
+    var onConsume: ((ConsumerRecords<K, V>) -> Unit)? = null
+    var onSuccess: ((ConsumerRecords<K, V>) -> Unit)? = null
+    var onFailure: ((throwable: Throwable) -> Unit)? = null
     var kafkaConsumer: KafkaConsumer<K, V>? = null
     var kafkaTopics: Collection<String>? = null
     var pollTimeout: Duration = Duration.ofMillis(100)
@@ -38,13 +38,13 @@ fun <K, V> KafkaConsumerPlugin(pluginInstance: Any): ApplicationPlugin<KafkaCons
         application.log.info("Installerer {}", pluginName)
         val kafkaTopics = requireNotNull(pluginConfig.kafkaTopics) { "KafkaTopics er null" }
         val kafkaConsumer = requireNotNull(pluginConfig.kafkaConsumer) { "KafkaConsumer er null" }
-        val consumeFunction = requireNotNull(pluginConfig.consumeFunction) { "ConsumeFunction er null" }
-        val successFunction = pluginConfig.successFunction ?: kafkaConsumer::defaultSuccessFunction
-        val errorFunction = pluginConfig.errorFunction ?: kafkaConsumer::defaultErrorFunction
+        val onConsume = requireNotNull(pluginConfig.onConsume) { "Consume function er null" }
+        val onSuccess = pluginConfig.onSuccess ?: kafkaConsumer::defaultSuccessFunction
+        val onFailure = pluginConfig.onFailure ?: kafkaConsumer::defaultErrorFunction
         val asyncRunner = KafkaConsumerAsyncRunner(
-            consumeFunction = consumeFunction,
-            successFunction = successFunction,
-            errorFunction = errorFunction,
+            onConsume = onConsume,
+            onSuccess = onSuccess,
+            onFailure = onFailure,
             kafkaConsumer = kafkaConsumer,
             kafkaTopics = kafkaTopics,
             pollTimeout = pluginConfig.pollTimeout,

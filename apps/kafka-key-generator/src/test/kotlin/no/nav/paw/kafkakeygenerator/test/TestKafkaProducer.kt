@@ -29,8 +29,8 @@ fun main() {
 
     val fraArbeidssoekerId = ArbeidssoekerId(2)
     val tilArbeidssoekerId = ArbeidssoekerId(1)
-    val identitetsnummer1 = Identitetsnummer("02017012345")
-    val identitetsnummer2 = Identitetsnummer("06017012345")
+    val identitetsnummer1 = Identitetsnummer("01017012345")
+    val identitetsnummer2 = Identitetsnummer("02017012345")
 
     val key = 1L
     val value = TestData.getIdentitetsnummerSammenslaatt(

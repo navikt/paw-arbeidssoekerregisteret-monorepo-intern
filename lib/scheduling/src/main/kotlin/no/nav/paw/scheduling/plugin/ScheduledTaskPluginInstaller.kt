@@ -10,6 +10,9 @@ import java.time.Duration
 fun Application.installScheduledTaskPlugin(
     name: String = DEFAULT_SCHEDULED_TASK_NAME,
     task: (() -> Unit),
+    onSuccess: ((Unit) -> Unit) = {},
+    onFailure: ((throwable: Throwable) -> Unit) = {},
+    onAbort: (() -> Unit) = {},
     interval: Duration,
     delay: Duration = Duration.ZERO,
     startEvent: EventDefinition<Application> = ApplicationStarted,
@@ -17,6 +20,9 @@ fun Application.installScheduledTaskPlugin(
 ) {
     install(ScheduledTaskPlugin(name)) {
         this.task = task
+        this.onSuccess = onSuccess
+        this.onFailure = onFailure
+        this.onAbort = onAbort
         this.delay = delay
         this.interval = interval
         this.startEvent = startEvent

@@ -45,6 +45,31 @@ import no.nav.paw.bekreftelse.internehendelser.vo.Bruker as InternBekreftelseBru
 object TestData {
     val runtimeEnvironment = currentRuntimeEnvironment
 
+    val key1 = -10001L
+    val key2 = -10002L
+    val key3 = -10003L
+    val key4 = -10004L
+    val key5 = -10005L
+    val identitetsnummer1 = "01017012345"
+    val identitetsnummer2 = "02017012345"
+    val identitetsnummer3 = "03017012345"
+    val identitetsnummer4 = "04017012345"
+    val identitetsnummer5 = "05017012345"
+    val arbeidssoekerId1 = 10001L
+    val arbeidssoekerId2 = 10002L
+    val arbeidssoekerId3 = 10003L
+    val arbeidssoekerId4 = 10004L
+    val periodeId1 = UUID.fromString("4c0cb50a-3b4a-45df-b5b6-2cb45f04d19b")
+    val periodeId2 = UUID.fromString("0fc3de47-a6cd-4ad5-8433-53235738200d")
+    val periodeId3 = UUID.fromString("12cf8147-a76d-4b62-85d2-4792fea08995")
+    val periodeId4 = UUID.fromString("f6f2f98a-2f2b-401d-b837-6ad26e45d4bf")
+    val periodeId5 = UUID.fromString("f6384bc5-a0ec-4bdc-9262-f6ebf952269f")
+    val bekreftelseId1 = UUID.fromString("0cd73e66-e5a2-4dae-88de-2dd89a910a19")
+    val bekreftelseId2 = UUID.fromString("7b769364-4d48-40f8-ac64-4489bb8080dd")
+    val bekreftelseId3 = UUID.fromString("b6e3b543-da44-4524-860f-9474bd6d505e")
+    val bekreftelseId4 = UUID.fromString("a59581e6-c9be-4aec-b9f4-c635f1826c71")
+    val bekreftelseId5 = UUID.fromString("de94b7ab-360f-4e5f-9ad1-3dc572b3e6a5")
+
     fun insertPeriodeRow(
         periodeId: UUID = UUID.randomUUID(),
         identitetsnummer: String = randomFnr(),

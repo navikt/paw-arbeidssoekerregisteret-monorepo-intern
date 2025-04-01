@@ -15,8 +15,8 @@ fun Application.installKafkaPlugins(
 ) {
 
     install(KafkaConsumerPlugin<Long, Hendelse>("Hendelselogg")) {
-        this.consumeFunction = kafkaConsumerService::handleRecords
-        this.errorFunction = kafkaConsumerService::handleException
+        this.onConsume = kafkaConsumerService::handleRecords
+        this.onFailure = kafkaConsumerService::handleException
         this.kafkaConsumer = kafkaConsumer
         this.kafkaTopics = listOf(kafkaTopologyConfig.hendelseloggTopic)
     }

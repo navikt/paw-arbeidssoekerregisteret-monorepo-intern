@@ -16,6 +16,9 @@ private const val SCHEDULED_TASK_PLUGIN_SUFFIX = "ScheduledTaskPlugin"
 
 class ScheduledTaskPluginConfig {
     var task: (() -> Unit)? = null
+    var onSuccess: ((Unit) -> Unit) = {}
+    var onFailure: ((throwable: Throwable) -> Unit) = {}
+    var onAbort: (() -> Unit) = {}
     var interval: Duration? = null
     var delay: Duration = Duration.ZERO
     var startEvent: EventDefinition<Application> = ApplicationStarted
@@ -34,11 +37,15 @@ fun ScheduledTaskPlugin(
         val asyncRunner = ScheduledAsyncRunner<Unit>(interval, pluginConfig.delay)
 
         on(MonitoringEvent(pluginConfig.startEvent)) {
-            asyncRunner.run(task, {}) {}
+            asyncRunner.run(
+                task = task,
+                onFailure = pluginConfig.onFailure,
+                onSuccess = pluginConfig.onSuccess
+            )
         }
 
         on(MonitoringEvent(pluginConfig.stopEvent)) {
-            asyncRunner.abort {}
+            asyncRunner.abort(onAbort = pluginConfig.onAbort)
         }
     }
 }

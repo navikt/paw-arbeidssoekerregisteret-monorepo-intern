@@ -149,14 +149,14 @@ class BekreftelseRoutesTest : FreeSpec({
             "Skal hente tilgjengelige bekreftelser med GET-request".config(enabled = false) { // TODO Disable midlertidig
                 coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
                     TestData.arbeidssoekerId1,
-                    TestData.kafkaKey1
+                    TestData.key1
                 )
                 val bereftelseRows = TestData.nyBekreftelseRows(
                     arbeidssoekerId = TestData.arbeidssoekerId1,
                     periodeId = TestData.periodeId1,
                     bekreftelseRow = listOf(
-                        TestData.kafkaOffset1 to TestData.bekreftelseId1,
-                        TestData.kafkaOffset2 to TestData.bekreftelseId2
+                        TestData.offset1 to TestData.bekreftelseId1,
+                        TestData.offset2 to TestData.bekreftelseId2
                     )
                 )
 
@@ -182,14 +182,14 @@ class BekreftelseRoutesTest : FreeSpec({
             "Skal hente tilgjengelige bekreftelser med POST-request".config(enabled = false) { // TODO Disable midlertidig
                 coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
                     TestData.arbeidssoekerId2,
-                    TestData.kafkaKey2
+                    TestData.key2
                 )
                 val bereftelseRows = TestData.nyBekreftelseRows(
                     arbeidssoekerId = TestData.arbeidssoekerId2,
                     periodeId = TestData.periodeId2,
                     bekreftelseRow = listOf(
-                        TestData.kafkaOffset3 to TestData.bekreftelseId3,
-                        TestData.kafkaOffset4 to TestData.bekreftelseId4
+                        TestData.offset3 to TestData.bekreftelseId3,
+                        TestData.offset4 to TestData.bekreftelseId4
                     )
                 )
                 val request = TestData.nyTilgjengeligeBekreftelserRequest(identitetsnummer = TestData.fnr2)
@@ -239,14 +239,14 @@ class BekreftelseRoutesTest : FreeSpec({
             "Skal motta bekreftelse" {
                 coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
                     TestData.arbeidssoekerId3,
-                    TestData.kafkaKey3
+                    TestData.key3
                 )
                 every { kafkaProducerHandlerMock.sendBekreftelse(any<Long>(), any<Bekreftelse>()) } just runs
                 val bereftelseRows = TestData.nyBekreftelseRows(
                     arbeidssoekerId = TestData.arbeidssoekerId3,
                     periodeId = TestData.periodeId3,
                     bekreftelseRow = listOf(
-                        TestData.kafkaOffset5 to TestData.bekreftelseId5
+                        TestData.offset5 to TestData.bekreftelseId5
                     )
                 )
                 val request = TestData.nyBekreftelseRequest(
@@ -275,7 +275,7 @@ class BekreftelseRoutesTest : FreeSpec({
             "Skal motta bekreftelse men finner ikke relatert tilgjengelig bekreftelse" {
                 coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
                     TestData.arbeidssoekerId4,
-                    TestData.kafkaKey4
+                    TestData.key4
                 )
                 val request = TestData.nyBekreftelseRequest(identitetsnummer = TestData.fnr4)
 
@@ -365,15 +365,15 @@ class BekreftelseRoutesTest : FreeSpec({
             "Skal hente tilgjengelige bekreftelser".config(enabled = false) { // TODO Disable midlertidig
                 coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
                     TestData.arbeidssoekerId5,
-                    TestData.kafkaKey5
+                    TestData.key5
                 )
                 coEvery { tilgangskontrollClientMock.harAnsattTilgangTilPerson(any(), any(), any()) } returns Data(true)
                 val bereftelseRows = TestData.nyBekreftelseRows(
                     arbeidssoekerId = TestData.arbeidssoekerId5,
                     periodeId = TestData.periodeId4,
                     bekreftelseRow = listOf(
-                        TestData.kafkaOffset6 to TestData.bekreftelseId6,
-                        TestData.kafkaOffset7 to TestData.bekreftelseId7
+                        TestData.offset6 to TestData.bekreftelseId6,
+                        TestData.offset7 to TestData.bekreftelseId7
                     )
                 )
                 val request = TestData.nyTilgjengeligeBekreftelserRequest(identitetsnummer = TestData.fnr4)
@@ -401,7 +401,7 @@ class BekreftelseRoutesTest : FreeSpec({
             "Skal motta bekreftelse" {
                 coEvery { kafkaKeysClientMock.getIdAndKey(any<String>()) } returns KafkaKeysResponse(
                     TestData.arbeidssoekerId6,
-                    TestData.kafkaKey6
+                    TestData.key6
                 )
                 coEvery { tilgangskontrollClientMock.harAnsattTilgangTilPerson(any(), any(), any()) } returns Data(true)
                 every { kafkaProducerHandlerMock.sendBekreftelse(any<Long>(), any<Bekreftelse>()) } just runs
@@ -409,7 +409,7 @@ class BekreftelseRoutesTest : FreeSpec({
                     arbeidssoekerId = TestData.arbeidssoekerId6,
                     periodeId = TestData.periodeId5,
                     bekreftelseRow = listOf(
-                        TestData.kafkaOffset8 to TestData.bekreftelseId8
+                        TestData.offset8 to TestData.bekreftelseId8
                     )
                 )
                 val request = TestData.nyBekreftelseRequest(
