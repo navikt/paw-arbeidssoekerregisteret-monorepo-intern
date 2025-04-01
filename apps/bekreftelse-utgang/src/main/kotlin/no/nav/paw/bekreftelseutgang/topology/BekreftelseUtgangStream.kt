@@ -3,8 +3,7 @@ package no.nav.paw.bekreftelseutgang.topology
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
-import no.nav.paw.arbeidssokerregisteret.intern.v1.KalkulertAarsak
-import no.nav.paw.arbeidssokerregisteret.intern.v1.OppgittAarsak
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Aarsak
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
@@ -61,7 +60,7 @@ fun processBekreftelseHendelse(
                 sikkerhetsnivaa = null
             ),
             aarsak = "[Bekreftelse] ikke levert innen fristen",
-            oppgittAarsak = OppgittAarsak.RegisterGracePeriodeUtloept
+            oppgittAarsak = Aarsak.RegisterGracePeriodeUtloept
         )
         is RegisterGracePeriodeUtloeptEtterEksternInnsamling -> avsluttetHendelse(
             identitetsnummer = identitetsnummer,
@@ -73,7 +72,7 @@ fun processBekreftelseHendelse(
                 sikkerhetsnivaa = null
             ),
             aarsak = "[Bekreftelse:ytelse/støtte] Ikke levert innen fristen",
-            oppgittAarsak = OppgittAarsak.RegisterGracePeriodeUtloeptEtterEksternInnsamling,
+            oppgittAarsak = Aarsak.RegisterGracePeriodeUtloeptEtterEksternInnsamling,
         )
         is BaOmAaAvsluttePeriode -> avsluttetHendelse(
             identitetsnummer = identitetsnummer,
@@ -91,7 +90,7 @@ fun processBekreftelseHendelse(
                 sikkerhetsnivaa = bekreftelseHendelse.utfoertAv.sikkerhetsnivaa
             ),
             aarsak = "[Bekreftelse] Ønsket ikke lenger å være arbeidssøker",
-            oppgittAarsak = OppgittAarsak.BaOmAaAvsluttePeriode,
+            oppgittAarsak = Aarsak.BaOmAaAvsluttePeriode,
         )
         else -> null
     }
@@ -99,13 +98,13 @@ fun processBekreftelseHendelse(
 
 fun ApplicationConfig.getAppImage() = runtimeEnvironment.appImageOrDefaultForLocal("paw-arbeidssoekerregisteret-bekreftelse-utgang:LOCAL")
 
-fun avsluttetHendelse(identitetsnummer: String, periodeId: UUID, arbeidssoekerId: Long, utfoertAv: Bruker, aarsak: String, oppgittAarsak: OppgittAarsak) = Avsluttet(
+fun avsluttetHendelse(identitetsnummer: String, periodeId: UUID, arbeidssoekerId: Long, utfoertAv: Bruker, aarsak: String, oppgittAarsak: Aarsak) = Avsluttet(
     hendelseId = UUID.randomUUID(),
     id = arbeidssoekerId,
     identitetsnummer = identitetsnummer,
     metadata = metadata(utfoertAv, aarsak),
     periodeId = periodeId,
-    kalkulertAarsak = KalkulertAarsak.Udefinert,
+    kalkulertAarsak = Aarsak.Udefinert,
     oppgittAarsak = oppgittAarsak,
 )
 

@@ -6,6 +6,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import no.nav.paw.arbeidssokerregisteret.RequestScope
 import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Aarsak
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.collections.PawNonEmptyList
 import no.nav.paw.kafka.producer.sendDeferred
@@ -66,11 +67,31 @@ class StartStoppRequestHandler(
             identitetsnummer = identitetsnummer,
             feilretting = feilretting
         )
+
+        val kanStarteResultat = try {
+            requestValidator.validerStartAvPeriodeOenske(
+                requestScope = requestScope,
+                identitetsnummer = identitetsnummer,
+                feilretting = null
+            ).fold(
+                ifLeft = {
+                    it.first.regel.id.toAvsluttetAarsak()
+                },
+                ifRight = {
+                    Aarsak.IngenAarsakFunnet
+                }
+            )
+        } catch (e: Exception) {
+            logger.error("Feil under validering av start av periodeønske", e)
+            Aarsak.TekniskFeilUnderKalkuleringAvAarsak
+        }
+
         val hendelse = stoppResultatSomHendelse(
             requestScope = requestScope,
             id = id,
             identitetsnummer = identitetsnummer,
             resultat = tilgangskontrollResultat,
+            aarsak = kanStarteResultat,
             feilretting = feilretting
         )
         val record = ProducerRecord(
