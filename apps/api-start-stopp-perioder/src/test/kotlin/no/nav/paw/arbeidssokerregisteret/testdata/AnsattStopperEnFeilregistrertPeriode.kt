@@ -7,8 +7,7 @@ import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feilretting
 import no.nav.paw.arbeidssokerregisteret.ansattToken
 import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
-import no.nav.paw.arbeidssokerregisteret.intern.v1.KalkulertAarsak
-import no.nav.paw.arbeidssokerregisteret.intern.v1.OppgittAarsak
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Aarsak
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
@@ -58,8 +57,8 @@ data object AnsattStopperEnFeilregistrertPeriode : StoppPeriodeTestCase {
                     avviksType = no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType.SLETTET
                 )
             ),
-            kalkulertAarsak = KalkulertAarsak.Udefinert,
-            oppgittAarsak = OppgittAarsak.Udefinert,
+            kalkulertAarsak = Aarsak.Udefinert,
+            oppgittAarsak = Aarsak.Udefinert,
             opplysninger = setOf(
                 Opplysning.ANSATT_TILGANG,
                 Opplysning.TOKENX_PID_IKKE_FUNNET,
