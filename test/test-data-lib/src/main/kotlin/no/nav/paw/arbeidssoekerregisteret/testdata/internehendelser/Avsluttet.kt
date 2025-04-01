@@ -2,6 +2,8 @@ package no.nav.paw.arbeidssoekerregisteret.testdata.internehendelser
 
 import no.nav.paw.arbeidssoekerregisteret.testdata.KafkaKeyContext
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.KalkulertAarsak
+import no.nav.paw.arbeidssokerregisteret.intern.v1.OppgittAarsak
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
 import java.util.*
 
@@ -15,5 +17,7 @@ fun KafkaKeyContext.avsluttet(
     id = arbeidssoekerId,
     identitetsnummer = identitetsnummer,
     metadata = metadata(),
-    opplysninger = opplysninger
+    opplysninger = opplysninger,
+    kalkulertAarsak = KalkulertAarsak.Udefinert,
+    oppgittAarsak = OppgittAarsak.Udefinert
 )
