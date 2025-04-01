@@ -1,7 +1,7 @@
 jobEnabled = "${JOB_ENABLED}"
 
 [csvFil]
-filsti = "/var/run/secrets/paw-arbeidssoekere-synk-jobb-csv/v6.csv"
+filsti = "/var/run/secrets/paw-arbeidssoekere-synk-jobb-csv/empty.csv"
 kolonneSeparator = ";"
 innholderHeader = false
 inneholderKommentarer = false
