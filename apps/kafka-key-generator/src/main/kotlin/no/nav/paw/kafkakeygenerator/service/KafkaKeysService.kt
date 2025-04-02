@@ -130,6 +130,13 @@ class KafkaKeysService(
     }
 
     @WithSpan
+    fun kunHent(identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> {
+        logger.debug("Henter identer fra database")
+        meterRegistry.countRestApiFetched()
+        return kafkaKeysRepository.hent(identitet)
+    }
+
+    @WithSpan
     suspend fun hent(callId: CallId, identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> {
         logger.debug("Henter identer fra database")
         meterRegistry.countRestApiFetched()
