@@ -59,11 +59,11 @@ class KafkaConsumerServiceTest : FreeSpec({
         val arbeidssoekerId1 = ArbeidssoekerId(1)
         val arbeidssoekerId2 = ArbeidssoekerId(2)
         val hendelser: List<Hendelse> = listOf(
-            TestData.getPeriodeStartet(identitetsnummer1, arbeidssoekerId1),
-            TestData.getPeriodeAvsluttet(identitetsnummer1, arbeidssoekerId1),
-            TestData.getPeriodeStartAvvist(identitetsnummer1, arbeidssoekerId1),
-            TestData.getPeriodeAvsluttetAvvist(identitetsnummer1, arbeidssoekerId1),
-            TestData.getArbeidssoekerIdFlettetInn(
+            TestData.periodeStartet(identitetsnummer1, arbeidssoekerId1),
+            TestData.periodeAvsluttet(identitetsnummer1, arbeidssoekerId1),
+            TestData.periodeStartAvvist(identitetsnummer1, arbeidssoekerId1),
+            TestData.periodeAvsluttetAvvist(identitetsnummer1, arbeidssoekerId1),
+            TestData.arbeidssoekerIdFlettetInn(
                 listOf(identitetsnummer1, identitetsnummer2),
                 arbeidssoekerId1,
                 arbeidssoekerId2
@@ -86,7 +86,7 @@ class KafkaConsumerServiceTest : FreeSpec({
         val tilArbeidssoekerId = ArbeidssoekerId(4)
 
         val hendelser: List<Hendelse> = listOf(
-            TestData.getIdentitetsnummerSammenslaatt(listOf(identitetsnummer), fraArbeidssoekerId, tilArbeidssoekerId)
+            TestData.identitetsnummerSammenslaatt(listOf(identitetsnummer), fraArbeidssoekerId, tilArbeidssoekerId)
         )
 
         shouldThrow<IllegalStateException> {
@@ -116,7 +116,7 @@ class KafkaConsumerServiceTest : FreeSpec({
                 opprettResult3.onLeft { it shouldBe null }
                 opprettResult3.onRight { eksisterendeArbeidssoekerId ->
                     val hendelser: List<Hendelse> = listOf(
-                        TestData.getIdentitetsnummerSammenslaatt(
+                        TestData.identitetsnummerSammenslaatt(
                             listOf(identitetsnummer2, identitetsnummer3),
                             fraArbeidssoekerId,
                             tilArbeidssoekerId
@@ -166,7 +166,7 @@ class KafkaConsumerServiceTest : FreeSpec({
             opprettResult2.onLeft { it shouldBe null }
             opprettResult2.onRight { fraArbeidssoekerId ->
                 val hendelser: List<Hendelse> = listOf(
-                    TestData.getIdentitetsnummerSammenslaatt(
+                    TestData.identitetsnummerSammenslaatt(
                         listOf(identitetsnummer1, identitetsnummer2, identitetsnummer3),
                         fraArbeidssoekerId,
                         tilArbeidssoekerId
