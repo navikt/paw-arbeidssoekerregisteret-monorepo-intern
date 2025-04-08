@@ -136,9 +136,8 @@ class TopologyTest : FreeSpec({
                         value.type shouldBe Varseltype.Beskjed
                         value.ident shouldBe lukketPeriode.identitetsnummer
                         value.eventName shouldBe EventType.Opprett
-                        value.eksternVarsling shouldBe null
-                        // value.eksternVarsling shouldNotBe null TODO: midlertidig disablet
-                        // value.eksternVarsling!!.prefererteKanaler shouldContain EksternKanal.BETINGET_SMS
+                        value.eksternVarsling shouldNotBe null
+                        value.eksternVarsling!!.prefererteKanaler shouldContain EksternKanal.BETINGET_SMS
                     }
                     periodeVarselTopic.isEmpty shouldBe true
                     periodeTopic.pipeInput(lukketPeriode.asRecord(key))
@@ -173,9 +172,8 @@ class TopologyTest : FreeSpec({
                         value.type shouldBe Varseltype.Beskjed
                         value.ident shouldBe lukketPeriode.identitetsnummer
                         value.eventName shouldBe EventType.Opprett
-                        value.eksternVarsling shouldBe null
-                        // value.eksternVarsling shouldNotBe null TODO: midlertidig disablet
-                        // value.eksternVarsling!!.prefererteKanaler shouldContain EksternKanal.BETINGET_SMS
+                        value.eksternVarsling shouldNotBe null
+                        value.eksternVarsling!!.prefererteKanaler shouldContain EksternKanal.BETINGET_SMS
                     }
                     periodeVarselTopic.isEmpty shouldBe true
 
