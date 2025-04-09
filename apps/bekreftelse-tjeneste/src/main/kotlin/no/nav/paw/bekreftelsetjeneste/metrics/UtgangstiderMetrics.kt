@@ -46,7 +46,6 @@ fun init(
                         }
                         .groupBy { it }
                         .mapValues { it.value.size }
-                        .onEach { logger.info("På denne noden klokken {}, går fristen ut for {} personer", it.key, it.value) }
                         .minByOrNull { it.key }
                         .also { neste ->
                             val ts = neste?.key?.toEpochMilli() ?: 0L
