@@ -8,6 +8,8 @@ import no.nav.paw.arbeidssoekerregisteret.backup.database.txContext
 import no.nav.paw.arbeidssoekerregisteret.backup.database.updateHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.database.writeRecord
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Aarsak
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerializer
@@ -69,6 +71,13 @@ fun ApplicationContext.runApplication(
 ) {
     val counterInclude = meterRegistry.counter(RECORD_COUNTER, listOf(Tag.of("include", "true")))
     val counterExclude = meterRegistry.counter(RECORD_COUNTER, listOf(Tag.of("include", "false")))
+
+    val kalkulertAarsakCounters = Aarsak.entries.associateWith { aarsak ->
+        meterRegistry.counter(
+            KALKULERT_AVSLUTTET_AARSAK,
+            listOf(Tag.of("kalkulert_aarsak", aarsak.name))
+        )
+    }
     source.forEach { records ->
         transaction {
             with(txContext(this@runApplication)()) {
@@ -76,6 +85,11 @@ fun ApplicationContext.runApplication(
                     if (updateHwm(it.partition(), it.offset())) {
                         writeRecord(hendelseSerializer, it)
                         counterInclude.increment()
+
+                        val hendelse = it.value()
+                        if (hendelse is Avsluttet) {
+                            kalkulertAarsakCounters[hendelse.kalkulertAarsak]?.increment()
+                        }
                     } else {
                         counterExclude.increment()
                     }
