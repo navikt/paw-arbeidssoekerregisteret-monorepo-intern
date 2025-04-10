@@ -17,7 +17,7 @@ import java.util.*
 
 class PeriodeRepository {
 
-    @WithSpan("findAll")
+    @WithSpan("PeriodeRepository.findAll")
     fun findAll(paging: Paging = Paging.none()): List<PeriodeRow> = transaction {
         PerioderTable.selectAll()
             .orderBy(PerioderTable.startetTimestamp, paging.order.asSortOrder())
@@ -25,7 +25,7 @@ class PeriodeRepository {
             .map { it.asPeriodeRow() }
     }
 
-    @WithSpan("findByPeriodeId")
+    @WithSpan("PeriodeRepository.findByPeriodeId")
     fun findByPeriodeId(periodeId: UUID): PeriodeRow? = transaction {
         PerioderTable.selectAll()
             .where { PerioderTable.periodeId eq periodeId }
@@ -33,7 +33,7 @@ class PeriodeRepository {
             .singleOrNull()
     }
 
-    @WithSpan("insert")
+    @WithSpan("PeriodeRepository.insert")
     fun insert(periode: InsertPeriodeRow): Int = transaction {
         PerioderTable.insert {
             it[periodeId] = periode.periodeId
@@ -44,7 +44,7 @@ class PeriodeRepository {
         }.insertedCount
     }
 
-    @WithSpan("update")
+    @WithSpan("PeriodeRepository.update")
     fun update(periode: UpdatePeriodeRow): Int = transaction {
         PerioderTable.update({
             PerioderTable.periodeId eq periode.periodeId

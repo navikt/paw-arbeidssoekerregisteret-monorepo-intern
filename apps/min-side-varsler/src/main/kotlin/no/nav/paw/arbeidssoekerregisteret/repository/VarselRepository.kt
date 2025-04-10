@@ -7,11 +7,15 @@ import no.nav.paw.arbeidssoekerregisteret.model.Paging
 import no.nav.paw.arbeidssoekerregisteret.model.UpdateVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.VarselKilde
 import no.nav.paw.arbeidssoekerregisteret.model.VarselRow
+import no.nav.paw.arbeidssoekerregisteret.model.VarselStatus
 import no.nav.paw.arbeidssoekerregisteret.model.VarslerTable
 import no.nav.paw.arbeidssoekerregisteret.model.asSortOrder
 import no.nav.paw.arbeidssoekerregisteret.model.asVarselRow
 import org.jetbrains.exposed.sql.JoinType
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -21,7 +25,7 @@ import java.util.*
 
 class VarselRepository {
 
-    @WithSpan("findAll")
+    @WithSpan("VarselRepository.findAll")
     fun findAll(paging: Paging = Paging.none()): List<VarselRow> = transaction {
         VarslerTable.join(EksterneVarslerTable, JoinType.LEFT, VarslerTable.varselId, EksterneVarslerTable.varselId)
             .selectAll()
@@ -30,7 +34,7 @@ class VarselRepository {
             .map { it.asVarselRow() }
     }
 
-    @WithSpan("findByVarselId")
+    @WithSpan("VarselRepository.findByVarselId")
     fun findByVarselId(varselId: UUID): VarselRow? = transaction {
         VarslerTable.join(EksterneVarslerTable, JoinType.LEFT, VarslerTable.varselId, EksterneVarslerTable.varselId)
             .selectAll()
@@ -39,7 +43,7 @@ class VarselRepository {
             .firstOrNull()
     }
 
-    @WithSpan("findByVarselId")
+    @WithSpan("VarselRepository.findByVarselId")
     fun findByBekreftelseId(bekreftelseId: UUID): VarselRow? = transaction {
         VarslerTable.join(EksterneVarslerTable, JoinType.LEFT, VarslerTable.varselId, EksterneVarslerTable.varselId)
             .selectAll()
@@ -48,7 +52,7 @@ class VarselRepository {
             .firstOrNull()
     }
 
-    @WithSpan("findByPeriodeId")
+    @WithSpan("VarselRepository.findByPeriodeId")
     fun findByPeriodeId(
         periodeId: UUID,
         paging: Paging = Paging.none(),
@@ -61,7 +65,7 @@ class VarselRepository {
             .map { it.asVarselRow() }
     }
 
-    @WithSpan("findByPeriodeIdAndVarselKilde")
+    @WithSpan("VarselRepository.findByPeriodeIdAndVarselKilde")
     fun findByPeriodeIdAndVarselKilde(
         periodeId: UUID,
         varselKilde: VarselKilde,
@@ -75,7 +79,7 @@ class VarselRepository {
             .map { it.asVarselRow() }
     }
 
-    @WithSpan("insert")
+    @WithSpan("VarselRepository.insert")
     fun insert(varsel: InsertVarselRow): Int = transaction {
         VarslerTable.insert {
             it[periodeId] = varsel.periodeId
@@ -90,7 +94,7 @@ class VarselRepository {
         }.insertedCount
     }
 
-    @WithSpan("update")
+    @WithSpan("VarselRepository.update")
     fun update(varsel: UpdateVarselRow): Int = transaction {
         VarslerTable.update({
             VarslerTable.varselId eq varsel.varselId
@@ -99,6 +103,17 @@ class VarselRepository {
             it[hendelseNavn] = varsel.hendelseName
             it[hendelseTimestamp] = varsel.hendelseTimestamp
             it[updatedTimestamp] = Instant.now()
+        }
+    }
+
+    @WithSpan("VarselRepository.deleteByUpdatedTimestampAndStatus")
+    fun deleteByUpdatedTimestampAndStatus(
+        updateTimestamp: Instant,
+        vararg varselStatus: VarselStatus
+    ): Int = transaction {
+        VarslerTable.deleteWhere {
+            (VarslerTable.updatedTimestamp less updateTimestamp) and
+                    (VarslerTable.varselStatus inList varselStatus.toList())
         }
     }
 }

@@ -10,6 +10,7 @@ import no.nav.paw.arbeidssoekerregisteret.model.UpdateBestillingRow
 import no.nav.paw.arbeidssoekerregisteret.model.asBestillingRow
 import no.nav.paw.arbeidssoekerregisteret.model.asSortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
@@ -20,7 +21,7 @@ import java.util.*
 
 class BestillingRepository {
 
-    @WithSpan("findAll")
+    @WithSpan("BestillingRepository.findAll")
     fun findAll(paging: Paging = Paging.none()): List<BestillingRow> = transaction {
         BestillingerTable.selectAll()
             .orderBy(BestillingerTable.insertedTimestamp, paging.order.asSortOrder())
@@ -28,7 +29,7 @@ class BestillingRepository {
             .map { it.asBestillingRow() }
     }
 
-    @WithSpan("findAll")
+    @WithSpan("BestillingRepository.findAll")
     fun findByStatus(
         status: BestillingStatus,
         paging: Paging = Paging.none()
@@ -40,7 +41,7 @@ class BestillingRepository {
             .map { it.asBestillingRow() }
     }
 
-    @WithSpan("findByBestillingId")
+    @WithSpan("BestillingRepository.findByBestillingId")
     fun findByBestillingId(bestillingId: UUID): BestillingRow? = transaction {
         BestillingerTable.selectAll()
             .where { BestillingerTable.bestillingId eq bestillingId }
@@ -48,7 +49,20 @@ class BestillingRepository {
             .singleOrNull()
     }
 
-    @WithSpan("insert")
+    @WithSpan("BestillingRepository.findByUpdatedTimestampAndStatus")
+    fun findByUpdatedTimestampAndStatus(
+        updateTimestamp: Instant,
+        vararg status: BestillingStatus
+    ): List<BestillingRow> = transaction {
+        BestillingerTable.selectAll()
+            .where {
+                (BestillingerTable.updatedTimestamp less updateTimestamp) and
+                        (BestillingerTable.status inList status.toList())
+            }
+            .map { it.asBestillingRow() }
+    }
+
+    @WithSpan("BestillingRepository.insert")
     fun insert(bestilling: InsertBestillingRow): Int = transaction {
         BestillingerTable.insert {
             it[bestillingId] = bestilling.bestillingId
@@ -58,7 +72,7 @@ class BestillingRepository {
         }.insertedCount
     }
 
-    @WithSpan("update")
+    @WithSpan("BestillingRepository.update")
     fun update(bestilling: UpdateBestillingRow): Int = transaction {
         BestillingerTable.update({
             BestillingerTable.bestillingId eq bestilling.bestillingId
@@ -68,7 +82,7 @@ class BestillingRepository {
         }
     }
 
-    @WithSpan("deleteByBestillingId")
+    @WithSpan("BestillingRepository.deleteByBestillingId")
     fun deleteByBestillingId(bestillingId: UUID): Int = transaction {
         BestillingerTable.deleteWhere { BestillingerTable.bestillingId eq bestillingId }
     }

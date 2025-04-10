@@ -38,8 +38,10 @@ spec:
       value: "https://www.nav.no/arbeidssoekerregisteret/bekreftelse"
     - name: MANUELT_VARSEL_LINK
       value: "https://www.nav.no/arbeidssoekerregisteret"
-    - name: MANUELLE_VARSLER_ENABLED
+    - name: MANUELT_VARSEL_ENABLED
       value: "false"
+    - name: OPPRYDDING_ENABLED
+      value: "true"
   liveness:
     path: /internal/isAlive
     initialDelay: 10

@@ -67,12 +67,12 @@ class VarselService(
     private val logger = buildLogger
     private val mdc = MDC.getMDCAdapter()
 
-    @WithSpan("hentVarsel")
+    @WithSpan("VarselService.hentVarsel")
     fun hentVarsel(varselId: UUID): VarselResponse = transaction {
         varselRepository.findByVarselId(varselId)?.asResponse() ?: throw VarselIkkeFunnetException("Varsel ikke funnet")
     }
 
-    @WithSpan("finnVarsler")
+    @WithSpan("VarselService.finnVarsler")
     fun finnVarsler(
         periodeId: UUID,
         paging: Paging = Paging.none()
@@ -80,7 +80,7 @@ class VarselService(
         varselRepository.findByPeriodeId(periodeId, paging).map { it.asResponse() }
     }
 
-    @WithSpan("mottaPeriode")
+    @WithSpan("VarselService.mottaPeriode")
     fun mottaPeriode(periode: Periode): List<VarselMelding> = transaction {
         val eventName = periode.eventName
         try {
@@ -142,7 +142,7 @@ class VarselService(
         }
     }
 
-    @WithSpan("mottaBekreftelseHendelse")
+    @WithSpan("VarselService.mottaBekreftelseHendelse")
     fun mottaBekreftelseHendelse(periode: PeriodeHendelse, hendelse: BekreftelseHendelse): List<VarselMelding> =
         transaction {
             try {
@@ -255,7 +255,7 @@ class VarselService(
         return emptyList()
     }
 
-    @WithSpan("mottaVarselHendelse")
+    @WithSpan("VarselService.mottaVarselHendelse")
     fun mottaVarselHendelse(hendelse: VarselHendelse) = transaction {
         try {
             val eventName = hendelse.verboseEventName

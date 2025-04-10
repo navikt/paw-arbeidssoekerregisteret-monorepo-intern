@@ -1,7 +1,13 @@
 package no.nav.paw.arbeidssoekerregisteret.test
 
+import no.nav.paw.arbeidssoekerregisteret.model.BestillingRow
 import no.nav.paw.arbeidssoekerregisteret.model.BestillingStatus
+import no.nav.paw.arbeidssoekerregisteret.model.BestillingerTable
+import no.nav.paw.arbeidssoekerregisteret.model.BestiltVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.BestiltVarselStatus
+import no.nav.paw.arbeidssoekerregisteret.model.BestilteVarslerTable
+import no.nav.paw.arbeidssoekerregisteret.model.EksterneVarslerTable
+import no.nav.paw.arbeidssoekerregisteret.model.EksterntVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.InsertBestillingRow
 import no.nav.paw.arbeidssoekerregisteret.model.InsertBestiltVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.InsertEksterntVarselRow
@@ -15,8 +21,10 @@ import no.nav.paw.arbeidssoekerregisteret.model.VarselEventName
 import no.nav.paw.arbeidssoekerregisteret.model.VarselHendelse
 import no.nav.paw.arbeidssoekerregisteret.model.VarselKanal
 import no.nav.paw.arbeidssoekerregisteret.model.VarselKilde
+import no.nav.paw.arbeidssoekerregisteret.model.VarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.VarselStatus
 import no.nav.paw.arbeidssoekerregisteret.model.VarselType
+import no.nav.paw.arbeidssoekerregisteret.model.VarslerTable
 import no.nav.paw.arbeidssokerregisteret.api.v1.Bruker
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata
@@ -36,6 +44,8 @@ import no.nav.paw.config.env.appNameOrDefaultForLocal
 import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.config.env.namespaceOrDefaultForLocal
 import org.apache.kafka.streams.test.TestRecord
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -90,6 +100,28 @@ object TestData {
         avsluttetTimestamp = avsluttetTimestamp
     )
 
+    fun varselRow(
+        periodeId: UUID = UUID.randomUUID(),
+        varselId: UUID = UUID.randomUUID(),
+        varselKilde: VarselKilde = VarselKilde.UKJENT,
+        varselType: VarselType = VarselType.UKJENT,
+        varselStatus: VarselStatus = VarselStatus.UKJENT,
+        hendelseName: VarselEventName = VarselEventName.UKJENT,
+        hendelseTimestamp: Instant = Instant.now(),
+        insertedTimestamp: Instant = Instant.now(),
+        updatedTimestamp: Instant? = null
+    ): VarselRow = VarselRow(
+        periodeId = periodeId,
+        varselId = varselId,
+        varselKilde = varselKilde,
+        varselType = varselType,
+        varselStatus = varselStatus,
+        hendelseName = hendelseName,
+        hendelseTimestamp = hendelseTimestamp,
+        insertedTimestamp = insertedTimestamp,
+        updatedTimestamp = updatedTimestamp
+    )
+
     fun insertVarselRow(
         periodeId: UUID = UUID.randomUUID(),
         varselId: UUID = UUID.randomUUID(),
@@ -118,6 +150,24 @@ object TestData {
         varselStatus = varselStatus,
         hendelseName = hendelseName,
         hendelseTimestamp = hendelseTimestamp
+    )
+
+    fun eksterntVarselRow(
+        varselId: UUID = UUID.randomUUID(),
+        varselType: VarselType = VarselType.UKJENT,
+        varselStatus: VarselStatus = VarselStatus.UKJENT,
+        hendelseName: VarselEventName = VarselEventName.UKJENT,
+        hendelseTimestamp: Instant = Instant.now(),
+        insertedTimestamp: Instant = Instant.now(),
+        updatedTimestamp: Instant? = null
+    ): EksterntVarselRow = EksterntVarselRow(
+        varselId = varselId,
+        varselType = varselType,
+        varselStatus = varselStatus,
+        hendelseName = hendelseName,
+        hendelseTimestamp = hendelseTimestamp,
+        insertedTimestamp = insertedTimestamp,
+        updatedTimestamp = updatedTimestamp
     )
 
     fun insertEksterntVarselRow(
@@ -409,4 +459,65 @@ object TestData {
 
     fun VarselHendelse.asRecord(): TestRecord<String, VarselHendelse> =
         TestRecord(this.varselId, this)
+
+    fun VarselRow.insert(): Int {
+        val row = this
+        return transaction {
+            VarslerTable.insert {
+                it[periodeId] = row.periodeId
+                it[bekreftelseId] = row.bekreftelseId
+                it[varselId] = row.varselId
+                it[varselKilde] = row.varselKilde
+                it[varselType] = row.varselType
+                it[varselStatus] = row.varselStatus
+                it[hendelseNavn] = row.hendelseName
+                it[hendelseTimestamp] = row.hendelseTimestamp
+                it[insertedTimestamp] = row.insertedTimestamp
+                it[updatedTimestamp] = row.updatedTimestamp
+            }.insertedCount
+        }
+    }
+
+    fun EksterntVarselRow.insert(): Int {
+        val row = this
+        return transaction {
+            EksterneVarslerTable.insert {
+                it[varselId] = row.varselId
+                it[varselType] = row.varselType
+                it[varselStatus] = row.varselStatus
+                it[hendelseNavn] = row.hendelseName
+                it[hendelseTimestamp] = row.hendelseTimestamp
+                it[insertedTimestamp] = row.insertedTimestamp
+                it[updatedTimestamp] = row.updatedTimestamp
+            }.insertedCount
+        }
+    }
+
+    fun BestillingRow.insert(): Int {
+        val row = this
+        return transaction {
+            BestillingerTable.insert {
+                it[bestillingId] = row.bestillingId
+                it[bestiller] = row.bestiller
+                it[status] = row.status
+                it[insertedTimestamp] = row.insertedTimestamp
+                it[updatedTimestamp] = row.updatedTimestamp
+            }.insertedCount
+        }
+    }
+
+    fun BestiltVarselRow.insert(): Int {
+        val row = this
+        return transaction {
+            BestilteVarslerTable.insert {
+                it[bestillingId] = row.bestillingId
+                it[periodeId] = row.periodeId
+                it[varselId] = row.varselId
+                it[identitetsnummer] = row.identitetsnummer
+                it[status] = row.status
+                it[insertedTimestamp] = row.insertedTimestamp
+                it[updatedTimestamp] = row.updatedTimestamp
+            }.insertedCount
+        }
+    }
 }

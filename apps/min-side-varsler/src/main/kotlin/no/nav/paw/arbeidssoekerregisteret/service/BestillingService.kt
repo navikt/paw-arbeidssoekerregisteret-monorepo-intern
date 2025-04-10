@@ -38,7 +38,7 @@ class BestillingService(
 ) {
     private val logger = buildApplicationLogger
 
-    @WithSpan("hentBestilling")
+    @WithSpan("BestillingService.hentBestilling")
     fun hentBestilling(bestillingId: UUID): BestillingResponse = transaction {
         val bestilling = bestillingRepository.findByBestillingId(bestillingId)
             ?: throw BestillingIkkeFunnetException("Bestilling ikke funnet")
@@ -53,7 +53,7 @@ class BestillingService(
         bestilling.asResponse(totalCount, sendtCount, feiletCount, ignorertCount)
     }
 
-    @WithSpan("opprettBestilling")
+    @WithSpan("BestillingService.opprettBestilling")
     fun opprettBestilling(bestiller: String): BestillingResponse = transaction {
         val bestillingId = UUID.randomUUID()
         bestillingRepository.insert(InsertBestillingRow(bestillingId, bestiller))
@@ -61,7 +61,7 @@ class BestillingService(
             ?: throw BestillingIkkeFunnetException("Bestilling ikke funnet")
     }
 
-    @WithSpan("bekreftBestilling")
+    @WithSpan("BestillingService.bekreftBestilling")
     fun bekreftBestilling(bestillingId: UUID): BestillingResponse = transaction {
         val bestilling = bestillingRepository.findByBestillingId(bestillingId)
             ?: throw BestillingIkkeFunnetException("Bestilling ikke funnet")
@@ -72,13 +72,13 @@ class BestillingService(
         hentBestilling(bestillingId)
     }
 
-    @WithSpan("prosesserBestillinger")
+    @WithSpan("BestillingService.prosesserBestillinger")
     fun prosesserBestillinger() {
         val bestillinger = bestillingRepository.findByStatus(BestillingStatus.BEKREFTET)
         if (bestillinger.isEmpty()) {
             logger.info("Ingen ventende manuelle varselbestillinger funnet")
         } else {
-            if (!applicationConfig.manuelleVarslerEnabled) {
+            if (!applicationConfig.manueltVarselEnabled) {
                 logger.warn("Utsendelse av manuelle varsler er deaktivert")
             }
             logger.info("Starter prosessering av {} manuelle varselbestillinger", bestillinger.size)
@@ -89,7 +89,7 @@ class BestillingService(
         }
     }
 
-    @WithSpan("prosesserBestilling")
+    @WithSpan("BestillingService.prosesserBestilling")
     private fun prosesserBestilling(bestilling: BestillingRow) {
         val varselIdList = bestiltVarselRepository
             .findVarselIdByBestillingIdAndStatus(bestilling.bestillingId, BestiltVarselStatus.VENTER)
@@ -119,13 +119,13 @@ class BestillingService(
         bestillingRepository.update(UpdateBestillingRow(bestilling.bestillingId, status))
     }
 
-    @WithSpan("prosesserBestiltVarsel")
+    @WithSpan("BestillingService.prosesserBestiltVarsel")
     private fun prosesserBestiltVarsel(varselId: UUID): BestiltVarselRow = transaction {
         val varsel = bestiltVarselRepository.findByVarselId(varselId)
             ?: throw VarselIkkeFunnetException("Manuelt varsel ikke funnet")
         try {
             logger.info("Prosesserer manuelt varsel {}", varselId)
-            if (applicationConfig.manuelleVarslerEnabled) {
+            if (applicationConfig.manueltVarselEnabled) {
                 val insertVarselRow = varsel.asInsertVarselRow()
                 varselRepository.insert(insertVarselRow)
                 val melding = varselMeldingBygger.opprettManueltVarsel(varsel.varselId, varsel.identitetsnummer)
@@ -134,12 +134,7 @@ class BestillingService(
                 logger.debug("Sendte manuelt varsel {}", varsel.varselId)
                 bestiltVarselRepository.update(UpdateBestiltVarselRow(varsel.varselId, BestiltVarselStatus.SENDT))
             } else {
-                bestiltVarselRepository.update(
-                    UpdateBestiltVarselRow(
-                        varsel.varselId,
-                        BestiltVarselStatus.IGNORERT
-                    )
-                )
+                bestiltVarselRepository.update(UpdateBestiltVarselRow(varsel.varselId, BestiltVarselStatus.IGNORERT))
             }
         } catch (e: Exception) {
             logger.error("Sending av manuelt varsel feilet", e)

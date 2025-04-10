@@ -11,6 +11,8 @@ import no.nav.paw.arbeidssoekerregisteret.model.asBestiltVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.asSortOrder
 import no.nav.paw.arbeidssoekerregisteret.model.asVarselId
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
@@ -22,7 +24,7 @@ import java.util.*
 
 class BestiltVarselRepository {
 
-    @WithSpan("findAll")
+    @WithSpan("BestiltVarselRepository.findAll")
     fun findAll(paging: Paging = Paging.none()): List<BestiltVarselRow> = transaction {
         BestilteVarslerTable.selectAll()
             .orderBy(BestilteVarslerTable.insertedTimestamp, paging.order.asSortOrder())
@@ -30,7 +32,7 @@ class BestiltVarselRepository {
             .map { it.asBestiltVarselRow() }
     }
 
-    @WithSpan("findByVarselId")
+    @WithSpan("BestiltVarselRepository.findByVarselId")
     fun findByVarselId(varselId: UUID): BestiltVarselRow? = transaction {
         BestilteVarslerTable.selectAll()
             .where { BestilteVarslerTable.varselId eq varselId }
@@ -38,7 +40,7 @@ class BestiltVarselRepository {
             .firstOrNull()
     }
 
-    @WithSpan("findByBestillingId")
+    @WithSpan("BestiltVarselRepository.findByBestillingId")
     fun findByBestillingId(
         bestillingId: UUID,
         paging: Paging = Paging.none(),
@@ -50,7 +52,7 @@ class BestiltVarselRepository {
             .map { it.asBestiltVarselRow() }
     }
 
-    @WithSpan("findVarselIdByBestillingId")
+    @WithSpan("BestiltVarselRepository.findVarselIdByBestillingId")
     fun findVarselIdByBestillingIdAndStatus(
         bestillingId: UUID,
         status: BestiltVarselStatus,
@@ -63,7 +65,7 @@ class BestiltVarselRepository {
             .map { it.asVarselId() }
     }
 
-    @WithSpan("insert")
+    @WithSpan("BestiltVarselRepository.insert")
     fun insert(varsel: InsertBestiltVarselRow): Int = transaction {
         BestilteVarslerTable.insert {
             it[bestillingId] = varsel.bestillingId
@@ -75,7 +77,7 @@ class BestiltVarselRepository {
         }.insertedCount
     }
 
-    @WithSpan("update")
+    @WithSpan("BestiltVarselRepository.update")
     fun update(varsel: UpdateBestiltVarselRow): Int = transaction {
         BestilteVarslerTable.update({
             BestilteVarslerTable.varselId eq varsel.varselId
@@ -85,24 +87,27 @@ class BestiltVarselRepository {
         }
     }
 
-    @WithSpan("deleteByBestillingId")
-    fun deleteByBestillingId(bestillingId: UUID): Int = transaction {
-        BestilteVarslerTable.deleteWhere { BestilteVarslerTable.bestillingId eq bestillingId }
+    @WithSpan("BestiltVarselRepository.deleteByBestillingIdAndUpdatedTimestampAndStatus")
+    fun deleteByBestillingIdAndUpdatedTimestampAndStatus(
+        bestillingId: UUID,
+        updateTimestamp: Instant,
+        vararg status: BestiltVarselStatus
+    ): Int = transaction {
+        BestilteVarslerTable.deleteWhere {
+            (BestilteVarslerTable.bestillingId eq bestillingId) and
+                    (BestilteVarslerTable.updatedTimestamp less updateTimestamp) and
+                    (BestilteVarslerTable.status inList status.toList())
+        }
     }
 
-    @WithSpan("deleteByVarselId")
-    fun deleteByVarselId(varselId: UUID): Int = transaction {
-        BestilteVarslerTable.deleteWhere { BestilteVarslerTable.varselId eq varselId }
-    }
-
-    @WithSpan("countByBestillingId")
+    @WithSpan("BestiltVarselRepository.countByBestillingId")
     fun countByBestillingId(bestillingId: UUID): Long = transaction {
         BestilteVarslerTable.selectAll()
             .where { BestilteVarslerTable.bestillingId eq bestillingId }
             .count()
     }
 
-    @WithSpan("countByBestillingIdAndStatus")
+    @WithSpan("BestiltVarselRepository.countByBestillingIdAndStatus")
     fun countByBestillingIdAndStatus(
         bestillingId: UUID,
         status: BestiltVarselStatus
@@ -112,7 +117,7 @@ class BestiltVarselRepository {
             .count()
     }
 
-    @WithSpan("insertAktivePerioder")
+    @WithSpan("BestiltVarselRepository.insertAktivePerioder")
     fun insertAktivePerioder(bestillingId: UUID) = transaction {
         val status = BestiltVarselStatus.VENTER.name
         exec(

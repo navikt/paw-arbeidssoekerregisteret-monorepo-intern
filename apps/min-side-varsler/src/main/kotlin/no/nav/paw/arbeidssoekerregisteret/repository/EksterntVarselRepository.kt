@@ -6,8 +6,13 @@ import no.nav.paw.arbeidssoekerregisteret.model.EksterntVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.InsertEksterntVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.Paging
 import no.nav.paw.arbeidssoekerregisteret.model.UpdateEksterntVarselRow
+import no.nav.paw.arbeidssoekerregisteret.model.VarselStatus
 import no.nav.paw.arbeidssoekerregisteret.model.asEksterntVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.asSortOrder
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -17,7 +22,7 @@ import java.util.*
 
 class EksterntVarselRepository {
 
-    @WithSpan("findAll")
+    @WithSpan("EksterntVarselRepository.findAll")
     fun findAll(paging: Paging = Paging.none()): List<EksterntVarselRow> = transaction {
         EksterneVarslerTable.selectAll()
             .orderBy(EksterneVarslerTable.hendelseTimestamp, paging.order.asSortOrder())
@@ -25,7 +30,7 @@ class EksterntVarselRepository {
             .map { it.asEksterntVarselRow() }
     }
 
-    @WithSpan("findByVarselId")
+    @WithSpan("EksterntVarselRepository.findByVarselId")
     fun findByVarselId(varselId: UUID): EksterntVarselRow? = transaction {
         EksterneVarslerTable.selectAll()
             .where { EksterneVarslerTable.varselId eq varselId }
@@ -33,7 +38,7 @@ class EksterntVarselRepository {
             .firstOrNull()
     }
 
-    @WithSpan("insert")
+    @WithSpan("EksterntVarselRepository.insert")
     fun insert(varsel: InsertEksterntVarselRow): Int = transaction {
         EksterneVarslerTable.insert {
             it[varselId] = varsel.varselId
@@ -45,7 +50,7 @@ class EksterntVarselRepository {
         }.insertedCount
     }
 
-    @WithSpan("update")
+    @WithSpan("EksterntVarselRepository.update")
     fun update(varsel: UpdateEksterntVarselRow): Int = transaction {
         EksterneVarslerTable.update({
             EksterneVarslerTable.varselId eq varsel.varselId
@@ -55,6 +60,17 @@ class EksterntVarselRepository {
             it[hendelseNavn] = varsel.hendelseName
             it[hendelseTimestamp] = varsel.hendelseTimestamp
             it[updatedTimestamp] = Instant.now()
+        }
+    }
+
+    @WithSpan("EksterntVarselRepository.deleteByUpdatedTimestampAndStatus")
+    fun deleteByUpdatedTimestampAndStatus(
+        updateTimestamp: Instant,
+        vararg varselStatus: VarselStatus
+    ): Int = transaction {
+        EksterneVarslerTable.deleteWhere {
+            (EksterneVarslerTable.updatedTimestamp less updateTimestamp) and
+                    (EksterneVarslerTable.varselStatus inList varselStatus.toList())
         }
     }
 }

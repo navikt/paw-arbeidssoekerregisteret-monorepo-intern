@@ -29,7 +29,7 @@ fun Route.bestillingerRoutes(
             }
 
             post {
-                if (applicationConfig.manuelleVarslerEnabled) {
+                if (applicationConfig.manueltVarselEnabled) {
                     val bruker = call.bruker<Bruker<String>>()
                     val response = bestillingService.opprettBestilling(bruker.ident)
                     call.respond(HttpStatusCode.OK, response)
@@ -39,7 +39,7 @@ fun Route.bestillingerRoutes(
             }
 
             put("/{bestillingId}") {
-                if (applicationConfig.manuelleVarslerEnabled) {
+                if (applicationConfig.manueltVarselEnabled) {
                     val bestillingId = call.pathBestillingId()
                     val response = bestillingService.bekreftBestilling(bestillingId)
                     call.respond(HttpStatusCode.OK, response)
