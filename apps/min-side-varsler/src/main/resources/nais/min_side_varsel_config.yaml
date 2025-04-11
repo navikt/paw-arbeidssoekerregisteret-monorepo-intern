@@ -15,9 +15,9 @@ periodeAvsluttet:
       tekst: You are no longer registered as a job seeker
   eksterntVarsel:
     preferertKanal: BETINGET_SMS
-    smsTekst: Hei! Du er ikke lenger registrert som arbeidssøker hos Nav. Logg inn på Nav sine nettsider for mer informasjon. Hilsen Nav
+    smsTekst: Hei! Du er ikke lenger registrert som arbeidssøker hos Nav. Logg inn på Nav hvis du vil vite hva dette betyr for deg. Hilsen Nav
     epostTittel: Du har fått en melding fra Nav
-    epostTekst: Hei!<br>Du er ikke lenger registrert som arbeidssøker hos Nav. Logg inn på Nav sine nettsider for mer informasjon.<br>Hilsen Nav
+    epostTekst: Hei!<br>Du er ikke lenger registrert som arbeidssøker hos Nav. Logg inn på Nav hvis du vil vite hva dette betyr for deg.<br>Hilsen Nav
 
 bekreftelseTilgjengelig:
   link: ${BEKREFTELSE_TILGJENGELIG_VARSEL_LINK}
@@ -36,9 +36,9 @@ bekreftelseTilgjengelig:
       tekst: Confirm that you want to be registered as a jobseeker with Nav
   eksterntVarsel:
     preferertKanal: BETINGET_SMS
-    smsTekst: Hei! Ønsker du fortsatt å være registrert som arbeidssøker? Logg inn på Nav så snart som mulig for å bekrefte at du vil være registrert. Hilsen Nav
+    smsTekst: Hei! Ønsker du fortsatt å være registrert som arbeidssøker? Logg inn på Nav for å bekrefte at du vil være registrert. Hilsen Nav
     epostTittel: Du har fått en melding fra Nav
-    epostTekst: Hei!<br>Ønsker du fortsatt å være registrert som arbeidssøker hos Nav? Logg inn på Nav sine nettsider så snart som mulig for å bekrefte at du vil være registrert som arbeidssøker.<br>Hilsen Nav
+    epostTekst: Hei!<br>Ønsker du fortsatt å være registrert som arbeidssøker? Logg inn på Nav for å bekrefte at du vil være registrert.<br>Hilsen Nav
 
 manueltVarsel:
   link: ${MANUELT_VARSEL_LINK}
