@@ -27,13 +27,13 @@ bekreftelseTilgjengelig:
   tekster:
     - spraak:
         kode: nb
-      tekst: Bekreft at du vil være registrert som arbeidssøker
+      tekst: Bekreft at du vil være registrert som arbeidssøker hos Nav
     - spraak:
         kode: nn
-      tekst: Stadfest at du vil vere arbeidssøkjar
+      tekst: Stadfest at du vil vera registrert som arbeidssøkjar hos Nav
     - spraak:
         kode: en
-      tekst: Confirm your status as a jobseeker
+      tekst: Confirm that you want to be registered as a jobseeker with Nav
   eksterntVarsel:
     preferertKanal: BETINGET_SMS
     smsTekst: Hei! Ønsker du fortsatt å være registrert som arbeidssøker? Logg inn på Nav så snart som mulig for å bekrefte at du vil være registrert. Hilsen Nav
