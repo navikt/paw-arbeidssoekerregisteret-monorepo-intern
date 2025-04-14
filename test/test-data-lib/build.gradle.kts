@@ -10,6 +10,6 @@ dependencies {
     implementation(project(":domain:main-avro-schema"))
     implementation(project(":lib:kafka-key-generator-client"))
 
-    implementation(libs.coroutinesCore)
+    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.avro.core)
 }

@@ -14,25 +14,23 @@ ioConfluentKafkaVersion = "7.9.0"
 orgApacheAvroVersion = "1.12.0"
 comFasterxmlJacksonVersion = "2.18.3"
 kotlinExposedVersion = "0.60.0"
-logstashVersion = "8.0"
+logstashVersion = "8.1"
 logbackVersion = "1.5.18"
 kotestVersion = "5.9.1"
 mockkVersion = "1.13.17"
 testContainersVersion = "1.20.6"
 micrometerVersion = "1.14.5"
-otelTargetSdkVersion = "1.48.0"
+otelTargetSdkVersion = "1.49.0"
 otelInstrumentationVersion = "2.14.0"
-coroutinesVersion = "1.10.1"
 postgresDriverVersion = "42.7.5"
 h2DatabaseVersion = "2.3.232"
-flywayVersion = "11.5.0"
+flywayVersion = "11.6.0"
 hikariVersion = "6.3.0"
-kotlinxCoroutinesVersion = "1.10.1"
-kotlinxSerializationJsonVersion = "1.8.0"
+kotlinxCoroutinesVersion = "1.10.2"
+kotlinxSerializationJsonVersion = "1.8.1"
 ktorVersion = "3.1.2"
 
 [libraries]
-coroutinesCore = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutinesVersion" }
 arrow-core-core = { group = "io.arrow-kt", name = "arrow-core", version.ref = "arrowVersion" }
 arrow-functions = { group = "io.arrow-kt", name = "arrow-functions", version.ref = "arrowVersion" }
 arrow-integration-jackson = { group = "io.arrow-kt", name = "arrow-integrations-jackson-module", version.ref = "arrowJacksonIntegrationVersion" }
