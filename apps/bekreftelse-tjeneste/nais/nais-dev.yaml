@@ -24,11 +24,11 @@ spec:
     - name: BEKREFTELSE_TIDLIGSTE_PERIODE_START
       value: "2025-03-10"
     - name: BEKREFTELSE_INTERVAL
-      value: "PT5M"
+      value: "P14D"
     - name: BEKREFTELSE_GRACEPERIODE
-      value: "P1D"
+      value: "P8D"
     - name: BEKREFTELSE_TILGJENGELIG_OFFSET
-      value: "PT2M"
+      value: "PT68H" # 2 døgn og 20 timer
   azure:
     application:
       enabled: true
