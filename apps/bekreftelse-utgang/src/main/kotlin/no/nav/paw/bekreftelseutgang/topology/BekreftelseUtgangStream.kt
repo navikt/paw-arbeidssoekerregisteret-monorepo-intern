@@ -60,7 +60,8 @@ fun processBekreftelseHendelse(
                 sikkerhetsnivaa = null
             ),
             aarsak = "[Bekreftelse] ikke levert innen fristen",
-            oppgittAarsak = Aarsak.RegisterGracePeriodeUtloept
+            oppgittAarsak = Aarsak.RegisterGracePeriodeUtloept,
+            kilde = bekreftelseHendelse.kilde,
         )
         is RegisterGracePeriodeUtloeptEtterEksternInnsamling -> avsluttetHendelse(
             identitetsnummer = identitetsnummer,
@@ -73,6 +74,7 @@ fun processBekreftelseHendelse(
             ),
             aarsak = "[Bekreftelse:ytelse/støtte] Ikke levert innen fristen",
             oppgittAarsak = Aarsak.RegisterGracePeriodeUtloeptEtterEksternInnsamling,
+            kilde = bekreftelseHendelse.kilde
         )
         is BaOmAaAvsluttePeriode -> avsluttetHendelse(
             identitetsnummer = identitetsnummer,
@@ -91,6 +93,7 @@ fun processBekreftelseHendelse(
             ),
             aarsak = "[Bekreftelse] Ønsket ikke lenger å være arbeidssøker",
             oppgittAarsak = Aarsak.BaOmAaAvsluttePeriode,
+            kilde = bekreftelseHendelse.kilde
         )
         else -> null
     }
@@ -98,19 +101,19 @@ fun processBekreftelseHendelse(
 
 fun ApplicationConfig.getAppImage() = runtimeEnvironment.appImageOrDefaultForLocal("paw-arbeidssoekerregisteret-bekreftelse-utgang:LOCAL")
 
-fun avsluttetHendelse(identitetsnummer: String, periodeId: UUID, arbeidssoekerId: Long, utfoertAv: Bruker, aarsak: String, oppgittAarsak: Aarsak) = Avsluttet(
+fun avsluttetHendelse(identitetsnummer: String, periodeId: UUID, arbeidssoekerId: Long, utfoertAv: Bruker, aarsak: String, oppgittAarsak: Aarsak, kilde: String) = Avsluttet(
     hendelseId = UUID.randomUUID(),
     id = arbeidssoekerId,
     identitetsnummer = identitetsnummer,
-    metadata = metadata(utfoertAv, aarsak),
+    metadata = metadata(utfoertAv, aarsak, kilde),
     periodeId = periodeId,
     kalkulertAarsak = Aarsak.Udefinert,
     oppgittAarsak = oppgittAarsak,
 )
 
-fun metadata(utfoertAv: Bruker, aarsak: String) = Metadata(
+fun metadata(utfoertAv: Bruker, aarsak: String, kilde: String) = Metadata(
     tidspunkt = Instant.now(),
     utfoertAv = utfoertAv,
-    kilde = "paw.arbeidssoekerregisteret.bekreftelse-utgang",
+    kilde = kilde,
     aarsak = aarsak,
 )

@@ -11,7 +11,8 @@ class BaOmAaAvsluttePeriode(
     override val periodeId: UUID,
     override val arbeidssoekerId: Long,
     override val hendelseTidspunkt: Instant,
-    val utfoertAv: Bruker
+    val utfoertAv: Bruker,
+    val kilde: String = "",
 ) : BekreftelseHendelse {
     override val hendelseType: String = baOmAaAvsluttePeriodeHendelsesType
 }

@@ -102,7 +102,8 @@ private fun stoppPaaVeieneAv(
                 hendelseId = UUID.randomUUID(),
                 periodeId = paaVegneAvHendelse.periodeId,
                 arbeidssoekerId = bekreftelseTilstand.periode.arbeidsoekerId,
-                hendelseTidspunkt = wallclock.value
+                hendelseTidspunkt = wallclock.value,
+                kilde = "bekreftelse_paavegneav_stopp:${paaVegneAvHendelse.bekreftelsesloesning.name.lowercase()}"
             )
         )
     } else {

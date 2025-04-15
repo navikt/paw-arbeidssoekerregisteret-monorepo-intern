@@ -10,7 +10,8 @@ data class RegisterGracePeriodeUtloept(
     override val periodeId: UUID,
     override val arbeidssoekerId: Long,
     override val hendelseTidspunkt: Instant,
-    val bekreftelseId: UUID
+    val bekreftelseId: UUID,
+    val kilde: String = "",
 ) : BekreftelseHendelse {
     override val hendelseType: String = registerGracePeriodeUtloeptHendelseType
 }

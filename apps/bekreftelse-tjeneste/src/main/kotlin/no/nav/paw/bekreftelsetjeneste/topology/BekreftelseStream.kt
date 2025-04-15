@@ -186,7 +186,8 @@ fun behandleGyldigSvar(
                 type = record.svar.sendtInnAv.utfoertAv.type.tilInternBrukerType(),
                 id = record.svar.sendtInnAv.utfoertAv.id,
                 sikkerhetsnivaa = record.svar.sendtInnAv.utfoertAv.sikkerhetsnivaa
-            )
+            ),
+            kilde = "bekreftelse:${record.bekreftelsesloesning.name.lowercase()}:${record.id}"
         )
     } else null
 

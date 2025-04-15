@@ -2,7 +2,6 @@ package no.nav.paw.bekreftelsetjeneste.topology
 
 import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
-import no.nav.paw.bekreftelse.internehendelser.BekreftelseMeldingMottatt
 import no.nav.paw.bekreftelse.internehendelser.vo.Bruker
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelse.melding.v1.vo.BrukerType
@@ -10,9 +9,6 @@ import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
 import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
 import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
-import kotlin.reflect.KClass
-
-
 
 fun haandterBekreftelseMottatt(
     wallClock: WallClock,
@@ -61,7 +57,8 @@ fun haandterBekreftelseMottatt(
                                     },
                                     id = melding.svar.sendtInnAv.utfoertAv.id,
                                     sikkerhetsnivaa = melding.svar.sendtInnAv.utfoertAv.sikkerhetsnivaa
-                                )
+                                ),
+                                kilde = "bekreftelse:${melding.bekreftelsesloesning.name.lowercase()}:${melding.id}"
                             )
                         }
                 )

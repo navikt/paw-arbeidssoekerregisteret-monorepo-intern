@@ -3,14 +3,11 @@ package no.nav.paw.bekreftelsetjeneste.topology
 import arrow.core.andThen
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
-import io.opentelemetry.api.trace.SpanKind.INTERNAL
-import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjenstaaendeTid
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
-import no.nav.paw.bekreftelsetjeneste.logger
 import no.nav.paw.bekreftelsetjeneste.metrics.tellBekreftelseHandling
 import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
@@ -33,6 +30,8 @@ import no.nav.paw.bekreftelsetjeneste.tilstand.sisteTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.sluttTidForBekreftelsePeriode
 import no.nav.paw.collections.PawNonEmptyList
 import no.nav.paw.collections.pawNonEmptyListOf
+import no.nav.paw.config.env.appNameOrDefaultForLocal
+import no.nav.paw.config.env.currentRuntimeEnvironment
 import java.time.LocalDate
 import java.time.Month
 import java.util.*
@@ -207,7 +206,8 @@ fun BekreftelseContext.oppdaterBekreftelser(bekreftelser: PawNonEmptyList<Bekref
                     periodeId = periodeInfo.periodeId,
                     arbeidssoekerId = periodeInfo.arbeidsoekerId,
                     hendelseTidspunkt = wallClock.value,
-                    bekreftelseId = bekreftelse.bekreftelseId
+                    bekreftelseId = bekreftelse.bekreftelseId,
+                    kilde = currentRuntimeEnvironment.appNameOrDefaultForLocal()
                 )
             }
 
