@@ -35,6 +35,7 @@ include(
     "test:test-data-lib",
     "test:kafka-streams-test-functions",
     // domain
+    "domain:identitet-interne-hendelser",
     "domain:bekreftelse-interne-hendelser",
     "domain:bekreftelse-paavegneav-avro-schema",
     "domain:bekreftelsesmelding-avro-schema",
