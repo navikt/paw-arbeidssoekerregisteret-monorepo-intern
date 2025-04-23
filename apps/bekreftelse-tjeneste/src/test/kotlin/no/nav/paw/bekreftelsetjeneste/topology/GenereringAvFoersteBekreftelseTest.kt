@@ -46,14 +46,10 @@ class GenereringAvFoersteBekreftelseTest : FreeSpec({
                     prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
                 )
                 val (tilstand, _, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
-                tilstand.bekreftelser.size shouldBe 2
+                tilstand.bekreftelser.size shouldBe 1
                 tilstand.bekreftelser.maxBy { it.gjelderFra } should { bekreftelse ->
                     bekreftelse.gjelderFra shouldBe "2025-03-10".vedStartAvDagen()
                     bekreftelse.gjelderTil shouldBe "2025-03-24".vedStartAvDagen()
-                }
-                tilstand.bekreftelser.minBy { it.gjelderFra } should { bekreftelse ->
-                    bekreftelse.gjelderFra shouldBe "2025-02-24".vedStartAvDagen()
-                    bekreftelse.gjelderTil shouldBe "2025-03-10".vedStartAvDagen()
                 }
                 hendelser.shouldBeEmpty()
             }
@@ -71,14 +67,10 @@ class GenereringAvFoersteBekreftelseTest : FreeSpec({
                     prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
                 )
                 val (tilstand, _, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
-                tilstand.bekreftelser.size shouldBe 2
+                tilstand.bekreftelser.size shouldBe 1
                 tilstand.bekreftelser.maxBy { it.gjelderFra } should { bekreftelse ->
                     bekreftelse.gjelderFra shouldBe "2025-03-10".vedStartAvDagen()
                     bekreftelse.gjelderTil shouldBe "2025-03-24".vedStartAvDagen()
-                }
-                tilstand.bekreftelser.minBy { it.gjelderFra } should { bekreftelse ->
-                    bekreftelse.gjelderFra shouldBe "2025-02-24".vedStartAvDagen()
-                    bekreftelse.gjelderTil shouldBe "2025-03-10".vedStartAvDagen()
                 }
                 hendelser.shouldBeEmpty()
             }
@@ -96,14 +88,10 @@ class GenereringAvFoersteBekreftelseTest : FreeSpec({
                     prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
                 )
                 val (tilstand, _, hendelser) = context.prosesser(BekreftelseTilstand(0, periodeInfo, emptyList()))
-                tilstand.bekreftelser.size shouldBe 2
+                tilstand.bekreftelser.size shouldBe 1
                 tilstand.bekreftelser.first() should { bekreftelse ->
                     bekreftelse.gjelderFra shouldBe periodeInfo.startet
                     bekreftelse.gjelderTil shouldBe "2025-03-24".vedStartAvDagen()
-                }
-                tilstand.bekreftelser.minBy { it.gjelderFra } should { bekreftelse ->
-                    bekreftelse.gjelderFra shouldBe "2025-02-24".vedStartAvDagen()
-                    bekreftelse.gjelderTil shouldBe "2025-03-10".vedStartAvDagen()
                 }
                 hendelser.shouldBeEmpty()
             }
