@@ -150,55 +150,77 @@ fun List<Hendelse>.asConsumerRecords(): ConsumerRecords<Long, Hendelse> =
 
 object TestData {
 
-    fun getMetadata(): Metadata =
+    const val fnr1 = "01017012345"
+    const val fnr2 = "02017012345"
+    const val fnr3 = "03017012345"
+    const val fnr4 = "04017012345"
+    const val fnr5 = "05017012345"
+    const val dnr1 = "41017012345"
+    const val dnr2 = "42017012345"
+    const val dnr3 = "43017012345"
+    const val dnr4 = "44017012345"
+    const val dnr5 = "45017012345"
+    const val aktorId1 = "200001017012345"
+    const val aktorId2 = "200002017012345"
+    const val aktorId3 = "200003017012345"
+    const val aktorId4 = "200004017012345"
+    const val aktorId5 = "200005017012345"
+
+    fun bruker(): Bruker = Bruker(
+        type = BrukerType.SYSTEM,
+        id = "paw",
+        sikkerhetsnivaa = null
+    )
+
+    fun metadata(): Metadata =
         Metadata(
             tidspunkt = Instant.now(),
-            utfoertAv = Bruker(type = BrukerType.SYSTEM, id = "paw", sikkerhetsnivaa = null),
+            utfoertAv = bruker(),
             kilde = "paw",
             aarsak = "test"
         )
 
-    fun getPeriodeStartet(
+    fun periodeStartet(
         identitetsnummer: Identitetsnummer,
         arbeidssoekerId: ArbeidssoekerId
     ): Startet = Startet(
         hendelseId = UUID.randomUUID(),
         id = arbeidssoekerId.value,
         identitetsnummer = identitetsnummer.value,
-        metadata = getMetadata()
+        metadata = metadata()
     )
 
-    fun getPeriodeAvsluttet(
+    fun periodeAvsluttet(
         identitetsnummer: Identitetsnummer,
         arbeidssoekerId: ArbeidssoekerId
     ): Avsluttet = Avsluttet(
         hendelseId = UUID.randomUUID(),
         id = arbeidssoekerId.value,
         identitetsnummer = identitetsnummer.value,
-        metadata = getMetadata()
+        metadata = metadata()
     )
 
-    fun getPeriodeStartAvvist(
+    fun periodeStartAvvist(
         identitetsnummer: Identitetsnummer,
         arbeidssoekerId: ArbeidssoekerId
     ): Avvist = Avvist(
         hendelseId = UUID.randomUUID(),
         id = arbeidssoekerId.value,
         identitetsnummer = identitetsnummer.value,
-        metadata = getMetadata()
+        metadata = metadata()
     )
 
-    fun getPeriodeAvsluttetAvvist(
+    fun periodeAvsluttetAvvist(
         identitetsnummer: Identitetsnummer,
         arbeidssoekerId: ArbeidssoekerId
     ): AvvistStoppAvPeriode = AvvistStoppAvPeriode(
         hendelseId = UUID.randomUUID(),
         id = arbeidssoekerId.value,
         identitetsnummer = identitetsnummer.value,
-        metadata = getMetadata()
+        metadata = metadata()
     )
 
-    fun getIdentitetsnummerSammenslaatt(
+    fun identitetsnummerSammenslaatt(
         identitetsnummerList: List<Identitetsnummer>,
         fraArbeidssoekerId: ArbeidssoekerId,
         tilArbeidssoekerId: ArbeidssoekerId
@@ -206,12 +228,12 @@ object TestData {
         hendelseId = UUID.randomUUID(),
         id = fraArbeidssoekerId.value,
         identitetsnummer = identitetsnummerList.first().value,
-        metadata = getMetadata(),
+        metadata = metadata(),
         flyttedeIdentitetsnumre = HashSet(identitetsnummerList.map { it.value }),
         flyttetTilArbeidssoekerId = tilArbeidssoekerId.value
     )
 
-    fun getArbeidssoekerIdFlettetInn(
+    fun arbeidssoekerIdFlettetInn(
         identitetsnummerList: List<Identitetsnummer>,
         tilArbeidssoekerId: ArbeidssoekerId,
         fraArbeidssoekerId: ArbeidssoekerId
@@ -219,7 +241,7 @@ object TestData {
         hendelseId = UUID.randomUUID(),
         id = tilArbeidssoekerId.value,
         identitetsnummer = identitetsnummerList.first().value,
-        metadata = getMetadata(),
+        metadata = metadata(),
         kilde = Kilde(
             identitetsnummer = HashSet(identitetsnummerList.map { it.value }),
             arbeidssoekerId = fraArbeidssoekerId.value

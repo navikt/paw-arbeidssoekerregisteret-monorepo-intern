@@ -31,6 +31,7 @@
             <root level="INFO">
                 <appender-ref ref="STDOUT"/>
             </root>
+            <logger name="org.apache.kafka.clients" level="WARN"/>
             <logger name="no.nav.paw" level="DEBUG"/>
         </then>
     </if>
