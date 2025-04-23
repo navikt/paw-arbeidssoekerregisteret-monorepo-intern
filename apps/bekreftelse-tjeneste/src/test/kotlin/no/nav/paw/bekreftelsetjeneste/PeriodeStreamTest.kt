@@ -7,7 +7,6 @@ import no.nav.paw.arbeidssoekerregisteret.testdata.kafkaKeyContext
 import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.metadata
 import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.periode
 import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
-import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.StatiskMapOddetallPartallMap
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.opprettBekreftelseTilstand
 import no.nav.paw.bekreftelsetjeneste.topology.BekreftelseTilstandStateStore
@@ -19,8 +18,7 @@ class PeriodeStreamTest : FreeSpec({
 
     "Tilstand er null og periode er avsluttet - gjør ingenting" {
         with(ApplicationTestContext(
-            initialWallClockTime = startTime,
-            oddetallPartallMap = StatiskMapOddetallPartallMap(emptySequence())
+            initialWallClockTime = startTime
         )) {
             with(kafkaKeyContext()) {
                 val (_, key, periode) = periode(identitetsnummer = identitetsnummer, avsluttetMetadata = metadata(tidspunkt = startTime))
@@ -36,8 +34,7 @@ class PeriodeStreamTest : FreeSpec({
 
     "Tilstand er null og periode er ikke avsluttet, opprett tilstand" {
         with(ApplicationTestContext(
-            initialWallClockTime = startTime,
-            oddetallPartallMap = StatiskMapOddetallPartallMap(emptySequence()))
+            initialWallClockTime = startTime)
         ) {
             with(kafkaKeyContext()) {
                 val (id, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
@@ -53,8 +50,7 @@ class PeriodeStreamTest : FreeSpec({
 
     "Tilstand er ikke null og periode er avsluttet, slett state og send PeriodeAvsluttet hendelse" {
         with(ApplicationTestContext(
-            initialWallClockTime = startTime,
-            oddetallPartallMap = StatiskMapOddetallPartallMap(emptySequence()))
+            initialWallClockTime = startTime)
         ) {
             with(kafkaKeyContext()) {
                 val (_, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))
@@ -77,8 +73,7 @@ class PeriodeStreamTest : FreeSpec({
 
     "Tilstand er ikke null og periode er ikke avsluttet, gjør ingenting" {
         with(ApplicationTestContext(
-            initialWallClockTime = startTime,
-            oddetallPartallMap = StatiskMapOddetallPartallMap(emptySequence()))
+            initialWallClockTime = startTime)
         ) {
             with(kafkaKeyContext()) {
                 val (id, key, periode) = periode(identitetsnummer = identitetsnummer, startetMetadata = metadata(tidspunkt = startTime))

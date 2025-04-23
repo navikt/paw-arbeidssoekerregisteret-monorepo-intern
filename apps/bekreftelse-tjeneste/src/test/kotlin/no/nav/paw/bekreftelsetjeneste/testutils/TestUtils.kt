@@ -16,8 +16,6 @@ import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloeptEtterEksternInnsamling
 import no.nav.paw.bekreftelsetjeneste.ApplicationTestContext
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
-import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.OddetallPartallMap
-import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.StatiskMapOddetallPartallMap
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import no.nav.paw.test.days
 import java.time.Duration
@@ -176,8 +174,7 @@ fun setOppTest(
     tidlistBekreftelsePeriodeStart: LocalDate? = null,
     bekreftelseIntervall: Duration,
     tilgjengeligOffset: Duration,
-    innleveringsfrist: Duration,
-    oddetallPartallMap: OddetallPartallMap = StatiskMapOddetallPartallMap(emptySequence())
+    innleveringsfrist: Duration
 ): ApplicationTestContext {
     return ApplicationTestContext(
         initialWallClockTime = datoOgKlokkeslettVedStart,
@@ -187,8 +184,7 @@ fun setOppTest(
             interval = bekreftelseIntervall,
             graceperiode = innleveringsfrist,
             tilgjengeligOffset = tilgjengeligOffset,
-        ),
-        oddetallPartallMap = oddetallPartallMap
+        )
     )
 }
 

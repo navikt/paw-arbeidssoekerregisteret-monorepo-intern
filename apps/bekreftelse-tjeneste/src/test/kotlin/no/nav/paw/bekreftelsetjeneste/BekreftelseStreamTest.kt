@@ -12,7 +12,6 @@ import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.metadata
 import no.nav.paw.arbeidssoekerregisteret.testdata.mainavro.periode
 import no.nav.paw.bekreftelse.internehendelser.*
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
-import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.StatiskMapOddetallPartallMap
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import no.nav.paw.test.assertEvent
 import no.nav.paw.test.seconds
@@ -26,8 +25,7 @@ class BekreftelseStreamTest : FreeSpec({
 
     "For melding mottatt uten en tilhørende tilstand skal tilstand være uendret og hendelselogg skal være tom" {
         with(ApplicationTestContext(
-            initialWallClockTime = startTime,
-            oddetallPartallMap = StatiskMapOddetallPartallMap(emptySequence())
+            initialWallClockTime = startTime
         )) {
             val bekreftelseMelding = bekreftelseMelding(
                 periodeId = UUID.randomUUID(),
@@ -50,8 +48,8 @@ class BekreftelseStreamTest : FreeSpec({
 
     "Mottatt melding med tilhørende tilstand GracePeriodeUtloept skal tilstand være uendret og hendelselogg skal være tom" {
         with(ApplicationTestContext(
-            initialWallClockTime = startTime,
-            oddetallPartallMap = StatiskMapOddetallPartallMap(emptySequence()))
+            initialWallClockTime = startTime
+        )
         ) {
             with(kafkaKeyContext()) {
                 val (_, _, interval, graceperiode, tilgjengeligOffset, varselFoerGraceperiodeUtloept) = bekreftelseKonfigurasjon
@@ -123,8 +121,7 @@ class BekreftelseStreamTest : FreeSpec({
 
     "Mottatt melding med tilhørende tilstand av typen VenterSvar skal oppdatere tilstand til Levert og sende BekreftelseMeldingMottatt hendelse".config(enabled = false) {
         with(ApplicationTestContext(
-            initialWallClockTime = startTime,
-            oddetallPartallMap = StatiskMapOddetallPartallMap(emptySequence()))
+            initialWallClockTime = startTime)
         ) {
             with(kafkaKeyContext()) {
                 val (_, _, interval, _, tilgjengeligOffset, _) = bekreftelseKonfigurasjon
@@ -193,8 +190,7 @@ class BekreftelseStreamTest : FreeSpec({
 
     "Mottatt melding med tilhørende tilstand KlarForUtfylling skal oppdatere tilstand til Levert og sende BekreftelseMeldingMottatt og BaOmAaAvsluttePeriode hendelse om svaret er at bruker ikke vil fortsette som arbeidssøker".config(enabled = false) {
         with(ApplicationTestContext(
-            initialWallClockTime = startTime,
-            oddetallPartallMap = StatiskMapOddetallPartallMap(emptySequence()))
+            initialWallClockTime = startTime)
         ) {
             with(kafkaKeyContext()) {
                 val (_, _, interval, _, tilgjengeligOffset, _) = bekreftelseKonfigurasjon

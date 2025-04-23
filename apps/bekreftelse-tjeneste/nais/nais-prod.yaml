@@ -32,26 +32,15 @@ spec:
   azure:
     application:
       enabled: true
-  filesFrom:
-    - secret: paw-arbeidssoekere-bekreftelse-uke-sync-a
-      mountPath: /var/run/secrets/paw-arbeidssoekere-bekreftelse-uke-sync-a
-    - secret: paw-arbeidssoekere-bekreftelse-uke-sync-b
-      mountPath: /var/run/secrets/paw-arbeidssoekere-bekreftelse-uke-sync-b
-    - secret: paw-arbeidssoekere-bekreftelse-uke-sync-c
-      mountPath: /var/run/secrets/paw-arbeidssoekere-bekreftelse-uke-sync-c
-    - secret: paw-arbeidssoekere-bekreftelse-uke-sync-d
-      mountPath: /var/run/secrets/paw-arbeidssoekere-bekreftelse-uke-sync-d
-    - secret: paw-arbeidssoekere-bekreftelse-uke-sync-e
-      mountPath: /var/run/secrets/paw-arbeidssoekere-bekreftelse-uke-sync-e
   replicas:
     min: 6
     max: 6
   resources:
     limits:
-      memory: 4096Mi
+      memory: 1024Mi
     requests:
       cpu: 20m
-      memory: 2048Mi
+      memory: 512Mi
   liveness:
     path: /internal/isAlive
     initialDelay: 10

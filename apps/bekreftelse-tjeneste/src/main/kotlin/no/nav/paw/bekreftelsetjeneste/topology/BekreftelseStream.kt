@@ -19,7 +19,6 @@ import no.nav.paw.bekreftelsetjeneste.metrics.tellBekreftelseUtgaaendeHendelse
 import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
 import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
 import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
-import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.OddetallPartallMap
 import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.GracePeriodeVarselet
@@ -44,8 +43,7 @@ import no.nav.paw.bekreftelse.internehendelser.vo.BrukerType as InterntBrukerTyp
 fun StreamsBuilder.buildBekreftelseStream(
     prometheusMeterRegistry: PrometheusMeterRegistry,
     applicationConfig: ApplicationConfig,
-    bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
-    oddetallPartallMap: OddetallPartallMap
+    bekreftelseKonfigurasjon: BekreftelseKonfigurasjon
 ) {
     with(applicationConfig.kafkaTopology) {
         stream<Long, no.nav.paw.bekreftelse.melding.v1.Bekreftelse>(bekreftelseTopic)
@@ -61,7 +59,6 @@ fun StreamsBuilder.buildBekreftelseStream(
                         .partially1(internStateStoreName)
                         .partially1(bekreftelsePaaVegneAvStateStoreName)
                         .partially1(bekreftelseKonfigurasjon)
-                        .partially1(oddetallPartallMap)
                 ),
             ) { record ->
                 val wallClock = WallClock(Instant.ofEpochMilli(currentSystemTimeMs()))

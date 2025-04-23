@@ -21,10 +21,6 @@ import no.nav.paw.bekreftelsetjeneste.plugins.buildKafkaStreams
 import no.nav.paw.bekreftelsetjeneste.plugins.configureKafka
 import no.nav.paw.bekreftelsetjeneste.plugins.configureMetrics
 import no.nav.paw.bekreftelsetjeneste.routes.metricsRoutes
-import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.OddetallPartallMap
-import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.StatiskMapOddetallPartallMap
-import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.finnFiler
-import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.oddetallPartallMapFraCsvFil
 import no.nav.paw.bekreftelsetjeneste.tilstand.InternTilstandSerde
 import no.nav.paw.bekreftelsetjeneste.topology.buildTopology
 import no.nav.paw.config.env.appNameOrDefaultForLocal
@@ -47,23 +43,11 @@ fun main() {
 
     logger.info("Starter: ${currentRuntimeEnvironment.appNameOrDefaultForLocal()}")
     val keepGoing = AtomicBoolean(true)
-    val syncFiler = finnFiler(StaticConfigValues.syncMappe)
-    logger.info("Følgende filer ble funnet: $syncFiler")
-    val oddetallPartallMap = oddetallPartallMapFraCsvFil(
-        header = false,
-        filer = syncFiler,
-        delimiter = ";",
-        identitetsnummerKolonne = 0,
-        ukenummerKolonne = 1,
-        partall = "P",
-        oddetall = "O"
-    )
     with(serverConfig) {
         embeddedServer(Netty, port = port) {
             module(
                 applicationConfig = applicationConfig,
-                bekreftelseKonfigurasjon = bekreftelseKonfigurasjon,
-                oddetallPartallMap = oddetallPartallMap
+                bekreftelseKonfigurasjon = bekreftelseKonfigurasjon
             )
         }.apply {
             addShutdownHook {
@@ -78,13 +62,11 @@ fun main() {
 fun Application.module(
     applicationConfig: ApplicationConfig,
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
-    keepGoing: AtomicBoolean = AtomicBoolean(true),
-    oddetallPartallMap: OddetallPartallMap
+    keepGoing: AtomicBoolean = AtomicBoolean(true)
 ) {
     val applicationContext = ApplicationContext.create(
         applicationConfig = applicationConfig,
-        bekreftelseKonfigurasjon = bekreftelseKonfigurasjon,
-        oddetallPartallMap = oddetallPartallMap
+        bekreftelseKonfigurasjon = bekreftelseKonfigurasjon
     )
     val stream = StreamsBuilder()
     stream.addStateStore(

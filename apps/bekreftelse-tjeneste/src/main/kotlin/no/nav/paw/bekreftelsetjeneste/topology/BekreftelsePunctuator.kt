@@ -12,7 +12,6 @@ import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjenstaaendeT
 import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
 import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
-import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.OddetallPartallMap
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
 import no.nav.paw.collections.toPawNonEmptyListOrNull
 import org.apache.kafka.streams.KeyValue
@@ -33,7 +32,6 @@ fun bekreftelsePunctuator(
     bekreftelseTilstandStateStoreName: String,
     paaVegneAvTilstandStateStoreName: String,
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
-    oddetallPartallMap: OddetallPartallMap,
     timestamp: Instant,
     ctx: ProcessorContext<Long, BekreftelseHendelse>
 ) {
@@ -43,8 +41,7 @@ fun bekreftelsePunctuator(
         paaVegneAvTilstandStateStoreName,
         prometheusMeterRegistry,
         bekreftelseKonfigurasjon,
-        timestamp,
-        oddetallPartallMap
+        timestamp
     )
 }
 
@@ -60,8 +57,7 @@ fun runPunctuator(
     paaVegneAvTilstandStateStoreName: String,
     prometheusMeterRegistry: PrometheusMeterRegistry,
     bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
-    timestamp: Instant,
-    oddetallPartallMap: OddetallPartallMap
+    timestamp: Instant
 ) {
     punctuatorLogger.info("Starter Punctuator for partition: {}", ctx.taskId().partition())
     val bekreftelseTilstandStateStore: BekreftelseTilstandStateStore =
@@ -93,8 +89,7 @@ fun runPunctuator(
                         prometheusMeterRegistry = prometheusMeterRegistry,
                         konfigurasjon = bekreftelseKonfigurasjon,
                         wallClock = WallClock(timestamp),
-                        periodeInfo = tilstand.periode,
-                        oddetallPartallMap = oddetallPartallMap
+                        periodeInfo = tilstand.periode
                     )
                     context.prosesser(tilstand)
                 }

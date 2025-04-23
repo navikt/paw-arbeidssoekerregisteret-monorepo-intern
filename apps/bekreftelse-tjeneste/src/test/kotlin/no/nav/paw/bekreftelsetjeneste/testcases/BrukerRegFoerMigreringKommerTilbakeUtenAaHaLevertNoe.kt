@@ -28,7 +28,6 @@ import no.nav.paw.bekreftelsetjeneste.testutils.setOppTest
 import no.nav.paw.bekreftelsetjeneste.testutils.timer
 import no.nav.paw.bekreftelsetjeneste.testutils.timestamp
 import no.nav.paw.bekreftelsetjeneste.tilstand.GracePeriodeVarselet
-import no.nav.paw.bekreftelsetjeneste.topology.DummyOddetallPartallMap
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
@@ -47,8 +46,7 @@ class BrukerRegFoerMigreringKommerTilbakeUtenAaHaLevertNoe : FreeSpec({
             datoOgKlokkeslettVedStart = periodeStartet,
             bekreftelseIntervall = interval,
             tilgjengeligOffset = tilgjengeligOffset,
-            innleveringsfrist = graceperiode + 4.timer,
-            oddetallPartallMap = DummyOddetallPartallMap()
+            innleveringsfrist = graceperiode + 4.timer
         )
     ) {
         "Setter opp test med ${interval.toDays()} dagers intervall og ${graceperiode.toDays()} dagers graceperiode. Bekreftelser tilgjengeliggjøres ${tilgjengeligOffset.toDays()} dager før utløp av ${interval.toDays()} dagers perioden" {}

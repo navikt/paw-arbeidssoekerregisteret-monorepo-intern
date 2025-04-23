@@ -25,8 +25,7 @@ fun StreamsBuilder.buildTopology(
     buildBekreftelseStream(
         prometheusMeterRegistry = applicationContext.prometheusMeterRegistry,
         applicationConfig = applicationContext.applicationConfig,
-        bekreftelseKonfigurasjon = applicationContext.bekreftelseKonfigurasjon,
-        oddetallPartallMap = applicationContext.oddetallPartallMap
+        bekreftelseKonfigurasjon = applicationContext.bekreftelseKonfigurasjon
     )
     byggBekreftelsePaaVegneAvStroem(
         registry = applicationContext.prometheusMeterRegistry,

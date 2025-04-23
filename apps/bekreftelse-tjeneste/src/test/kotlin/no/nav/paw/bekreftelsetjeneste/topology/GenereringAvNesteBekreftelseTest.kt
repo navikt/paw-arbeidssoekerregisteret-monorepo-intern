@@ -22,7 +22,6 @@ import java.util.*
 
 class GenereringAvNesteBekreftelseTest : FreeSpec({
     val tidligste = LocalDate.parse("2023-03-10")
-    val map = DummyOddetallPartallMap()
     val intervall = Duration.ofDays(14)
     val bekreftelseKonfigurasjon = BekreftelseKonfigurasjon(
         maksAntallVentendeBekreftelser = 3,
@@ -39,7 +38,6 @@ class GenereringAvNesteBekreftelseTest : FreeSpec({
             konfigurasjon = bekreftelseKonfigurasjon,
             wallClock = WallClock(tidspunkt.timestamp),
             periodeInfo = periodeInfo,
-            oddetallPartallMap = map,
             prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
         )
     }

@@ -5,7 +5,6 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
-import no.nav.paw.bekreftelsetjeneste.startdatohaandtering.OddetallPartallMap
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.auth.azureAdM2MTokenClient
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
@@ -16,16 +15,14 @@ class ApplicationContext(
     val applicationConfig: ApplicationConfig,
     val prometheusMeterRegistry: PrometheusMeterRegistry,
     val healthIndicatorRepository: HealthIndicatorRepository,
-    val kafkaKeysClient: KafkaKeysClient,
-    val oddetallPartallMap: OddetallPartallMap
+    val kafkaKeysClient: KafkaKeysClient
 ) {
     val bekreftelseHendelseSerde = BekreftelseHendelseSerde()
 
     companion object {
         fun create(
             applicationConfig: ApplicationConfig,
-            bekreftelseKonfigurasjon: BekreftelseKonfigurasjon,
-            oddetallPartallMap: OddetallPartallMap
+            bekreftelseKonfigurasjon: BekreftelseKonfigurasjon
         ): ApplicationContext {
             val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
 
@@ -44,8 +41,7 @@ class ApplicationContext(
                 applicationConfig,
                 prometheusMeterRegistry,
                 healthIndicatorRepository,
-                kafkaKeysClient,
-                oddetallPartallMap
+                kafkaKeysClient
             )
         }
     }
