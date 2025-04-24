@@ -49,6 +49,15 @@ fun PrometheusMeterRegistry.tellAvsluttetMedAarsak(periodeStartet: Instant, avsl
     val tidspunkt = avsluttet.metadata.tidspunktFraKilde?.tidspunkt ?: avsluttet.metadata.tidspunkt
     val erFeilretting = avsluttet.metadata.tidspunktFraKilde?.avviksType?.name?.lowercase() ?: "nei"
     val varighet = fineGrainedDurationToMonthsBucket(periodeStartet, tidspunkt)
+    val kilde = avsluttet.metadata.kilde
+        .split(":")
+        .let { parts ->
+            if (parts.size >= 2) {
+                "${parts[0]}:${parts[1]}"
+            } else {
+                parts[0]
+            }
+        }
     counter(
         Names.AVSLUTTET,
         Tags.of(
@@ -56,7 +65,8 @@ fun PrometheusMeterRegistry.tellAvsluttetMedAarsak(periodeStartet: Instant, avsl
             Tag.of(Labels.AARSAK, aarsak.name),
             Tag.of(Labels.VARIGHET_MAANEDER, varighet),
             Tag.of(Labels.FEILRETTING, erFeilretting),
-            Tag.of(Labels.UTFOERT_AV, avsluttet.metadata.utfoertAv.type.name.lowercase())
+            Tag.of(Labels.UTFOERT_AV, avsluttet.metadata.utfoertAv.type.name.lowercase()),
+            Tag.of(Labels.KILDE, kilde)
         )
     ).increment()
 }

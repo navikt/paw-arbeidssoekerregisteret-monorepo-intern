@@ -28,6 +28,7 @@ object Labels {
     const val VARIGHET_MAANEDER = "varighet_maaneder"
     const val FEILRETTING = "feilettting"
     const val UTFOERT_AV = "utfoert_av"
+    const val KILDE = "kilde"
 }
 
 object Directions {
