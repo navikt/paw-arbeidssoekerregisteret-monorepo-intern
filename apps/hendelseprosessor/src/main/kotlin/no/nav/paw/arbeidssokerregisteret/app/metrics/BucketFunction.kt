@@ -31,8 +31,8 @@ fun durationToBucket(timestamp: Instant): String {
     }
 }
 
-fun fineGrainedDurationToMonthsBucket(timestamp: Instant): String {
-    val duration = Duration.between(timestamp, Instant.now()).abs()
+fun fineGrainedDurationToMonthsBucket(from: Instant, to: Instant): String {
+    val duration = Duration.between(from, to).abs()
     return when {
         lessThan6Months(duration) -> (duration.toDays()/30).toString()
         lessThan1Year(duration) -> (duration.toDays()/30).toString()

@@ -19,6 +19,7 @@ import no.nav.paw.arbeidssokerregisteret.app.funksjoner.ignorerOpphoerteIdenter
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors.MeteredOutboundTopicNameExtractor
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors.lagreInternTilstand
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.kafkastreamsprocessors.lastInternTilstand
+import no.nav.paw.arbeidssokerregisteret.app.funksjoner.tellAvsluttetMedAarsak
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.tellHendelse
 import no.nav.paw.arbeidssokerregisteret.app.funksjoner.tilstandKey
 import no.nav.paw.arbeidssokerregisteret.app.metrics.fineGrainedDurationToMonthsBucket
@@ -44,49 +45,54 @@ fun topology(
     val strøm: KStream<Long, Hendelse> = builder.stream(innTopic, Consumed.with(Serdes.Long(), HendelseSerde()))
     val meteredTopicExtractor =
         MeteredOutboundTopicNameExtractor(periodeTopic, opplysningerOmArbeidssoekerTopic, prometheusMeterRegistry)
-        strøm
-            .lastInternTilstand(dbNavn)
-            .peek { _, (_, tilstand, hendelse) ->
-                prometheusMeterRegistry.tellHendelse(innTopic, hendelse)
-                Span.current().setAllAttributes(
-                    Attributes.builder()
-                        .add(hendelseType(hendelse))
-                        .put(tilstandKey, tilstand?.gjeldeneTilstand?.name ?: "null")
-                        .put(
-                            AttributeKey.stringKey("paw.arbeidssoekerregisteret.hendelse.periodeIdErSatt"),
-                            (hendelse as? Avsluttet)?.let { it.periodeId != null }?.toString() ?: "NA"
-                        ).put(AttributeKey.stringKey("paw.arbeidssoekerregisteret.tilstand.periodeIdErSatt"),
-                            (tilstand?.gjeldenePeriode?.id != null).toString()
-                        ).build()
+    strøm
+        .lastInternTilstand(dbNavn)
+        .peek { _, (_, tilstand, hendelse) ->
+            prometheusMeterRegistry.tellHendelse(innTopic, hendelse)
+            Span.current().setAllAttributes(
+                Attributes.builder()
+                    .add(hendelseType(hendelse))
+                    .put(tilstandKey, tilstand?.gjeldeneTilstand?.name ?: "null")
+                    .put(
+                        AttributeKey.stringKey("paw.arbeidssoekerregisteret.hendelse.periodeIdErSatt"),
+                        (hendelse as? Avsluttet)?.let { it.periodeId != null }?.toString() ?: "NA"
+                    ).put(
+                        AttributeKey.stringKey("paw.arbeidssoekerregisteret.tilstand.periodeIdErSatt"),
+                        (tilstand?.gjeldenePeriode?.id != null).toString()
+                    ).build()
+            )
+        }
+        .filter(::ignorerOpphoerteIdenter)
+        .filter(::ignorerDuplikatStartOgStopp)
+        .filter(::ignorerAvsluttetForAnnenPeriode)
+        .peek { _, (_, _, hendelse) ->
+            Span.current().addEvent(hendelseAkseptert, Attributes.builder().add(hendelseType(hendelse)).build())
+        }
+        .peek { _, (_, tilstand, hendelse) ->
+            if (hendelse is Avsluttet) {
+                val tidspunkt = tilstand?.gjeldenePeriode?.startet?.tidspunktFraKilde?.tidspunkt
+                    ?: tilstand?.gjeldenePeriode?.startet?.tidspunkt
+                tidspunkt?.also { periodeStartet ->
+                    prometheusMeterRegistry.tellAvsluttetMedAarsak(
+                        periodeStartet = periodeStartet,
+                        avsluttet = hendelse
                     )
-            }
-            .filter(::ignorerOpphoerteIdenter)
-            .filter(::ignorerDuplikatStartOgStopp)
-            .filter(::ignorerAvsluttetForAnnenPeriode)
-            .peek { _, (_, _, hendelse) ->
-                Span.current().addEvent(hendelseAkseptert, Attributes.builder().add(hendelseType(hendelse)).build())
-            }
-            .mapValues { internTilstandOgHendelse ->
-                genererNyInternTilstandOgNyeApiTilstander(
-                    applicationLogicConfig,
-                    internTilstandOgHendelse
-                )
-            }
-            .lagreInternTilstand(dbNavn)
-            .flatMapValues { _, value ->
-                listOfNotNull(
-                    value.nyPeriodeTilstand as SpecificRecord?,
-                    value.nyOpplysningerOmArbeidssoekerTilstand as SpecificRecord?
-                )
-            }
-            .peek { _, value ->
-                if ((value as? Periode)?.avsluttet != null) {
-                    prometheusMeterRegistry.counter("avsluttet_periode_med_varighet", Tags.of(
-                        Tag.of("varighet_maaneder", fineGrainedDurationToMonthsBucket(value.startet.tidspunktFraKilde?.tidspunkt ?: value.startet.tidspunkt)),
-                        Tag.of("er_feilretting", value.avsluttet?.tidspunktFraKilde?.avviksType?.name ?: "nei")
-                    )).increment()
                 }
             }
-            .to(meteredTopicExtractor)
+        }
+        .mapValues { internTilstandOgHendelse ->
+            genererNyInternTilstandOgNyeApiTilstander(
+                applicationLogicConfig,
+                internTilstandOgHendelse
+            )
+        }
+        .lagreInternTilstand(dbNavn)
+        .flatMapValues { _, value ->
+            listOfNotNull(
+                value.nyPeriodeTilstand as SpecificRecord?,
+                value.nyOpplysningerOmArbeidssoekerTilstand as SpecificRecord?
+            )
+        }
+        .to(meteredTopicExtractor)
     return builder.build()
 }
