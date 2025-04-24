@@ -110,12 +110,14 @@ fun metadata(
     )
 )
 
+val testTraceparent = "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01"
+
 fun Hendelse.storedData(
     partition: Int  = 1,
     offset: Long = 1,
     recordKey: Long = 1,
     arbeidssoekerId: Long = 1,
-    traceparent: String = "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01",
+    traceparent: String = testTraceparent,
     merged: Boolean = false
 ) = StoredData(
     partition = 1,
@@ -149,6 +151,7 @@ fun StoredData.apiHendelse(): no.nav.paw.arbeidssoekerregisteret.backup.api.bruk
             }
         ),
         kafkaOffset = offset,
+        traceparent = testTraceparent,
         data = data,
         api = null
     )

@@ -156,7 +156,8 @@ fun historiskeTilstander(hendelser: List<StoredData>): Iterable<Snapshot> =
                     },
                 ),
                 data = hendelse.data,
-                api = null
+                api = null,
+                traceparent = hendelse.traceparent
             ),
             gjeldeneTilstand = tilstand,
             nyTilstand = nyTilstand

@@ -224,6 +224,11 @@ components:
         data:
           type: "object"
           description: "Selve hendelsen"
+        traceparent:
+          type: "string"
+          format: "traceparent"
+          description: "https://www.w3.org/TR/trace-context/#traceparent-header-field-values"
+          example: "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
       required:
         - "hendelseId"
         - "hendelseType"

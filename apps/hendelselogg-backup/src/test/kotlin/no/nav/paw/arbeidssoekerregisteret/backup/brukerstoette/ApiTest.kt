@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
@@ -41,7 +42,6 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
 class ApiTest : FreeSpec({
-    println("Arg!!")
     "Test av brukerstøtte API" {
         val logger = LoggerFactory.getLogger(ApiTest::class.java)
         logger.info("Starter test")
@@ -140,7 +140,9 @@ class ApiTest : FreeSpec({
                         aarsak = "test"
                     )
                 )
-            )
+            ).also {
+                it.headers().add("traceparent", "test".toByteArray())
+            }
             transaction {
                 txContext(applicationContext)().writeRecord(HendelseSerde().serializer(), testRecord)
             }
@@ -155,6 +157,7 @@ class ApiTest : FreeSpec({
             detaljer.arbeidssoekerId shouldBe testRecord.value().id
             detaljer.kafkaPartition shouldBe 3
             detaljer.recordKey shouldBe testRecord.key()
+            detaljer.historikk.first().hendelse.traceparent shouldBe "test"
             detaljer.gjeldeneTilstand shouldBe Tilstand(
                 harAktivePeriode = true,
                 startet = testRecord.value().metadata.tidspunkt,
