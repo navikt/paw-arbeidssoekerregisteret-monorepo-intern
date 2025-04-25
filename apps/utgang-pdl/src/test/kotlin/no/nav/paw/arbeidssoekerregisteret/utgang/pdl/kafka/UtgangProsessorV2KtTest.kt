@@ -4,6 +4,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import no.nav.paw.arbeidssokerregisteret.application.*
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
+import no.nav.paw.collections.pawNonEmptyListOf
 
 class UtgangProsessorV2KtTest : FreeSpec({
     "Under 18 år registrert via veilarb skal ikke trigge avslutning" {
@@ -15,7 +16,7 @@ class UtgangProsessorV2KtTest : FreeSpec({
                 DomeneOpplysning.BosattEtterFregLoven
             )
         ) shouldBe ProsesseringsResultat(
-            grunnlag = setOf(ForhaandsgodkjentAvAnsatt),
+            grunnlag = pawNonEmptyListOf(ForhaandsgodkjentAvAnsatt),
             periodeSkalAvsluttes = false,
             forhaandsgodkjenningSkalSlettes = false
         )
@@ -32,7 +33,7 @@ class UtgangProsessorV2KtTest : FreeSpec({
                 DomeneOpplysning.ErNorskStatsborger
             )
         ) shouldBe ProsesseringsResultat(
-            grunnlag = setOf(IkkeBosattINorgeIHenholdTilFolkeregisterloven),
+            grunnlag = pawNonEmptyListOf(IkkeBosattINorgeIHenholdTilFolkeregisterloven),
             periodeSkalAvsluttes = true,
             forhaandsgodkjenningSkalSlettes = false
         )
@@ -48,7 +49,7 @@ class UtgangProsessorV2KtTest : FreeSpec({
                 DomeneOpplysning.ErEuEoesStatsborger
             )
         ) shouldBe ProsesseringsResultat(
-            grunnlag = setOf(ForhaandsgodkjentAvAnsatt),
+            grunnlag = pawNonEmptyListOf(ForhaandsgodkjentAvAnsatt),
             periodeSkalAvsluttes = false,
             forhaandsgodkjenningSkalSlettes = false
         )
@@ -66,7 +67,7 @@ class UtgangProsessorV2KtTest : FreeSpec({
                 DomeneOpplysning.BosattEtterFregLoven
             )
         ) shouldBe ProsesseringsResultat(
-            grunnlag = setOf(Over18AarOgBosattEtterFregLoven),
+            grunnlag = pawNonEmptyListOf(Over18AarOgBosattEtterFregLoven),
             periodeSkalAvsluttes = false,
             forhaandsgodkjenningSkalSlettes = false
         )
@@ -85,7 +86,7 @@ class UtgangProsessorV2KtTest : FreeSpec({
                 DomeneOpplysning.IkkeBosatt
             )
         ) shouldBe ProsesseringsResultat(
-            grunnlag = setOf(ForhaandsgodkjentAvAnsatt),
+            grunnlag = pawNonEmptyListOf(ForhaandsgodkjentAvAnsatt),
             periodeSkalAvsluttes = false,
             forhaandsgodkjenningSkalSlettes = false
         )
@@ -104,7 +105,7 @@ class UtgangProsessorV2KtTest : FreeSpec({
                 DomeneOpplysning.BosattEtterFregLoven
             )
         ) shouldBe ProsesseringsResultat(
-            grunnlag = setOf(Over18AarOgBosattEtterFregLoven),
+            grunnlag = pawNonEmptyListOf(Over18AarOgBosattEtterFregLoven),
             periodeSkalAvsluttes = false,
             forhaandsgodkjenningSkalSlettes = true
         )
@@ -123,7 +124,7 @@ class UtgangProsessorV2KtTest : FreeSpec({
                 DomeneOpplysning.ErEuEoesStatsborger
             )
         ) shouldBe ProsesseringsResultat(
-            grunnlag = setOf(EuEoesStatsborgerOver18Aar),
+            grunnlag = pawNonEmptyListOf(EuEoesStatsborgerOver18Aar),
             periodeSkalAvsluttes = false,
             forhaandsgodkjenningSkalSlettes = true
         )

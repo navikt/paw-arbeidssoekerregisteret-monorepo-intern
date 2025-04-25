@@ -3,7 +3,10 @@ package no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.ApplicationInfo
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentPerson
+import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.Endring
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseState
+import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.OK
+import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.UDENFINERT
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.metrics.tellPdlAvsluttetHendelser
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.*
 import no.nav.paw.arbeidssokerregisteret.application.*
@@ -34,6 +37,7 @@ data class EvalueringResultat(
     val detaljer: Set<no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning>,
     val avsluttPeriode: Boolean,
     val slettForhaandsGodkjenning: Boolean,
+    val endring: Endring?
 )
 
 fun scheduleAvsluttPerioder(
@@ -146,12 +150,27 @@ fun List<HentPersonBolkResult>.processPdlResultsV2(
                 inngangsOpplysninger = registreringsOpplysninger,
                 gjeldeneOpplysninger = gjeldeneOpplysninger
             )
+            val forrigeRegelId = hendelseState.sisteEndring?.tilRegelId ?: UDENFINERT
+            val nyRegelId = if (resultat.periodeSkalAvsluttes) {
+                resultat.grunnlag.first::class.simpleName ?: "ukjent"
+            } else {
+                OK
+            }
+            val endring = if (forrigeRegelId != nyRegelId) {
+                Endring(
+                    fraRegelId = forrigeRegelId,
+                    tilRegelId = nyRegelId,
+                    tidspunkt = Instant.now()
+                )
+            } else { null }
+
             EvalueringResultat(
                 hendelseState = hendelseState,
-                grunnlag = resultat.grunnlag,
+                grunnlag = resultat.grunnlag.toSet(),
                 detaljer = gjeldeneOpplysninger.toSet(),
                 avsluttPeriode = resultat.periodeSkalAvsluttes,
                 slettForhaandsGodkjenning = resultat.forhaandsgodkjenningSkalSlettes,
+                endring = endring
             )
         }
 

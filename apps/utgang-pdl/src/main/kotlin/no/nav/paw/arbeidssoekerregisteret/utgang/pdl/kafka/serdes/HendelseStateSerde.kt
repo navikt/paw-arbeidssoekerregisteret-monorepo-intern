@@ -12,6 +12,9 @@ import org.apache.kafka.common.serialization.Serializer
 import java.time.Instant
 import java.util.*
 
+const val UDENFINERT = "udenfinert"
+const val OK = "OK"
+
 data class HendelseState(
     val brukerId: Long? = null,
     val periodeId: UUID,
@@ -19,7 +22,14 @@ data class HendelseState(
     val identitetsnummer: String,
     val opplysninger: Set<Opplysning>,
     val startetTidspunkt: Instant,
-    var harTilhoerendePeriode: Boolean = false
+    var harTilhoerendePeriode: Boolean = false,
+    val sisteEndring: Endring? = null
+)
+
+data class Endring(
+    val fraRegelId: String,
+    val tilRegelId: String,
+    val tidspunkt: Instant
 )
 
 class HendelseStateSerde : Serde<HendelseState> {

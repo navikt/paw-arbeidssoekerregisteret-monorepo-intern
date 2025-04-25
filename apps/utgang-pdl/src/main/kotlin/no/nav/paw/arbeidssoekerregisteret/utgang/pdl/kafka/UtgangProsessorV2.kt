@@ -19,7 +19,7 @@ fun prosesser(
         .evaluer(gjeldeneOpplysninger)
         .map { grunnlagForGodkjenning ->
             ProsesseringsResultat(
-                grunnlag = setOf(grunnlagForGodkjenning.regel.id),
+                grunnlag = pawNonEmptyListOf(grunnlagForGodkjenning.regel.id),
                 periodeSkalAvsluttes = false,
                 forhaandsgodkjenningSkalSlettes = inngangsOpplysninger
                     .contains(DomeneOpplysning.ErForhaandsgodkjent)
@@ -41,7 +41,7 @@ fun prosesser(
         }.fold(
             {
                 ProsesseringsResultat(
-                    grunnlag = it.map { problem -> problem.regel.id }.toSet(),
+                    grunnlag = it.map { problem -> problem.regel.id },
                     periodeSkalAvsluttes = true,
                     forhaandsgodkjenningSkalSlettes = false
                 )
@@ -59,7 +59,7 @@ private fun Raise<PawNonEmptyList<Problem>>.raiseIfNewProblem(
         val head = nyeProblemer.firstOrNull()
         if (head == null) {
             ProsesseringsResultat(
-                grunnlag = setOf(ForhaandsgodkjentAvAnsatt),
+                grunnlag = pawNonEmptyListOf(ForhaandsgodkjentAvAnsatt),
                 periodeSkalAvsluttes = false,
                 forhaandsgodkjenningSkalSlettes = false
             )
@@ -90,7 +90,7 @@ fun registreringsResultat(
 }
 
 data class ProsesseringsResultat(
-    val grunnlag: Set<RegelId>,
+    val grunnlag: PawNonEmptyList<RegelId>,
     val periodeSkalAvsluttes: Boolean,
     val forhaandsgodkjenningSkalSlettes: Boolean
 )
