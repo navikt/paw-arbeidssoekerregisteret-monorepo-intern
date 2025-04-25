@@ -1,7 +1,11 @@
 package no.nav.paw.arbeidssoekerregisteret.utgang.pdl.metrics
 
 import io.micrometer.core.instrument.Tag
+import io.micrometer.core.instrument.Tags
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.Endring
+import java.time.Duration
+import java.time.Instant
 
 const val METRICS_UTGANG_PDL = "paw_arbeidssoekerregisteret_utgang_pdl"
 
@@ -20,6 +24,36 @@ fun PrometheusMeterRegistry.tellStatusFraPdlHentPersonBolk(status: String) = cou
     METRICS_UTGANG_PDL + PDL_HENT_PERSON,
     listOf(Tag.of(PDL_HENT_PERSON_STATUS, status))
 ).increment()
+
+fun PrometheusMeterRegistry.tellEndring(tidspunktForrigeEndring: Instant, endring: Endring) {
+    val varighet = Duration.between(tidspunktForrigeEndring, Instant.now())
+    val dager = varighet.toDays().tilMetricVerdi()
+    counter(
+        "paw_arbeidssoekerregisteret_utgang_pdl_endring",
+        Tags.of(
+            Tag.of(
+                "fra", endring.fraRegelId
+            ),
+            Tag.of(
+                "til", endring.tilRegelId
+            ),
+            Tag.of(
+                "varighet_dager", dager
+            )
+        )
+    ).increment()
+}
+
+private fun Long.tilMetricVerdi(): String =
+    when {
+        this < 0 -> "negative"
+        this < 14 -> this.toString()
+        this < 21 -> "14-21"
+        this < 28 -> "21-28"
+        this < 35 -> "28-35"
+        else -> "35+"
+    }
+
 
 
 

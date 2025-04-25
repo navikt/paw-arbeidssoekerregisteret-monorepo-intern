@@ -7,6 +7,7 @@ import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.Endring
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseState
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.OK
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.UDENFINERT
+import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.metrics.tellEndring
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.metrics.tellPdlAvsluttetHendelser
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils.*
 import no.nav.paw.arbeidssokerregisteret.application.*
@@ -74,6 +75,14 @@ fun scheduleAvsluttPerioder(
 
                 resultater.forEach { resultat ->
                     val hendelseState = resultat.hendelseState
+                    if (resultat.endring != null) {
+                        val nyState = hendelseState.copy(sisteEndring = resultat.endring)
+                        hendelseStateStore.put(nyState.periodeId, nyState)
+                        prometheusMeterRegistry.tellEndring(
+                            tidspunktForrigeEndring = hendelseState.sisteEndring?.tidspunkt ?: hendelseState.startetTidspunkt,
+                            endring = resultat.endring,
+                        )
+                    }
                     if (resultat.avsluttPeriode) {
                         sendAvsluttetHendelse(
                             resultat.grunnlag,
