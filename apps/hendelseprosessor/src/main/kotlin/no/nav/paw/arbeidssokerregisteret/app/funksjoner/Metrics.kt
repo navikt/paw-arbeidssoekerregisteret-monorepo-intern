@@ -50,6 +50,8 @@ fun PrometheusMeterRegistry.tellAvsluttetMedAarsak(periodeStartet: Instant, avsl
     val erFeilretting = avsluttet.metadata.tidspunktFraKilde?.avviksType?.name?.lowercase() ?: "nei"
     val varighet = fineGrainedDurationToMonthsBucket(periodeStartet, tidspunkt)
     val kilde = avsluttet.metadata.kilde
+        .split("/paw/")
+        .let { if (it.size >= 2) "app:${it[1]}" else it[0] }
         .split(":")
         .let { parts ->
             if (parts.size >= 2) {

@@ -36,9 +36,9 @@ fun fineGrainedDurationToMonthsBucket(from: Instant, to: Instant): String {
     return when {
         lessThan6Months(duration) -> (duration.toDays()/30).toString()
         lessThan1Year(duration) -> (duration.toDays()/30).toString()
-        lessThan18Months(duration) -> "12-18_maaneder"
-        lessThan2Years(duration) -> "18-24_maaneder"
-        else -> "mer_enn_24_maaneder"
+        lessThan18Months(duration) -> "12-18"
+        lessThan2Years(duration) -> "18-24"
+        else -> "24++"
     }
 }
 
