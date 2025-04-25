@@ -4,6 +4,7 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentPerson
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.scheduleAvsluttPerioder
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseState
+import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.metrics.tellAvsluttetPeriode
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.application.InngangsReglerV3
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
@@ -58,6 +59,8 @@ class PeriodeProcessor(
         val hendelseStore = requireNotNull(hendelseStateStore) { "State store is not initialized" }
         val periode = record.value()
         if (periode.avsluttet != null) {
+            val tilstand = hendelseStore.get(periode.id)
+            prometheusMeterRegistry.tellAvsluttetPeriode(periode.avsluttet, tilstand)
             hendelseStore.delete(periode.id)
             return
         }

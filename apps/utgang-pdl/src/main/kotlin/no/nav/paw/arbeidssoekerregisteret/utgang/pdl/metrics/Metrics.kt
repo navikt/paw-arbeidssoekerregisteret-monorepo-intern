@@ -4,6 +4,9 @@ import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.Tags
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.Endring
+import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseState
+import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.OK
+import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata
 import java.time.Duration
 import java.time.Instant
 
@@ -24,6 +27,30 @@ fun PrometheusMeterRegistry.tellStatusFraPdlHentPersonBolk(status: String) = cou
     METRICS_UTGANG_PDL + PDL_HENT_PERSON,
     listOf(Tag.of(PDL_HENT_PERSON_STATUS, status))
 ).increment()
+
+fun PrometheusMeterRegistry.tellAvsluttetPeriode(metadata: Metadata, tilstand: HendelseState) {
+    val forsinkelse = tilstand.sisteEndring?.tidspunkt?.let { sistEndring ->
+        Duration.between(sistEndring, metadata.tidspunkt).toDays().tilMetricVerdi()
+    } ?: "ingen_endring"
+
+    val sisteTilstand = tilstand.sisteEndring?.tilRegelId ?: OK
+    val forrigeTilstand = tilstand.sisteEndring?.fraRegelId ?: OK
+
+    counter(
+        "paw_arbeidssoekerregisteret_utgang_pdl_avsluttetv2",
+        Tags.of(
+            Tag.of(
+                "siste_tilstand", sisteTilstand
+            ),
+            Tag.of(
+                "forrige_tilstand", forrigeTilstand
+            ),
+            Tag.of(
+                "forsinkelse_dager", forsinkelse
+            )
+        )
+    ).increment()
+}
 
 fun PrometheusMeterRegistry.tellEndring(tidspunktForrigeEndring: Instant, endring: Endring) {
     val varighet = Duration.between(tidspunktForrigeEndring, Instant.now())
