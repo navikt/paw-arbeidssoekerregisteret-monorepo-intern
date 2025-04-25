@@ -28,13 +28,13 @@ fun PrometheusMeterRegistry.tellStatusFraPdlHentPersonBolk(status: String) = cou
     listOf(Tag.of(PDL_HENT_PERSON_STATUS, status))
 ).increment()
 
-fun PrometheusMeterRegistry.tellAvsluttetPeriode(metadata: Metadata, tilstand: HendelseState) {
-    val forsinkelse = tilstand.sisteEndring?.tidspunkt?.let { sistEndring ->
+fun PrometheusMeterRegistry.tellAvsluttetPeriode(metadata: Metadata, tilstand: HendelseState?) {
+    val forsinkelse = tilstand?.sisteEndring?.tidspunkt?.let { sistEndring ->
         Duration.between(sistEndring, metadata.tidspunkt).toDays().tilMetricVerdi()
     } ?: "ingen_endring"
 
-    val sisteTilstand = tilstand.sisteEndring?.tilRegelId ?: OK
-    val forrigeTilstand = tilstand.sisteEndring?.fraRegelId ?: OK
+    val sisteTilstand = tilstand?.sisteEndring?.tilRegelId ?: OK
+    val forrigeTilstand = tilstand?.sisteEndring?.fraRegelId ?: OK
 
     counter(
         "paw_arbeidssoekerregisteret_utgang_pdl_avsluttetv2",
