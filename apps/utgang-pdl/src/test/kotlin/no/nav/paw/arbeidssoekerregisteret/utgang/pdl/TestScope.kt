@@ -52,11 +52,19 @@ fun testScope(pdlMockResponse: List<HentPersonBolkResult>?): TestScope {
                 HendelseStateSerde(),
                 Time.SYSTEM
             )
+        ).addStateStore(
+            KeyValueStoreBuilder(
+                InMemoryKeyValueBytesStoreSupplier(applicationConfig.sisteKjoeringStateStoreName),
+                Serdes.Integer(),
+                Serdes.Long(),
+                Time.SYSTEM
+            )
         )
 
     val testDriver = TopologyTestDriver(
         streamBuilder.appTopology(
             hendelseStateStoreName = hendelseStateStoreName,
+            sisteKjoeringStateStoreName = applicationConfig.sisteKjoeringStateStoreName,
             periodeTopic = applicationConfig.periodeTopic,
             hendelseLoggTopic = applicationConfig.hendelseloggTopic,
             pdlHentPerson = { _, _, _ ->

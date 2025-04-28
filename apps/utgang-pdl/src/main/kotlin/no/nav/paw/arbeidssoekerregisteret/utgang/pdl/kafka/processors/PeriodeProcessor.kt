@@ -19,34 +19,41 @@ import java.util.UUID
 
 fun KStream<Long, Periode>.oppdaterHendelseState(
     hendelseStateStoreName: String,
+    sisteKjoeringStateStoreName: String,
     prometheusMeterRegistry: PrometheusMeterRegistry,
     pdlHentPerson: PdlHentPerson
 ): KStream<Long, Hendelse> {
     val processor = {
         PeriodeProcessor(
             hendelseStateStoreName,
+            sisteKjoeringStateStoreName,
             prometheusMeterRegistry,
             pdlHentPerson
         )
     }
-    return process(processor, Named.`as`("periodeProsessor"), hendelseStateStoreName)
+    return process(processor, Named.`as`("periodeProsessor"), hendelseStateStoreName, sisteKjoeringStateStoreName)
 }
 
 class PeriodeProcessor(
     private val hendelseStateStoreName: String,
+    private val sistKjoeringStateStoreName: String,
     private val prometheusMeterRegistry: PrometheusMeterRegistry,
     private val pdlHentPersonBolk: PdlHentPerson,
 ) : Processor<Long, Periode, Long, Hendelse> {
     private var hendelseStateStore: KeyValueStore<UUID, HendelseState>? = null
+    private var sisteKjoeringStateStore: KeyValueStore<Int, Long>? = null
     private var context: ProcessorContext<Long, Hendelse>? = null
 
     override fun init(context: ProcessorContext<Long, Hendelse>?) {
         super.init(context)
         this.context = context
         hendelseStateStore = context?.getStateStore(hendelseStateStoreName)
+        sisteKjoeringStateStore = context?.getStateStore(sistKjoeringStateStoreName)
         scheduleAvsluttPerioder(
             ctx = requireNotNull(context),
             hendelseStateStore = requireNotNull(hendelseStateStore),
+            sisteKjoeringStateStore = requireNotNull(sisteKjoeringStateStore),
+            schduledInterval = Duration.ofMinutes(10),
             interval = Duration.ofDays(1),
             pdlHentPersonBolk = pdlHentPersonBolk,
             prometheusMeterRegistry = prometheusMeterRegistry,

@@ -43,13 +43,20 @@ fun main() {
                 Serdes.UUID(),
                 HendelseStateSerde()
             )
+        ).addStateStore(
+            Stores.keyValueStoreBuilder(
+                Stores.persistentKeyValueStore(applicationConfiguration.sisteKjoeringStateStoreName),
+                Serdes.Integer(),
+                Serdes.Long()
+            )
         )
 
     val topology = streamsBuilder.appTopology(
-        prometheusMeterRegistry,
-        applicationConfiguration.periodeTopic,
-        applicationConfiguration.hendelseloggTopic,
-        applicationConfiguration.hendelseStateStoreName,
+        prometheusRegistry = prometheusMeterRegistry,
+        periodeTopic = applicationConfiguration.periodeTopic,
+        hendelseLoggTopic = applicationConfiguration.hendelseloggTopic,
+        hendelseStateStoreName = applicationConfiguration.hendelseStateStoreName,
+        sisteKjoeringStateStoreName = applicationConfiguration.sisteKjoeringStateStoreName,
         pdlHentPerson = PdlHentPerson.create(),
         sendAvsluttetHendelser = applicationConfiguration.sendAvsluttetHendelser
     )

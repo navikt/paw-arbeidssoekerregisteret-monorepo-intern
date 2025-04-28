@@ -20,6 +20,7 @@ fun StreamsBuilder.appTopology(
     periodeTopic: String,
     hendelseLoggTopic: String,
     hendelseStateStoreName: String,
+    sisteKjoeringStateStoreName: String,
     pdlHentPerson: PdlHentPerson,
     sendAvsluttetHendelser: Boolean
 ): Topology {
@@ -32,6 +33,7 @@ fun StreamsBuilder.appTopology(
     stream<Long, Periode>(periodeTopic)
         .oppdaterHendelseState(
             hendelseStateStoreName = hendelseStateStoreName,
+            sisteKjoeringStateStoreName = sisteKjoeringStateStoreName,
             prometheusMeterRegistry = prometheusRegistry,
             pdlHentPerson = pdlHentPerson
         )

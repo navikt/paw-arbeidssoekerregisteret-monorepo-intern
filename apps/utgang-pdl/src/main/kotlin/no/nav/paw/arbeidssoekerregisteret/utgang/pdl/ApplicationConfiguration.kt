@@ -6,5 +6,6 @@ data class ApplicationConfiguration(
     val periodeTopic: String,
     val hendelseloggTopic: String,
     val hendelseStateStoreName: String,
+    val sisteKjoeringStateStoreName: String,
     val sendAvsluttetHendelser: Boolean = false
 )

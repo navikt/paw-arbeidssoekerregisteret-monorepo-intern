@@ -45,59 +45,70 @@ fun scheduleAvsluttPerioder(
     ctx: ProcessorContext<Long, Hendelse>,
     hendelseStateStore: KeyValueStore<UUID, HendelseState>,
     interval: Duration,
+    schduledInterval: Duration,
     pdlHentPersonBolk: PdlHentPerson,
     prometheusMeterRegistry: PrometheusMeterRegistry,
-    regler: Regler
-): Cancellable = ctx.schedule(interval, PunctuationType.WALL_CLOCK_TIME) {
+    regler: Regler,
+    sisteKjoeringStateStore: KeyValueStore<Int, Long>
+): Cancellable = ctx.schedule(schduledInterval, PunctuationType.WALL_CLOCK_TIME) {
 
     val logger = LoggerFactory.getLogger("scheduleAvsluttPerioder")
+    val partition = ctx.taskId().partition()
+    val sisteKjoering = sisteKjoeringStateStore?.get(partition) ?: 0L
+    val tidSidenSist = Duration.ofMillis(ctx.currentSystemTimeMs() - sisteKjoering)
+    if (tidSidenSist >= interval) {
+        logger.info("Kjører 'scheduleAvsluttPerioder' for partisjon $partition, tid siden sist: $tidSidenSist (tid mellom hver kjøring: $interval)")
+        hendelseStateStore.all().use { iterator ->
+            iterator
+                .asSequence()
+                .toList()
+                .filterValidHendelseStates()
+                .chunked(1000) { chunk ->
+                    val identitetsnummere = chunk.map { it.value.identitetsnummer }
 
-    hendelseStateStore.all().use { iterator ->
-        iterator
-            .asSequence()
-            .toList()
-            .filterValidHendelseStates()
-            .chunked(1000) { chunk ->
-                val identitetsnummere = chunk.map { it.value.identitetsnummer }
-
-                val pdlHentPersonResults = hentPersonBolk(identitetsnummere, pdlHentPersonBolk)
-                val resultater: List<EvalueringResultat> = if (pdlHentPersonResults == null) {
-                    logger.warn("PDL hentPersonBolk returnerte null")
-                    emptyList()
-                } else {
-                    pdlHentPersonResults.processPdlResultsV2(
-                        prometheusMeterRegistry = prometheusMeterRegistry,
-                        regler = regler,
-                        chunk = chunk,
-                        logger = logger
-                    )
-                }
-
-                resultater.forEach { resultat ->
-                    val hendelseState = resultat.hendelseState
-                    if (resultat.endring != null) {
-                        val nyState = hendelseState.copy(sisteEndring = resultat.endring)
-                        hendelseStateStore.put(nyState.periodeId, nyState)
-                        prometheusMeterRegistry.tellEndring(
-                            tidspunktForrigeEndring = hendelseState.sisteEndring?.tidspunkt ?: hendelseState.startetTidspunkt,
-                            endring = resultat.endring,
+                    val pdlHentPersonResults = hentPersonBolk(identitetsnummere, pdlHentPersonBolk)
+                    val resultater: List<EvalueringResultat> = if (pdlHentPersonResults == null) {
+                        logger.warn("PDL hentPersonBolk returnerte null")
+                        emptyList()
+                    } else {
+                        pdlHentPersonResults.processPdlResultsV2(
+                            prometheusMeterRegistry = prometheusMeterRegistry,
+                            regler = regler,
+                            chunk = chunk,
+                            logger = logger
                         )
                     }
-                    if (resultat.avsluttPeriode) {
-                        sendAvsluttetHendelse(
-                            resultat.grunnlag,
-                            resultat.detaljer,
-                            hendelseState,
-                            hendelseStateStore,
-                            ctx,
-                            prometheusMeterRegistry
-                        )
-                    }
-                    if (resultat.slettForhaandsGodkjenning) {
-                        slettForhaandsGodkjenning(hendelseState, hendelseStateStore)
+
+                    resultater.forEach { resultat ->
+                        val hendelseState = resultat.hendelseState
+                        if (resultat.endring != null) {
+                            val nyState = hendelseState.copy(sisteEndring = resultat.endring)
+                            hendelseStateStore.put(nyState.periodeId, nyState)
+                            prometheusMeterRegistry.tellEndring(
+                                tidspunktForrigeEndring = hendelseState.sisteEndring?.tidspunkt
+                                    ?: hendelseState.startetTidspunkt,
+                                endring = resultat.endring,
+                            )
+                        }
+                        if (resultat.avsluttPeriode) {
+                            sendAvsluttetHendelse(
+                                resultat.grunnlag,
+                                resultat.detaljer,
+                                hendelseState,
+                                hendelseStateStore,
+                                ctx,
+                                prometheusMeterRegistry
+                            )
+                        }
+                        if (resultat.slettForhaandsGodkjenning) {
+                            slettForhaandsGodkjenning(hendelseState, hendelseStateStore)
+                        }
                     }
                 }
-            }
+        }
+        sisteKjoeringStateStore.put(partition, ctx.currentSystemTimeMs())
+    } else {
+        logger.info("Dropper kjøring av 'scheduleAvsluttPerioder' for partisjon $partition, tid siden sist: $tidSidenSist, tid mellom hver kjøring: $interval")
     }
 }
 
@@ -171,7 +182,9 @@ fun List<HentPersonBolkResult>.processPdlResultsV2(
                     tilRegelId = nyRegelId,
                     tidspunkt = Instant.now()
                 )
-            } else { null }
+            } else {
+                null
+            }
 
             EvalueringResultat(
                 hendelseState = hendelseState,
@@ -251,7 +264,8 @@ fun genererAvsluttetHendelseRecord(
                 sikkerhetsnivaa = null
             )
         ),
-        opplysninger = detaljer.filterIsInstance<DomeneOpplysning>().map(::domeneOpplysningTilHendelseOpplysning).toSet()
+        opplysninger = detaljer.filterIsInstance<DomeneOpplysning>().map(::domeneOpplysningTilHendelseOpplysning)
+            .toSet()
     ),
     Instant.now().toEpochMilli()
 )
