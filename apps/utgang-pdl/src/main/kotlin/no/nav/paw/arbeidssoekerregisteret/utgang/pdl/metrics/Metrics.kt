@@ -57,7 +57,7 @@ fun PrometheusMeterRegistry.tellAvsluttetPeriode(metadata: Metadata, tilstand: H
                     .let { if (it.size  >= 2) it[1] else it[0] }
                     .split(":")
                     .let {
-                    if (it.size >=2) "${it[0]}${it[1]}" else it[0]
+                    if (it.size >=2) "${it[0]}_${it[1]}" else it[0]
                 }
             )
         )
