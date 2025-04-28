@@ -7,6 +7,7 @@ import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.Endring
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseState
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.OK
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
 import java.time.Duration
 import java.time.Instant
 
@@ -50,6 +51,9 @@ fun PrometheusMeterRegistry.tellAvsluttetPeriode(metadata: Metadata, tilstand: H
             ),
             Tag.of(
                 "utfoert_av", metadata.utfoertAv.type.name.lowercase()
+            ),
+            Tag.of(
+                "forhaandsgodkjent", tilstand?.opplysninger?.contains(Opplysning.FORHAANDSGODKJENT_AV_ANSATT)?.toString() ?: "ukjent"
             ),
             Tag.of(
                 "kilde", metadata.kilde
