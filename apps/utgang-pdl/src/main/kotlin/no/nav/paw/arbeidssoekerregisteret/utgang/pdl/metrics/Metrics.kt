@@ -66,7 +66,7 @@ fun PrometheusMeterRegistry.tellAvsluttetPeriode(metadata: Metadata, tilstand: H
     ).increment()
 }
 
-fun PrometheusMeterRegistry.tellEndring(tidspunktForrigeEndring: Instant, endring: Endring) {
+fun PrometheusMeterRegistry.tellEndring(tidspunktForrigeEndring: Instant, forhaandsgodkjent: Boolean, endring: Endring) {
     val varighet = Duration.between(tidspunktForrigeEndring, Instant.now())
     val dager = varighet.toDays().tilMetricVerdi()
     counter(
@@ -80,6 +80,9 @@ fun PrometheusMeterRegistry.tellEndring(tidspunktForrigeEndring: Instant, endrin
             ),
             Tag.of(
                 "varighet_dager", dager
+            ),
+            Tag.of(
+                "forhaandsgodkjent", forhaandsgodkjent.toString()
             )
         )
     ).increment()

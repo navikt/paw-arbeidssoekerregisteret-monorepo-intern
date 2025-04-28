@@ -88,6 +88,7 @@ fun scheduleAvsluttPerioder(
                                 tidspunktForrigeEndring = hendelseState.sisteEndring?.tidspunkt
                                     ?: hendelseState.startetTidspunkt,
                                 endring = resultat.endring,
+                                forhaandsgodkjent = hendelseState.opplysninger.contains(Opplysning.FORHAANDSGODKJENT_AV_ANSATT)
                             )
                         }
                         if (resultat.avsluttPeriode) {
