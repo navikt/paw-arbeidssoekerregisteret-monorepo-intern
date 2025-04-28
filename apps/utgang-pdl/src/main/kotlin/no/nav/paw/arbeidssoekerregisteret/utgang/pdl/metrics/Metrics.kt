@@ -49,12 +49,14 @@ fun PrometheusMeterRegistry.tellAvsluttetPeriode(metadata: Metadata, tilstand: H
                 "forsinkelse_dager", forsinkelse
             ),
             Tag.of(
-                "ufoert_av", metadata.utfoertAv.type.name.lowercase()
+                "utfoert_av", metadata.utfoertAv.type.name.lowercase()
             ),
             Tag.of(
                 "kilde", metadata.kilde
                     .split("/paw/")
-                    .let { if (it.size  >= 2) it[1] else it[0] }
+                    .let { if (it.size  >= 2) {
+                        it[1].split(":").first()
+                    } else it[0] }
                     .split(":")
                     .let {
                     if (it.size >=2) "${it[0]}_${it[1]}" else it[0]
