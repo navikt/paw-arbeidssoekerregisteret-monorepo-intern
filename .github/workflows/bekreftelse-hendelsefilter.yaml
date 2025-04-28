@@ -18,7 +18,7 @@ on:
 
 env:
   MODULE: bekreftelse-hendelsefilter
-  IMAGE: europe-north1-docker.pkg.dev/${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}/paw/paw-arbeidssoekerregisteret-bekreftelse-hendelsefilter
+  IMAGE: europe-north1-docker.pkg.dev/nais-management-233d/paw/paw-arbeidssoekerregisteret-bekreftelse-hendelsefilter
 jobs:
   build:
     name: Build
@@ -44,8 +44,6 @@ jobs:
       - name: Login GAR
         uses: nais/login@v0
         with:
-          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
-          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
           team: paw
       - name: Build and push image with Gradle
         id: docker-build-push
