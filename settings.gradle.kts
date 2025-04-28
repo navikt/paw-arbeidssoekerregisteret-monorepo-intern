@@ -3,7 +3,7 @@ plugins {
     kotlin("jvm") version "2.1.20" apply false
     kotlin("plugin.serialization") version "2.1.20" apply false
     id("com.google.cloud.tools.jib") version "3.4.5" apply false
-    id("org.openapi.generator") version "7.12.0" apply false
+    id("org.openapi.generator") version "7.13.0" apply false
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1" apply false
     id("com.expediagroup.graphql") version "8.6.2" apply false
 }
