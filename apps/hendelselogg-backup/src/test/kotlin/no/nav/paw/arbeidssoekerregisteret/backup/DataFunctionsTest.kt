@@ -6,7 +6,7 @@ import io.kotest.matchers.shouldBe
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.backup.database.*
-import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContextOld
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
@@ -61,7 +61,7 @@ class DataFunctionsTest : FreeSpec({
         }
         "we can write to the log without errors" {
             transaction {
-                val appCtx = ApplicationContext(
+                val appCtx = ApplicationContextOld(
                     consumerVersion = 1,
                     logger = logger,
                     meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
@@ -81,7 +81,7 @@ class DataFunctionsTest : FreeSpec({
         )
         "we can write a different version to the log without errors" {
             transaction {
-                val appCtx = ApplicationContext(
+                val appCtx = ApplicationContextOld(
                     consumerVersion = 2,
                     logger = logger,
                     meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
@@ -103,7 +103,7 @@ class DataFunctionsTest : FreeSpec({
                 ?.let { h -> String(h.value()) }
         }
         "we can read multiple versions from the log" {
-            val storedDataV1 = ApplicationContext(
+            val storedDataV1 = ApplicationContextOld(
                 consumerVersion = 1,
                 logger = logger,
                 meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
@@ -120,7 +120,7 @@ class DataFunctionsTest : FreeSpec({
             storedDataV1.data shouldBe record.value()
             storedDataV1.traceparent shouldBe record.headers().lastHeader("traceparent")
                 ?.let { h -> String(h.value()) }
-            val storedDataV2 = ApplicationContext(
+            val storedDataV2 = ApplicationContextOld(
                 consumerVersion = 2,
                 logger = logger,
                 meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),

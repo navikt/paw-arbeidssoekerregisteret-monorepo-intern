@@ -1,7 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.backup.database
 
 import no.nav.paw.arbeidssoekerregisteret.backup.database.HendelseTable.recordKey
-import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.StoredData
 import no.nav.paw.arbeidssokerregisteret.intern.v1.ArbeidssoekerIdFlettetInn
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse

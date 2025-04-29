@@ -11,11 +11,10 @@ import no.nav.paw.arbeidssoekerregisteret.backup.database.initHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.database.readAllNestedRecordsForId
 import no.nav.paw.arbeidssoekerregisteret.backup.database.readRecord
 import no.nav.paw.arbeidssoekerregisteret.backup.database.txContext
-import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContextOld
 import no.nav.paw.arbeidssokerregisteret.intern.v1.ArbeidssoekerIdFlettetInn
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
-import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerSammenslaatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Kilde
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -26,7 +25,7 @@ import java.util.*
 class ApplicationHappyPathTest : FreeSpec({
     "Verifiser enkel applikasjonsflyt" {
         val appCtx =
-            ApplicationContext(
+            ApplicationContextOld(
                 consumerVersion = 1,
                 logger = LoggerFactory.getLogger("test-logger"),
                 meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),

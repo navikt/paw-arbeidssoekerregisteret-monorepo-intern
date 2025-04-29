@@ -5,7 +5,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
@@ -24,7 +23,7 @@ import no.nav.paw.arbeidssoekerregisteret.backup.configureHTTP
 import no.nav.paw.arbeidssoekerregisteret.backup.database.txContext
 import no.nav.paw.arbeidssoekerregisteret.backup.database.writeRecord
 import no.nav.paw.arbeidssoekerregisteret.backup.initDbContainer
-import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContextOld
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
@@ -47,7 +46,7 @@ class ApiTest : FreeSpec({
         logger.info("Starter test")
         initDbContainer()
         logger.info("Db cntainer startet")
-        val applicationContext = ApplicationContext(
+        val applicationContext = ApplicationContextOld(
             consumerVersion = 1,
             logger = logger,
             meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),

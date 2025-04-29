@@ -8,9 +8,8 @@ import arrow.core.right
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.*
 import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.ArbeidssoekerperiodeResponse
 import no.nav.paw.arbeidssoekerregisteret.backup.database.readAllNestedRecordsForId
-import no.nav.paw.arbeidssoekerregisteret.backup.database.readAllRecordsForId
 import no.nav.paw.arbeidssoekerregisteret.backup.database.txContext
-import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContextOld
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.StoredData
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
@@ -26,7 +25,7 @@ import kotlin.contracts.contract
 class BrukerstoetteService(
     private val oppslagAPI: OppslagApiClient,
     private val kafkaKeysClient: KafkaKeysClient,
-    private val applicationContext: ApplicationContext,
+    private val applicationContext: ApplicationContextOld,
     private val hendelseDeserializer: HendelseDeserializer
 ) {
     private val errorLogger = LoggerFactory.getLogger("error_logger")

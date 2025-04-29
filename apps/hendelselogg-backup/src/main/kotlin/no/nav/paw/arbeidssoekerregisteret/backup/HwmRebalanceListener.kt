@@ -2,7 +2,7 @@ package no.nav.paw.arbeidssoekerregisteret.backup
 
 import no.nav.paw.arbeidssoekerregisteret.backup.database.getHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.database.txContext
-import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContextOld
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
 import org.apache.kafka.common.TopicPartition
@@ -10,7 +10,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.concurrent.ConcurrentHashMap
 
 class HwmRebalanceListener(
-    private val context: ApplicationContext,
+    private val context: ApplicationContextOld,
     private val consumer: Consumer<*, *>
 ) : ConsumerRebalanceListener {
 

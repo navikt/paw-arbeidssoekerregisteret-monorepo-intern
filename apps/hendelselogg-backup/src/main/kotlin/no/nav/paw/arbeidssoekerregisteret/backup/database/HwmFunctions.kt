@@ -1,15 +1,15 @@
 package no.nav.paw.arbeidssoekerregisteret.backup.database
 
-import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContextOld
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.Hwm
 import org.jetbrains.exposed.sql.*
 
 data class TransactionContext(
-    val appContext: ApplicationContext,
+    val appContext: ApplicationContextOld,
     val transaction: Transaction
 )
 
-fun txContext(applicationContext: ApplicationContext): Transaction.() -> TransactionContext = {
+fun txContext(applicationContext: ApplicationContextOld): Transaction.() -> TransactionContext = {
     TransactionContext(applicationContext, this)
 }
 
