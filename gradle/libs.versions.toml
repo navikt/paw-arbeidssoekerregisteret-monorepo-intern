@@ -1,9 +1,9 @@
 [versions]
 noNavSecurityVersion = "5.0.25"
 noNavSecurityMockOauth2ServerVersion = "2.1.10"
-noNavCommonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
+noNavCommonVersion = "3.2024.11.26_16.35-432a29107830"
 noNavTmsVarselBuilderVersion = "2.1.1"
-arbeidssokerregisteretVersion = "1.13720481449.52-1"
+arbeidssokerregisteretVersion = "1.25.03.10.2-1"
 bekreftelseSchemaVersion = "1.25.03.26.32-1"
 arrowVersion = "2.1.0"
 arrowJacksonIntegrationVersion = "0.15.1"
