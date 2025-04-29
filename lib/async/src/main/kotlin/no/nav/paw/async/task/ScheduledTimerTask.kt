@@ -5,9 +5,7 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
 class ScheduledTimerTask<T>(
-    private val task: () -> T,
-    private val onSuccess: (T) -> Unit,
-    private val onFailure: (Throwable) -> Unit,
+    private val onRun: () -> Unit,
     private val keepRunning: AtomicBoolean = AtomicBoolean(false)
 ) : TimerTask() {
     private val logger = LoggerFactory.getLogger(this.javaClass)
@@ -15,12 +13,7 @@ class ScheduledTimerTask<T>(
     override fun run() {
         logger.info("Running scheduled async function")
         do {
-            try {
-                val result = task()
-                onSuccess(result)
-            } catch (throwable: Throwable) {
-                onFailure(throwable)
-            }
+            onRun()
         } while (keepRunning.get())
     }
 }

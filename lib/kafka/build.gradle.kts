@@ -4,6 +4,7 @@ plugins {
 
 
 dependencies {
+    api(project(":lib:logging"))
     api(project(":lib:async"))
     compileOnly(libs.ktor.server.core)
     compileOnly(libs.kotlinx.coroutines.core)

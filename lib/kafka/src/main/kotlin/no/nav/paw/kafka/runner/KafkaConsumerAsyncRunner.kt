@@ -1,53 +1,40 @@
 package no.nav.paw.kafka.runner
 
 import no.nav.paw.async.runner.ThreadPoolAsyncRunner
-import no.nav.paw.kafka.listener.NoopConsumerRebalanceListener
-import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
+import no.nav.paw.kafka.consumer.KafkaConsumerWrapper
+import no.nav.paw.logging.logger.buildNamedLogger
 import org.apache.kafka.clients.consumer.ConsumerRecords
-import org.apache.kafka.clients.consumer.KafkaConsumer
-import org.slf4j.LoggerFactory
-import java.time.Duration
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 
 class KafkaConsumerAsyncRunner<K, V>(
+    private val onInit: () -> Unit,
     private val onConsume: (ConsumerRecords<K, V>) -> Unit,
-    private val onSuccess: (ConsumerRecords<K, V>) -> Unit,
-    private val onFailure: (throwable: Throwable) -> Unit,
-    private val kafkaConsumer: KafkaConsumer<K, V>,
-    private val kafkaTopics: Collection<String>,
-    private val pollTimeout: Duration = Duration.ofMillis(100),
-    private val closeTimeout: Duration = Duration.ofMillis(500),
-    private val rebalanceListener: ConsumerRebalanceListener = NoopConsumerRebalanceListener(),
-    executorService: ExecutorService = Executors.newSingleThreadExecutor()
-) : ThreadPoolAsyncRunner<ConsumerRecords<K, V>>(executorService = executorService, recursive = true) {
-    private val logger = LoggerFactory.getLogger(this.javaClass)
-
-    private fun consumeTask(): ConsumerRecords<K, V> {
-        val records = kafkaConsumer.poll(pollTimeout)
-        onConsume(records)
-        return records
-    }
+    private val kafkaConsumerWrapper: KafkaConsumerWrapper<K, V>,
+    executorService: ExecutorService = Executors.newSingleThreadExecutor(),
+    keepRunning: AtomicBoolean = AtomicBoolean(true),
+    mayInterruptOnStop: AtomicBoolean = AtomicBoolean(false)
+) : ThreadPoolAsyncRunner<ConsumerRecords<K, V>>(executorService, keepRunning, mayInterruptOnStop) {
+    private val logger = buildNamedLogger("kafka.consumer")
 
     fun init(instance: Any) {
         logger.info("Klargjør Kafka Consumer {}", instance)
-        kafkaConsumer.subscribe(kafkaTopics, rebalanceListener)
+        onInit()
+        kafkaConsumerWrapper.init()
     }
 
     fun start(instance: Any) {
         logger.info("Starter Kafka Consumer {}", instance)
-        run(
-            task = ::consumeTask,
-            onSuccess = onSuccess,
-            onFailure = onFailure
-        )
+        run(onRun = {
+            kafkaConsumerWrapper.consume(onConsume)
+        })
     }
 
     fun stop(instance: Any) {
         abort(onAbort = {
             logger.info("Stopper Kafka Consumer {}", instance)
-            kafkaConsumer.unsubscribe()
-            kafkaConsumer.close(closeTimeout)
+            kafkaConsumerWrapper.stop()
         })
     }
 }

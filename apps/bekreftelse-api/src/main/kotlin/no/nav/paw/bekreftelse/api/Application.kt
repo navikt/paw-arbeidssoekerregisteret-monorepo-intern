@@ -58,9 +58,9 @@ fun Application.module(applicationContext: ApplicationContext) {
         installKafkaPlugins(
             applicationConfig = applicationConfig,
             bekreftelseKafkaProducer = bekreftelseKafkaProducer,
-            bekreftelseHendelseKafkaConsumer = bekreftelseKafkaConsumer,
+            bekreftelseHendelseKafkaConsumer = bekreftelseHendelseKafkaConsumer,
             bekreftelseService = bekreftelseService,
-            kafkaConsumerHandler = kafkaConsumerHandler
+            consumerExceptionHandler = healthIndicatorConsumerExceptionHandler
         )
         configureRouting(
             meterRegistry = prometheusMeterRegistry,

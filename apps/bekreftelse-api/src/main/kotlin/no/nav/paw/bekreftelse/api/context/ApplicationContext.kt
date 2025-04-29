@@ -11,7 +11,7 @@ import no.nav.paw.bekreftelse.api.config.APPLICATION_CONFIG
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.config.SERVER_CONFIG
 import no.nav.paw.bekreftelse.api.config.ServerConfig
-import no.nav.paw.bekreftelse.api.handler.KafkaConsumerHandler
+import no.nav.paw.bekreftelse.api.handler.HealthIndicatorConsumerExceptionHandler
 import no.nav.paw.bekreftelse.api.handler.KafkaProducerHandler
 import no.nav.paw.bekreftelse.api.repository.BekreftelseRepository
 import no.nav.paw.bekreftelse.api.service.AuthorizationService
@@ -25,8 +25,6 @@ import no.nav.paw.database.config.DATABASE_CONFIG
 import no.nav.paw.database.config.DatabaseConfig
 import no.nav.paw.database.factory.createHikariDataSource
 import no.nav.paw.health.model.HealthStatus
-import no.nav.paw.health.model.LivenessHealthIndicator
-import no.nav.paw.health.model.ReadinessHealthIndicator
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafka.config.KAFKA_CONFIG_WITH_SCHEME_REG
 import no.nav.paw.kafka.config.KafkaConfig
@@ -58,9 +56,9 @@ data class ApplicationContext(
     val prometheusMeterRegistry: PrometheusMeterRegistry,
     val healthIndicatorRepository: HealthIndicatorRepository,
     val bekreftelseKafkaProducer: Producer<Long, Bekreftelse>,
-    val bekreftelseKafkaConsumer: KafkaConsumer<Long, BekreftelseHendelse>,
+    val bekreftelseHendelseKafkaConsumer: KafkaConsumer<Long, BekreftelseHendelse>,
     val kafkaProducerHandler: KafkaProducerHandler,
-    val kafkaConsumerHandler: KafkaConsumerHandler,
+    val healthIndicatorConsumerExceptionHandler: HealthIndicatorConsumerExceptionHandler,
     val authorizationService: AuthorizationService,
     val bekreftelseService: BekreftelseService,
     val additionalMeterBinders: List<MeterBinder>
@@ -101,9 +99,9 @@ data class ApplicationContext(
 
             val authorizationService = AuthorizationService(serverConfig, tilgangskontrollClient)
 
-            val kafkaConsumerHandler = KafkaConsumerHandler(
-                healthIndicatorRepository.addLivenessIndicator(LivenessHealthIndicator(HealthStatus.HEALTHY)),
-                healthIndicatorRepository.addReadinessIndicator(ReadinessHealthIndicator(HealthStatus.HEALTHY))
+            val healthIndicatorConsumerExceptionHandler = HealthIndicatorConsumerExceptionHandler(
+                livenessIndicator = healthIndicatorRepository.livenessIndicator(HealthStatus.HEALTHY),
+                readinessIndicator = healthIndicatorRepository.readinessIndicator(HealthStatus.HEALTHY)
             )
 
             val kafkaFactory = KafkaFactory(kafkaConfig)
@@ -115,12 +113,11 @@ data class ApplicationContext(
             )
             val kafkaProducerHandler = KafkaProducerHandler(applicationConfig, bekreftelseKafkaProducer)
 
-            val bekreftelseKafkaConsumer = kafkaFactory.createConsumer(
+            val bekreftelseHendelseKafkaConsumer = kafkaFactory.createConsumer(
                 clientId = applicationConfig.kafkaTopology.consumerId,
                 groupId = applicationConfig.kafkaTopology.consumerGroupId,
                 keyDeserializer = LongDeserializer::class,
                 valueDeserializer = BekreftelseHendelseDeserializer::class,
-                autoCommit = false
             )
 
             val bekreftelseRepository = BekreftelseRepository()
@@ -143,14 +140,14 @@ data class ApplicationContext(
                 prometheusMeterRegistry = prometheusMeterRegistry,
                 healthIndicatorRepository = healthIndicatorRepository,
                 bekreftelseKafkaProducer = bekreftelseKafkaProducer,
-                bekreftelseKafkaConsumer = bekreftelseKafkaConsumer,
+                bekreftelseHendelseKafkaConsumer = bekreftelseHendelseKafkaConsumer,
                 kafkaProducerHandler = kafkaProducerHandler,
-                kafkaConsumerHandler = kafkaConsumerHandler,
+                healthIndicatorConsumerExceptionHandler = healthIndicatorConsumerExceptionHandler,
                 authorizationService = authorizationService,
                 bekreftelseService = bekreftelseService,
                 additionalMeterBinders = listOf(
                     KafkaClientMetrics(bekreftelseKafkaProducer),
-                    KafkaClientMetrics(bekreftelseKafkaConsumer)
+                    KafkaClientMetrics(bekreftelseHendelseKafkaConsumer)
                 )
             )
         }
