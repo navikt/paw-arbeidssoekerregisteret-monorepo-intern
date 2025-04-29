@@ -16,9 +16,16 @@ dependencies {
     implementation(project(":lib:kafka"))
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:kafka-key-generator-client"))
+    implementation(project(":lib:error-handling"))
+    implementation(project(":lib:logging"))
+    implementation(project(":lib:security"))
+    implementation(project(":lib:serialization"))
+    implementation(project(":lib:metrics"))
+    implementation(project(":lib:database"))
 
-    implementation(libs.arrow.core.core)
+
     implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.arrow.core.core)
     implementation(libs.ktor.server.cors)
     implementation(libs.ktor.server.swagger)
     implementation(libs.ktor.server.callId)
@@ -53,12 +60,17 @@ dependencies {
     implementation(libs.jackson.datatypeJsr310)
     implementation(libs.jackson.kotlin)
 
-    testImplementation(libs.test.junit5.runner)
-    testImplementation(libs.test.kotest.assertionsCore)
-    testImplementation(libs.test.mockk.core)
-    testImplementation(libs.test.testContainers.core)
-    testImplementation(libs.test.testContainers.postgresql)
+    // Testing
+    testImplementation(project(":test:test-data-lib"))
+    testImplementation(project(":lib:kafka-key-generator-client"))
+    testImplementation(libs.bundles.testLibsWithUnitTesting)
     testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.ktor.client.cio)
+    testImplementation(libs.ktor.client.mock)
+    testImplementation(libs.ktor.client.contentNegotiation)
+    testImplementation(libs.test.testContainers.postgresql)
+    testImplementation(libs.test.mockOauth2Server)
+    testImplementation(libs.test.kotest.assertionsCore)
 }
 
 java {
@@ -68,7 +80,7 @@ java {
 }
 
 application {
-    mainClass.set("no.nav.paw.arbeidssoekerregisteret.backup.StartAppKt")
+    mainClass.set("no.nav.paw.arbeidssoekerregisteret.backup.ApplicationKt")
 }
 
 tasks.withType<KotlinCompile>().configureEach {
