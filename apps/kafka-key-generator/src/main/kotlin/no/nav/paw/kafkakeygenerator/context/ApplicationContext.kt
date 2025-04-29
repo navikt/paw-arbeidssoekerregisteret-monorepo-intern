@@ -12,22 +12,25 @@ import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.database.config.DATABASE_CONFIG
 import no.nav.paw.database.config.DatabaseConfig
 import no.nav.paw.database.factory.createHikariDataSource
+import no.nav.paw.health.model.HealthStatus
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafka.config.KAFKA_CONFIG
 import no.nav.paw.kafka.config.KafkaConfig
 import no.nav.paw.kafka.factory.KafkaFactory
+import no.nav.paw.kafka.handler.ConsumerExceptionHandler
 import no.nav.paw.kafkakeygenerator.config.KAFKA_TOPOLOGY_CONFIG
 import no.nav.paw.kafkakeygenerator.config.KafkaTopologyConfig
 import no.nav.paw.kafkakeygenerator.config.PDL_CLIENT_CONFIG
 import no.nav.paw.kafkakeygenerator.config.PdlClientConfig
 import no.nav.paw.kafkakeygenerator.config.SERVER_CONFIG
 import no.nav.paw.kafkakeygenerator.config.ServerConfig
+import no.nav.paw.kafkakeygenerator.handler.HealthIndicatorConsumerExceptionHandler
 import no.nav.paw.kafkakeygenerator.merge.MergeDetector
 import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
-import no.nav.paw.kafkakeygenerator.service.KafkaConsumerService
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
+import no.nav.paw.kafkakeygenerator.service.PawHendelseKafkaConsumerService
 import no.nav.paw.kafkakeygenerator.service.PdlService
 import no.nav.paw.kafkakeygenerator.utils.createPdlClient
 import no.nav.paw.security.authentication.config.SECURITY_CONFIG
@@ -43,8 +46,9 @@ data class ApplicationContext(
     val dataSource: DataSource,
     val prometheusMeterRegistry: PrometheusMeterRegistry,
     val healthIndicatorRepository: HealthIndicatorRepository,
-    val hendelseKafkaConsumer: KafkaConsumer<Long, Hendelse>,
-    val kafkaConsumerService: KafkaConsumerService,
+    val pawHendelseKafkaConsumer: KafkaConsumer<Long, Hendelse>,
+    val pawHendelseKafkaConsumerService: PawHendelseKafkaConsumerService,
+    val pawHendelseConsumerExceptionHandler: ConsumerExceptionHandler,
     val kafkaKeysService: KafkaKeysService,
     val mergeDetector: MergeDetector,
     val additionalMeterBinders: List<MeterBinder>
@@ -65,12 +69,15 @@ data class ApplicationContext(
             val identitetRepository = IdentitetRepository()
             val kafkaKeysRepository = KafkaKeysRepository()
             val kafkaKeysAuditRepository = KafkaKeysAuditRepository()
-            val kafkaConsumerService = KafkaConsumerService(
+            val pawHendelseKafkaConsumerService = PawHendelseKafkaConsumerService(
                 meterRegistry = prometheusMeterRegistry,
-                healthIndicatorRepository = healthIndicatorRepository,
                 identitetRepository = identitetRepository,
                 kafkaKeysRepository = kafkaKeysRepository,
                 kafkaKeysAuditRepository = kafkaKeysAuditRepository
+            )
+            val pawHendelseConsumerExceptionHandler = HealthIndicatorConsumerExceptionHandler(
+                livenessIndicator = healthIndicatorRepository.livenessIndicator(defaultStatus = HealthStatus.HEALTHY),
+                readinessIndicator = healthIndicatorRepository.readinessIndicator(defaultStatus = HealthStatus.HEALTHY)
             )
             val pdlService = PdlService(pdlClient = pdlClient)
             val kafkaKeysService = KafkaKeysService(
@@ -96,8 +103,9 @@ data class ApplicationContext(
                 dataSource = dataSource,
                 prometheusMeterRegistry = prometheusMeterRegistry,
                 healthIndicatorRepository = healthIndicatorRepository,
-                hendelseKafkaConsumer = hendelseKafkaConsumer,
-                kafkaConsumerService = kafkaConsumerService,
+                pawHendelseKafkaConsumer = hendelseKafkaConsumer,
+                pawHendelseKafkaConsumerService = pawHendelseKafkaConsumerService,
+                pawHendelseConsumerExceptionHandler = pawHendelseConsumerExceptionHandler,
                 kafkaKeysService = kafkaKeysService,
                 mergeDetector = mergeDetector,
                 additionalMeterBinders = listOf(KafkaClientMetrics(hendelseKafkaConsumer))

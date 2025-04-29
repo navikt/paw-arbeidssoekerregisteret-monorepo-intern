@@ -46,13 +46,14 @@ fun Application.module(applicationContext: ApplicationContext) {
         installAuthenticationPlugin(securityConfig.authProviders)
         installWebAppMetricsPlugin(
             meterRegistry = prometheusMeterRegistry,
-            additionalMeterBinders = listOf(KafkaClientMetrics(hendelseKafkaConsumer))
+            additionalMeterBinders = listOf(KafkaClientMetrics(pawHendelseKafkaConsumer))
         )
         installDatabasePlugin(dataSource)
         installKafkaPlugins(
             kafkaTopologyConfig = kafkaTopologyConfig,
-            kafkaConsumer = hendelseKafkaConsumer,
-            kafkaConsumerService = kafkaConsumerService
+            pawHendelseKafkaConsumer = pawHendelseKafkaConsumer,
+            pawHendelseKafkaConsumerService = pawHendelseKafkaConsumerService,
+            pawHendelseConsumerExceptionHandler = pawHendelseConsumerExceptionHandler
         )
         configureRouting(
             meterRegistry = prometheusMeterRegistry,

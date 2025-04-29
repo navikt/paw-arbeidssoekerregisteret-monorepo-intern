@@ -6,7 +6,6 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.micrometer.core.instrument.logging.LoggingMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
@@ -27,7 +26,7 @@ class KafkaConsumerServiceTest : FreeSpec({
     lateinit var dataSource: DataSource
     lateinit var kafkaKeysRepository: KafkaKeysRepository
     lateinit var kafkaKeysAuditRepository: KafkaKeysAuditRepository
-    lateinit var kafkaConsumerService: KafkaConsumerService
+    lateinit var kafkaConsumerService: PawHendelseKafkaConsumerService
 
     beforeSpec {
         dataSource = initTestDatabase()
@@ -37,12 +36,10 @@ class KafkaConsumerServiceTest : FreeSpec({
             .load()
             .migrate()
         Database.connect(dataSource)
-        val healthIndicatorRepository = HealthIndicatorRepository()
         kafkaKeysRepository = KafkaKeysRepository()
         kafkaKeysAuditRepository = KafkaKeysAuditRepository()
-        kafkaConsumerService = KafkaConsumerService(
+        kafkaConsumerService = PawHendelseKafkaConsumerService(
             meterRegistry = LoggingMeterRegistry(),
-            healthIndicatorRepository = healthIndicatorRepository,
             identitetRepository = IdentitetRepository(),
             kafkaKeysRepository = kafkaKeysRepository,
             kafkaKeysAuditRepository = kafkaKeysAuditRepository

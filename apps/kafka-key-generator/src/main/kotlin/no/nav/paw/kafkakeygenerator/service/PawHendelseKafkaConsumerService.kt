@@ -1,15 +1,9 @@
 package no.nav.paw.kafkakeygenerator.service
 
 import io.micrometer.core.instrument.MeterRegistry
-import io.opentelemetry.api.trace.Span
-import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerSammenslaatt
-import no.nav.paw.health.model.HealthStatus
-import no.nav.paw.health.model.LivenessHealthIndicator
-import no.nav.paw.health.model.ReadinessHealthIndicator
-import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
@@ -30,8 +24,7 @@ import no.nav.paw.logging.logger.buildLogger
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class KafkaConsumerService(
-    private val healthIndicatorRepository: HealthIndicatorRepository,
+class PawHendelseKafkaConsumerService(
     private val meterRegistry: MeterRegistry,
     private val identitetRepository: IdentitetRepository,
     private val kafkaKeysRepository: KafkaKeysRepository,
@@ -39,15 +32,9 @@ class KafkaConsumerService(
 ) {
     private val logger = buildLogger
     private val errorLogger = buildErrorLogger
-    private val livenessIndicator = healthIndicatorRepository
-        .addLivenessIndicator(LivenessHealthIndicator(HealthStatus.HEALTHY))
-    private val readinessIndicator = healthIndicatorRepository
-        .addReadinessIndicator(ReadinessHealthIndicator(HealthStatus.HEALTHY))
 
     @WithSpan
-    fun handleRecords(
-        records: ConsumerRecords<Long, Hendelse>
-    ) {
+    fun handleRecords(records: ConsumerRecords<Long, Hendelse>) {
         records
             .onEach { record ->
                 logger.info(
@@ -193,13 +180,5 @@ class KafkaConsumerService(
             )
             kafkaKeysAuditRepository.insert(audit)
         }
-    }
-
-    @WithSpan
-    fun handleException(throwable: Throwable) {
-        errorLogger.error("Kafka Consumer avslutter etter feil", throwable)
-        Span.current().setStatus(StatusCode.ERROR)
-        // livenessIndicator.setUnhealthy() TODO: Disabler for å unngå å ta ned appen
-        // readinessIndicator.setUnhealthy()
     }
 }
