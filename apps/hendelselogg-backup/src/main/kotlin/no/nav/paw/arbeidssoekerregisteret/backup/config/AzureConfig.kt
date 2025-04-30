@@ -1,4 +1,4 @@
-package no.nav.paw.arbeidssoekerregisteret.backup
+package no.nav.paw.arbeidssoekerregisteret.backup.config
 
 import no.nav.paw.kafkakeygenerator.auth.AzureM2MConfig
 

@@ -65,7 +65,7 @@ class DataFunctionsTest : FreeSpec({
                     consumerVersion = 1,
                     logger = logger,
                     meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
-                    azureConfig = loadNaisOrLocalConfiguration("azure.toml")
+                    azureConfig = loadNaisOrLocalConfiguration("azure_config.toml")
                 )
                 txContext(appCtx)().writeRecord(hendelseSerde.serializer(), record)
             }
@@ -85,7 +85,7 @@ class DataFunctionsTest : FreeSpec({
                     consumerVersion = 2,
                     logger = logger,
                     meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
-                    azureConfig = loadNaisOrLocalConfiguration("azure.toml")
+                    azureConfig = loadNaisOrLocalConfiguration("azure_config.toml")
                 )
                 txContext(appCtx)().writeRecord(hendelseSerde.serializer(), recordVersion2)
             }
@@ -107,7 +107,7 @@ class DataFunctionsTest : FreeSpec({
                 consumerVersion = 1,
                 logger = logger,
                 meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
-                azureConfig = loadNaisOrLocalConfiguration("azure.toml")
+                azureConfig = loadNaisOrLocalConfiguration("azure_config.toml")
             ).let { appCtx ->
                 transaction {
                     txContext(appCtx)().readRecord(hendelseSerde.deserializer(), record.partition(), record.offset())
@@ -124,7 +124,7 @@ class DataFunctionsTest : FreeSpec({
                 consumerVersion = 2,
                 logger = logger,
                 meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
-                azureConfig = loadNaisOrLocalConfiguration("azure.toml")
+                azureConfig = loadNaisOrLocalConfiguration("azure_config.toml")
             ).let { appCtx ->
                 transaction {
                     txContext(appCtx)().readRecord(hendelseSerde.deserializer(), record.partition(), record.offset())

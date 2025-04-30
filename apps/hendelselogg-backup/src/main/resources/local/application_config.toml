@@ -1,0 +1,5 @@
+version = 1
+antallPartitioner = 1
+consumerId = "paw-arbeidssoekerregisteret-hendelseslogg-backup-v1-consumer"
+consumerGroupId = "paw-arbeidssoekerregisteret-hendelseslogg-backup-v1"
+hendelsesloggTopic = "paw.arbeidssoker-hendelseslogg-v1"

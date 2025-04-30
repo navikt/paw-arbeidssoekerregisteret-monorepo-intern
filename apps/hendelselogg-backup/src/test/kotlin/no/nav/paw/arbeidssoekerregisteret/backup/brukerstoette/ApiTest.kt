@@ -51,7 +51,7 @@ class ApiTest : FreeSpec({
             logger = logger,
             meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
             shutdownCalled = AtomicBoolean(false),
-            azureConfig = loadNaisOrLocalConfiguration("azure.toml"),
+            azureConfig = loadNaisOrLocalConfiguration("azure_config.toml"),
         )
         val kafkaKeysClient = inMemoryKafkaKeysMock()
         val oppslagsApi: OppslagApiClient = mockk()

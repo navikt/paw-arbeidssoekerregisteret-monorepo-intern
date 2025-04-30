@@ -24,7 +24,7 @@ class HwmFunctionsTest : FreeSpec({
                     consumerVersion = 1,
                     logger = logger,
                     meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
-                    azureConfig = loadNaisOrLocalConfiguration("azure.toml")
+                    azureConfig = loadNaisOrLocalConfiguration("azure_config.toml")
                 )
             )
             "When there is no hwm for the partition, getHwm should return null" {
@@ -109,7 +109,7 @@ class HwmFunctionsTest : FreeSpec({
                     consumerVersion = 2,
                     logger = logger,
                     meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
-                    azureConfig = loadNaisOrLocalConfiguration("azure.toml")
+                    azureConfig = loadNaisOrLocalConfiguration("azure_config.toml")
                 )
             )
             "We find no hwms for version 2" {

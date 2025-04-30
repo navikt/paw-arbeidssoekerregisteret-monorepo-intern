@@ -9,7 +9,6 @@ import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.*
 import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.ArbeidssoekerperiodeResponse
 import no.nav.paw.arbeidssoekerregisteret.backup.database.readAllNestedRecordsForId
 import no.nav.paw.arbeidssoekerregisteret.backup.database.txContext
-import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContextOld
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.StoredData
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
@@ -23,14 +22,14 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
 class BrukerstoetteService(
-    private val oppslagAPI: OppslagApiClient,
+    private val consumerVersion: Int,
     private val kafkaKeysClient: KafkaKeysClient,
-    private val applicationContext: ApplicationContextOld,
+    private val oppslagApiClient: OppslagApiClient,
     private val hendelseDeserializer: HendelseDeserializer
 ) {
     private val errorLogger = LoggerFactory.getLogger("error_logger")
     private val apiOppslagLogger = LoggerFactory.getLogger("api_oppslag_logger")
-    private val txCtx = txContext(applicationContext)
+    private val txCtx = txContext(consumerVersion)
     suspend fun hentDetaljer(identitetsnummer: String): DetaljerResponse? {
         val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer)
         val hendelser = transaction {
@@ -72,15 +71,15 @@ class BrukerstoetteService(
 
     private suspend fun hentFraOppslagsApi(identitetsnummer: String): Either<Error, List<ApiData>> {
         return either {
-            val perioder = oppslagAPI.perioder(identitetsnummer).bind().map(ArbeidssoekerperiodeResponse::periodeId)
+            val perioder = oppslagApiClient.perioder(identitetsnummer).bind().map(ArbeidssoekerperiodeResponse::periodeId)
             val opplysninger =
                 perioder.flatMap { periodeId ->
-                    oppslagAPI.opplysninger(identitetsnummer, periodeId).bind()
+                    oppslagApiClient.opplysninger(identitetsnummer, periodeId).bind()
                         .map { opplysning -> ApiData(periodeId, opplysning.opplysningerOmArbeidssoekerId, null) }
                         .let { it.ifEmpty { listOf(ApiData(periodeId, null, null)) } }
                 }
             val profilernger = perioder.flatMap { periodeId ->
-                oppslagAPI.profileringer(identitetsnummer, periodeId).bind()
+                oppslagApiClient.profileringer(identitetsnummer, periodeId).bind()
                     .map { ApiData(periodeId, it.opplysningerOmArbeidssoekerId, it.profileringId) }
             }
             return perioder.map { periodeId -> ApiData(periodeId, null, null) }

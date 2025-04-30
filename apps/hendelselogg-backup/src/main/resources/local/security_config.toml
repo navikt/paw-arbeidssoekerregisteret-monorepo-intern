@@ -1,0 +1,7 @@
+[[authProviders]]
+name = "azure"
+audiences = ["paw-arbeidssoekerregisteret-api-bekreftelse"]
+discoveryUrl = "http://localhost:8081/azure/.well-known/openid-configuration"
+
+    [authProviders.requiredClaims]
+    claims = ["NAVident"]

@@ -21,6 +21,7 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.DetaljerRequest
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Feil
 import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.BrukerstoetteService
+import no.nav.paw.arbeidssoekerregisteret.backup.config.AzureConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.health.configureHealthRoutes
 import no.nav.paw.arbeidssoekerregisteret.backup.health.installMetrics
 import no.nav.paw.config.env.ProdGcp

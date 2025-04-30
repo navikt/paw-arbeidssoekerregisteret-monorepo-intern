@@ -9,11 +9,4 @@ class Metrics(private val meterRegistry: PrometheusMeterRegistry) {
         const val KALKULERT_AVSLUTTET_AARSAK = "paw_arbeidssoekerregisteret_hendelselogg_backup_kalkulert_avsluttet_aarsak"
         const val HWM_GAUGE = "paw_arbeidssoekerregisteret_hendelselogg_backup_hwm"
     }
-
-    fun lagActivePartitionsGauge(currentlyAssignedPartitions: Double) {
-        meterRegistry.gauge(
-            ACTIVE_PARTITIONS_GAUGE,
-            currentlyAssignedPartitions
-        )
-    }
 }

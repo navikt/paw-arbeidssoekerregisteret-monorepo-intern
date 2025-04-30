@@ -1,18 +1,16 @@
 package no.nav.paw.arbeidssoekerregisteret.backup.database
 
-import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContextOld
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.Hwm
 import org.jetbrains.exposed.sql.*
 
 data class TransactionContext(
-    val appContext: ApplicationContextOld,
+    val consumerVersion: Int,
     val transaction: Transaction
 )
 
-fun txContext(applicationContext: ApplicationContextOld): Transaction.() -> TransactionContext = {
-    TransactionContext(applicationContext, this)
+fun txContext(consumerVersion: Int): Transaction.() -> TransactionContext = {
+    TransactionContext(consumerVersion, this)
 }
-
 
 fun TransactionContext.initHwm(partitionCount: Int) {
     (0 until partitionCount)
@@ -23,13 +21,13 @@ fun TransactionContext.initHwm(partitionCount: Int) {
 fun TransactionContext.getHwm(partition: Int): Long? =
     HwmTable
         .selectAll()
-        .where { (HwmTable.partition eq partition) and (HwmTable.version eq appContext.consumerVersion) }
+        .where { (HwmTable.partition eq partition) and (HwmTable.version eq consumerVersion) }
         .singleOrNull()?.get(HwmTable.offset)
 
 fun TransactionContext.getAllHwms(): List<Hwm> =
     HwmTable
         .selectAll()
-        .where { HwmTable.version eq appContext.consumerVersion }
+        .where { HwmTable.version eq consumerVersion }
         .map {
             Hwm(
                 partition = it[HwmTable.partition],
@@ -39,7 +37,7 @@ fun TransactionContext.getAllHwms(): List<Hwm> =
 
 fun TransactionContext.insertHwm(partition: Int, offset: Long) {
     HwmTable.insert {
-        it[HwmTable.version] = appContext.consumerVersion
+        it[HwmTable.version] = consumerVersion
         it[HwmTable.partition] = partition
         it[HwmTable.offset] = offset
     }
@@ -50,6 +48,6 @@ fun TransactionContext.updateHwm(partition: Int, offset: Long): Boolean =
         .update({
             (HwmTable.partition eq partition) and
                     (HwmTable.offset less offset) and
-                    (HwmTable.version eq appContext.consumerVersion)
+                    (HwmTable.version eq consumerVersion)
         }
         ) { it[HwmTable.offset] = offset } == 1

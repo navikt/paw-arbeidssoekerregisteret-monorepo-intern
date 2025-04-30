@@ -1,9 +1,11 @@
 package no.nav.paw.arbeidssoekerregisteret.backup
 
+import io.ktor.server.application.Application
+import io.ktor.server.engine.addShutdownHook
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
 import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.binder.kafka.KafkaClientMetrics
-import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.BrukerstoetteService
-import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.initClients
 import no.nav.paw.arbeidssoekerregisteret.backup.database.txContext
 import no.nav.paw.arbeidssoekerregisteret.backup.database.updateHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.database.writeRecord
@@ -11,9 +13,14 @@ import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Aarsak
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerializer
+import no.nav.paw.config.env.appNameOrDefaultForLocal
+import no.nav.paw.error.plugin.installErrorHandlingPlugin
 import no.nav.paw.kafka.consumer.asSequence
+import no.nav.paw.logging.logger.buildApplicationLogger
+import no.nav.paw.logging.plugin.installLoggingPlugin
+import no.nav.paw.security.authentication.plugin.installAuthenticationPlugin
+import no.nav.paw.serialization.plugin.installContentNegotiationPlugin
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.slf4j.LoggerFactory
@@ -21,34 +28,60 @@ import java.time.Duration.ofMillis
 import kotlin.system.exitProcess
 
 fun main() {
+    val logger = buildApplicationLogger
+
+    val applicationContext = ApplicationContext.create()
+    val appName = applicationContext.serverConfig.runtimeEnvironment.appNameOrDefaultForLocal()
+
+    with(applicationContext.serverConfig) {
+        logger.info("Starter $appName med hostname $host og port $port")
+
+        embeddedServer(factory = Netty, port = port) {
+
+        }.apply {
+            addShutdownHook {
+                logger.info("Avslutter $appName")
+                stop(gracePeriodMillis, timeoutMillis)
+            }
+            start(wait = true)
+        }
+    }
+}
+
+fun Application.module(applicationContext: ApplicationContext) {
+    with(applicationContext) {
+        installLoggingPlugin()
+        installContentNegotiationPlugin()
+        installErrorHandlingPlugin() // TODO: legg inn problemdetails i openapi spec
+        installAuthenticationPlugin(securityConfig.authProviders)
+        // TODO: Fortsett herifra
+    }
+}
+
+fun main2() {
     val mainLogger = LoggerFactory.getLogger("app")
     runCatching {
-        val (consumer, applicationContext) = initApplication()
-        with(applicationContext) {
-            consumer.use {
-                val hwmRebalanceListener = HwmRebalanceListener(context = this, consumer = consumer)
-                meterRegistry.gauge(
-                    ACTIVE_PARTITIONS_GAUGE,
+        val context = ApplicationContext.create()
+        initApplication(context)
+        with(context) {
+            hendelseKafkaConsumer.use {
+                val hwmRebalanceListener = HwmRebalanceListener(context = this, consumer = hendelseKafkaConsumer)
+                prometheusMeterRegistry.gauge(
+                    Metrics.ACTIVE_PARTITIONS_GAUGE,
                     hwmRebalanceListener
                 ) { it.currentlyAssignedPartitions.size.toDouble() }
-                consumer.subscribe(listOf(HENDELSE_TOPIC), hwmRebalanceListener)
-                logger.info("Started subscription. Currently assigned partitions: ${consumer.assignment()}")
-                val (kafkaKeysClient, oppslagAPI) = initClients(azureConfig.m2mCfg)
-                val service = BrukerstoetteService(
-                    oppslagAPI = oppslagAPI,
-                    kafkaKeysClient = kafkaKeysClient,
-                    applicationContext = applicationContext,
-                    hendelseDeserializer = HendelseDeserializer()
-                )
+                hendelseKafkaConsumer.subscribe(listOf(applicationConfig.hendelsesloggTopic), hwmRebalanceListener)
+                logger.info("Started subscription. Currently assigned partitions: ${hendelseKafkaConsumer.assignment()}")
+
                 initKtor(
-                    prometheusMeterRegistry = meterRegistry,
-                    binders = listOf(KafkaClientMetrics(consumer)),
+                    prometheusMeterRegistry = prometheusMeterRegistry,
+                    binders = listOf(KafkaClientMetrics(hendelseKafkaConsumer)),
                     azureConfig = azureConfig,
-                    brukerstoetteService = service
+                    brukerstoetteService = context.brukerstoetteService
                 )
                 runApplication(
                     hendelseSerializer = HendelseSerializer(),
-                    source = consumer.asSequence(
+                    source = hendelseKafkaConsumer.asSequence(
                         stop = shutdownCalled,
                         pollTimeout = ofMillis(500),
                         closeTimeout = ofMillis(100)

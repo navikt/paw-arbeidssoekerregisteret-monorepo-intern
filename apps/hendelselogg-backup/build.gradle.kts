@@ -16,6 +16,10 @@ dependencies {
     implementation(project(":lib:kafka"))
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:kafka-key-generator-client"))
+    implementation(project(":lib:error-handling"))
+    implementation(project(":lib:logging"))
+    implementation(project(":lib:security"))
+    implementation(project(":lib:serialization"))
 
     implementation(libs.arrow.core.core)
     implementation(libs.bundles.ktorServerWithNettyAndMicrometer)

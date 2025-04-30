@@ -29,7 +29,7 @@ class ApplicationHappyPathTest : FreeSpec({
                 consumerVersion = 1,
                 logger = LoggerFactory.getLogger("test-logger"),
                 meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
-                azureConfig = loadNaisOrLocalConfiguration("azure.toml")
+                azureConfig = loadNaisOrLocalConfiguration("azure_config.toml")
             )
         val txCtx = txContext(appCtx)
         initDbContainer()
