@@ -1,4 +1,3 @@
-
 plugins {
     kotlin("jvm")
     application
@@ -20,6 +19,7 @@ dependencies {
     implementation(project(":lib:pdl-client"))
     implementation(project(":lib:kafka"))
     implementation(project(":domain:interne-hendelser"))
+    implementation(project(":domain:pdl-aktoer-schema"))
 
     // NAV
     implementation(libs.nav.common.log)
@@ -27,8 +27,10 @@ dependencies {
     implementation(libs.nav.security.tokenClientCore)
     implementation(libs.nav.security.tokenValidationKtorV3)
 
-    // Kafka (for å beregne partisjonsnummer)
+    // Kafka
     implementation(libs.kafka.clients)
+    implementation(libs.avro.kafkaSerializer)
+    implementation(libs.avro.kafkaStreamsSerde)
 
     // Ktor
     implementation(libs.ktor.serialization.jackson)

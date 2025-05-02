@@ -1,6 +1,8 @@
 package no.nav.paw.kafkakeygenerator.repository
 
 import no.nav.paw.kafkakeygenerator.database.IdentitetTabell
+import no.nav.paw.kafkakeygenerator.model.KafkaKeyRow
+import no.nav.paw.kafkakeygenerator.model.asKafkaKeyRow
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import org.jetbrains.exposed.sql.insert
@@ -16,6 +18,12 @@ class IdentitetRepository {
             ?.let {
                 Identitetsnummer(it[IdentitetTabell.identitetsnummer]) to ArbeidssoekerId(it[IdentitetTabell.kafkaKey])
             }
+    }
+
+    fun findByIdentiteter(identitetList: List<String>): List<KafkaKeyRow> = transaction {
+        IdentitetTabell.selectAll()
+            .where { IdentitetTabell.identitetsnummer inList identitetList }
+            .map { it.asKafkaKeyRow() }
     }
 
     fun insert(

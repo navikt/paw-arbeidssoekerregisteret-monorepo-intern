@@ -22,6 +22,9 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import no.nav.person.pdl.aktor.v2.Aktor
+import no.nav.person.pdl.aktor.v2.Identifikator
+import no.nav.person.pdl.aktor.v2.Type
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.common.TopicPartition
@@ -247,6 +250,19 @@ object TestData {
             arbeidssoekerId = fraArbeidssoekerId.value
         )
     )
+
+    fun identifikator(
+        ident: String = fnr1,
+        type: Type = Type.FOLKEREGISTERIDENT,
+        gjeldende: Boolean = true
+    ): Identifikator = Identifikator(ident, type, gjeldende)
+
+    fun aktor(
+        identifikatorer: List<Identifikator> = listOf(
+            identifikator(ident = fnr1, type = Type.FOLKEREGISTERIDENT, gjeldende = true),
+            identifikator(ident = aktorId1, type = Type.AKTORID, gjeldende = true)
+        )
+    ): Aktor = Aktor(identifikatorer)
 
     fun <K, V> getConsumerRecord(key: K, value: V): ConsumerRecord<K, V> =
         ConsumerRecord("topic", 1, 1, key, value)
