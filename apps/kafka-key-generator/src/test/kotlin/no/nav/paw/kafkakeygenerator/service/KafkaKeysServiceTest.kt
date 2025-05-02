@@ -25,6 +25,14 @@ import org.junit.jupiter.api.fail
 class KafkaKeysServiceTest : FreeSpec({
     with(TestContext.build()) {
 
+        beforeSpec {
+            setUp()
+        }
+
+        afterSpec {
+            tearDown()
+        }
+
         "Test suite for hentEllerOpprett()" - {
             "alle identer for person1 skal gi samme nøkkel" {
                 val person1KafkaNøkler = listOf(

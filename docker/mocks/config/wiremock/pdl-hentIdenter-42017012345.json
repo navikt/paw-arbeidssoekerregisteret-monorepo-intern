@@ -4,7 +4,7 @@
     "urlPathPattern": "/pdl",
     "bodyPatterns": [
       {
-        "matchesJsonPath": "$.variables[?(@.ident == '02017012345')]"
+        "matchesJsonPath": "$.variables[?(@.ident == '42017012345')]"
       }
     ]
   },
