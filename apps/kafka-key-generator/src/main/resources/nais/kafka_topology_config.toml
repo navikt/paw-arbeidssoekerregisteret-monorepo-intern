@@ -1,2 +1,0 @@
-consumerGroupId = "${KAFKA_CONSUMER_GROUP_ID}"
-hendelseloggTopic = "${KAFKA_TOPIC_PAW_ARBEIDSSOKER_HENDELSESLOGG}"
