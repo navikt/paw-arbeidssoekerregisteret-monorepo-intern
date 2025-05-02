@@ -1,0 +1,11 @@
+[pawHendelseConsumer]
+version = "${KAFKA_CONSUMER_GROUP_ID_VERSION_PAW_HENDELSESLOGG}"
+topic = "${KAFKA_TOPIC_PAW_HENDELSESLOGG}"
+defaultPartitionCount = 6
+groupIdPrefix = "${KAFKA_CONSUMER_GROUP_ID_PREFIX_PAW_HENDELSESLOGG}"
+
+[pdlAktorConsumer]
+version = "${KAFKA_CONSUMER_GROUP_ID_VERSION_PDL_AKTOR}"
+topic = "${KAFKA_TOPIC_PDL_AKTOR}"
+defaultPartitionCount = 6
+groupIdPrefix = "${KAFKA_CONSUMER_GROUP_ID_PREFIX_PDL_AKTOR}"

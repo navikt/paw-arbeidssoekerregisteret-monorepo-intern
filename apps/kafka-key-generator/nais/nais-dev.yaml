@@ -15,10 +15,18 @@ spec:
       value: "api://dev-fss.pdl.pdl-api/.default"
     - name: PDL_TEMA
       value: "OPP"
-    - name: KAFKA_CONSUMER_GROUP_ID
-      value: "paw-kafka-key-generator-v1"
-    - name: KAFKA_TOPIC_PAW_ARBEIDSSOKER_HENDELSESLOGG
+    - name: KAFKA_TOPIC_PAW_HENDELSESLOGG
       value: "paw.arbeidssoker-hendelseslogg-v1"
+    - name: KAFKA_CONSUMER_GROUP_ID_PREFIX_PAW_HENDELSESLOGG
+      value: "paw-kafka-key-generator"
+    - name: KAFKA_CONSUMER_GROUP_ID_VERSION_PAW_HENDELSESLOGG
+      value: "1"
+    - name: KAFKA_TOPIC_PDL_AKTOR
+      value: "pdl.aktor-v2"
+    - name: KAFKA_CONSUMER_GROUP_ID_PREFIX_PDL_AKTOR
+      value: "paw-kafka-key-generator-pdl-aktor"
+    - name: KAFKA_CONSUMER_GROUP_ID_VERSION_PDL_AKTOR
+      value: "1"
   ingresses:
     - https://record-key-arbeidssoekerregisteret.intern.dev.nav.no/api/v1/record-key
     - https://record-key-arbeidssoekerregisteret.intern.dev.nav.no/docs/record-key

@@ -6,7 +6,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import javax.sql.DataSource
 
-fun initTestDatabase(): DataSource {
+fun postgresTestDatabase(): DataSource {
     val config = postgreSQLContainer().let {
         DatabaseConfig(
             host = it.host,

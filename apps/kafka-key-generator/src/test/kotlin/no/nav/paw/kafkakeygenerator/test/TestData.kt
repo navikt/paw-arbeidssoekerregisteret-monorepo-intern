@@ -20,8 +20,14 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
+import no.nav.paw.identitet.internehendelser.vo.IdentitetType
+import no.nav.paw.kafkakeygenerator.model.IdentitetRow
+import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import no.nav.person.pdl.aktor.v2.Aktor
+import no.nav.person.pdl.aktor.v2.Identifikator
+import no.nav.person.pdl.aktor.v2.Type
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.common.TopicPartition
@@ -144,10 +150,6 @@ fun MockRequestHandleScope.genererResponse(it: HttpRequestData): HttpResponseDat
     )
 }
 
-fun List<Hendelse>.asConsumerRecords(): ConsumerRecords<Long, Hendelse> =
-    this.map { TestData.getConsumerRecord(nextLong(), it) }
-        .let { TestData.getConsumerRecords(it) }
-
 object TestData {
 
     const val fnr1 = "01017012345"
@@ -165,6 +167,80 @@ object TestData {
     const val aktorId3 = "200003017012345"
     const val aktorId4 = "200004017012345"
     const val aktorId5 = "200005017012345"
+    const val npId1 = "900001017012345"
+    const val npId2 = "900002017012345"
+    const val npId3 = "900003017012345"
+    const val npId4 = "900004017012345"
+    const val npId5 = "900005017012345"
+
+    val aktor1_1 = aktor(
+        listOf(
+            identifikator(ident = dnr1, type = Type.FOLKEREGISTERIDENT, gjeldende = true),
+            identifikator(ident = aktorId1, type = Type.AKTORID, gjeldende = true),
+            identifikator(ident = npId1, type = Type.NPID, gjeldende = true)
+        )
+    )
+    val aktor1_2 = aktor(
+        listOf(
+            identifikator(ident = fnr1, type = Type.FOLKEREGISTERIDENT, gjeldende = true),
+            identifikator(ident = dnr1, type = Type.FOLKEREGISTERIDENT, gjeldende = false),
+            identifikator(ident = aktorId1, type = Type.AKTORID, gjeldende = true),
+            identifikator(ident = npId1, type = Type.NPID, gjeldende = true)
+        )
+    )
+    val aktor2_1 = aktor(
+        listOf(
+            identifikator(ident = dnr2, type = Type.FOLKEREGISTERIDENT, gjeldende = true),
+            identifikator(ident = aktorId2, type = Type.AKTORID, gjeldende = true),
+            identifikator(ident = npId2, type = Type.NPID, gjeldende = true)
+        )
+    )
+    val aktor2_2 = aktor(
+        listOf(
+            identifikator(ident = fnr2, type = Type.FOLKEREGISTERIDENT, gjeldende = true),
+            identifikator(ident = dnr2, type = Type.FOLKEREGISTERIDENT, gjeldende = false),
+            identifikator(ident = aktorId2, type = Type.AKTORID, gjeldende = true),
+            identifikator(ident = npId2, type = Type.NPID, gjeldende = true)
+        )
+    )
+    val aktor3_1 = aktor(
+        listOf(
+            identifikator(ident = dnr3, type = Type.FOLKEREGISTERIDENT, gjeldende = true),
+            identifikator(ident = aktorId3, type = Type.AKTORID, gjeldende = true),
+            identifikator(ident = npId3, type = Type.NPID, gjeldende = true)
+        )
+    )
+    val aktor3_2 = aktor(
+        listOf(
+            identifikator(ident = fnr3, type = Type.FOLKEREGISTERIDENT, gjeldende = true),
+            identifikator(ident = dnr3, type = Type.FOLKEREGISTERIDENT, gjeldende = false),
+            identifikator(ident = aktorId3, type = Type.AKTORID, gjeldende = true),
+            identifikator(ident = npId3, type = Type.NPID, gjeldende = true)
+        )
+    )
+    val aktor4_1 = aktor(
+        listOf(
+            identifikator(ident = dnr4, type = Type.FOLKEREGISTERIDENT, gjeldende = true),
+            identifikator(ident = aktorId4, type = Type.AKTORID, gjeldende = true),
+            identifikator(ident = npId4, type = Type.NPID, gjeldende = true)
+        )
+    )
+    val aktor4_2 = aktor(
+        listOf(
+            identifikator(ident = dnr4, type = Type.FOLKEREGISTERIDENT, gjeldende = false),
+            identifikator(ident = fnr4, type = Type.FOLKEREGISTERIDENT, gjeldende = true),
+            identifikator(ident = aktorId4, type = Type.AKTORID, gjeldende = true),
+            identifikator(ident = npId4, type = Type.NPID, gjeldende = true)
+        )
+    )
+    val aktor5_1 = aktor(
+        listOf(
+            identifikator(ident = dnr5, type = Type.FOLKEREGISTERIDENT, gjeldende = false),
+            identifikator(ident = aktorId5, type = Type.AKTORID, gjeldende = true),
+            identifikator(ident = npId5, type = Type.NPID, gjeldende = true)
+        )
+    )
+
 
     fun bruker(): Bruker = Bruker(
         type = BrukerType.SYSTEM,
@@ -248,9 +324,45 @@ object TestData {
         )
     )
 
-    fun <K, V> getConsumerRecord(key: K, value: V): ConsumerRecord<K, V> =
-        ConsumerRecord("topic", 1, 1, key, value)
+    fun identifikator(
+        ident: String = fnr1,
+        type: Type = Type.FOLKEREGISTERIDENT,
+        gjeldende: Boolean = true
+    ): Identifikator = Identifikator(ident, type, gjeldende)
 
-    fun <K, V> getConsumerRecords(records: List<ConsumerRecord<K, V>>): ConsumerRecords<K, V> =
-        ConsumerRecords(mapOf(TopicPartition("topic", 1) to records))
+    fun aktor(
+        identifikatorer: List<Identifikator> = listOf(
+            identifikator(ident = fnr1, type = Type.FOLKEREGISTERIDENT, gjeldende = true),
+            identifikator(ident = dnr1, type = Type.FOLKEREGISTERIDENT, gjeldende = false),
+            identifikator(ident = aktorId1, type = Type.AKTORID, gjeldende = true),
+            identifikator(ident = npId1, type = Type.NPID, gjeldende = true)
+        )
+    ): Aktor = Aktor(identifikatorer)
+
+    fun <K, V> List<ConsumerRecord<K, V>>.asRecords(): ConsumerRecords<K, V> {
+        val tp = TopicPartition(this.first().topic(), this.first().partition())
+        return ConsumerRecords<K, V>(mapOf(tp to this))
+    }
+
+    fun List<Hendelse>.asHendelseRecords(): ConsumerRecords<Long, Hendelse> =
+        this.map { ConsumerRecord("topic", 0, 0, nextLong(), it) }
+            .asRecords()
+
+    data class IdentitetWrapper(
+        val arbeidssoekerId: Long,
+        val aktorId: String,
+        val identitet: String,
+        val type: IdentitetType,
+        val gjeldende: Boolean,
+        val status: IdentitetStatus
+    )
+
+    fun IdentitetRow.asWrapper(): IdentitetWrapper = IdentitetWrapper(
+        arbeidssoekerId = arbeidssoekerId,
+        aktorId = aktorId,
+        identitet = identitet,
+        type = type,
+        gjeldende = gjeldende,
+        status = status
+    )
 }

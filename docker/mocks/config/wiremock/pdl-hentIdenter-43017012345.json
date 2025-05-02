@@ -4,7 +4,7 @@
     "urlPathPattern": "/pdl",
     "bodyPatterns": [
       {
-        "matchesJsonPath": "$.variables[?(@.ident == '05017012345')]"
+        "matchesJsonPath": "$.variables[?(@.ident == '43017012345')]"
       }
     ]
   },
@@ -17,6 +17,11 @@
       "data": {
         "hentIdenter": {
           "identer": [
+            {
+              "ident": "43017012345",
+              "gruppe": "FOLKEREGISTERIDENT",
+              "historisk": false
+            }
           ]
         }
       }

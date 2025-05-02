@@ -4,8 +4,8 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerSammenslaatt
-import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
+import no.nav.paw.kafkakeygenerator.repository.KafkaKeysIdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
 import no.nav.paw.kafkakeygenerator.utils.countKafkaFailed
 import no.nav.paw.kafkakeygenerator.utils.countKafkaIgnored
@@ -26,7 +26,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 class PawHendelseKafkaConsumerService(
     private val meterRegistry: MeterRegistry,
-    private val identitetRepository: IdentitetRepository,
+    private val kafkaKeysIdentitetRepository: KafkaKeysIdentitetRepository,
     private val kafkaKeysRepository: KafkaKeysRepository,
     private val kafkaKeysAuditRepository: KafkaKeysAuditRepository,
 ) {
@@ -88,9 +88,15 @@ class PawHendelseKafkaConsumerService(
 
         transaction {
             identitetsnummerSet.forEach { identitetsnummer ->
-                val kafkaKey = identitetRepository.find(identitetsnummer)
+                val kafkaKey = kafkaKeysIdentitetRepository.find(identitetsnummer)
                 if (kafkaKey != null) {
-                    updateIdentitet(identitetsnummer, fraArbeidssoekerId, tilArbeidssoekerId, kafkaKey.second)
+                    val eksisterendeArbeidssoekerId = ArbeidssoekerId(kafkaKey.arbeidssoekerId)
+                    updateIdentitet(
+                        identitetsnummer,
+                        fraArbeidssoekerId,
+                        tilArbeidssoekerId,
+                        eksisterendeArbeidssoekerId
+                    )
                 } else {
                     insertIdentitet(identitetsnummer, tilArbeidssoekerId)
                 }
@@ -117,7 +123,7 @@ class PawHendelseKafkaConsumerService(
             kafkaKeysAuditRepository.insert(audit)
         } else if (eksisterendeArbeidssoekerId == fraArbeidssoekerId) {
             logger.info("Identitetsnummer oppdateres med annen ArbeidsøkerId")
-            val count = identitetRepository.update(identitetsnummer, tilArbeidssoekerId)
+            val count = kafkaKeysIdentitetRepository.update(identitetsnummer, tilArbeidssoekerId)
             if (count != 0) {
                 meterRegistry.countKafkaUpdated()
                 val audit = Audit(
@@ -159,7 +165,7 @@ class PawHendelseKafkaConsumerService(
         tilArbeidssoekerId: ArbeidssoekerId
     ) {
         logger.info("Identitetsnummer opprettes med eksisterende ArbeidsøkerId")
-        val count = identitetRepository.insert(identitetsnummer, tilArbeidssoekerId)
+        val count = kafkaKeysIdentitetRepository.insert(identitetsnummer, tilArbeidssoekerId)
         if (count != 0) {
             meterRegistry.countKafkaInserted()
             val audit = Audit(

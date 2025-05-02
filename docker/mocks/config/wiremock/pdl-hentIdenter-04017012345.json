@@ -21,11 +21,6 @@
               "ident": "04017012345",
               "gruppe": "FOLKEREGISTERIDENT",
               "historisk": false
-            },
-            {
-              "ident": "05017012345",
-              "gruppe": "FOLKEREGISTERIDENT",
-              "historisk": true
             }
           ]
         }

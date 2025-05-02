@@ -1,7 +1,7 @@
 package no.nav.paw.kafkakeygenerator.repository
 
-import no.nav.paw.kafkakeygenerator.database.IdentitetTabell
-import no.nav.paw.kafkakeygenerator.database.KafkaKeysTabell
+import no.nav.paw.kafkakeygenerator.database.KafkaKeysIdentitetTable
+import no.nav.paw.kafkakeygenerator.database.KafkaKeysTable
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Either
 import no.nav.paw.kafkakeygenerator.vo.Failure
@@ -23,18 +23,18 @@ class KafkaKeysRepository {
 
     fun find(arbeidssoekerId: ArbeidssoekerId): ArbeidssoekerId? =
         transaction {
-            KafkaKeysTabell.selectAll()
-                .where { KafkaKeysTabell.id eq arbeidssoekerId.value }
-                .singleOrNull()?.let { ArbeidssoekerId(it[KafkaKeysTabell.id]) }
+            KafkaKeysTable.selectAll()
+                .where { KafkaKeysTable.id eq arbeidssoekerId.value }
+                .singleOrNull()?.let { ArbeidssoekerId(it[KafkaKeysTable.id]) }
         }
 
     fun hentSisteArbeidssoekerId(): Either<Failure, ArbeidssoekerId> =
         attempt {
             transaction {
-                IdentitetTabell
+                KafkaKeysIdentitetTable
                     .selectAll()
-                    .orderBy(IdentitetTabell.kafkaKey, SortOrder.DESC)
-                    .firstOrNull()?.get(IdentitetTabell.kafkaKey)
+                    .orderBy(KafkaKeysIdentitetTable.kafkaKey, SortOrder.DESC)
+                    .firstOrNull()?.get(KafkaKeysIdentitetTable.kafkaKey)
             }
         }.mapToFailure { exception ->
             Failure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
@@ -45,13 +45,13 @@ class KafkaKeysRepository {
     fun hent(currentPos: Long, maxSize: Int): Either<Failure, Map<Identitetsnummer, ArbeidssoekerId>> {
         return attempt {
             transaction {
-                IdentitetTabell
+                KafkaKeysIdentitetTable
                     .selectAll()
-                    .where { IdentitetTabell.kafkaKey greaterEq currentPos and (IdentitetTabell.kafkaKey less (currentPos + maxSize)) }
-                    .orderBy(column = IdentitetTabell.kafkaKey, order = SortOrder.ASC)
+                    .where { KafkaKeysIdentitetTable.kafkaKey greaterEq currentPos and (KafkaKeysIdentitetTable.kafkaKey less (currentPos + maxSize)) }
+                    .orderBy(column = KafkaKeysIdentitetTable.kafkaKey, order = SortOrder.ASC)
                     .limit(maxSize)
                     .associate {
-                        Identitetsnummer(it[IdentitetTabell.identitetsnummer]) to ArbeidssoekerId(it[IdentitetTabell.kafkaKey])
+                        Identitetsnummer(it[KafkaKeysIdentitetTable.identitetsnummer]) to ArbeidssoekerId(it[KafkaKeysIdentitetTable.kafkaKey])
                     }
             }
         }.mapToFailure { exception ->
@@ -62,11 +62,11 @@ class KafkaKeysRepository {
     fun hent(identiteter: List<String>): Either<Failure, Map<String, ArbeidssoekerId>> =
         attempt {
             transaction {
-                IdentitetTabell
+                KafkaKeysIdentitetTable
                     .selectAll()
-                    .where { IdentitetTabell.identitetsnummer inList identiteter }
+                    .where { KafkaKeysIdentitetTable.identitetsnummer inList identiteter }
                     .associate {
-                        it[IdentitetTabell.identitetsnummer] to it[IdentitetTabell.kafkaKey]
+                        it[KafkaKeysIdentitetTable.identitetsnummer] to it[KafkaKeysIdentitetTable.kafkaKey]
                     }
             }
         }.mapToFailure { exception ->
@@ -76,10 +76,10 @@ class KafkaKeysRepository {
     fun hent(identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> =
         attempt {
             transaction {
-                IdentitetTabell
+                KafkaKeysIdentitetTable
                     .selectAll()
-                    .where { IdentitetTabell.identitetsnummer eq identitet.value }
-                    .firstOrNull()?.get(IdentitetTabell.kafkaKey)
+                    .where { KafkaKeysIdentitetTable.identitetsnummer eq identitet.value }
+                    .firstOrNull()?.get(KafkaKeysIdentitetTable.kafkaKey)
             }
         }.mapToFailure { exception ->
             Failure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
@@ -90,10 +90,10 @@ class KafkaKeysRepository {
     fun hent(arbeidssoekerId: ArbeidssoekerId): Either<Failure, List<Identitetsnummer>> =
         attempt {
             transaction {
-                IdentitetTabell
+                KafkaKeysIdentitetTable
                     .selectAll()
-                    .where { IdentitetTabell.kafkaKey eq arbeidssoekerId.value }
-                    .map { Identitetsnummer(it[IdentitetTabell.identitetsnummer]) }
+                    .where { KafkaKeysIdentitetTable.kafkaKey eq arbeidssoekerId.value }
+                    .map { Identitetsnummer(it[KafkaKeysIdentitetTable.identitetsnummer]) }
             }
         }.mapToFailure { exception ->
             Failure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
@@ -103,7 +103,7 @@ class KafkaKeysRepository {
     fun lagre(identitet: Identitetsnummer, arbeidssoekerId: ArbeidssoekerId): Either<Failure, Unit> =
         attempt {
             transaction {
-                IdentitetTabell.insertIgnore {
+                KafkaKeysIdentitetTable.insertIgnore {
                     it[identitetsnummer] = identitet.value
                     it[kafkaKey] = arbeidssoekerId.value
                 }.insertedCount
@@ -118,8 +118,8 @@ class KafkaKeysRepository {
     fun opprett(identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> =
         attempt {
             transaction {
-                val key = KafkaKeysTabell.insert { }[KafkaKeysTabell.id]
-                val opprettet = IdentitetTabell.insertIgnore {
+                val key = KafkaKeysTable.insert { }[KafkaKeysTable.id]
+                val opprettet = KafkaKeysIdentitetTable.insertIgnore {
                     it[identitetsnummer] = identitet.value
                     it[kafkaKey] = key
                 }.insertedCount == 1

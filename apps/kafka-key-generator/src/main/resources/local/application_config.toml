@@ -1,0 +1,11 @@
+[pawHendelseConsumer]
+version = 1
+topic = "paw.arbeidssoker-hendelseslogg-v1"
+defaultPartitionCount = 6
+groupIdPrefix = "paw-kafka-key-generator"
+
+[pdlAktorConsumer]
+version = 1
+topic = "pdl.aktor-v2"
+defaultPartitionCount = 6
+groupIdPrefix = "paw-kafka-key-generator-pdl-aktor"

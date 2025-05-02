@@ -50,10 +50,14 @@ fun Application.module(applicationContext: ApplicationContext) {
         )
         installDatabasePlugin(dataSource)
         installKafkaPlugins(
-            kafkaTopologyConfig = kafkaTopologyConfig,
+            applicationConfig = applicationConfig,
             pawHendelseKafkaConsumer = pawHendelseKafkaConsumer,
+            pawHendelseConsumerExceptionHandler = pawHendelseConsumerExceptionHandler,
             pawHendelseKafkaConsumerService = pawHendelseKafkaConsumerService,
-            pawHendelseConsumerExceptionHandler = pawHendelseConsumerExceptionHandler
+            pdlAktorKafkaConsumer = pdlAktorConsumer,
+            pdlAktorConsumerExceptionHandler = pdlAktorConsumerExceptionHandler,
+            pdlAktorHwmRebalanceListener = pdlAktorConsumerRebalanceListener,
+            pdlAktorKafkaConsumerService = pdlAktorKafkaConsumerService
         )
         configureRouting(
             meterRegistry = prometheusMeterRegistry,

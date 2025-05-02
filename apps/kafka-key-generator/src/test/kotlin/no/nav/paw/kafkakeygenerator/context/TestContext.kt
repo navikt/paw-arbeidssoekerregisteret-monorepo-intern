@@ -5,11 +5,27 @@ import io.ktor.client.engine.mock.MockEngine
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.logging.LoggingMeterRegistry
 import kotlinx.coroutines.runBlocking
+import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
+import no.nav.paw.kafkakeygenerator.config.APPLICATION_CONFIG
+import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
+import no.nav.paw.kafkakeygenerator.repository.HwmRepository
+import no.nav.paw.kafkakeygenerator.repository.IdentitetHendelseRepository
+import no.nav.paw.kafkakeygenerator.repository.IdentitetKonfliktRepository
+import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
+import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
+import no.nav.paw.kafkakeygenerator.repository.KafkaKeysIdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
+import no.nav.paw.kafkakeygenerator.service.IdentitetHendelseService
+import no.nav.paw.kafkakeygenerator.service.IdentitetKonfliktService
+import no.nav.paw.kafkakeygenerator.service.IdentitetService
+import no.nav.paw.kafkakeygenerator.service.KafkaHwmOperations
+import no.nav.paw.kafkakeygenerator.service.KafkaHwmService
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
+import no.nav.paw.kafkakeygenerator.service.PawHendelseKafkaConsumerService
+import no.nav.paw.kafkakeygenerator.service.PdlAktorKafkaConsumerService
 import no.nav.paw.kafkakeygenerator.service.PdlService
 import no.nav.paw.kafkakeygenerator.test.genererResponse
-import no.nav.paw.kafkakeygenerator.test.initTestDatabase
+import no.nav.paw.kafkakeygenerator.test.postgresTestDatabase
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.CallId
 import no.nav.paw.kafkakeygenerator.vo.Either
@@ -21,19 +37,60 @@ import org.jetbrains.exposed.sql.Database
 import java.util.*
 import javax.sql.DataSource
 
-data class TestContext(
-    val dataSource: DataSource = initTestDatabase(),
+class TestContext private constructor(
+    val applicationConfig: ApplicationConfig = loadNaisOrLocalConfiguration(APPLICATION_CONFIG),
+    val dataSource: DataSource = postgresTestDatabase(),
     val pdlClient: PdlClient = pdlClient(),
     val meterRegistry: MeterRegistry = LoggingMeterRegistry(),
+    val hwmRepository: HwmRepository = HwmRepository(),
     val kafkaKeysRepository: KafkaKeysRepository = KafkaKeysRepository(),
+    val kafkaKeysAuditRepository: KafkaKeysAuditRepository = KafkaKeysAuditRepository(),
+    val kafkaKeysIdentitetRepository: KafkaKeysIdentitetRepository = KafkaKeysIdentitetRepository(),
+    val identitetRepository: IdentitetRepository = IdentitetRepository(),
+    val identitetKonfliktRepository: IdentitetKonfliktRepository = IdentitetKonfliktRepository(),
+    val identitetHendelseRepository: IdentitetHendelseRepository = IdentitetHendelseRepository(),
+    val identitetKonfliktService: IdentitetKonfliktService = IdentitetKonfliktService(
+        identitetKonfliktRepository = identitetKonfliktRepository
+    ),
+    val identitetHendelseService: IdentitetHendelseService = IdentitetHendelseService(
+        identitetHendelseRepository = identitetHendelseRepository
+    ),
+    val identitetService: IdentitetService = IdentitetService(
+        identitetRepository = identitetRepository,
+        identitetKonfliktService = identitetKonfliktService,
+        identitetHendelseService = identitetHendelseService
+    ),
     val pdlService: PdlService = PdlService(pdlClient),
     val kafkaKeysService: KafkaKeysService = KafkaKeysService(
         meterRegistry = meterRegistry,
         kafkaKeysRepository = kafkaKeysRepository,
         pdlService = pdlService
+    ),
+    val pdlAktorKafkaHwmOperations: KafkaHwmOperations = KafkaHwmService(
+        kafkaConsumerConfig = applicationConfig.pdlAktorConsumer,
+        hwmRepository = hwmRepository
+    ),
+    val pdlAktorKafkaConsumerService: PdlAktorKafkaConsumerService = PdlAktorKafkaConsumerService(
+        kafkaConsumerConfig = applicationConfig.pdlAktorConsumer,
+        kafkaKeysIdentitetRepository = kafkaKeysIdentitetRepository,
+        hwmOperations = pdlAktorKafkaHwmOperations,
+        identitetService = identitetService
+    ),
+    val pawHendelseKafkaConsumerService: PawHendelseKafkaConsumerService = PawHendelseKafkaConsumerService(
+        meterRegistry = meterRegistry,
+        kafkaKeysIdentitetRepository = kafkaKeysIdentitetRepository,
+        kafkaKeysRepository = kafkaKeysRepository,
+        kafkaKeysAuditRepository = kafkaKeysAuditRepository
     )
 ) {
-    init {
+    fun hentEllerOpprett(identitetsnummer: String): Either<Failure, ArbeidssoekerId> = runBlocking {
+        kafkaKeysService.hentEllerOpprett(
+            callId = CallId(UUID.randomUUID().toString()),
+            identitet = Identitetsnummer(identitetsnummer)
+        )
+    }
+
+    fun setUp() {
         Database.connect(dataSource)
         Flyway.configure()
             .dataSource(dataSource)
@@ -42,11 +99,8 @@ data class TestContext(
             .migrate()
     }
 
-    fun hentEllerOpprett(identitetsnummer: String): Either<Failure, ArbeidssoekerId> = runBlocking {
-        kafkaKeysService.hentEllerOpprett(
-            callId = CallId(UUID.randomUUID().toString()),
-            identitet = Identitetsnummer(identitetsnummer)
-        )
+    fun tearDown() {
+        dataSource.connection.close()
     }
 
     companion object {
