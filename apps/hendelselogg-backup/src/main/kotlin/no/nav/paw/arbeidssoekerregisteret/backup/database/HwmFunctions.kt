@@ -3,28 +3,19 @@ package no.nav.paw.arbeidssoekerregisteret.backup.database
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.Hwm
 import org.jetbrains.exposed.sql.*
 
-data class TransactionContext(
-    val consumerVersion: Int,
-    val transaction: Transaction
-)
-
-fun txContext(consumerVersion: Int): Transaction.() -> TransactionContext = {
-    TransactionContext(consumerVersion, this)
-}
-
-fun TransactionContext.initHwm(partitionCount: Int) {
+fun Transaction.initHwm(consumerVersion: Int, partitionCount: Int) {
     (0 until partitionCount)
-        .filter { getHwm(it) == null }
-        .forEach { insertHwm(it, -1) }
+        .filter { getHwm(consumerVersion, it) == null }
+        .forEach { insertHwm(consumerVersion, it, -1) }
 }
 
-fun TransactionContext.getHwm(partition: Int): Long? =
+fun Transaction.getHwm(consumerVersion: Int, partition: Int): Long? =
     HwmTable
         .selectAll()
         .where { (HwmTable.partition eq partition) and (HwmTable.version eq consumerVersion) }
         .singleOrNull()?.get(HwmTable.offset)
 
-fun TransactionContext.getAllHwms(): List<Hwm> =
+fun Transaction.getAllHwms(consumerVersion: Int): List<Hwm> =
     HwmTable
         .selectAll()
         .where { HwmTable.version eq consumerVersion }
@@ -35,7 +26,7 @@ fun TransactionContext.getAllHwms(): List<Hwm> =
             )
         }
 
-fun TransactionContext.insertHwm(partition: Int, offset: Long) {
+fun Transaction.insertHwm(consumerVersion: Int, partition: Int, offset: Long) {
     HwmTable.insert {
         it[HwmTable.version] = consumerVersion
         it[HwmTable.partition] = partition
@@ -43,7 +34,7 @@ fun TransactionContext.insertHwm(partition: Int, offset: Long) {
     }
 }
 
-fun TransactionContext.updateHwm(partition: Int, offset: Long): Boolean =
+fun Transaction.updateHwm(consumerVersion: Int, partition: Int, offset: Long): Boolean =
     HwmTable
         .update({
             (HwmTable.partition eq partition) and

@@ -1,5 +1,7 @@
 package no.nav.paw.arbeidssoekerregisteret.backup.vo
 
+import io.micrometer.core.instrument.binder.MeterBinder
+import io.micrometer.core.instrument.binder.kafka.KafkaClientMetrics
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.backup.config.AzureConfig
@@ -44,10 +46,10 @@ data class ApplicationContext(
     val prometheusMeterRegistry: PrometheusMeterRegistry,
     val hendelseKafkaConsumer: KafkaConsumer<Long, Hendelse>,
     val brukerstoetteService: BrukerstoetteService,
+    val additionalMeterBinder: MeterBinder
 ) {
     companion object {
         fun create(): ApplicationContext {
-            val logger = LoggerFactory.getLogger("backup-context-create")
 
             val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>("application_config.toml")
             val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
@@ -57,11 +59,8 @@ data class ApplicationContext(
             val securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>("security_config.toml")
 
             val dataSource = databaseConfig.dataSource()
-            logger.info("Connection to database($this)...")
             Database.Companion.connect(dataSource)
-            logger.info("Migrating database...")
             migrateDatabase(dataSource)
-            logger.info("Connection to kafka...")
 
             val (kafkaKeysClient, oppslagApiClient) = initClients(azureConfig.m2mCfg)
             val service = BrukerstoetteService(
@@ -89,6 +88,7 @@ data class ApplicationContext(
                 prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
                 hendelseKafkaConsumer = consumer,
                 brukerstoetteService = service,
+                additionalMeterBinder = KafkaClientMetrics(consumer)
             )
         }
     }

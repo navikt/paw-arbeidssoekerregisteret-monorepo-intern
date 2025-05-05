@@ -20,6 +20,8 @@ dependencies {
     implementation(project(":lib:logging"))
     implementation(project(":lib:security"))
     implementation(project(":lib:serialization"))
+    implementation(project(":lib:metrics"))
+    implementation(project(":lib:database"))
 
     implementation(libs.arrow.core.core)
     implementation(libs.bundles.ktorServerWithNettyAndMicrometer)

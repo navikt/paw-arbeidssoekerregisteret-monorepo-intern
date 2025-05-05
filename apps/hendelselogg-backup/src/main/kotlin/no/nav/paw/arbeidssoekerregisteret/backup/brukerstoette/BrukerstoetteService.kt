@@ -8,7 +8,6 @@ import arrow.core.right
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.*
 import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.ArbeidssoekerperiodeResponse
 import no.nav.paw.arbeidssoekerregisteret.backup.database.readAllNestedRecordsForId
-import no.nav.paw.arbeidssoekerregisteret.backup.database.txContext
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.StoredData
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
@@ -21,6 +20,9 @@ import java.util.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
+class IngenHendelserFunnet(message: String) : RuntimeException(message)
+class OppslagApiFeil(message: String) : RuntimeException(message)
+
 class BrukerstoetteService(
     private val consumerVersion: Int,
     private val kafkaKeysClient: KafkaKeysClient,
@@ -29,49 +31,48 @@ class BrukerstoetteService(
 ) {
     private val errorLogger = LoggerFactory.getLogger("error_logger")
     private val apiOppslagLogger = LoggerFactory.getLogger("api_oppslag_logger")
-    private val txCtx = txContext(consumerVersion)
-    suspend fun hentDetaljer(identitetsnummer: String): DetaljerResponse? {
+    suspend fun hentDetaljer(identitetsnummer: String): DetaljerResponse {
         val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer)
         val hendelser = transaction {
-            txCtx().readAllNestedRecordsForId(hendelseDeserializer, id)
+            readAllNestedRecordsForId(consumerVersion, hendelseDeserializer, id)
         }
-        if (hendelser.isEmpty()) {
-            return null
-        } else {
-            val sistePeriode = sistePeriode(hendelser)
-            val innkommendeHendelse = historiskeTilstander(hendelser).toList()
-            val fraOppslagsApi = hentFraOppslagsApi(identitetsnummer)
-                .fold(
-                    { error ->
-                        errorLogger.error(
-                            "Feil ved henting av opplysninger fra oppslagsapi: {}:{}",
-                            error.httpCode,
-                            error.message
-                        )
-                        emptyList()
-                    },
-                    { it }
-                )
+        if (hendelser.isEmpty()) throw IngenHendelserFunnet("Fant ingen hendelser for person")
 
-            val partition = hendelser.filterNot { it.merged }.firstOrNull()?.partition
-            return DetaljerResponse(
-                recordKey = key,
-                kafkaPartition = partition,
-                historikk = innkommendeHendelse.map { snapshot ->
-                    snapshot.copy(
-                        nyTilstand = snapshot.nyTilstand?.let { enrich(it, fraOppslagsApi) },
-                        gjeldeneTilstand = snapshot.gjeldeneTilstand?.let { enrich(it, fraOppslagsApi) }
+        val sistePeriode = sistePeriode(hendelser)
+        val innkommendeHendelse = historiskeTilstander(hendelser).toList()
+        val fraOppslagsApi = hentFraOppslagsApi(identitetsnummer)
+            .fold(
+                { error ->
+                    errorLogger.error(
+                        "Feil ved henting av opplysninger fra oppslagsapi: {}:{}",
+                        error.httpCode,
+                        error.message
                     )
+                    emptyList()
                 },
-                arbeidssoekerId = id,
-                gjeldeneTilstand = sistePeriode?.let { enrich(it, fraOppslagsApi) }
+                { it }
             )
-        }
+        if (fraOppslagsApi.isEmpty()) throw OppslagApiFeil("Feil ved henting av opplysninger fra oppslagsapi.")
+
+        val partition = hendelser.filterNot { it.merged }.firstOrNull()?.partition
+        return DetaljerResponse(
+            recordKey = key,
+            kafkaPartition = partition,
+            historikk = innkommendeHendelse.map { snapshot ->
+                snapshot.copy(
+                    nyTilstand = snapshot.nyTilstand?.let { enrich(it, fraOppslagsApi) },
+                    gjeldeneTilstand = snapshot.gjeldeneTilstand?.let { enrich(it, fraOppslagsApi) }
+                )
+            },
+            arbeidssoekerId = id,
+            gjeldeneTilstand = sistePeriode?.let { enrich(it, fraOppslagsApi) }
+        )
     }
 
     private suspend fun hentFraOppslagsApi(identitetsnummer: String): Either<Error, List<ApiData>> {
         return either {
-            val perioder = oppslagApiClient.perioder(identitetsnummer).bind().map(ArbeidssoekerperiodeResponse::periodeId)
+            val perioder =
+                oppslagApiClient.perioder(identitetsnummer).bind().map(ArbeidssoekerperiodeResponse::periodeId)
             val opplysninger =
                 perioder.flatMap { periodeId ->
                     oppslagApiClient.opplysninger(identitetsnummer, periodeId).bind()
@@ -87,7 +88,8 @@ class BrukerstoetteService(
                 .plus(opplysninger.filterNot { opplysning -> profilernger.any { profilering -> profilering.periodeId == opplysning.periodeId } })
                 .right()
                 .onRight { result ->
-                    apiOppslagLogger.info("Hentet data fra oppslagsapi, perioder: {}, opplysninger: {}, profileringer: {}",
+                    apiOppslagLogger.info(
+                        "Hentet data fra oppslagsapi, perioder: {}, opplysninger: {}, profileringer: {}",
                         result.distinctBy { it.periodeId }.size,
                         result.distinctBy { it.opplysningsId }.size,
                         result.distinctBy { it.profileringsId }.size
@@ -96,6 +98,7 @@ class BrukerstoetteService(
         }
     }
 }
+
 
 fun enrich(tilstand: Tilstand, apiData: List<ApiData>): Tilstand {
     val periodeData = apiData.filter { it.periodeId == tilstand.periodeId }

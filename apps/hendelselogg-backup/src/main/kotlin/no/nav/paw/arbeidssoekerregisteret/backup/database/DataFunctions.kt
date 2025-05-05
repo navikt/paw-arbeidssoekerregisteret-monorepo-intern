@@ -13,9 +13,9 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 
-fun <A : Hendelse> TransactionContext.writeRecord(hendelseSerializer: HendelseSerializer, record: ConsumerRecord<Long, A>) {
+fun <A : Hendelse> Transaction.writeRecord(consumerVersion: Int, hendelseSerializer: HendelseSerializer, record: ConsumerRecord<Long, A>) {
     HendelseTable.insert {
-        it[version] = appContext.consumerVersion
+        it[version] = consumerVersion
         it[partition] = record.partition()
         it[offset] = record.offset()
         it[recordKey] = record.key()
@@ -25,13 +25,13 @@ fun <A : Hendelse> TransactionContext.writeRecord(hendelseSerializer: HendelseSe
     }
 }
 
-fun TransactionContext.readRecord(hendelseDeserializer: HendelseDeserializer, partition: Int, offset: Long): StoredData? =
+fun Transaction.readRecord(consumerVersion: Int, hendelseDeserializer: HendelseDeserializer, partition: Int, offset: Long): StoredData? =
     HendelseTable
         .selectAll()
         .where {
             (HendelseTable.partition eq partition) and
                     (HendelseTable.offset eq offset) and
-                    (HendelseTable.version eq appContext.consumerVersion)
+                    (HendelseTable.version eq consumerVersion)
         }.singleOrNull()
         ?.let {
             StoredData(
@@ -45,23 +45,25 @@ fun TransactionContext.readRecord(hendelseDeserializer: HendelseDeserializer, pa
             )
         }
 
-fun TransactionContext.readAllNestedRecordsForId(
+fun Transaction.readAllNestedRecordsForId(
+    consumerVersion: Int,
     hendelseDeserializer: HendelseDeserializer,
     arbeidssoekerId: Long,
     merged: Boolean = false
 ): List<StoredData> {
-    val tmp = readAllRecordsForId(hendelseDeserializer = hendelseDeserializer, arbeidssoekerId = arbeidssoekerId, merged = merged)
+    val tmp = readAllRecordsForId(hendelseDeserializer = hendelseDeserializer, arbeidssoekerId = arbeidssoekerId, merged = merged, consumerVersion = consumerVersion)
     return tmp.asSequence()
         .map(StoredData::data)
         .filterIsInstance<ArbeidssoekerIdFlettetInn>()
         .map { it.kilde.arbeidssoekerId }
         .distinct()
-        .flatMap { readAllNestedRecordsForId(hendelseDeserializer = hendelseDeserializer, arbeidssoekerId = it, merged = true) }.toList()
+        .flatMap { readAllNestedRecordsForId(hendelseDeserializer = hendelseDeserializer, arbeidssoekerId = it, merged = true, consumerVersion = consumerVersion) }.toList()
         .plus(tmp)
         .sortedBy { it.data.metadata.tidspunkt }
 }
 
-fun TransactionContext.readAllRecordsForId(
+fun Transaction.readAllRecordsForId(
+    consumerVersion: Int,
     hendelseDeserializer: HendelseDeserializer,
     arbeidssoekerId: Long,
     merged: Boolean = false
@@ -70,7 +72,7 @@ fun TransactionContext.readAllRecordsForId(
         .selectAll()
         .where {
             (HendelseTable.arbeidssoekerId eq arbeidssoekerId) and
-                    (HendelseTable.version eq appContext.consumerVersion)
+                    (HendelseTable.version eq consumerVersion)
         }
         .map {
             StoredData(
