@@ -24,8 +24,8 @@ spec:
     limits:
       memory: 1024Mi
     requests:
-      cpu: 200m
-      memory: 256Mi
+      cpu: 15m
+      memory: 512Mi
   ingresses:
     - https://bekreftelse-arbeidssoekerregisteret.intern.dev.nav.no
   idporten:
