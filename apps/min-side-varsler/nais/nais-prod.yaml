@@ -13,10 +13,10 @@ spec:
     max: 1
   resources:
     limits:
-      memory: 4Gi
-    requests:
       memory: 2Gi
-      cpu: 1000m
+    requests:
+      memory: 1536Mi
+      cpu: 25m
   env:
     - name: KAFKA_PERIODE_STREAM_SUFFIX
       value: "periode-v1"
