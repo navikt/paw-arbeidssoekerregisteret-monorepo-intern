@@ -28,8 +28,8 @@ spec:
     limits:
       memory: 1024Mi
     requests:
-      cpu: 200m
-      memory: 256Mi
+      cpu: 50m
+      memory: 512Mi
   liveness:
     path: /internal/isAlive
     initialDelay: 10
