@@ -9,6 +9,7 @@ import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.health.Health
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.health.initKtor
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.appTopology
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseStateSerde
+import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.metrics.TilstandsGauge
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.kafka.config.KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG
 import no.nav.paw.kafka.config.KafkaConfig
@@ -69,7 +70,12 @@ fun main() {
         StreamsUncaughtExceptionHandler.StreamThreadExceptionResponse.SHUTDOWN_APPLICATION
     }
     kafkaStreams.start()
-
+    val tilstandsGauge = TilstandsGauge(
+        kafkaStreams = kafkaStreams,
+        registry = prometheusMeterRegistry,
+        storeName = applicationConfiguration.hendelseStateStoreName
+    )
+    tilstandsGauge.run()
     initKtor(
         kafkaStreamsMetrics = KafkaStreamsMetrics(kafkaStreams),
         prometheusRegistry = prometheusMeterRegistry,

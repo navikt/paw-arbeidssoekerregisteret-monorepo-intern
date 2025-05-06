@@ -92,7 +92,7 @@ fun PrometheusMeterRegistry.tellEndring(tidspunktForrigeEndring: Instant, forhaa
     ).increment()
 }
 
-private fun Long.tilMetricVerdi(): String =
+fun Long.tilMetricVerdi(): String =
     when {
         this < 0 -> "negative"
         this < 14 -> this.toString()
