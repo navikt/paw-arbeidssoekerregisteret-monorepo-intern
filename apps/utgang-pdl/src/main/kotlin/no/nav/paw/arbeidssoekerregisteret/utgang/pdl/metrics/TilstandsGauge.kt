@@ -9,6 +9,7 @@ import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseState
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.UDENFINERT
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StoreQueryParameters
+import org.apache.kafka.streams.errors.InvalidStateStoreException
 import org.apache.kafka.streams.state.QueryableStoreTypes
 import org.apache.kafka.streams.state.ReadOnlyKeyValueStore
 import org.slf4j.LoggerFactory
@@ -48,46 +49,51 @@ class TilstandsGauge(
     }
 
     fun update(): Boolean {
-        if (kafkaStreams.state() != KafkaStreams.State.RUNNING) return false
+        try {
+            if (kafkaStreams.state() != KafkaStreams.State.RUNNING) return false
 
-        val tilstander: ReadOnlyKeyValueStore<UUID, HendelseState> = kafkaStreams.store(
-            StoreQueryParameters.fromNameAndType(
-                storeName,
-                QueryableStoreTypes.keyValueStore()
+            val tilstander: ReadOnlyKeyValueStore<UUID, HendelseState> = kafkaStreams.store(
+                StoreQueryParameters.fromNameAndType(
+                    storeName,
+                    QueryableStoreTypes.keyValueStore()
+                )
             )
-        )
-        val timestamp = Instant.now()
-        val stats = tilstander.all().use { iterator ->
-            iterator.asSequence()
-                .map {
-                    Labels(
-                        sisteTilstand = it.value.sisteEndring?.tilRegelId ?: UDENFINERT,
-                        forrigeTilstand = it.value.sisteEndring?.fraRegelId ?: UDENFINERT,
-                        dagerITilstand = it.value.sisteEndring?.tidspunkt?.let { endringsTidspunkt ->
-                            between(endringsTidspunkt, timestamp).toDays().tilMetricVerdi()
-                        } ?: "ingen_endring")
-                }.groupBy { it }
-                .mapValues { entry -> entry.value.size }
-                .onEach { (labels, count) ->
-                    gauges.computeIfAbsent(labels) { labels ->
-                        val value = AtomicInteger(count)
-                        Gauge.builder(
-                            TILSTAND_GAUGE,
-                            value
-                        ) {
-                            it.get().toDouble()
-                        }.tags(labels.toTags())
-                            .let { it.register(registry).id to value }
-                    }.second.set(count)
-                }.keys
-        }
-        gauges.toList()
-            .filter { (key, _) ->  key !in stats}
-            .forEach { (key, value) ->
-                registry.remove(value.first)
-                gauges.remove(key)
+            val timestamp = Instant.now()
+            val stats = tilstander.all().use { iterator ->
+                iterator.asSequence()
+                    .map {
+                        Labels(
+                            sisteTilstand = it.value.sisteEndring?.tilRegelId ?: UDENFINERT,
+                            forrigeTilstand = it.value.sisteEndring?.fraRegelId ?: UDENFINERT,
+                            dagerITilstand = it.value.sisteEndring?.tidspunkt?.let { endringsTidspunkt ->
+                                between(endringsTidspunkt, timestamp).toDays().tilMetricVerdi()
+                            } ?: "ingen_endring")
+                    }.groupBy { it }
+                    .mapValues { entry -> entry.value.size }
+                    .onEach { (labels, count) ->
+                        gauges.computeIfAbsent(labels) { labels ->
+                            val value = AtomicInteger(count)
+                            Gauge.builder(
+                                TILSTAND_GAUGE,
+                                value
+                            ) {
+                                it.get().toDouble()
+                            }.tags(labels.toTags())
+                                .let { it.register(registry).id to value }
+                        }.second.set(count)
+                    }.keys
             }
-        return true
+            gauges.toList()
+                .filter { (key, _) -> key !in stats }
+                .forEach { (key, value) ->
+                    registry.remove(value.first)
+                    gauges.remove(key)
+                }
+            return true
+        } catch (e: InvalidStateStoreException) {
+            logger.warn("Metrics: state store ikke lenger gyldig")
+            return false
+        }
     }
 }
 
