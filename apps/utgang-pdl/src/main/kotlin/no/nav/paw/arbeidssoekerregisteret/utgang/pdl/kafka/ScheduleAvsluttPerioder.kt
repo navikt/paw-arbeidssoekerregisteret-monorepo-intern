@@ -1,6 +1,12 @@
 package no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka
 
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.AttributeKey.stringKey
+import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.ApplicationInfo
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.clients.pdl.PdlHentPerson
 import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.Endring
@@ -28,6 +34,7 @@ import org.apache.kafka.streams.processor.api.Record
 import org.apache.kafka.streams.state.KeyValueStore
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.security.KeyStore
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -163,39 +170,58 @@ fun List<HentPersonBolkResult>.processPdlResultsV2(
             }
         }
         .map { (person, hendelseState) ->
-            val registreringsOpplysninger = hendelseState.opplysninger.toDomeneOpplysninger()
-            val gjeldeneOpplysninger = genererPersonFakta(person.toPerson())
-
-            val resultat = prosesser(
-                regler = regler,
-                inngangsOpplysninger = registreringsOpplysninger,
-                gjeldeneOpplysninger = gjeldeneOpplysninger
-            )
-            val forrigeRegelId = hendelseState.sisteEndring?.tilRegelId ?: UDENFINERT
-            val nyRegelId = if (resultat.periodeSkalAvsluttes) {
-                resultat.grunnlag.first::class.simpleName ?: "ukjent"
-            } else {
-                OK
-            }
-            val endring = if (forrigeRegelId != nyRegelId) {
-                Endring(
-                    fraRegelId = forrigeRegelId,
-                    tilRegelId = nyRegelId,
-                    tidspunkt = Instant.now()
-                )
-            } else {
-                null
-            }
-
-            EvalueringResultat(
-                hendelseState = hendelseState,
-                grunnlag = resultat.grunnlag.toSet(),
-                detaljer = gjeldeneOpplysninger.toSet(),
-                avsluttPeriode = resultat.periodeSkalAvsluttes,
-                slettForhaandsGodkjenning = resultat.forhaandsgodkjenningSkalSlettes,
-                endring = endring
-            )
+            prosesserPerson(hendelseState, person, regler)
         }
+
+@WithSpan(
+    value = "prosesser_endring_for_person",
+    kind = SpanKind.INTERNAL
+)
+fun prosesserPerson(
+    hendelseState: HendelseState,
+    person: Person,
+    regler: Regler
+): EvalueringResultat {
+    val registreringsOpplysninger = hendelseState.opplysninger.toDomeneOpplysninger()
+    val gjeldeneOpplysninger = genererPersonFakta(person.toPerson())
+
+    val resultat = prosesser(
+        regler = regler,
+        inngangsOpplysninger = registreringsOpplysninger,
+        gjeldeneOpplysninger = gjeldeneOpplysninger
+    )
+    val forrigeRegelId = hendelseState.sisteEndring?.tilRegelId ?: UDENFINERT
+    val nyRegelId = if (resultat.periodeSkalAvsluttes) {
+        resultat.grunnlag.first::class.simpleName ?: "ukjent"
+    } else {
+        OK
+    }
+    Span.current().setAllAttributes(
+        Attributes.of(
+            stringKey("forrige_regel_id"), forrigeRegelId,
+            stringKey("ny_regel_id"), nyRegelId,
+            stringKey("siste_endring"), hendelseState.sisteEndring?.tidspunkt?.toString() ?: "ingen_endring",
+        )
+    )
+    val endring = if (forrigeRegelId != nyRegelId) {
+        Endring(
+            fraRegelId = forrigeRegelId,
+            tilRegelId = nyRegelId,
+            tidspunkt = Instant.now()
+        )
+    } else {
+        null
+    }
+
+    return EvalueringResultat(
+        hendelseState = hendelseState,
+        grunnlag = resultat.grunnlag.toSet(),
+        detaljer = gjeldeneOpplysninger.toSet(),
+        avsluttPeriode = resultat.periodeSkalAvsluttes,
+        slettForhaandsGodkjenning = resultat.forhaandsgodkjenningSkalSlettes,
+        endring = endring
+    )
+}
 
 
 fun sendAvsluttetHendelse(

@@ -29,6 +29,8 @@ dependencies {
 
     implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
     implementation(libs.micrometer.registryPrometheus)
+    implementation(libs.opentelemetry.api)
+    implementation(libs.opentelemetry.annotations)
 
     implementation(libs.logbackClassic)
     implementation(libs.logstashLogbackEncoder)
