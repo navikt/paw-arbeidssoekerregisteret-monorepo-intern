@@ -28,7 +28,7 @@ flywayVersion = "11.8.0"
 hikariVersion = "6.3.0"
 kotlinxCoroutinesVersion = "1.10.2"
 kotlinxSerializationJsonVersion = "1.8.1"
-ktorVersion = "3.1.2"
+ktorVersion = "3.1.3"
 
 [libraries]
 arrow-core-core = { group = "io.arrow-kt", name = "arrow-core", version.ref = "arrowVersion" }
