@@ -1,18 +1,17 @@
-package no.nav.paw.arbeidssoekerregisteret.backup.vo
+package no.nav.paw.arbeidssoekerregisteret.backup.context
 
 import io.micrometer.core.instrument.binder.MeterBinder
 import io.micrometer.core.instrument.binder.kafka.KafkaClientMetrics
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import no.nav.paw.arbeidssoekerregisteret.backup.config.AzureConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.BrukerstoetteService
 import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.initClients
+import no.nav.paw.arbeidssoekerregisteret.backup.config.ApplicationConfig
+import no.nav.paw.arbeidssoekerregisteret.backup.config.AzureConfig
+import no.nav.paw.arbeidssoekerregisteret.backup.config.ServerConfig
+import no.nav.paw.arbeidssoekerregisteret.backup.config.m2mCfg
 import no.nav.paw.arbeidssoekerregisteret.backup.database.DatabaseConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.database.dataSource
-import no.nav.paw.arbeidssoekerregisteret.backup.database.migrateDatabase
-import no.nav.paw.arbeidssoekerregisteret.backup.config.m2mCfg
-import no.nav.paw.arbeidssoekerregisteret.backup.config.ApplicationConfig
-import no.nav.paw.arbeidssoekerregisteret.backup.config.ServerConfig
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
@@ -22,9 +21,7 @@ import no.nav.paw.kafka.factory.KafkaFactory
 import no.nav.paw.security.authentication.config.SecurityConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.LongDeserializer
-import org.jetbrains.exposed.sql.Database
 import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.sql.DataSource
 
@@ -45,6 +42,7 @@ data class ApplicationContext(
     val dataSource: DataSource,
     val prometheusMeterRegistry: PrometheusMeterRegistry,
     val hendelseKafkaConsumer: KafkaConsumer<Long, Hendelse>,
+    val partitionCount: Int,
     val brukerstoetteService: BrukerstoetteService,
     val additionalMeterBinder: MeterBinder
 ) {
@@ -59,8 +57,6 @@ data class ApplicationContext(
             val securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>("security_config.toml")
 
             val dataSource = databaseConfig.dataSource()
-            Database.Companion.connect(dataSource)
-            migrateDatabase(dataSource)
 
             val (kafkaKeysClient, oppslagApiClient) = initClients(azureConfig.m2mCfg)
             val service = BrukerstoetteService(
@@ -87,6 +83,7 @@ data class ApplicationContext(
                 dataSource = dataSource,
                 prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
                 hendelseKafkaConsumer = consumer,
+                partitionCount = consumer.partitionsFor(applicationConfig.hendelsesloggTopic).count(),
                 brukerstoetteService = service,
                 additionalMeterBinder = KafkaClientMetrics(consumer)
             )

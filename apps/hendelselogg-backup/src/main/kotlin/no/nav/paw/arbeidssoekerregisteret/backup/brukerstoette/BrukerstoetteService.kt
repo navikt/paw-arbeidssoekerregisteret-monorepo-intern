@@ -21,7 +21,6 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
 class IngenHendelserFunnet(message: String) : RuntimeException(message)
-class OppslagApiFeil(message: String) : RuntimeException(message)
 
 class BrukerstoetteService(
     private val consumerVersion: Int,
@@ -40,7 +39,7 @@ class BrukerstoetteService(
 
         val sistePeriode = sistePeriode(hendelser)
         val innkommendeHendelse = historiskeTilstander(hendelser).toList()
-        val fraOppslagsApi = hentFraOppslagsApi(identitetsnummer)
+        val fraOppslagsApi: List<ApiData> = hentFraOppslagsApi(identitetsnummer)
             .fold(
                 { error ->
                     errorLogger.error(
@@ -52,7 +51,6 @@ class BrukerstoetteService(
                 },
                 { it }
             )
-        if (fraOppslagsApi.isEmpty()) throw OppslagApiFeil("Feil ved henting av opplysninger fra oppslagsapi.")
 
         val partition = hendelser.filterNot { it.merged }.firstOrNull()?.partition
         return DetaljerResponse(
@@ -79,13 +77,13 @@ class BrukerstoetteService(
                         .map { opplysning -> ApiData(periodeId, opplysning.opplysningerOmArbeidssoekerId, null) }
                         .let { it.ifEmpty { listOf(ApiData(periodeId, null, null)) } }
                 }
-            val profilernger = perioder.flatMap { periodeId ->
+            val profileringer = perioder.flatMap { periodeId ->
                 oppslagApiClient.profileringer(identitetsnummer, periodeId).bind()
                     .map { ApiData(periodeId, it.opplysningerOmArbeidssoekerId, it.profileringId) }
             }
             return perioder.map { periodeId -> ApiData(periodeId, null, null) }
                 .filterNot { periode -> opplysninger.any { periode.periodeId == it.periodeId } }
-                .plus(opplysninger.filterNot { opplysning -> profilernger.any { profilering -> profilering.periodeId == opplysning.periodeId } })
+                .plus(opplysninger.filterNot { opplysning -> profileringer.any { profilering -> profilering.periodeId == opplysning.periodeId } })
                 .right()
                 .onRight { result ->
                     apiOppslagLogger.info(

@@ -1,5 +1,5 @@
 version = 1
-antallPartitioner = 6
+partitionCount = 6
 consumerId = "${NAIS_APP_NAME}-v1-consumer"
 consumerGroupId = "${NAIS_APP_NAME}-v1"
 hendelsesloggTopic = "${KAFKA_PAW_ARBEIDSSOKER_HENDELSESLOGG_TOPIC}"

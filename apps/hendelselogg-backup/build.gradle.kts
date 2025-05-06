@@ -74,7 +74,7 @@ java {
 }
 
 application {
-    mainClass.set("no.nav.paw.arbeidssoekerregisteret.backup.StartAppKt")
+    mainClass.set("no.nav.paw.arbeidssoekerregisteret.backup.ApplicationKt")
 }
 
 tasks.withType<KotlinCompile>().configureEach {

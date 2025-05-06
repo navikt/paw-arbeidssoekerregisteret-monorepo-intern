@@ -9,7 +9,7 @@ import no.nav.paw.arbeidssoekerregisteret.backup.database.getHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.database.initHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.database.txContext
 import no.nav.paw.arbeidssoekerregisteret.backup.database.updateHwm
-import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContextOld
+import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContextOld
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.slf4j.LoggerFactory

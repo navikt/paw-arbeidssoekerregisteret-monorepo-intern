@@ -6,21 +6,30 @@ import io.ktor.server.routing.IgnoreTrailingSlash
 import io.ktor.server.routing.routing
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.BrukerstoetteService
-import no.nav.paw.health.repository.HealthIndicatorRepository
+import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.apiDocsRoutes
+import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.brukerstoetteRoutes
+import no.nav.paw.config.env.ProdGcp
+import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.health.route.healthRoutes
 import no.nav.paw.metrics.route.metricsRoutes
+import no.nav.paw.security.authentication.model.AzureAd
+import no.nav.paw.security.authentication.plugin.autentisering
 
 fun Application.configureRouting(
     meterRegistry: PrometheusMeterRegistry,
-    healthIndicatorRepository: HealthIndicatorRepository,
-    authorizationService: AuthorizationService,
     brukerstoetteService: BrukerstoetteService
 ) {
     install(IgnoreTrailingSlash)
     routing {
-        healthRoutes(healthIndicatorRepository)
+        healthRoutes()
         metricsRoutes(meterRegistry)
         apiDocsRoutes()
-        brukerstoetteRoutes(authorizationService, brukerstoetteService)
+        if (currentRuntimeEnvironment is ProdGcp) {
+            autentisering(AzureAd) {
+                brukerstoetteRoutes(brukerstoetteService)
+            }
+        } else {
+            brukerstoetteRoutes(brukerstoetteService)
+        }
     }
 }

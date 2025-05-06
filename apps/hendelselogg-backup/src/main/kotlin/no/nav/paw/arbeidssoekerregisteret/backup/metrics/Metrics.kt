@@ -1,4 +1,4 @@
-package no.nav.paw.arbeidssoekerregisteret.backup
+package no.nav.paw.arbeidssoekerregisteret.backup.metrics
 
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 

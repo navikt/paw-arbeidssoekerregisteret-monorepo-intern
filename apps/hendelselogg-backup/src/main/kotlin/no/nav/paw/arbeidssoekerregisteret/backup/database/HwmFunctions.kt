@@ -2,11 +2,14 @@ package no.nav.paw.arbeidssoekerregisteret.backup.database
 
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.Hwm
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.transactions.transaction
 
-fun Transaction.initHwm(consumerVersion: Int, partitionCount: Int) {
-    (0 until partitionCount)
-        .filter { getHwm(consumerVersion, it) == null }
-        .forEach { insertHwm(consumerVersion, it, -1) }
+fun initHwm(consumerVersion: Int, partitionCount: Int) {
+    transaction {
+        (0 until partitionCount)
+            .filter { getHwm(consumerVersion, it) == null }
+            .forEach { insertHwm(consumerVersion, it, -1) }
+    }
 }
 
 fun Transaction.getHwm(consumerVersion: Int, partition: Int): Long? =

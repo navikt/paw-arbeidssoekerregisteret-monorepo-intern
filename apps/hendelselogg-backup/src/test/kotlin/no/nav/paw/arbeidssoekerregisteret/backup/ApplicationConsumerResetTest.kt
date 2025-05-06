@@ -3,100 +3,54 @@ package no.nav.paw.arbeidssoekerregisteret.backup
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import io.micrometer.prometheusmetrics.PrometheusConfig
-import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.backup.database.*
-import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContextOld
+import no.nav.paw.arbeidssoekerregisteret.backup.kafka.processRecords
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
-import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.slf4j.LoggerFactory
+import org.apache.kafka.clients.consumer.ConsumerRecords
+import org.apache.kafka.common.TopicPartition
 
 class ApplicationConsumerResetTest : FreeSpec({
-    "Verifiser applikasjonsflyt ved hikke i consumer" {
-        val appCtx =
-            ApplicationContextOld(
-                consumerVersion = 1,
-                logger = LoggerFactory.getLogger("test-logger"),
-                meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
-                azureConfig = loadNaisOrLocalConfiguration("azure_config.toml"),
-            )
+    "Verifiser applikasjonsflyt ved hikke i consumer" - {
 
-        val txCtx = txContext(appCtx)
         initDbContainer()
-        val partitionCount = 3
-        val testData: List<List<ConsumerRecord<Long, Hendelse>>> = listOf(
-            listOf(
-                ConsumerRecord(
-                    "paw.arbeidssoker-hendelseslogg-v1",
-                    0,
-                    0,
-                    100L,
-                    startet()
-                ),
-                ConsumerRecord(
-                    "paw.arbeidssoker-hendelseslogg-v1",
-                    0,
-                    1,
-                    101L,
-                    avsluttet()
-                )
-            ),
-            listOf(
-                ConsumerRecord(
-                    "paw.arbeidssoker-hendelseslogg-v1",
-                    2,
-                    0,
-                    102L,
-                    startet()
-                )
-            ),
-            emptyList(),
-            emptyList(),
-            emptyList(),
-            emptyList(),
-            listOf(
-                ConsumerRecord(
-                    "paw.arbeidssoker-hendelseslogg-v1",
-                    0,
-                    0,
-                    100L,
-                    avsluttet()
-                )
-            ),
-            emptyList(),
-            emptyList(),
-            listOf(
-                ConsumerRecord(
-                    "paw.arbeidssoker-hendelseslogg-v1",
-                    0,
-                    2,
-                    100L,
-                    avsluttet()
-                )
-            )
-        )
-
-        transaction {
-            txCtx().initHwm(partitionCount)
-        }
-        appCtx.runApplication(HendelseSerde().serializer(), testData.asSequence())
-        testData
-            .flatten()
+        initHwm(testApplicationContext)
+        processRecords(records = testData(), context = testApplicationContext)
+        testData()
             .distinctBy { it.partition() to it.offset() }
             .forEach { record ->
                 val partition = record.partition()
                 val offset = record.offset()
                 val forventetHendelse = record.value()
                 val lagretHendelse = transaction {
-                    txCtx().readRecord(HendelseSerde().deserializer(), partition, offset)
+                    readRecord(
+                        testApplicationContext.applicationConfig.version,
+                        HendelseSerde().deserializer(),
+                        partition,
+                        offset
+                    )
                 }
+                lagretHendelse?.data shouldBe forventetHendelse
                 lagretHendelse.shouldNotBeNull()
                 lagretHendelse.partition shouldBe partition
                 lagretHendelse.offset shouldBe offset
-                lagretHendelse.data shouldBe forventetHendelse
             }
     }
 })
+
+private fun testData(): ConsumerRecords<Long, Hendelse> {
+    val records = listOf(
+        ConsumerRecord("paw.arbeidssoker-hendelseslogg-v1", 0, 0L, 100L, startet() as Hendelse),
+        ConsumerRecord("paw.arbeidssoker-hendelseslogg-v1", 0, 1L, 101L, avsluttet() as Hendelse),
+        ConsumerRecord("paw.arbeidssoker-hendelseslogg-v1", 2, 0L, 102L, startet() as Hendelse),
+        ConsumerRecord("paw.arbeidssoker-hendelseslogg-v1", 0, 2L, 100L, avsluttet() as Hendelse),
+        ConsumerRecord("paw.arbeidssoker-hendelseslogg-v1", 0, 3L, 100L, avsluttet() as Hendelse)
+    )
+
+    val grouped: Map<TopicPartition, List<ConsumerRecord<Long, Hendelse>>> =
+        records.groupBy { TopicPartition(it.topic(), it.partition()) }
+
+    return ConsumerRecords(grouped)
+}

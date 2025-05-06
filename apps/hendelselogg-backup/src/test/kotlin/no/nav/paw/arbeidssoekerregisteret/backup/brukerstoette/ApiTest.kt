@@ -23,7 +23,7 @@ import no.nav.paw.arbeidssoekerregisteret.backup.configureHTTP
 import no.nav.paw.arbeidssoekerregisteret.backup.database.txContext
 import no.nav.paw.arbeidssoekerregisteret.backup.database.writeRecord
 import no.nav.paw.arbeidssoekerregisteret.backup.initDbContainer
-import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContextOld
+import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContextOld
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde

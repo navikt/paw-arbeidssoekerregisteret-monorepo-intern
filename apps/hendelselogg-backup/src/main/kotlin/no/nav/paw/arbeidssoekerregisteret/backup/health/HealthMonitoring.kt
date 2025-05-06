@@ -15,7 +15,7 @@ import io.micrometer.core.instrument.binder.kafka.KafkaClientMetrics
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.prometheus.metrics.model.registry.PrometheusRegistry
-import no.nav.paw.arbeidssoekerregisteret.backup.HwmRebalanceListener
+import no.nav.paw.arbeidssoekerregisteret.backup.kafka.HwmRebalanceListener
 import org.apache.kafka.clients.consumer.Consumer
 
 fun Application.installMetrics(

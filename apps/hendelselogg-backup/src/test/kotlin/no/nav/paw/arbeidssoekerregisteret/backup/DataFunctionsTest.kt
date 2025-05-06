@@ -6,7 +6,7 @@ import io.kotest.matchers.shouldBe
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.backup.database.*
-import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContextOld
+import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContextOld
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
