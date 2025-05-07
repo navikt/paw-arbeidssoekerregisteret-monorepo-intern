@@ -54,7 +54,6 @@ dependencies {
 
     // Database
     implementation(libs.exposed.core)
-    implementation(libs.exposed.crypt)
     implementation(libs.exposed.dao)
     implementation(libs.exposed.jdbc)
     implementation(libs.exposed.javaTime)
