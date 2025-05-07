@@ -1,6 +1,6 @@
 package no.nav.paw.kafkakeygenerator.model
 
-import no.nav.paw.kafkakeygenerator.database.IdentitetTabell
+import no.nav.paw.kafkakeygenerator.database.KafkaKeysIdentitetTable
 import org.jetbrains.exposed.sql.ResultRow
 
 data class KafkaKeyRow(
@@ -9,6 +9,6 @@ data class KafkaKeyRow(
 )
 
 fun ResultRow.asKafkaKeyRow(): KafkaKeyRow = KafkaKeyRow(
-    arbeidssoekerId = this[IdentitetTabell.kafkaKey],
-    identitetsnummer = this[IdentitetTabell.identitetsnummer]
+    arbeidssoekerId = this[KafkaKeysIdentitetTable.kafkaKey],
+    identitetsnummer = this[KafkaKeysIdentitetTable.identitetsnummer]
 )

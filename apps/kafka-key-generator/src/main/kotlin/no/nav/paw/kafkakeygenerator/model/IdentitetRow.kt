@@ -1,11 +1,16 @@
 package no.nav.paw.kafkakeygenerator.model
 
+import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import org.jetbrains.exposed.sql.ResultRow
 import java.time.Instant
 
+enum class IdentitetStatus {
+    AKTIV, KONFLIKT, SLETTET
+}
+
 data class IdentitetRow(
     val id: Long,
-    val arbeidssoekerId: Long? = null,
+    val arbeidssoekerId: Long,
     val aktorId: String,
     val identitet: String,
     val type: IdentitetType,

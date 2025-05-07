@@ -1,7 +1,7 @@
 CREATE TABLE identiteter
 (
     id                 BIGSERIAL PRIMARY KEY,
-    arbeidssoeker_id   BIGINT REFERENCES KafkaKeys (id),
+    arbeidssoeker_id   BIGINT       NOT NULL REFERENCES KafkaKeys (id),
     aktor_id           VARCHAR(50)  NOT NULL,
     identitet          VARCHAR(50)  NOT NULL,
     type               VARCHAR(50)  NOT NULL,
@@ -13,4 +13,22 @@ CREATE TABLE identiteter
     UNIQUE (aktor_id, identitet)
 );
 
-CREATE INDEX identiteter_arbeidssoeker_id_idx ON identiteter (arbeidssoeker_id);
+CREATE TABLE identitet_konflikter
+(
+    id                 BIGSERIAL PRIMARY KEY,
+    aktor_id           VARCHAR(50)  NOT NULL,
+    status             VARCHAR(50)  NOT NULL,
+    inserted_timestamp TIMESTAMP(6) NOT NULL,
+    updated_timestamp  TIMESTAMP(6)
+);
+
+CREATE TABLE identitet_hendelser
+(
+    id                 BIGSERIAL PRIMARY KEY,
+    arbeidssoeker_id   BIGINT       NOT NULL REFERENCES KafkaKeys (id),
+    aktor_id           VARCHAR(50)  NOT NULL,
+    data               JSONB        NOT NULL,
+    status             VARCHAR(50)  NOT NULL,
+    inserted_timestamp TIMESTAMP(6) NOT NULL,
+    updated_timestamp  TIMESTAMP(6)
+);

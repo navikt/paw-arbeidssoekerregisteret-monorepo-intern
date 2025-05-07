@@ -19,6 +19,7 @@ dependencies {
     implementation(project(":lib:pdl-client"))
     implementation(project(":lib:kafka"))
     implementation(project(":domain:interne-hendelser"))
+    implementation(project(":domain:identitet-interne-hendelser"))
     implementation(project(":domain:pdl-aktoer-schema"))
 
     // NAV

@@ -28,10 +28,15 @@ import no.nav.paw.kafkakeygenerator.handler.HealthIndicatorConsumerExceptionHand
 import no.nav.paw.kafkakeygenerator.listener.HwmConsumerRebalanceListener
 import no.nav.paw.kafkakeygenerator.merge.MergeDetector
 import no.nav.paw.kafkakeygenerator.repository.HwmRepository
+import no.nav.paw.kafkakeygenerator.repository.IdentitetHendelseRepository
+import no.nav.paw.kafkakeygenerator.repository.IdentitetKonfliktRepository
 import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
+import no.nav.paw.kafkakeygenerator.repository.KafkaKeysIdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
-import no.nav.paw.kafkakeygenerator.repository.NyttIdentitetRepository
+import no.nav.paw.kafkakeygenerator.service.IdentitetHendelseService
+import no.nav.paw.kafkakeygenerator.service.IdentitetKonfliktService
+import no.nav.paw.kafkakeygenerator.service.IdentitetService
 import no.nav.paw.kafkakeygenerator.service.KafkaHwmService
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
 import no.nav.paw.kafkakeygenerator.service.PawHendelseKafkaConsumerService
@@ -78,14 +83,27 @@ data class ApplicationContext(
             val healthIndicatorRepository = HealthIndicatorRepository()
             val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
 
-            val identitetRepository = IdentitetRepository()
+            val kafkaKeysIdentitetRepository = KafkaKeysIdentitetRepository()
             val kafkaKeysRepository = KafkaKeysRepository()
             val kafkaKeysAuditRepository = KafkaKeysAuditRepository()
-            val nyttIdentitetRepository = NyttIdentitetRepository()
+            val identitetRepository = IdentitetRepository()
+            val identitetKonfliktRepository = IdentitetKonfliktRepository()
+            val identitetHendelseRepository = IdentitetHendelseRepository()
 
+            val identitetKonfliktService = IdentitetKonfliktService(
+                identitetKonfliktRepository = identitetKonfliktRepository
+            )
+            val identitetHendelseService = IdentitetHendelseService(
+                identitetHendelseRepository = identitetHendelseRepository
+            )
+            val identitetService = IdentitetService(
+                identitetRepository = identitetRepository,
+                identitetKonfliktService = identitetKonfliktService,
+                identitetHendelseService = identitetHendelseService
+            )
             val pawHendelseKafkaConsumerService = PawHendelseKafkaConsumerService(
                 meterRegistry = prometheusMeterRegistry,
-                identitetRepository = identitetRepository,
+                kafkaKeysIdentitetRepository = kafkaKeysIdentitetRepository,
                 kafkaKeysRepository = kafkaKeysRepository,
                 kafkaKeysAuditRepository = kafkaKeysAuditRepository
             )
@@ -122,9 +140,9 @@ data class ApplicationContext(
             )
             val pdlAktorKafkaConsumerService = PdlAktorKafkaConsumerService(
                 kafkaConsumerConfig = applicationConfig.pdlAktorConsumer,
+                kafkaKeysIdentitetRepository = kafkaKeysIdentitetRepository,
                 hwmOperations = pdlAktorKafkaHwmOperations,
-                identitetRepository = identitetRepository,
-                nyttIdentitetRepository = nyttIdentitetRepository
+                identitetService = identitetService
             )
             val pdlAktorConsumerExceptionHandler = HealthIndicatorConsumerExceptionHandler(
                 livenessIndicator = healthIndicatorRepository.livenessIndicator(HealthStatus.HEALTHY),

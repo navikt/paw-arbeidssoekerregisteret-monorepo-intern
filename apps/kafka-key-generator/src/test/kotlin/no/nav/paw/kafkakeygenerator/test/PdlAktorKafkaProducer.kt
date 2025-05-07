@@ -19,20 +19,29 @@ class AktorAvroSerializer : SpecificAvroSerializer<Aktor>()
 fun main() {
     val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG_WITH_SCHEME_REG)
     val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG)
-    with(applicationConfig) {
+    with(applicationConfig.pdlAktorConsumer) {
         val kafkaFactory = KafkaFactory(kafkaConfig)
         val pawHendelseKafkaProducer = kafkaFactory.createProducer<String, Aktor>(
-            clientId = "${pdlAktorConsumer.groupId}-producer",
+            clientId = "${groupId}-producer",
             keySerializer = StringSerializer::class,
             valueSerializer = AktorAvroSerializer::class
         )
 
-        val key = "1"
-        val value = TestData.aktor()
+        val records: List<ProducerRecord<String, Aktor>> = listOf(
+            ProducerRecord(topic, TestData.aktorId1, TestData.aktor1_1),
+            ProducerRecord(topic, TestData.aktorId2, TestData.aktor2_1),
+            ProducerRecord(topic, TestData.aktorId1, TestData.aktor1_2),
+            ProducerRecord(topic, TestData.aktorId3, TestData.aktor3_1),
+            ProducerRecord(topic, TestData.aktorId4, TestData.aktor4_1),
+            ProducerRecord(topic, TestData.aktorId5, TestData.aktor5_1),
+            ProducerRecord(topic, TestData.aktorId2, TestData.aktor2_2),
+        )
 
         try {
-            logger.info("Sender hendelse {}", value)
-            pawHendelseKafkaProducer.send(ProducerRecord(pdlAktorConsumer.topic, key, value)).get()
+            records.forEach { record ->
+                logger.info("Sender key {} value {}", record.key(), record.value())
+                pawHendelseKafkaProducer.send(record).get()
+            }
         } catch (e: Exception) {
             logger.error("Send hendelse feilet", e)
         } finally {

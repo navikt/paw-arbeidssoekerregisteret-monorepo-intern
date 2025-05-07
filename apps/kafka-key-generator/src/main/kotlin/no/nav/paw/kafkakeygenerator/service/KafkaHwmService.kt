@@ -36,9 +36,11 @@ class KafkaHwmService(
     }
 
     override fun updateHwm(topic: String, partition: Int, offset: Long, timestamp: Instant): Int {
-        with(kafkaConsumerConfig) {
-            logger.info("Updating HWM for partition {} on topic {}", partition, topic)
-            return hwmRepository.update(version, topic, partition, offset, timestamp, Instant.now())
+        return transaction {
+            with(kafkaConsumerConfig) {
+                logger.info("Updating HWM for partition {} on topic {}", partition, topic)
+                hwmRepository.update(version, topic, partition, offset, timestamp, Instant.now())
+            }
         }
     }
 }
