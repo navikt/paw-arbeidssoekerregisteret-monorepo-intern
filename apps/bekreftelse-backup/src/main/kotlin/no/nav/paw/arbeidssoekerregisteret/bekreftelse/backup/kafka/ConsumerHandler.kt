@@ -45,7 +45,7 @@ class ConsumerHandler(
 
     fun startConsumerTasks(
         pollTimeout: Duration,
-    ): CompletableFuture<Void> {
+    ): CompletableFuture<Any> {
         val hendelseFuture = createConsumerFuture(
             consumer = context.hendelseConsumer,
             topic = context.hendelseTopic,
@@ -67,7 +67,7 @@ class ConsumerHandler(
             processFunction = this::processPaaVegneAvRecord
         )
 
-        return CompletableFuture.allOf(hendelseFuture, bekreftelseFuture, paaVegneAvFuture)
+        return CompletableFuture.anyOf(hendelseFuture, bekreftelseFuture, paaVegneAvFuture)
     }
 
     fun <V> createConsumerFuture(
