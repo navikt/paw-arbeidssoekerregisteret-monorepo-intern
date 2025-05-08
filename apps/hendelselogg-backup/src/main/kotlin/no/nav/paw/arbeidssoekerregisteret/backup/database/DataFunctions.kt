@@ -13,6 +13,7 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.TransactionManager
+import java.util.UUID
 
 fun <A : Hendelse> TransactionContext.writeRecord(hendelseSerializer: HendelseSerializer, record: ConsumerRecord<Long, A>) {
     HendelseTable.insert {
@@ -45,6 +46,19 @@ fun TransactionContext.readRecord(hendelseDeserializer: HendelseDeserializer, pa
                 merged = false
             )
         }
+
+fun TransactionContext.hentIdentitetsnummerForPeriodeId(hendelseDeserializer: HendelseDeserializer, periodeId: UUID): String? =
+    TransactionManager.current()
+        .exec(
+            stmt = """select data from hendelser where data @> '{"hendelseId": "$periodeId"}' and data @> '{"hendelseType": "intern.v1.startet"}' limit 1;""",
+            transform = { rs ->
+                if (rs.next()) {
+                    hendelseDeserializer
+                        .deserializeFromString(rs.getString(HendelseTable.data.name))
+                        .identitetsnummer
+                } else null
+            }
+        )
 
 fun TransactionContext.readAllNestedRecordsForId(
     hendelseDeserializer: HendelseDeserializer,

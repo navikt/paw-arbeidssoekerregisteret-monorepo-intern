@@ -7,6 +7,7 @@ import arrow.core.raise.either
 import arrow.core.right
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.*
 import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.ArbeidssoekerperiodeResponse
+import no.nav.paw.arbeidssoekerregisteret.backup.database.hentIdentitetsnummerForPeriodeId
 import no.nav.paw.arbeidssoekerregisteret.backup.database.readAllNestedRecordsForId
 import no.nav.paw.arbeidssoekerregisteret.backup.database.readAllRecordsForId
 import no.nav.paw.arbeidssoekerregisteret.backup.database.txContext
@@ -32,7 +33,16 @@ class BrukerstoetteService(
     private val errorLogger = LoggerFactory.getLogger("error_logger")
     private val apiOppslagLogger = LoggerFactory.getLogger("api_oppslag_logger")
     private val txCtx = txContext(applicationContext)
-    suspend fun hentDetaljer(identitetsnummer: String): DetaljerResponse? {
+    suspend fun hentDetaljer(id: String): DetaljerResponse? {
+        val identitetsnummer = if (id.length == 11) {
+            id
+        } else {
+            val periodeId = UUID.fromString(id)
+            transaction {
+                txCtx().hentIdentitetsnummerForPeriodeId(hendelseDeserializer, periodeId)
+            }
+        }
+        if (identitetsnummer == null) return null
         val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer)
         val hendelser = transaction {
             txCtx().readAllNestedRecordsForId(hendelseDeserializer, id)
