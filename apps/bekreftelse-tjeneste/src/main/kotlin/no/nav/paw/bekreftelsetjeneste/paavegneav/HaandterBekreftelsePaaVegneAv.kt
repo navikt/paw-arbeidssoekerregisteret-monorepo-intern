@@ -66,14 +66,16 @@ fun haandterBekreftelsePaaVegneAvEndret(
                 loesning = Loesning.from(paaVegneAvHendelse.bekreftelsesloesning),
                 handling = action,
                 feil = Feil.PERIODE_IKKE_FUNNET,
-                harAnsvar = harAnsvar
+                harAnsvar = harAnsvar,
+                fristBrutt = (paaVegneAvHendelse.handling as? Stopp)?.fristBrutt
             )
         } else {
             log(
                 loesning = Loesning.from(paaVegneAvHendelse.bekreftelsesloesning),
                 handling = action,
                 periodeFunnet = periodeFunnet,
-                harAnsvar = harAnsvar
+                harAnsvar = harAnsvar,
+                fristBrutt = (paaVegneAvHendelse.handling as? Stopp)?.fristBrutt
             )
         }
     }

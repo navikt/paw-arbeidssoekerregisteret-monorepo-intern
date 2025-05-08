@@ -43,6 +43,6 @@ const val bekreftelseHentUke = "bekreftelse_hent_uke"
 const val paaVegneAvStartet ="paa_vegne_av_startet"
 const val paaVegneAvStoppet ="paa_vegne_av_stoppet"
 val registerFristUtloept = AttributeKey.booleanKey("register_frist_utloept")
-
+val fristBruttKey = AttributeKey.booleanKey("frist_brutt")
 
 fun String.snakeCase(): String = this.replace(Regex("([a-z])([A-Z]+)"), "$1_$2").lowercase()

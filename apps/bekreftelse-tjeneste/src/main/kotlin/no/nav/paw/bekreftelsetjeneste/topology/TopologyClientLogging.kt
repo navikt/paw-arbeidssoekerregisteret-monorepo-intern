@@ -15,13 +15,15 @@ private fun attributes(
     periodeFunnet: Boolean,
     harAnsvar: Boolean,
     feilMelding: String? = null,
-    tilstand: String? = null
+    tilstand: String? = null,
+    fristBrutt: Boolean? = null,
 ): Attributes = Attributes.builder()
     .put(domainKey, "bekreftelse")
     .put(actionKey, handling)
     .put(bekreftelseloesingKey, loesning.name)
     .put(harAnsvarKey, harAnsvar)
     .put(periodeFunnetKey, periodeFunnet)
+    .let { if (fristBrutt != null) it.put(fristBruttKey, fristBrutt) else it }
     .let { if (feilMelding != null) it.put(feilMeldingKey, feilMelding) else it }
     .let { if (tilstand != null) it.put(tilstandKey, tilstand) else it }
     .build()
@@ -31,14 +33,16 @@ fun log(
     handling: String,
     periodeFunnet: Boolean,
     harAnsvar: Boolean,
-    tilstand: BekreftelseTilstandStatus? = null
+    tilstand: BekreftelseTilstandStatus? = null,
+    fristBrutt: Boolean? = null
 ) {
     val attributes = attributes(
         loesning = loesning,
         handling = handling,
         periodeFunnet = periodeFunnet,
         harAnsvar = harAnsvar,
-        tilstand = formaterClassSimpleName(tilstand)
+        tilstand = formaterClassSimpleName(tilstand),
+        fristBrutt = fristBrutt
     )
     with(Span.current()) {
         setAllAttributes(attributes)
@@ -56,7 +60,8 @@ fun logWarning(
     handling: String,
     feil: Feil,
     harAnsvar: Boolean = feil.harAnsvar,
-    tilstand: BekreftelseTilstandStatus? = null
+    tilstand: BekreftelseTilstandStatus? = null,
+    fristBrutt: Boolean? = null,
 ) {
     val attributes = attributes(
         loesning = loesning,
@@ -64,7 +69,8 @@ fun logWarning(
         periodeFunnet = feil.periodeFunnet,
         harAnsvar = harAnsvar,
         feilMelding = feil.name,
-        tilstand = formaterClassSimpleName(tilstand)
+        tilstand = formaterClassSimpleName(tilstand),
+        fristBrutt = fristBrutt
     )
     with(Span.current()) {
         setAllAttributes(attributes)
