@@ -84,12 +84,18 @@ fun Route.configureBrukerstoetteRoutes(brukerstoetteService: BrukerstoetteServic
                     feilKode = "ikke funnet"
                 )
             )
-        }.onFailure {
-            errorLogger.error("Feil ved henting av detaljer", it)
+        }.onFailure { throwable ->
+            errorLogger.error("Feil ved henting av detaljer", throwable)
+            val (feilkode, feilmelding) = when (throwable) {
+                is IllegalArgumentException -> HttpStatusCode.BadRequest to "ugyldig input"
+                is NoSuchElementException -> HttpStatusCode.NotFound to "ikke funnet"
+                else -> HttpStatusCode.InternalServerError to "intern feil"
+            }
             call.respond(
-                HttpStatusCode.InternalServerError, Feil(
-                    melding = "Feil ved henting av detaljer",
-                    feilKode = "intern feil"
+                status = feilkode,
+                message = Feil(
+                    melding = feilmelding,
+                    feilKode = feilkode.description
                 )
             )
         }
