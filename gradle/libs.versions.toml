@@ -1,6 +1,6 @@
 [versions]
 noNavSecurityVersion = "5.0.25"
-noNavSecurityMockOauth2ServerVersion = "2.1.10"
+noNavSecurityMockOauth2ServerVersion = "2.1.11"
 noNavCommonVersion = "3.2025.04.01_09.46-936a3ae3d5d9"
 noNavTmsVarselBuilderVersion = "2.1.1"
 arbeidssokerregisteretVersion = "1.25.03.10.2-1"
