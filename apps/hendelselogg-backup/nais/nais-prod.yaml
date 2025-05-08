@@ -23,6 +23,9 @@ spec:
     enabled: true
     path: /internal/metrics
   observability:
+    logging:
+      destinations:
+        - id: loki
     autoInstrumentation:
       enabled: true
       runtime: java
