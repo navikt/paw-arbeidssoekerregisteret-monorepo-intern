@@ -4,7 +4,7 @@ import org.slf4j.LoggerFactory
 import org.slf4j.MarkerFactory
 
 object SecureLogger {
-    private val secureLogger = LoggerFactory.getLogger("tjenestekall")
+    private val secureLogger = LoggerFactory.getLogger("team-logs-logger")
     private val secureMarker = MarkerFactory.getMarker("TEAM_LOGS")
 
     fun trace(msg: String, vararg args: Any) {

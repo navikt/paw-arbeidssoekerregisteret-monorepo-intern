@@ -31,12 +31,18 @@
             <root level="INFO">
                 <appender-ref ref="CONSOLE"/>
             </root>
+            <logger name="team-logs-logger" level="INFO" additivity="false">
+                <appender-ref ref="CONSOLE" />
+            </logger>
         </then>
         <else>
             <root level="INFO">
                 <appender-ref ref="STDOUT_JSON" />
                 <appender-ref ref="team-logs" />
             </root>
+            <logger name="team-logs-logger" level="INFO" additivity="false">
+                <appender-ref ref="team-logs" />
+            </logger>
         </else>
     </if>
 
