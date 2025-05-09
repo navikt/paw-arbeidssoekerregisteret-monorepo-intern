@@ -33,17 +33,13 @@
             </root>
         </then>
         <else>
-            <logger name="team-logs-logger" level="INFO" additivity="false">
-                <appender-ref ref="team-logs" />
-            </logger>
             <root level="INFO">
-                <appender-ref ref="STDOUT_JSON"/>
+                <appender-ref ref="STDOUT_JSON" />
+                <appender-ref ref="team-logs" />
             </root>
         </else>
     </if>
 
     <include resource="no/nav/common/audit_log/logback-naudit.xml"/>
-
-    <logger name="tjenestekall" level="TRACE"/>
 
 </configuration>
