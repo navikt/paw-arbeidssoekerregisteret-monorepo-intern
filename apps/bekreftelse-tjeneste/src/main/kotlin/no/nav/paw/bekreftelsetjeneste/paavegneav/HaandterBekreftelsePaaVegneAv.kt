@@ -84,9 +84,8 @@ fun haandterBekreftelsePaaVegneAvEndret(
                 val tidSidenSisteLevering = sistLevert?.let {  between(it, wallclock.value) }
                 val fristKanVaereBrutt = tidSidenSisteLevering
                     ?.let { it >= (bekreftelseKonfigurasjon.interval + bekreftelseKonfigurasjon.graceperiode) }
-                    ?.let { between(bekreftelseTilstand.periode.startet, wallclock.value) >=
-                            (bekreftelseKonfigurasjon.interval + bekreftelseKonfigurasjon.graceperiode)
-                    }
+                        ?: (between(bekreftelseTilstand.periode.startet, wallclock.value) >=
+                            (bekreftelseKonfigurasjon.interval + bekreftelseKonfigurasjon.graceperiode))
                 log(
                     loesning = Loesning.from(paaVegneAvHendelse.bekreftelsesloesning),
                     handling = action,
