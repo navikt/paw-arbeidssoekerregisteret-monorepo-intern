@@ -81,7 +81,8 @@ jobs:
           VAR: image=${{ needs.build.outputs.image }}
 
   deploy-prod:
-    if: github.ref == 'refs/heads/main'
+    #if: github.ref == 'refs/heads/main'
+    if: false
     name: Deploy to prod-gcp
     needs:
       - build
