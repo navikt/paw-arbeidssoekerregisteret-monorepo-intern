@@ -44,5 +44,8 @@ const val paaVegneAvStartet ="paa_vegne_av_startet"
 const val paaVegneAvStoppet ="paa_vegne_av_stoppet"
 val registerFristUtloept = AttributeKey.booleanKey("register_frist_utloept")
 val fristBruttKey = AttributeKey.booleanKey("frist_brutt")
+val sistLevertKey = AttributeKey.stringKey("sist_levert")
+val dagerSidenSisteLeveringKey = AttributeKey.longKey("dager_siden_siste_levering")
+val fristKanVaereBruttKey = AttributeKey.booleanKey("frist_kan_vaere_brutt")
 
 fun String.snakeCase(): String = this.replace(Regex("([a-z])([A-Z]+)"), "$1_$2").lowercase()

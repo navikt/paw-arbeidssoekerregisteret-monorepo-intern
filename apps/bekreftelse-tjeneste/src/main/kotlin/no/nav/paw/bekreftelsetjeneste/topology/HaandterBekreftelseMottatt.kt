@@ -25,7 +25,7 @@ fun haandterBekreftelseMottatt(
                     loesning = Loesning.from(melding.bekreftelsesloesning),
                     handling = bekreftelseLevertAction,
                     periodeFunnet = true,
-                    harAnsvar = true
+                    harAnsvar = true,
                 )
                 gjeldendeTilstand.leggTilNyEllerOppdaterBekreftelse(
                     Bekreftelse(

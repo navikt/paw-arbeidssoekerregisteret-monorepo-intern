@@ -6,6 +6,8 @@ import io.opentelemetry.api.trace.StatusCode
 import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstandStatus
 import org.slf4j.LoggerFactory
+import java.time.Duration
+import java.time.Instant
 
 private val clientLogger = LoggerFactory.getLogger("bekreftelse.tjeneste.client")
 
@@ -17,6 +19,9 @@ private fun attributes(
     feilMelding: String? = null,
     tilstand: String? = null,
     fristBrutt: Boolean? = null,
+    sistLevert: Instant? = null,
+    tidSidenSisteLevering: Duration? = null,
+    fristKanVaereBrutt: Boolean? = null
 ): Attributes = Attributes.builder()
     .put(domainKey, "bekreftelse")
     .put(actionKey, handling)
@@ -26,6 +31,9 @@ private fun attributes(
     .let { if (fristBrutt != null) it.put(fristBruttKey, fristBrutt) else it }
     .let { if (feilMelding != null) it.put(feilMeldingKey, feilMelding) else it }
     .let { if (tilstand != null) it.put(tilstandKey, tilstand) else it }
+    .let { if (sistLevert != null) it.put(sistLevertKey, sistLevert.toString()) else it }
+    .let { if (tidSidenSisteLevering != null) it.put(dagerSidenSisteLeveringKey, tidSidenSisteLevering.toDays()) else it }
+    .let { if (fristKanVaereBrutt != null) it.put(fristKanVaereBruttKey, fristKanVaereBrutt) else it }
     .build()
 
 fun log(
@@ -34,7 +42,10 @@ fun log(
     periodeFunnet: Boolean,
     harAnsvar: Boolean,
     tilstand: BekreftelseTilstandStatus? = null,
-    fristBrutt: Boolean? = null
+    fristBrutt: Boolean? = null,
+    sistLevert: Instant? = null,
+    tidSidenSisteLevering: Duration? = null,
+    fristKanVaereBrutt: Boolean? = null,
 ) {
     val attributes = attributes(
         loesning = loesning,
@@ -42,7 +53,10 @@ fun log(
         periodeFunnet = periodeFunnet,
         harAnsvar = harAnsvar,
         tilstand = formaterClassSimpleName(tilstand),
-        fristBrutt = fristBrutt
+        fristBrutt = fristBrutt,
+        sistLevert = sistLevert,
+        tidSidenSisteLevering = tidSidenSisteLevering,
+        fristKanVaereBrutt = fristKanVaereBrutt
     )
     with(Span.current()) {
         setAllAttributes(attributes)
@@ -70,7 +84,7 @@ fun logWarning(
         harAnsvar = harAnsvar,
         feilMelding = feil.name,
         tilstand = formaterClassSimpleName(tilstand),
-        fristBrutt = fristBrutt
+        fristBrutt = fristBrutt,
     )
     with(Span.current()) {
         setAllAttributes(attributes)

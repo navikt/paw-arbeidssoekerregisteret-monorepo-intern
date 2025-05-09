@@ -142,7 +142,7 @@ fun processPawNamespace(
                     handling = bekreftelseLevertAction,
                     periodeFunnet = true,
                     harAnsvar = registeretHarAnsvar,
-                    tilstand = sisteTilstand
+                    tilstand = sisteTilstand,
                 )
                 val (hendelser, oppdatertBekreftelse) = behandleGyldigSvar(wallClock, gjeldeneTilstand, hendelse, bekreftelse)
                 gjeldeneTilstand.oppdaterBekreftelse(oppdatertBekreftelse) to hendelser

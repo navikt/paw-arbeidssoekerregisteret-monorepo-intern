@@ -11,14 +11,18 @@ import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.GracePeriodeVarselet
 import no.nav.paw.bekreftelsetjeneste.tilstand.IkkeKlarForUtfylling
 import no.nav.paw.bekreftelsetjeneste.tilstand.KlarForUtfylling
+import no.nav.paw.bekreftelsetjeneste.tilstand.Levert
 import no.nav.paw.bekreftelsetjeneste.tilstand.VenterSvar
+import no.nav.paw.bekreftelsetjeneste.tilstand.has
 import no.nav.paw.bekreftelsetjeneste.tilstand.sisteTilstand
+import no.nav.paw.bekreftelsetjeneste.tilstand.tilstand
 import no.nav.paw.bekreftelsetjeneste.topology.Feil
 import no.nav.paw.bekreftelsetjeneste.topology.log
 import no.nav.paw.bekreftelsetjeneste.topology.logWarning
 import no.nav.paw.bekreftelsetjeneste.topology.paaVegneAvStartet
 import no.nav.paw.bekreftelsetjeneste.topology.paaVegneAvStoppet
 import java.time.Duration
+import java.time.Duration.between
 import java.time.Instant
 import java.util.*
 
@@ -57,11 +61,10 @@ fun haandterBekreftelsePaaVegneAvEndret(
             is Stopp -> paaVegneAvStoppet
             else -> "ukjent"
         }
-        val periodeFunnet = bekreftelseTilstand != null
         val harAnsvar = paaVegneAvTilstand?.paaVegneAvList
             ?.map { it.loesning }
             ?.contains(Loesning.from(paaVegneAvHendelse.bekreftelsesloesning)) ?: false
-        if (!periodeFunnet) {
+        if (bekreftelseTilstand == null) {
             logWarning(
                 loesning = Loesning.from(paaVegneAvHendelse.bekreftelsesloesning),
                 handling = action,
@@ -70,13 +73,38 @@ fun haandterBekreftelsePaaVegneAvEndret(
                 fristBrutt = (paaVegneAvHendelse.handling as? Stopp)?.fristBrutt
             )
         } else {
-            log(
-                loesning = Loesning.from(paaVegneAvHendelse.bekreftelsesloesning),
-                handling = action,
-                periodeFunnet = periodeFunnet,
-                harAnsvar = harAnsvar,
-                fristBrutt = (paaVegneAvHendelse.handling as? Stopp)?.fristBrutt
-            )
+            val handling = paaVegneAvHendelse.handling
+            if (handling is Stopp) {
+                val sistLevert = bekreftelseTilstand.bekreftelser
+                    .filter { !it.dummy }
+                    .filter { it.has<Levert>() }
+                    .maxByOrNull { it.gjelderTil }
+                    ?.tilstand<Levert>()
+                    ?.timestamp
+                val tidSidenSisteLevering = sistLevert?.let {  between(it, wallclock.value) }
+                val fristKanVaereBrutt = tidSidenSisteLevering
+                    ?.let { it >= (bekreftelseKonfigurasjon.interval + bekreftelseKonfigurasjon.graceperiode) }
+                    ?.let { between(bekreftelseTilstand.periode.startet, wallclock.value) >=
+                            (bekreftelseKonfigurasjon.interval + bekreftelseKonfigurasjon.graceperiode)
+                    }
+                log(
+                    loesning = Loesning.from(paaVegneAvHendelse.bekreftelsesloesning),
+                    handling = action,
+                    periodeFunnet = true,
+                    harAnsvar = harAnsvar,
+                    fristBrutt = handling.fristBrutt,
+                    sistLevert = sistLevert,
+                    tidSidenSisteLevering = tidSidenSisteLevering,
+                    fristKanVaereBrutt = fristKanVaereBrutt,
+                )
+            } else {
+                log(
+                    loesning = Loesning.from(paaVegneAvHendelse.bekreftelsesloesning),
+                    handling = action,
+                    periodeFunnet = true,
+                    harAnsvar = harAnsvar
+                )
+            }
         }
     }
 }
