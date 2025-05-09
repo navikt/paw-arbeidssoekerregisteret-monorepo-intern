@@ -17,6 +17,7 @@ private val logger = LoggerFactory.getLogger("tilgangskontroll")
 
 fun main() {
     logger.info("Starter tilgangskontroll...")
+    SecureLogger.info("Secure logging aktivert, denne linjen skal ikke dukke opp i Loki")
     val service: TilgangsTjenesteForAnsatte = initPoaobackend(
         secureLogger = SecureLogger,
         m2mTokenClient = createAzureAdM2MTokenClient(azureProviderConfig = loadNaisOrLocalConfiguration(AZURE_M2M_CONFIG)),
