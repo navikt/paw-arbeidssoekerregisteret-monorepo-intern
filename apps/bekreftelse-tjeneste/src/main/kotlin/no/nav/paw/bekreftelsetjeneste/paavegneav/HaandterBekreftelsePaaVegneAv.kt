@@ -55,7 +55,7 @@ fun haandterBekreftelsePaaVegneAvEndret(
         )
 
         else -> emptyList()
-    }.also { _ ->
+    }.also { utgaande ->
         val action = when (paaVegneAvHendelse.handling) {
             is Start -> paaVegneAvStartet
             is Stopp -> paaVegneAvStoppet
@@ -95,6 +95,8 @@ fun haandterBekreftelsePaaVegneAvEndret(
                     sistLevert = sistLevert,
                     tidSidenSisteLevering = tidSidenSisteLevering,
                     fristKanVaereBrutt = fristKanVaereBrutt,
+                    utgaaende = utgaande.filterIsInstance<SendHendelse>()
+                        .map { it.hendelse.hendelseType }
                 )
             } else {
                 log(

@@ -21,7 +21,8 @@ private fun attributes(
     fristBrutt: Boolean? = null,
     sistLevert: Instant? = null,
     tidSidenSisteLevering: Duration? = null,
-    fristKanVaereBrutt: Boolean? = null
+    fristKanVaereBrutt: Boolean? = null,
+    utgaaende: List<String>? = null
 ): Attributes = Attributes.builder()
     .put(domainKey, "bekreftelse")
     .put(actionKey, handling)
@@ -34,6 +35,7 @@ private fun attributes(
     .let { if (sistLevert != null) it.put(sistLevertKey, sistLevert.toString()) else it }
     .let { if (tidSidenSisteLevering != null) it.put(dagerSidenSisteLeveringKey, tidSidenSisteLevering.toDays()) else it }
     .let { if (fristKanVaereBrutt != null) it.put(fristKanVaereBruttKey, fristKanVaereBrutt) else it }
+    .let { if (utgaaende != null) it.put(utgaaendeKey, utgaaende.joinToString(",")) else it }
     .build()
 
 fun log(
@@ -46,6 +48,7 @@ fun log(
     sistLevert: Instant? = null,
     tidSidenSisteLevering: Duration? = null,
     fristKanVaereBrutt: Boolean? = null,
+    utgaaende: List<String>? = null
 ) {
     val attributes = attributes(
         loesning = loesning,
@@ -56,7 +59,8 @@ fun log(
         fristBrutt = fristBrutt,
         sistLevert = sistLevert,
         tidSidenSisteLevering = tidSidenSisteLevering,
-        fristKanVaereBrutt = fristKanVaereBrutt
+        fristKanVaereBrutt = fristKanVaereBrutt,
+        utgaaende = utgaaende
     )
     with(Span.current()) {
         setAllAttributes(attributes)

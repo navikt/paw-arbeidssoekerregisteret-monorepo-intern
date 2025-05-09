@@ -49,25 +49,6 @@ fun haandterStoppPaaVegneAv(
         else -> {
             emptyList()
         }
-    }.also { resultat ->
-        val hendelse =
-            resultat.firstOrNull { it is SendHendelse && it.hendelse is RegisterGracePeriodeUtloeptEtterEksternInnsamling }
-        val fraTilDummy = bekreftelseTilstand?.bekreftelser
-            ?.filter { it.sisteTilstand() is Levert }
-            ?.maxByOrNull { it.gjelderTil }
-            ?.let { Triple(it.gjelderFra, it.gjelderTil, it.dummy) }
-
-        stoppPaaVegneAvLogger.trace(
-            "hadde_ansvar: {}, frist_brutt: {}, sist_leverte: [{} -> {}], er_dummy: {}, avslutt_periode: {}, loesning: {}, periode_startet: {}",
-            ansvar != null,
-            handling.fristBrutt,
-            fraTilDummy?.first,
-            fraTilDummy?.second,
-            fraTilDummy?.third ?: false,
-            hendelse != null,
-            paaVegneAvHendelse.bekreftelsesloesning.name,
-            bekreftelseTilstand?.periode?.startet
-        )
     }
 }
 
