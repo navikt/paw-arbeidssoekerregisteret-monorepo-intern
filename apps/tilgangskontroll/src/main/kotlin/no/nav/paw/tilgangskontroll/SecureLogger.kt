@@ -5,7 +5,7 @@ import org.slf4j.MarkerFactory
 
 object SecureLogger {
     private val secureLogger = LoggerFactory.getLogger("tjenestekall")
-    private val secureMarker = MarkerFactory.getMarker("SECURE_LOG")
+    private val secureMarker = MarkerFactory.getMarker("TEAM_LOGS")
 
     fun trace(msg: String, vararg args: Any) {
         secureLogger.trace(secureMarker, msg, *args)
