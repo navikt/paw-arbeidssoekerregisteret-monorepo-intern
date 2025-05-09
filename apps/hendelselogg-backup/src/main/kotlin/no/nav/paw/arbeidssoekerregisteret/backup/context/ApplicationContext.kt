@@ -42,7 +42,6 @@ data class ApplicationContext(
     val dataSource: DataSource,
     val prometheusMeterRegistry: PrometheusMeterRegistry,
     val hendelseKafkaConsumer: KafkaConsumer<Long, Hendelse>,
-    val partitionCount: Int,
     val brukerstoetteService: BrukerstoetteService,
     val additionalMeterBinder: MeterBinder
 ) {
@@ -83,7 +82,6 @@ data class ApplicationContext(
                 dataSource = dataSource,
                 prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
                 hendelseKafkaConsumer = consumer,
-                partitionCount = consumer.partitionsFor(applicationConfig.hendelsesloggTopic).count(),
                 brukerstoetteService = service,
                 additionalMeterBinder = KafkaClientMetrics(consumer)
             )

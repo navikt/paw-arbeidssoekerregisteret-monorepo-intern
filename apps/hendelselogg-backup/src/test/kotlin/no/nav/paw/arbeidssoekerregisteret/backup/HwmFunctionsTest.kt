@@ -7,7 +7,6 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.backup.database.getAllHwms
 import no.nav.paw.arbeidssoekerregisteret.backup.database.getHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.database.initHwm
-import no.nav.paw.arbeidssoekerregisteret.backup.database.txContext
 import no.nav.paw.arbeidssoekerregisteret.backup.database.updateHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContextOld
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
@@ -19,84 +18,73 @@ class HwmFunctionsTest : FreeSpec({
     "Verify Hwm functions" - {
         initDbContainer()
         "We run som tests with backup version 1" - {
-            val txCtx = txContext(
+            val ctx =
                 ApplicationContextOld(
                     consumerVersion = 1,
                     logger = logger,
                     meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
                     azureConfig = loadNaisOrLocalConfiguration("azure_config.toml")
                 )
-            )
             "When there is no hwm for the partition, getHwm should return null" {
                 transaction {
-                    txCtx().getHwm(0) shouldBe null
+                    getHwm(ctx.consumerVersion, 0) shouldBe null
                 }
             }
             val partitionsToInit = 6
             "When we init hwm for $partitionsToInit partitions, getHwm should return -1 for partitions 0-${partitionsToInit - 1}" {
                 transaction {
-                    txCtx().initHwm(partitionsToInit)
+                    initHwm(ctx.consumerVersion, partitionsToInit)
                 }
                 transaction {
                     for (i in 0 until partitionsToInit) {
-                        txCtx().getHwm(i) shouldBe -1
+                        getHwm(ctx.consumerVersion, i) shouldBe -1
                     }
                 }
             }
             "We can update the hwm for a partition" {
                 transaction {
-                    with(txCtx()) {
-                        updateHwm(0, 123) shouldBe true
-                        updateHwm(1, 0) shouldBe true
-                    }
+                    updateHwm(ctx.consumerVersion, 0, 123) shouldBe true
+                    updateHwm(ctx.consumerVersion, 1, 0) shouldBe true
                 }
                 transaction {
-                    with(txCtx()) {
-                        getHwm(0) shouldBe 123
-                        getHwm(1) shouldBe 0
-                    }
+                    getHwm(ctx.consumerVersion, 0) shouldBe 123
+                    getHwm(ctx.consumerVersion, 1) shouldBe 0
                 }
             }
             "We can update the hwm for a partition multiple times" {
                 transaction {
-                    with(txCtx()) {
-                        updateHwm(2, 123) shouldBe true
-                        updateHwm(2, 456) shouldBe true
-                    }
+                    updateHwm(ctx.consumerVersion, 2, 123) shouldBe true
+                    updateHwm(ctx.consumerVersion, 2, 456) shouldBe true
                 }
                 transaction {
-                    txCtx().updateHwm(2, 789) shouldBe true
+                    updateHwm(ctx.consumerVersion, 2, 789) shouldBe true
                 }
                 transaction {
-                    txCtx().getHwm(2) shouldBe 789
+                    getHwm(ctx.consumerVersion, 2) shouldBe 789
                 }
             }
             "We can not update the hwm for a partition to a lower value" {
                 transaction {
-                    with(txCtx()) {
-                        updateHwm(3, 123) shouldBe true
-                        updateHwm(3, 123) shouldBe false
-                    }
+                    updateHwm(ctx.consumerVersion, 3, 123) shouldBe true
+                    updateHwm(ctx.consumerVersion, 3, 123) shouldBe false
                 }
                 transaction {
-                    with(txCtx()) {
-                        updateHwm(3, 100) shouldBe false
-                        updateHwm(3, 0) shouldBe false
-                        updateHwm(3, -1) shouldBe false
-                    }
+                    updateHwm(ctx.consumerVersion, 3, 100) shouldBe false
+                    updateHwm(ctx.consumerVersion, 3, 0) shouldBe false
+                    updateHwm(ctx.consumerVersion, 3, -1) shouldBe false
                 }
                 transaction {
-                    txCtx().getHwm(3) shouldBe 123
+                    getHwm(ctx.consumerVersion, 3) shouldBe 123
                 }
             }
             "If we run init again for a partition, the hwm should not change" {
                 transaction {
-                    txCtx().updateHwm(4, 2786482) shouldBe true
+                    updateHwm(ctx.consumerVersion, 4, 2786482) shouldBe true
                 }
-                val allHwmsBeforeNewInit = transaction { txCtx().getAllHwms() }
+                val allHwmsBeforeNewInit = transaction { getAllHwms(ctx.consumerVersion) }
                 allHwmsBeforeNewInit.find { it.partition == 4 }?.offset shouldBe 2786482
-                transaction { txCtx().initHwm(partitionsToInit) }
-                val allHwmsAfter = transaction { txCtx().getAllHwms() }
+                transaction { initHwm(ctx.consumerVersion, partitionsToInit) }
+                val allHwmsAfter = transaction { getAllHwms(ctx.consumerVersion) }
                 allHwmsBeforeNewInit.forEach { preNewInitHwm ->
                     allHwmsAfter.find { it.partition == preNewInitHwm.partition } shouldBe preNewInitHwm
                 }
@@ -104,36 +92,33 @@ class HwmFunctionsTest : FreeSpec({
         }
 
         "we run some tests with backup version 2" - {
-            val txCtx = txContext(
-                ApplicationContextOld(
+            val ctx = ApplicationContextOld(
                     consumerVersion = 2,
                     logger = logger,
                     meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
                     azureConfig = loadNaisOrLocalConfiguration("azure_config.toml")
                 )
-            )
+
             "We find no hwms for version 2" {
                 transaction {
-                    txCtx().getAllHwms() shouldBe emptyList()
+                    getAllHwms(ctx.consumerVersion) shouldBe emptyList()
                 }
             }
             "We can init hwms for version 2" {
                 transaction {
-                    txCtx().initHwm(2)
+                    initHwm(ctx.consumerVersion, 2)
                 }
                 transaction {
-                    with(txCtx()) {
-                        getAllHwms().distinctBy { it.partition }.size shouldBe 2
-                        getAllHwms().all { it.offset == -1L } shouldBe true
-                    }
+                        getAllHwms(ctx.consumerVersion).distinctBy { it.partition }.size shouldBe 2
+                        getAllHwms(ctx.consumerVersion).all { it.offset == -1L } shouldBe true
                 }
             }
             "We can update a hwm for version 2" {
                 transaction {
-                    txCtx().updateHwm(0, 999) shouldBe true
+                    updateHwm(ctx.consumerVersion, 0, 999) shouldBe true
                 }
                 transaction {
-                    txCtx().getHwm(0) shouldBe 999
+                    getHwm(ctx.consumerVersion, 0) shouldBe 999
                 }
             }
         }

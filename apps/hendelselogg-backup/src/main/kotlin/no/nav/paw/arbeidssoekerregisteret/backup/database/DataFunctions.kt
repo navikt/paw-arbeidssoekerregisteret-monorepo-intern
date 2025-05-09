@@ -25,26 +25,6 @@ fun <A : Hendelse> Transaction.writeRecord(consumerVersion: Int, hendelseSeriali
     }
 }
 
-fun Transaction.readRecord(consumerVersion: Int, hendelseDeserializer: HendelseDeserializer, partition: Int, offset: Long): StoredData? =
-    HendelseTable
-        .selectAll()
-        .where {
-            (HendelseTable.partition eq partition) and
-                    (HendelseTable.offset eq offset) and
-                    (HendelseTable.version eq consumerVersion)
-        }.singleOrNull()
-        ?.let {
-            StoredData(
-                partition = it[HendelseTable.partition],
-                offset = it[HendelseTable.offset],
-                recordKey = it[recordKey],
-                arbeidssoekerId = it[HendelseTable.arbeidssoekerId],
-                traceparent = it[HendelseTable.traceparent],
-                data = hendelseDeserializer.deserializeFromString(it[HendelseTable.data]),
-                merged = false
-            )
-        }
-
 fun Transaction.readAllNestedRecordsForId(
     consumerVersion: Int,
     hendelseDeserializer: HendelseDeserializer,
@@ -85,26 +65,3 @@ fun Transaction.readAllRecordsForId(
                 merged = merged
             )
         }
-
-fun Transaction.getOneRecordForId(hendelseDeserializer: HendelseDeserializer, id: String): StoredData? =
-    TransactionManager.current()
-        .exec(
-            stmt = """select * from hendelser where data @> '{"identitetsnummer": "$id"}' limit 1;""",
-            transform = { rs ->
-                sequence {
-                    while (rs.next()) {
-                        yield(
-                            StoredData(
-                                partition = rs.getInt(HendelseTable.partition.name),
-                                offset = rs.getLong(HendelseTable.offset.name),
-                                recordKey = rs.getLong(HendelseTable.recordKey.name),
-                                arbeidssoekerId = rs.getLong(HendelseTable.arbeidssoekerId.name),
-                                data = hendelseDeserializer.deserializeFromString(rs.getString(HendelseTable.data.name)),
-                                traceparent = rs.getString(HendelseTable.traceparent.name),
-                                merged = false
-                            )
-                        )
-                    }
-                }.toList().firstOrNull()
-            }
-        )

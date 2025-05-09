@@ -9,7 +9,7 @@ import javax.sql.DataSource
 
 fun initDbContainer(): Pair<Database, DataSource> {
     val databaseName = "backupTest"
-    val postgres = PostgreSQLContainer("postgres:15")
+    val postgres = PostgreSQLContainer("postgres:17")
         .withDatabaseName(databaseName)
         .withUsername("postgres")
         .withPassword("postgres")

@@ -41,7 +41,6 @@ fun Transaction.updateHwm(consumerVersion: Int, partition: Int, offset: Long): B
     HwmTable
         .update({
             (HwmTable.partition eq partition) and
-                    (HwmTable.offset less offset) and
-                    (HwmTable.version eq consumerVersion)
-        }
-        ) { it[HwmTable.offset] = offset } == 1
+            (HwmTable.offset less offset) and
+            (HwmTable.version eq consumerVersion)
+        }) { it[HwmTable.offset] = offset } == 1
