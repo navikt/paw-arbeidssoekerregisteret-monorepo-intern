@@ -19,7 +19,7 @@ class PdlAktorKafkaConsumerService(
     private val logger = buildNamedLogger("application.kafka")
 
     @WithSpan
-    fun handleRecords(records: ConsumerRecords<String, Aktor>) {
+    fun handleRecords(records: ConsumerRecords<Any, Aktor>) {
         with(kafkaConsumerConfig) {
             if (records.isEmpty) {
                 logger.trace("Ingen aktor-meldinger mottatt i poll-vindu fra {}", topic)
@@ -31,31 +31,41 @@ class PdlAktorKafkaConsumerService(
     }
 
     @WithSpan
-    private fun handleRecord(record: ConsumerRecord<String, Aktor>) {
+    private fun handleRecord(record: ConsumerRecord<Any, Aktor>) {
         transaction {
-            with(kafkaConsumerConfig) {
-                val rowsAffected = updateHwm(record)
+            try {
+                with(kafkaConsumerConfig) {
+                    val rowsAffected = hwmOperations.updateHwm(
+                        topic = topic,
+                        partition = record.partition(),
+                        offset = record.offset(),
+                        timestamp = Instant.ofEpochMilli(record.timestamp())
+                    )
 
-                if (rowsAffected == 0) {
-                    logger.info(
-                        "Ignorerer aktor-melding på grunn av at offset {} på partition {} fra topic {} ikke er over HWM",
-                        record.offset(),
-                        record.partition(),
-                        topic
-                    )
-                } else {
-                    logger.info(
-                        "Håndterer aktor-melding med offset {} på partition {} fra topic {}",
-                        record.offset(),
-                        record.partition(),
-                        topic
-                    )
-                    handleAktor(
-                        aktorId = record.key(),
-                        aktor = record.value(),
-                        sourceTimestamp = Instant.ofEpochMilli(record.timestamp())
-                    )
+                    if (rowsAffected == 0) {
+                        logger.info(
+                            "Ignorerer aktor-melding på grunn av at offset {} på partition {} fra topic {} ikke er over HWM",
+                            record.offset(),
+                            record.partition(),
+                            topic
+                        )
+                    } else {
+                        logger.info(
+                            "Håndterer aktor-melding med offset {} på partition {} fra topic {}",
+                            record.offset(),
+                            record.partition(),
+                            topic
+                        )
+                        handleAktor(
+                            aktorId = record.key().toString(),
+                            aktor = record.value(),
+                            sourceTimestamp = Instant.ofEpochMilli(record.timestamp())
+                        )
+                    }
                 }
+            } catch (e: Exception) {
+                logger.error("Håndterer av aktor-melding feilet", e)
+                throw e
             }
         }
     }
@@ -80,8 +90,6 @@ class PdlAktorKafkaConsumerService(
                 )
             }
         } else {
-            logger.info("Mottok melding om endring av identiteter")
-
             val identiteter = aktor.identifikatorer
                 .map { it.idnummer }
                 .toSet()
@@ -92,9 +100,15 @@ class PdlAktorKafkaConsumerService(
                 .toSet()
 
             if (arbeidssoekerIdSet.isEmpty()) {
-                logger.info("Ignorer aktor-melding fordi person ikke er arbeidssøker")
+                logger.info(
+                    "Ignorer aktor-melding fordi person ikke er arbeidssøker ({} identiteter)",
+                    identiteter.size
+                )
             } else if (arbeidssoekerIdSet.size > 1) {
-                logger.warn("Identiteter for aktor-melding har flere arbeidssøker-ider")
+                logger.warn(
+                    "Pauser aktor-melding fordi arbeidssøker har flere arbeidssøker-ider ({} identiteter)",
+                    identiteter.size
+                )
                 identitetService.identiteterMedKonflikt(
                     aktorId = aktorId,
                     aktor = aktor,
@@ -102,6 +116,7 @@ class PdlAktorKafkaConsumerService(
                     eksisterendeKafkaKeyRows = eksisterendeKafkaKeyRows
                 )
             } else {
+                logger.info("Endrer identiteter for arbeidssøker ({} identiteter)", identiteter.size)
                 val arbeidssoekerId = arbeidssoekerIdSet.first()
                 identitetService.identiteterSkalEndres(
                     aktorId = aktorId,
@@ -110,17 +125,6 @@ class PdlAktorKafkaConsumerService(
                     arbeidssoekerId = arbeidssoekerId
                 )
             }
-        }
-    }
-
-    private fun updateHwm(record: ConsumerRecord<String, Aktor>): Int {
-        with(kafkaConsumerConfig) {
-            return hwmOperations.updateHwm(
-                topic = topic,
-                partition = record.partition(),
-                offset = record.offset(),
-                timestamp = Instant.ofEpochMilli(record.timestamp())
-            )
         }
     }
 }

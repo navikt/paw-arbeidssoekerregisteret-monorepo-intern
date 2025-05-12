@@ -1,5 +1,6 @@
 package no.nav.paw.kafkakeygenerator.context
 
+import io.confluent.kafka.serializers.KafkaAvroDeserializer
 import io.micrometer.core.instrument.binder.MeterBinder
 import io.micrometer.core.instrument.binder.kafka.KafkaClientMetrics
 import io.micrometer.prometheusmetrics.PrometheusConfig
@@ -48,7 +49,6 @@ import no.nav.paw.security.authentication.config.SecurityConfig
 import no.nav.person.pdl.aktor.v2.Aktor
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.LongDeserializer
-import org.apache.kafka.common.serialization.StringDeserializer
 import javax.sql.DataSource
 
 data class ApplicationContext(
@@ -61,7 +61,7 @@ data class ApplicationContext(
     val pawHendelseKafkaConsumer: KafkaConsumer<Long, Hendelse>,
     val pawHendelseConsumerExceptionHandler: ConsumerExceptionHandler,
     val pawHendelseKafkaConsumerService: PawHendelseKafkaConsumerService,
-    val pdlAktorConsumer: KafkaConsumer<String, Aktor>,
+    val pdlAktorConsumer: KafkaConsumer<Any, Aktor>,
     val pdlAktorConsumerExceptionHandler: ConsumerExceptionHandler,
     val pdlAktorConsumerRebalanceListener: HwmConsumerRebalanceListener,
     val pdlAktorKafkaConsumerService: PdlAktorKafkaConsumerService,
@@ -133,10 +133,10 @@ data class ApplicationContext(
                 kafkaConsumerConfig = applicationConfig.pdlAktorConsumer,
                 hwmRepository = hwmRepository
             )
-            val pdlAktorConsumer = kafkaFactory.createKafkaAvroValueConsumer<String, Aktor>(
+            val pdlAktorConsumer = kafkaFactory.createKafkaAvroValueConsumer<Any, Aktor>(
                 groupId = applicationConfig.pdlAktorConsumer.groupId,
                 clientId = applicationConfig.pdlAktorConsumer.clientId,
-                keyDeserializer = StringDeserializer::class
+                keyDeserializer = KafkaAvroDeserializer::class
             )
             val pdlAktorKafkaConsumerService = PdlAktorKafkaConsumerService(
                 kafkaConsumerConfig = applicationConfig.pdlAktorConsumer,

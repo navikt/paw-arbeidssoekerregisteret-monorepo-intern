@@ -19,7 +19,7 @@ fun Application.installKafkaPlugins(
     pawHendelseKafkaConsumer: KafkaConsumer<Long, Hendelse>,
     pawHendelseConsumerExceptionHandler: ConsumerExceptionHandler,
     pawHendelseKafkaConsumerService: PawHendelseKafkaConsumerService,
-    pdlAktorKafkaConsumer: KafkaConsumer<String, Aktor>,
+    pdlAktorKafkaConsumer: KafkaConsumer<Any, Aktor>,
     pdlAktorConsumerExceptionHandler: ConsumerExceptionHandler,
     pdlAktorHwmRebalanceListener: HwmConsumerRebalanceListener,
     pdlAktorKafkaConsumerService: PdlAktorKafkaConsumerService
@@ -32,7 +32,7 @@ fun Application.installKafkaPlugins(
             exceptionHandler = pawHendelseConsumerExceptionHandler
         )
     }
-    install(KafkaConsumerPlugin<String, Aktor>("PdlAktor")) {
+    install(KafkaConsumerPlugin<Any, Aktor>("PdlAktor")) {
         this.onInit = pdlAktorHwmRebalanceListener::onPartitionsReady
         this.onConsume = pdlAktorKafkaConsumerService::handleRecords
         this.kafkaConsumerWrapper = NonCommittingKafkaConsumerWrapper(

@@ -14,6 +14,7 @@ import no.nav.paw.kafkakeygenerator.test.TestData.asWrapper
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import no.nav.person.pdl.aktor.v2.Aktor
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.apache.kafka.clients.consumer.ConsumerRecords
 import java.time.Instant
 
 class PdlAktorKafkaConsumerServiceTest : FreeSpec({
@@ -31,9 +32,9 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
 
         "Person er ikke arbeidssøker" {
             // GIVEN
-            val records = listOf(
-                ConsumerRecord(aktorTopic, 0, 1, TestData.aktorId1, TestData.aktor1_1),
-                ConsumerRecord(aktorTopic, 0, 2, TestData.aktorId1, TestData.aktor1_2)
+            val records: ConsumerRecords<Any, Aktor> = listOf(
+                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 1, TestData.aktorId1, TestData.aktor1_1),
+                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 2, TestData.aktorId1, TestData.aktor1_2)
             ).asRecords()
 
             // WHEN
@@ -54,9 +55,9 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
 
         "Offset ikke over HWM" {
             // GIVEN
-            val records = listOf(
-                ConsumerRecord(aktorTopic, 0, 3, TestData.aktorId2, TestData.aktor2_1),
-                ConsumerRecord(aktorTopic, 0, 4, TestData.aktorId2, TestData.aktor2_2)
+            val records: ConsumerRecords<Any, Aktor> = listOf(
+                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 3, TestData.aktorId2, TestData.aktor2_1),
+                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 4, TestData.aktorId2, TestData.aktor2_2)
             ).asRecords()
 
             // WHEN
@@ -85,8 +86,8 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             val arbeidssoekerId = kafkaKeysRepository.opprett(Identitetsnummer(dnr))
                 .fold(onLeft = { null }, onRight = { it })!!.value
 
-            val records1 = listOf(
-                ConsumerRecord(aktorTopic, 0, 5, aktorId, TestData.aktor3_1),
+            val records1: ConsumerRecords<Any, Aktor> = listOf(
+                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 5, aktorId, TestData.aktor3_1),
             ).asRecords()
 
             // WHEN
@@ -138,8 +139,8 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             hwm1.offset shouldBe 5
 
             // GIVEN
-            val records2 = listOf(
-                ConsumerRecord(aktorTopic, 0, 6, aktorId, TestData.aktor3_2)
+            val records2: ConsumerRecords<Any, Aktor> = listOf(
+                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 6, aktorId, TestData.aktor3_2)
             ).asRecords()
 
             // WHEN
@@ -199,8 +200,8 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             hwm2.offset shouldBe 6
 
             // GIVEN
-            val records3 = listOf(
-                ConsumerRecord<String, Aktor>(aktorTopic, 0, 7, aktorId, null)
+            val records3: ConsumerRecords<Any, Aktor> = listOf(
+                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 7, aktorId, null)
             ).asRecords()
 
             // WHEN
@@ -270,8 +271,8 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 .fold(onLeft = { null }, onRight = { it })!!.value
             val arbeidssoekerId2 = kafkaKeysRepository.opprett(Identitetsnummer(fnr))
                 .fold(onLeft = { null }, onRight = { it })!!.value
-            val records1 = listOf(
-                ConsumerRecord(aktorTopic, 0, 8, aktorId, TestData.aktor4_1)
+            val records1: ConsumerRecords<Any, Aktor> = listOf(
+                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 8, aktorId, TestData.aktor4_1)
             ).asRecords()
 
             // WHEN
@@ -324,8 +325,8 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             hwm1.offset shouldBe 8
 
             // GIVEN
-            val records2 = listOf(
-                ConsumerRecord(aktorTopic, 0, 9, aktorId, TestData.aktor4_2)
+            val records2: ConsumerRecords<Any, Aktor> = listOf(
+                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 9, aktorId, TestData.aktor4_2)
             ).asRecords()
 
             // WHEN
@@ -386,8 +387,8 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             hwm2.offset shouldBe 9
 
             // GIVEN
-            val records3 = listOf(
-                ConsumerRecord<String, Aktor>(aktorTopic, 0, 10, aktorId, null)
+            val records3: ConsumerRecords<Any, Aktor> = listOf(
+                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 10, aktorId, null)
             ).asRecords()
 
             // WHEN
