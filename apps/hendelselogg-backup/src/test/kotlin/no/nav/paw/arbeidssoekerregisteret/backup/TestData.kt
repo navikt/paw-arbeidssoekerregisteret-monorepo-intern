@@ -27,16 +27,10 @@ import java.util.*
 import kotlin.random.Random
 import kotlin.random.Random.Default.nextLong
 
-fun hendelser(): Sequence<Hendelse> {
+fun genererHendelseSequenceFra(hendelser: List<Hendelse>): Sequence<Hendelse> {
     return sequence {
         while (true) {
-            yieldAll(
-                listOf(
-                    startet(),
-                    opplysninger(),
-                    avsluttet()
-                )
-            )
+            yieldAll(hendelser)
         }
     }
 }

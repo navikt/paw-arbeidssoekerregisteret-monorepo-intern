@@ -1,65 +1,190 @@
 package no.nav.paw.arbeidssoekerregisteret.backup
 
 import io.kotest.core.spec.style.FreeSpec
-import no.nav.paw.arbeidssoekerregisteret.backup.config.ApplicationConfig
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldBe
+import no.nav.paw.arbeidssoekerregisteret.backup.database.initHwm
+import no.nav.paw.arbeidssoekerregisteret.backup.database.readAllNestedRecordsForId
 import no.nav.paw.arbeidssoekerregisteret.backup.kafka.processRecords
 import no.nav.paw.arbeidssokerregisteret.intern.v1.ArbeidssoekerIdFlettetInn
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
+import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Kilde
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.common.TopicPartition
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
 class ApplicationHappyPathTest : FreeSpec({
     "Verifiser enkel applikasjonsflyt" {
-        /*
-         val appCtx =
-             ApplicationContextOld(
-                 consumerVersion = 1,
-                 logger = LoggerFactory.getLogger("test-logger"),
-                 meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
-                 azureConfig = loadNaisOrLocalConfiguration("azure_config.toml")
-             )
-         val txCtx = txContext(appCtx)
-         transaction {
-             txCtx().initHwm(partitionCount)
-         }
-         println("HWMs: ${transaction { txCtx().getAllHwms() }}")
-
-         */
         initDbContainer()
+        initHwm(testApplicationContext)
 
-        val testHendelser = lagConsumerRecordsFra(
+        val topic = testApplicationContext.applicationConfig.hendelsesloggTopic
+        val testRecords = testConsumerRecords()
 
-            hendelser = listOf(
-                startet(),
-                opplysninger(),
-                avsluttet()
-            ),
-            )
-        )
+        processRecords(records = testRecords, testApplicationContext)
 
-        val førsteHendelse = testHendelser.first()
-        val andreHendelse = testHendelser[1]
-
-        val mergeHendelse: List<ConsumerRecord<Long, Hendelse>> = genererMergeHendelse(førsteHendelse, andreHendelse)
-
-        val records: ConsumerRecords<Long, Hendelse> =
-            ConsumerRecords((testHendelser + mergeHendelse).associate { record ->
-                val topicPartition = TopicPartition(record.topic(), record.partition())
-                topicPartition to listOf(record)
-            })
-
-        processRecords(records = records, testApplicationContext)
-
-        //appCtx.runApplication(HendelseSerde().serializer(), input.asSequence())
-        testHendelser.forEach { record ->
+        testRecords.forEach { record ->
             val partition = record.partition()
             val offset = record.offset()
             val forventetHendelse = record.value()
-            /*
+
+            val lagretHendelse = transaction {
+                readRecord(testApplicationContext.applicationConfig.version, partition, offset)
+            }
+            lagretHendelse.shouldNotBeNull()
+            lagretHendelse.partition shouldBe partition
+            lagretHendelse.offset shouldBe offset
+            lagretHendelse.data shouldBe forventetHendelse
+        }
+
+        transaction {
+            val nyesteId = testRecords.records(topic).last().value().id
+            val originalId = testRecords.records(topic).first().value().id
+            val hendelser = readAllNestedRecordsForId(
+                hendelseDeserializer = HendelseSerde().deserializer(),
+                arbeidssoekerId = nyesteId,
+                consumerVersion = testApplicationContext.applicationConfig.version,
+                merged = true
+            )
+            hendelser.map { it.arbeidssoekerId }.distinct() shouldContainExactlyInAnyOrder listOf(nyesteId, originalId)
+        }
+    }
+})
+
+private fun testConsumerRecords(): ConsumerRecords<Long, Hendelse> {
+    val topic = testApplicationContext.applicationConfig.hendelsesloggTopic
+    val partitionCount = testApplicationContext.applicationConfig.partitionCount
+    val records: MutableMap<TopicPartition, MutableList<ConsumerRecord<Long, Hendelse>>> =
+        (0..partitionCount - 1).associate { partition ->
+            val recordList = mutableListOf<ConsumerRecord<Long, Hendelse>>(
+                ConsumerRecord(
+                    topic,
+                    partition,
+                    0L,
+                    partition + 100L,
+                    startet((10000000000 + partition).toString(), id = 1L + partition)
+                ),
+                ConsumerRecord(
+                    topic,
+                    partition,
+                    1L,
+                    partition + 100L,
+                    opplysninger((10000000000 + partition).toString(), id = 1L + partition)
+                ),
+                ConsumerRecord(
+                    topic,
+                    partition,
+                    2L,
+                    partition + 100L,
+                    avsluttet((10000000000 + partition).toString(), id = 1L + partition)
+                ),
+            )
+            TopicPartition(topic, partition) to recordList
+        }.toMutableMap()
+
+    val mergeRecord = createMergeRecord(
+        originalHendelse = records.originalHendelse(),
+        nyesteHendelse = records.nyesteHendelse(),
+    )
+    records.addRecord(mergeRecord)
+
+    return ConsumerRecords(records)
+}
+
+private fun Map<TopicPartition, List<ConsumerRecord<Long, Hendelse>>>.originalHendelse() = entries.first().value.first()
+private fun Map<TopicPartition, List<ConsumerRecord<Long, Hendelse>>>.nyesteHendelse() = entries.last().value.last()
+fun MutableMap<TopicPartition, MutableList<ConsumerRecord<Long, Hendelse>>>.addRecord(mergeHendelse: ConsumerRecord<Long, Hendelse>) {
+    this[TopicPartition(mergeHendelse.topic(), 5)]?.add(mergeHendelse)
+}
+
+private fun createMergeRecord(
+    originalHendelse: ConsumerRecord<Long, Hendelse>,
+    nyesteHendelse: ConsumerRecord<Long, Hendelse>,
+) = ConsumerRecord<Long, Hendelse>(
+    testApplicationContext.applicationConfig.hendelsesloggTopic,
+    nyesteHendelse.partition(),
+    nyesteHendelse.offset() + 1,
+    nyesteHendelse.key(),
+    ArbeidssoekerIdFlettetInn(
+        identitetsnummer = nyesteHendelse.value().identitetsnummer,
+        id = nyesteHendelse.value().id,
+        hendelseId = UUID.randomUUID(),
+        metadata = nyesteHendelse.value().metadata.copy(aarsak = "Merged"),
+        kilde = Kilde(
+            arbeidssoekerId = originalHendelse.value().id,
+            identitetsnummer = setOf(
+                originalHendelse.value().identitetsnummer
+            )
+        )
+    )
+)
+
+/*
+*     "Verifiser enkel applikasjonsflyt" {
+        val appCtx =
+            ApplicationContext(
+                consumerVersion = 1,
+                logger = LoggerFactory.getLogger("test-logger"),
+                meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+                azureConfig = loadNaisOrLocalConfiguration("azure.toml")
+            )
+        val txCtx = txContext(appCtx)
+        initDbContainer()
+        val partitionCount = 3
+        val (idA, idB, testData) = hendelser()
+            .take(15)
+            .mapIndexed { index, hendelse ->
+                val partition = index % partitionCount
+                ConsumerRecord(
+                    "paw.arbeidssoker-hendelseslogg-v1",
+                    partition,
+                    index.toLong(),
+                    (partition + 100).toLong(),
+                    hendelse
+                )
+            }.chunked(5)
+            .toList()
+            .let { chunks ->
+                val (a, b) = chunks
+                    .flatten()
+                    .distinctBy { it.value().id }
+                    .take(2)
+                Triple(a, b, chunks)
+            }
+        val merge = ConsumerRecord(
+            idA.topic(),
+            idA.partition(),
+            idA.offset() + 1000,
+            (idA.partition() + 100).toLong(),
+            ArbeidssoekerIdFlettetInn(
+                identitetsnummer = idA.value().identitetsnummer,
+                id = idA.value().id,
+                hendelseId = UUID.randomUUID(),
+                metadata = idA.value().metadata.copy(aarsak = "Merge"),
+                kilde = Kilde(
+                    arbeidssoekerId = idB.value().id,
+                    identitetsnummer = setOf(
+                        idB.value().identitetsnummer
+                    )
+                )
+            ) as Hendelse
+        )
+        println("Testdata: $testData")
+        transaction {
+            txCtx().initHwm(partitionCount)
+        }
+        val mergeAsList = listOf(merge)
+        val input = testData.plusElement(mergeAsList)
+        appCtx.runApplication(HendelseSerde().serializer(), input.asSequence())
+        println("HWMs: ${transaction { txCtx().getAllHwms() }}")
+        testData.flatten().forEach { record ->
+            val partition = record.partition()
+            val offset = record.offset()
+            val forventetHendelse = record.value()
             val lagretHendelse = transaction {
                 txCtx().readRecord(HendelseSerde().deserializer(), partition, offset)
             }
@@ -67,8 +192,6 @@ class ApplicationHappyPathTest : FreeSpec({
             lagretHendelse.partition shouldBe partition
             lagretHendelse.offset shouldBe offset
             lagretHendelse.data shouldBe forventetHendelse
-
-
         }
         transaction {
             val hendelser = txCtx().readAllNestedRecordsForId(
@@ -76,45 +199,6 @@ class ApplicationHappyPathTest : FreeSpec({
                 arbeidssoekerId = idA.value().id
             )
             hendelser.map { it.arbeidssoekerId }.distinct() shouldContainExactlyInAnyOrder listOf(idA.value().id, idB.value().id)
-        */
         }
     }
-})
-
-private fun genererMergeHendelse(
-    førsteHendelse: ConsumerRecord<Long, Hendelse>,
-    andreHendelse: ConsumerRecord<Long, Hendelse>,
-): List<ConsumerRecord<Long, Hendelse>> = listOf(
-    ConsumerRecord<Long, Hendelse>(
-        førsteHendelse.topic(),
-        førsteHendelse.partition(),
-        førsteHendelse.offset() + 1000,
-        (førsteHendelse.partition() + 100).toLong(),
-        ArbeidssoekerIdFlettetInn(
-            identitetsnummer = førsteHendelse.value().identitetsnummer,
-            id = førsteHendelse.value().id,
-            hendelseId = UUID.randomUUID(),
-            metadata = Metadata(aarsak = "Merge"),
-            kilde = Kilde(
-                arbeidssoekerId = andreHendelse.value().id,
-                identitetsnummer = setOf(
-                    andreHendelse.value().identitetsnummer
-                )
-            )
-        )
-    )
-)
-
-fun lagConsumerRecordsFra(
-    hendelser: List<Hendelse>,
-    config: ApplicationConfig = testApplicationContext.applicationConfig,
-): List<ConsumerRecord<Long, Hendelse>> = hendelser.mapIndexed { index, hendelse ->
-    val partition = index % config.partitionCount
-    ConsumerRecord(
-        config.hendelsesloggTopic,
-        partition,
-        index.toLong(),
-        (partition + 100).toLong(),
-        hendelse
-    )
-}.toList()
+*/

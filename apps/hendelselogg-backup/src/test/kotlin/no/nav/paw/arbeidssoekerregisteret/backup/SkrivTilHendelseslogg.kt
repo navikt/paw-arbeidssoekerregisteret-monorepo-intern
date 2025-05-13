@@ -22,7 +22,7 @@ fun main() {
     }
     val startTime = Instant.now()
     val numberOfRecords = 12560
-    hendelser().take(numberOfRecords).forEach {
+    genererHendelseSequenceFra(hendelser = listOf(startet(), opplysninger(), avsluttet())).take(numberOfRecords).forEach {
         producer.send(ProducerRecord(
             "paw.arbeidssoker-hendelseslogg-v1",
             it.id,
