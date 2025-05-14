@@ -60,7 +60,8 @@ include(
     "apps:bekreftelse-backup",
     "apps:tilgangskontroll",
     "apps:dolly-api",
-    "apps:min-side-varsler"
+    "apps:min-side-varsler",
+    "apps:bigquery-stats-adapter",
 )
 
 dependencyResolutionManagement {
