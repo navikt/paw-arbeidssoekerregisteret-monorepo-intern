@@ -2,9 +2,9 @@ package no.nav.paw.arbeidssoekerregisteret.backup.kafka
 
 import io.micrometer.core.instrument.Tag
 import no.nav.paw.arbeidssoekerregisteret.backup.database.updateHwm
-import no.nav.paw.arbeidssoekerregisteret.backup.database.writeRecord
 import no.nav.paw.arbeidssoekerregisteret.backup.metrics.Metrics
 import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.database.DataFunctions.writeRecord
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Aarsak
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse

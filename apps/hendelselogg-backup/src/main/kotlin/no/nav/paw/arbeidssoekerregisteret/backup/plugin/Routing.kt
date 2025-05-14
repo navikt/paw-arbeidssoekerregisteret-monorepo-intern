@@ -3,6 +3,7 @@ package no.nav.paw.arbeidssoekerregisteret.backup.plugin
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.routing.IgnoreTrailingSlash
+import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.BrukerstoetteService
@@ -24,12 +25,14 @@ fun Application.configureRouting(
         healthRoutes()
         metricsRoutes(meterRegistry)
         apiDocsRoutes()
-        if (currentRuntimeEnvironment is ProdGcp) {
-            autentisering(AzureAd) {
+        route("/api/v1") {
+            if (currentRuntimeEnvironment is ProdGcp) {
+                autentisering(AzureAd) {
+                    brukerstoetteRoutes(brukerstoetteService)
+                }
+            } else {
                 brukerstoetteRoutes(brukerstoetteService)
             }
-        } else {
-            brukerstoetteRoutes(brukerstoetteService)
         }
     }
 }

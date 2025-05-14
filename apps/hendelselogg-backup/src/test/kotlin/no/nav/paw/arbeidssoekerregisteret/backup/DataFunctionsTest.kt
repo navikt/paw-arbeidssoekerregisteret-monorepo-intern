@@ -3,27 +3,20 @@ package no.nav.paw.arbeidssoekerregisteret.backup
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import io.micrometer.prometheusmetrics.PrometheusConfig
-import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import no.nav.paw.arbeidssoekerregisteret.backup.database.*
-import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContextOld
+import no.nav.paw.arbeidssoekerregisteret.backup.database.DataFunctions.writeRecord
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
-import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.slf4j.LoggerFactory
-import org.testcontainers.containers.PostgreSQLContainer
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
 
 class DataFunctionsTest : FreeSpec({
-    val logger = LoggerFactory.getLogger("test-logger")
     "Verify data functions" - {
         initDbContainer()
         val hendelseSerde = HendelseSerde()
@@ -61,13 +54,7 @@ class DataFunctionsTest : FreeSpec({
         }
         "we can write to the log without errors" {
             transaction {
-                val appCtx = ApplicationContextOld(
-                    consumerVersion = 1,
-                    logger = logger,
-                    meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
-                    azureConfig = loadNaisOrLocalConfiguration("azure_config.toml")
-                )
-                //txContext(appCtx)().writeRecord(hendelseSerde.serializer(), record)
+                writeRecord(1, hendelseSerde.serializer(), record)
             }
         }
         val recordVersion2 = ConsumerRecord(
@@ -81,19 +68,15 @@ class DataFunctionsTest : FreeSpec({
         )
         "we can write a different version to the log without errors" {
             transaction {
-                val appCtx = ApplicationContextOld(
-                    consumerVersion = 2,
-                    logger = logger,
-                    meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
-                    azureConfig = loadNaisOrLocalConfiguration("azure_config.toml")
-                )
-                //txContext(appCtx)().writeRecord(hendelseSerde.serializer(), recordVersion2)
+                writeRecord(2, hendelseSerde.serializer(), recordVersion2)
             }
         }
         "we can read a record based on id" {
             val storedData = transaction {
                 getOneRecordForId(id = record.value().identitetsnummer)
-            }.shouldNotBeNull()
+            }
+
+            storedData.shouldNotBeNull()
             storedData.partition shouldBe record.partition()
             storedData.offset shouldBe record.offset()
             storedData.recordKey shouldBe record.key()
@@ -103,53 +86,30 @@ class DataFunctionsTest : FreeSpec({
                 ?.let { h -> String(h.value()) }
         }
         "we can read multiple versions from the log" {
-            val storedDataV1 = ApplicationContextOld(
-                consumerVersion = 1,
-                logger = logger,
-                meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
-                azureConfig = loadNaisOrLocalConfiguration("azure_config.toml")
-            ).let { appCtx ->
-                transaction {
-                    //txContext(appCtx)().readRecord(hendelseSerde.deserializer(), record.partition(), record.offset())
-                }
-            }.shouldNotBeNull()
-            /*
+
+            val storedDataV1 = transaction {
+                readRecord(1, record.partition(), record.offset())
+            }
+            storedDataV1.shouldNotBeNull()
             storedDataV1.partition shouldBe record.partition()
             storedDataV1.offset shouldBe record.offset()
             storedDataV1.recordKey shouldBe record.key()
             storedDataV1.arbeidssoekerId shouldBe record.value().id
             storedDataV1.data shouldBe record.value()
             storedDataV1.traceparent shouldBe record.headers().lastHeader("traceparent")
-                ?.let { h -> String(h.value()) }
-            val storedDataV2 = ApplicationContextOld(
-                consumerVersion = 2,
-                logger = logger,
-                meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
-                azureConfig = loadNaisOrLocalConfiguration("azure_config.toml")
-            ).let { appCtx ->
-                transaction {
-                    txContext(appCtx)().readRecord(hendelseSerde.deserializer(), record.partition(), record.offset())
-                }
-            }.shouldNotBeNull()
+                ?.let { header -> String(header.value()) }
+
+            val storedDataV2 = transaction {
+                readRecord(2, record.partition(), record.offset())
+            }
+
+            storedDataV2.shouldNotBeNull()
             storedDataV2.partition shouldBe record.partition()
             storedDataV2.offset shouldBe record.offset()
             storedDataV2.recordKey shouldBe record.key()
             storedDataV2.arbeidssoekerId shouldBe record.value().id
             storedDataV2.data shouldBe recordVersion2.value()
             storedDataV2.traceparent shouldBe null
-
-             */
         }
     }
 })
-
-fun PostgreSQLContainer<*>.databaseConfig(): DatabaseConfig {
-    return DatabaseConfig(
-        host = host,
-        port = firstMappedPort,
-        username = username,
-        password = password,
-        name = databaseName,
-        jdbc = null
-    )
-}

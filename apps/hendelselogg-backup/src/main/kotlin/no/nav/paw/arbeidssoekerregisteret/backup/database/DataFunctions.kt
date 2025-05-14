@@ -13,55 +13,74 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 
-fun <A : Hendelse> Transaction.writeRecord(consumerVersion: Int, hendelseSerializer: HendelseSerializer, record: ConsumerRecord<Long, A>) {
-    HendelseTable.insert {
-        it[version] = consumerVersion
-        it[partition] = record.partition()
-        it[offset] = record.offset()
-        it[recordKey] = record.key()
-        it[arbeidssoekerId] = record.value().id
-        it[data] = hendelseSerializer.serializeToString(record.value())
-        it[traceparent] = record.headers().lastHeader("traceparent")?.let { h -> String(h.value()) }
+
+object DataFunctions {
+    fun <A : Hendelse> writeRecord(
+        consumerVersion: Int,
+        hendelseSerializer: HendelseSerializer,
+        record: ConsumerRecord<Long, A>
+    ) {
+        HendelseTable.insert {
+            it[version] = consumerVersion
+            it[partition] = record.partition()
+            it[offset] = record.offset()
+            it[recordKey] = record.key()
+            it[arbeidssoekerId] = record.value().id
+            it[data] = hendelseSerializer.serializeToString(record.value())
+            it[traceparent] = record.headers().lastHeader("traceparent")?.let { h -> String(h.value()) }
+        }
     }
-}
 
-fun Transaction.readAllNestedRecordsForId(
-    consumerVersion: Int,
-    hendelseDeserializer: HendelseDeserializer,
-    arbeidssoekerId: Long,
-    merged: Boolean = false
-): List<StoredData> {
-    val tmp = readAllRecordsForId(hendelseDeserializer = hendelseDeserializer, arbeidssoekerId = arbeidssoekerId, merged = merged, consumerVersion = consumerVersion)
-    return tmp.asSequence()
-        .map(StoredData::data)
-        .filterIsInstance<ArbeidssoekerIdFlettetInn>()
-        .map { it.kilde.arbeidssoekerId }
-        .distinct()
-        .flatMap { readAllNestedRecordsForId(hendelseDeserializer = hendelseDeserializer, arbeidssoekerId = it, merged = true, consumerVersion = consumerVersion) }.toList()
-        .plus(tmp)
-        .sortedBy { it.data.metadata.tidspunkt }
-}
+    fun readAllNestedRecordsForId(
+        consumerVersion: Int,
+        hendelseDeserializer: HendelseDeserializer,
+        arbeidssoekerId: Long,
+        merged: Boolean = false,
+    ): List<StoredData> {
+        val tmp = readAllRecordsForId(
+            hendelseDeserializer = hendelseDeserializer,
+            arbeidssoekerId = arbeidssoekerId,
+            merged = merged,
+            consumerVersion = consumerVersion
+        )
+        return tmp.asSequence()
+            .map(StoredData::data)
+            .filterIsInstance<ArbeidssoekerIdFlettetInn>()
+            .map { it.kilde.arbeidssoekerId }
+            .distinct()
+            .flatMap {
+                readAllNestedRecordsForId(
+                    hendelseDeserializer = hendelseDeserializer,
+                    arbeidssoekerId = it,
+                    merged = true,
+                    consumerVersion = consumerVersion
+                )
+            }.toList()
+            .plus(tmp)
+            .sortedBy { it.data.metadata.tidspunkt }
+    }
 
-fun Transaction.readAllRecordsForId(
-    consumerVersion: Int,
-    hendelseDeserializer: HendelseDeserializer,
-    arbeidssoekerId: Long,
-    merged: Boolean = false
-): List<StoredData> =
-    HendelseTable
-        .selectAll()
-        .where {
-            (HendelseTable.arbeidssoekerId eq arbeidssoekerId) and
-                    (HendelseTable.version eq consumerVersion)
-        }
-        .map {
-            StoredData(
-                partition = it[HendelseTable.partition],
-                offset = it[HendelseTable.offset],
-                recordKey = it[recordKey],
-                arbeidssoekerId = it[HendelseTable.arbeidssoekerId],
-                traceparent = it[HendelseTable.traceparent],
-                data = hendelseDeserializer.deserializeFromString(it[HendelseTable.data]),
-                merged = merged
-            )
-        }
+    fun readAllRecordsForId(
+        consumerVersion: Int,
+        hendelseDeserializer: HendelseDeserializer,
+        arbeidssoekerId: Long,
+        merged: Boolean = false,
+    ): List<StoredData> =
+        HendelseTable
+            .selectAll()
+            .where {
+                (HendelseTable.arbeidssoekerId eq arbeidssoekerId) and
+                        (HendelseTable.version eq consumerVersion)
+            }
+            .map {
+                StoredData(
+                    partition = it[HendelseTable.partition],
+                    offset = it[HendelseTable.offset],
+                    recordKey = it[recordKey],
+                    arbeidssoekerId = it[HendelseTable.arbeidssoekerId],
+                    traceparent = it[HendelseTable.traceparent],
+                    data = hendelseDeserializer.deserializeFromString(it[HendelseTable.data]),
+                    merged = merged
+                )
+            }
+}

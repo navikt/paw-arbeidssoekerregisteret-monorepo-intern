@@ -7,7 +7,7 @@ import arrow.core.raise.either
 import arrow.core.right
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.*
 import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.ArbeidssoekerperiodeResponse
-import no.nav.paw.arbeidssoekerregisteret.backup.database.readAllNestedRecordsForId
+import no.nav.paw.arbeidssoekerregisteret.backup.database.DataFunctions.readAllNestedRecordsForId
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.StoredData
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer

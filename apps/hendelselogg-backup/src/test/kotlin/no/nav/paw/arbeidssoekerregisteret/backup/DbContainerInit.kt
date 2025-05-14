@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.backup
 
+import no.nav.paw.arbeidssoekerregisteret.backup.database.DatabaseConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.database.dataSource
 import no.nav.paw.arbeidssoekerregisteret.backup.database.migrateDatabase
 import org.jetbrains.exposed.sql.Database
@@ -20,4 +21,15 @@ fun initDbContainer(): Pair<Database, DataSource> {
     val dataSource = dbConfig.dataSource()
     migrateDatabase(dataSource)
     return Database.connect(dataSource) to dataSource
+}
+
+fun PostgreSQLContainer<*>.databaseConfig(): DatabaseConfig {
+    return DatabaseConfig(
+        host = host,
+        port = firstMappedPort,
+        username = username,
+        password = password,
+        name = databaseName,
+        jdbc = null
+    )
 }
