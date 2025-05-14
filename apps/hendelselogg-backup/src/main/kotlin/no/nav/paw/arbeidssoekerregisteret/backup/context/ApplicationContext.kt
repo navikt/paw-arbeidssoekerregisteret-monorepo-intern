@@ -8,6 +8,7 @@ import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.BrukerstoetteServ
 import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.initClients
 import no.nav.paw.arbeidssoekerregisteret.backup.config.ApplicationConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.config.AzureConfig
+import no.nav.paw.arbeidssoekerregisteret.backup.config.SERVER_CONFIG
 import no.nav.paw.arbeidssoekerregisteret.backup.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.config.m2mCfg
 import no.nav.paw.arbeidssoekerregisteret.backup.database.DatabaseConfig
@@ -21,18 +22,7 @@ import no.nav.paw.kafka.factory.KafkaFactory
 import no.nav.paw.security.authentication.config.SecurityConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.LongDeserializer
-import org.slf4j.Logger
-import java.util.concurrent.atomic.AtomicBoolean
 import javax.sql.DataSource
-
-@JvmRecord
-data class ApplicationContextOld(
-    val consumerVersion: Int,
-    val logger: Logger,
-    val meterRegistry: PrometheusMeterRegistry,
-    val shutdownCalled: AtomicBoolean = AtomicBoolean(false),
-    val azureConfig: AzureConfig,
-)
 
 data class ApplicationContext(
     val applicationConfig: ApplicationConfig,
@@ -52,7 +42,7 @@ data class ApplicationContext(
             val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
             val databaseConfig = loadNaisOrLocalConfiguration<DatabaseConfig>("database_configuration.toml")
             val azureConfig = loadNaisOrLocalConfiguration<AzureConfig>("azure_config.toml")
-            val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>("server_config.toml")
+            val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG)
             val securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>("security_config.toml")
 
             val dataSource = databaseConfig.dataSource()

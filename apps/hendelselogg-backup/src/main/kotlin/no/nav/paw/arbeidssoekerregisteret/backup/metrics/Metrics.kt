@@ -1,8 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.backup.metrics
 
-import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-
-class Metrics(private val meterRegistry: PrometheusMeterRegistry) {
+class Metrics() {
     companion object {
         const val ACTIVE_PARTITIONS_GAUGE = "paw_arbeidssoekerregisteret_hendelselogg_backup_active_partitions"
         const val RECORD_COUNTER = "paw_arbeidssoekerregisteret_hendelselogg_backup_records_written"

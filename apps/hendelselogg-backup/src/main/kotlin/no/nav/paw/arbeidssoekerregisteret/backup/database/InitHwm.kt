@@ -10,7 +10,7 @@ fun initHwm(context: ApplicationContext) {
     val version = context.applicationConfig.version
     val allHwms = transaction {
             initHwm(version, partitions)
-            getAllHwms(version)
+        getAllHwms(version)
     }
     allHwms.forEach { hwm ->
         context.prometheusMeterRegistry.gauge(Metrics.HWM_GAUGE, listOf(Tag.of("partition", hwm.partition.toString())), context) { _ ->

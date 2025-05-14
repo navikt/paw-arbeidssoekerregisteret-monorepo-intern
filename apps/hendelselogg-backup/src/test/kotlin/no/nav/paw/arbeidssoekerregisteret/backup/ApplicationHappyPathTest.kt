@@ -100,8 +100,8 @@ private fun testConsumerRecords(): MutableMap<TopicPartition, MutableList<Consum
 private fun Map<TopicPartition, List<ConsumerRecord<Long, Hendelse>>>.originalHendelse() = entries.first().value.first()
 private fun Map<TopicPartition, List<ConsumerRecord<Long, Hendelse>>>.nyesteHendelse() = entries.last().value.last()
 
-fun MutableMap<TopicPartition, MutableList<ConsumerRecord<Long, Hendelse>>>.addRecord(mergeHendelse: ConsumerRecord<Long, Hendelse>) {
-    this[TopicPartition(mergeHendelse.topic(), 5)]?.add(mergeHendelse)
+fun MutableMap<TopicPartition, MutableList<ConsumerRecord<Long, Hendelse>>>.addRecord(record: ConsumerRecord<Long, Hendelse>) {
+    this[TopicPartition(record.topic(), 5)]?.add(record)
 }
 
 private fun createMergeRecord(

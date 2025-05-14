@@ -12,13 +12,13 @@ fun initHwm(consumerVersion: Int, partitionCount: Int) {
     }
 }
 
-fun Transaction.getHwm(consumerVersion: Int, partition: Int): Long? =
+fun getHwm(consumerVersion: Int, partition: Int): Long? =
     HwmTable
         .selectAll()
         .where { (HwmTable.partition eq partition) and (HwmTable.version eq consumerVersion) }
         .singleOrNull()?.get(HwmTable.offset)
 
-fun Transaction.getAllHwms(consumerVersion: Int): List<Hwm> =
+fun getAllHwms(consumerVersion: Int): List<Hwm> =
     HwmTable
         .selectAll()
         .where { HwmTable.version eq consumerVersion }
@@ -29,7 +29,7 @@ fun Transaction.getAllHwms(consumerVersion: Int): List<Hwm> =
             )
         }
 
-fun Transaction.insertHwm(consumerVersion: Int, partition: Int, offset: Long) {
+fun insertHwm(consumerVersion: Int, partition: Int, offset: Long) {
     HwmTable.insert {
         it[HwmTable.version] = consumerVersion
         it[HwmTable.partition] = partition
@@ -37,7 +37,7 @@ fun Transaction.insertHwm(consumerVersion: Int, partition: Int, offset: Long) {
     }
 }
 
-fun Transaction.updateHwm(consumerVersion: Int, partition: Int, offset: Long): Boolean =
+fun updateHwm(consumerVersion: Int, partition: Int, offset: Long): Boolean =
     HwmTable
         .update({
             (HwmTable.partition eq partition) and
