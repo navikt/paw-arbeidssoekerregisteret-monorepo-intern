@@ -6,7 +6,7 @@ import java.util.*
 
 data class IdentiteterEndretHendelse(
     val identiteter: List<Identitet>,
-    val historiskeIdentiteter: List<Identitet> = emptyList(),
+    val tidligereIdentiteter: List<Identitet> = emptyList(),
     override val hendelseId: UUID = UUID.randomUUID(),
     override val hendelseTidspunkt: Instant = Instant.now()
 ) : IdentitetHendelse {
