@@ -20,7 +20,7 @@ class IdentitetHendelseService(
         aktorId: String,
         arbeidssoekerId: Long,
         identiteter: MutableList<Identitet>,
-        historiskeIdentiteter: MutableList<Identitet>
+        tidligereIdentiteter: MutableList<Identitet>
     ) {
         val arbeidssoekerIdIdentitet = Identitet(
             identitet = arbeidssoekerId.toString(),
@@ -30,12 +30,12 @@ class IdentitetHendelseService(
         if (identiteter.isNotEmpty()) {
             identiteter.add(arbeidssoekerIdIdentitet)
         }
-        if (historiskeIdentiteter.isNotEmpty()) {
-            historiskeIdentiteter.add(arbeidssoekerIdIdentitet)
+        if (tidligereIdentiteter.isNotEmpty()) {
+            tidligereIdentiteter.add(arbeidssoekerIdIdentitet)
         }
         val hendelse = IdentiteterEndretHendelse(
             identiteter = identiteter,
-            historiskeIdentiteter = historiskeIdentiteter
+            tidligereIdentiteter = tidligereIdentiteter
         )
         val rowsAffected = identitetHendelseRepository.insert(
             arbeidssoekerId = arbeidssoekerId,

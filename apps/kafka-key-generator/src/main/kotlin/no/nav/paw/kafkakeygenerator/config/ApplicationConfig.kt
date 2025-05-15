@@ -4,6 +4,7 @@ const val APPLICATION_CONFIG = "application_config.toml"
 
 data class ApplicationConfig(
     val pawHendelseConsumer: KafkaConsumerConfig,
+    val pawPeriodeConsumer: KafkaConsumerConfig,
     val pdlAktorConsumer: KafkaConsumerConfig
 )
 
