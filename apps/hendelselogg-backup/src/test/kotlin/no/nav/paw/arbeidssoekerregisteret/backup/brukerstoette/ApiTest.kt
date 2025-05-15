@@ -1,56 +1,35 @@
 package no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.headers
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.HttpStatusCode
-import io.ktor.serialization.jackson.jackson
-import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import io.mockk.every
 import io.mockk.mockk
+import no.nav.paw.arbeidssoekerregisteret.backup.TestApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.DetaljerRequest
 import no.nav.paw.arbeidssoekerregisteret.backup.database.RecordRepository
-import no.nav.paw.arbeidssoekerregisteret.backup.module
-import no.nav.paw.arbeidssoekerregisteret.backup.testApplicationContext
-import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
-import no.nav.paw.kafkakeygenerator.client.inMemoryKafkaKeysMock
 
 class ApiTest : FreeSpec({
-    "Test av brukerstøtte API" - {
-        val kafkaKeysClient = inMemoryKafkaKeysMock()
-        val oppslagsApi: OppslagApiClient = mockk()
-        val dataFunctions = mockk<RecordRepository>(relaxed = true)
-        val brukerstoetteService = BrukerstoetteService(
-            kafkaKeysClient = kafkaKeysClient,
-            hendelseDeserializer = HendelseDeserializer(),
-            consumerVersion = testApplicationContext.applicationConfig.version,
-            oppslagApiClient = oppslagsApi,
-        )
+    with(TestApplicationContext.build()) {
 
-        "Ingen hendelse gir 404" {
+    "Test av brukerstøtte API" - {
+        initDatabase()
+        val recordRepository = mockk<RecordRepository>(relaxed = true)
+
+        "Ingen hendelser funnet gir 404" {
             every {
-                dataFunctions.readAllNestedRecordsForId(
-                    any(),
-                    any(),
-                    any(),
-                    any()
-                )
+                recordRepository.readAllNestedRecordsForId(any(), any(), any(), any())
             } returns emptyList()
 
             testApplication {
-                application {
-                    module(testApplicationContext(brukerstoetteService))
-                }
-
-                val response = testClient().post("/api/v1/arbeidssoeker/detaljer") {
+                configureTestApplication()
+                val client = configureTestClient()
+                val response = client.post("/api/v1/arbeidssoeker/detaljer") {
                     headers {
                         append("Content-Type", "application/json")
                     }
@@ -59,10 +38,12 @@ class ApiTest : FreeSpec({
 
                 response.status shouldBe HttpStatusCode.NotFound
                 val responseBody = response.body<no.nav.paw.error.model.ProblemDetails>()
-                responseBody.detail shouldBe "Ingen hendelser for bruker"
+                responseBody.detail shouldBe "Fant ingen hendelser for person"
                 responseBody.status shouldBe HttpStatusCode.NotFound
             }
         }
+    }
+
         /*        "Test av brukerstøtte API med tomt svar" {
 
                     every { runBlocking { oppslagsApi.perioder(any()) } } returns emptyList<ArbeidssoekerperiodeResponse>().right()
@@ -293,12 +274,3 @@ class ApiTest : FreeSpec({
             }
         }*/
 })
-
-private fun ApplicationTestBuilder.testClient(): HttpClient = createClient {
-    install(ContentNegotiation) {
-        jackson {
-            registerKotlinModule()
-            registerModule(JavaTimeModule())
-        }
-    }
-}

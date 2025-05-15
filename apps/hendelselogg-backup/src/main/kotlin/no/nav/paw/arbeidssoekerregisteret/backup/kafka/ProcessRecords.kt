@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.Tag
 import no.nav.paw.arbeidssoekerregisteret.backup.database.updateHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.metrics.Metrics
 import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.database.RecordPostgresRepository
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Aarsak
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
@@ -27,7 +28,7 @@ fun processRecords(records: ConsumerRecords<Long, Hendelse>, context: Applicatio
     transaction {
         records.asSequence().forEach { record ->
             if (updateHwm(context.applicationConfig.version, record.partition(), record.offset())) {
-                DataFunctions().writeRecord(context.applicationConfig.version, HendelseSerializer(), record)
+                RecordPostgresRepository.writeRecord(context.applicationConfig.version, HendelseSerializer(), record)
                 counterInclude.increment()
 
                 val hendelse = record.value()

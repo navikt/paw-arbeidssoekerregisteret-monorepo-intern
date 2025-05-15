@@ -12,24 +12,26 @@ import org.apache.kafka.common.TopicPartition
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class ApplicationConsumerResetTest : FreeSpec({
-    "Prosesserer ConsumerRecords riktig iht. HWM ved oppstart" - {
-        initDbContainer()
-        initHwm(testApplicationContext)
-        val testConsumerRecords = testConsumerRecords()
-        processRecords(records = testConsumerRecords, context = testApplicationContext)
-        testConsumerRecords.forEach { record ->
-            val forventetHendelse = record.value()
-            val lagretHendelse = transaction {
-                readRecord(
-                    consumerVersion = testApplicationContext.applicationConfig.version,
-                    partition = record.partition(),
-                    offset = record.offset()
-                )
+    with(TestApplicationContext.build()) {
+        "Prosesserer ConsumerRecords riktig iht. HWM ved oppstart" - {
+            initDatabase()
+            initHwm(testApplicationContext)
+            val testConsumerRecords = testConsumerRecords()
+            processRecords(records = testConsumerRecords, context = testApplicationContext)
+            testConsumerRecords.forEach { record ->
+                val forventetHendelse = record.value()
+                val lagretHendelse = transaction {
+                    readRecord(
+                        consumerVersion = testApplicationContext.applicationConfig.version,
+                        partition = record.partition(),
+                        offset = record.offset()
+                    )
+                }
+                lagretHendelse?.data shouldBe forventetHendelse
+                lagretHendelse.shouldNotBeNull()
+                lagretHendelse.partition shouldBe record.partition()
+                lagretHendelse.offset shouldBe record.offset()
             }
-            lagretHendelse?.data shouldBe forventetHendelse
-            lagretHendelse.shouldNotBeNull()
-            lagretHendelse.partition shouldBe record.partition()
-            lagretHendelse.offset shouldBe record.offset()
         }
     }
 })

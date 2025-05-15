@@ -11,28 +11,6 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 
-interface RecordRepository {
-    fun <A : Hendelse> writeRecord(
-        consumerVersion: Int,
-        hendelseSerializer: HendelseSerializer,
-        record: ConsumerRecord<Long, A>,
-    )
-
-    fun readAllNestedRecordsForId(
-        consumerVersion: Int,
-        hendelseDeserializer: HendelseDeserializer,
-        arbeidssoekerId: Long,
-        merged: Boolean,
-    ): List<StoredData>
-
-    fun readAllRecordsForId(
-        consumerVersion: Int,
-        hendelseDeserializer: HendelseDeserializer,
-        arbeidssoekerId: Long,
-        merged: Boolean,
-    ): List<StoredData>
-}
-
 object RecordPostgresRepository : RecordRepository {
     override fun <A : Hendelse> writeRecord(
         consumerVersion: Int,
