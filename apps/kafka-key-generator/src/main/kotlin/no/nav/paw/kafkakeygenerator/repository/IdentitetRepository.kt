@@ -52,18 +52,6 @@ class IdentitetRepository {
         }.insertedCount
     }
 
-    fun updateArbeidssoekerId(
-        identitet: String,
-        arbeidssoekerId: Long
-    ): Int = transaction {
-        IdentiteterTable.update(where = {
-            (IdentiteterTable.identitet eq identitet)
-        }) {
-            it[IdentiteterTable.arbeidssoekerId] = arbeidssoekerId
-            it[updatedTimestamp] = Instant.now()
-        }
-    }
-
     fun updateGjeldendeByIdentitet(
         identitet: String,
         gjeldende: Boolean
@@ -97,6 +85,20 @@ class IdentitetRepository {
         IdentiteterTable.update(where = {
             (IdentiteterTable.aktorId eq aktorId)
         }) {
+            it[IdentiteterTable.status] = status
+            it[updatedTimestamp] = Instant.now()
+        }
+    }
+
+    fun updateArbeidssoekerIdAndStatusByAktorId(
+        aktorId: String,
+        arbeidssoekerId: Long,
+        status: IdentitetStatus
+    ): Int = transaction {
+        IdentiteterTable.update(where = {
+            (IdentiteterTable.aktorId eq aktorId)
+        }) {
+            it[IdentiteterTable.arbeidssoekerId] = arbeidssoekerId
             it[IdentiteterTable.status] = status
             it[updatedTimestamp] = Instant.now()
         }

@@ -37,7 +37,7 @@ class IdentitetService(
 
         if (arbeidssoekerIdList.size == 1) {
             val arbeidssoekerId = arbeidssoekerIdList.first()
-            val historiskeIdentiteter = eksisterendeIdentitetRows
+            val tidligereIdentiteter = eksisterendeIdentitetRows
                 .map { it.asIdentitet() }
                 .toMutableList()
 
@@ -45,7 +45,7 @@ class IdentitetService(
                 arbeidssoekerId = arbeidssoekerId,
                 aktorId = aktorId,
                 identiteter = mutableListOf(),
-                historiskeIdentiteter = historiskeIdentiteter
+                tidligereIdentiteter = tidligereIdentiteter
             )
         } else {
             identitetKonfliktService.lagreVentendeIdentitetKonflikt(aktorId)
@@ -63,7 +63,7 @@ class IdentitetService(
         val identiteterSet = identitetRows
             .map { it.identitet }
             .toSet()
-        val sisteArbeidssoekerId = eksisterendeKafkaKeyRows.maxOf { it.arbeidssoekerId }
+        val nyesteArbeidssoekerId = eksisterendeKafkaKeyRows.maxOf { it.arbeidssoekerId }
         val kafkaKeyMap = eksisterendeKafkaKeyRows
             .associate { it.identitetsnummer to it.arbeidssoekerId }
 
@@ -75,7 +75,7 @@ class IdentitetService(
                         status = IdentitetStatus.KONFLIKT
                     )
                 } else {
-                    val arbeidssoekerId = kafkaKeyMap[identifikator.idnummer] ?: sisteArbeidssoekerId
+                    val arbeidssoekerId = kafkaKeyMap[identifikator.idnummer] ?: nyesteArbeidssoekerId
                     insertIdentitet(
                         arbeidssoekerId = arbeidssoekerId,
                         aktorId = aktorId,
@@ -129,7 +129,7 @@ class IdentitetService(
             arbeidssoekerId = arbeidssoekerId,
             aktorId = aktorId,
             identiteter = endredeIdentiteter,
-            historiskeIdentiteter = historiskeIdentiteter
+            tidligereIdentiteter = historiskeIdentiteter
         )
     }
 

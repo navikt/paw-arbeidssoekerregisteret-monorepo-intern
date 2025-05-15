@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm")
-    application
     id("jib-distroless")
+    application
 }
 
 val jvmMajorVersion: String by project
@@ -20,6 +20,7 @@ dependencies {
     implementation(project(":lib:kafka"))
     implementation(project(":domain:interne-hendelser"))
     implementation(project(":domain:identitet-interne-hendelser"))
+    implementation(project(":domain:main-avro-schema"))
     implementation(project(":domain:pdl-aktoer-schema"))
 
     // NAV
