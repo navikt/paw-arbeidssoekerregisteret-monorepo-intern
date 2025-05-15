@@ -4,7 +4,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import no.nav.paw.arbeidssoekerregisteret.backup.database.DataFunctions.readAllNestedRecordsForId
+import no.nav.paw.arbeidssoekerregisteret.backup.database.RecordPostgresRepository.readAllNestedRecordsForId
 import no.nav.paw.arbeidssoekerregisteret.backup.database.initHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.kafka.processRecords
 import no.nav.paw.arbeidssokerregisteret.intern.v1.ArbeidssoekerIdFlettetInn

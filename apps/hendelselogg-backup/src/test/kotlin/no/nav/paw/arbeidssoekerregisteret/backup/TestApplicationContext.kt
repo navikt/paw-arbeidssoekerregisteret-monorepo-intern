@@ -13,9 +13,11 @@ import no.nav.paw.arbeidssoekerregisteret.backup.database.dataSource
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.security.authentication.config.SecurityConfig
 
-fun testApplicationContext(brukerstoetteService: BrukerstoetteService = mockk(relaxed = true)): ApplicationContext {
+fun testApplicationContext(
+    brukerstoetteService: BrukerstoetteService = mockk(relaxed = true),
+): ApplicationContext {
     return testApplicationContext.copy(
-        brukerstoetteService = brukerstoetteService
+        brukerstoetteService = brukerstoetteService,
     )
 }
 

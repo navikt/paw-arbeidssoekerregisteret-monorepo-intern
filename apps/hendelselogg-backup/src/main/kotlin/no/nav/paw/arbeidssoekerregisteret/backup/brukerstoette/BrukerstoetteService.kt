@@ -5,9 +5,16 @@ package no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette
 import arrow.core.Either
 import arrow.core.raise.either
 import arrow.core.right
-import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.*
+import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.DetaljerResponse
+import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Hendelse
+import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.HendelseMetadata
+import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.HendelseMetadataTidspunktFraKilde
+import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.HendelseMetadataUtfoertAv
+import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Snapshot
+import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Tilstand
+import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.TilstandApiKall
 import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.ArbeidssoekerperiodeResponse
-import no.nav.paw.arbeidssoekerregisteret.backup.database.DataFunctions.readAllNestedRecordsForId
+import no.nav.paw.arbeidssoekerregisteret.backup.database.RecordPostgresRepository.readAllNestedRecordsForId
 import no.nav.paw.arbeidssoekerregisteret.backup.vo.StoredData
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
@@ -26,14 +33,14 @@ class BrukerstoetteService(
     private val consumerVersion: Int,
     private val kafkaKeysClient: KafkaKeysClient,
     private val oppslagApiClient: OppslagApiClient,
-    private val hendelseDeserializer: HendelseDeserializer
+    private val hendelseDeserializer: HendelseDeserializer,
 ) {
     private val errorLogger = LoggerFactory.getLogger("error_logger")
     private val apiOppslagLogger = LoggerFactory.getLogger("api_oppslag_logger")
     suspend fun hentDetaljer(identitetsnummer: String): DetaljerResponse {
         val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer)
         val hendelser = transaction {
-            readAllNestedRecordsForId(consumerVersion, hendelseDeserializer, id)
+            readAllNestedRecordsForId(consumerVersion, hendelseDeserializer, id, merged = false)
         }
         if (hendelser.isEmpty()) throw IngenHendelserFunnet("Fant ingen hendelser for person")
 
@@ -97,7 +104,6 @@ class BrukerstoetteService(
     }
 }
 
-
 fun enrich(tilstand: Tilstand, apiData: List<ApiData>): Tilstand {
     val periodeData = apiData.filter { it.periodeId == tilstand.periodeId }
     val harPeriode = periodeData.isNotEmpty()
@@ -119,7 +125,7 @@ fun enrich(tilstand: Tilstand, apiData: List<ApiData>): Tilstand {
 data class ApiData(
     val periodeId: UUID,
     val opplysningsId: UUID?,
-    val profileringsId: UUID?
+    val profileringsId: UUID?,
 )
 
 fun sistePeriode(hendelser: List<StoredData>): Tilstand? =
@@ -172,7 +178,6 @@ fun <V, S, R> Iterable<V>.map(initial: S, function: (S, V) -> Pair<S, R>): Itera
         result
     }
 }
-
 
 fun beregnTilstand(tilstand: Tilstand?, hendelse: StoredData): Tilstand? =
     when {

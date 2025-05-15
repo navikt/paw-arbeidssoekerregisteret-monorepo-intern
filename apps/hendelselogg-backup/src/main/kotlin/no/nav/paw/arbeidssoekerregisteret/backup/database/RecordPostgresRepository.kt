@@ -7,18 +7,37 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerializer
 import org.apache.kafka.clients.consumer.ConsumerRecord
-import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.transactions.TransactionManager
 
-
-object DataFunctions {
+interface RecordRepository {
     fun <A : Hendelse> writeRecord(
         consumerVersion: Int,
         hendelseSerializer: HendelseSerializer,
-        record: ConsumerRecord<Long, A>
+        record: ConsumerRecord<Long, A>,
+    )
+
+    fun readAllNestedRecordsForId(
+        consumerVersion: Int,
+        hendelseDeserializer: HendelseDeserializer,
+        arbeidssoekerId: Long,
+        merged: Boolean,
+    ): List<StoredData>
+
+    fun readAllRecordsForId(
+        consumerVersion: Int,
+        hendelseDeserializer: HendelseDeserializer,
+        arbeidssoekerId: Long,
+        merged: Boolean,
+    ): List<StoredData>
+}
+
+object RecordPostgresRepository : RecordRepository {
+    override fun <A : Hendelse> writeRecord(
+        consumerVersion: Int,
+        hendelseSerializer: HendelseSerializer,
+        record: ConsumerRecord<Long, A>,
     ) {
         HendelseTable.insert {
             it[version] = consumerVersion
@@ -31,11 +50,11 @@ object DataFunctions {
         }
     }
 
-    fun readAllNestedRecordsForId(
+    override fun readAllNestedRecordsForId(
         consumerVersion: Int,
         hendelseDeserializer: HendelseDeserializer,
         arbeidssoekerId: Long,
-        merged: Boolean = false,
+        merged: Boolean,
     ): List<StoredData> {
         val tmp = readAllRecordsForId(
             hendelseDeserializer = hendelseDeserializer,
@@ -60,11 +79,11 @@ object DataFunctions {
             .sortedBy { it.data.metadata.tidspunkt }
     }
 
-    fun readAllRecordsForId(
+    override fun readAllRecordsForId(
         consumerVersion: Int,
         hendelseDeserializer: HendelseDeserializer,
         arbeidssoekerId: Long,
-        merged: Boolean = false,
+        merged: Boolean,
     ): List<StoredData> =
         HendelseTable
             .selectAll()
