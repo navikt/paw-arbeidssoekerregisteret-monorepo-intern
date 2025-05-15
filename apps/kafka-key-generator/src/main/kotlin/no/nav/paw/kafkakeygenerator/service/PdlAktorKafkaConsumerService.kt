@@ -12,9 +12,9 @@ import java.time.Instant
 
 class PdlAktorKafkaConsumerService(
     private val kafkaConsumerConfig: KafkaConsumerConfig,
-    private val kafkaKeysIdentitetRepository: KafkaKeysIdentitetRepository,
     private val hwmOperations: KafkaHwmOperations,
-    private val identitetService: IdentitetService
+    private val identitetService: IdentitetService,
+    private val kafkaKeysIdentitetRepository: KafkaKeysIdentitetRepository
 ) {
     private val logger = buildNamedLogger("application.kafka")
 
@@ -33,8 +33,8 @@ class PdlAktorKafkaConsumerService(
     @WithSpan
     private fun handleRecord(record: ConsumerRecord<Any, Aktor>) {
         transaction {
-            try {
-                with(kafkaConsumerConfig) {
+            with(kafkaConsumerConfig) {
+                try {
                     val rowsAffected = hwmOperations.updateHwm(
                         topic = topic,
                         partition = record.partition(),
@@ -43,7 +43,7 @@ class PdlAktorKafkaConsumerService(
                     )
 
                     if (rowsAffected == 0) {
-                        logger.info(
+                        logger.warn(
                             "Ignorerer aktor-melding på grunn av at offset {} på partition {} fra topic {} ikke er over HWM",
                             record.offset(),
                             record.partition(),
@@ -62,10 +62,10 @@ class PdlAktorKafkaConsumerService(
                             sourceTimestamp = Instant.ofEpochMilli(record.timestamp())
                         )
                     }
+                } catch (e: Exception) {
+                    logger.error("Håndterer av aktor-melding feilet", e)
+                    throw e
                 }
-            } catch (e: Exception) {
-                logger.error("Håndterer av aktor-melding feilet", e)
-                throw e
             }
         }
     }
