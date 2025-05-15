@@ -44,11 +44,11 @@ class IdentitetKonfliktRepository {
     }
 
     fun updateStatusByAktorId(
-        aktorId: String,
+        aktorIdList: List<String>,
         status: IdentitetKonfliktStatus
     ): Int = transaction {
         IdentitetKonflikterTable.update(where = {
-            (IdentitetKonflikterTable.aktorId eq aktorId)
+            (IdentitetKonflikterTable.aktorId inList aktorIdList)
         }) {
             it[IdentitetKonflikterTable.status] = status
             it[updatedTimestamp] = Instant.now()
