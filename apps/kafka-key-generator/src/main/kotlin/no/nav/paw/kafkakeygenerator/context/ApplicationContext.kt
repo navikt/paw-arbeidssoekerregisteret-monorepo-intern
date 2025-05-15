@@ -35,6 +35,7 @@ import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysIdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
+import no.nav.paw.kafkakeygenerator.repository.PeriodeRepository
 import no.nav.paw.kafkakeygenerator.service.IdentitetHendelseService
 import no.nav.paw.kafkakeygenerator.service.IdentitetKonfliktService
 import no.nav.paw.kafkakeygenerator.service.IdentitetService
@@ -89,12 +90,16 @@ data class ApplicationContext(
             val identitetRepository = IdentitetRepository()
             val identitetKonfliktRepository = IdentitetKonfliktRepository()
             val identitetHendelseRepository = IdentitetHendelseRepository()
+            val periodeRepository = PeriodeRepository()
 
-            val identitetKonfliktService = IdentitetKonfliktService(
-                identitetKonfliktRepository = identitetKonfliktRepository
-            )
             val identitetHendelseService = IdentitetHendelseService(
                 identitetHendelseRepository = identitetHendelseRepository
+            )
+            val identitetKonfliktService = IdentitetKonfliktService(
+                identitetRepository = identitetRepository,
+                identitetKonfliktRepository = identitetKonfliktRepository,
+                periodeRepository = periodeRepository,
+                identitetHendelseService = identitetHendelseService
             )
             val identitetService = IdentitetService(
                 identitetRepository = identitetRepository,
@@ -140,9 +145,9 @@ data class ApplicationContext(
             )
             val pdlAktorKafkaConsumerService = PdlAktorKafkaConsumerService(
                 kafkaConsumerConfig = applicationConfig.pdlAktorConsumer,
-                kafkaKeysIdentitetRepository = kafkaKeysIdentitetRepository,
                 hwmOperations = pdlAktorKafkaHwmOperations,
-                identitetService = identitetService
+                identitetService = identitetService,
+                kafkaKeysIdentitetRepository = kafkaKeysIdentitetRepository
             )
             val pdlAktorConsumerExceptionHandler = HealthIndicatorConsumerExceptionHandler(
                 livenessIndicator = healthIndicatorRepository.livenessIndicator(HealthStatus.HEALTHY),
