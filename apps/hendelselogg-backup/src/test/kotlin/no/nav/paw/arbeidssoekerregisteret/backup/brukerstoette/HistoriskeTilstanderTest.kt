@@ -2,9 +2,14 @@ package no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import no.nav.paw.arbeidssoekerregisteret.backup.*
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Snapshot
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Tilstand
+import no.nav.paw.arbeidssoekerregisteret.backup.apiHendelse
+import no.nav.paw.arbeidssoekerregisteret.backup.avsluttet
+import no.nav.paw.arbeidssoekerregisteret.backup.avvist
+import no.nav.paw.arbeidssoekerregisteret.backup.opplysninger
+import no.nav.paw.arbeidssoekerregisteret.backup.startet
+import no.nav.paw.arbeidssoekerregisteret.backup.storedHendelseRecord
 import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
 
 class HistoriskeTilstanderTest : FreeSpec({
@@ -13,7 +18,7 @@ class HistoriskeTilstanderTest : FreeSpec({
             historiskeTilstander(emptyList()) shouldBe emptyList()
         }
         "med en startet hendelse returneres en liste med en tilstand" {
-            val startet = startet().storedData(
+            val startet = startet().storedHendelseRecord(
                 offset = 1,
                 partition = 3,
                 recordKey = 2
@@ -41,14 +46,14 @@ class HistoriskeTilstanderTest : FreeSpec({
         }
         "med flere perioder og opplysinger skal vi få alle tilstandene" - {
             val  hendelser = listOf(
-                avvist().storedData(offset = 0),
-                startet().storedData(offset = 1),
-                opplysninger().storedData(offset = 2),
-                avsluttet().storedData(offset = 3),
-                startet().storedData(offset = 4),
-                opplysninger().storedData(offset = 5),
-                avsluttet().storedData(offset = 6),
-                avvist().storedData(offset = 7)
+                avvist().storedHendelseRecord(offset = 0),
+                startet().storedHendelseRecord(offset = 1),
+                opplysninger().storedHendelseRecord(offset = 2),
+                avsluttet().storedHendelseRecord(offset = 3),
+                startet().storedHendelseRecord(offset = 4),
+                opplysninger().storedHendelseRecord(offset = 5),
+                avsluttet().storedHendelseRecord(offset = 6),
+                avvist().storedHendelseRecord(offset = 7)
             )
             val result = historiskeTilstander(hendelser).toList()
             val expected = listOf(

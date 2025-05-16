@@ -1,8 +1,10 @@
-package no.nav.paw.arbeidssoekerregisteret.backup.database
+package no.nav.paw.arbeidssoekerregisteret.backup.database.hwm
 
-import no.nav.paw.arbeidssoekerregisteret.backup.vo.Hwm
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.update
 
 fun initHwm(consumerVersion: Int, partitionCount: Int) {
     transaction {

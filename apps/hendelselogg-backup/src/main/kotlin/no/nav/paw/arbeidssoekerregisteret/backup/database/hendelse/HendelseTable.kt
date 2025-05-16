@@ -1,5 +1,6 @@
-package no.nav.paw.arbeidssoekerregisteret.backup.database
+package no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse
 
+import no.nav.paw.arbeidssoekerregisteret.backup.database.jsonb
 import org.jetbrains.exposed.sql.Table
 
 object HendelseTable: Table("hendelser") {

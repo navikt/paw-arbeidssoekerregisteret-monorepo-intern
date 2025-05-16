@@ -2,10 +2,10 @@ package no.nav.paw.arbeidssoekerregisteret.backup
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import no.nav.paw.arbeidssoekerregisteret.backup.database.getAllHwms
-import no.nav.paw.arbeidssoekerregisteret.backup.database.getHwm
-import no.nav.paw.arbeidssoekerregisteret.backup.database.initHwm
-import no.nav.paw.arbeidssoekerregisteret.backup.database.updateHwm
+import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.getAllHwms
+import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.getHwm
+import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.initHwm
+import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.updateHwm
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class HwmFunctionsTest : FreeSpec({

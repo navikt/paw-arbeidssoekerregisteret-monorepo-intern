@@ -1,6 +1,8 @@
 package no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette
 
+import arrow.core.right
 import io.kotest.core.spec.style.FreeSpec
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.ktor.client.call.body
 import io.ktor.client.request.headers
@@ -8,269 +10,152 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
+import io.mockk.clearMocks
+import io.mockk.coEvery
 import io.mockk.every
-import io.mockk.mockk
 import no.nav.paw.arbeidssoekerregisteret.backup.TestApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.DetaljerRequest
-import no.nav.paw.arbeidssoekerregisteret.backup.database.RecordRepository
+import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.DetaljerResponse
+import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.ArbeidssoekerperiodeResponse
+import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.BrukerResponse
+import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.BrukerType
+import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.MetadataResponse
+import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.OpplysningerOmArbeidssoekerResponse
+import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.ProfileringResponse
+import no.nav.paw.arbeidssoekerregisteret.backup.avvist
+import no.nav.paw.arbeidssoekerregisteret.backup.opplysninger
+import no.nav.paw.arbeidssoekerregisteret.backup.startet
+import no.nav.paw.arbeidssoekerregisteret.backup.storedHendelseRecord
+import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
 
 class ApiTest : FreeSpec({
     with(TestApplicationContext.build()) {
 
-    "Test av brukerstøtte API" - {
-        initDatabase()
-        val recordRepository = mockk<RecordRepository>(relaxed = true)
+        "Test av brukerstøtte API" - {
+            "Ingen hendelser funnet gir 404 Not Found" {
+                coEvery {
+                    kafkaKeysClient.getIdAndKeyOrNull("12345678901")
+                } returns KafkaKeysResponse(id = 1, key = 1L)
 
-        "Ingen hendelser funnet gir 404" {
-            every {
-                recordRepository.readAllNestedRecordsForId(any(), any(), any(), any())
-            } returns emptyList()
+                every {
+                    hendelseRecordRepository.readAllNestedRecordsForId(any(), any(), any(), any())
+                } returns emptyList()
 
-            testApplication {
-                configureTestApplication()
-                val client = configureTestClient()
-                val response = client.post("/api/v1/arbeidssoeker/detaljer") {
-                    headers {
-                        append("Content-Type", "application/json")
+                testApplication {
+                    configureTestApplication()
+                    val client = configureTestClient()
+                    val response = client.post("/api/v1/arbeidssoeker/detaljer") {
+                        headers {
+                            append("Content-Type", "application/json")
+                        }
+                        setBody(DetaljerRequest("12345678901"))
                     }
-                    setBody(DetaljerRequest("12345678901"))
-                }
 
-                response.status shouldBe HttpStatusCode.NotFound
-                val responseBody = response.body<no.nav.paw.error.model.ProblemDetails>()
-                responseBody.detail shouldBe "Fant ingen hendelser for person"
-                responseBody.status shouldBe HttpStatusCode.NotFound
+                    response.status shouldBe HttpStatusCode.NotFound
+                    val responseBody = response.body<no.nav.paw.error.model.ProblemDetails>()
+                    responseBody.detail shouldBe "Fant ingen hendelser for person"
+                    responseBody.status shouldBe HttpStatusCode.NotFound
+                }
+                clearMocks(hendelseRecordRepository)
+            }
+
+            "Ingen svar fra Oppslag gir likevel 200 OK" {
+                coEvery {
+                    kafkaKeysClient.getIdAndKeyOrNull("12345678901")
+                } returns KafkaKeysResponse(id = 1, key = 1L)
+
+                every {
+                    hendelseRecordRepository.readAllNestedRecordsForId(any(), any(), any(), any())
+                } returns listOf(avvist(identitetsnummer = "12345678901", id = 1).storedHendelseRecord(arbeidssoekerId = 1))
+
+                coEvery {
+                    oppslagApiClient.perioder("12345678901")
+                } returns emptyList<ArbeidssoekerperiodeResponse>().right()
+
+                coEvery {
+                    oppslagApiClient.opplysninger("12345678901", any())
+                } returns emptyList<OpplysningerOmArbeidssoekerResponse>().right()
+
+                coEvery {
+                    oppslagApiClient.profileringer("12345678901", any())
+                } returns emptyList<ProfileringResponse>().right()
+
+                testApplication {
+                    configureTestApplication()
+                    val client = configureTestClient()
+                    val response = client.post("/api/v1/arbeidssoeker/detaljer") {
+                        headers {
+                            append("Content-Type", "application/json")
+                        }
+                        setBody(DetaljerRequest("12345678901"))
+                    }
+
+                    response.status shouldBe HttpStatusCode.OK
+                    val detaljer: DetaljerResponse = response.body()
+                    detaljer.arbeidssoekerId shouldBe 1
+                }
+            }
+
+            "Svar fra Oppslag gir 200 OK" {
+                val startet = startet(identitetsnummer = "12345678901", id = 1)
+                val opplysninger = opplysninger(identitetsnummer = "12345678901", id = 1)
+                coEvery {
+                    kafkaKeysClient.getIdAndKeyOrNull("12345678901")
+                } returns KafkaKeysResponse(id = 1, key = 1L)
+
+                every {
+                    hendelseRecordRepository.readAllNestedRecordsForId(any(), any(), any(), any())
+                } returns listOf(
+                    startet.storedHendelseRecord(arbeidssoekerId = 1),
+                    opplysninger.storedHendelseRecord(arbeidssoekerId = 1),
+                )
+
+                coEvery {
+                    oppslagApiClient.perioder("12345678901")
+                } returns listOf(
+                    ArbeidssoekerperiodeResponse(
+                        periodeId = startet.hendelseId,
+                        startet = MetadataResponse(
+                            tidspunkt = startet.metadata.tidspunkt,
+                            utfoertAv = BrukerResponse(
+                                type = BrukerType.SLUTTBRUKER,
+                                id = startet.metadata.utfoertAv.id,
+                            ),
+                            kilde = startet.metadata.kilde,
+                            aarsak = startet.metadata.aarsak,
+                            tidspunktFraKilde = null,
+
+                            ),
+                        avsluttet = null
+                    )
+                ).right()
+
+                coEvery {
+                    oppslagApiClient.opplysninger("12345678901", any())
+                } returns emptyList<OpplysningerOmArbeidssoekerResponse>().right()
+
+                coEvery {
+                    oppslagApiClient.profileringer("12345678901", any())
+                } returns emptyList<ProfileringResponse>().right()
+
+                testApplication {
+                    configureTestApplication()
+                    val client = configureTestClient()
+                    val response = client.post("/api/v1/arbeidssoeker/detaljer") {
+                        headers {
+                            append("Content-Type", "application/json")
+                        }
+                        setBody(DetaljerRequest("12345678901"))
+                    }
+
+                    response.status shouldBe HttpStatusCode.OK
+                    val detaljer: DetaljerResponse = response.body()
+                    detaljer.arbeidssoekerId shouldBe 1
+                    detaljer.historikk.isNotEmpty() shouldBe true
+                    detaljer.gjeldeneTilstand.shouldNotBeNull()
+                    detaljer.gjeldeneTilstand.harAktivePeriode shouldBe true
+                }
             }
         }
     }
-
-        /*        "Test av brukerstøtte API med tomt svar" {
-
-                    every { runBlocking { oppslagsApi.perioder(any()) } } returns emptyList<ArbeidssoekerperiodeResponse>().right()
-                    every {
-                        runBlocking {
-                            oppslagsApi.opplysninger(
-                                any(),
-                                any()
-                            )
-                        }
-                    } returns emptyList<OpplysningerOmArbeidssoekerResponse>().right()
-                    every {
-                        runBlocking {
-                            oppslagsApi.profileringer(
-                                any(),
-                                any()
-                            )
-                        }
-                    } returns emptyList<ProfileringResponse>().right()
-
-                    val service = BrukerstoetteService(
-                        kafkaKeysClient = kafkaKeysClient,
-                        hendelseDeserializer = HendelseDeserializer(),
-                        consumerVersion = 1,
-                        oppslagApiClient = oppslagsApi,
-                    )
-
-                    testApplication {
-                        application {
-                            module(testApplicationContext(service))
-                        }
-
-                        val client = testClient()
-                        val response = client.post("/api/v1/arbeidssoeker/detaljer") {
-                            headers {
-                                append("Content-Type", "application/json")
-                            }
-                            setBody(DetaljerRequest("12345678901"))
-                        }
-
-                        response.status shouldBe HttpStatusCode.NotFound
-                        val responseBody = response.body<no.nav.paw.error.model.ProblemDetails>()
-                        responseBody.detail shouldBe "Ingen hendelser for bruker"
-                        responseBody.status shouldBe "ikke funnet"
-                    }
-                }*/
-
-        /*        "Test av brukerstøtte API med svar" {
-                    initDbContainer()
-                    val kafkaKeysClient = inMemoryKafkaKeysMock()
-                    val oppslagsApi: OppslagApiClient = mockk()
-                    every { runBlocking { oppslagsApi.perioder(any()) } } returns listOf(
-                        ArbeidssoekerperiodeResponse(
-                            periodeId = UUID.randomUUID(),
-                            startet = MetadataResponse(
-                                tidspunkt = Instant.now().truncatedTo(ChronoUnit.MILLIS),
-                                utfoertAv = BrukerResponse(
-                                    type = no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.BrukerType.SYSTEM,
-                                    id = "system"
-                                ),
-                                kilde = "system",
-                                aarsak = "test"
-
-                            ),
-                            avsluttet = null
-                        )
-                    ).right()
-                    every {
-                        runBlocking {
-                            oppslagsApi.opplysninger(
-                                any(),
-                                any()
-                            )
-                        }
-                    } returns emptyList<OpplysningerOmArbeidssoekerResponse>().right()
-                    every {
-                        runBlocking {
-                            oppslagsApi.profileringer(
-                                any(),
-                                any()
-                            )
-                        }
-                    } returns emptyList<ProfileringResponse>().right()
-
-                    val service = BrukerstoetteService(
-                        kafkaKeysClient = kafkaKeysClient,
-                        hendelseDeserializer = HendelseDeserializer(),
-                        consumerVersion = 1,
-                        oppslagApiClient = oppslagsApi,
-                    )
-
-                    testApplication {
-                        application {
-                            module(testApplicationContext(service))
-                        }
-
-                        val client = testClient()
-                        val response = client.post("/api/v1/arbeidssoeker/detaljer") {
-                            headers {
-                                append("Content-Type", "application/json")
-                            }
-                            setBody(DetaljerRequest("12345678901"))
-                        }
-
-                        response.status shouldBe HttpStatusCode.OK
-                        val detaljer: DetaljerResponse = response.body()
-                        detaljer.arbeidssoekerId shouldBe kafkaKeysClient.getIdAndKeyOrNull("12345678901")!!.id
-                    }
-                }*/
-    }
-    /*    "Test av brukerstøtte API" {
-            val logger = LoggerFactory.getLogger(ApiTest::class.java)
-            logger.info("Starter test")
-            initDbContainer()
-            logger.info("Db container startet")
-            val kafkaKeysClient = inMemoryKafkaKeysMock()
-            val oppslagsApi: OppslagApiClient = mockk()
-            every { runBlocking { oppslagsApi.perioder(any()) } } returns listOf(
-                ArbeidssoekerperiodeResponse(
-                    periodeId = UUID.randomUUID(),
-                    startet = MetadataResponse(
-                        tidspunkt = Instant.now().truncatedTo(ChronoUnit.MILLIS),
-                        utfoertAv = BrukerResponse(
-                            type = no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.BrukerType.SYSTEM,
-                            id = "system"
-                        ),
-                        kilde = "system",
-                        aarsak = "test"
-
-                    ),
-                    avsluttet = null
-                )
-            ).right()
-            every {
-                runBlocking {
-                    oppslagsApi.opplysninger(
-                        any(),
-                        any()
-                    )
-                }
-            } returns emptyList<OpplysningerOmArbeidssoekerResponse>().right()
-            every {
-                runBlocking {
-                    oppslagsApi.profileringer(
-                        any(),
-                        any()
-                    )
-                }
-            } returns emptyList<ProfileringResponse>().right()
-
-            val service = BrukerstoetteService(
-                kafkaKeysClient = kafkaKeysClient,
-                hendelseDeserializer = HendelseDeserializer(),
-                consumerVersion = 1,
-                oppslagApiClient = oppslagsApi,
-            )
-            logger.info("Service opprettet")
-
-            testApplication {
-                application {
-                    module(testApplicationContext(service))
-                }
-
-                val client = testClient()
-                val response = client.post("/api/v1/arbeidssoeker/detaljer") {
-                    headers {
-                        append("Content-Type", "application/json")
-                    }
-                    setBody(DetaljerRequest("12345678901"))
-                }
-
-                response.status shouldBe HttpStatusCode.NotFound
-                val responseBody = response.body<no.nav.paw.error.model.ProblemDetails>()
-                responseBody.detail shouldBe "Ingen hendelser for bruker"
-                responseBody.status shouldBe "ikke funnet"
-
-                val testRecord = ConsumerRecord<Long, Hendelse>(
-                    "topic",
-                    3,
-                    157,
-                    kafkaKeysClient.getIdAndKeyOrNull("12345678901")!!.key,
-                    Startet(
-                        hendelseId = UUID.randomUUID(),
-                        id = kafkaKeysClient.getIdAndKeyOrNull("12345678901")!!.id,
-                        identitetsnummer = "12345678901",
-                        metadata = Metadata(
-                            tidspunkt = Instant.now().truncatedTo(ChronoUnit.MILLIS),
-                            utfoertAv = Bruker(
-                                type = BrukerType.SYSTEM,
-                                id = "system",
-                                sikkerhetsnivaa = null
-                            ),
-                            kilde = "system",
-                            aarsak = "test"
-                        )
-                    )
-                ).also {
-                    it.headers().add("traceparent", "test".toByteArray())
-                }
-                transaction {
-                    writeRecord(1, HendelseSerde().serializer(), testRecord)
-                }
-                val response2 = client.post("/api/v1/arbeidssoeker/detaljer") {
-                    headers {
-                        append("Content-Type", "application/json")
-                    }
-                    setBody(DetaljerRequest("12345678901"))
-                }
-                response2.status shouldBe HttpStatusCode.OK
-                val detaljer: DetaljerResponse = response2.body()
-                detaljer.arbeidssoekerId shouldBe testRecord.value().id
-                detaljer.kafkaPartition shouldBe 3
-                detaljer.recordKey shouldBe testRecord.key()
-                detaljer.historikk.first().hendelse.traceparent shouldBe "test"
-                detaljer.gjeldeneTilstand shouldBe Tilstand(
-                    harAktivePeriode = true,
-                    startet = testRecord.value().metadata.tidspunkt,
-                    harOpplysningerMottattHendelse = false,
-                    avsluttet = null,
-                    apiKall = TilstandApiKall(
-                        harPeriode = false,
-                        harOpplysning = false,
-                        harProfilering = false
-                    ),
-                    periodeId = testRecord.value().hendelseId,
-                    gjeldeneOpplysningsId = null
-                )
-            }
-        }*/
 })

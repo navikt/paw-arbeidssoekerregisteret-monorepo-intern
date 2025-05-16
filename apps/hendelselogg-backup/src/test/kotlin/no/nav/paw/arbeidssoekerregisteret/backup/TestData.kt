@@ -3,7 +3,7 @@ package no.nav.paw.arbeidssoekerregisteret.backup
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.HendelseMetadata
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.HendelseMetadataTidspunktFraKilde
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.HendelseMetadataUtfoertAv
-import no.nav.paw.arbeidssoekerregisteret.backup.vo.StoredData
+import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.StoredHendelseRecord
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
@@ -120,14 +120,14 @@ fun metadata(
 
 val testTraceparent = "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01"
 
-fun Hendelse.storedData(
+fun Hendelse.storedHendelseRecord(
     partition: Int = 1,
     offset: Long = 1,
     recordKey: Long = 1,
     arbeidssoekerId: Long = 1,
     traceparent: String = testTraceparent,
     merged: Boolean = false,
-) = StoredData(
+) = StoredHendelseRecord(
     partition = 1,
     offset = 1,
     recordKey = 1,
@@ -137,7 +137,7 @@ fun Hendelse.storedData(
     merged = merged
 )
 
-fun StoredData.apiHendelse(): no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Hendelse =
+fun StoredHendelseRecord.apiHendelse(): no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Hendelse =
     no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Hendelse(
         hendelseId = data.hendelseId,
         hendelseType = data.hendelseType,

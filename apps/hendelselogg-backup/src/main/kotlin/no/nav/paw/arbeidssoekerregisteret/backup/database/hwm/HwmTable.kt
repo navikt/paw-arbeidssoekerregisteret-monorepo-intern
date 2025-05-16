@@ -1,4 +1,4 @@
-package no.nav.paw.arbeidssoekerregisteret.backup.database
+package no.nav.paw.arbeidssoekerregisteret.backup.database.hwm
 
 import org.jetbrains.exposed.sql.Table
 

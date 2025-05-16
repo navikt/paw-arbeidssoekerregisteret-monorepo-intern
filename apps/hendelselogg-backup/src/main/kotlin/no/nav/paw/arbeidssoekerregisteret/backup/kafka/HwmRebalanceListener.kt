@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssoekerregisteret.backup.kafka
 
-import no.nav.paw.arbeidssoekerregisteret.backup.database.getHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.getHwm
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
 import org.apache.kafka.common.TopicPartition

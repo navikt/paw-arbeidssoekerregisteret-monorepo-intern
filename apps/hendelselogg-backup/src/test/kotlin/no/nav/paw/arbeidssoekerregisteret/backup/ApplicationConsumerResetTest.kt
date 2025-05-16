@@ -3,7 +3,7 @@ package no.nav.paw.arbeidssoekerregisteret.backup
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import no.nav.paw.arbeidssoekerregisteret.backup.database.initHwm
+import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.initHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.kafka.processRecords
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import org.apache.kafka.clients.consumer.ConsumerRecord

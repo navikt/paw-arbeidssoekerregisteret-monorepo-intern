@@ -13,6 +13,7 @@ import no.nav.paw.arbeidssoekerregisteret.backup.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.config.m2mCfg
 import no.nav.paw.arbeidssoekerregisteret.backup.database.DatabaseConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.database.dataSource
+import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseHendelseRecordPostgresRepository
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
@@ -52,6 +53,7 @@ data class ApplicationContext(
                 applicationConfig.version,
                 kafkaKeysClient,
                 oppslagApiClient,
+                HendelseHendelseRecordPostgresRepository,
                 hendelseDeserializer = HendelseDeserializer()
             )
 

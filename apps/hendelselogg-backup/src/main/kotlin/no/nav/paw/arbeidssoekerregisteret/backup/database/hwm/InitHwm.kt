@@ -1,8 +1,8 @@
-package no.nav.paw.arbeidssoekerregisteret.backup.database
+package no.nav.paw.arbeidssoekerregisteret.backup.database.hwm
 
 import io.micrometer.core.instrument.Tag
-import no.nav.paw.arbeidssoekerregisteret.backup.metrics.Metrics
 import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.metrics.Metrics
 import org.jetbrains.exposed.sql.transactions.transaction
 
 fun initHwm(context: ApplicationContext) {

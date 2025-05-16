@@ -14,14 +14,13 @@ import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Snapsh
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Tilstand
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.TilstandApiKall
 import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.ArbeidssoekerperiodeResponse
-import no.nav.paw.arbeidssoekerregisteret.backup.database.RecordPostgresRepository.readAllNestedRecordsForId
-import no.nav.paw.arbeidssoekerregisteret.backup.vo.StoredData
+import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecordRepository
+import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.StoredHendelseRecord
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.slf4j.LoggerFactory
 import java.util.*
 import kotlin.contracts.ExperimentalContracts
@@ -33,15 +32,15 @@ class BrukerstoetteService(
     private val consumerVersion: Int,
     private val kafkaKeysClient: KafkaKeysClient,
     private val oppslagApiClient: OppslagApiClient,
+    private val hendelseRecordRepository: HendelseRecordRepository,
     private val hendelseDeserializer: HendelseDeserializer,
 ) {
     private val errorLogger = LoggerFactory.getLogger("error_logger")
     private val apiOppslagLogger = LoggerFactory.getLogger("api_oppslag_logger")
     suspend fun hentDetaljer(identitetsnummer: String): DetaljerResponse {
-        val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer)
-        val hendelser = transaction {
-            readAllNestedRecordsForId(consumerVersion, hendelseDeserializer, id, merged = false)
-        }
+        val (id, key) = kafkaKeysClient.getIdAndKeyOrNull(identitetsnummer) ?: throw IngenHendelserFunnet("Fant ingen hendelser for person")
+        val hendelser = hendelseRecordRepository.readAllNestedRecordsForId(consumerVersion, hendelseDeserializer, id, merged = false)
+
         if (hendelser.isEmpty()) throw IngenHendelserFunnet("Fant ingen hendelser for person")
 
         val sistePeriode = sistePeriode(hendelser)
@@ -128,13 +127,13 @@ data class ApiData(
     val profileringsId: UUID?,
 )
 
-fun sistePeriode(hendelser: List<StoredData>): Tilstand? =
+fun sistePeriode(hendelser: List<StoredHendelseRecord>): Tilstand? =
     hendelser
         .filterNot { it.merged }
         .sortedBy { it.offset }
         .fold(null as Tilstand?, ::beregnTilstand)
 
-fun historiskeTilstander(hendelser: List<StoredData>): Iterable<Snapshot> =
+fun historiskeTilstander(hendelser: List<StoredHendelseRecord>): Iterable<Snapshot> =
     hendelser.map(null as Tilstand?) { tilstand, hendelse ->
         val nyTilstand = beregnTilstand(tilstand, hendelse)
         val resultat = Snapshot(
@@ -179,7 +178,7 @@ fun <V, S, R> Iterable<V>.map(initial: S, function: (S, V) -> Pair<S, R>): Itera
     }
 }
 
-fun beregnTilstand(tilstand: Tilstand?, hendelse: StoredData): Tilstand? =
+fun beregnTilstand(tilstand: Tilstand?, hendelse: StoredHendelseRecord): Tilstand? =
     when {
         !tilstand.harAktivPeriode() && hendelse.erStartet() -> {
             Tilstand(
@@ -211,9 +210,9 @@ fun beregnTilstand(tilstand: Tilstand?, hendelse: StoredData): Tilstand? =
         else -> tilstand
     }
 
-fun StoredData.erAvsluttet(): Boolean = this.data is Avsluttet
-fun StoredData.erStartet(): Boolean = this.data is Startet
-fun StoredData.erOpplysningerMottatt(): Boolean = this.data is OpplysningerOmArbeidssoekerMottatt
+fun StoredHendelseRecord.erAvsluttet(): Boolean = this.data is Avsluttet
+fun StoredHendelseRecord.erStartet(): Boolean = this.data is Startet
+fun StoredHendelseRecord.erOpplysningerMottatt(): Boolean = this.data is OpplysningerOmArbeidssoekerMottatt
 
 fun Tilstand?.harAktivPeriode(): Boolean {
     contract {

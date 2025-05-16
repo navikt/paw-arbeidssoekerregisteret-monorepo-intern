@@ -6,8 +6,8 @@ import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.install
 import io.ktor.server.routing.IgnoreTrailingSlash
 import io.ktor.server.routing.route
-import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.routing.routing
+import io.ktor.server.testing.ApplicationTestBuilder
 import io.micrometer.core.instrument.binder.MeterBinder
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
@@ -22,12 +22,13 @@ import no.nav.paw.arbeidssoekerregisteret.backup.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.backup.database.DatabaseConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.database.dataSource
+import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecordRepository
 import no.nav.paw.arbeidssoekerregisteret.backup.database.migrateDatabase
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.error.plugin.installErrorHandlingPlugin
-import no.nav.paw.kafkakeygenerator.client.inMemoryKafkaKeysMock
+import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.security.authentication.config.SecurityConfig
 import no.nav.paw.security.authentication.plugin.installAuthenticationPlugin
 import no.nav.paw.serialization.jackson.configureJackson
@@ -64,6 +65,9 @@ open class TestApplicationContext(
     open val serverConfig: ServerConfig,
     open val securityConfig: SecurityConfig,
     open val prometheusMeterRegistry: PrometheusMeterRegistry,
+    open val kafkaKeysClient: KafkaKeysClient,
+    open val oppslagApiClient: OppslagApiClient,
+    open val hendelseRecordRepository: HendelseRecordRepository,
     open val brukerstoetteService: BrukerstoetteService,
     open val additionalMeterBinder: MeterBinder
 ) {
@@ -75,12 +79,14 @@ open class TestApplicationContext(
             val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>("server_config.toml")
             val securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>("security_config.toml")
             val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-            val kafkaKeysClient = inMemoryKafkaKeysMock()
+            val kafkaKeysClient = mockk<KafkaKeysClient>()
             val oppslagApiClient = mockk<OppslagApiClient>()
+            val hendelseRecordRepository = mockk<HendelseRecordRepository>(relaxed = true)
             val brukerstoetteService = BrukerstoetteService(
                 applicationConfig.version,
                 kafkaKeysClient,
                 oppslagApiClient,
+                hendelseRecordRepository,
                 HendelseDeserializer()
             )
             val additionalMeterBinder = mockk<MeterBinder>(relaxed = true)
@@ -92,6 +98,9 @@ open class TestApplicationContext(
                 serverConfig = serverConfig,
                 securityConfig = securityConfig,
                 prometheusMeterRegistry = prometheusMeterRegistry,
+                kafkaKeysClient = kafkaKeysClient,
+                oppslagApiClient = oppslagApiClient,
+                hendelseRecordRepository = hendelseRecordRepository,
                 brukerstoetteService = brukerstoetteService,
                 additionalMeterBinder = additionalMeterBinder
             )
@@ -121,7 +130,13 @@ open class TestApplicationContext(
         dataSource = loadNaisOrLocalConfiguration<DatabaseConfig>("database_configuration.toml").dataSource(),
         prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
         hendelseKafkaConsumer = mockk(relaxed = true),
-        brukerstoetteService = brukerstoetteService,
+        brukerstoetteService = BrukerstoetteService(
+            applicationConfig.version,
+            kafkaKeysClient,
+            oppslagApiClient,
+            hendelseRecordRepository,
+            HendelseDeserializer()
+        ),
         additionalMeterBinder = mockk(relaxed = true)
     )
 

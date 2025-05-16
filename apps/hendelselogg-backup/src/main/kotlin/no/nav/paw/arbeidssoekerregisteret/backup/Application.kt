@@ -5,10 +5,10 @@ import io.ktor.server.engine.addShutdownHook
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.customExceptionResolver
-import no.nav.paw.arbeidssoekerregisteret.backup.database.initHwm
+import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.initHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.plugin.configureRouting
 import no.nav.paw.arbeidssoekerregisteret.backup.plugin.installKafkaPlugin
-import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContext
 import no.nav.paw.config.env.appNameOrDefaultForLocal
 import no.nav.paw.database.plugin.installDatabasePlugin
 import no.nav.paw.error.plugin.installErrorHandlingPlugin

@@ -2,11 +2,11 @@ package no.nav.paw.arbeidssoekerregisteret.backup.plugin
 
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
-import no.nav.paw.arbeidssoekerregisteret.backup.kafka.HwmRebalanceListener
+import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.backup.health.HealthIndicatorConsumerExceptionHandler
+import no.nav.paw.arbeidssoekerregisteret.backup.kafka.HwmRebalanceListener
 import no.nav.paw.arbeidssoekerregisteret.backup.kafka.processRecords
 import no.nav.paw.arbeidssoekerregisteret.backup.metrics.Metrics
-import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContext
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.health.model.LivenessHealthIndicator
 import no.nav.paw.health.model.ReadinessHealthIndicator
