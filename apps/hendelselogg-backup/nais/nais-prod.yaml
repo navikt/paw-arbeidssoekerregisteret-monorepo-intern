@@ -45,6 +45,8 @@ spec:
       value: "api://prod-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag/.default"
     - name: KAFKA_KEYS_SCOPE
       value: "api://prod-gcp.paw.paw-kafka-key-generator/.default"
+    - name: KAFKA_PAW_ARBEIDSSOKER_HENDELSESLOGG_TOPIC
+      value: "paw.arbeidssoker-hendelseslogg-v1"
   resources:
     limits:
       memory: 1024Mi
