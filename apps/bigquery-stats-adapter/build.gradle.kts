@@ -19,6 +19,10 @@ dependencies {
     implementation(project(":lib:error-handling"))
     implementation(project(":lib:metrics"))
 
+    //Database
+    implementation(platform(libs.database.bigquery.librariesBom))
+    implementation(libs.database.bigquery.client)
+
     // Server
     implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
 

@@ -32,3 +32,8 @@ spec:
       runtime: java
   kafka:
     pool: nav-dev
+  filesFrom:
+    - secret: bq-enc-periode
+      mountPath: /var/run/secrets/periode_id
+    - secret: bq-enc-hendelse
+      mountPath: /var/run/secrets/ident

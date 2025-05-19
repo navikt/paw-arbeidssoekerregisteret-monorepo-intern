@@ -24,6 +24,7 @@ otelTargetSdkVersion = "1.50.0"
 otelInstrumentationVersion = "2.15.0"
 postgresDriverVersion = "42.7.5"
 h2DatabaseVersion = "2.3.232"
+bigqueryVersion = "26.45.0"
 flywayVersion = "11.8.2"
 hikariVersion = "6.3.0"
 kotlinxCoroutinesVersion = "1.10.2"
@@ -96,6 +97,8 @@ database-flyway-core = { group = "org.flywaydb", name = "flyway-core", version.r
 database-flyway-postgres = { group = "org.flywaydb", name = "flyway-database-postgresql", version.ref = "flywayVersion" }
 database-hikari-connectionPool = { group = "com.zaxxer", name = "HikariCP", version.ref = "hikariVersion" }
 database-h2 = { group = "com.h2database", name = "h2", version.ref = "h2DatabaseVersion" }
+database-bigquery-librariesBom = { group = "com.google.cloud", name = "libraries-bom", version.ref = "bigqueryVersion" }
+database-bigquery-client = { group = "com.google.cloud", name = "google-cloud-bigquery"}
 nav-common-tokenClient = { group = "no.nav.common", name = "token-client", version.ref = "noNavCommonVersion" }
 nav-common-log = { group = "no.nav.common", name = "log", version.ref = "noNavCommonVersion" }
 nav-common-auditLog = { group = "no.nav.common", name = "audit-log", version.ref = "noNavCommonVersion" }

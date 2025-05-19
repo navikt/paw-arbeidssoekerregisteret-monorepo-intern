@@ -9,13 +9,22 @@ import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.health.route.healthRoutes
 import no.nav.paw.metrics.route.metricsRoutes
 import org.slf4j.LoggerFactory
+import java.nio.file.Paths
 
 val appLogger = LoggerFactory.getLogger("app")
+
+val periodeIdSaltPath = Paths.get("/var/run/secrets/periode_id/enc_periode")
+val hendelseIdentSaltPath = Paths.get("/var/run/secrets/ident/bq-enc-hendele")
 
 fun main() {
     appLogger.info("Starter app...")
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val healthIndicatorRepository = HealthIndicatorRepository()
+    val encoder = Encoder(
+        identSalt = hendelseIdentSaltPath.toFile().readBytes(),
+        periodeIdSalt = periodeIdSaltPath.toFile().readBytes()
+    )
+    appLogger.info("Lastet encoder: $encoder")
     embeddedServer(factory = Netty, port = 8080) {
         routing {
             metricsRoutes(prometheusMeterRegistry)
