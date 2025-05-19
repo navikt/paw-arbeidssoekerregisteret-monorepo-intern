@@ -15,7 +15,7 @@ import java.nio.file.Paths
 val appLogger = LoggerFactory.getLogger("app")
 
 val periodeIdSaltPath = Paths.get("/var/run/secrets/periode_id/enc_periode")
-val hendelseIdentSaltPath = Paths.get("/var/run/secrets/ident/bq-enc-hendele")
+val hendelseIdentSaltPath = Paths.get("/var/run/secrets/ident/enc-hendelse")
 
 fun main() {
     appLogger.info("Starter app...")
