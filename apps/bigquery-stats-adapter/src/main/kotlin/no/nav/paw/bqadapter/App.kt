@@ -22,9 +22,9 @@ fun main() {
     appLogger.info("Starter app...")
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val healthIndicatorRepository = HealthIndicatorRepository()
-    appLogger.info("Mounted secrets: " + basePath.toFile().listFiles().flatMap {
+    appLogger.info("Mounted secrets: " + basePath.toFile().listFiles()?.flatMap {
         if (it.isDirectory) {
-            it.listFiles().toList().map { inner -> "${it.name}/$inner" }
+            it.listFiles()?.toList()?.map { inner -> "${it.name}/$inner" } ?: listOf("${it.name}/ listFiles => null")
         } else listOf(it.name)
     })
     val encoder = Encoder(
