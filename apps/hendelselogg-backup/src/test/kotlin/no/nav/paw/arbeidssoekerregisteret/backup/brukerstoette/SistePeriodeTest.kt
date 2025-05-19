@@ -6,7 +6,7 @@ import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Tilsta
 import no.nav.paw.arbeidssoekerregisteret.backup.avsluttet
 import no.nav.paw.arbeidssoekerregisteret.backup.opplysninger
 import no.nav.paw.arbeidssoekerregisteret.backup.startet
-import no.nav.paw.arbeidssoekerregisteret.backup.storedData
+import no.nav.paw.arbeidssoekerregisteret.backup.storedHendelseRecord
 
 class SistePeriodeTest: FreeSpec({
     "verifiser at sistePeriode funksjonen fungerer" - {
@@ -16,8 +16,8 @@ class SistePeriodeTest: FreeSpec({
         "uten startet hendelse returneres null" {
             sistePeriode(
                 listOf(
-                    avsluttet().storedData(offset = 1),
-                    opplysninger().storedData(offset = 2)
+                    avsluttet().storedHendelseRecord(offset = 1),
+                    opplysninger().storedHendelseRecord(offset = 2)
                 )
             ) shouldBe null
         }
@@ -25,7 +25,7 @@ class SistePeriodeTest: FreeSpec({
             val startet = startet()
             sistePeriode(
                 listOf(
-                    startet.storedData(offset = 1)
+                    startet.storedHendelseRecord(offset = 1)
                 )
             ) shouldBe Tilstand(
                 harAktivePeriode = true,
@@ -42,13 +42,13 @@ class SistePeriodeTest: FreeSpec({
             val gjeldeneOpplysninger = opplysninger()
             sistePeriode(
                 listOf(
-                    startet().storedData(offset = 1),
-                    opplysninger().storedData(offset = 2),
-                    avsluttet().storedData(offset = 3),
-                    nyesteperiode.storedData(offset = 4),
-                    startet().storedData(offset = 5),
-                    gjeldeneOpplysninger.storedData(offset = 6),
-                    avsluttet.storedData(offset = 7)
+                    startet().storedHendelseRecord(offset = 1),
+                    opplysninger().storedHendelseRecord(offset = 2),
+                    avsluttet().storedHendelseRecord(offset = 3),
+                    nyesteperiode.storedHendelseRecord(offset = 4),
+                    startet().storedHendelseRecord(offset = 5),
+                    gjeldeneOpplysninger.storedHendelseRecord(offset = 6),
+                    avsluttet.storedHendelseRecord(offset = 7)
                 )
             ) shouldBe Tilstand(
                 harAktivePeriode = false,

@@ -1,12 +1,12 @@
-package no.nav.paw.arbeidssoekerregisteret.backup
+package no.nav.paw.arbeidssoekerregisteret.backup.kafka
 
-import no.nav.paw.arbeidssoekerregisteret.backup.database.getHwm
-import no.nav.paw.arbeidssoekerregisteret.backup.database.txContext
-import no.nav.paw.arbeidssoekerregisteret.backup.vo.ApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.getHwm
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
 import org.apache.kafka.common.TopicPartition
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 
 class HwmRebalanceListener(
@@ -14,14 +14,14 @@ class HwmRebalanceListener(
     private val consumer: Consumer<*, *>
 ) : ConsumerRebalanceListener {
 
+    private val logger = LoggerFactory.getLogger(HwmRebalanceListener::class.java)
     private val currentPartitions = ConcurrentHashMap<Int, TopicPartition>(6)
 
     val currentlyAssignedPartitions: Set<Int> get() = currentPartitions.keys
 
-    private val txContext = txContext(context)
 
     override fun onPartitionsRevoked(partitions: MutableCollection<TopicPartition>?) {
-        context.logger.info("Revoked: $partitions")
+        logger.info("Revoked: $partitions")
         partitions?.forEach { partition ->
             currentPartitions.remove(partition.partition())
         }
@@ -32,11 +32,11 @@ class HwmRebalanceListener(
             currentPartitions.putIfAbsent(partition.partition(), partition)
         }
         val assignedPartitions = partitions ?: emptyList()
-        context.logger.info("Assigned partitions $assignedPartitions")
+        logger.info("Assigned partitions $assignedPartitions")
         if (assignedPartitions.isNotEmpty()) {
             val seekTo = transaction {
                 assignedPartitions.map { partition ->
-                    val offset = requireNotNull(txContext().getHwm(partition.partition())) {
+                    val offset = requireNotNull(getHwm(context.applicationConfig.version, partition.partition())) {
                         "No hwm for partition ${partition.partition()}, init not called?"
                     }
                     partition to offset

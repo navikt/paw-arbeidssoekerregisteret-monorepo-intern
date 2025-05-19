@@ -1,8 +1,8 @@
-package no.nav.paw.arbeidssoekerregisteret.backup.vo
+package no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse
 
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 
-data class StoredData(
+data class StoredHendelseRecord(
     val partition: Int,
     val offset: Long,
     val recordKey: Long,

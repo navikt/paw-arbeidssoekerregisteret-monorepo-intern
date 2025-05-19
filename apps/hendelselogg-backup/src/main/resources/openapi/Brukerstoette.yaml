@@ -37,7 +37,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Feil"
+                $ref: "#/components/schemas/ProblemDetails"
         "500":
           description: "Internal Server Error"
           headers:
@@ -48,7 +48,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Feil"
+                $ref: "#/components/schemas/ProblemDetails"
         "403":
           description: "Forbidden"
           headers:
@@ -59,7 +59,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Feil"
+                $ref: "#/components/schemas/ProblemDetails"
         "200":
           description: "OK"
           headers:
@@ -74,16 +74,37 @@ paths:
 
 components:
   schemas:
-    Feil:
-      type: "object"
+    ProblemDetails:
+      type: object
       properties:
-        melding:
+        id:
           type: "string"
-        feilKode:
+          format: "uuid"
+        type:
+          type: "string"
+          format: "uri"
+        status:
+          type: "integer"
+        title:
+          type: "string"
+        detail:
+          type: "string"
+        instance:
           type: "string"
       required:
-      - "melding"
-      - "feilKode"
+        - id
+        - type
+        - status
+        - title
+        - detail
+        - instance
+      example:
+        id: "3cd944fb-6187-41a8-91b2-b172f2baf890"
+        type: "urn:paw:sikkerhet:bruker-har-ikke-tilgang"
+        status: 403
+        title: "Forbidden"
+        detail: "Bruker har ikke tilgang"
+        instance: "/api/endpoint"
     DetaljerRequest:
       type: "object"
       properties:

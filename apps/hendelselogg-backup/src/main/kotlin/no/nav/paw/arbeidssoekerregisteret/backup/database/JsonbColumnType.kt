@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.backup.database
 
-import no.nav.paw.arbeidssoekerregisteret.backup.database.HendelseTable.registerColumn
+import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseTable.registerColumn
 import org.jetbrains.exposed.sql.IColumnType
 import org.postgresql.util.PGobject
 

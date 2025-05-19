@@ -1,6 +1,7 @@
 package no.nav.paw.arbeidssoekerregisteret.backup
 
-import no.nav.paw.arbeidssokerregisteret.intern.v1.*
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
+import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerializer
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.kafka.config.KAFKA_CONFIG
 import no.nav.paw.kafka.config.KafkaConfig
@@ -22,7 +23,7 @@ fun main() {
     }
     val startTime = Instant.now()
     val numberOfRecords = 12560
-    hendelser().take(numberOfRecords).forEach {
+    genererHendelseSequenceFra(hendelser = listOf(startet(), opplysninger(), avsluttet())).take(numberOfRecords).forEach {
         producer.send(ProducerRecord(
             "paw.arbeidssoker-hendelseslogg-v1",
             it.id,
