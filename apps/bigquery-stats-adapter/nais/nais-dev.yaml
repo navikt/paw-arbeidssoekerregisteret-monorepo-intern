@@ -37,3 +37,12 @@ spec:
       mountPath: /var/run/secrets/periode_id
     - secret: bq-enc-hendelse
       mountPath: /var/run/secrets/ident
+  gcp:
+    bigQueryDatasets:
+      - cascadingDelete: true
+        description: Contains pseudo annonymized data from the NAV arbeidssoekerregisteret.
+        name: arbeidssoekerregisteret_internt
+        permission: READWRITE
+      - description: Contains materialized views of data from dataset -> arbeidssoekerregisteret_internt
+        name: arbeidssoekerregisteret_grafana
+        permission: READWRITE
