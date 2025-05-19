@@ -6,8 +6,8 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.customExceptionResolver
 import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContext
-import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.initHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.plugin.configureRouting
+import no.nav.paw.arbeidssoekerregisteret.backup.plugin.installHwmPlugin
 import no.nav.paw.arbeidssoekerregisteret.backup.plugin.installKafkaPlugin
 import no.nav.paw.config.env.appNameOrDefaultForLocal
 import no.nav.paw.database.plugin.installDatabasePlugin
@@ -29,7 +29,6 @@ fun main() {
         embeddedServer(factory = Netty, port = port) {
             module(applicationContext)
         }.apply {
-            initHwm(applicationContext)
             addShutdownHook {
                 logger.info("Avslutter $appName")
                 stop(gracePeriodMillis, timeoutMillis)
@@ -56,6 +55,7 @@ fun Application.module(applicationContext: ApplicationContext) =
             customResolver = customExceptionResolver()
         )
         installAuthenticationPlugin(securityConfig.authProviders)
+        installHwmPlugin(applicationContext)
         configureRouting(
             meterRegistry = prometheusMeterRegistry,
             brukerstoetteService = brukerstoetteService

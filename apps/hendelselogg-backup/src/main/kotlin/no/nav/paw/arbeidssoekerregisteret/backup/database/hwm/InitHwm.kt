@@ -9,7 +9,7 @@ fun initHwm(context: ApplicationContext) {
     val partitions = context.applicationConfig.partitionCount
     val version = context.applicationConfig.version
     val allHwms = transaction {
-            initHwm(version, partitions)
+        initHwm(version, partitions)
         getAllHwms(version)
     }
     allHwms.forEach { hwm ->
