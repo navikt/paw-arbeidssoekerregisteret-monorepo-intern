@@ -57,7 +57,6 @@ class BrukerstoetteService(
         val (id, key) = kafkaKeysClient.getIdAndKeyOrNull(identitetsnummer)
             ?: throw IngenHendelserFunnet("Fant ingen hendelser for person")
 
-
         val hendelser = hendelseRecordRepository.readAllNestedRecordsForId(
             consumerVersion,
             hendelseDeserializer,

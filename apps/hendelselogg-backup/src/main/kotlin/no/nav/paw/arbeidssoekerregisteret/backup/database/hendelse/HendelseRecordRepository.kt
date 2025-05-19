@@ -11,7 +11,7 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.util.UUID
+import java.util.*
 
 interface HendelseRecordRepository {
     fun <A : Hendelse> writeRecord(
@@ -59,7 +59,10 @@ object HendelseHendelseRecordPostgresRepository : HendelseRecordRepository {
         }
     }
 
-    override fun hentIdentitetsnummerForPeriodeId(hendelseDeserializer: HendelseDeserializer, periodeId: UUID): String? =
+    override fun hentIdentitetsnummerForPeriodeId(
+        hendelseDeserializer: HendelseDeserializer,
+        periodeId: UUID,
+    ): String? = transaction {
         TransactionManager.current()
             .exec(
                 stmt = """select data from hendelser where data @> '{"hendelseId": "$periodeId"}' and data @> '{"hendelseType": "intern.v1.startet"}' limit 1;""",
@@ -71,7 +74,7 @@ object HendelseHendelseRecordPostgresRepository : HendelseRecordRepository {
                     } else null
                 }
             )
-
+    }
 
     override fun readAllNestedRecordsForId(
         consumerVersion: Int,
