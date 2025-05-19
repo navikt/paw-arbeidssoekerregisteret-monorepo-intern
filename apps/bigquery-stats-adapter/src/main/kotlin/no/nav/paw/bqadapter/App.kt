@@ -16,7 +16,7 @@ val appLogger = LoggerFactory.getLogger("app")
 
 val basePaths = listOf(Paths.get("/var/run/secrets/periode_id"), Paths.get("/var/run/secrets/ident"))
 val periodeIdSaltPath = Paths.get("/var/run/secrets/periode_id/enc_periode")
-val hendelseIdentSaltPath = Paths.get("/var/run/secrets/ident/enc-hendelse")
+val hendelseIdentSaltPath = Paths.get("/var/run/secrets/ident/enc_hendelse")
 
 fun main() {
     appLogger.info("Starter app...")
