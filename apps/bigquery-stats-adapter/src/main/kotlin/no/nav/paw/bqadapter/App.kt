@@ -14,7 +14,6 @@ import java.nio.file.Paths
 
 val appLogger = LoggerFactory.getLogger("app")
 
-val basePaths = listOf(Paths.get("/var/run/secrets/periode_id"), Paths.get("/var/run/secrets/ident"))
 val periodeIdSaltPath = Paths.get("/var/run/secrets/periode_id/enc_periode")
 val hendelseIdentSaltPath = Paths.get("/var/run/secrets/ident/enc_hendelse")
 
@@ -29,14 +28,6 @@ fun main() {
     appLogger.info("Lastet encoder: $encoder")
     val appConfig = appConfig
     appLogger.info("App config: $appConfig")
-    appLogger.info("Mounted secrets: " + basePaths.map { path ->
-        path.toFile().listFiles()?.flatMap {
-            if (it.isDirectory) {
-                it.listFiles()?.toList()?.map { inner -> "${it.name}/$inner" }
-                    ?: listOf("${it.name}/ listFiles => null")
-            } else listOf(it.name)
-        }
-    })
     val bigqueryContext = createBigQueryContext(
         project = appConfig.bigqueryProject
     )
