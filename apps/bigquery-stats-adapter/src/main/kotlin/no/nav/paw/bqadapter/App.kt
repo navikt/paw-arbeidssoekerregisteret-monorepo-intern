@@ -5,6 +5,7 @@ import io.ktor.server.netty.Netty
 import io.ktor.server.routing.routing
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import no.nav.paw.bqadapter.bigquery.createBigQueryContext
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.health.route.healthRoutes
 import no.nav.paw.metrics.route.metricsRoutes
@@ -23,6 +24,11 @@ fun main() {
     val encoder = Encoder(
         identSalt = hendelseIdentSaltPath.toFile().readBytes(),
         periodeIdSalt = periodeIdSaltPath.toFile().readBytes()
+    )
+    val appConfig = appConfig
+    appLogger.info("App config: $appConfig")
+    val bigqueryContext = createBigQueryContext(
+        project = appConfig.bigqueryProject
     )
     appLogger.info("Lastet encoder: $encoder")
     embeddedServer(factory = Netty, port = 8080) {
