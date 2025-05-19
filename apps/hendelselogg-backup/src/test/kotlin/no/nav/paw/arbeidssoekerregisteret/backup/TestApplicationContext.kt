@@ -8,7 +8,6 @@ import io.ktor.server.routing.IgnoreTrailingSlash
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.ApplicationTestBuilder
-import io.micrometer.core.instrument.binder.MeterBinder
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.mockk.mockk
@@ -17,14 +16,12 @@ import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.OppslagApiClient
 import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.brukerstoetteRoutes
 import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.customExceptionResolver
 import no.nav.paw.arbeidssoekerregisteret.backup.config.ApplicationConfig
-import no.nav.paw.arbeidssoekerregisteret.backup.config.AzureConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.backup.database.DatabaseConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.database.dataSource
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecordRepository
 import no.nav.paw.arbeidssoekerregisteret.backup.database.migrateDatabase
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.error.plugin.installErrorHandlingPlugin
@@ -33,22 +30,12 @@ import no.nav.paw.security.authentication.config.SecurityConfig
 import no.nav.paw.security.authentication.plugin.installAuthenticationPlugin
 import no.nav.paw.serialization.jackson.configureJackson
 import no.nav.paw.serialization.plugin.installContentNegotiationPlugin
-import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.jetbrains.exposed.sql.Database
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
 
-fun testApplicationContext(
-    brukerstoetteService: BrukerstoetteService = mockk(relaxed = true),
-): ApplicationContext {
-    return testApplicationContext.copy(
-        brukerstoetteService = brukerstoetteService,
-    )
-}
-
 val testApplicationContext = ApplicationContext(
     hendelseKafkaConsumer = mockk(relaxed = true),
-    azureConfig = loadNaisOrLocalConfiguration<AzureConfig>("azure_config.toml"),
     applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>("application_config.toml"),
     serverConfig = loadNaisOrLocalConfiguration<ServerConfig>("server_config.toml"),
     securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>("security_config.toml"),
@@ -59,26 +46,19 @@ val testApplicationContext = ApplicationContext(
 )
 
 open class TestApplicationContext(
-    open val hendelseKafkaConsumer: KafkaConsumer<Long, Hendelse>,
-    open val azureConfig: AzureConfig,
     open val applicationConfig: ApplicationConfig,
     open val serverConfig: ServerConfig,
     open val securityConfig: SecurityConfig,
-    open val prometheusMeterRegistry: PrometheusMeterRegistry,
     open val kafkaKeysClient: KafkaKeysClient,
     open val oppslagApiClient: OppslagApiClient,
     open val hendelseRecordRepository: HendelseRecordRepository,
     open val brukerstoetteService: BrukerstoetteService,
-    open val additionalMeterBinder: MeterBinder
 ) {
     companion object {
         fun build(): TestApplicationContext {
-            val hendelseKafkaConsumer = mockk<KafkaConsumer<Long, Hendelse>>(relaxed = true)
-            val azureConfig = loadNaisOrLocalConfiguration<AzureConfig>("azure_config.toml")
             val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>("application_config.toml")
-            val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>("server_config.toml")
-            val securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>("security_config.toml")
-            val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+            val serverConfig = mockk<ServerConfig>(relaxed = true)
+            val securityConfig = mockk<SecurityConfig>(relaxed = true)
             val kafkaKeysClient = mockk<KafkaKeysClient>()
             val oppslagApiClient = mockk<OppslagApiClient>()
             val hendelseRecordRepository = mockk<HendelseRecordRepository>(relaxed = true)
@@ -89,20 +69,14 @@ open class TestApplicationContext(
                 hendelseRecordRepository,
                 HendelseDeserializer()
             )
-            val additionalMeterBinder = mockk<MeterBinder>(relaxed = true)
-
             return TestApplicationContext(
-                hendelseKafkaConsumer = hendelseKafkaConsumer,
-                azureConfig = azureConfig,
                 applicationConfig = applicationConfig,
                 serverConfig = serverConfig,
                 securityConfig = securityConfig,
-                prometheusMeterRegistry = prometheusMeterRegistry,
                 kafkaKeysClient = kafkaKeysClient,
                 oppslagApiClient = oppslagApiClient,
                 hendelseRecordRepository = hendelseRecordRepository,
-                brukerstoetteService = brukerstoetteService,
-                additionalMeterBinder = additionalMeterBinder
+                brukerstoetteService = brukerstoetteService
             )
         }
     }
@@ -134,7 +108,6 @@ open class TestApplicationContext(
 
     private fun createApplicationContext(service: BrukerstoetteService = brukerstoetteService()) = ApplicationContext(
         applicationConfig = applicationConfig,
-        azureConfig = azureConfig,
         serverConfig = serverConfig,
         securityConfig = securityConfig,
         dataSource = loadNaisOrLocalConfiguration<DatabaseConfig>("database_configuration.toml").dataSource(),

@@ -1,0 +1,2 @@
+tokenEndpointUrl = "http://localhost:8081/azure/token"
+clientId = "paw-arbeidssoekerregisteret-hendelseslogg-backup"

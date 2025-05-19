@@ -20,6 +20,8 @@ import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.kafka.config.KAFKA_CONFIG
 import no.nav.paw.kafka.config.KafkaConfig
 import no.nav.paw.kafka.factory.KafkaFactory
+import no.nav.paw.kafkakeygenerator.auth.AZURE_M2M_CONFIG
+import no.nav.paw.kafkakeygenerator.auth.AzureM2MConfig
 import no.nav.paw.security.authentication.config.SecurityConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.LongDeserializer
@@ -27,7 +29,6 @@ import javax.sql.DataSource
 
 data class ApplicationContext(
     val applicationConfig: ApplicationConfig,
-    val azureConfig: AzureConfig,
     val serverConfig: ServerConfig,
     val securityConfig: SecurityConfig,
     val dataSource: DataSource,
@@ -42,13 +43,13 @@ data class ApplicationContext(
             val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>("application_config.toml")
             val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
             val databaseConfig = loadNaisOrLocalConfiguration<DatabaseConfig>("database_configuration.toml")
-            val azureConfig = loadNaisOrLocalConfiguration<AzureConfig>("azure_config.toml")
+            val azureM2MConfig = loadNaisOrLocalConfiguration<AzureM2MConfig>(AZURE_M2M_CONFIG)
             val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG)
             val securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>("security_config.toml")
 
             val dataSource = databaseConfig.dataSource()
 
-            val (kafkaKeysClient, oppslagApiClient) = initClients(azureConfig.m2mCfg)
+            val (kafkaKeysClient, oppslagApiClient) = initClients(azureM2MConfig)
             val service = BrukerstoetteService(
                 applicationConfig.version,
                 kafkaKeysClient,
@@ -68,7 +69,6 @@ data class ApplicationContext(
 
             return ApplicationContext(
                 applicationConfig = applicationConfig,
-                azureConfig = azureConfig,
                 serverConfig = serverConfig,
                 securityConfig = securityConfig,
                 dataSource = dataSource,
