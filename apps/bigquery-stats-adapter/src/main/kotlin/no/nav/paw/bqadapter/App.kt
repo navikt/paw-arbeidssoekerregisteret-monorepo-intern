@@ -39,7 +39,7 @@ fun main() {
     val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG_WITH_SCHEME_REG)
     val kafkaFactory = KafkaFactory(kafkaConfig)
     val consumer = kafkaFactory.createConsumer<Long, ByteArray>(
-        groupId = "bq-consumer-v1",
+        groupId = "bq-consumer-v2",
         clientId = "bq-consumer-v1-${System.currentTimeMillis()}",
         keyDeserializer = LongDeserializer::class,
         valueDeserializer = ByteArrayDeserializer::class,
@@ -47,6 +47,7 @@ fun main() {
         autoOffsetReset = "earliest",
         maxPollrecords = 1000
     )
+
     appLogger.info("Lastet encoder: $encoder")
     val appConfig = appConfig
     appLogger.info("App config: $appConfig")
@@ -63,6 +64,7 @@ fun main() {
                 topics = listOf(PERIODE_TOPIC, HENDELSE_TOPIC),
                 consumer = consumer
             )
+
         }
         routing {
             metricsRoutes(prometheusMeterRegistry)
