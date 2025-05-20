@@ -8,10 +8,14 @@ class BigqueryDatabase(
 ) {
     fun write(tableName: TableName, rows: Iterable<Row>) {
         val tableId = bigqueryTables[tableName] ?: throw IllegalArgumentException("Table '$tableName' not found")
-        tableId.insert(
+        val response = tableId.insert(
             rows.map {
                 row -> InsertAllRequest.RowToInsert.of(row.id, row.value)
             }
         )
+        if (response.hasErrors()) {
+            throw IllegalStateException("Could not insert rows into table " +
+                    "$tableName: ${response.insertErrors.map { "${it.key}=${it.value}" }}")
+        }
     }
 }
