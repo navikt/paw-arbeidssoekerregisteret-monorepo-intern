@@ -14,8 +14,12 @@ class Encoder(
         return "Encoder(algorithm=${digestAlgorithm}, hexformat=$hexformat, identSalt=${identSalt.size} bytes, periodeIdSalt=${periodeIdSalt.size}) bytes"
     }
 
-    fun encodeIdent(ident: String): String {
-        return encode(identSalt, ident)
+    fun encodeArbeidssoekerId(arId: Long): String {
+        return encode(identSalt, arId.toString())
+    }
+
+    fun encodeRecordId(topic: String, partition: Int, offset: Long): String {
+        return encode(identSalt, "$topic:$partition:$offset")
     }
 
     fun encodePeriodeId(periodeId: UUID): String {
