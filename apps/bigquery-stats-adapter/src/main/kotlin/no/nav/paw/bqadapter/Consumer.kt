@@ -11,7 +11,7 @@ import no.nav.paw.bqadapter.bigquery.schema.periodeRad
 import org.apache.kafka.clients.consumer.ConsumerRecord
 
 const val PERIODE_TOPIC = "paw.arbeidssokerperioder-v1"
-const val HENDELSE_TOPIC = "paw.arbeidssoker-hendelselogg-v1"
+const val HENDELSE_TOPIC = "paw.arbeidssoker-hendelseslogg-v1"
 
 data class Record<A : Any>(
     val id: String,
