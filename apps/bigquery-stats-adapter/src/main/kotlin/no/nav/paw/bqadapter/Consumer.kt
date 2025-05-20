@@ -39,7 +39,11 @@ fun BigQueryContext.handleRecords(records: Iterable<ConsumerRecord<Long, ByteArr
 
 
 class RecordsByType(source: Iterable<Record<Any>>)  {
-    val map = source.groupBy { it.value::class }
+    val map = source.groupBy { when (it.value) {
+        is Periode -> Periode::class
+        is Hendelse -> Hendelse::class
+        else -> throw IllegalArgumentException("Unknown type: ${it.value}")
+    } }
     @Suppress("UNCHECKED_CAST")
     inline fun <reified A: Any> get(): Iterable<Record<A>> {
         return (map[A::class]?.let { it as Iterable<Record<A>> }) ?: emptyList()
