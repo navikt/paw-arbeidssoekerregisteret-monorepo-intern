@@ -39,10 +39,10 @@ fun BigQueryContext.handleRecords(records: Iterable<ConsumerRecord<Long, ByteArr
 
 
 class RecordsByType(source: Iterable<Record<Any>>)  {
-    val map = source.groupBy { it.value::class }.withDefault { emptyList() }
+    val map = source.groupBy { it.value::class }
     @Suppress("UNCHECKED_CAST")
     inline fun <reified A: Any> get(): Iterable<Record<A>> {
-        return (map[A::class] as Iterable<Record<A>>)
+        return (map[A::class]?.let { it as Iterable<Record<A>> }) ?: emptyList()
     }
 }
 
