@@ -13,6 +13,7 @@ class BigqueryDatabase(
             appLogger.error("Table $tableName not found in BigQuery")
             throw IllegalStateException("Table $tableName not found in BigQuery")
         }
+        appLogger.info("Writing to table $tableName => $rows")
         val response = tableId.insert(
             rows.map {
                 row -> InsertAllRequest.RowToInsert.of(row.id, row.value)

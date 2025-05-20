@@ -7,25 +7,20 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.bqadapter.Encoder
 import no.nav.paw.bqadapter.bigquery.schema.structs.metadataStruct
 
-private const val perioder_id = "id"
 private const val perioder_correlation_id = "correlation_id"
 private const val perioder_startet = "startet"
 private const val perioder_avsluttet = "avsluttet"
 
 val perioderSchema: Schema
     get() = Schema.of(
-        Field.of(
-            perioder_id, StandardSQLTypeName.STRING
-        ),
         Field.of(perioder_correlation_id, StandardSQLTypeName.STRING),
         Field.of(perioder_startet, StandardSQLTypeName.STRUCT, metadataStruct),
         Field.of(perioder_avsluttet, StandardSQLTypeName.STRUCT, metadataStruct)
-)
+    )
 
 fun periodeRad(encoder: Encoder, periode: Periode): Map<String, Any> {
     val maskertPeriodeId = encoder.encodePeriodeId(periode.id)
     return mapOf(
-        perioder_id to periode.id,
         perioder_correlation_id to maskertPeriodeId,
         perioder_startet to metadataStruct(
             tidspunkt = periode.startet.tidspunkt,
