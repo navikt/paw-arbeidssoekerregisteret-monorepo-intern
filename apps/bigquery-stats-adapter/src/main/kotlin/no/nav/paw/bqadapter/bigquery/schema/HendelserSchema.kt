@@ -42,6 +42,6 @@ fun hendelseRad(
             aarsak = hendelse.metadata.aarsak,
             brukertype = hendelse.metadata.utfoertAv.type.name.lowercase()
         ),
-        hendelser_options to ((hendelse as? HarOpplysninger)?.opplysninger?.toList() ?: emptyList())
+        hendelser_options to ((hendelse as? HarOpplysninger)?.opplysninger?.toList()?.map { it.name.lowercase() } ?: emptyList())
     )
 }
