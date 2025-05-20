@@ -62,9 +62,12 @@ fun main() {
             onConsume = bigqueryContext::handleRecords
             kafkaConsumerWrapper = CommittingKafkaConsumerWrapper(
                 topics = listOf(PERIODE_TOPIC, HENDELSE_TOPIC),
-                consumer = consumer
+                consumer = consumer,
+                exceptionHandler = { throwable ->
+                    appLogger.error("Error in consumer", throwable)
+                    throw throwable
+                }
             )
-
         }
         routing {
             metricsRoutes(prometheusMeterRegistry)
