@@ -42,7 +42,7 @@ class RecordsByType(source: Iterable<Record<Any>>)  {
     val map = source.groupBy { it.value::class }.withDefault { emptyList() }
     @Suppress("UNCHECKED_CAST")
     inline fun <reified A: Any> get(): Iterable<Record<A>> {
-        return map[A::class] as Iterable<Record<A>>
+        return (map[A::class] as Iterable<Record<A>>)
     }
 }
 
@@ -50,7 +50,10 @@ fun BigQueryContext.deserializeRecord(topic: String, bytes: ByteArray): Any? {
     return when (topic) {
         PERIODE_TOPIC -> periodeDeserializer.deserialize(topic, bytes)
         HENDELSE_TOPIC -> hendelseDeserializer.deserialize(topic, bytes)
-        else -> null
+        else -> {
+            appLogger.warn("Ignoring record from from topic: $topic")
+            null
+        }
     }
 }
 
@@ -67,7 +70,7 @@ fun BigQueryContext.lagrePerioder(records: Iterable<Record<Periode>>) {
 }
 
 fun BigQueryContext.lagreHendelser(records: Iterable<Record<Hendelse>>) {
-    records.mapNotNull { record ->
+    records.map { record ->
         Row(id = record.id, value = hendelseRad(encoder, record.value))
     }.takeIf { it.isNotEmpty() }
         ?.also { periodeRader ->
