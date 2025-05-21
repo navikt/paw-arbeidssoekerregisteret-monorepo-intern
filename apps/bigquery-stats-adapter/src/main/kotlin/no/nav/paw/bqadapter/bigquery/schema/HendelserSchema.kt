@@ -4,6 +4,7 @@ import com.google.cloud.bigquery.Field.of
 import com.google.cloud.bigquery.Schema
 import com.google.cloud.bigquery.StandardSQLTypeName
 import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.StandardSQLTypeName.STRING
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HarOpplysninger
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.bqadapter.Encoder
@@ -17,14 +18,11 @@ private const val hendelser_options = "options"
 
 val hendelserSchema: Schema
     get() = Schema.of(
-        of(hendelser_ident, StandardSQLTypeName.STRING),
-        of(hendelser_hendelse_id, StandardSQLTypeName.STRING),
-        of(hendelser_type, StandardSQLTypeName.STRING),
+        hendelser_ident.ofRequiredType(STRING),
+        hendelser_hendelse_id.ofRequiredType(STRING),
+        hendelser_type.ofRequiredType(STRING),
         of(hendelser_metadata, StandardSQLTypeName.STRUCT, metadataStruct),
-        Field.newBuilder(
-            hendelser_options,
-            StandardSQLTypeName.STRING
-        ).setMode(Field.Mode.REPEATED).build()
+        hendelser_options.ofRepeatedType(STRING)
     )
 
 fun hendelseRad(
@@ -36,6 +34,7 @@ fun hendelseRad(
     return mapOf(
         hendelser_ident to maskertIdent,
         hendelser_hendelse_id to maskertHendelseId,
+        hendelser_type to hendelse.hendelseType,
         hendelser_metadata to metadataStruct(
             tidspunkt = hendelse.metadata.tidspunkt,
             kilde = hendelse.metadata.kilde,

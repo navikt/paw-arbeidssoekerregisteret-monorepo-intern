@@ -3,6 +3,7 @@ package no.nav.paw.bqadapter.bigquery.schema
 import com.google.cloud.bigquery.Field
 import com.google.cloud.bigquery.Schema
 import com.google.cloud.bigquery.StandardSQLTypeName
+import com.google.cloud.bigquery.StandardSQLTypeName.STRING
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.bqadapter.Encoder
 import no.nav.paw.bqadapter.bigquery.schema.structs.metadataStruct
@@ -13,7 +14,7 @@ private const val perioder_avsluttet = "avsluttet"
 
 val perioderSchema: Schema
     get() = Schema.of(
-        Field.of(perioder_correlation_id, StandardSQLTypeName.STRING),
+        perioder_correlation_id.ofRequiredType(STRING),
         Field.of(perioder_startet, StandardSQLTypeName.STRUCT, metadataStruct),
         Field.of(perioder_avsluttet, StandardSQLTypeName.STRUCT, metadataStruct)
     )

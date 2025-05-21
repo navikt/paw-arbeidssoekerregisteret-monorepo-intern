@@ -1,8 +1,9 @@
 package no.nav.paw.bqadapter.bigquery.schema.structs
 
-import com.google.cloud.bigquery.Field
 import com.google.cloud.bigquery.FieldList
-import com.google.cloud.bigquery.StandardSQLTypeName
+import com.google.cloud.bigquery.StandardSQLTypeName.DATE
+import com.google.cloud.bigquery.StandardSQLTypeName.STRING
+import no.nav.paw.bqadapter.bigquery.schema.ofRequiredType
 import java.time.Instant
 import java.time.LocalDate.ofInstant
 import java.time.ZoneId
@@ -16,10 +17,10 @@ private val localTimeZone = ZoneId.of("Europe/Oslo")
 private val dateTimeFormater = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
 val metadataStruct get(): FieldList = FieldList.of(
-    Field.of(metadata_tidspunkt, StandardSQLTypeName.DATE),
-    Field.of(metadata_kilde, StandardSQLTypeName.STRING),
-    Field.of(metadata_aarsak, StandardSQLTypeName.STRING),
-    Field.of(metadata_brukertype, StandardSQLTypeName.STRING)
+    metadata_tidspunkt.ofRequiredType(DATE),
+    metadata_kilde.ofRequiredType(STRING),
+    metadata_aarsak.ofRequiredType(STRING),
+    metadata_brukertype.ofRequiredType(STRING)
 )
 
 fun metadataStruct(
