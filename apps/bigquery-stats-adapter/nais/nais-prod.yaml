@@ -1,0 +1,48 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  name: paw-bigquery-stats-adapter
+  namespace: paw
+  labels:
+    team: paw
+spec:
+  image: {{ image }}
+  port: 8080
+  resources:
+    limits:
+      memory: 1024Mi
+    requests:
+      cpu: 20m
+      memory: 512Mi
+  replicas:
+    min: 1
+    max: 1
+  liveness:
+    path: /internal/isAlive
+    initialDelay: 10
+  readiness:
+    path: /internal/isReady
+    initialDelay: 10
+  prometheus:
+    enabled: true
+    path: /internal/metrics
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
+  kafka:
+    pool: nav-prod
+  filesFrom:
+    - secret: bq-enc-periode
+      mountPath: /var/run/secrets/periode_id
+    - secret: bq-enc-hendelse
+      mountPath: /var/run/secrets/ident
+  gcp:
+    bigQueryDatasets:
+      - cascadingDelete: true
+        description: Contains pseudo annonymized data from the NAV arbeidssoekerregisteret.
+        name: arbeidssoekerregisteret_internt
+        permission: READWRITE
+      - description: Contains materialized views of data from dataset -> arbeidssoekerregisteret_internt
+        name: arbeidssoekerregisteret_grafana
+        permission: READWRITE
