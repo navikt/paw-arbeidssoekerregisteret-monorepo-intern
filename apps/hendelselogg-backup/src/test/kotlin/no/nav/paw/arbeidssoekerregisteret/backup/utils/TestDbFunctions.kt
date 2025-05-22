@@ -1,4 +1,4 @@
-package no.nav.paw.arbeidssoekerregisteret.backup
+package no.nav.paw.arbeidssoekerregisteret.backup.utils
 
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseTable
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseTable.recordKey

@@ -1,5 +1,6 @@
-package no.nav.paw.arbeidssoekerregisteret.backup
+package no.nav.paw.arbeidssoekerregisteret.backup.utils
 
+import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Hendelse as ApiHendelse
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.HendelseMetadata
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.HendelseMetadataTidspunktFraKilde
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.HendelseMetadataUtfoertAv
@@ -138,7 +139,7 @@ fun Hendelse.storedHendelseRecord(
 )
 
 fun StoredHendelseRecord.apiHendelse(): no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Hendelse =
-    no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Hendelse(
+    ApiHendelse(
         hendelseId = data.hendelseId,
         hendelseType = data.hendelseType,
         merged = merged,

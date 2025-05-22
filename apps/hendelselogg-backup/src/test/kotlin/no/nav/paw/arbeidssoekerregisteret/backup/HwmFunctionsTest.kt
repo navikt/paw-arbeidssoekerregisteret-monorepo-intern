@@ -6,6 +6,8 @@ import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.getAllHwms
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.getHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.initHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.updateHwm
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.TestApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.initDatabase
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class HwmFunctionsTest : FreeSpec({
@@ -13,7 +15,7 @@ class HwmFunctionsTest : FreeSpec({
         "Verify Hwm functions" - {
             initDatabase()
             "We run som tests with backup version 1" - {
-                val consumerVersion = testApplicationContext.applicationConfig.version
+                val consumerVersion = applicationConfig.consumerVersion
                 "When there is no hwm for the partition, getHwm should return null" {
                     transaction {
                         getHwm(consumerVersion, 0) shouldBe null

@@ -1,6 +1,5 @@
 package no.nav.paw.arbeidssoekerregisteret.backup.kafka
 
-import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.getHwm
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
@@ -10,7 +9,7 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 
 class HwmRebalanceListener(
-    private val context: ApplicationContext,
+    private val consumerVersion: Int,
     private val consumer: Consumer<*, *>
 ) : ConsumerRebalanceListener {
 
@@ -36,7 +35,7 @@ class HwmRebalanceListener(
         if (assignedPartitions.isNotEmpty()) {
             val seekTo = transaction {
                 assignedPartitions.map { partition ->
-                    val offset = requireNotNull(getHwm(context.applicationConfig.version, partition.partition())) {
+                    val offset = requireNotNull(getHwm(consumerVersion, partition.partition())) {
                         "No hwm for partition ${partition.partition()}, init not called?"
                     }
                     partition to offset

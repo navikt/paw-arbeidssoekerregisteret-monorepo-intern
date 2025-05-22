@@ -40,7 +40,7 @@ interface HendelseRecordRepository {
     ): String?
 }
 
-object HendelseHendelseRecordPostgresRepository : HendelseRecordRepository {
+object HendelseRecordPostgresRepository : HendelseRecordRepository {
     override fun <A : Hendelse> writeRecord(
         consumerVersion: Int,
         hendelseSerializer: HendelseSerializer,

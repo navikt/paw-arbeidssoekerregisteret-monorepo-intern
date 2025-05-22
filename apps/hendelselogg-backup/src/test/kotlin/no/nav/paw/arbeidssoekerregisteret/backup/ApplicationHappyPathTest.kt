@@ -4,9 +4,15 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseHendelseRecordPostgresRepository.readAllNestedRecordsForId
+import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecordPostgresRepository.readAllNestedRecordsForId
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.initHwm
-import no.nav.paw.arbeidssoekerregisteret.backup.kafka.processRecords
+import no.nav.paw.arbeidssoekerregisteret.backup.config.ApplicationConfig
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.TestApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.avsluttet
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.toApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.opplysninger
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.readRecord
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.ArbeidssoekerIdFlettetInn
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
@@ -18,23 +24,24 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
 class ApplicationHappyPathTest : FreeSpec({
-    with(TestApplicationContext.build()) {
-        "Verifiser enkel applikasjonsflyt" {
-            initDatabase()
-            initHwm(testApplicationContext)
-
-            val topic = testApplicationContext.applicationConfig.hendelsesloggTopic
-            val testRecords = testConsumerRecords()
+    "Verifiser enkel applikasjonsflyt" {
+        with(TestApplicationContext.buildWithDatabase().toApplicationContext()) {
+            initHwm(this)
+            val testRecords = testConsumerRecords(applicationConfig)
 
             val mergeRecord = createMergeRecord(
                 originalHendelse = testRecords.originalHendelse(),
                 nyesteHendelse = testRecords.nyesteHendelse(),
+                applicationConfig = applicationConfig,
             )
             testRecords.addRecord(mergeRecord)
 
             val testConsumerRecords = ConsumerRecords(testRecords)
 
-            processRecords(records = testConsumerRecords, testApplicationContext)
+            hendelseloggBackup.processRecords(
+                records = testConsumerRecords,
+                applicationConfig.consumerVersion
+            )
 
             testConsumerRecords.forEach { record ->
                 val partition = record.partition()
@@ -42,7 +49,7 @@ class ApplicationHappyPathTest : FreeSpec({
                 val forventetHendelse = record.value()
 
                 val lagretHendelse = transaction {
-                    readRecord(testApplicationContext.applicationConfig.version, partition, offset)
+                    readRecord(applicationConfig.consumerVersion, partition, offset)
                 }
                 lagretHendelse.shouldNotBeNull()
                 lagretHendelse.partition shouldBe partition
@@ -51,24 +58,29 @@ class ApplicationHappyPathTest : FreeSpec({
             }
 
             transaction {
+                val topic = applicationConfig.hendelsesloggTopic
                 val nyesteId = testConsumerRecords.records(topic).last().value().id
                 val originalId = testConsumerRecords.records(topic).first().value().id
                 val hendelser = readAllNestedRecordsForId(
                     hendelseDeserializer = HendelseSerde().deserializer(),
                     arbeidssoekerId = nyesteId,
-                    consumerVersion = testApplicationContext.applicationConfig.version,
+                    consumerVersion = applicationConfig.consumerVersion,
                     merged = true
                 )
-                hendelser.map { it.arbeidssoekerId }.distinct() shouldContainExactlyInAnyOrder listOf(nyesteId, originalId)
+                hendelser.map { it.arbeidssoekerId }.distinct() shouldContainExactlyInAnyOrder listOf(
+                    nyesteId,
+                    originalId
+                )
             }
         }
     }
 
+
 })
 
-private fun testConsumerRecords(): MutableMap<TopicPartition, MutableList<ConsumerRecord<Long, Hendelse>>> {
-    val topic = testApplicationContext.applicationConfig.hendelsesloggTopic
-    val partitionCount = testApplicationContext.applicationConfig.partitionCount
+private fun testConsumerRecords(applicationConfig: ApplicationConfig): MutableMap<TopicPartition, MutableList<ConsumerRecord<Long, Hendelse>>> {
+    val topic = applicationConfig.hendelsesloggTopic
+    val partitionCount = applicationConfig.partitionCount
     val records: MutableMap<TopicPartition, MutableList<ConsumerRecord<Long, Hendelse>>> =
         (0..partitionCount - 1).associate { partition ->
             val recordList = mutableListOf<ConsumerRecord<Long, Hendelse>>(
@@ -110,8 +122,9 @@ fun MutableMap<TopicPartition, MutableList<ConsumerRecord<Long, Hendelse>>>.addR
 private fun createMergeRecord(
     originalHendelse: ConsumerRecord<Long, Hendelse>,
     nyesteHendelse: ConsumerRecord<Long, Hendelse>,
+    applicationConfig: ApplicationConfig
 ) = ConsumerRecord<Long, Hendelse>(
-    testApplicationContext.applicationConfig.hendelsesloggTopic,
+    applicationConfig.hendelsesloggTopic,
     nyesteHendelse.partition(),
     nyesteHendelse.offset() + 1,
     nyesteHendelse.key(),

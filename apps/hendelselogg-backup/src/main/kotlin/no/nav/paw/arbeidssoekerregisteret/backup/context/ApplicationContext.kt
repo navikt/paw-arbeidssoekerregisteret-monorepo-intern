@@ -7,16 +7,17 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.BrukerstoetteService
 import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.initClients
 import no.nav.paw.arbeidssoekerregisteret.backup.config.ApplicationConfig
-import no.nav.paw.arbeidssoekerregisteret.backup.config.AzureConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.config.SERVER_CONFIG
 import no.nav.paw.arbeidssoekerregisteret.backup.config.ServerConfig
-import no.nav.paw.arbeidssoekerregisteret.backup.config.m2mCfg
-import no.nav.paw.arbeidssoekerregisteret.backup.database.DatabaseConfig
-import no.nav.paw.arbeidssoekerregisteret.backup.database.dataSource
-import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseHendelseRecordPostgresRepository
+import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecordPostgresRepository
+import no.nav.paw.arbeidssoekerregisteret.backup.kafka.HendelseloggBackup
+import no.nav.paw.arbeidssoekerregisteret.backup.metrics.Metrics
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
+import no.nav.paw.database.config.DATABASE_CONFIG
+import no.nav.paw.database.config.DatabaseConfig
+import no.nav.paw.database.factory.createHikariDataSource
 import no.nav.paw.kafka.config.KAFKA_CONFIG
 import no.nav.paw.kafka.config.KafkaConfig
 import no.nav.paw.kafka.factory.KafkaFactory
@@ -35,26 +36,28 @@ data class ApplicationContext(
     val prometheusMeterRegistry: PrometheusMeterRegistry,
     val hendelseKafkaConsumer: KafkaConsumer<Long, Hendelse>,
     val brukerstoetteService: BrukerstoetteService,
-    val additionalMeterBinder: MeterBinder
+    val additionalMeterBinder: MeterBinder,
+    val metrics: Metrics,
+    val hendelseloggBackup: HendelseloggBackup,
 ) {
     companion object {
         fun create(): ApplicationContext {
 
             val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>("application_config.toml")
             val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
-            val databaseConfig = loadNaisOrLocalConfiguration<DatabaseConfig>("database_configuration.toml")
+            val databaseConfig = loadNaisOrLocalConfiguration<DatabaseConfig>(DATABASE_CONFIG)
             val azureM2MConfig = loadNaisOrLocalConfiguration<AzureM2MConfig>(AZURE_M2M_CONFIG)
             val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG)
             val securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>("security_config.toml")
 
-            val dataSource = databaseConfig.dataSource()
+            val dataSource = createHikariDataSource(databaseConfig)
 
             val (kafkaKeysClient, oppslagApiClient) = initClients(azureM2MConfig)
             val service = BrukerstoetteService(
-                applicationConfig.version,
+                applicationConfig.consumerVersion,
                 kafkaKeysClient,
                 oppslagApiClient,
-                HendelseHendelseRecordPostgresRepository,
+                HendelseRecordPostgresRepository,
                 hendelseDeserializer = HendelseDeserializer()
             )
 
@@ -66,16 +69,22 @@ data class ApplicationContext(
                 autoCommit = false,
                 autoOffsetReset = "earliest"
             )
+            val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+            val metrics = Metrics(prometheusMeterRegistry)
+            val hendelseloggBackup = HendelseloggBackup(HendelseRecordPostgresRepository, metrics)
+
 
             return ApplicationContext(
                 applicationConfig = applicationConfig,
                 serverConfig = serverConfig,
                 securityConfig = securityConfig,
                 dataSource = dataSource,
-                prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+                prometheusMeterRegistry = prometheusMeterRegistry,
                 hendelseKafkaConsumer = consumer,
                 brukerstoetteService = service,
-                additionalMeterBinder = KafkaClientMetrics(consumer)
+                additionalMeterBinder = KafkaClientMetrics(consumer),
+                metrics = metrics,
+                hendelseloggBackup = hendelseloggBackup,
             )
         }
     }
