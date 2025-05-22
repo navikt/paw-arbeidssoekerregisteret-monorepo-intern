@@ -1,15 +1,16 @@
 package no.nav.paw.bqadapter
 
+import com.google.cloud.bigquery.BigQueryOptions
 import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.routing.routing
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
-import no.nav.paw.bqadapter.bigquery.createBigQueryContext
+import no.nav.paw.bqadapter.bigquery.initBqApp
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
+import no.nav.paw.health.model.HealthStatus
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.health.route.healthRoutes
 import no.nav.paw.kafka.config.KAFKA_CONFIG_WITH_SCHEME_REG
@@ -32,6 +33,8 @@ fun main() {
     appLogger.info("Starter app...")
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val healthIndicatorRepository = HealthIndicatorRepository()
+    val livenessHealthIndicator = healthIndicatorRepository.livenessIndicator(defaultStatus = HealthStatus.HEALTHY)
+    val readinessHealthIndicator = healthIndicatorRepository.readinessIndicator(defaultStatus = HealthStatus.UNHEALTHY)
     val encoder = Encoder(
         identSalt = hendelseIdentSaltPath.toFile().readBytes(),
         periodeIdSalt = periodeIdSaltPath.toFile().readBytes()
@@ -51,21 +54,25 @@ fun main() {
     appLogger.info("Lastet encoder: $encoder")
     val appConfig = appConfig
     appLogger.info("App config: $appConfig")
-    val bigqueryContext = createBigQueryContext(
+    val bigqueryAppContext = initBqApp(
+        livenessHealthIndicator = livenessHealthIndicator,
+        readinessHealthIndicator = readinessHealthIndicator,
+        bigquery = BigQueryOptions.getDefaultInstance().getService(),
         project = appConfig.bigqueryProject,
         encoder = encoder,
         hendelserDeserializer = HendelseDeserializer(),
-        periodeDeserializer = kafkaFactory.kafkaAvroDeSerializer<Periode>(),
+        periodeDeserializer = kafkaFactory.kafkaAvroDeSerializer(),
     )
     embeddedServer(factory = Netty, port = 8080) {
         install(KafkaConsumerPlugin<Long, ByteArray>("application_consumer")) {
-            onConsume = bigqueryContext::handleRecords
+            onConsume = bigqueryAppContext::handleRecords
             kafkaConsumerWrapper = CommittingKafkaConsumerWrapper(
                 topics = listOf(HENDELSE_TOPIC, PERIODE_TOPIC),
                 consumer = consumer,
                 exceptionHandler = { throwable ->
+                    livenessHealthIndicator.setUnhealthy()
+                    readinessHealthIndicator.setUnhealthy()
                     appLogger.error("Error in consumer", throwable)
-                    throw throwable
                 }
             )
         }

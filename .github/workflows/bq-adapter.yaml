@@ -79,7 +79,7 @@ jobs:
           RESOURCE: apps/bigquery-stats-adapter/nais/nais-dev.yaml
           VAR: image=${{ needs.build.outputs.image }},kafka=nav-dev
 
-  deploy-dev:
+  deploy-prod:
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/dev')
     name: Deploy to prod-gcp
     needs:

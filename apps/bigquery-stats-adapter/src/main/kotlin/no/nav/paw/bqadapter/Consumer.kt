@@ -2,12 +2,13 @@ package no.nav.paw.bqadapter
 
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.bqadapter.bigquery.BigQueryContext
+import no.nav.paw.bqadapter.bigquery.AppContext
 import no.nav.paw.bqadapter.bigquery.HENDELSE_TABELL
 import no.nav.paw.bqadapter.bigquery.PERIODE_TABELL
 import no.nav.paw.bqadapter.bigquery.Row
 import no.nav.paw.bqadapter.bigquery.schema.hendelseRad
 import no.nav.paw.bqadapter.bigquery.schema.periodeRad
+import no.nav.paw.health.model.HealthStatus
 import org.apache.kafka.clients.consumer.ConsumerRecord
 
 const val PERIODE_TOPIC = "paw.arbeidssokerperioder-v1"
@@ -18,7 +19,7 @@ data class Record<A : Any>(
     val value: A
 )
 
-fun BigQueryContext.handleRecords(records: Iterable<ConsumerRecord<Long, ByteArray>>) {
+fun AppContext.handleRecords(records: Iterable<ConsumerRecord<Long, ByteArray>>) {
     val records = records.mapNotNull { record ->
         deserializeRecord(record.topic(), record.value())
             ?.let { deserialized ->
@@ -34,6 +35,9 @@ fun BigQueryContext.handleRecords(records: Iterable<ConsumerRecord<Long, ByteArr
     }.let(::RecordsByType)
     lagrePerioder(records.get())
     lagreHendelser(records.get())
+    if (livenessHealthIndicator.getStatus() == HealthStatus.HEALTHY) {
+        readinessHealthIndicator.setHealthy()
+    }
 }
 
 
@@ -50,7 +54,7 @@ class RecordsByType(source: Iterable<Record<Any>>)  {
     }
 }
 
-fun BigQueryContext.deserializeRecord(topic: String, bytes: ByteArray): Any? {
+fun AppContext.deserializeRecord(topic: String, bytes: ByteArray): Any? {
     return when (topic) {
         PERIODE_TOPIC -> periodeDeserializer.deserialize(topic, bytes)
         HENDELSE_TOPIC -> hendelseDeserializer.deserialize(topic, bytes)
@@ -61,7 +65,7 @@ fun BigQueryContext.deserializeRecord(topic: String, bytes: ByteArray): Any? {
     }
 }
 
-fun BigQueryContext.lagrePerioder(records: Iterable<Record<Periode>>) {
+fun AppContext.lagrePerioder(records: Iterable<Record<Periode>>) {
     records.map { record ->
         Row(id = record.id, value = periodeRad(encoder, record.value))
     }.takeIf { it.isNotEmpty() }
@@ -73,7 +77,7 @@ fun BigQueryContext.lagrePerioder(records: Iterable<Record<Periode>>) {
         }
 }
 
-fun BigQueryContext.lagreHendelser(records: Iterable<Record<Hendelse>>) {
+fun AppContext.lagreHendelser(records: Iterable<Record<Hendelse>>) {
     records.map { record ->
         Row(id = record.id, value = hendelseRad(encoder, record.value))
     }.takeIf { it.isNotEmpty() }

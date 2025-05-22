@@ -1,12 +1,13 @@
 package no.nav.paw.bqadapter.bigquery
 
-import com.google.cloud.bigquery.BigQueryOptions
-import com.google.cloud.bigquery.Table
+import com.google.cloud.bigquery.BigQuery
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.bqadapter.Encoder
 import no.nav.paw.bqadapter.bigquery.schema.hendelserSchema
 import no.nav.paw.bqadapter.bigquery.schema.perioderSchema
+import no.nav.paw.health.model.LivenessHealthIndicator
+import no.nav.paw.health.model.ReadinessHealthIndicator
 import org.apache.kafka.common.serialization.Deserializer
 
 private val INTERNT_DATASET = DatasetName("arbeidssoekerregisteret_internt")
@@ -15,22 +16,24 @@ private val GRAFANA_DATASET = DatasetName("arbeidssoekerregisteret_grafana")
 val PERIODE_TABELL = TableName("perioder")
 val HENDELSE_TABELL = TableName("hendelser")
 
-class BigQueryContext(
-    val tables: Map<TableName, Table>,
-    val bqAdmin: BigQueryAdmin,
+class AppContext(
     val bqDatabase: BigqueryDatabase,
     val encoder: Encoder,
     val hendelseDeserializer: HendelseDeserializer,
-    val periodeDeserializer: Deserializer<Periode>
+    val periodeDeserializer: Deserializer<Periode>,
+    val livenessHealthIndicator: LivenessHealthIndicator,
+    val readinessHealthIndicator: ReadinessHealthIndicator
 )
 
-fun createBigQueryContext(
+fun initBqApp(
+    bigquery: BigQuery,
     project: String,
     encoder: Encoder,
     hendelserDeserializer: HendelseDeserializer,
-    periodeDeserializer: Deserializer<Periode>
-): BigQueryContext {
-    val bigquery =  BigQueryOptions.getDefaultInstance().getService();
+    periodeDeserializer: Deserializer<Periode>,
+    livenessHealthIndicator: LivenessHealthIndicator,
+    readinessHealthIndicator: ReadinessHealthIndicator
+): AppContext {
     val bqAdmin = BigQueryAdmin(
         bigQuery = bigquery,
         project = project
@@ -49,9 +52,9 @@ fun createBigQueryContext(
         )
     )
 
-    return BigQueryContext(
-        tables = tables,
-        bqAdmin = bqAdmin,
+    return AppContext(
+        livenessHealthIndicator = livenessHealthIndicator,
+        readinessHealthIndicator = readinessHealthIndicator,
         bqDatabase = BigqueryDatabase(bigqueryTables = tables),
         encoder = encoder,
         hendelseDeserializer = hendelserDeserializer,
