@@ -169,7 +169,7 @@ fun List<HentPersonBolkResult>.processPdlResultsV2(
                 logger.warn("Feil under stats generering", ex)
             }
         }
-        .map { (person, hendelseState) ->
+        .mapNotNull { (person, hendelseState) ->
             prosesserPerson(hendelseState, person, regler)
         }
 
@@ -181,10 +181,10 @@ fun prosesserPerson(
     hendelseState: HendelseState,
     person: Person,
     regler: Regler
-): EvalueringResultat {
+): EvalueringResultat? {
     val registreringsOpplysninger = hendelseState.opplysninger.toDomeneOpplysninger()
-    val gjeldeneOpplysninger = genererPersonFakta(person.toPerson())
-
+    val gjeldeneOpplysninger = runCatching { genererPersonFakta(person.toPerson()) }
+        .getOrElse { exception -> null } ?: return null //Feil er alt logger tidligere i prosessen
     val resultat = prosesser(
         regler = regler,
         inngangsOpplysninger = registreringsOpplysninger,
