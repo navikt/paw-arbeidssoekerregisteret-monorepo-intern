@@ -1,1 +1,1 @@
-bigqueryProject = "paw-dev-129d"
+bigqueryProject = "${GOOGLE_CLOUD_PROJECT}"
