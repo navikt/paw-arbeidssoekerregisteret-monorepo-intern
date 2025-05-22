@@ -8,7 +8,8 @@ import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.customExceptionRe
 import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.backup.plugin.configureRouting
 import no.nav.paw.arbeidssoekerregisteret.backup.plugin.installHwmPlugin
-import no.nav.paw.arbeidssoekerregisteret.backup.plugin.installKafkaPlugin
+import no.nav.paw.arbeidssoekerregisteret.backup.plugin.installKafkaConsumerPlugin
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.config.env.appNameOrDefaultForLocal
 import no.nav.paw.database.plugin.installDatabasePlugin
 import no.nav.paw.error.plugin.installErrorHandlingPlugin
@@ -17,6 +18,7 @@ import no.nav.paw.logging.plugin.installLoggingPlugin
 import no.nav.paw.metrics.plugin.installWebAppMetricsPlugin
 import no.nav.paw.security.authentication.plugin.installAuthenticationPlugin
 import no.nav.paw.serialization.plugin.installContentNegotiationPlugin
+import org.apache.kafka.clients.consumer.ConsumerRecords
 
 fun main() {
     val logger = buildApplicationLogger
@@ -47,9 +49,15 @@ fun Application.module(applicationContext: ApplicationContext) =
             additionalMeterBinders = listOf(additionalMeterBinder)
         )
         installDatabasePlugin(dataSource)
-        installKafkaPlugin(
-            applicationContext = this,
-            hendelseKafkaConsumer = hendelseKafkaConsumer
+        installKafkaConsumerPlugin(
+            applicationContext = applicationContext,
+            hendelseKafkaConsumer = hendelseKafkaConsumer,
+            consumeFunction = { records: ConsumerRecords<Long, Hendelse> ->
+                hendelseloggBackup.processRecords(
+                    records,
+                    applicationConfig.consumerVersion
+                )
+            },
         )
         installErrorHandlingPlugin(
             customResolver = customExceptionResolver()

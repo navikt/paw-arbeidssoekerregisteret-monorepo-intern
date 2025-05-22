@@ -4,7 +4,11 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.initHwm
-import no.nav.paw.arbeidssoekerregisteret.backup.kafka.processRecords
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.TestApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.avsluttet
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.readRecord
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.startet
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.toApplicationContext
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
@@ -12,17 +16,19 @@ import org.apache.kafka.common.TopicPartition
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class ApplicationConsumerResetTest : FreeSpec({
-    with(TestApplicationContext.build()) {
-        "Prosesserer ConsumerRecords riktig iht. HWM ved oppstart" - {
-            initDatabase()
-            initHwm(testApplicationContext)
+    "Prosesserer ConsumerRecords riktig iht. HWM ved oppstart" - {
+        with(TestApplicationContext.buildWithDatabase().toApplicationContext()) {
+            initHwm(this)
             val testConsumerRecords = testConsumerRecords()
-            processRecords(records = testConsumerRecords, context = testApplicationContext)
+            hendelseloggBackup.processRecords(
+                records = testConsumerRecords,
+                consumerVersion = applicationConfig.consumerVersion
+            )
             testConsumerRecords.forEach { record ->
                 val forventetHendelse = record.value()
                 val lagretHendelse = transaction {
                     readRecord(
-                        consumerVersion = testApplicationContext.applicationConfig.version,
+                        consumerVersion = applicationConfig.consumerVersion,
                         partition = record.partition(),
                         offset = record.offset()
                     )

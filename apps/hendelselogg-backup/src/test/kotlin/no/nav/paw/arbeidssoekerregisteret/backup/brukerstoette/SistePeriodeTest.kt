@@ -3,10 +3,10 @@ package no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Tilstand
-import no.nav.paw.arbeidssoekerregisteret.backup.avsluttet
-import no.nav.paw.arbeidssoekerregisteret.backup.opplysninger
-import no.nav.paw.arbeidssoekerregisteret.backup.startet
-import no.nav.paw.arbeidssoekerregisteret.backup.storedHendelseRecord
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.avsluttet
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.opplysninger
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.startet
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.storedHendelseRecord
 
 class SistePeriodeTest: FreeSpec({
     "verifiser at sistePeriode funksjonen fungerer" - {

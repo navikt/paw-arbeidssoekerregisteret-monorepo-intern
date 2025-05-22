@@ -10,10 +10,10 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
+import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.every
-import io.mockk.mockk
-import no.nav.paw.arbeidssoekerregisteret.backup.TestApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.TestApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.DetaljerRequest
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.DetaljerResponse
 import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.ArbeidssoekerperiodeResponse
@@ -22,17 +22,23 @@ import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.BrukerTy
 import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.MetadataResponse
 import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.OpplysningerOmArbeidssoekerResponse
 import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.ProfileringResponse
-import no.nav.paw.arbeidssoekerregisteret.backup.avvist
-import no.nav.paw.arbeidssoekerregisteret.backup.opplysninger
-import no.nav.paw.arbeidssoekerregisteret.backup.startet
-import no.nav.paw.arbeidssoekerregisteret.backup.storedHendelseRecord
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.avvist
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.configureTestApplication
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.configureTestClient
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.opplysninger
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.startet
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.storedHendelseRecord
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.toApplicationContext
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
 
 class BrukerstoetteApiTest : FreeSpec({
-    with(TestApplicationContext.build()) {
+    val testApplicationContext = TestApplicationContext.build()
+    afterEach { clearAllMocks() }
 
+    with(testApplicationContext) {
         "Test av brukerstøtte API" - {
             "Ingen hendelser funnet gir 404 Not Found" {
+
                 coEvery {
                     kafkaKeysClient.getIdAndKeyOrNull("12345678901")
                 } returns KafkaKeysResponse(id = 1, key = 1L)
@@ -42,7 +48,7 @@ class BrukerstoetteApiTest : FreeSpec({
                 } returns emptyList()
 
                 testApplication {
-                    configureTestApplication()
+                    configureTestApplication(testApplicationContext.toApplicationContext())
                     val client = configureTestClient()
                     val response = client.post("/api/v1/arbeidssoeker/detaljer") {
                         headers {
@@ -56,14 +62,14 @@ class BrukerstoetteApiTest : FreeSpec({
                     responseBody.detail shouldBe "Fant ingen hendelser for person"
                     responseBody.status shouldBe HttpStatusCode.NotFound
                 }
+
             }
 
             "Ugyldig identformat resulterer i 400 bad request" {
-                val brukerstoetteService = mockk<BrukerstoetteService>(relaxed = true).also { brukerstoetteService ->
-                    coEvery { brukerstoetteService.hentDetaljer(any()) } throws UgyldigIdentFormat("Ugyldig identformat")
-                }
+                coEvery { brukerstoetteService.hentDetaljer(any()) } throws UgyldigIdentFormat("Ugyldig identformat")
+
                 testApplication {
-                    configureTestApplication(brukerstoetteService)
+                    configureTestApplication(testApplicationContext.toApplicationContext())
                     val client = configureTestClient()
                     val response = client.post("/api/v1/arbeidssoeker/detaljer") {
                         headers {
@@ -80,11 +86,10 @@ class BrukerstoetteApiTest : FreeSpec({
             }
 
             "Fant ikke identitetsnummer resulterer i 404 not found" {
-                val brukerstoetteService = mockk<BrukerstoetteService>(relaxed = true).also { brukerstoetteService ->
-                    coEvery { brukerstoetteService.hentDetaljer(any()) } throws FantIkkeIdentitetsnummer("Fant ikke identitetsnummer for periodeId")
-                }
+                coEvery { brukerstoetteService.hentDetaljer(any()) } throws FantIkkeIdentitetsnummer("Fant ikke identitetsnummer for periodeId")
+
                 testApplication {
-                    configureTestApplication(brukerstoetteService)
+                    configureTestApplication(testApplicationContext.toApplicationContext())
                     val client = configureTestClient()
                     val response = client.post("/api/v1/arbeidssoeker/detaljer") {
                         headers {
@@ -107,7 +112,12 @@ class BrukerstoetteApiTest : FreeSpec({
 
                 every {
                     hendelseRecordRepository.readAllNestedRecordsForId(any(), any(), any(), any())
-                } returns listOf(avvist(identitetsnummer = "12345678901", id = 1).storedHendelseRecord(arbeidssoekerId = 1))
+                } returns listOf(
+                    avvist(
+                        identitetsnummer = "12345678901",
+                        id = 1
+                    ).storedHendelseRecord(arbeidssoekerId = 1)
+                )
 
                 coEvery {
                     oppslagApiClient.perioder("12345678901")
@@ -122,7 +132,7 @@ class BrukerstoetteApiTest : FreeSpec({
                 } returns emptyList<ProfileringResponse>().right()
 
                 testApplication {
-                    configureTestApplication()
+                    configureTestApplication(testApplicationContext.toApplicationContext())
                     val client = configureTestClient()
                     val response = client.post("/api/v1/arbeidssoeker/detaljer") {
                         headers {
@@ -180,7 +190,7 @@ class BrukerstoetteApiTest : FreeSpec({
                 } returns emptyList<ProfileringResponse>().right()
 
                 testApplication {
-                    configureTestApplication()
+                    configureTestApplication(testApplicationContext.toApplicationContext())
                     val client = configureTestClient()
                     val response = client.post("/api/v1/arbeidssoeker/detaljer") {
                         headers {

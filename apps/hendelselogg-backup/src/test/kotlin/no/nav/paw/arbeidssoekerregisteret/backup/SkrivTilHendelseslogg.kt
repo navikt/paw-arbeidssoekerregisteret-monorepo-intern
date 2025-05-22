@@ -1,5 +1,9 @@
 package no.nav.paw.arbeidssoekerregisteret.backup
 
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.avsluttet
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.genererHendelseSequenceFra
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.opplysninger
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerializer
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration

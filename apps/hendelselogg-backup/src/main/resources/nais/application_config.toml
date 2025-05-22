@@ -1,4 +1,4 @@
-version = 1
+consumerVersion = 1
 partitionCount = 6
 consumerId = "${NAIS_APP_NAME}-v1-consumer"
 consumerGroupId = "${NAIS_APP_NAME}-v1"

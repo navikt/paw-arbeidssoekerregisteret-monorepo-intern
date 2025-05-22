@@ -50,13 +50,17 @@ dependencies {
     implementation(libs.logbackClassic)
     implementation(libs.logstashLogbackEncoder)
     implementation(libs.kafka.clients)
+
+    // Database
     implementation(libs.exposed.core)
     implementation(libs.exposed.jdbc)
     implementation(libs.exposed.javaTime)
     implementation(libs.database.postgres.driver)
     implementation(libs.database.flyway.core)
     implementation(libs.database.flyway.postgres)
+    implementation(libs.database.hikari.connectionPool)
 
+    // Jackson
     implementation(libs.jackson.datatypeJsr310)
     implementation(libs.jackson.kotlin)
 

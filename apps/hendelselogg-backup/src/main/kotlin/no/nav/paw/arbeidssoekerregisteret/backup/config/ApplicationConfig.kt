@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssoekerregisteret.backup.config
 
 data class ApplicationConfig(
-    val version: Int,
+    val consumerVersion: Int,
     val partitionCount: Int,
     val consumerId: String,
     val consumerGroupId: String,

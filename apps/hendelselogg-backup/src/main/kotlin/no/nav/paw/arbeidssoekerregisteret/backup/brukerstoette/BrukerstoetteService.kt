@@ -14,7 +14,7 @@ import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Snapsh
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Tilstand
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.TilstandApiKall
 import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.ArbeidssoekerperiodeResponse
-import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseHendelseRecordPostgresRepository.hentIdentitetsnummerForPeriodeId
+import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecordPostgresRepository.hentIdentitetsnummerForPeriodeId
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecordRepository
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.StoredHendelseRecord
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet

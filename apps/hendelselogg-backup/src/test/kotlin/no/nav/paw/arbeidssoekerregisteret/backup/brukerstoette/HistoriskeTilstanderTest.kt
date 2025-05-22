@@ -4,12 +4,12 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Snapshot
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Tilstand
-import no.nav.paw.arbeidssoekerregisteret.backup.apiHendelse
-import no.nav.paw.arbeidssoekerregisteret.backup.avsluttet
-import no.nav.paw.arbeidssoekerregisteret.backup.avvist
-import no.nav.paw.arbeidssoekerregisteret.backup.opplysninger
-import no.nav.paw.arbeidssoekerregisteret.backup.startet
-import no.nav.paw.arbeidssoekerregisteret.backup.storedHendelseRecord
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.apiHendelse
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.avsluttet
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.avvist
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.opplysninger
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.startet
+import no.nav.paw.arbeidssoekerregisteret.backup.utils.storedHendelseRecord
 import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
 
 class HistoriskeTilstanderTest : FreeSpec({

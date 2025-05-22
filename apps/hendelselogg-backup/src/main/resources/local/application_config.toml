@@ -1,4 +1,4 @@
-version = 1
+consumerVersion = 1
 partitionCount = 6
 consumerId = "paw-arbeidssoekerregisteret-hendelseslogg-backup-v1-consumer"
 consumerGroupId = "paw-arbeidssoekerregisteret-hendelseslogg-backup-v1"
