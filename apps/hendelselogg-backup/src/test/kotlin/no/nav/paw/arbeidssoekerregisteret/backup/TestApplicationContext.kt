@@ -64,7 +64,7 @@ data class TestApplicationContext(
                 kafkaKeysClient = kafkaKeysClient,
                 oppslagApiClient = oppslagApiClient,
                 hendelseRecordRepository = hendelseRecordRepository,
-                databaseConfig =  databaseConfig,
+                databaseConfig = databaseConfig,
                 dataSource = dataSource,
                 brukerstoetteService = brukerstoetteService,
                 metrics = metrics,
@@ -74,7 +74,7 @@ data class TestApplicationContext(
 
         fun buildWithDatabase(): TestApplicationContext {
             val baseContext: TestApplicationContext = build()
-            initDatabase(baseContext.databaseConfig)
+            initDatabase()
             val dataSource = createHikariDataSource(baseContext.databaseConfig)
             val backupService = BackupService(HendelseRecordPostgresRepository, baseContext.metrics)
             return baseContext.copy(
@@ -99,11 +99,13 @@ fun TestApplicationContext.toApplicationContext(): ApplicationContext =
         backupService = backupService
     )
 
-fun initDatabase(databaseConfig: DatabaseConfig): Database {
-    val postgres = PostgreSQLContainer("postgres:17")
-        .withDatabaseName(databaseConfig.database)
-        .withUsername(databaseConfig.username)
-        .withPassword(databaseConfig.password)
+fun initDatabase(): Database {
+    val postgres = PostgreSQLContainer("postgres:17").apply {
+        addEnv("POSTGRES_PASSWORD", "admin")
+        addEnv("POSTGRES_USER", "admin")
+        addEnv("POSTGRES_DATABASE", "hendelselogg_backup")
+        addExposedPorts(5432)
+    }
 
     postgres.start()
     postgres.waitingFor(Wait.forHealthcheck())
