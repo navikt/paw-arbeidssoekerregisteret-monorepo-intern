@@ -3,16 +3,12 @@ package no.nav.paw.arbeidssoekerregisteret.backup.database.hwm
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 
-fun initHwm(consumerVersion: Int, partitionCount: Int) {
-    transaction {
-        (0 until partitionCount)
-            .filter { getHwm(consumerVersion, it) == null }
-            .forEach { insertHwm(consumerVersion, it, -1) }
-    }
-}
+fun initHwm(consumerVersion: Int, partitionCount: Int) =
+    (0 until partitionCount)
+        .filter { getHwm(consumerVersion, it) == null }
+        .forEach { insertHwm(consumerVersion, it, -1) }
 
 fun getHwm(consumerVersion: Int, partition: Int): Long? =
     HwmTable
@@ -43,6 +39,6 @@ fun updateHwm(consumerVersion: Int, partition: Int, offset: Long): Boolean =
     HwmTable
         .update({
             (HwmTable.partition eq partition) and
-            (HwmTable.offset less offset) and
-            (HwmTable.version eq consumerVersion)
+                    (HwmTable.offset less offset) and
+                    (HwmTable.version eq consumerVersion)
         }) { it[HwmTable.offset] = offset } == 1

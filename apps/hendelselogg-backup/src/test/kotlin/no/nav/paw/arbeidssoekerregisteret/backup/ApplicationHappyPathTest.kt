@@ -7,9 +7,7 @@ import io.kotest.matchers.shouldBe
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecordPostgresRepository.readAllNestedRecordsForId
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.initHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.config.ApplicationConfig
-import no.nav.paw.arbeidssoekerregisteret.backup.utils.TestApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.avsluttet
-import no.nav.paw.arbeidssoekerregisteret.backup.utils.toApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.opplysninger
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.readRecord
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.startet
@@ -25,8 +23,8 @@ import java.util.*
 
 class ApplicationHappyPathTest : FreeSpec({
     "Verifiser enkel applikasjonsflyt" {
-        with(TestApplicationContext.buildWithDatabase().toApplicationContext()) {
-            initHwm(this)
+        with(TestApplicationContext.buildWithDatabase()) {
+            initHwm(this.toApplicationContext())
             val testRecords = testConsumerRecords(applicationConfig)
 
             val mergeRecord = createMergeRecord(
@@ -38,23 +36,19 @@ class ApplicationHappyPathTest : FreeSpec({
 
             val testConsumerRecords = ConsumerRecords(testRecords)
 
-            hendelseloggBackup.processRecords(
+            backupService.processRecords(
                 records = testConsumerRecords,
                 applicationConfig.consumerVersion
             )
 
             testConsumerRecords.forEach { record ->
-                val partition = record.partition()
-                val offset = record.offset()
-                val forventetHendelse = record.value()
-
                 val lagretHendelse = transaction {
-                    readRecord(applicationConfig.consumerVersion, partition, offset)
+                    readRecord(applicationConfig.consumerVersion, record.partition(), record.offset())
                 }
                 lagretHendelse.shouldNotBeNull()
-                lagretHendelse.partition shouldBe partition
-                lagretHendelse.offset shouldBe offset
-                lagretHendelse.data shouldBe forventetHendelse
+                lagretHendelse.partition shouldBe record.partition()
+                lagretHendelse.offset shouldBe record.offset()
+                lagretHendelse.data shouldBe record.value()
             }
 
             transaction {

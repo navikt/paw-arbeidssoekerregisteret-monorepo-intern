@@ -4,9 +4,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecordPostgresRepository.writeRecord
-import no.nav.paw.arbeidssoekerregisteret.backup.utils.TestApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.getOneRecordForId
-import no.nav.paw.arbeidssoekerregisteret.backup.utils.initDatabase
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.readRecord
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
@@ -20,10 +18,9 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
 
-class DataFunctionsTest : FreeSpec({
-    with(TestApplicationContext.build()){
+class HendelseRecordRepositoryTest : FreeSpec({
+    with(TestApplicationContext.buildWithDatabase()){
         "Verify data functions" - {
-            initDatabase()
             val hendelseSerde = HendelseSerde()
             val record = ConsumerRecord<Long, Hendelse>(
                 "t1",

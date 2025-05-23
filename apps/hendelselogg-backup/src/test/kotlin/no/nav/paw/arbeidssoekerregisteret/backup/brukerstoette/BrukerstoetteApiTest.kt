@@ -13,7 +13,7 @@ import io.ktor.server.testing.testApplication
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.every
-import no.nav.paw.arbeidssoekerregisteret.backup.utils.TestApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.TestApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.DetaljerRequest
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.DetaljerResponse
 import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.ArbeidssoekerperiodeResponse
@@ -28,8 +28,9 @@ import no.nav.paw.arbeidssoekerregisteret.backup.utils.configureTestClient
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.opplysninger
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.startet
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.storedHendelseRecord
-import no.nav.paw.arbeidssoekerregisteret.backup.utils.toApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.toApplicationContext
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
+import java.util.UUID
 
 class BrukerstoetteApiTest : FreeSpec({
     val testApplicationContext = TestApplicationContext.build()
@@ -38,7 +39,6 @@ class BrukerstoetteApiTest : FreeSpec({
     with(testApplicationContext) {
         "Test av brukerstøtte API" - {
             "Ingen hendelser funnet gir 404 Not Found" {
-
                 coEvery {
                     kafkaKeysClient.getIdAndKeyOrNull("12345678901")
                 } returns KafkaKeysResponse(id = 1, key = 1L)
@@ -66,8 +66,7 @@ class BrukerstoetteApiTest : FreeSpec({
             }
 
             "Ugyldig identformat resulterer i 400 bad request" {
-                coEvery { brukerstoetteService.hentDetaljer(any()) } throws UgyldigIdentFormat("Ugyldig identformat")
-
+                val testIdentitetsnummer = "test"
                 testApplication {
                     configureTestApplication(testApplicationContext.toApplicationContext())
                     val client = configureTestClient()
@@ -75,7 +74,7 @@ class BrukerstoetteApiTest : FreeSpec({
                         headers {
                             append("Content-Type", "application/json")
                         }
-                        setBody(DetaljerRequest("12345678901"))
+                        setBody(DetaljerRequest(testIdentitetsnummer))
                     }
 
                     response.status shouldBe HttpStatusCode.BadRequest
@@ -85,8 +84,11 @@ class BrukerstoetteApiTest : FreeSpec({
                 }
             }
 
-            "Fant ikke identitetsnummer resulterer i 404 not found" {
-                coEvery { brukerstoetteService.hentDetaljer(any()) } throws FantIkkeIdentitetsnummer("Fant ikke identitetsnummer for periodeId")
+            "Fant ikke arbeidssøkerId resulterer i 404 not found" {
+                val testIdentitetsnummer = "12345678912"
+                coEvery {
+                    kafkaKeysClient.getIdAndKeyOrNull(testIdentitetsnummer)
+                } returns null
 
                 testApplication {
                     configureTestApplication(testApplicationContext.toApplicationContext())
@@ -95,12 +97,36 @@ class BrukerstoetteApiTest : FreeSpec({
                         headers {
                             append("Content-Type", "application/json")
                         }
-                        setBody(DetaljerRequest("12345678901"))
+                        setBody(DetaljerRequest(testIdentitetsnummer))
                     }
 
                     response.status shouldBe HttpStatusCode.NotFound
                     val responseBody = response.body<no.nav.paw.error.model.ProblemDetails>()
-                    responseBody.detail shouldBe "Fant ikke identitetsnummer for periodeId"
+                    responseBody.detail shouldBe "Fant ikke arbeidssøkerId"
+                    responseBody.status shouldBe HttpStatusCode.NotFound
+                }
+            }
+
+            "Fant ikke identitetsnummer resulterer i 404 not found" {
+                val testIdent = UUID.randomUUID()
+
+                every {
+                    hendelseRecordRepository.hentIdentitetsnummerForPeriodeId(any(), any())
+                } returns null
+
+                testApplication {
+                    configureTestApplication(testApplicationContext.toApplicationContext())
+                    val client = configureTestClient()
+                    val response = client.post("/api/v1/arbeidssoeker/detaljer") {
+                        headers {
+                            append("Content-Type", "application/json")
+                        }
+                        setBody(DetaljerRequest(testIdent.toString()))
+                    }
+
+                    response.status shouldBe HttpStatusCode.NotFound
+                    val responseBody = response.body<no.nav.paw.error.model.ProblemDetails>()
+                    responseBody.detail shouldBe "Fant ikke identitetsnummer for periodeId: $testIdent"
                     responseBody.status shouldBe HttpStatusCode.NotFound
                 }
             }

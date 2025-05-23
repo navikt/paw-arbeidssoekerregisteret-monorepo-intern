@@ -4,11 +4,9 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.initHwm
-import no.nav.paw.arbeidssoekerregisteret.backup.utils.TestApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.avsluttet
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.readRecord
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.startet
-import no.nav.paw.arbeidssoekerregisteret.backup.utils.toApplicationContext
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
@@ -17,10 +15,10 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 class ApplicationConsumerResetTest : FreeSpec({
     "Prosesserer ConsumerRecords riktig iht. HWM ved oppstart" - {
-        with(TestApplicationContext.buildWithDatabase().toApplicationContext()) {
-            initHwm(this)
+        with(TestApplicationContext.buildWithDatabase()) {
+            initHwm(this.toApplicationContext())
             val testConsumerRecords = testConsumerRecords()
-            hendelseloggBackup.processRecords(
+            backupService.processRecords(
                 records = testConsumerRecords,
                 consumerVersion = applicationConfig.consumerVersion
             )

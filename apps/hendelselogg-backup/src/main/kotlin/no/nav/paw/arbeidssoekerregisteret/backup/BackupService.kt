@@ -1,4 +1,4 @@
-package no.nav.paw.arbeidssoekerregisteret.backup.kafka
+package no.nav.paw.arbeidssoekerregisteret.backup
 
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecordRepository
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.updateHwm
@@ -9,7 +9,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerializer
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class HendelseloggBackup(
+class BackupService(
     private val hendelseRecordRepository: HendelseRecordRepository,
     private val metrics: Metrics,
 ) {

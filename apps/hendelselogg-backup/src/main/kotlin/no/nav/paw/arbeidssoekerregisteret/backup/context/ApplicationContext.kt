@@ -10,7 +10,7 @@ import no.nav.paw.arbeidssoekerregisteret.backup.config.ApplicationConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.config.SERVER_CONFIG
 import no.nav.paw.arbeidssoekerregisteret.backup.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecordPostgresRepository
-import no.nav.paw.arbeidssoekerregisteret.backup.kafka.HendelseloggBackup
+import no.nav.paw.arbeidssoekerregisteret.backup.BackupService
 import no.nav.paw.arbeidssoekerregisteret.backup.metrics.Metrics
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
@@ -38,7 +38,7 @@ data class ApplicationContext(
     val brukerstoetteService: BrukerstoetteService,
     val additionalMeterBinder: MeterBinder,
     val metrics: Metrics,
-    val hendelseloggBackup: HendelseloggBackup,
+    val backupService: BackupService,
 ) {
     companion object {
         fun create(): ApplicationContext {
@@ -71,7 +71,7 @@ data class ApplicationContext(
             )
             val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
             val metrics = Metrics(prometheusMeterRegistry)
-            val hendelseloggBackup = HendelseloggBackup(HendelseRecordPostgresRepository, metrics)
+            val backupService = BackupService(HendelseRecordPostgresRepository, metrics)
 
 
             return ApplicationContext(
@@ -84,7 +84,7 @@ data class ApplicationContext(
                 brukerstoetteService = service,
                 additionalMeterBinder = KafkaClientMetrics(consumer),
                 metrics = metrics,
-                hendelseloggBackup = hendelseloggBackup,
+                backupService = backupService,
             )
         }
     }

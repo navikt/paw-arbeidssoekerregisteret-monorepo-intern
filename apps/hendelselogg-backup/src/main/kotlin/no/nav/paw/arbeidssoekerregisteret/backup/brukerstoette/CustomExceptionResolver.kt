@@ -9,6 +9,14 @@ import no.nav.paw.error.model.ProblemDetailsBuilder
 
 fun customExceptionResolver(): (Throwable, ApplicationRequest) -> ProblemDetails? = { throwable, request ->
     when (throwable) {
+        is IngenArbeidssoekerIdFunnet -> {
+            ProblemDetailsBuilder.builder()
+                .type(ErrorType.domain("http").error("ingen-arbeidssoeker-id-funnet").build())
+                .status(HttpStatusCode.NotFound)
+                .detail(throwable.message ?: "Ingen arbeidssoeker id funnet")
+                .instance(request.uri)
+                .build()
+        }
         is IngenHendelserFunnet -> {
             ProblemDetailsBuilder.builder()
                 .type(ErrorType.domain("http").error("ingen-hendelser-funnet").build())

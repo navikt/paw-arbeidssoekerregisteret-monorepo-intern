@@ -53,10 +53,7 @@ fun Application.module(applicationContext: ApplicationContext) =
             applicationContext = applicationContext,
             hendelseKafkaConsumer = hendelseKafkaConsumer,
             consumeFunction = { records: ConsumerRecords<Long, Hendelse> ->
-                hendelseloggBackup.processRecords(
-                    records,
-                    applicationConfig.consumerVersion
-                )
+                backupService.processRecords(records, applicationConfig.consumerVersion)
             },
         )
         installErrorHandlingPlugin(

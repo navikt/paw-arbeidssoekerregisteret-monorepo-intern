@@ -14,7 +14,6 @@ import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Snapsh
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Tilstand
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.TilstandApiKall
 import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.ArbeidssoekerperiodeResponse
-import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecordPostgresRepository.hentIdentitetsnummerForPeriodeId
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecordRepository
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.StoredHendelseRecord
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
@@ -27,6 +26,7 @@ import java.util.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
+class IngenArbeidssoekerIdFunnet(message: String) : RuntimeException(message)
 class IngenHendelserFunnet(message: String) : RuntimeException(message)
 class FantIkkeIdentitetsnummer(message: String) : RuntimeException(message)
 class UgyldigIdentFormat(message: String) : RuntimeException(message)
@@ -43,19 +43,19 @@ class BrukerstoetteService(
 
     suspend fun hentDetaljer(id: String): DetaljerResponse {
 
-        val identitetsnummer = when (id.length) {
-            11 -> id
+        val identitetsnummer = when {
+            id.matches(Regex("\\d{11}")) -> id
             else -> {
                 val periodeId = runCatching { UUID.fromString(id) }
                     .getOrElse { throw UgyldigIdentFormat("Ugyldig identformat") }
 
-                hentIdentitetsnummerForPeriodeId(hendelseDeserializer, periodeId)
+                hendelseRecordRepository.hentIdentitetsnummerForPeriodeId(hendelseDeserializer, periodeId)
                     ?: throw FantIkkeIdentitetsnummer("Fant ikke identitetsnummer for periodeId: $periodeId")
             }
         }
 
         val (id, key) = kafkaKeysClient.getIdAndKeyOrNull(identitetsnummer)
-            ?: throw IngenHendelserFunnet("Fant ingen hendelser for person")
+            ?: throw IngenArbeidssoekerIdFunnet("Fant ikke arbeidssøkerId")
 
         val hendelser = hendelseRecordRepository.readAllNestedRecordsForId(
             consumerVersion,

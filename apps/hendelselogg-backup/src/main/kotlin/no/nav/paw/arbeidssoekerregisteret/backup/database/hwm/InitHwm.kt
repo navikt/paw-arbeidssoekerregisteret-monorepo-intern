@@ -6,9 +6,8 @@ import org.jetbrains.exposed.sql.transactions.transaction
 fun initHwm(applicationContext: ApplicationContext) = with(applicationContext) {
     val partitions = applicationConfig.partitionCount
     val version = applicationConfig.consumerVersion
-    val allHwms = transaction {
+    transaction {
         initHwm(version, partitions)
-        getAllHwms(version)
+        metrics.registerHwmGauges(applicationContext, getAllHwms(version))
     }
-    metrics.registerHwmGauges(applicationContext, allHwms)
 }
