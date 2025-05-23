@@ -75,11 +75,9 @@ data class TestApplicationContext(
         fun buildWithDatabase(): TestApplicationContext {
             val baseContext: TestApplicationContext = build()
             initDatabase()
-            val dataSource = createHikariDataSource(baseContext.databaseConfig)
             val backupService = BackupService(HendelseRecordPostgresRepository, baseContext.metrics)
             return baseContext.copy(
                 backupService = backupService,
-                dataSource = dataSource,
             )
         }
     }
@@ -100,27 +98,35 @@ fun TestApplicationContext.toApplicationContext(): ApplicationContext =
     )
 
 fun initDatabase(): Database {
-    val postgres = PostgreSQLContainer("postgres:17").apply {
-        addEnv("POSTGRES_PASSWORD", "admin")
-        addEnv("POSTGRES_USER", "admin")
-        addEnv("POSTGRES_DATABASE", "hendelselogg_backup")
-        addExposedPorts(5432)
-    }
-
-    postgres.start()
-    postgres.waitingFor(Wait.forHealthcheck())
-    val dbConfig = postgres.databaseConfig()
-    val dataSource = createHikariDataSource(dbConfig)
+    val dataSource = createTestDataSource()
     migrateDatabase(dataSource)
     return Database.connect(dataSource)
 }
 
-fun PostgreSQLContainer<*>.databaseConfig() =
-    DatabaseConfig(
-        host = host,
-        port = firstMappedPort,
-        username = username,
-        password = password,
-        database = databaseName,
-        jdbcUrl = null,
-    )
+fun createTestDataSource(
+    databaseConfig: DatabaseConfig = loadNaisOrLocalConfiguration(DATABASE_CONFIG),
+    postgresContainer: PostgreSQLContainer<*> = postgresContainer(),
+): DataSource {
+    val updatedDatabaseConfig = postgresContainer.let {
+        databaseConfig.copy(
+            host = it.host,
+            port = it.firstMappedPort,
+            username = it.username,
+            password = it.password,
+            database = it.databaseName
+        )
+    }
+    return createHikariDataSource(updatedDatabaseConfig)
+}
+
+private fun postgresContainer(): PostgreSQLContainer<out PostgreSQLContainer<*>> {
+    val postgres = PostgreSQLContainer("postgres:17").apply {
+        addEnv("POSTGRES_PASSWORD", "hendelselogg_backup")
+        addEnv("POSTGRES_USER", "Paw1234")
+        addEnv("POSTGRES_DB", "hendelselogg_backup")
+        addExposedPorts(5432)
+    }
+    postgres.start()
+    postgres.waitingFor(Wait.forHealthcheck())
+    return postgres
+}
