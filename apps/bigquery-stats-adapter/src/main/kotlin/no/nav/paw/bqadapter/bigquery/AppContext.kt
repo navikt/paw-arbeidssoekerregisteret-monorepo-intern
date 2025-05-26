@@ -52,6 +52,11 @@ fun initBqApp(
         )
     )
 
+    bqAdmin.createMaterializedViews(
+        datasetName = GRAFANA_DATASET,
+        path = views_path
+    )
+
     return AppContext(
         livenessHealthIndicator = livenessHealthIndicator,
         readinessHealthIndicator = readinessHealthIndicator,

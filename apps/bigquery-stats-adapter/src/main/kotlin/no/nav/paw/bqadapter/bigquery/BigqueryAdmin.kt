@@ -27,4 +27,9 @@ class BigQueryAdmin(
         val tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build()
         return bigQuery.create(tableInfo)
     }
+
+    fun getOrCreate(tableInfo: TableInfo): Table {
+        val tableId = tableInfo.tableId
+        return bigQuery.getTable(tableId) ?: bigQuery.create(tableInfo)
+    }
 }
