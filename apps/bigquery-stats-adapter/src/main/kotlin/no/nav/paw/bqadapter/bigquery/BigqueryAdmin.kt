@@ -7,6 +7,7 @@ import com.google.cloud.bigquery.StandardTableDefinition
 import com.google.cloud.bigquery.Table
 import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.TableInfo
+import no.nav.paw.bqadapter.appLogger
 import com.google.api.services.bigquery.model.Table as ModelTable
 
 class BigQueryAdmin(
@@ -32,6 +33,7 @@ class BigQueryAdmin(
     }
 
     fun getOrCreate(datasetName: DatasetName, table: ModelTable): ModelTable {
+        appLogger.info("Creating table: $table")
        return bigquery.tables()
            .insert(project, datasetName.value, table)
            .execute()

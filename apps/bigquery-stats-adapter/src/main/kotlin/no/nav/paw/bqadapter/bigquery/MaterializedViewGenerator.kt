@@ -45,7 +45,6 @@ fun createMaterializedViewDefinition(datasetName: DatasetName, view: View<Sql>):
     }
     val viewDefinition = MaterializedViewDefinition()
         .setQuery(view.representation.value)
-        .setEnableRefresh(false)
         .setRefreshIntervalMs(matrialized_views_refresh_interval.toMillis())
         .setAllowNonIncrementalDefinition(true)
         .encodeMaxStaleness(
