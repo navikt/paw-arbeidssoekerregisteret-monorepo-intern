@@ -47,7 +47,7 @@ fun createMaterializedViewDefinition(view: View<Sql>): View<MaterializedViewDefi
         representation =
             MaterializedViewDefinition
                 .newBuilder(view.representation.value)
-                .setEnableRefresh(true)
+                .setEnableRefresh(false)
                 .setRefreshIntervalMs(matrialized_views_refresh_interval_ms)
                 .build()
     )
