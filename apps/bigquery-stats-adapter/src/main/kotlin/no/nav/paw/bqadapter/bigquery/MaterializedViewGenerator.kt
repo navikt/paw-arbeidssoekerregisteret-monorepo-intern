@@ -6,7 +6,7 @@ import com.google.cloud.bigquery.TableInfo
 import java.io.File
 import java.time.Duration
 
-const val views_path = "/materialized_views/"
+const val views_path = "materialized_views/"
 val matrialized_views_refresh_interval_ms = Duration.ofHours(6).toMillis()
 
 @JvmInline
