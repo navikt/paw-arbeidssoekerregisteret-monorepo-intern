@@ -1,5 +1,6 @@
 package no.nav.paw.bqadapter.bigquery
 
+import com.google.api.services.bigquery.Bigquery
 import com.google.cloud.bigquery.BigQuery
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
@@ -28,6 +29,7 @@ class AppContext(
 
 fun initBqApp(
     bigquery: BigQuery,
+    bigqueryModel: Bigquery,
     project: String,
     encoder: Encoder,
     hendelserDeserializer: HendelseDeserializer,
@@ -37,6 +39,7 @@ fun initBqApp(
 ): AppContext {
     val bqAdmin = BigQueryAdmin(
         bigQuery = bigquery,
+        bigquery = bigqueryModel,
         project = project
     )
 

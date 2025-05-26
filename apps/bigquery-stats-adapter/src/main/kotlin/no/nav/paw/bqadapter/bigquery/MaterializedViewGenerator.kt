@@ -1,13 +1,13 @@
 package no.nav.paw.bqadapter.bigquery
 
-import com.google.cloud.bigquery.MaterializedViewDefinition
-import com.google.cloud.bigquery.TableId
-import com.google.cloud.bigquery.TableInfo
+import com.google.api.services.bigquery.model.MaterializedViewDefinition
+import com.google.api.services.bigquery.model.Table
+import com.google.api.services.bigquery.model.TableReference
 import java.io.File
 import java.time.Duration
 
 const val views_path = "materialized_views/"
-val matrialized_views_refresh_interval_ms = Duration.ofHours(6).toMillis()
+val matrialized_views_refresh_interval = Duration.ofHours(6)
 
 @JvmInline
 value class Sql(val value: String)
@@ -21,11 +21,9 @@ fun BigQueryAdmin.createMaterializedViews(
     path: String
 ): List<String> =
     viewsFromResource(path)
-        ?.map(::createMaterializedViewDefinition)
+        ?.map { createMaterializedViewDefinition(datasetName, it) }
         ?.map { view ->
-            val tableId = TableId.of(datasetName.value, view.name)
-            val tableInfo = TableInfo.of(tableId, view.representation)
-            getOrCreate(tableInfo)
+            getOrCreate(datasetName, view.representation)
             "${datasetName}.${view.name}"
         } ?: emptyList()
 
@@ -40,14 +38,26 @@ fun viewsFromResource(path: String): List<View<Sql>>? =
             View(name, sql)
         }
 
-
-fun createMaterializedViewDefinition(view: View<Sql>): View<MaterializedViewDefinition> =
-    View(
+fun createMaterializedViewDefinition(datasetName: DatasetName, view: View<Sql>): View<Table> {
+    val tableRef = TableReference().apply {
+        tableId = view.name
+        datasetId = datasetName.value
+    }
+    val viewDefinition = MaterializedViewDefinition()
+        .setQuery(view.representation.value)
+        .setEnableRefresh(false)
+        .setRefreshIntervalMs(matrialized_views_refresh_interval.toMillis())
+        .setAllowNonIncrementalDefinition(true)
+        .encodeMaxStaleness(
+            "INTERVAL \"${matrialized_views_refresh_interval.toHours()}\" HOUR"
+                .toByteArray()
+        )
+    val table = Table().apply {
+        tableReference = tableRef
+        materializedView = viewDefinition
+    }
+    return View(
         name = view.name,
-        representation =
-            MaterializedViewDefinition
-                .newBuilder(view.representation.value)
-                .setEnableRefresh(false)
-                .setRefreshIntervalMs(matrialized_views_refresh_interval_ms)
-                .build()
+        representation = table
     )
+}

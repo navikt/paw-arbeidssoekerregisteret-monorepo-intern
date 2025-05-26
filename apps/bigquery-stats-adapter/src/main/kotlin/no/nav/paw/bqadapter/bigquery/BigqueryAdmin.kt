@@ -1,14 +1,17 @@
 package no.nav.paw.bqadapter.bigquery
 
+import com.google.api.services.bigquery.Bigquery
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.Schema
 import com.google.cloud.bigquery.StandardTableDefinition
 import com.google.cloud.bigquery.Table
 import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.TableInfo
+import com.google.api.services.bigquery.model.Table as ModelTable
 
 class BigQueryAdmin(
     private val bigQuery: BigQuery,
+    private val bigquery: Bigquery,
     private val project: String
 ) {
 
@@ -28,8 +31,9 @@ class BigQueryAdmin(
         return bigQuery.create(tableInfo)
     }
 
-    fun getOrCreate(tableInfo: TableInfo): Table {
-        val tableId = tableInfo.tableId
-        return bigQuery.getTable(tableId) ?: bigQuery.create(tableInfo)
+    fun getOrCreate(datasetName: DatasetName, table: ModelTable): ModelTable {
+       return bigquery.tables()
+           .insert(project, datasetName.value, table)
+           .execute()
     }
 }

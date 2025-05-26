@@ -1,5 +1,10 @@
 package no.nav.paw.bqadapter
 
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
+import com.google.api.client.json.gson.GsonFactory
+import com.google.api.services.bigquery.Bigquery
+import com.google.auth.http.HttpCredentialsAdapter
+import com.google.auth.oauth2.ServiceAccountCredentials
 import com.google.cloud.bigquery.BigQueryOptions
 import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
@@ -23,6 +28,7 @@ import org.apache.kafka.common.serialization.ByteArrayDeserializer
 import org.apache.kafka.common.serialization.LongDeserializer
 import org.slf4j.LoggerFactory
 import java.nio.file.Paths
+
 
 val appLogger = LoggerFactory.getLogger("app")
 
@@ -62,6 +68,11 @@ fun main() {
         encoder = encoder,
         hendelserDeserializer = HendelseDeserializer(),
         periodeDeserializer = kafkaFactory.kafkaAvroDeSerializer(),
+        bigqueryModel = Bigquery.Builder(
+            GoogleNetHttpTransport.newTrustedTransport(),
+            GsonFactory.getDefaultInstance(),
+            HttpCredentialsAdapter(ServiceAccountCredentials.getApplicationDefault())
+        ).build()
     )
     embeddedServer(factory = Netty, port = 8080) {
         install(KafkaConsumerPlugin<Long, ByteArray>("application_consumer")) {
