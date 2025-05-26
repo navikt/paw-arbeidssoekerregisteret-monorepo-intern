@@ -48,7 +48,7 @@ fun createMaterializedViewDefinition(datasetName: DatasetName, view: View<Sql>):
         .setRefreshIntervalMs(matrialized_views_refresh_interval.toMillis())
         .setAllowNonIncrementalDefinition(true)
         .encodeMaxStaleness(
-            "INTERVAL \"${matrialized_views_refresh_interval.toHours()}\" HOUR"
+            "INTERVAL ${matrialized_views_refresh_interval.toHours()} HOUR"
                 .toByteArray()
         )
     val table = Table().apply {
