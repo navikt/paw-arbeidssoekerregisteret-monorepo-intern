@@ -51,7 +51,6 @@ fun Application.module(applicationContext: ApplicationContext) =
         installDatabasePlugin(dataSource)
         installKafkaConsumerPlugin(
             applicationContext = applicationContext,
-            hendelseKafkaConsumer = hendelseKafkaConsumer,
             consumeFunction = { records: ConsumerRecords<Long, Hendelse> ->
                 backupService.processRecords(records, applicationConfig.consumerVersion)
             },
@@ -60,9 +59,6 @@ fun Application.module(applicationContext: ApplicationContext) =
             customResolver = customExceptionResolver()
         )
         installAuthenticationPlugin(securityConfig.authProviders)
-        installHwmPlugin(applicationContext)
-        configureRouting(
-            meterRegistry = prometheusMeterRegistry,
-            brukerstoetteService = brukerstoetteService
-        )
+        installHwmPlugin(this)
+        configureRouting(this)
     }

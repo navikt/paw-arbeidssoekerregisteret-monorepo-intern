@@ -25,11 +25,11 @@ class NonCommittingKafkaConsumerWrapper<K, V>(
     override fun init() {
         logger.info("Kafka Consumer abonnerer på topics {}", topics)
         consumer.subscribe(topics, rebalanceListener)
+        isRunning.set(true)
     }
 
     override fun consume(onConsume: (ConsumerRecords<K, V>) -> Unit) {
         try {
-            isRunning.set(true)
             val records = consumer.poll(pollTimeout)
             onConsume(records)
         } catch (throwable: Throwable) {
@@ -42,5 +42,8 @@ class NonCommittingKafkaConsumerWrapper<K, V>(
         logger.info("Kafka Consumer stopper å abonnere på topics {} og lukkes", topics)
         consumer.unsubscribe()
         consumer.close(closeTimeout)
+        isRunning.set(false)
     }
+
+    override fun isRunning() = isRunning.get()
 }

@@ -11,6 +11,9 @@ import no.nav.paw.arbeidssoekerregisteret.backup.config.SERVER_CONFIG
 import no.nav.paw.arbeidssoekerregisteret.backup.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecordPostgresRepository
 import no.nav.paw.arbeidssoekerregisteret.backup.BackupService
+import no.nav.paw.arbeidssoekerregisteret.backup.health.HealthIndicatorConsumerExceptionHandler
+import no.nav.paw.arbeidssoekerregisteret.backup.kafka.HwmRebalanceListener
+import no.nav.paw.arbeidssoekerregisteret.backup.kafka.NonCommittingKafkaConsumerWrapper
 import no.nav.paw.arbeidssoekerregisteret.backup.metrics.Metrics
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
@@ -18,13 +21,15 @@ import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.database.config.DATABASE_CONFIG
 import no.nav.paw.database.config.DatabaseConfig
 import no.nav.paw.database.factory.createHikariDataSource
+import no.nav.paw.health.model.LivenessHealthIndicator
+import no.nav.paw.health.model.ReadinessHealthIndicator
 import no.nav.paw.kafka.config.KAFKA_CONFIG
 import no.nav.paw.kafka.config.KafkaConfig
+import no.nav.paw.kafka.consumer.KafkaConsumerWrapper
 import no.nav.paw.kafka.factory.KafkaFactory
 import no.nav.paw.kafkakeygenerator.auth.AZURE_M2M_CONFIG
 import no.nav.paw.kafkakeygenerator.auth.AzureM2MConfig
 import no.nav.paw.security.authentication.config.SecurityConfig
-import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.LongDeserializer
 import javax.sql.DataSource
 
@@ -34,7 +39,8 @@ data class ApplicationContext(
     val securityConfig: SecurityConfig,
     val dataSource: DataSource,
     val prometheusMeterRegistry: PrometheusMeterRegistry,
-    val hendelseKafkaConsumer: KafkaConsumer<Long, Hendelse>,
+    val hwmRebalanceListener: HwmRebalanceListener,
+    val hendelseConsumerWrapper: KafkaConsumerWrapper<Long, Hendelse>,
     val brukerstoetteService: BrukerstoetteService,
     val additionalMeterBinder: MeterBinder,
     val metrics: Metrics,
@@ -69,6 +75,16 @@ data class ApplicationContext(
                 autoCommit = false,
                 autoOffsetReset = "earliest"
             )
+            val hwmRebalanceListener = HwmRebalanceListener(applicationConfig.consumerVersion, consumer)
+            val kafkaConsumerWrapper = NonCommittingKafkaConsumerWrapper(
+                rebalanceListener = hwmRebalanceListener,
+                topics = listOf(applicationConfig.hendelsesloggTopic),
+                consumer = consumer,
+                exceptionHandler = HealthIndicatorConsumerExceptionHandler(
+                    LivenessHealthIndicator(),
+                    ReadinessHealthIndicator()
+                )
+            )
             val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
             val metrics = Metrics(prometheusMeterRegistry)
             val backupService = BackupService(HendelseRecordPostgresRepository, metrics)
@@ -80,7 +96,8 @@ data class ApplicationContext(
                 securityConfig = securityConfig,
                 dataSource = dataSource,
                 prometheusMeterRegistry = prometheusMeterRegistry,
-                hendelseKafkaConsumer = consumer,
+                hwmRebalanceListener = hwmRebalanceListener,
+                hendelseConsumerWrapper = kafkaConsumerWrapper,
                 brukerstoetteService = service,
                 additionalMeterBinder = KafkaClientMetrics(consumer),
                 metrics = metrics,

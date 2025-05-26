@@ -10,15 +10,26 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
+import io.micrometer.core.instrument.binder.MeterBinder
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.mockk.every
 import io.mockk.mockk
+import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.BrukerstoetteService
+import no.nav.paw.arbeidssoekerregisteret.backup.config.ApplicationConfig
+import no.nav.paw.arbeidssoekerregisteret.backup.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.kafka.HwmRebalanceListener
+import no.nav.paw.arbeidssoekerregisteret.backup.metrics.Metrics
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.configureTestClient
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
+import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
+import no.nav.paw.kafka.consumer.KafkaConsumerWrapper
 import no.nav.paw.logging.logger.buildErrorLogger
+import no.nav.paw.security.authentication.config.SecurityConfig
 import java.sql.SQLException
 import javax.sql.DataSource
 
-const val internalStartedUrl = "/internal/started"
+const val internalStartupUrl = "/internal/startup"
 val testLogger = buildErrorLogger
 
 class StartupProbeTest : FreeSpec({
@@ -28,7 +39,7 @@ class StartupProbeTest : FreeSpec({
         testApplication {
             configureInternalTestApplication(testApplicationContext.toApplicationContext())
             val client = configureTestClient()
-            val response = client.get(internalStartedUrl)
+            val response = client.get(internalStartupUrl)
             response.status shouldBe HttpStatusCode.OK
         }
     }
@@ -41,7 +52,7 @@ class StartupProbeTest : FreeSpec({
         testApplication {
             configureInternalTestApplication(applicationContext)
             val client = configureTestClient()
-            val response = client.get(internalStartedUrl)
+            val response = client.get(internalStartupUrl)
             response.status shouldBe HttpStatusCode.InternalServerError
         }
     }
@@ -50,7 +61,7 @@ class StartupProbeTest : FreeSpec({
         testApplication {
             configureInternalTestApplication(applicationContext.toApplicationContext())
             val client = configureTestClient()
-            val response = client.get(internalStartedUrl)
+            val response = client.get(internalStartupUrl)
             response.status shouldBe HttpStatusCode.InternalServerError
         }
     }
@@ -60,12 +71,18 @@ fun ApplicationTestBuilder.configureInternalTestApplication(applicationContext: 
     with(applicationContext) {
         application {
             routing {
-                get(internalStartedUrl) {
-                    //val kafkaOk = !applicationContext.hendelseKafkaConsumer.
+                get(internalStartupUrl) {
+                    val kafkaOk = hendelseConsumerWrapper.isRunning()
                     val canConnectToDb = isConnected(dataSource)
                     if (!canConnectToDb) {
                         call.respondText(
                             "Application is not ready to receive requests, database connection failed",
+                            status = HttpStatusCode.InternalServerError,
+                            contentType = ContentType.Text.Plain
+                        )
+                    } else if(!kafkaOk) {
+                        call.respondText(
+                            "Application is not ready to receive requests, kafka consumer connection failed",
                             status = HttpStatusCode.InternalServerError,
                             contentType = ContentType.Text.Plain
                         )
@@ -93,14 +110,15 @@ fun isConnected(dataSource: DataSource) = runCatching {
 }.isSuccess
 
 private fun testContextWith(dataSourceMock: DataSource): ApplicationContext = ApplicationContext(
-    applicationConfig = mockk(),
-    serverConfig = mockk(),
-    securityConfig = mockk(),
+    applicationConfig = mockk(relaxed = true),
+    serverConfig = mockk(relaxed = true),
+    securityConfig = mockk(relaxed = true),
     dataSource = dataSourceMock,
-    prometheusMeterRegistry = mockk(),
-    hendelseKafkaConsumer = mockk(),
-    brukerstoetteService = mockk(),
-    additionalMeterBinder = mockk(),
-    metrics = mockk(),
-    backupService = mockk()
+    prometheusMeterRegistry = mockk(relaxed = true),
+    hwmRebalanceListener = mockk(relaxed = true),
+    hendelseConsumerWrapper = mockk(relaxed = true),
+    brukerstoetteService = mockk(relaxed = true),
+    additionalMeterBinder = mockk(relaxed = true),
+    metrics = mockk(relaxed = true),
+    backupService = mockk(relaxed = true),
 )
