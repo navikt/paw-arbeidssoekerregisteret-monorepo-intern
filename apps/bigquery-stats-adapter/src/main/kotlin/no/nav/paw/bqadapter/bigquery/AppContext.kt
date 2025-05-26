@@ -4,6 +4,7 @@ import com.google.cloud.bigquery.BigQuery
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.bqadapter.Encoder
+import no.nav.paw.bqadapter.appLogger
 import no.nav.paw.bqadapter.bigquery.schema.hendelserSchema
 import no.nav.paw.bqadapter.bigquery.schema.perioderSchema
 import no.nav.paw.health.model.LivenessHealthIndicator
@@ -52,10 +53,11 @@ fun initBqApp(
         )
     )
 
-    bqAdmin.createMaterializedViews(
+    val views =bqAdmin.createMaterializedViews(
         datasetName = GRAFANA_DATASET,
         path = views_path
     )
+    appLogger.info("Materialized views created: ${views.joinToString(", ")}")
 
     return AppContext(
         livenessHealthIndicator = livenessHealthIndicator,
