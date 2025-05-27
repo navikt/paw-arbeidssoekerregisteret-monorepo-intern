@@ -1,7 +1,8 @@
--- Define the date range you want to analyze
-WITH DateSeries AS (
+WITH
+-- Define a fixed start date and use current_date() for the end
+DateSeries AS (
     SELECT date AS day
-FROM UNNEST(GENERATE_DATE_ARRAY('2020-01-01', CURRENT_DATE("Europe/Oslo"))) AS date  -- Replace with your desired date range
+FROM UNNEST(GENERATE_DATE_ARRAY('2020-01-01', CURRENT_DATE())) AS date
     ),
 
 -- Get the latest status for each correlation_id
@@ -30,9 +31,10 @@ ON
 GROUP BY d.day
     )
 
--- Get the final results
+-- Get the final results with refresh timestamp
 SELECT
     day,
-    active_count
+    active_count,
+    CURRENT_TIMESTAMP() AS last_refreshed
 FROM ActiveCountsByDay
 ORDER BY day
