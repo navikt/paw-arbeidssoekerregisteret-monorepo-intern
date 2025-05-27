@@ -18,7 +18,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords
 import java.time.Instant
 
 class PdlAktorKafkaConsumerServiceTest : FreeSpec({
-    with(TestContext.build()) {
+    with(TestContext.buildWithPostgres()) {
         val aktorTopic = applicationConfig.pdlAktorConsumer.topic
 
         beforeSpec {
@@ -30,7 +30,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             tearDown()
         }
 
-        "Person er ikke arbeidssøker" {
+        "Skal ignorere meldinger for personer som ikke er arbeidssøker" {
             // GIVEN
             val records: ConsumerRecords<Any, Aktor> = listOf(
                 ConsumerRecord<Any, Aktor>(aktorTopic, 0, 1, TestData.aktorId1, TestData.aktor1_1),
@@ -46,14 +46,14 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             val konflikter = identitetKonfliktRepository.findByAktorId(TestData.aktorId1)
             konflikter shouldHaveSize 0
             kafkaKeysIdentitetRepository.find(Identitetsnummer(TestData.dnr1)) shouldBe null
-            kafkaKeysIdentitetRepository.find(Identitetsnummer(TestData.fnr1)) shouldBe null
+            kafkaKeysIdentitetRepository.find(Identitetsnummer(TestData.fnr1_1)) shouldBe null
             kafkaKeysIdentitetRepository.find(Identitetsnummer(TestData.aktorId1)) shouldBe null
             kafkaKeysIdentitetRepository.find(Identitetsnummer(TestData.npId1)) shouldBe null
             val hwm = pdlAktorKafkaHwmOperations.getHwm(aktorTopic, 0)
             hwm.offset shouldBe 2
         }
 
-        "Offset ikke over HWM" {
+        "Skal ignorere meldinger med offset som ikke er over HWM" {
             // GIVEN
             val records: ConsumerRecords<Any, Aktor> = listOf(
                 ConsumerRecord<Any, Aktor>(aktorTopic, 0, 3, TestData.aktorId2, TestData.aktor2_1),
@@ -70,17 +70,17 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             val konflikter = identitetKonfliktRepository.findByAktorId(TestData.aktorId2)
             konflikter shouldHaveSize 0
             kafkaKeysIdentitetRepository.find(Identitetsnummer(TestData.dnr2)) shouldBe null
-            kafkaKeysIdentitetRepository.find(Identitetsnummer(TestData.fnr2)) shouldBe null
+            kafkaKeysIdentitetRepository.find(Identitetsnummer(TestData.fnr2_1)) shouldBe null
             kafkaKeysIdentitetRepository.find(Identitetsnummer(TestData.aktorId2)) shouldBe null
             kafkaKeysIdentitetRepository.find(Identitetsnummer(TestData.npId2)) shouldBe null
             val hwm = pdlAktorKafkaHwmOperations.getHwm(aktorTopic, 0)
             hwm.offset shouldBe 4
         }
 
-        "Motta dnr så fnr for arbeidssøker" {
+        "Skal lagre aktive ideniteter for melding med dnr så med fnr for arbeidssøker" {
             // GIVEN
             val dnr = TestData.dnr3
-            val fnr = TestData.fnr3
+            val fnr = TestData.fnr3_1
             val aktorId = TestData.aktorId3
             val npId = TestData.npId3
             val arbeidssoekerId = kafkaKeysRepository.opprett(Identitetsnummer(dnr))
@@ -261,10 +261,10 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             hwm3.offset shouldBe 7
         }
 
-        "Motta dnr så fnr for arbeidssøker med to arbeidssøkerIder" {
+        "Skal lagre identiteter med konflikt for melding med dnr så for fnr for arbeidssøker med to arbeidssøkerIder" {
             // GIVEN
             val dnr = TestData.dnr4
-            val fnr = TestData.fnr4
+            val fnr = TestData.fnr4_1
             val aktorId = TestData.aktorId4
             val npId = TestData.npId4
             val arbeidssoekerId1 = kafkaKeysRepository.opprett(Identitetsnummer(dnr))

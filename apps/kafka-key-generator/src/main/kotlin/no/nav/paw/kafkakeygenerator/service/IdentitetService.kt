@@ -9,7 +9,6 @@ import no.nav.paw.kafkakeygenerator.model.asIdentitetType
 import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.logging.logger.buildLogger
 import no.nav.person.pdl.aktor.v2.Aktor
-import no.nav.person.pdl.aktor.v2.Identifikator
 import java.time.Instant
 
 class IdentitetService(
@@ -28,7 +27,10 @@ class IdentitetService(
         aktorId: String,
         eksisterendeIdentitetRows: List<IdentitetRow>,
     ) {
-        val rowsAffected = identitetRepository.updateStatusByAktorId(aktorId, IdentitetStatus.SLETTET)
+        val rowsAffected = identitetRepository.updateStatusByAktorId(
+            aktorId = aktorId,
+            status = IdentitetStatus.SLETTET
+        )
         logger.info("Mottok tombstone-melding, soft-slettet {} tilhørende identiteter", rowsAffected)
 
         val arbeidssoekerIdList = eksisterendeIdentitetRows
@@ -40,10 +42,11 @@ class IdentitetService(
             val tidligereIdentiteter = eksisterendeIdentitetRows
                 .map { it.asIdentitet() }
                 .toMutableList()
+                .apply { add(arbeidssoekerId.asIdentitet(gjeldende = true)) }
 
-            identitetHendelseService.lagreVentendeIdentitetHendelse(
-                arbeidssoekerId = arbeidssoekerId,
+            identitetHendelseService.lagreIdentiteterEndretHendelse(
                 aktorId = aktorId,
+                arbeidssoekerId = arbeidssoekerId,
                 identiteter = mutableListOf(),
                 tidligereIdentiteter = tidligereIdentiteter
             )
@@ -70,18 +73,33 @@ class IdentitetService(
         aktor.identifikatorer
             .map { identifikator ->
                 if (identiteterSet.contains(identifikator.idnummer)) {
-                    updateIdentitet(
-                        identifikator = identifikator,
+                    val rowsAffected = identitetRepository.updateGjeldendeAndStatusByIdentitet(
+                        identitet = identifikator.idnummer,
+                        gjeldende = identifikator.gjeldende,
                         status = IdentitetStatus.KONFLIKT
+                    )
+                    logger.info(
+                        "Oppdaterer identitet av type {} med status {} (rows affected {})",
+                        identifikator.type.name,
+                        IdentitetStatus.KONFLIKT.name,
+                        rowsAffected
                     )
                 } else {
                     val arbeidssoekerId = kafkaKeyMap[identifikator.idnummer] ?: nyesteArbeidssoekerId
-                    insertIdentitet(
+                    val rowsAffected = identitetRepository.insert(
                         arbeidssoekerId = arbeidssoekerId,
                         aktorId = aktorId,
-                        identifikator = identifikator,
+                        identitet = identifikator.idnummer,
+                        type = identifikator.type.asIdentitetType(),
+                        gjeldende = identifikator.gjeldende,
                         status = IdentitetStatus.KONFLIKT,
                         sourceTimestamp = sourceTimestamp
+                    )
+                    logger.info(
+                        "Lagret identitet av type {} med status {} (rows affected {})",
+                        identifikator.type.name,
+                        IdentitetStatus.KONFLIKT.name,
+                        rowsAffected
                     )
                 }
             }
@@ -97,92 +115,59 @@ class IdentitetService(
     ) {
         val eksisterendeIdentitetRows = identitetRepository
             .findByAktorId(aktorId)
-        val identiteterSet = eksisterendeIdentitetRows
-            .map { it.identitet }
-            .toSet()
+        val identiteterMap = eksisterendeIdentitetRows
+            .associate { it.identitet to it.gjeldende }
 
         val endredeIdentiteter = aktor.identifikatorer
             .map { identifikator ->
-                if (identiteterSet.contains(identifikator.idnummer)) {
-                    updateIdentitet(
-                        identifikator = identifikator
-                    )
+                val erGjeldende = identiteterMap[identifikator.idnummer]
+                if (erGjeldende != null) {
+                    if (erGjeldende != identifikator.gjeldende) {
+                        val rowsAffected = identitetRepository.updateGjeldendeByIdentitet(
+                            identitet = identifikator.idnummer,
+                            gjeldende = identifikator.gjeldende
+                        )
+                        logger.info(
+                            "Oppdaterer identitet av type {} (rows affected {})",
+                            identifikator.type.name,
+                            rowsAffected
+                        )
+                    }
                 } else {
-                    insertIdentitet(
+                    val rowsAffected = identitetRepository.insert(
                         arbeidssoekerId = arbeidssoekerId,
                         aktorId = aktorId,
-                        identifikator = identifikator,
+                        identitet = identifikator.idnummer,
+                        type = identifikator.type.asIdentitetType(),
+                        gjeldende = identifikator.gjeldende,
                         status = IdentitetStatus.AKTIV,
                         sourceTimestamp = sourceTimestamp
+                    )
+                    logger.info(
+                        "Lagret identitet av type {} med status {} (rows affected {})",
+                        identifikator.type.name,
+                        IdentitetStatus.AKTIV.name,
+                        rowsAffected
                     )
                 }
                 identitetRepository.getByIdentitet(identifikator.idnummer)
                     ?.asIdentitet() ?: throw IdentitetIkkeFunnetException("Identitet ikke funnet")
             }
             .toMutableList()
+            .apply { add(arbeidssoekerId.asIdentitet(gjeldende = true)) }
 
-        val historiskeIdentiteter = eksisterendeIdentitetRows
+        val tidligereIdentiteter = eksisterendeIdentitetRows
             .map { it.asIdentitet() }
             .toMutableList()
+        if (tidligereIdentiteter.isNotEmpty()) {
+            tidligereIdentiteter.add(arbeidssoekerId.asIdentitet(gjeldende = true))
+        }
 
-        identitetHendelseService.lagreVentendeIdentitetHendelse(
+        identitetHendelseService.lagreIdentiteterEndretHendelse(
             arbeidssoekerId = arbeidssoekerId,
             aktorId = aktorId,
             identiteter = endredeIdentiteter,
-            tidligereIdentiteter = historiskeIdentiteter
+            tidligereIdentiteter = tidligereIdentiteter
         )
-    }
-
-    private fun insertIdentitet(
-        arbeidssoekerId: Long,
-        aktorId: String,
-        identifikator: Identifikator,
-        status: IdentitetStatus,
-        sourceTimestamp: Instant
-    ) {
-        val rowsAffected = identitetRepository.insert(
-            arbeidssoekerId = arbeidssoekerId,
-            aktorId = aktorId,
-            identitet = identifikator.idnummer,
-            type = identifikator.type.asIdentitetType(),
-            gjeldende = identifikator.gjeldende,
-            status = status,
-            sourceTimestamp = sourceTimestamp
-        )
-        logger.info(
-            "Lagret identitet av type {} med status {} (rows affected {})",
-            identifikator.type.name,
-            status.name,
-            rowsAffected
-        )
-    }
-
-    private fun updateIdentitet(
-        identifikator: Identifikator,
-        status: IdentitetStatus? = null,
-    ) {
-        if (status == null) {
-            val rowsAffected = identitetRepository.updateGjeldendeByIdentitet(
-                identitet = identifikator.idnummer,
-                gjeldende = identifikator.gjeldende
-            )
-            logger.info(
-                "Oppdaterer identitet av type {} (rows affected {})",
-                identifikator.type.name,
-                rowsAffected
-            )
-        } else {
-            val rowsAffected = identitetRepository.updateGjeldendeAndStatusByIdentitet(
-                identitet = identifikator.idnummer,
-                gjeldende = identifikator.gjeldende,
-                status = status
-            )
-            logger.info(
-                "Oppdaterer identitet av type {} med status {} (rows affected {})",
-                identifikator.type.name,
-                status.name,
-                rowsAffected
-            )
-        }
     }
 }

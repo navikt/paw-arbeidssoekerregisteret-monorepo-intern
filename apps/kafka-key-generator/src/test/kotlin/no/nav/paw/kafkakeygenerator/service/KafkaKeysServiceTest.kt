@@ -23,7 +23,7 @@ import no.nav.paw.kafkakeygenerator.vo.Right
 import org.junit.jupiter.api.fail
 
 class KafkaKeysServiceTest : FreeSpec({
-    with(TestContext.build()) {
+    with(TestContext.buildWithPostgres()) {
 
         beforeSpec {
             setUp()
