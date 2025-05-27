@@ -8,6 +8,7 @@ import java.time.Duration
 
 const val views_path = "materialized_views/"
 val matrialized_views_refresh_interval = Duration.ofHours(6)
+val matrialized_views_max_staleness = Duration.ofHours(7)
 
 @JvmInline
 value class Sql(val value: String)
@@ -47,14 +48,10 @@ fun createMaterializedViewDefinition(datasetName: DatasetName, view: View<Sql>):
         .setQuery(view.representation.value)
         .setRefreshIntervalMs(matrialized_views_refresh_interval.toMillis())
         .setAllowNonIncrementalDefinition(true)
-        .encodeMaxStaleness(
-            "INTERVAL ${matrialized_views_refresh_interval.toHours()} HOUR"
-                .toByteArray()
-        )
     val table = Table().apply {
         tableReference = tableRef
         materializedView = viewDefinition
-    }
+    }.setMaxStaleness("0-0 0 ${matrialized_views_max_staleness.toHours()}:0:0")
     return View(
         name = view.name,
         representation = table
