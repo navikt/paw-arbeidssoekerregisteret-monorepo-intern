@@ -15,7 +15,7 @@ import no.nav.paw.kafkakeygenerator.vo.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 
 class PawHendelseKafkaConsumerServiceTest : FreeSpec({
-    with(TestContext.build()) {
+    with(TestContext.buildWithPostgres()) {
 
         beforeSpec {
             setUp()
@@ -31,11 +31,11 @@ class PawHendelseKafkaConsumerServiceTest : FreeSpec({
             val arbeidssoekerId1 = ArbeidssoekerId(1)
             val arbeidssoekerId2 = ArbeidssoekerId(2)
             val hendelser: List<Hendelse> = listOf(
-                TestData.periodeStartet(identitetsnummer1, arbeidssoekerId1),
-                TestData.periodeAvsluttet(identitetsnummer1, arbeidssoekerId1),
-                TestData.periodeStartAvvist(identitetsnummer1, arbeidssoekerId1),
-                TestData.periodeAvsluttetAvvist(identitetsnummer1, arbeidssoekerId1),
-                TestData.arbeidssoekerIdFlettetInn(
+                TestData.periodeStartetHendelse(identitetsnummer1, arbeidssoekerId1),
+                TestData.periodeAvsluttetHendelse(identitetsnummer1, arbeidssoekerId1),
+                TestData.periodeStartAvvistHendelse(identitetsnummer1, arbeidssoekerId1),
+                TestData.periodeAvsluttetAvvistHendelse(identitetsnummer1, arbeidssoekerId1),
+                TestData.arbeidssoekerIdFlettetInnHendelse(
                     listOf(identitetsnummer1, identitetsnummer2),
                     arbeidssoekerId1,
                     arbeidssoekerId2
@@ -58,7 +58,11 @@ class PawHendelseKafkaConsumerServiceTest : FreeSpec({
             val tilArbeidssoekerId = ArbeidssoekerId(4)
 
             val hendelser: List<Hendelse> = listOf(
-                TestData.identitetsnummerSammenslaatt(listOf(identitetsnummer), fraArbeidssoekerId, tilArbeidssoekerId)
+                TestData.identitetsnummerSammenslaattHendelse(
+                    listOf(identitetsnummer),
+                    fraArbeidssoekerId,
+                    tilArbeidssoekerId
+                )
             )
 
             shouldThrow<IllegalStateException> {
@@ -88,7 +92,7 @@ class PawHendelseKafkaConsumerServiceTest : FreeSpec({
                     opprettResult3.onLeft { it shouldBe null }
                     opprettResult3.onRight { eksisterendeArbeidssoekerId ->
                         val hendelser: List<Hendelse> = listOf(
-                            TestData.identitetsnummerSammenslaatt(
+                            TestData.identitetsnummerSammenslaattHendelse(
                                 listOf(identitetsnummer2, identitetsnummer3),
                                 fraArbeidssoekerId,
                                 tilArbeidssoekerId
@@ -138,7 +142,7 @@ class PawHendelseKafkaConsumerServiceTest : FreeSpec({
                 opprettResult2.onLeft { it shouldBe null }
                 opprettResult2.onRight { fraArbeidssoekerId ->
                     val hendelser: List<Hendelse> = listOf(
-                        TestData.identitetsnummerSammenslaatt(
+                        TestData.identitetsnummerSammenslaattHendelse(
                             listOf(identitetsnummer1, identitetsnummer2, identitetsnummer3),
                             fraArbeidssoekerId,
                             tilArbeidssoekerId

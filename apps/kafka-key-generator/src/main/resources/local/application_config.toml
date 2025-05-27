@@ -1,17 +1,28 @@
 [pawHendelseConsumer]
 version = 1
 topic = "paw.arbeidssoker-hendelseslogg-v1"
-defaultPartitionCount = 6
 groupIdPrefix = "paw-kafka-key-generator"
 
 [pawPeriodeConsumer]
 version = 1
 topic = "paw.arbeidssokerperioder-v1"
-defaultPartitionCount = 6
 groupIdPrefix = "paw-kafka-key-generator-paw-perioder"
 
 [pdlAktorConsumer]
 version = 1
 topic = "pdl.aktor-v2"
-defaultPartitionCount = 6
 groupIdPrefix = "paw-kafka-key-generator-pdl-aktor"
+
+[pawIdentitetProducer]
+topic = "paw.arbeidssoker-identiteter-v1"
+clientId = "paw-kafka-key-generator-paw-identiteter-producer-v1"
+
+[identitetKonfliktJob]
+enabled = true
+delay = "PT5M"
+interval = "PT5M"
+
+[identitetHendelseJob]
+enabled = true
+delay = "PT5M"
+interval = "PT5M"
