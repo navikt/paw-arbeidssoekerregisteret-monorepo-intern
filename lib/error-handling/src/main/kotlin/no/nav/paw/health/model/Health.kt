@@ -70,3 +70,6 @@ class ReadinessHealthIndicator(initialStatus: HealthStatus = HealthStatus.UNKNOW
 
 class LivenessHealthIndicator(initialStatus: HealthStatus = HealthStatus.HEALTHY) :
     DefaultHealthIndicator(initialStatus)
+
+open class StartedHealthIndicator(open val initialStatus: HealthStatus = HealthStatus.UNKNOWN) :
+    DefaultHealthIndicator(initialStatus)
