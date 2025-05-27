@@ -17,6 +17,7 @@ import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.database.config.DATABASE_CONFIG
 import no.nav.paw.database.config.DatabaseConfig
 import no.nav.paw.database.factory.createHikariDataSource
+import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.security.authentication.config.SecurityConfig
 import org.jetbrains.exposed.sql.Database
@@ -36,6 +37,7 @@ data class TestApplicationContext(
     val brukerstoetteService: BrukerstoetteService,
     val metrics: Metrics,
     val backupService: BackupService,
+    val healthIndicatorRepository: HealthIndicatorRepository,
 ) {
     companion object {
         fun build(): TestApplicationContext {
@@ -56,6 +58,7 @@ data class TestApplicationContext(
             )
             val metrics = mockk<Metrics>(relaxed = true)
             val backupService = mockk<BackupService>(relaxed = true)
+            val healthIndicatorRepository = HealthIndicatorRepository()
 
             return TestApplicationContext(
                 applicationConfig = applicationConfig,
@@ -68,7 +71,8 @@ data class TestApplicationContext(
                 dataSource = dataSource,
                 brukerstoetteService = brukerstoetteService,
                 metrics = metrics,
-                backupService = backupService
+                backupService = backupService,
+                healthIndicatorRepository = healthIndicatorRepository,
             )
         }
 
@@ -95,7 +99,8 @@ fun TestApplicationContext.toApplicationContext(): ApplicationContext =
         brukerstoetteService = brukerstoetteService,
         additionalMeterBinder = mockk(relaxed = true),
         metrics = metrics,
-        backupService = backupService
+        backupService = backupService,
+        healthIndicatorRepository = healthIndicatorRepository,
     )
 
 fun initDatabase(): Database {

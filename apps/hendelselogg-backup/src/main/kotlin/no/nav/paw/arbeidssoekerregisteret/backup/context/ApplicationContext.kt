@@ -23,6 +23,7 @@ import no.nav.paw.database.config.DatabaseConfig
 import no.nav.paw.database.factory.createHikariDataSource
 import no.nav.paw.health.model.LivenessHealthIndicator
 import no.nav.paw.health.model.ReadinessHealthIndicator
+import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafka.config.KAFKA_CONFIG
 import no.nav.paw.kafka.config.KafkaConfig
 import no.nav.paw.kafka.consumer.KafkaConsumerWrapper
@@ -45,7 +46,9 @@ data class ApplicationContext(
     val additionalMeterBinder: MeterBinder,
     val metrics: Metrics,
     val backupService: BackupService,
+    val healthIndicatorRepository: HealthIndicatorRepository = HealthIndicatorRepository()
 ) {
+
     companion object {
         fun create(): ApplicationContext {
 
@@ -57,7 +60,6 @@ data class ApplicationContext(
             val securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>("security_config.toml")
 
             val dataSource = createHikariDataSource(databaseConfig)
-
             val (kafkaKeysClient, oppslagApiClient) = initClients(azureM2MConfig)
             val service = BrukerstoetteService(
                 applicationConfig.consumerVersion,
