@@ -12,6 +12,7 @@ import org.jetbrains.exposed.sql.update
 import java.time.Instant
 
 class IdentitetRepository {
+    // TODO: Hvordan håndtere soft-slettede?
     fun getByIdentitet(identitet: String): IdentitetRow? = transaction {
         IdentiteterTable.selectAll()
             .where { IdentiteterTable.identitet eq identitet }
@@ -19,15 +20,11 @@ class IdentitetRepository {
             .singleOrNull()
     }
 
+    // TODO: Hvordan håndtere soft-slettede?
     fun findByAktorId(aktorId: String): List<IdentitetRow> = transaction {
         IdentiteterTable.selectAll()
+            .orderBy(IdentiteterTable.id)
             .where { IdentiteterTable.aktorId eq aktorId }
-            .map { it.asIdentitetRow() }
-    }
-
-    fun findByIdentiteter(identitetList: List<String>): List<IdentitetRow> = transaction {
-        IdentiteterTable.selectAll()
-            .where { IdentiteterTable.identitet inList identitetList }
             .map { it.asIdentitetRow() }
     }
 
