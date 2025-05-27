@@ -26,47 +26,47 @@ class PawPeriodeKafkaConsumerService(
             if (records.isEmpty) {
                 logger.trace("Ingen periode-meldinger mottatt i poll-vindu fra {}", topic)
             } else {
-                logger.info("Mottok {} periode-meldinger fra {}", records.count(), topic)
-                records.forEach(::handleRecord)
+                transaction {
+                    logger.debug("Mottok {} periode-meldinger fra {}", records.count(), topic)
+                    records.forEach(::handleRecord)
+                }
             }
         }
     }
 
     @WithSpan
     private fun handleRecord(record: ConsumerRecord<Long, Periode>) {
-        transaction {
-            with(kafkaConsumerConfig) {
-                try {
-                    val rowsAffected = hwmOperations.updateHwm(
-                        topic = topic,
-                        partition = record.partition(),
-                        offset = record.offset(),
-                        timestamp = Instant.ofEpochMilli(record.timestamp())
-                    )
+        with(kafkaConsumerConfig) {
+            try {
+                val rowsAffected = hwmOperations.updateHwm(
+                    topic = topic,
+                    partition = record.partition(),
+                    offset = record.offset(),
+                    timestamp = Instant.ofEpochMilli(record.timestamp())
+                )
 
-                    if (rowsAffected == 0) {
-                        logger.warn(
-                            "Ignorerer periode-melding på grunn av at offset {} på partition {} fra topic {} ikke er over HWM",
-                            record.offset(),
-                            record.partition(),
-                            topic
-                        )
-                    } else {
-                        logger.info(
-                            "Håndterer periode-melding med offset {} på partition {} fra topic {}",
-                            record.offset(),
-                            record.partition(),
-                            topic
-                        )
-                        handlePeriode(
-                            periode = record.value(),
-                            sourceTimestamp = Instant.ofEpochMilli(record.timestamp())
-                        )
-                    }
-                } catch (e: Exception) {
-                    logger.error("Håndterer av periode-melding feilet", e)
-                    throw e
+                if (rowsAffected == 0) {
+                    logger.warn(
+                        "Ignorerer periode-melding på grunn av at offset {} på partition {} fra topic {} ikke er over HWM",
+                        record.offset(),
+                        record.partition(),
+                        topic
+                    )
+                } else {
+                    logger.info(
+                        "Håndterer periode-melding med offset {} på partition {} fra topic {}",
+                        record.offset(),
+                        record.partition(),
+                        topic
+                    )
+                    handlePeriode(
+                        periode = record.value(),
+                        sourceTimestamp = Instant.ofEpochMilli(record.timestamp())
+                    )
                 }
+            } catch (e: Exception) {
+                logger.error("Håndterer av periode-melding feilet", e)
+                throw e
             }
         }
     }

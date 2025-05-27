@@ -9,36 +9,26 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
+import org.jetbrains.exposed.sql.updateReturning
 import java.time.Instant
 
 class IdentitetHendelseRepository {
+    fun findById(
+        id: Long
+    ): IdentitetHendelseRow? = transaction {
+        IdentitetHendelseTable.selectAll()
+            .where { IdentitetHendelseTable.id eq id }
+            .orderBy(IdentitetHendelseTable.insertedTimestamp, SortOrder.ASC)
+            .map { it.asIdentitetHendelseRow() }
+            .singleOrNull()
+    }
+
     fun findByAktorId(
         aktorId: String
     ): List<IdentitetHendelseRow> = transaction {
         IdentitetHendelseTable.selectAll()
             .where { IdentitetHendelseTable.aktorId eq aktorId }
             .orderBy(IdentitetHendelseTable.insertedTimestamp, SortOrder.ASC)
-            .map { it.asIdentitetHendelseRow() }
-    }
-
-    fun findByStatus(
-        status: IdentitetHendelseStatus
-    ): List<IdentitetHendelseRow> = transaction {
-        IdentitetHendelseTable.selectAll()
-            .where { IdentitetHendelseTable.status eq status }
-            .orderBy(IdentitetHendelseTable.insertedTimestamp, SortOrder.ASC)
-            .map { it.asIdentitetHendelseRow() }
-    }
-
-    fun findByStatusForUpdate(
-        status: IdentitetHendelseStatus,
-        limit: Int = Int.MAX_VALUE
-    ): List<IdentitetHendelseRow> = transaction {
-        IdentitetHendelseTable.selectAll()
-            .forUpdate()
-            .where { IdentitetHendelseTable.status eq status }
-            .orderBy(IdentitetHendelseTable.insertedTimestamp, SortOrder.ASC)
-            .limit(limit)
             .map { it.asIdentitetHendelseRow() }
     }
 
@@ -57,15 +47,31 @@ class IdentitetHendelseRepository {
         }.insertedCount
     }
 
-    fun updateStatusByIdList(
-        idList: List<Long>,
+    fun updateStatusById(
+        id: Long,
         status: IdentitetHendelseStatus
     ): Int = transaction {
         IdentitetHendelseTable.update(where = {
-            (IdentitetHendelseTable.id inList idList)
+            (IdentitetHendelseTable.id eq id)
         }) {
             it[IdentitetHendelseTable.status] = status
             it[updatedTimestamp] = Instant.now()
+        }
+    }
+
+    fun updateStatusByStatusReturning(
+        fraStatus: IdentitetHendelseStatus,
+        tilStatus: IdentitetHendelseStatus
+    ): List<Long> = transaction {
+        IdentitetHendelseTable.updateReturning(
+            returning = listOf(IdentitetHendelseTable.id),
+            where = {
+                IdentitetHendelseTable.status eq fraStatus
+            }) {
+            it[IdentitetHendelseTable.status] = tilStatus
+            it[updatedTimestamp] = Instant.now()
+        }.map {
+            it[IdentitetHendelseTable.id].value
         }
     }
 }

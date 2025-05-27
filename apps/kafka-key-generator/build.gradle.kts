@@ -18,6 +18,7 @@ dependencies {
     implementation(project(":lib:http-client-utils"))
     implementation(project(":lib:pdl-client"))
     implementation(project(":lib:kafka"))
+    implementation(project(":lib:scheduling"))
     implementation(project(":domain:interne-hendelser"))
     implementation(project(":domain:identitet-interne-hendelser"))
     implementation(project(":domain:main-avro-schema"))

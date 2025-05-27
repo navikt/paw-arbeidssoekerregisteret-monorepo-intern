@@ -28,7 +28,7 @@ class PeriodeRepository {
         periodeId: UUID,
         identitet: String,
         startetTimestamp: Instant,
-        avsluttetTimestamp: Instant?,
+        avsluttetTimestamp: Instant? = null,
         sourceTimestamp: Instant
     ): Int = transaction {
         PerioderTable.insert {

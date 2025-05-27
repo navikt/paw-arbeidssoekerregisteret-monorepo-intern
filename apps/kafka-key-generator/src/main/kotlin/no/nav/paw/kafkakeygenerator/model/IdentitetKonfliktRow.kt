@@ -3,10 +3,6 @@ package no.nav.paw.kafkakeygenerator.model
 import org.jetbrains.exposed.sql.ResultRow
 import java.time.Instant
 
-enum class IdentitetKonfliktStatus {
-    VENTER, PROSESSERER, FULFOERT
-}
-
 data class IdentitetKonfliktRow(
     val id: Long,
     val aktorId: String,

@@ -2,11 +2,19 @@ package no.nav.paw.kafkakeygenerator.test
 
 import no.nav.paw.database.config.DatabaseConfig
 import no.nav.paw.database.factory.createHikariDataSource
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import javax.sql.DataSource
 
-fun postgresTestDatabase(): DataSource {
+fun String.runAsSql() {
+    val sql = this
+    transaction {
+        exec(sql)
+    }
+}
+
+fun buildPostgresDataSource(): DataSource {
     val config = postgreSQLContainer().let {
         DatabaseConfig(
             host = it.host,
@@ -20,7 +28,7 @@ fun postgresTestDatabase(): DataSource {
     return createHikariDataSource(config)
 }
 
-fun postgreSQLContainer(): PostgreSQLContainer<out PostgreSQLContainer<*>> {
+private fun postgreSQLContainer(): PostgreSQLContainer<out PostgreSQLContainer<*>> {
     val postgres = PostgreSQLContainer(
         "postgres:14"
     ).apply {

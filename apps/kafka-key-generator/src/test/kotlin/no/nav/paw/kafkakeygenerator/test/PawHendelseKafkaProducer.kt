@@ -33,7 +33,7 @@ fun main() {
         val identitetsnummer2 = Identitetsnummer("02017012345")
 
         val key = 1L
-        val value = TestData.identitetsnummerSammenslaatt(
+        val value = TestData.identitetsnummerSammenslaattHendelse(
             identitetsnummerList = listOf(identitetsnummer1, identitetsnummer2),
             fraArbeidssoekerId = fraArbeidssoekerId,
             tilArbeidssoekerId = tilArbeidssoekerId

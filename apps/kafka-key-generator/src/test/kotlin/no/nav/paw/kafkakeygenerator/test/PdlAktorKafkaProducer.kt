@@ -28,13 +28,13 @@ fun main() {
         )
 
         val records: List<ProducerRecord<Any, Aktor>> = listOf(
-            ProducerRecord(topic, TestData.aktorId1, TestData.aktor1_1),
-            ProducerRecord(topic, TestData.aktorId2, TestData.aktor2_1),
-            ProducerRecord(topic, TestData.aktorId1, TestData.aktor1_2),
-            ProducerRecord(topic, TestData.aktorId3, TestData.aktor3_1),
-            ProducerRecord(topic, TestData.aktorId4, TestData.aktor4_1),
-            ProducerRecord(topic, TestData.aktorId5, TestData.aktor5_1),
-            ProducerRecord(topic, TestData.aktorId2, TestData.aktor2_2),
+            //ProducerRecord(topic, TestData.aktorId1, TestData.aktor1_1),
+            //ProducerRecord(topic, TestData.aktorId2, TestData.aktor2_1),
+            //ProducerRecord(topic, TestData.aktorId1, TestData.aktor1_2),
+            //ProducerRecord(topic, TestData.aktorId3, TestData.aktor3_1),
+            //ProducerRecord(topic, TestData.aktorId3, TestData.aktor3_2),
+            ProducerRecord(topic, TestData.aktorId3, TestData.aktor3_3),
+            //ProducerRecord(topic, TestData.aktorId2, TestData.aktor2_2),
         )
 
         try {

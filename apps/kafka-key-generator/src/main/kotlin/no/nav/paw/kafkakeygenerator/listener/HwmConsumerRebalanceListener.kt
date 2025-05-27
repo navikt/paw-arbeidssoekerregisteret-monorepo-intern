@@ -6,7 +6,6 @@ import no.nav.paw.logging.logger.buildNamedLogger
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.TopicPartition
-import java.util.concurrent.ConcurrentHashMap
 
 class HwmConsumerRebalanceListener(
     private val kafkaConsumerConfig: KafkaConsumerConfig,
@@ -14,11 +13,6 @@ class HwmConsumerRebalanceListener(
     private val kafkaConsumer: KafkaConsumer<*, *>
 ) : ConsumerRebalanceListener {
     private val logger = buildNamedLogger("application.kafka.hwm")
-    private val currentPartitions = ConcurrentHashMap<Int, TopicPartition>(kafkaConsumerConfig.defaultPartitionCount)
-
-    fun currentlyAssignedPartitions(): List<TopicPartition> {
-        return currentPartitions.elements().toList()
-    }
 
     fun onPartitionsReady() {
         val partitionCount = kafkaConsumer.partitionsFor(kafkaConsumerConfig.topic).count()
@@ -28,15 +22,9 @@ class HwmConsumerRebalanceListener(
 
     override fun onPartitionsRevoked(partitions: MutableCollection<TopicPartition>?) {
         logger.info("Revoked partitions {}", partitions)
-        partitions?.forEach { partition ->
-            currentPartitions.remove(partition.partition())
-        }
     }
 
     override fun onPartitionsAssigned(partitions: MutableCollection<TopicPartition>?) {
-        partitions?.forEach { partition ->
-            currentPartitions.putIfAbsent(partition.partition(), partition)
-        }
         val assignedPartitions = partitions ?: emptyList()
         logger.info("Assigned partitions {}", assignedPartitions)
         if (assignedPartitions.isEmpty()) {

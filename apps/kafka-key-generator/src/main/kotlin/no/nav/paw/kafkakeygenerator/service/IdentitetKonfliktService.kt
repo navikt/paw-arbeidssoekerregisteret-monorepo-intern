@@ -21,8 +21,8 @@ class IdentitetKonfliktService(
     fun lagreVentendeIdentitetKonflikt(
         aktorId: String,
     ) {
-        val rows = identitetKonfliktRepository.findByAktorId(aktorId)
-        if (rows.isEmpty()) {
+        val identitetKonfliktRows = identitetKonfliktRepository.findByAktorId(aktorId)
+        if (identitetKonfliktRows.isEmpty()) {
             val rowsAffected = identitetKonfliktRepository.insert(
                 aktorId = aktorId,
                 status = IdentitetKonfliktStatus.VENTER
@@ -33,25 +33,33 @@ class IdentitetKonfliktService(
                 rowsAffected
             )
         } else {
-            logger.info("Innskag for identitet-konflikt finnes allerede")
+            logger.info("Innslag for identitet-konflikt finnes allerede")
         }
     }
 
-    fun handleVentendeIdentitetKonflikter() = transaction {
-        val konflikter = identitetKonfliktRepository
+    fun handleVentendeIdentitetKonflikter() {
+        /*val identitetKonfliktRows = identitetKonfliktRepository
             .findByStatusForUpdate(status = IdentitetKonfliktStatus.VENTER, limit = 10)
-        val aktorIdList = konflikter.map { it.aktorId }
+        val aktorIdList = identitetKonfliktRows.map { it.aktorId }
         val rowsAffected = identitetKonfliktRepository.updateStatusByAktorId(
             aktorIdList = aktorIdList,
             status = IdentitetKonfliktStatus.PROSESSERER
         )
-        if (rowsAffected != konflikter.size) {
+        if (rowsAffected != identitetKonfliktRows.size) {
             throw IllegalStateException("Fikk ikke endret status for alle valgte konflikter")
-        }
-        aktorIdList.forEach(::handleVentendeIdentitetKonflikt)
+        }*/
+        val idList = identitetKonfliktRepository.updateStatusByStatusReturning(
+            fraStatus = IdentitetKonfliktStatus.VENTER,
+            tilStatus = IdentitetKonfliktStatus.PROSESSERER,
+        )
+        logger.info("Håndterer {} ventende idenitet-konflikter", idList.size)
+        idList
+            .mapNotNull { id -> identitetKonfliktRepository.getById(id) }
+            .map { it.aktorId }
+            .forEach(::handleVentendeIdentitetKonflikt)
     }
 
-    private fun handleVentendeIdentitetKonflikt(aktorId: String) {
+    private fun handleVentendeIdentitetKonflikt(aktorId: String) = transaction {
         val identitetRows = identitetRepository.findByAktorId(aktorId)
         if (identitetRows.isEmpty()) {
             throw IllegalStateException("Ingen identiteter funnet for aktorId")
@@ -61,32 +69,122 @@ class IdentitetKonfliktService(
             .map { it.identitet }
         val periodeRows = periodeRepository.findByIdentiteter(identer)
         val aktivePeriodeRows = periodeRows.filter { it.avsluttetTimestamp == null }
-        val valgArbeidssoekerId = if (aktivePeriodeRows.isEmpty()) {
+
+        val valgtArbeidssoekerId = if (periodeRows.isEmpty()) {
+            // Ingen perioder. Velger nyeste arbeidssoekerId.
             identitetRows.maxOf { it.arbeidssoekerId }
+        } else if (aktivePeriodeRows.isEmpty()) {
+            // Ingen aktive perioder. Velger arbeidssoekerId tilhørende nyeste periode.
+            val nyestePeriode = periodeRows
+                .maxBy { it.startetTimestamp.toEpochMilli() } // TODO: Finne siste sluttbrukeraksjon?
+            val valgtIdentitet = identitetRows.find { it.identitet == nyestePeriode.identitet }
+                ?: throw IllegalStateException("Fant ikke identitet for periode")
+            valgtIdentitet.arbeidssoekerId
         } else if (aktivePeriodeRows.size == 1) {
+            // Én aktiv periode. Velger tilhørende arbeidssoekerId.
+            val aktivPeriode = aktivePeriodeRows.first()
+            val valgtIdentitet = identitetRows.find { it.identitet == aktivPeriode.identitet }
+                ?: throw IllegalStateException("Fant ikke identitet for periode")
+            valgtIdentitet.arbeidssoekerId
         } else {
+            // Flere aktive perioder. Kan ikke håndtere konflikt.
+            val rowsAffected = identitetKonfliktRepository
+                .updateStatusByAktorId(aktorId, IdentitetKonfliktStatus.KONFLIKT)
+            logger.error(
+                "Kunne ikke løse konflikt for identiteter på grunn av at person har aktive perioder på forskjellige identiteter (rows affected {})",
+                rowsAffected
+            )
             null
         }
 
-        if (aktivePeriodeRows.size <= 1) {
-            val nyesteArbeidssoekerId = identitetRows.maxOf { it.arbeidssoekerId }
-            val rowsAffected = identitetRepository.updateArbeidssoekerIdAndStatusByAktorId(
+        /*
+         * database:
+         *    key1 - identitet:
+         *       - fnr1
+         *       - aId1
+         *    key2 - identitet:
+         *       - fnr2
+         *       - aId2
+         *
+         * aktor-hendelse:
+         *    - fnr1
+         *    - fnr2
+         *    - fnr3 - g
+         *
+         * key1 - endret-hendelse:
+         *    identiteter:
+         *      - fnr1
+         *      - fnr2
+         *      - fnr3 - g
+         *      - aId1 - g
+         *      - aId2
+         *    tidligereIdentiteter:
+         *      - fnr1 - (g)
+         *      - fnr2 - (g)
+         *      - aId1 - (g)
+         *      - aId2 - (g)
+         *
+         * key2 - flyttet-hendelse:
+         *    identiteter:
+         *
+         *    tidligereIdentiteter:
+         *       - fnr2 - g
+         *       - fnr3
+         *       - aId2 - g
+         */
+
+        if (valgtArbeidssoekerId != null) {
+            val flyttetArbeidssoekerIdList = identitetRows
+                .map { it.arbeidssoekerId }
+                .filter { it != valgtArbeidssoekerId }
+                .distinct()
+
+            val identiteter = identitetRows
+                .map { it.asIdentitet() }
+                .toMutableList()
+                .apply { add(valgtArbeidssoekerId.asIdentitet(gjeldende = true)) }
+                .apply { flyttetArbeidssoekerIdList.forEach { add(it.asIdentitet(gjeldende = false)) } }
+            val tidligereIdentiteter = identitetRows
+                .filter { it.updatedTimestamp == null }
+                .map { it.asIdentitet() }
+                .toMutableList()
+                .apply { add(valgtArbeidssoekerId.asIdentitet(gjeldende = true)) }
+                .apply { flyttetArbeidssoekerIdList.forEach { add(it.asIdentitet(gjeldende = true)) } }
+
+            val identitetRowsAffected = identitetRepository.updateArbeidssoekerIdAndStatusByAktorId(
                 aktorId = aktorId,
-                arbeidssoekerId = nyesteArbeidssoekerId,
+                arbeidssoekerId = valgtArbeidssoekerId,
                 status = IdentitetStatus.AKTIV
             )
             logger.info(
                 "Oppdaterer identiteter med arbeidssoekerId og status {} (rows affected {})",
                 IdentitetStatus.AKTIV.name,
-                rowsAffected
+                identitetRowsAffected
             )
-            identitetHendelseService.lagreVentendeIdentitetHendelse(
+            val identitetKonfliktRowsAffected = identitetKonfliktRepository
+                .updateStatusByAktorId(
+                    aktorId = aktorId,
+                    status = IdentitetKonfliktStatus.FULLFOERT
+                )
+            logger.info(
+                "Oppdaterer identitet-konflikt med status {} (rows affected {})",
+                IdentitetKonfliktStatus.FULLFOERT.name,
+                identitetKonfliktRowsAffected
+            )
+            identitetHendelseService.lagreIdentiteterEndretHendelse(
                 aktorId = aktorId,
-                arbeidssoekerId = nyesteArbeidssoekerId,
-                identiteter = identitetRows.map { it.asIdentitet() }.toMutableList(),
-                tidligereIdentiteter = mutableListOf() // TODO: Hvordan sette denne korrekt?
+                arbeidssoekerId = valgtArbeidssoekerId,
+                identiteter = identiteter,
+                tidligereIdentiteter = tidligereIdentiteter
             )
-        } else {
+            flyttetArbeidssoekerIdList.forEach { flyttetArbeidssoekerId ->
+                identitetHendelseService.lagreIdentiteterEndretHendelse(
+                    aktorId = aktorId,
+                    arbeidssoekerId = flyttetArbeidssoekerId,
+                    identiteter = identiteter,
+                    tidligereIdentiteter = tidligereIdentiteter
+                )
+            }
         }
     }
 }

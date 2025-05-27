@@ -24,7 +24,7 @@ class PdlAktorKafkaConsumerService(
             if (records.isEmpty) {
                 logger.trace("Ingen aktor-meldinger mottatt i poll-vindu fra {}", topic)
             } else {
-                logger.info("Mottok {} aktor-meldinger fra {}", records.count(), topic)
+                logger.debug("Mottok {} aktor-meldinger fra {}", records.count(), topic)
                 records.forEach(::handleRecord)
             }
         }
