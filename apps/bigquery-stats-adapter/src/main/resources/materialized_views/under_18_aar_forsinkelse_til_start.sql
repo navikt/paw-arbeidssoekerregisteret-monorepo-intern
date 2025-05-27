@@ -1,26 +1,26 @@
 WITH
--- Find first avvist events that match our criteria
-    FirstAvvist AS (
-        SELECT
-            id,
-            metadata.tidspunkt AS avvist_time
-        FROM `arbeidssoekerregisteret_internt.hendelser`
-        WHERE
-            type = 'intern.v1.avvist'
-          AND 'er_under_18_aar' IN UNNEST(options)
+-- Find first avvist events that match our criteria (replacing QUALIFY with GROUP BY)
+FirstAvvist AS (
+    SELECT
+        id,
+        MIN(metadata.tidspunkt) AS avvist_time
+    FROM `arbeidssoekerregisteret_internt.hendelser`
+    WHERE
+        type = 'intern.v1.avvist'
+      AND 'er_under_18_aar' IN UNNEST(options)
     AND 'bosatt_etter_freg_loven' IN UNNEST(options)
     AND metadata.brukertype = 'sluttbruker'
-    QUALIFY ROW_NUMBER() OVER (PARTITION BY id ORDER BY metadata.tidspunkt ASC) = 1
+GROUP BY id
     ),
 
--- Find first startet events
+-- Find first startet events (replacing QUALIFY with GROUP BY)
     FirstStartet AS (
 SELECT
     id,
-    metadata.tidspunkt AS startet_time
+    MIN(metadata.tidspunkt) AS startet_time
 FROM `arbeidssoekerregisteret_internt.hendelser`
 WHERE type = 'intern.v1.startet'
-    QUALIFY ROW_NUMBER() OVER (PARTITION BY id ORDER BY metadata.tidspunkt ASC) = 1
+GROUP BY id
     ),
 
 -- Calculate latency between events, including IDs with no startet event
@@ -49,14 +49,15 @@ WHERE s.startet_time >= a.avvist_time OR s.startet_time IS NULL
 SELECT
     latency_bucket,
     COUNT(*) AS count,
-  MIN(latency_days) AS min_days,
-  MAX(latency_days) AS max_days,
-  AVG(latency_days) AS avg_days
---ARRAY_AGG(id ORDER BY latency_days DESC LIMIT 5) AS sample_ids  --inkluder eksempler for hver kattegori
+    MIN(latency_days) AS min_days,
+    MAX(latency_days) AS max_days,
+    AVG(latency_days) AS avg_days,
+    -- Added last refresh timestamp
+    CURRENT_TIMESTAMP() AS last_refreshed
 FROM LatencyData
 GROUP BY latency_bucket
 ORDER BY
     -- Put "Never started" at the end
     CASE WHEN latency_bucket = 'Aldri startet' THEN 1 ELSE 0 END,
-  -- Order the rest by min days
-  MIN(latency_days)
+    -- Order the rest by min days
+    MIN(latency_days)
