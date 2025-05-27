@@ -15,3 +15,9 @@ fun Type.asIdentitetType(): IdentitetType = when (this) {
     Type.AKTORID -> IdentitetType.AKTORID
     Type.FOLKEREGISTERIDENT -> IdentitetType.FOLKEREGISTERIDENT
 }
+
+fun Long.asIdentitet(gjeldende: Boolean): Identitet = Identitet(
+    identitet = this.toString(),
+    type = IdentitetType.ARBEIDSSOEKERID,
+    gjeldende = gjeldende,
+)
