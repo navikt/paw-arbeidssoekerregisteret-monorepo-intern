@@ -4,7 +4,6 @@ import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.getHwm
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
 import org.apache.kafka.common.TopicPartition
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 
@@ -33,14 +32,14 @@ class HwmRebalanceListener(
         val assignedPartitions = partitions ?: emptyList()
         logger.info("Assigned partitions $assignedPartitions")
         if (assignedPartitions.isNotEmpty()) {
-            val seekTo = transaction {
+            val seekTo =
                 assignedPartitions.map { partition ->
                     val offset = requireNotNull(getHwm(consumerVersion, partition.partition())) {
                         "No hwm for partition ${partition.partition()}, init not called?"
                     }
                     partition to offset
                 }
-            }
+
             seekTo.forEach { (partition, offset) ->
                 consumer.seek(partition, offset + 1)
             }

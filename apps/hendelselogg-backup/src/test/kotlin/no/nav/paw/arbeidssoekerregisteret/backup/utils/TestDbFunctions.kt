@@ -7,11 +7,12 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.TransactionManager
+import org.jetbrains.exposed.sql.transactions.transaction
 
 private val hendelseDeserializer = HendelseDeserializer()
 
-fun readRecord(consumerVersion: Int, partition: Int, offset: Long): StoredHendelseRecord? {
-    return HendelseTable
+fun readRecord(consumerVersion: Int, partition: Int, offset: Long): StoredHendelseRecord? = transaction {
+    HendelseTable
         .selectAll()
         .where {
             (HendelseTable.partition eq partition) and

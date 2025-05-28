@@ -13,13 +13,12 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
 import org.apache.kafka.clients.consumer.ConsumerRecord
-import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
 
 class HendelseRecordRepositoryTest : FreeSpec({
-    with(TestApplicationContext.buildWithDatabase()){
+    with(TestApplicationContext.buildWithDatabase()) {
         "Verify data functions" - {
             val hendelseSerde = HendelseSerde()
             val record = ConsumerRecord<Long, Hendelse>(
@@ -55,9 +54,7 @@ class HendelseRecordRepositoryTest : FreeSpec({
                 )
             }
             "we can write to the log without errors" {
-                transaction {
-                    writeRecord(1, hendelseSerde.serializer(), record)
-                }
+                writeRecord(1, hendelseSerde.serializer(), record)
             }
             val recordVersion2 = ConsumerRecord(
                 record.topic(),
@@ -69,14 +66,11 @@ class HendelseRecordRepositoryTest : FreeSpec({
                 )
             )
             "we can write a different version to the log without errors" {
-                transaction {
-                    writeRecord(2, hendelseSerde.serializer(), recordVersion2)
-                }
+                writeRecord(2, hendelseSerde.serializer(), recordVersion2)
             }
             "we can read a record based on id" {
-                val storedData = transaction {
+                val storedData =
                     getOneRecordForId(id = record.value().identitetsnummer)
-                }
 
                 storedData.shouldNotBeNull()
                 storedData.partition shouldBe record.partition()
@@ -89,9 +83,9 @@ class HendelseRecordRepositoryTest : FreeSpec({
             }
             "we can read multiple versions from the log" {
 
-                val storedDataV1 = transaction {
+                val storedDataV1 =
                     readRecord(1, record.partition(), record.offset())
-                }
+
                 storedDataV1.shouldNotBeNull()
                 storedDataV1.partition shouldBe record.partition()
                 storedDataV1.offset shouldBe record.offset()
@@ -101,9 +95,9 @@ class HendelseRecordRepositoryTest : FreeSpec({
                 storedDataV1.traceparent shouldBe record.headers().lastHeader("traceparent")
                     ?.let { header -> String(header.value()) }
 
-                val storedDataV2 = transaction {
+                val storedDataV2 =
                     readRecord(2, record.partition(), record.offset())
-                }
+
 
                 storedDataV2.shouldNotBeNull()
                 storedDataV2.partition shouldBe record.partition()
