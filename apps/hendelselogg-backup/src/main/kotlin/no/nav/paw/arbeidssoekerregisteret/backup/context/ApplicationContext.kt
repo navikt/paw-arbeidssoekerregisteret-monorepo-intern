@@ -25,7 +25,6 @@ import no.nav.paw.health.model.ReadinessHealthIndicator
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafka.config.KAFKA_CONFIG
 import no.nav.paw.kafka.config.KafkaConfig
-import no.nav.paw.kafka.consumer.KafkaConsumerWrapper
 import no.nav.paw.kafka.consumer.NonCommittingKafkaConsumerWrapper
 import no.nav.paw.kafka.factory.KafkaFactory
 import no.nav.paw.kafkakeygenerator.auth.AZURE_M2M_CONFIG
@@ -43,7 +42,7 @@ data class ApplicationContext(
     val prometheusMeterRegistry: PrometheusMeterRegistry,
     val hwmRebalanceListener: HwmRebalanceListener,
     val hendelseConsumer: Consumer<Long, Hendelse>,
-    val hendelseConsumerWrapper: KafkaConsumerWrapper<Long, Hendelse>,
+    val hendelseConsumerWrapper: NonCommittingKafkaConsumerWrapper<Long, Hendelse>,
     val brukerstoetteService: BrukerstoetteService,
     val additionalMeterBinder: MeterBinder,
     val metrics: Metrics,

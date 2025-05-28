@@ -20,6 +20,7 @@ import no.nav.paw.database.config.DATABASE_CONFIG
 import no.nav.paw.database.config.DatabaseConfig
 import no.nav.paw.database.factory.createHikariDataSource
 import no.nav.paw.health.repository.HealthIndicatorRepository
+import no.nav.paw.kafka.consumer.NonCommittingKafkaConsumerWrapper
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.security.authentication.config.SecurityConfig
 import org.apache.kafka.clients.consumer.Consumer
@@ -41,6 +42,7 @@ data class TestApplicationContext(
     val metrics: Metrics,
     val backupService: BackupService,
     val hendelseConsumer: Consumer<Long, Hendelse>,
+    val hendelseConsumerWrapper: NonCommittingKafkaConsumerWrapper<Long, Hendelse>,
     val healthIndicatorRepository: HealthIndicatorRepository,
 ) {
     companion object {
@@ -64,6 +66,7 @@ data class TestApplicationContext(
             val backupService = mockk<BackupService>(relaxed = true)
             val healthIndicatorRepository = HealthIndicatorRepository()
             val hendelseConsumer = mockk<Consumer<Long, Hendelse>>(relaxed = true)
+            val hendelseConsumerWrapper = mockk<NonCommittingKafkaConsumerWrapper<Long, Hendelse>>(relaxed = true)
 
             return TestApplicationContext(
                 applicationConfig = applicationConfig,
@@ -78,6 +81,7 @@ data class TestApplicationContext(
                 metrics = metrics,
                 backupService = backupService,
                 hendelseConsumer = hendelseConsumer,
+                hendelseConsumerWrapper = hendelseConsumerWrapper,
                 healthIndicatorRepository = healthIndicatorRepository,
             )
         }
@@ -103,7 +107,7 @@ fun TestApplicationContext.asApplicationContext(): ApplicationContext =
         dataSource = dataSource,
         prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
         hwmRebalanceListener = mockk(relaxed = true),
-        hendelseConsumerWrapper = mockk(relaxed = true),
+        hendelseConsumerWrapper = hendelseConsumerWrapper,
         brukerstoetteService = brukerstoetteService,
         additionalMeterBinder = mockk(relaxed = true),
         metrics = metrics,

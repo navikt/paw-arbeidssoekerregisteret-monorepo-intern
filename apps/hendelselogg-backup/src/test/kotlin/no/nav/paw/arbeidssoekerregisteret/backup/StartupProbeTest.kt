@@ -14,18 +14,17 @@ import no.nav.paw.arbeidssoekerregisteret.backup.health.isKafkaConsumerReady
 import no.nav.paw.arbeidssoekerregisteret.backup.health.startupPath
 import no.nav.paw.arbeidssoekerregisteret.backup.health.startupRoute
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.configureTestClient
-import org.apache.kafka.common.TopicPartition
 
 class StartupProbeTest : FreeSpec({
     with(TestApplicationContext.buildWithDatabase()) {
         "Alle startup checks er ok" {
             testApplication {
-                every { hendelseConsumer.assignment() } returns setOf(TopicPartition("topic", 1))
+                every { hendelseConsumerWrapper.isRunning() } returns true
                 configureInternalTestApplication(
                     applicationContext = asApplicationContext(),
                     startupChecks = listOf(
                         { isDatabaseReady(dataSource) },
-                        { isKafkaConsumerReady(hendelseConsumer) },
+                        { isKafkaConsumerReady(hendelseConsumerWrapper) },
                     )
                 )
                 val client = configureTestClient()
@@ -51,11 +50,11 @@ class StartupProbeTest : FreeSpec({
 
         "Startup check feiler på kafka consumer" {
             testApplication {
-                every { hendelseConsumer.assignment() } returns emptySet()
+                every { hendelseConsumerWrapper.isRunning() } returns false
                 configureInternalTestApplication(
                     applicationContext = asApplicationContext(),
                     startupChecks = listOf(
-                        { isKafkaConsumerReady(hendelseConsumer) },
+                        { isKafkaConsumerReady(hendelseConsumerWrapper) },
                     ),
                 )
                 val client = configureTestClient()
@@ -65,7 +64,6 @@ class StartupProbeTest : FreeSpec({
         }
         "Startup check feiler så lenge en av sjekken feiler" {
             testApplication {
-                every { hendelseConsumer.assignment() } returns emptySet()
                 configureInternalTestApplication(
                     applicationContext = asApplicationContext(),
                     startupChecks = listOf(

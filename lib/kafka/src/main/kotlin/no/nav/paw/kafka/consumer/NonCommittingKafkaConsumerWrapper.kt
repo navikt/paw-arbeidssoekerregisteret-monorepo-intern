@@ -8,6 +8,7 @@ import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import java.time.Duration
+import java.util.concurrent.atomic.AtomicBoolean
 
 class NonCommittingKafkaConsumerWrapper<K, V>(
     private val topics: Collection<String>,
@@ -15,13 +16,14 @@ class NonCommittingKafkaConsumerWrapper<K, V>(
     private val pollTimeout: Duration = Duration.ofMillis(100),
     private val closeTimeout: Duration = Duration.ofMillis(500),
     private val exceptionHandler: ConsumerExceptionHandler = NoopConsumerExceptionHandler(),
-    private val rebalanceListener: ConsumerRebalanceListener = NoopConsumerRebalanceListener()
+    private val rebalanceListener: ConsumerRebalanceListener = NoopConsumerRebalanceListener(),
 ) : KafkaConsumerWrapper<K, V> {
     private val logger = buildLogger
-
+    private val isRunning = AtomicBoolean(false)
     override fun init() {
         logger.info("Kafka Consumer abonnerer på topics {}", topics)
         consumer.subscribe(topics, rebalanceListener)
+        isRunning.set(true)
     }
 
     override fun consume(onConsume: (ConsumerRecords<K, V>) -> Unit) {
@@ -37,5 +39,10 @@ class NonCommittingKafkaConsumerWrapper<K, V>(
         logger.info("Kafka Consumer stopper å abonnere på topics {} og lukkes", topics)
         consumer.unsubscribe()
         consumer.close(closeTimeout)
+        isRunning.set(false)
+    }
+
+    fun isRunning(): Boolean {
+        return isRunning.get()
     }
 }
