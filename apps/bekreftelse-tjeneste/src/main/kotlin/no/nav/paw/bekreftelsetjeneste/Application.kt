@@ -42,6 +42,7 @@ fun main() {
     val bekreftelseKonfigurasjon = loadNaisOrLocalConfiguration<BekreftelseKonfigurasjon>(BEKREFTELSE_CONFIG_FILE_NAME)
 
     logger.info("Starter: ${currentRuntimeEnvironment.appNameOrDefaultForLocal()}")
+    SecureLogger.info("Logger til team-logs...")
     val keepGoing = AtomicBoolean(true)
     with(serverConfig) {
         embeddedServer(Netty, port = port) {
