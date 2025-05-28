@@ -23,9 +23,9 @@ fun BigQueryAdmin.createMaterializedViews(
 ): List<String> =
     viewsFromResource(path)
         ?.map { createMaterializedViewDefinition(datasetName, it) }
-        ?.map { view ->
-            getOrCreate(datasetName, view.representation)
-            "${datasetName}.${view.name}"
+        ?.map { table ->
+            getOrCreate(table)
+            "${table.tableReference.datasetId}.${table.tableReference.tableId}"
         } ?: emptyList()
 
 fun viewsFromResource(path: String): List<View<Sql>>? =
@@ -39,7 +39,7 @@ fun viewsFromResource(path: String): List<View<Sql>>? =
             View(name, sql)
         }
 
-fun createMaterializedViewDefinition(datasetName: DatasetName, view: View<Sql>): View<Table> {
+fun createMaterializedViewDefinition(datasetName: DatasetName, view: View<Sql>): Table {
     val tableRef = TableReference().apply {
         tableId = view.name
         datasetId = datasetName.value
@@ -48,12 +48,8 @@ fun createMaterializedViewDefinition(datasetName: DatasetName, view: View<Sql>):
         .setQuery(view.representation.value)
         .setRefreshIntervalMs(matrialized_views_refresh_interval.toMillis())
         .setAllowNonIncrementalDefinition(true)
-    val table = Table().apply {
+    return Table().apply {
         tableReference = tableRef
         materializedView = viewDefinition
     }.setMaxStaleness("0-0 0 ${matrialized_views_max_staleness.toHours()}:0:0")
-    return View(
-        name = view.name,
-        representation = table
-    )
 }
