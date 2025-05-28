@@ -32,7 +32,7 @@ fun readRecord(consumerVersion: Int, partition: Int, offset: Long): StoredHendel
         }
 }
 
-fun getOneRecordForId(id: String): StoredHendelseRecord? =
+fun getOneRecordForId(id: String): StoredHendelseRecord? = transaction {
     TransactionManager.current()
         .exec(
             stmt = """select * from hendelser where data @> '{"identitetsnummer": "$id"}' limit 1;""",
@@ -54,3 +54,4 @@ fun getOneRecordForId(id: String): StoredHendelseRecord? =
                 }.toList().firstOrNull()
             }
         )
+}
