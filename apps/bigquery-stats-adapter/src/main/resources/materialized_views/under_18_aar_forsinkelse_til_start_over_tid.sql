@@ -51,8 +51,7 @@ SELECT a.month_bucket,
        p.median_latency_days                                                         AS median_latency_days,
        MIN(l.latency_days)                                                           AS min_latency_days,
        MAX(l.latency_days)                                                           AS max_latency_days,
-       p.p90_latency_days                                                            AS p90_latency_days,
-       CURRENT_TIMESTAMP()                                                           AS last_refreshed
+       p.p90_latency_days                                                            AS p90_latency_days
 FROM AvvistByMonth a
          LEFT JOIN LatencyData l ON a.month_bucket = l.month_bucket
          LEFT JOIN PercentilesByMonth p ON a.month_bucket = p.month_bucket
@@ -60,4 +59,3 @@ GROUP BY a.month_bucket,
          a.total_avvist_count,
          p.median_latency_days,
          p.p90_latency_days
-ORDER BY a.month_bucket

@@ -1,8 +1,8 @@
 WITH
--- Define a fixed start date and use current_date() for the end
+-- Define a fixed start and end date
 DateSeries AS (
     SELECT date AS day
-FROM UNNEST(GENERATE_DATE_ARRAY('2020-01-01', CURRENT_DATE())) AS date
+FROM UNNEST(GENERATE_DATE_ARRAY('2020-01-01', '2026-01-01')) AS date
     ),
 
 -- Get the latest status for each correlation_id
@@ -34,7 +34,5 @@ GROUP BY d.day
 -- Get the final results with refresh timestamp
 SELECT
     day,
-    active_count,
-    CURRENT_TIMESTAMP() AS last_refreshed
+    active_count
 FROM ActiveCountsByDay
-ORDER BY day

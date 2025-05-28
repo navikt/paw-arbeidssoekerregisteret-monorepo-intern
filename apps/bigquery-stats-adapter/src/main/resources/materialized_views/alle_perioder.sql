@@ -14,7 +14,6 @@ WITH RankedRows AS (
 
 SELECT
     startet,
-    avsluttet,
-    TIMESTAMP_DIFF(COALESCE(avsluttet, CURRENT_DATE), startet, DAY) AS varighet_i_dager
+    avsluttet
 FROM RankedRows
 WHERE row_num = 1
