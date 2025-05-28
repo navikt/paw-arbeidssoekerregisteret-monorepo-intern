@@ -18,10 +18,12 @@ fun isDatabaseReady(dataSource: DataSource): Boolean = runCatching {
 }.getOrDefault(false)
 
 fun isKafkaConsumerReady(consumer: Consumer<Long, Hendelse>): Boolean {
-    val kafkaKlarForOppstart = consumer.assignment().isNotEmpty()
-    when {
-        kafkaKlarForOppstart -> logger.info("Kafka er klar for oppstart. Assigned topics: ${consumer.assignment()}")
-        else -> logger.warn("Kafka consumer er ikke klar for oppstart.")
+    synchronized(consumer) {
+        val kafkaKlarForOppstart = consumer.assignment().isNotEmpty()
+        when {
+            kafkaKlarForOppstart -> logger.info("Kafka er klar for oppstart. Assigned topics: ${consumer.assignment()}")
+            else -> logger.warn("Kafka consumer er ikke klar for oppstart.")
+        }
+        return kafkaKlarForOppstart
     }
-    return kafkaKlarForOppstart
 }
