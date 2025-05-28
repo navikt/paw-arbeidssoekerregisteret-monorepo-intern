@@ -51,8 +51,6 @@ SELECT
     COUNT(*) AS count,
     MIN(latency_days) AS min_days,
     MAX(latency_days) AS max_days,
-    AVG(latency_days) AS avg_days,
-    -- Added last refresh timestamp
-    CURRENT_TIMESTAMP() AS last_refreshed
+    AVG(latency_days) AS avg_days
 FROM LatencyData
 GROUP BY latency_bucket
