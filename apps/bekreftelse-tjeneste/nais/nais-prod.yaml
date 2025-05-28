@@ -60,5 +60,7 @@ spec:
   accessPolicy:
     outbound:
       rules:
+        - application: logging
+          namespace: nais-system
         - application: paw-kafka-key-generator
           namespace: paw
