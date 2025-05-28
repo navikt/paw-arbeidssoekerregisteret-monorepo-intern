@@ -34,7 +34,7 @@ class BigQueryAdmin(
 
     fun getOrCreate(table: ModelTable): ModelTable {
         return bigquery.tables().get(
-            table.tableReference.datasetId,
+            project,
             table.tableReference.datasetId,
             table.tableReference.tableId
         ).execute()
