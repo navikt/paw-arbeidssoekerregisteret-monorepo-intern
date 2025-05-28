@@ -24,7 +24,7 @@ fun Application.configureRouting(applicationContext: ApplicationContext) {
         routing {
             healthRoutes(healthIndicatorRepository)
             startupRoute(
-                { isKafkaConsumerReady(hendelseConsumer) },
+                //{ isKafkaConsumerReady(hendelseConsumer) },
                 { isDatabaseReady(dataSource) }
             )
             metricsRoutes(prometheusMeterRegistry)
