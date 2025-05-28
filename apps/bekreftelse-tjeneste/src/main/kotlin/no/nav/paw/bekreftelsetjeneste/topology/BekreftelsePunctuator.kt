@@ -6,12 +6,15 @@ import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
+import no.nav.paw.bekreftelsetjeneste.SecureLogger
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
+import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
 import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
 import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
 import org.slf4j.LoggerFactory
+import org.slf4j.MDC
 import java.time.Duration.between
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicLong
