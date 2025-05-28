@@ -41,8 +41,4 @@ class CommittingKafkaConsumerWrapper<K, V>(
         consumer.unsubscribe()
         consumer.close(closeTimeout)
     }
-
-    override fun isRunning(): Boolean {
-        return !consumer.assignment().isEmpty()
-    }
 }

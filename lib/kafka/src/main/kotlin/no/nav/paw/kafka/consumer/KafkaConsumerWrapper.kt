@@ -9,6 +9,4 @@ interface KafkaConsumerWrapper<K, V> {
     fun consume(onConsume: (ConsumerRecords<K, V>) -> Unit)
 
     fun stop()
-
-    fun isRunning(): Boolean
 }

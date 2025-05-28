@@ -70,6 +70,3 @@ class ReadinessHealthIndicator(initialStatus: HealthStatus = HealthStatus.UNKNOW
 
 class LivenessHealthIndicator(initialStatus: HealthStatus = HealthStatus.HEALTHY) :
     DefaultHealthIndicator(initialStatus)
-
-class StartupHealthIndicator(initialStatus: HealthStatus = HealthStatus.UNKNOWN) :
-    DefaultHealthIndicator(initialStatus)
