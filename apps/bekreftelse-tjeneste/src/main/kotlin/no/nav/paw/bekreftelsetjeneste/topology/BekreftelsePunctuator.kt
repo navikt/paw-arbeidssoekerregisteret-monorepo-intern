@@ -68,13 +68,16 @@ fun runPunctuator(
                 .asSequence()
                 .filter { (_, tilstand) ->
                     val paaVegneAv = paaVegneAvTilstandStateStore.get(tilstand.periode.periodeId)
-                    if (paaVegneAv?.paaVegneAvList?.any { it.loesning == Loesning.DAGPENGER } == true) {
+                    /**
+                     * Denne kan vi bruke for å logge til team loggs også bruker Google logs til å eksportere til csv.
+                     * Når Dagpenge problemene er over fjerner vi hele greien.
+                     if (paaVegneAv?.paaVegneAvList?.any { it.loesning == Loesning.DAGPENGER } == true) {
                         MDC.put("partition", ctx.taskId().partition().toString())
                         MDC.put("loesning", Loesning.DAGPENGER.name)
                         SecureLogger.info("ident ******")
                         MDC.remove("partition")
                         MDC.remove("loesning")
-                    }
+                    }**/
                     (paaVegneAv == null).also { registeretHarAnsvaret ->
                         totalt.incrementAndGet()
                         if (registeretHarAnsvaret) {
