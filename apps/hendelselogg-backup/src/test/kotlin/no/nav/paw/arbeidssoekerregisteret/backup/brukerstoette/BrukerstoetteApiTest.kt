@@ -28,7 +28,7 @@ import no.nav.paw.arbeidssoekerregisteret.backup.utils.configureTestClient
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.opplysninger
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.startet
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.storedHendelseRecord
-import no.nav.paw.arbeidssoekerregisteret.backup.toApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.asApplicationContext
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
 import java.util.UUID
 
@@ -48,7 +48,7 @@ class BrukerstoetteApiTest : FreeSpec({
                 } returns emptyList()
 
                 testApplication {
-                    configureTestApplication(testApplicationContext.toApplicationContext())
+                    configureTestApplication(testApplicationContext.asApplicationContext())
                     val client = configureTestClient()
                     val response = client.post("/api/v1/arbeidssoeker/detaljer") {
                         headers {
@@ -68,7 +68,7 @@ class BrukerstoetteApiTest : FreeSpec({
             "Ugyldig identformat resulterer i 400 bad request" {
                 val testIdentitetsnummer = "test"
                 testApplication {
-                    configureTestApplication(testApplicationContext.toApplicationContext())
+                    configureTestApplication(testApplicationContext.asApplicationContext())
                     val client = configureTestClient()
                     val response = client.post("/api/v1/arbeidssoeker/detaljer") {
                         headers {
@@ -91,7 +91,7 @@ class BrukerstoetteApiTest : FreeSpec({
                 } returns null
 
                 testApplication {
-                    configureTestApplication(testApplicationContext.toApplicationContext())
+                    configureTestApplication(testApplicationContext.asApplicationContext())
                     val client = configureTestClient()
                     val response = client.post("/api/v1/arbeidssoeker/detaljer") {
                         headers {
@@ -115,7 +115,7 @@ class BrukerstoetteApiTest : FreeSpec({
                 } returns null
 
                 testApplication {
-                    configureTestApplication(testApplicationContext.toApplicationContext())
+                    configureTestApplication(testApplicationContext.asApplicationContext())
                     val client = configureTestClient()
                     val response = client.post("/api/v1/arbeidssoeker/detaljer") {
                         headers {
@@ -158,7 +158,7 @@ class BrukerstoetteApiTest : FreeSpec({
                 } returns emptyList<ProfileringResponse>().right()
 
                 testApplication {
-                    configureTestApplication(testApplicationContext.toApplicationContext())
+                    configureTestApplication(testApplicationContext.asApplicationContext())
                     val client = configureTestClient()
                     val response = client.post("/api/v1/arbeidssoeker/detaljer") {
                         headers {
@@ -216,7 +216,7 @@ class BrukerstoetteApiTest : FreeSpec({
                 } returns emptyList<ProfileringResponse>().right()
 
                 testApplication {
-                    configureTestApplication(testApplicationContext.toApplicationContext())
+                    configureTestApplication(testApplicationContext.asApplicationContext())
                     val client = configureTestClient()
                     val response = client.post("/api/v1/arbeidssoeker/detaljer") {
                         headers {

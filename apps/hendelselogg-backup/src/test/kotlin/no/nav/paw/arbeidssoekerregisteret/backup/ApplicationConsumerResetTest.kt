@@ -16,7 +16,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 class ApplicationConsumerResetTest : FreeSpec({
     "Prosesserer ConsumerRecords riktig iht. HWM ved oppstart" - {
         with(TestApplicationContext.buildWithDatabase()) {
-            initHwm(this.toApplicationContext())
+            initHwm(this.asApplicationContext())
             val testConsumerRecords = testConsumerRecords()
             backupService.processRecords(
                 records = testConsumerRecords,

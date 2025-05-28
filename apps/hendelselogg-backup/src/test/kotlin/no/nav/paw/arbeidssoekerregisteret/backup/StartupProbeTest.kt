@@ -1,6 +1,5 @@
 package no.nav.paw.arbeidssoekerregisteret.backup
 
-import com.zaxxer.hikari.HikariDataSource
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
@@ -23,7 +22,7 @@ class StartupProbeTest : FreeSpec({
             testApplication {
                 every { hendelseConsumer.assignment() } returns setOf(TopicPartition("topic", 1))
                 configureInternalTestApplication(
-                    applicationContext = toApplicationContext(),
+                    applicationContext = asApplicationContext(),
                     startupChecks = listOf(
                         { isDatabaseReady(dataSource) },
                         { isKafkaConsumerReady(hendelseConsumer) },
@@ -35,14 +34,42 @@ class StartupProbeTest : FreeSpec({
             }
         }
 
-        "En startup check feiler" {
+        "Startup check feiler på database" {
             testApplication {
-                val hikariDataSource = dataSource as HikariDataSource
-                hikariDataSource.close()
+                dataSource.close()
                 configureInternalTestApplication(
-                    applicationContext = toApplicationContext(),
+                    applicationContext = asApplicationContext(),
                     startupChecks = listOf(
-                        { true }, { isDatabaseReady(dataSource) }
+                        { isDatabaseReady(dataSource) }
+                    ),
+                )
+                val client = configureTestClient()
+                val response = client.get(startupPath)
+                response.status shouldBe HttpStatusCode.ServiceUnavailable
+            }
+        }
+
+        "Startup check feiler på kafka consumer" {
+            testApplication {
+                every { hendelseConsumer.assignment() } returns emptySet()
+                configureInternalTestApplication(
+                    applicationContext = asApplicationContext(),
+                    startupChecks = listOf(
+                        { isKafkaConsumerReady(hendelseConsumer) },
+                    ),
+                )
+                val client = configureTestClient()
+                val response = client.get(startupPath)
+                response.status shouldBe HttpStatusCode.ServiceUnavailable
+            }
+        }
+        "Startup check feiler så lenge en av sjekken feiler" {
+            testApplication {
+                every { hendelseConsumer.assignment() } returns emptySet()
+                configureInternalTestApplication(
+                    applicationContext = asApplicationContext(),
+                    startupChecks = listOf(
+                        { true }, { false }
                     ),
                 )
                 val client = configureTestClient()

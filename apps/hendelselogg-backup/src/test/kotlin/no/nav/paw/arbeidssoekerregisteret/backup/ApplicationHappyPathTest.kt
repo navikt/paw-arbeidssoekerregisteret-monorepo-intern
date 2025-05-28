@@ -24,7 +24,7 @@ import java.util.*
 class ApplicationHappyPathTest : FreeSpec({
     "Verifiser enkel applikasjonsflyt" {
         with(TestApplicationContext.buildWithDatabase()) {
-            initHwm(this.toApplicationContext())
+            initHwm(this.asApplicationContext())
             val testRecords = testConsumerRecords(applicationConfig)
 
             val mergeRecord = createMergeRecord(

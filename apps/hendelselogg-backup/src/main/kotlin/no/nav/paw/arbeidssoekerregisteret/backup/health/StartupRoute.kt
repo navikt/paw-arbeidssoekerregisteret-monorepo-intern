@@ -13,8 +13,8 @@ val startupPath = "/internal/startup"
 
 fun Route.startupRoute(vararg startupChecks: () -> Boolean) {
     get(startupPath) {
-        val erAlleSystemerKlare = startupChecks.all { it() }
-        when (erAlleSystemerKlare) {
+        val startupComplete = startupChecks.all { isReady -> isReady() }
+        when (startupComplete) {
             true -> call.respondText(contentType = Text.Plain, status = OK) { HEALTHY.value }
             false -> call.respondText(contentType = Text.Plain, status = ServiceUnavailable) { UNHEALTHY.value }
         }

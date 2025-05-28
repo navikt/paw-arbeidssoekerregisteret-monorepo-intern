@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.backup
 
+import com.zaxxer.hikari.HikariDataSource
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.mockk.mockk
@@ -34,7 +35,7 @@ data class TestApplicationContext(
     val kafkaKeysClient: KafkaKeysClient,
     val oppslagApiClient: OppslagApiClient,
     val databaseConfig: DatabaseConfig,
-    var dataSource: DataSource,
+    var dataSource: HikariDataSource,
     val hendelseRecordRepository: HendelseRecordRepository,
     val brukerstoetteService: BrukerstoetteService,
     val metrics: Metrics,
@@ -51,7 +52,7 @@ data class TestApplicationContext(
             val kafkaKeysClient = mockk<KafkaKeysClient>(relaxed = true)
             val oppslagApiClient = mockk<OppslagApiClient>(relaxed = true)
             val hendelseRecordRepository = mockk<HendelseRecordRepository>(relaxed = true)
-            val dataSource = mockk<DataSource>(relaxed = true)
+            val dataSource = mockk<HikariDataSource>(relaxed = true)
             val brukerstoetteService = BrukerstoetteService(
                 applicationConfig.consumerVersion,
                 kafkaKeysClient,
@@ -94,7 +95,7 @@ data class TestApplicationContext(
     }
 }
 
-fun TestApplicationContext.toApplicationContext(): ApplicationContext =
+fun TestApplicationContext.asApplicationContext(): ApplicationContext =
     ApplicationContext(
         applicationConfig = applicationConfig,
         serverConfig = serverConfig,
@@ -119,7 +120,7 @@ fun initDatabase(dataSource: DataSource): Database {
 fun createTestDataSource(
     databaseConfig: DatabaseConfig = loadNaisOrLocalConfiguration(DATABASE_CONFIG),
     postgresContainer: PostgreSQLContainer<*> = postgresContainer(),
-): DataSource {
+): HikariDataSource {
     val updatedDatabaseConfig = postgresContainer.let {
         databaseConfig.copy(
             host = it.host,
