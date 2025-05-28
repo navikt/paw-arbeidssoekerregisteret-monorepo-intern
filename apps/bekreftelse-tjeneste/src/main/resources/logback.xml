@@ -10,26 +10,44 @@
         </encoder>
     </appender>
 
+
+    <appender name="team-logs" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>team-logs.nais-system:5170</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"google_cloud_project":"${GOOGLE_CLOUD_PROJECT}","nais_namespace_name":"${NAIS_NAMESPACE}","nais_pod_name":"${HOSTNAME}","nais_container_name":"${NAIS_APP_NAME}"}</customFields>
+            <includeContext>false</includeContext>
+        </encoder>
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
+                <marker>TEAM_LOGS</marker>
+            </evaluator>
+            <OnMatch>ACCEPT</OnMatch>
+            <OnMismatch>DENY</OnMismatch>
+        </filter>
+    </appender>
+
     <if condition='"${NAIS_CLUSTER_NAME}" == "NAIS_CLUSTER_NAME_IS_UNDEFINED"'>
         <then>
             <root level="INFO">
                 <appender-ref ref="CONSOLE"/>
             </root>
-            <logger name="org.apache.kafka.streams.StreamsConfig" level="WARN"/>
-            <logger name="org.apache.kafka.clients.admin.AdminClientConfig" level="WARN"/>
-            <logger name="org.apache.kafka.clients.consumer.ConsumerConfig" level="WARN"/>
-            <logger name="org.apache.kafka.clients.producer.ProducerConfig" level="WARN"/>
-            <logger name="io.confluent.kafka.serializers.KafkaAvroSerializerConfig" level="WARN"/>
-            <logger name="io.confluent.kafka.serializers.KafkaAvroDeserializerConfig" level="WARN"/>
-            <logger name="no.nav" level="DEBUG"/>
+            <logger name="team-logs-logger" level="INFO" additivity="false">
+                <appender-ref ref="CONSOLE" />
+            </logger>
         </then>
         <else>
             <root level="INFO">
-                <appender-ref ref="STDOUT_JSON"/>
+                <appender-ref ref="STDOUT_JSON" />
+                <appender-ref ref="team-logs" />
             </root>
-            <include resource="no/nav/common/audit_log/logback-naudit.xml"/>
+            <logger name="team-logs-logger" level="INFO" additivity="false">
+                <appender-ref ref="team-logs" />
+            </logger>
         </else>
     </if>
+
+    <include resource="no/nav/common/audit_log/logback-naudit.xml"/>
+
     <logger name="org.apache.kafka" level="WARN"/>
     <logger name="bekreftelse" level="TRACE"/>
     <logger name="bekreftelse.tjeneste.punctuator" level="INFO"/>

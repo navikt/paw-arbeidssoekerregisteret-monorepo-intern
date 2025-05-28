@@ -6,23 +6,14 @@ import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
-import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
-import no.nav.paw.bekreftelse.internehendelser.LeveringsfristUtloept
-import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjenstaaendeTid
-import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeUtloept
-import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
-import no.nav.paw.bekreftelsetjeneste.tilstand.*
-import no.nav.paw.collections.toPawNonEmptyListOrNull
+import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
 import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
 import org.slf4j.LoggerFactory
-import java.time.Duration
 import java.time.Duration.between
 import java.time.Instant
-import java.time.ZoneId
-import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 
 private val punctuatorLogger = LoggerFactory.getLogger("bekreftelse.tjeneste.punctuator")
