@@ -42,19 +42,5 @@ fun Route.healthRoutes(
             ) { status.value }
         }
     }
-
-    get("/internal/startup") {
-        val readinessIndicators = healthIndicatorRepository.getStartupIndicators()
-        when (val status = readinessIndicators.getAggregatedStatus()) {
-            HealthStatus.HEALTHY -> call.respondText(
-                ContentType.Text.Plain,
-                HttpStatusCode.OK
-            ) { status.value }
-
-            else -> call.respondText(
-                ContentType.Text.Plain,
-                HttpStatusCode.ServiceUnavailable
-            ) { status.value }
-        }
-    }
 }
+

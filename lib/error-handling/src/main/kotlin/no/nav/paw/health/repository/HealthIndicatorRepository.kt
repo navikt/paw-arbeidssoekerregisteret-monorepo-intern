@@ -5,7 +5,7 @@ import no.nav.paw.health.model.HealthIndicatorList
 import no.nav.paw.health.model.HealthStatus
 import no.nav.paw.health.model.LivenessHealthIndicator
 import no.nav.paw.health.model.ReadinessHealthIndicator
-import no.nav.paw.health.model.StartedHealthIndicator
+import no.nav.paw.health.model.StartupHealthIndicator
 
 class HealthIndicatorRepository {
 
@@ -37,7 +37,7 @@ class HealthIndicatorRepository {
     }
 
     fun getStartupIndicators(): HealthIndicatorList {
-        return livenessIndicators
+        return startupIndicators
     }
 
     fun readinessIndicator(defaultStatus: HealthStatus = HealthStatus.UNKNOWN): ReadinessHealthIndicator {
@@ -52,8 +52,8 @@ class HealthIndicatorRepository {
         return healthIndicator
     }
 
-    fun startupIndicator(defaultStatus: HealthStatus = HealthStatus.UNKNOWN): StartedHealthIndicator {
-        val healthIndicator = StartedHealthIndicator(defaultStatus)
+    fun startupIndicator(defaultStatus: HealthStatus = HealthStatus.UNKNOWN): StartupHealthIndicator {
+        val healthIndicator = StartupHealthIndicator(defaultStatus)
         startupIndicators.add(healthIndicator)
         return healthIndicator
     }

@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.backup
 
+import com.zaxxer.hikari.HikariDataSource
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
@@ -8,74 +9,59 @@ import io.ktor.server.routing.routing
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import io.mockk.every
-import io.mockk.mockk
 import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.health.isDatabaseReady
+import no.nav.paw.arbeidssoekerregisteret.backup.health.isKafkaConsumerReady
+import no.nav.paw.arbeidssoekerregisteret.backup.health.startupPath
+import no.nav.paw.arbeidssoekerregisteret.backup.health.startupRoute
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.configureTestClient
-import no.nav.paw.health.model.HealthStatus
-import no.nav.paw.health.route.healthRoutes
-import java.sql.SQLException
-import javax.sql.DataSource
-
-const val internalStartupUrl = "/internal/startup"
+import org.apache.kafka.common.TopicPartition
 
 class StartupProbeTest : FreeSpec({
-    val testApplicationContext = TestApplicationContext.buildWithDatabase()
-    with(testApplicationContext) {
-        beforeSpec { healthIndicatorRepository.getStartupIndicators().clear() }
-
-        "Startup probe - alt er fint og flott" {
+    with(TestApplicationContext.buildWithDatabase()) {
+        "Alle startup checks er ok" {
             testApplication {
-                healthIndicatorRepository.startupIndicator(HealthStatus.HEALTHY)
-                configureInternalTestApplication(testApplicationContext.toApplicationContext())
+                every { hendelseConsumer.assignment() } returns setOf(TopicPartition("topic", 1))
+                configureInternalTestApplication(
+                    applicationContext = toApplicationContext(),
+                    startupChecks = listOf(
+                        { isDatabaseReady(dataSource) },
+                        { isKafkaConsumerReady(hendelseConsumer) },
+                    )
+                )
                 val client = configureTestClient()
-                val response = client.get(internalStartupUrl)
+                val response = client.get(startupPath)
                 response.status shouldBe HttpStatusCode.OK
             }
         }
 
-        "Startup probe - databasen er ikke tilkoblet" {
-            val dataSourceMock = mockk<DataSource>().also {
-                every { it.connection } throws SQLException("Database connection failed")
-            }
-            val applicationContext = testContextWith(dataSourceMock)
+        "En startup check feiler" {
             testApplication {
-                configureInternalTestApplication(applicationContext)
+                val hikariDataSource = dataSource as HikariDataSource
+                hikariDataSource.close()
+                configureInternalTestApplication(
+                    applicationContext = toApplicationContext(),
+                    startupChecks = listOf(
+                        { true }, { isDatabaseReady(dataSource) }
+                    ),
+                )
                 val client = configureTestClient()
-                val response = client.get(internalStartupUrl)
-                response.status shouldBe HttpStatusCode.InternalServerError
-            }
-        }
-        "Startup probe - kafka feil" {
-            val applicationContext = TestApplicationContext.buildWithDatabase()
-            testApplication {
-                configureInternalTestApplication(applicationContext.toApplicationContext())
-                val client = configureTestClient()
-                val response = client.get(internalStartupUrl)
-                response.status shouldBe HttpStatusCode.InternalServerError
+                val response = client.get(startupPath)
+                response.status shouldBe HttpStatusCode.ServiceUnavailable
             }
         }
     }
-
 })
 
-fun ApplicationTestBuilder.configureInternalTestApplication(applicationContext: ApplicationContext) {
-    application {
-        routing {
-            healthRoutes(applicationContext.healthIndicatorRepository)
+fun ApplicationTestBuilder.configureInternalTestApplication(
+    applicationContext: ApplicationContext,
+    startupChecks: List<() -> Boolean> = listOf({ true }, { true }),
+) =
+    with(applicationContext) {
+        application {
+            routing {
+                startupRoute(*startupChecks.toTypedArray())
+            }
         }
     }
-}
 
-private fun testContextWith(dataSourceMock: DataSource): ApplicationContext = ApplicationContext(
-    applicationConfig = mockk(relaxed = true),
-    serverConfig = mockk(relaxed = true),
-    securityConfig = mockk(relaxed = true),
-    dataSource = dataSourceMock,
-    prometheusMeterRegistry = mockk(relaxed = true),
-    hwmRebalanceListener = mockk(relaxed = true),
-    hendelseConsumerWrapper = mockk(relaxed = true),
-    brukerstoetteService = mockk(relaxed = true),
-    additionalMeterBinder = mockk(relaxed = true),
-    metrics = mockk(relaxed = true),
-    backupService = mockk(relaxed = true),
-)

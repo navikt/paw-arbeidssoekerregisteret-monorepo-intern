@@ -12,6 +12,7 @@ import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecor
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecordRepository
 import no.nav.paw.arbeidssoekerregisteret.backup.database.migrateDatabase
 import no.nav.paw.arbeidssoekerregisteret.backup.metrics.Metrics
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.database.config.DATABASE_CONFIG
@@ -20,6 +21,7 @@ import no.nav.paw.database.factory.createHikariDataSource
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.security.authentication.config.SecurityConfig
+import org.apache.kafka.clients.consumer.Consumer
 import org.jetbrains.exposed.sql.Database
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
@@ -37,6 +39,7 @@ data class TestApplicationContext(
     val brukerstoetteService: BrukerstoetteService,
     val metrics: Metrics,
     val backupService: BackupService,
+    val hendelseConsumer: Consumer<Long, Hendelse>,
     val healthIndicatorRepository: HealthIndicatorRepository,
 ) {
     companion object {
@@ -59,6 +62,7 @@ data class TestApplicationContext(
             val metrics = mockk<Metrics>(relaxed = true)
             val backupService = mockk<BackupService>(relaxed = true)
             val healthIndicatorRepository = HealthIndicatorRepository()
+            val hendelseConsumer = mockk<Consumer<Long, Hendelse>>(relaxed = true)
 
             return TestApplicationContext(
                 applicationConfig = applicationConfig,
@@ -72,16 +76,19 @@ data class TestApplicationContext(
                 brukerstoetteService = brukerstoetteService,
                 metrics = metrics,
                 backupService = backupService,
+                hendelseConsumer = hendelseConsumer,
                 healthIndicatorRepository = healthIndicatorRepository,
             )
         }
 
         fun buildWithDatabase(): TestApplicationContext {
             val baseContext: TestApplicationContext = build()
-            initDatabase()
+            val dataSource = createTestDataSource()
+            initDatabase(dataSource)
             val backupService = BackupService(HendelseRecordPostgresRepository, baseContext.metrics)
             return baseContext.copy(
                 backupService = backupService,
+                dataSource = dataSource,
             )
         }
     }
@@ -100,11 +107,11 @@ fun TestApplicationContext.toApplicationContext(): ApplicationContext =
         additionalMeterBinder = mockk(relaxed = true),
         metrics = metrics,
         backupService = backupService,
+        hendelseConsumer = hendelseConsumer,
         healthIndicatorRepository = healthIndicatorRepository,
     )
 
-fun initDatabase(): Database {
-    val dataSource = createTestDataSource()
+fun initDatabase(dataSource: DataSource): Database {
     migrateDatabase(dataSource)
     return Database.connect(dataSource)
 }

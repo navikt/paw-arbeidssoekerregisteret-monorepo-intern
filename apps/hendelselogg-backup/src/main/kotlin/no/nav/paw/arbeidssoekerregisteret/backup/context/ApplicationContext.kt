@@ -4,16 +4,15 @@ import io.micrometer.core.instrument.binder.MeterBinder
 import io.micrometer.core.instrument.binder.kafka.KafkaClientMetrics
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import no.nav.paw.arbeidssoekerregisteret.backup.BackupService
 import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.BrukerstoetteService
 import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.initClients
 import no.nav.paw.arbeidssoekerregisteret.backup.config.ApplicationConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.config.SERVER_CONFIG
 import no.nav.paw.arbeidssoekerregisteret.backup.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecordPostgresRepository
-import no.nav.paw.arbeidssoekerregisteret.backup.BackupService
 import no.nav.paw.arbeidssoekerregisteret.backup.health.HealthIndicatorConsumerExceptionHandler
 import no.nav.paw.arbeidssoekerregisteret.backup.kafka.HwmRebalanceListener
-import no.nav.paw.arbeidssoekerregisteret.backup.kafka.NonCommittingKafkaConsumerWrapper
 import no.nav.paw.arbeidssoekerregisteret.backup.metrics.Metrics
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
@@ -27,10 +26,12 @@ import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafka.config.KAFKA_CONFIG
 import no.nav.paw.kafka.config.KafkaConfig
 import no.nav.paw.kafka.consumer.KafkaConsumerWrapper
+import no.nav.paw.kafka.consumer.NonCommittingKafkaConsumerWrapper
 import no.nav.paw.kafka.factory.KafkaFactory
 import no.nav.paw.kafkakeygenerator.auth.AZURE_M2M_CONFIG
 import no.nav.paw.kafkakeygenerator.auth.AzureM2MConfig
 import no.nav.paw.security.authentication.config.SecurityConfig
+import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.common.serialization.LongDeserializer
 import javax.sql.DataSource
 
@@ -41,12 +42,13 @@ data class ApplicationContext(
     val dataSource: DataSource,
     val prometheusMeterRegistry: PrometheusMeterRegistry,
     val hwmRebalanceListener: HwmRebalanceListener,
+    val hendelseConsumer: Consumer<Long, Hendelse>,
     val hendelseConsumerWrapper: KafkaConsumerWrapper<Long, Hendelse>,
     val brukerstoetteService: BrukerstoetteService,
     val additionalMeterBinder: MeterBinder,
     val metrics: Metrics,
     val backupService: BackupService,
-    val healthIndicatorRepository: HealthIndicatorRepository = HealthIndicatorRepository()
+    val healthIndicatorRepository: HealthIndicatorRepository,
 ) {
 
     companion object {
@@ -90,7 +92,7 @@ data class ApplicationContext(
             val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
             val metrics = Metrics(prometheusMeterRegistry)
             val backupService = BackupService(HendelseRecordPostgresRepository, metrics)
-
+            val healthIndicatorRepository = HealthIndicatorRepository()
 
             return ApplicationContext(
                 applicationConfig = applicationConfig,
@@ -99,11 +101,13 @@ data class ApplicationContext(
                 dataSource = dataSource,
                 prometheusMeterRegistry = prometheusMeterRegistry,
                 hwmRebalanceListener = hwmRebalanceListener,
+                hendelseConsumer = consumer,
                 hendelseConsumerWrapper = kafkaConsumerWrapper,
                 brukerstoetteService = service,
                 additionalMeterBinder = KafkaClientMetrics(consumer),
                 metrics = metrics,
                 backupService = backupService,
+                healthIndicatorRepository = healthIndicatorRepository,
             )
         }
     }
