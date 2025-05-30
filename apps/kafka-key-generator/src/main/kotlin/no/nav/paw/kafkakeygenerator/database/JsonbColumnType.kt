@@ -1,4 +1,4 @@
-package no.nav.paw.kafkakeygenerator.model
+package no.nav.paw.kafkakeygenerator.database
 
 import org.jetbrains.exposed.sql.IColumnType
 import org.postgresql.util.PGobject

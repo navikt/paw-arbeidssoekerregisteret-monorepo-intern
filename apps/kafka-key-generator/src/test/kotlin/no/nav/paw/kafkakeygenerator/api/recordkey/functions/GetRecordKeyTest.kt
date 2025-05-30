@@ -14,7 +14,7 @@ import no.nav.paw.kafkakeygenerator.api.v2.publicTopicKeyFunction
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.CallId
 import no.nav.paw.kafkakeygenerator.vo.Either
-import no.nav.paw.kafkakeygenerator.vo.Failure
+import no.nav.paw.kafkakeygenerator.vo.GenericFailure
 import no.nav.paw.kafkakeygenerator.vo.FailureCode
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import no.nav.paw.kafkakeygenerator.vo.left
@@ -27,8 +27,8 @@ class GetRecordKeyTest : FreeSpec({
     val arbeidssoeker1 = Identitetsnummer("12345678901") to ArbeidssoekerId(1)
     val arbeidssoeker2 = Identitetsnummer("12345678902") to ArbeidssoekerId(2)
     val map = mapOf(arbeidssoeker1, arbeidssoeker2)
-    suspend fun mockFunction(callId: CallId, identitetsnummer: Identitetsnummer): Either<Failure, ArbeidssoekerId> {
-        return map[identitetsnummer]?.let(::right) ?: left(Failure("feil", FailureCode.DB_NOT_FOUND, null))
+    suspend fun mockFunction(callId: CallId, identitetsnummer: Identitetsnummer): Either<GenericFailure, ArbeidssoekerId> {
+        return map[identitetsnummer]?.let(::right) ?: left(GenericFailure("feil", FailureCode.DB_NOT_FOUND, null))
     }
     "Når det finnes en arbeidssøkerId for en identitetsnummer, returneres tilhørende record key" {
         ::mockFunction.recordKey(

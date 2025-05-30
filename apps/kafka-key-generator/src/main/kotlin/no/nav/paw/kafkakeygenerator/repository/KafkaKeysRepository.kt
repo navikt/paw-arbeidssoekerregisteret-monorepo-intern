@@ -6,6 +6,7 @@ import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Either
 import no.nav.paw.kafkakeygenerator.vo.Failure
 import no.nav.paw.kafkakeygenerator.vo.FailureCode
+import no.nav.paw.kafkakeygenerator.vo.GenericFailure
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import no.nav.paw.kafkakeygenerator.vo.attempt
 import no.nav.paw.kafkakeygenerator.vo.flatMap
@@ -37,10 +38,9 @@ class KafkaKeysRepository {
                     .firstOrNull()?.get(KafkaKeysIdentitetTable.kafkaKey)
             }
         }.mapToFailure { exception ->
-            Failure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
-        }
-            .map { id -> id?.let(::ArbeidssoekerId) }
-            .flatMap { id -> id?.let(::right) ?: left(Failure("database", FailureCode.DB_NOT_FOUND)) }
+            GenericFailure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
+        }.map { id -> id?.let(::ArbeidssoekerId) }
+            .flatMap { id -> id?.let(::right) ?: left(GenericFailure("database", FailureCode.DB_NOT_FOUND)) }
 
     fun hent(currentPos: Long, maxSize: Int): Either<Failure, Map<Identitetsnummer, ArbeidssoekerId>> {
         return attempt {
@@ -55,7 +55,7 @@ class KafkaKeysRepository {
                     }
             }
         }.mapToFailure { exception ->
-            Failure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
+            GenericFailure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
         }
     }
 
@@ -70,7 +70,7 @@ class KafkaKeysRepository {
                     }
             }
         }.mapToFailure { exception ->
-            Failure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
+            GenericFailure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
         }.map { resultMap -> resultMap.mapValues { ArbeidssoekerId(it.value) } }
 
     fun hent(identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> =
@@ -82,10 +82,9 @@ class KafkaKeysRepository {
                     .firstOrNull()?.get(KafkaKeysIdentitetTable.kafkaKey)
             }
         }.mapToFailure { exception ->
-            Failure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
-        }
-            .map { id -> id?.let(::ArbeidssoekerId) }
-            .flatMap { id -> id?.let(::right) ?: left(Failure("database", FailureCode.DB_NOT_FOUND)) }
+            GenericFailure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
+        }.map { id -> id?.let(::ArbeidssoekerId) }
+            .flatMap { id -> id?.let(::right) ?: left(GenericFailure("database", FailureCode.DB_NOT_FOUND)) }
 
     fun hent(arbeidssoekerId: ArbeidssoekerId): Either<Failure, List<Identitetsnummer>> =
         attempt {
@@ -96,7 +95,7 @@ class KafkaKeysRepository {
                     .map { Identitetsnummer(it[KafkaKeysIdentitetTable.identitetsnummer]) }
             }
         }.mapToFailure { exception ->
-            Failure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
+            GenericFailure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
         }
 
 
@@ -108,11 +107,9 @@ class KafkaKeysRepository {
                     it[kafkaKey] = arbeidssoekerId.value
                 }.insertedCount
             }
-        }
-            .mapToFailure { exception ->
-                Failure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
-            }
-            .flatMap { if (it == 1) right(Unit) else left(Failure("database", FailureCode.CONFLICT)) }
+        }.mapToFailure { exception ->
+            GenericFailure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
+        }.flatMap { if (it == 1) right(Unit) else left(GenericFailure("database", FailureCode.CONFLICT)) }
 
 
     fun opprett(identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> =
@@ -126,8 +123,7 @@ class KafkaKeysRepository {
                 if (opprettet) key else null
             }
         }.mapToFailure { exception ->
-            Failure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
-        }
-            .map { id -> id?.let(::ArbeidssoekerId) }
-            .flatMap { id -> id?.let(::right) ?: left(Failure("database", FailureCode.CONFLICT)) }
+            GenericFailure("database", FailureCode.INTERNAL_TECHINCAL_ERROR, exception)
+        }.map { id -> id?.let(::ArbeidssoekerId) }
+            .flatMap { id -> id?.let(::right) ?: left(GenericFailure("database", FailureCode.CONFLICT)) }
 }

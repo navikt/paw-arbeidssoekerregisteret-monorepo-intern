@@ -36,6 +36,6 @@ private suspend fun RoutingContext.handleRequest(
 ) {
     val callId = call.request.getCallId
     val identitetsnummer = Identitetsnummer(call.receive<RecordKeyLookupRequestV1>().ident)
-    val (status, response) = kafkaKeysService::hent.recordKey(logger, callId, identitetsnummer)
+    val (status, response) = kafkaKeysService::hentEllerOppdater.recordKey(logger, callId, identitetsnummer)
     call.respond(status, response)
 }
