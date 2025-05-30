@@ -1,9 +1,8 @@
 package no.nav.paw.kafkakeygenerator.merge
 
-import no.nav.paw.kafkakeygenerator.*
 import no.nav.paw.kafkakeygenerator.mergedetector.vo.MergeDetected
-import no.nav.paw.kafkakeygenerator.service.PdlService
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
+import no.nav.paw.kafkakeygenerator.service.PdlService
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Either
 import no.nav.paw.kafkakeygenerator.vo.Failure
@@ -22,7 +21,7 @@ class MergeDetector(
     private val hentEllerNull: (Identitetsnummer) -> ArbeidssoekerId? = { id ->
         kafkaKeysRepository.hent(id)
             .fold(
-                { null},
+                { null },
                 { it }
             )
     }
@@ -47,7 +46,13 @@ class MergeDetector(
         currentPos: Long,
         results: Either<Failure, Long>
     ): Either<Failure, Long> {
-        logger.info("Processing range:stopAt={}, maxSize={}, currentPos={}, results={}", stopAt, maxSize, currentPos, results)
+        logger.info(
+            "Processing range:stopAt={}, maxSize={}, currentPos={}, results={}",
+            stopAt,
+            maxSize,
+            currentPos,
+            results
+        )
         return when (results) {
             is Left -> {
                 return results

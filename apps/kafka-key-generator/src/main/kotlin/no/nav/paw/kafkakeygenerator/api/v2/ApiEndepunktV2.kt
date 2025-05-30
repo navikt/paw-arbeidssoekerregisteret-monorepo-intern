@@ -58,10 +58,10 @@ suspend fun RoutingContext.hentLokalInfo(
         )
 
         is Left -> {
-            logger.error("Kunne ikke hente alias for identer: {}", resultat.left.code, resultat.left.exception)
+            logger.error("Kunne ikke hente alias for identer: {}", resultat.left.code(), resultat.left.exception())
             call.respond(
                 status = InternalServerError,
-                message = resultat.left.code.name
+                message = resultat.left.code().name
             )
         }
     }
@@ -78,10 +78,10 @@ suspend fun RoutingContext.hentInfo(
         is Right -> call.respond(resultat.right)
 
         is Left -> {
-            logger.error("Kunne ikke hente info for ident: {}", resultat.left.code, resultat.left.exception)
+            logger.error("Kunne ikke hente info for ident: {}", resultat.left.code(), resultat.left.exception())
             call.respond(
                 status = InternalServerError,
-                message = resultat.left.code.name
+                message = resultat.left.code().name
             )
         }
     }
@@ -106,12 +106,12 @@ private suspend fun RoutingContext.hent(
 
         is Left -> {
             logger.error("Henting av nøkkel feilet")
-            val (code, msg) = when (resultat.left.code) {
+            val (code, msg) = when (resultat.left.code()) {
                 FailureCode.DB_NOT_FOUND -> HttpStatusCode.NotFound to "Nøkkel ikke funnet for ident"
                 FailureCode.PDL_NOT_FOUND -> HttpStatusCode.NotFound to "Person ikke funnet i PDL"
                 FailureCode.EXTERNAL_TECHINCAL_ERROR -> HttpStatusCode.ServiceUnavailable to "Ekstern feil, prøv igjen senere"
                 FailureCode.INTERNAL_TECHINCAL_ERROR,
-                FailureCode.CONFLICT -> InternalServerError to "Intern feil, rapporter til teamet med: kode=${resultat.left.code}, callId='${callId.value}'"
+                FailureCode.CONFLICT -> InternalServerError to "Intern feil, rapporter til teamet med: kode=${resultat.left.code()}, callId='${callId.value}'"
             }
             call.respondText(msg, status = code)
         }
@@ -137,12 +137,12 @@ private suspend fun RoutingContext.hentEllerOpprett(
 
         is Left -> {
             logger.error("Kunne ikke opprette nøkkel for ident, resultatet ble 'null' noe som ikke skal kunne skje.")
-            val (code, msg) = when (resultat.left.code) {
+            val (code, msg) = when (resultat.left.code()) {
                 FailureCode.PDL_NOT_FOUND -> HttpStatusCode.NotFound to "Person ikke i PDL"
                 FailureCode.EXTERNAL_TECHINCAL_ERROR -> HttpStatusCode.ServiceUnavailable to "Ekstern feil, prøv igjen senere"
                 FailureCode.INTERNAL_TECHINCAL_ERROR,
                 FailureCode.DB_NOT_FOUND,
-                FailureCode.CONFLICT -> InternalServerError to "Intern feil, rapporter til teamet med: kode=${resultat.left.code}, callId='${callId.value}'"
+                FailureCode.CONFLICT -> InternalServerError to "Intern feil, rapporter til teamet med: kode=${resultat.left.code()}, callId='${callId.value}'"
             }
             call.respondText(msg, status = code)
         }

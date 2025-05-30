@@ -2,7 +2,7 @@ package no.nav.paw.kafkakeygenerator.repository
 
 import no.nav.paw.kafkakeygenerator.model.IdentitetKonfliktRow
 import no.nav.paw.kafkakeygenerator.model.IdentitetKonfliktStatus
-import no.nav.paw.kafkakeygenerator.model.IdentitetKonflikterTable
+import no.nav.paw.kafkakeygenerator.database.IdentitetKonflikterTable
 import no.nav.paw.kafkakeygenerator.model.asIdentitetKonfliktRow
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
