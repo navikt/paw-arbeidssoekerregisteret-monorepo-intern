@@ -54,7 +54,7 @@ fun Application.installKafkaPlugins(
         this.kafkaConsumerWrapper = NonCommittingKafkaConsumerWrapper(
             topics = listOf(applicationConfig.pdlAktorConsumer.topic),
             consumer = pdlAktorConsumer,
-            //exceptionHandler = pdlAktorConsumerExceptionHandler,
+            exceptionHandler = pdlAktorConsumerExceptionHandler,
             rebalanceListener = pdlAktorHwmRebalanceListener
         )
     }

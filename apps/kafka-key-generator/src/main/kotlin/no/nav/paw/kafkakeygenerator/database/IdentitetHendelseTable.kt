@@ -1,6 +1,7 @@
-package no.nav.paw.kafkakeygenerator.model
+package no.nav.paw.kafkakeygenerator.database
 
-import no.nav.paw.kafkakeygenerator.database.KafkaKeysTable
+import no.nav.paw.kafkakeygenerator.model.IdentitetHendelseStatus
+import no.nav.paw.kafkakeygenerator.database.JsonbColumnType
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.javatime.timestamp
 

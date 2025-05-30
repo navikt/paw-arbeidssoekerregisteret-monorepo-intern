@@ -125,7 +125,8 @@ data class ApplicationContext(
             val identitetService = IdentitetService(
                 identitetRepository = identitetRepository,
                 identitetKonfliktService = identitetKonfliktService,
-                identitetHendelseService = identitetHendelseService
+                identitetHendelseService = identitetHendelseService,
+                kafkaKeysIdentitetRepository = kafkaKeysIdentitetRepository
             )
             val pawHendelseKafkaConsumerService = PawHendelseKafkaConsumerService(
                 meterRegistry = prometheusMeterRegistry,
@@ -137,7 +138,8 @@ data class ApplicationContext(
             val kafkaKeysService = KafkaKeysService(
                 meterRegistry = prometheusMeterRegistry,
                 kafkaKeysRepository = kafkaKeysRepository,
-                pdlService = pdlService
+                pdlService = pdlService,
+                identitetService = identitetService
             )
             val mergeDetector = MergeDetector(
                 kafkaKeysRepository = kafkaKeysRepository,

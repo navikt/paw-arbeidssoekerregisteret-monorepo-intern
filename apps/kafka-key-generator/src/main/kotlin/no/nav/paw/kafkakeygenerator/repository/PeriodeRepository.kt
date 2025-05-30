@@ -1,7 +1,7 @@
 package no.nav.paw.kafkakeygenerator.repository
 
 import no.nav.paw.kafkakeygenerator.model.PeriodeRow
-import no.nav.paw.kafkakeygenerator.model.PerioderTable
+import no.nav.paw.kafkakeygenerator.database.PerioderTable
 import no.nav.paw.kafkakeygenerator.model.asPeriodeRow
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll

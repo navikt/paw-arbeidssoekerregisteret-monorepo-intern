@@ -1,7 +1,7 @@
 package no.nav.paw.kafkakeygenerator.repository
 
 import no.nav.paw.kafkakeygenerator.model.HwmRow
-import no.nav.paw.kafkakeygenerator.model.HwmTable
+import no.nav.paw.kafkakeygenerator.database.HwmTable
 import no.nav.paw.kafkakeygenerator.model.asHwmRow
 import no.nav.paw.kafkakeygenerator.utils.max
 import org.jetbrains.exposed.sql.and

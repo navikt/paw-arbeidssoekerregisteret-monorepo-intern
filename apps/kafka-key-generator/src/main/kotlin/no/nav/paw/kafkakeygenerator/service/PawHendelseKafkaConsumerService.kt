@@ -19,7 +19,6 @@ import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Audit
 import no.nav.paw.kafkakeygenerator.vo.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
-import no.nav.paw.logging.logger.buildErrorLogger
 import no.nav.paw.logging.logger.buildLogger
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -31,7 +30,6 @@ class PawHendelseKafkaConsumerService(
     private val kafkaKeysAuditRepository: KafkaKeysAuditRepository,
 ) {
     private val logger = buildLogger
-    private val errorLogger = buildErrorLogger
 
     @WithSpan
     fun handleRecords(records: ConsumerRecords<Long, Hendelse>) {

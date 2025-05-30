@@ -1,15 +1,15 @@
 package no.nav.paw.kafkakeygenerator.mergedetector
 
 import io.opentelemetry.instrumentation.annotations.WithSpan
-import no.nav.paw.kafkakeygenerator.vo.FailureCode.DB_NOT_FOUND
-import no.nav.paw.kafkakeygenerator.vo.FailureCode.PDL_NOT_FOUND
-import no.nav.paw.kafkakeygenerator.vo.Info
-import no.nav.paw.kafkakeygenerator.vo.PdlId
 import no.nav.paw.kafkakeygenerator.mergedetector.vo.LagretData
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Either
 import no.nav.paw.kafkakeygenerator.vo.Failure
+import no.nav.paw.kafkakeygenerator.vo.FailureCode.DB_NOT_FOUND
+import no.nav.paw.kafkakeygenerator.vo.FailureCode.PDL_NOT_FOUND
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.vo.Info
+import no.nav.paw.kafkakeygenerator.vo.PdlId
 import no.nav.paw.kafkakeygenerator.vo.flatten
 import no.nav.paw.kafkakeygenerator.vo.left
 import no.nav.paw.kafkakeygenerator.vo.recover
@@ -36,8 +36,10 @@ fun hentLagretData(
         .toList()
         .flatten()
         .map { it.toMap() }
-        .map { LagretData(
-            identitetsnummer = Identitetsnummer(info.identitetsnummer),
-            lagretData = it
-        ) }
+        .map {
+            LagretData(
+                identitetsnummer = Identitetsnummer(info.identitetsnummer),
+                lagretData = it
+            )
+        }
 }

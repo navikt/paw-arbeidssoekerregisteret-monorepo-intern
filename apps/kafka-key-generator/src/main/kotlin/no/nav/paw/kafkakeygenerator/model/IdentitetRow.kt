@@ -1,6 +1,7 @@
 package no.nav.paw.kafkakeygenerator.model
 
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
+import no.nav.paw.kafkakeygenerator.database.IdentiteterTable
 import org.jetbrains.exposed.sql.ResultRow
 import java.time.Instant
 

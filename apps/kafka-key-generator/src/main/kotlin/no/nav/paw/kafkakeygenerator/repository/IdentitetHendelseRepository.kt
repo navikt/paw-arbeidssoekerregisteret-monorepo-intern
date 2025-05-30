@@ -2,7 +2,7 @@ package no.nav.paw.kafkakeygenerator.repository
 
 import no.nav.paw.kafkakeygenerator.model.IdentitetHendelseRow
 import no.nav.paw.kafkakeygenerator.model.IdentitetHendelseStatus
-import no.nav.paw.kafkakeygenerator.model.IdentitetHendelseTable
+import no.nav.paw.kafkakeygenerator.database.IdentitetHendelseTable
 import no.nav.paw.kafkakeygenerator.model.asIdentitetHendelseRow
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.insert

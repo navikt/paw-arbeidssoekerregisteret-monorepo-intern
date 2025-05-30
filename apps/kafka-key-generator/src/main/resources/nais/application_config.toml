@@ -18,11 +18,11 @@ topic = "${KAFKA_TOPIC_PAW_IDENTITETER}"
 clientId = "${KAFKA_PRODUCER_CLIENT_ID_PAW_IDENTITETER}"
 
 [identitetKonfliktJob]
-enabled = true
+enabled = false
 delay = "PT5M"
 interval = "PT5M"
 
 [identitetHendelseJob]
-enabled = true
+enabled = false
 delay = "PT5M"
 interval = "PT5M"

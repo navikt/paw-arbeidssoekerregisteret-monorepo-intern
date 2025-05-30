@@ -2,6 +2,7 @@ package no.nav.paw.kafkakeygenerator.service
 
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.kafkakeygenerator.config.KafkaConsumerConfig
+import no.nav.paw.kafkakeygenerator.model.asIdentitet
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysIdentitetRepository
 import no.nav.paw.logging.logger.buildNamedLogger
 import no.nav.person.pdl.aktor.v2.Aktor
@@ -77,54 +78,12 @@ class PdlAktorKafkaConsumerService(
     ) {
         if (aktor == null) {
             logger.info("Mottok melding om sletting av identiteter")
-
-            val eksisterendeIdentitetRows = identitetService
-                .hentIdentiteterForAktorId(aktorId)
-
-            if (eksisterendeIdentitetRows.isEmpty()) {
-                logger.info("Ignorer tombstone-melding fordi ingen lagrede identiteter funnet")
-            } else {
-                identitetService.identiteterSkalSlettes(
-                    aktorId = aktorId,
-                    eksisterendeIdentitetRows = eksisterendeIdentitetRows
-                )
-            }
+            identitetService.identiteterSkalSlettes(aktorId)
         } else {
+            logger.info("Mottok melding om oppdatering av identiteter")
             val identiteter = aktor.identifikatorer
-                .map { it.idnummer }
-                .toSet()
-            val eksisterendeKafkaKeyRows = kafkaKeysIdentitetRepository
-                .findByIdentiteter(identiteter)
-            val arbeidssoekerIdSet = eksisterendeKafkaKeyRows
-                .map { it.arbeidssoekerId }
-                .toSet()
-
-            if (arbeidssoekerIdSet.isEmpty()) {
-                logger.info(
-                    "Ignorer aktor-melding fordi person ikke er arbeidssøker ({} identiteter)",
-                    identiteter.size
-                )
-            } else if (arbeidssoekerIdSet.size > 1) {
-                logger.warn(
-                    "Pauser aktor-melding fordi arbeidssøker har flere arbeidssøker-ider ({} identiteter)",
-                    identiteter.size
-                )
-                identitetService.identiteterMedKonflikt(
-                    aktorId = aktorId,
-                    aktor = aktor,
-                    sourceTimestamp = sourceTimestamp,
-                    eksisterendeKafkaKeyRows = eksisterendeKafkaKeyRows
-                )
-            } else {
-                logger.info("Endrer identiteter for arbeidssøker ({} identiteter)", identiteter.size)
-                val arbeidssoekerId = arbeidssoekerIdSet.first()
-                identitetService.identiteterSkalEndres(
-                    aktorId = aktorId,
-                    aktor = aktor,
-                    sourceTimestamp = sourceTimestamp,
-                    arbeidssoekerId = arbeidssoekerId
-                )
-            }
+                .map { it.asIdentitet() }
+            identitetService.identiteterSkalOppdateres(aktorId, identiteter, sourceTimestamp)
         }
     }
 }
