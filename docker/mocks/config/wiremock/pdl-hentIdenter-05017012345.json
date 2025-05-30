@@ -17,6 +17,11 @@
       "data": {
         "hentIdenter": {
           "identer": [
+            {
+              "ident": "200001017012345",
+              "gruppe": "AKTORID",
+              "historisk": false
+            }
           ]
         }
       }

@@ -3,7 +3,7 @@ package no.nav.paw.kafkakeygenerator.repository
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafkakeygenerator.model.IdentitetRow
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
-import no.nav.paw.kafkakeygenerator.model.IdentiteterTable
+import no.nav.paw.kafkakeygenerator.database.IdentiteterTable
 import no.nav.paw.kafkakeygenerator.model.asIdentitetRow
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll

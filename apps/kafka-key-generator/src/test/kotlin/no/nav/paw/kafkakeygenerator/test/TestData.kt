@@ -1,5 +1,7 @@
 package no.nav.paw.kafkakeygenerator.test
 
+import com.expediagroup.graphql.client.serialization.types.KotlinxGraphQLResponse
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.engine.mock.MockRequestHandleScope
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.request.HttpRequestData
@@ -26,8 +28,15 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafkakeygenerator.model.IdentitetRow
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
+import no.nav.paw.kafkakeygenerator.test.TestData.asResponse
+import no.nav.paw.kafkakeygenerator.test.TestData.asString
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import no.nav.paw.pdl.graphql.generated.HentIdenter
+import no.nav.paw.pdl.graphql.generated.enums.IdentGruppe
+import no.nav.paw.pdl.graphql.generated.hentidenter.IdentInformasjon
+import no.nav.paw.pdl.graphql.generated.hentidenter.Identliste
+import no.nav.paw.serialization.jackson.buildObjectMapper
 import no.nav.person.pdl.aktor.v2.Aktor
 import no.nav.person.pdl.aktor.v2.Identifikator
 import no.nav.person.pdl.aktor.v2.Type
@@ -39,116 +48,13 @@ import java.time.Instant
 import java.util.*
 import kotlin.random.Random.Default.nextLong
 
-const val person1_fødselsnummer = "01017012346"
-const val person1_aktor_id = "2649500819544"
-const val person1_dnummer = "09127821913"
-const val person1_annen_ident = "12129127821913"
-const val person2_fødselsnummer = "01017012345"
-const val person2_aktor_id = "1649500819544"
-const val person3_fødselsnummer = "01017012344"
-
-fun hentSvar(ident: String) =
-    when (ident) {
-        person1_fødselsnummer -> person1MockSvar
-        person1_aktor_id -> person1MockSvar
-        person1_dnummer -> person1MockSvar
-        person1_annen_ident -> person1MockSvar
-        person2_fødselsnummer -> person2MockSvar
-        person2_aktor_id -> person2MockSvar
-        person3_fødselsnummer -> person3MockSvar
-        else -> ingenTreffMockSvar
-    }
-
-const val ingenTreffMockSvar = """
-{
-  "data": {
-    "hentIdenter": {
-      "identer": []
-    }
-  }
-}
-"""
-const val person1MockSvar = """
-{
-  "data": {
-    "hentIdenter": {
-      "identer": [
-        {
-          "ident": "$person1_fødselsnummer",
-          "gruppe": "FOLKEREGISTERIDENT",
-          "historisk": false
-        },
-        {
-          "ident": "$person1_aktor_id",
-          "gruppe": "AKTORID",
-          "historisk": false
-        },
-        {
-          "ident": "$person1_dnummer",
-          "gruppe": "FOLKEREGISTERIDENT",
-          "historisk": true
-        },
-        {
-          "ident": "$person1_annen_ident",
-          "gruppe": "ANNEN_IDENT",
-          "historisk": true
-        }
-      ]
-    }
-  }
-}
-"""
-
-const val person3MockSvar = """
-    {
-  "data": {
-    "hentIdenter": {
-      "identer": [
-        {
-          "ident": "$person3_fødselsnummer",
-          "gruppe": "FOLKEREGISTERIDENT",
-          "historisk": false
-        }
-      ]
-    }
-  }
-}
-"""
-
-const val person2MockSvar = """
- {
-  "data": {
-    "hentIdenter": {
-      "identer": [
-        {
-          "ident": "$person2_fødselsnummer",
-          "gruppe": "FOLKEREGISTERIDENT",
-          "historisk": false
-        },
-        {
-          "ident": "$person2_aktor_id",
-          "gruppe": "AKTORID",
-          "historisk": false
-        }
-      ]
-    }
-  }
-}   
-"""
+private val objectMapper = buildObjectMapper
 
 fun MockRequestHandleScope.genererResponse(it: HttpRequestData): HttpResponseData {
-    val text = (it.body as TextContent).text
-    val start = text.indexOf("ident")
-    val end = text.indexOf("}", start)
-    val ident = text
-        .substring(start, end)
-        .split(",")
-        .first()
-        .replace("\"", "")
-        .replace("ident:", "")
-        .trim()
+    val body = (it.body as TextContent).text
+    val request = objectMapper.readValue<HentIdenter>(body)
     return respond(
-        content = hentSvar(ident),
+        content = request.asResponse().asString(),
         status = HttpStatusCode.OK,
         headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
     )
@@ -176,6 +82,7 @@ object TestData {
     const val dnr3 = "43017012345"
     const val dnr4 = "44017012345"
     const val dnr5 = "45017012345"
+    const val dnr6 = "46017012345"
     const val aktorId1 = "200001017012345"
     const val aktorId2 = "200002017012345"
     const val aktorId3 = "200003017012345"
@@ -199,6 +106,8 @@ object TestData {
     val periodeId4_3 = UUID.fromString("bf92ecd7-5141-4bcd-9ab5-e7a9321ac242")
     val periodeId5_1 = UUID.fromString("f6384bc5-a0ec-4bdc-9262-f6ebf952269f")
     val periodeId5_2 = UUID.fromString("7525c98b-2914-41b9-badb-7d87c5ba64a4")
+    val navIdent1 = "NAV0001"
+    val navName1 = "Kari Normann"
 
     val aktor1_1 = aktor(
         listOf(
@@ -510,4 +419,45 @@ object TestData {
         gjeldende = gjeldende,
         status = status
     )
+
+    fun Type.asIdentGruppe(): IdentGruppe = when (this) {
+        Type.NPID -> IdentGruppe.NPID
+        Type.AKTORID -> IdentGruppe.AKTORID
+        Type.FOLKEREGISTERIDENT -> IdentGruppe.FOLKEREGISTERIDENT
+    }
+
+    fun Identifikator.asIdentInformasjon(): IdentInformasjon = IdentInformasjon(
+        ident = this.idnummer,
+        gruppe = this.type.asIdentGruppe(),
+        historisk = !this.gjeldende
+    )
+
+    fun Aktor.asGraphQLResponse(): KotlinxGraphQLResponse<HentIdenter.Result> {
+        return KotlinxGraphQLResponse(
+            data = HentIdenter.Result(
+                hentIdenter = Identliste(
+                    identer = identifikatorer.map { it.asIdentInformasjon() }
+                )
+            ))
+    }
+
+    fun HentIdenter.asResponse(): KotlinxGraphQLResponse<HentIdenter.Result> = when (variables.ident) {
+        dnr1 -> aktor1_1.asGraphQLResponse()
+        fnr1_1 -> aktor1_1.asGraphQLResponse()
+        fnr1_2 -> aktor1_1.asGraphQLResponse()
+        aktorId1 -> aktor1_1.asGraphQLResponse()
+        dnr2 -> aktor2_1.asGraphQLResponse()
+        fnr2_1 -> aktor2_1.asGraphQLResponse()
+        fnr2_2 -> aktor2_1.asGraphQLResponse()
+        aktorId2 -> aktor2_1.asGraphQLResponse()
+        dnr3 -> aktor3_1.asGraphQLResponse()
+        fnr3_1 -> aktor3_1.asGraphQLResponse()
+        fnr3_2 -> aktor3_1.asGraphQLResponse()
+        aktorId3 -> aktor3_1.asGraphQLResponse()
+        dnr4 -> aktor4_1.asGraphQLResponse()
+        fnr4_1 -> aktor4_2.asGraphQLResponse()
+        else -> aktor(identifikatorer = emptyList()).asGraphQLResponse()
+    }
+
+    fun KotlinxGraphQLResponse<*>.asString(): String = objectMapper.writeValueAsString(this)
 }

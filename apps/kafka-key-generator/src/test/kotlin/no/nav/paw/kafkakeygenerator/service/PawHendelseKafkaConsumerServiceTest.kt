@@ -9,8 +9,8 @@ import no.nav.paw.kafkakeygenerator.context.TestContext
 import no.nav.paw.kafkakeygenerator.test.TestData
 import no.nav.paw.kafkakeygenerator.test.TestData.asHendelseRecords
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.vo.Failure
 import no.nav.paw.kafkakeygenerator.vo.FailureCode
+import no.nav.paw.kafkakeygenerator.vo.GenericFailure
 import no.nav.paw.kafkakeygenerator.vo.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 
@@ -47,7 +47,7 @@ class PawHendelseKafkaConsumerServiceTest : FreeSpec({
             val keyResult = kafkaKeysRepository.hent(identitetsnummer1)
             val auditResult = kafkaKeysAuditRepository.findByIdentitetsnummer(identitetsnummer1)
 
-            keyResult.onLeft { it shouldBe Failure("database", FailureCode.DB_NOT_FOUND) }
+            keyResult.onLeft { it shouldBe GenericFailure("database", FailureCode.DB_NOT_FOUND) }
             keyResult.onRight { it shouldBe null }
             auditResult shouldHaveSize 0
         }
@@ -72,7 +72,7 @@ class PawHendelseKafkaConsumerServiceTest : FreeSpec({
             val keyResult = kafkaKeysRepository.hent(identitetsnummer)
             val auditResult = kafkaKeysAuditRepository.findByIdentitetsnummer(identitetsnummer)
 
-            keyResult.onLeft { it shouldBe Failure("database", FailureCode.DB_NOT_FOUND) }
+            keyResult.onLeft { it shouldBe GenericFailure("database", FailureCode.DB_NOT_FOUND) }
             keyResult.onRight { it shouldBe null }
             auditResult shouldHaveSize 0
         }
