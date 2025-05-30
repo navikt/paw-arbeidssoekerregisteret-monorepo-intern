@@ -9,6 +9,7 @@ import no.nav.paw.kafkakeygenerator.api.v2.publicTopicKeyFunction
 import no.nav.paw.kafkakeygenerator.mergedetector.findMerge
 import no.nav.paw.kafkakeygenerator.mergedetector.hentLagretData
 import no.nav.paw.kafkakeygenerator.mergedetector.vo.MergeDetected
+import no.nav.paw.kafkakeygenerator.model.asIdentitet
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
 import no.nav.paw.kafkakeygenerator.utils.countRestApiFailed
 import no.nav.paw.kafkakeygenerator.utils.countRestApiFetched
@@ -20,6 +21,7 @@ import no.nav.paw.kafkakeygenerator.vo.Either
 import no.nav.paw.kafkakeygenerator.vo.Failure
 import no.nav.paw.kafkakeygenerator.vo.FailureCode.CONFLICT
 import no.nav.paw.kafkakeygenerator.vo.FailureCode.DB_NOT_FOUND
+import no.nav.paw.kafkakeygenerator.vo.IdentitetFailure
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import no.nav.paw.kafkakeygenerator.vo.Info
 import no.nav.paw.kafkakeygenerator.vo.LokalIdData
@@ -31,13 +33,15 @@ import no.nav.paw.kafkakeygenerator.vo.recover
 import no.nav.paw.kafkakeygenerator.vo.right
 import no.nav.paw.kafkakeygenerator.vo.suspendingRecover
 import no.nav.paw.logging.logger.buildLogger
+import no.nav.paw.pdl.graphql.generated.hentidenter.IdentInformasjon
 import org.apache.kafka.clients.producer.internals.BuiltInPartitioner.partitionForKey
 import org.apache.kafka.common.serialization.Serdes
 
 class KafkaKeysService(
     private val meterRegistry: MeterRegistry,
     private val kafkaKeysRepository: KafkaKeysRepository,
-    private val pdlService: PdlService
+    private val pdlService: PdlService,
+    private val identitetService: IdentitetService
 ) {
     private val logger = buildLogger
     private val keySerializer = Serdes.Long().serializer()
@@ -99,7 +103,7 @@ class KafkaKeysService(
         val pdlIdInfo = pdlService.hentIdentInformasjon(
             callId = callId,
             identitet = identitet,
-            histrorikk = true
+            historikk = true
         )
         return kafkaKeysRepository.hent(identitet)
             .map { arbeidssoekerId ->
@@ -112,7 +116,7 @@ class KafkaKeysService(
                     identitetsnummer = identitet.value,
                     lagretData = lokalIdData,
                     pdlData = pdlIdInfo.fold(
-                        { PdlData(error = it.code.name, id = null) },
+                        { PdlData(error = it.code().name, id = null) },
                         {
                             PdlData(
                                 error = null,
@@ -137,23 +141,34 @@ class KafkaKeysService(
     }
 
     @WithSpan
-    suspend fun hent(callId: CallId, identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> {
+    suspend fun hentEllerOppdater(callId: CallId, identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> {
         logger.debug("Henter identer fra database")
         meterRegistry.countRestApiFetched()
         return kafkaKeysRepository.hent(identitet)
             .suspendingRecover(DB_NOT_FOUND) {
                 sjekkMotAliaser(callId, identitet)
+                    .flatMap { (arbeidssoekerId, identInformasjon) ->
+                        kafkaKeysRepository.lagre(identitet, arbeidssoekerId)
+                        val identiteter = identInformasjon.map { it.asIdentitet() }
+                        identitetService.identiteterSkalOppdateres(identiteter)
+                        right(arbeidssoekerId)
+                    }
             }
     }
 
     @WithSpan
     suspend fun hentEllerOpprett(callId: CallId, identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> {
         meterRegistry.countRestApiReceived()
-        return hent(callId, identitet)
-            .suspendingRecover(DB_NOT_FOUND) {
+        return hentEllerOppdater(callId, identitet)
+            .suspendingRecover(DB_NOT_FOUND) { failure ->
                 logger.debug("Oppretter identer i database")
                 meterRegistry.countRestApiInserted()
-                kafkaKeysRepository.opprett(identitet)
+                val result = kafkaKeysRepository.opprett(identitet)
+                if (failure is IdentitetFailure) {
+                    val identiteter = failure.identInformasjon().map { it.asIdentitet() }
+                    identitetService.identiteterSkalOppdateres(identiteter)
+                }
+                result
             }.recover(CONFLICT) {
                 meterRegistry.countRestApiFailed()
                 kafkaKeysRepository.hent(identitet)
@@ -161,19 +176,31 @@ class KafkaKeysService(
     }
 
     @WithSpan
-    private suspend fun sjekkMotAliaser(callId: CallId, identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> {
+    private suspend fun sjekkMotAliaser(
+        callId: CallId,
+        identitet: Identitetsnummer
+    ): Either<Failure, Pair<ArbeidssoekerId, List<IdentInformasjon>>> {
         logger.debug("Sjekker identer mot PDL")
-        return pdlService.hentIdentiter(
+        return pdlService.hentIdentInformasjon(
             callId = callId,
             identitet = identitet,
-            histrorikk = true
-        )
-            .flatMap(kafkaKeysRepository::hent)
-            .flatMap { ids ->
-                ids.values
-                    .firstOrNull()?.let(::right)
-                    ?: left(Failure("database", DB_NOT_FOUND))
+            historikk = true
+        ).flatMap { identiteter ->
+            kafkaKeysRepository.hent(identiteter.map { it.ident })
+                .map { it to identiteter }
+        }.flatMap { (identitetMap, identInformasjon) ->
+            if (identitetMap.isNotEmpty()) {
+                val arbeidssoekerId = identitetMap.values.first()
+                right(arbeidssoekerId to identInformasjon)
+            } else {
+                left(
+                    IdentitetFailure(
+                        system = "database",
+                        code = DB_NOT_FOUND,
+                        identInformasjon = identInformasjon
+                    )
+                )
             }
-            .onRight { key -> kafkaKeysRepository.lagre(identitet, key) }
+        }
     }
 }

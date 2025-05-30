@@ -1,5 +1,6 @@
-package no.nav.paw.kafkakeygenerator.model
+package no.nav.paw.kafkakeygenerator.database
 
+import no.nav.paw.kafkakeygenerator.model.IdentitetKonfliktStatus
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.javatime.timestamp
 
