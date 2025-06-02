@@ -9,11 +9,15 @@ import io.ktor.server.routing.get
 import no.nav.paw.health.model.HealthStatus.HEALTHY
 import no.nav.paw.health.model.HealthStatus.UNHEALTHY
 
-val startupPath = "/internal/startup"
+const val startupPath = "/internal/startup"
 
-fun Route.startupRoute(vararg startupChecks: () -> Boolean) {
+fun interface StartupProbe {
+    fun isReady(): Boolean
+}
+
+fun Route.startupRoute(vararg startupChecks: StartupProbe) {
     get(startupPath) {
-        val startupComplete = startupChecks.all { isReady -> isReady() }
+        val startupComplete = startupChecks.all { startupCheck -> startupCheck.isReady() }
         when (startupComplete) {
             true -> call.respondText(contentType = Text.Plain, status = OK) { HEALTHY.value }
             false -> call.respondText(contentType = Text.Plain, status = ServiceUnavailable) { UNHEALTHY.value }

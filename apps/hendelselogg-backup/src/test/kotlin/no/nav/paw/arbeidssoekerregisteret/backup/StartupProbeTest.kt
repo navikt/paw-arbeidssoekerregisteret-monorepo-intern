@@ -9,6 +9,7 @@ import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import io.mockk.every
 import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContext
+import no.nav.paw.arbeidssoekerregisteret.backup.health.StartupProbe
 import no.nav.paw.arbeidssoekerregisteret.backup.health.isDatabaseReady
 import no.nav.paw.arbeidssoekerregisteret.backup.health.isKafkaConsumerReady
 import no.nav.paw.arbeidssoekerregisteret.backup.health.startupPath
@@ -22,10 +23,8 @@ class StartupProbeTest : FreeSpec({
                 every { hendelseConsumerWrapper.isRunning() } returns true
                 configureInternalTestApplication(
                     applicationContext = asApplicationContext(),
-                    startupChecks = listOf(
-                        { isDatabaseReady(dataSource) },
-                        { isKafkaConsumerReady(hendelseConsumerWrapper) },
-                    )
+                    { isDatabaseReady(dataSource) },
+                    { isKafkaConsumerReady(hendelseConsumerWrapper) },
                 )
                 val client = configureTestClient()
                 val response = client.get(startupPath)
@@ -38,9 +37,7 @@ class StartupProbeTest : FreeSpec({
                 dataSource.close()
                 configureInternalTestApplication(
                     applicationContext = asApplicationContext(),
-                    startupChecks = listOf(
-                        { isDatabaseReady(dataSource) }
-                    ),
+                    { isDatabaseReady(dataSource) },
                 )
                 val client = configureTestClient()
                 val response = client.get(startupPath)
@@ -53,9 +50,7 @@ class StartupProbeTest : FreeSpec({
                 every { hendelseConsumerWrapper.isRunning() } returns false
                 configureInternalTestApplication(
                     applicationContext = asApplicationContext(),
-                    startupChecks = listOf(
-                        { isKafkaConsumerReady(hendelseConsumerWrapper) },
-                    ),
+                    { isKafkaConsumerReady(hendelseConsumerWrapper) },
                 )
                 val client = configureTestClient()
                 val response = client.get(startupPath)
@@ -66,9 +61,8 @@ class StartupProbeTest : FreeSpec({
             testApplication {
                 configureInternalTestApplication(
                     applicationContext = asApplicationContext(),
-                    startupChecks = listOf(
-                        { true }, { false }
-                    ),
+                    { true },
+                    { false }
                 )
                 val client = configureTestClient()
                 val response = client.get(startupPath)
@@ -80,13 +74,12 @@ class StartupProbeTest : FreeSpec({
 
 fun ApplicationTestBuilder.configureInternalTestApplication(
     applicationContext: ApplicationContext,
-    startupChecks: List<() -> Boolean> = listOf({ true }, { true }),
-) =
-    with(applicationContext) {
-        application {
-            routing {
-                startupRoute(*startupChecks.toTypedArray())
-            }
+    vararg startupChecks: StartupProbe,
+) = with(applicationContext) {
+    application {
+        routing {
+            startupRoute(*startupChecks)
         }
     }
+}
 

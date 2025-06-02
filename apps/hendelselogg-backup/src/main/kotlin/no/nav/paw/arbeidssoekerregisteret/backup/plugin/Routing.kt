@@ -22,11 +22,11 @@ fun Application.configureRouting(applicationContext: ApplicationContext) {
     with(applicationContext) {
         install(IgnoreTrailingSlash)
         routing {
-            healthRoutes(healthIndicatorRepository)
             startupRoute(
                 { isKafkaConsumerReady(hendelseConsumerWrapper) },
-                { isDatabaseReady(dataSource) }
+                { isDatabaseReady(dataSource) },
             )
+            healthRoutes(healthIndicatorRepository)
             metricsRoutes(prometheusMeterRegistry)
             apiDocsRoutes()
             route("/api/v1") {
