@@ -7,13 +7,12 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerializer
 import org.apache.kafka.clients.consumer.ConsumerRecords
-import org.jetbrains.exposed.sql.transactions.transaction
 
 class BackupService(
     private val hendelseRecordRepository: HendelseRecordRepository,
     private val metrics: Metrics,
 ) {
-    fun processRecords(records: ConsumerRecords<Long, Hendelse>, consumerVersion: Int) = transaction {
+    fun processRecords(records: ConsumerRecords<Long, Hendelse>, consumerVersion: Int) =
         records.forEach { record ->
             if (updateHwm(consumerVersion, record.partition(), record.offset())) {
                 hendelseRecordRepository.writeRecord(consumerVersion, HendelseSerializer(), record)
@@ -28,4 +27,3 @@ class BackupService(
             }
         }
     }
-}

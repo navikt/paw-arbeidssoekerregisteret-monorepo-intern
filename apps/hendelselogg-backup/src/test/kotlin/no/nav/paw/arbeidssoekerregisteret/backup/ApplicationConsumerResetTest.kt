@@ -11,12 +11,11 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.common.TopicPartition
-import org.jetbrains.exposed.sql.transactions.transaction
 
 class ApplicationConsumerResetTest : FreeSpec({
     "Prosesserer ConsumerRecords riktig iht. HWM ved oppstart" - {
         with(TestApplicationContext.buildWithDatabase()) {
-            initHwm(this.toApplicationContext())
+            initHwm(this.asApplicationContext())
             val testConsumerRecords = testConsumerRecords()
             backupService.processRecords(
                 records = testConsumerRecords,
@@ -24,13 +23,12 @@ class ApplicationConsumerResetTest : FreeSpec({
             )
             testConsumerRecords.forEach { record ->
                 val forventetHendelse = record.value()
-                val lagretHendelse = transaction {
+                val lagretHendelse =
                     readRecord(
                         consumerVersion = applicationConfig.consumerVersion,
                         partition = record.partition(),
                         offset = record.offset()
                     )
-                }
                 lagretHendelse?.data shouldBe forventetHendelse
                 lagretHendelse.shouldNotBeNull()
                 lagretHendelse.partition shouldBe record.partition()

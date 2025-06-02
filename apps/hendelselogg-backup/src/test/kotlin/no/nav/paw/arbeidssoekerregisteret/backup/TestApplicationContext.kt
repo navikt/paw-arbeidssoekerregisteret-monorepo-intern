@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.backup
 
+import com.zaxxer.hikari.HikariDataSource
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.mockk.mockk
@@ -12,13 +13,17 @@ import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecor
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecordRepository
 import no.nav.paw.arbeidssoekerregisteret.backup.database.migrateDatabase
 import no.nav.paw.arbeidssoekerregisteret.backup.metrics.Metrics
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.database.config.DATABASE_CONFIG
 import no.nav.paw.database.config.DatabaseConfig
 import no.nav.paw.database.factory.createHikariDataSource
+import no.nav.paw.health.repository.HealthIndicatorRepository
+import no.nav.paw.kafka.consumer.NonCommittingKafkaConsumerWrapper
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.security.authentication.config.SecurityConfig
+import org.apache.kafka.clients.consumer.Consumer
 import org.jetbrains.exposed.sql.Database
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
@@ -31,11 +36,14 @@ data class TestApplicationContext(
     val kafkaKeysClient: KafkaKeysClient,
     val oppslagApiClient: OppslagApiClient,
     val databaseConfig: DatabaseConfig,
-    var dataSource: DataSource,
+    var dataSource: HikariDataSource,
     val hendelseRecordRepository: HendelseRecordRepository,
     val brukerstoetteService: BrukerstoetteService,
     val metrics: Metrics,
     val backupService: BackupService,
+    val hendelseConsumer: Consumer<Long, Hendelse>,
+    val hendelseConsumerWrapper: NonCommittingKafkaConsumerWrapper<Long, Hendelse>,
+    val healthIndicatorRepository: HealthIndicatorRepository,
 ) {
     companion object {
         fun build(): TestApplicationContext {
@@ -46,7 +54,7 @@ data class TestApplicationContext(
             val kafkaKeysClient = mockk<KafkaKeysClient>(relaxed = true)
             val oppslagApiClient = mockk<OppslagApiClient>(relaxed = true)
             val hendelseRecordRepository = mockk<HendelseRecordRepository>(relaxed = true)
-            val dataSource = mockk<DataSource>(relaxed = true)
+            val dataSource = mockk<HikariDataSource>(relaxed = true)
             val brukerstoetteService = BrukerstoetteService(
                 applicationConfig.consumerVersion,
                 kafkaKeysClient,
@@ -56,6 +64,9 @@ data class TestApplicationContext(
             )
             val metrics = mockk<Metrics>(relaxed = true)
             val backupService = mockk<BackupService>(relaxed = true)
+            val healthIndicatorRepository = HealthIndicatorRepository()
+            val hendelseConsumer = mockk<Consumer<Long, Hendelse>>(relaxed = true)
+            val hendelseConsumerWrapper = mockk<NonCommittingKafkaConsumerWrapper<Long, Hendelse>>(relaxed = true)
 
             return TestApplicationContext(
                 applicationConfig = applicationConfig,
@@ -68,37 +79,44 @@ data class TestApplicationContext(
                 dataSource = dataSource,
                 brukerstoetteService = brukerstoetteService,
                 metrics = metrics,
-                backupService = backupService
+                backupService = backupService,
+                hendelseConsumer = hendelseConsumer,
+                hendelseConsumerWrapper = hendelseConsumerWrapper,
+                healthIndicatorRepository = healthIndicatorRepository,
             )
         }
 
         fun buildWithDatabase(): TestApplicationContext {
             val baseContext: TestApplicationContext = build()
-            initDatabase()
+            val dataSource = createTestDataSource()
+            initDatabase(dataSource)
             val backupService = BackupService(HendelseRecordPostgresRepository, baseContext.metrics)
             return baseContext.copy(
                 backupService = backupService,
+                dataSource = dataSource,
             )
         }
     }
 }
 
-fun TestApplicationContext.toApplicationContext(): ApplicationContext =
+fun TestApplicationContext.asApplicationContext(): ApplicationContext =
     ApplicationContext(
         applicationConfig = applicationConfig,
         serverConfig = serverConfig,
         securityConfig = securityConfig,
         dataSource = dataSource,
         prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
-        hendelseKafkaConsumer = mockk(relaxed = true),
+        hwmRebalanceListener = mockk(relaxed = true),
+        hendelseConsumerWrapper = hendelseConsumerWrapper,
         brukerstoetteService = brukerstoetteService,
         additionalMeterBinder = mockk(relaxed = true),
         metrics = metrics,
-        backupService = backupService
+        backupService = backupService,
+        hendelseConsumer = hendelseConsumer,
+        healthIndicatorRepository = healthIndicatorRepository,
     )
 
-fun initDatabase(): Database {
-    val dataSource = createTestDataSource()
+fun initDatabase(dataSource: DataSource): Database {
     migrateDatabase(dataSource)
     return Database.connect(dataSource)
 }
@@ -106,7 +124,7 @@ fun initDatabase(): Database {
 fun createTestDataSource(
     databaseConfig: DatabaseConfig = loadNaisOrLocalConfiguration(DATABASE_CONFIG),
     postgresContainer: PostgreSQLContainer<*> = postgresContainer(),
-): DataSource {
+): HikariDataSource {
     val updatedDatabaseConfig = postgresContainer.let {
         databaseConfig.copy(
             host = it.host,

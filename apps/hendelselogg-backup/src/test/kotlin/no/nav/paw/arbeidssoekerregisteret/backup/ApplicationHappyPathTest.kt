@@ -18,13 +18,12 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Kilde
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.common.TopicPartition
-import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
 class ApplicationHappyPathTest : FreeSpec({
     "Verifiser enkel applikasjonsflyt" {
         with(TestApplicationContext.buildWithDatabase()) {
-            initHwm(this.toApplicationContext())
+            initHwm(this.asApplicationContext())
             val testRecords = testConsumerRecords(applicationConfig)
 
             val mergeRecord = createMergeRecord(
@@ -42,30 +41,26 @@ class ApplicationHappyPathTest : FreeSpec({
             )
 
             testConsumerRecords.forEach { record ->
-                val lagretHendelse = transaction {
-                    readRecord(applicationConfig.consumerVersion, record.partition(), record.offset())
-                }
+                val lagretHendelse = readRecord(applicationConfig.consumerVersion, record.partition(), record.offset())
                 lagretHendelse.shouldNotBeNull()
                 lagretHendelse.partition shouldBe record.partition()
                 lagretHendelse.offset shouldBe record.offset()
                 lagretHendelse.data shouldBe record.value()
             }
 
-            transaction {
-                val topic = applicationConfig.hendelsesloggTopic
-                val nyesteId = testConsumerRecords.records(topic).last().value().id
-                val originalId = testConsumerRecords.records(topic).first().value().id
-                val hendelser = readAllNestedRecordsForId(
-                    hendelseDeserializer = HendelseSerde().deserializer(),
-                    arbeidssoekerId = nyesteId,
-                    consumerVersion = applicationConfig.consumerVersion,
-                    merged = true
-                )
-                hendelser.map { it.arbeidssoekerId }.distinct() shouldContainExactlyInAnyOrder listOf(
-                    nyesteId,
-                    originalId
-                )
-            }
+            val topic = applicationConfig.hendelsesloggTopic
+            val nyesteId = testConsumerRecords.records(topic).last().value().id
+            val originalId = testConsumerRecords.records(topic).first().value().id
+            val hendelser = readAllNestedRecordsForId(
+                hendelseDeserializer = HendelseSerde().deserializer(),
+                arbeidssoekerId = nyesteId,
+                consumerVersion = applicationConfig.consumerVersion,
+                merged = true
+            )
+            hendelser.map { it.arbeidssoekerId }.distinct() shouldContainExactlyInAnyOrder listOf(
+                nyesteId,
+                originalId
+            )
         }
     }
 
