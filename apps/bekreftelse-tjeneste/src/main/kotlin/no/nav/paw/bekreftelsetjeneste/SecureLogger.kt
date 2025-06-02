@@ -22,4 +22,10 @@ object SecureLogger {
     fun error(msg: String, t: Throwable) {
         secureLogger.error(secureMarker, msg, t)
     }
+    fun warn(msg: String, t: Throwable) {
+        secureLogger.warn(secureMarker, msg, t)
+    }
+    fun warn(msg: String) {
+        secureLogger.warn(secureMarker, msg)
+    }
 }

@@ -5,10 +5,12 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.vo.Bruker
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelse.melding.v1.vo.BrukerType
+import no.nav.paw.bekreftelsetjeneste.SecureLogger
 import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
 import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
 import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
 import no.nav.paw.bekreftelsetjeneste.tilstand.*
+import org.slf4j.MDC
 
 fun haandterBekreftelseMottatt(
     wallClock: WallClock,
@@ -63,6 +65,12 @@ fun haandterBekreftelseMottatt(
                         }
                 )
             } else {
+                logIdentTilSikkerLogg(
+                    identietetsnummer = gjeldendeTilstand.periode.identitetsnummer,
+                    loesning = Loesning.from(melding.bekreftelsesloesning),
+                    handling = bekreftelseLevertAction,
+                    feilmelding = Feil.HAR_IKKE_ANSVAR
+                )
                 logWarning(
                     Loesning.from(melding.bekreftelsesloesning),
                     bekreftelseLevertAction,
@@ -76,6 +84,23 @@ fun haandterBekreftelseMottatt(
     ) to hendelser
 }
 
+fun logIdentTilSikkerLogg(
+    identietetsnummer: String,
+    loesning: Loesning,
+    handling: String,
+    feilmelding: Feil
+) {
+    withMDCContext(
+        "loesning" to loesning.name,
+        "handling" to handling,
+        "feilMelding" to feilmelding.name
+    ) {
+        SecureLogger.info(
+            identietetsnummer
+        )
+    }
+}
+
 fun harAnsvar(
     bekreftelsesloesning: Bekreftelsesloesning,
     paaVegneAvTilstand: PaaVegneAvTilstand?
@@ -83,3 +108,20 @@ fun harAnsvar(
         (paaVegneAvTilstand?.paaVegneAvList
             ?: emptyList()).any { it.loesning == Loesning.from(bekreftelsesloesning) }
 
+fun <A> withMDCContext(
+    vararg keyValue: Pair<String, String>,
+    block: () -> A
+): A {
+    return MDCMapCloseable(keyValue.toMap()).use {
+        block()
+    }
+}
+
+private data class MDCMapCloseable(
+    private val map: Map<String, String>
+) : AutoCloseable {
+    private val closeables = map.map { (k, v) -> MDC.putCloseable(k, v) }
+    override fun close() {
+        closeables.forEach { it.close() }
+    }
+}
