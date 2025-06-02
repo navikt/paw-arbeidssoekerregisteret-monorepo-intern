@@ -1,5 +1,6 @@
 package no.nav.paw.bqadapter.bigquery
 
+import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.google.api.services.bigquery.Bigquery
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.Schema
@@ -37,9 +38,15 @@ class BigQueryAdmin(
             project,
             table.tableReference.datasetId,
             table.tableReference.tableId
-        ).execute()
-            ?: bigquery.tables()
-                .insert(project, table.tableReference.datasetId, table)
-                .execute()
+        ).let { request ->
+            runCatching { request.execute() }
+                .recover { ex ->
+                    if (ex is GoogleJsonResponseException && ex.statusCode == 404) null
+                    else throw ex
+                }.getOrThrow()
+                ?: bigquery.tables()
+                    .insert(project, table.tableReference.datasetId, table)
+                    .execute()
+        }
     }
 }
