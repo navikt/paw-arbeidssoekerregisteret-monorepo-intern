@@ -28,8 +28,8 @@ class NonCommittingKafkaConsumerWrapper<K, V>(
     override fun consume(onConsume: (ConsumerRecords<K, V>) -> Unit) {
         try {
             val records = consumer.poll(pollTimeout)
-            onConsume(records)
             isRunning.set(true)
+            onConsume(records)
         } catch (throwable: Throwable) {
             exceptionHandler.handleException(throwable)
         }
