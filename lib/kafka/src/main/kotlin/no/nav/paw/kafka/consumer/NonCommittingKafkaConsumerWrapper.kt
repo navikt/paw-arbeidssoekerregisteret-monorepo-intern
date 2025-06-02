@@ -23,13 +23,13 @@ class NonCommittingKafkaConsumerWrapper<K, V>(
     override fun init() {
         logger.info("Kafka Consumer abonnerer på topics {}", topics)
         consumer.subscribe(topics, rebalanceListener)
-        isRunning.set(true)
     }
 
     override fun consume(onConsume: (ConsumerRecords<K, V>) -> Unit) {
         try {
             val records = consumer.poll(pollTimeout)
             onConsume(records)
+            isRunning.set(true)
         } catch (throwable: Throwable) {
             exceptionHandler.handleException(throwable)
         }
