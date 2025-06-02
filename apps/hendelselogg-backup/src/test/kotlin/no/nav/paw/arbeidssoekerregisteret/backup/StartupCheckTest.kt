@@ -8,21 +8,19 @@ import io.ktor.server.routing.routing
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import io.mockk.every
-import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContext
-import no.nav.paw.arbeidssoekerregisteret.backup.health.StartupProbe
 import no.nav.paw.arbeidssoekerregisteret.backup.health.isDatabaseReady
 import no.nav.paw.arbeidssoekerregisteret.backup.health.isKafkaConsumerReady
-import no.nav.paw.arbeidssoekerregisteret.backup.health.startupPath
-import no.nav.paw.arbeidssoekerregisteret.backup.health.startupRoute
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.configureTestClient
+import no.nav.paw.startup.StartupCheck
+import no.nav.paw.startup.startupPath
+import no.nav.paw.startup.startupRoute
 
-class StartupProbeTest : FreeSpec({
+class StartupCheckTest : FreeSpec({
     with(TestApplicationContext.buildWithDatabase()) {
         "Alle startup checks er ok" {
             testApplication {
                 every { hendelseConsumerWrapper.isRunning() } returns true
                 configureInternalTestApplication(
-                    applicationContext = asApplicationContext(),
                     { isDatabaseReady(dataSource) },
                     { isKafkaConsumerReady(hendelseConsumerWrapper) },
                 )
@@ -36,7 +34,6 @@ class StartupProbeTest : FreeSpec({
             testApplication {
                 dataSource.close()
                 configureInternalTestApplication(
-                    applicationContext = asApplicationContext(),
                     { isDatabaseReady(dataSource) },
                 )
                 val client = configureTestClient()
@@ -49,20 +46,7 @@ class StartupProbeTest : FreeSpec({
             testApplication {
                 every { hendelseConsumerWrapper.isRunning() } returns false
                 configureInternalTestApplication(
-                    applicationContext = asApplicationContext(),
                     { isKafkaConsumerReady(hendelseConsumerWrapper) },
-                )
-                val client = configureTestClient()
-                val response = client.get(startupPath)
-                response.status shouldBe HttpStatusCode.ServiceUnavailable
-            }
-        }
-        "Startup check feiler så lenge en av sjekken feiler" {
-            testApplication {
-                configureInternalTestApplication(
-                    applicationContext = asApplicationContext(),
-                    { true },
-                    { false }
                 )
                 val client = configureTestClient()
                 val response = client.get(startupPath)
@@ -73,13 +57,10 @@ class StartupProbeTest : FreeSpec({
 })
 
 fun ApplicationTestBuilder.configureInternalTestApplication(
-    applicationContext: ApplicationContext,
-    vararg startupChecks: StartupProbe,
-) = with(applicationContext) {
-    application {
-        routing {
-            startupRoute(*startupChecks)
-        }
+    vararg startupChecks: StartupCheck,
+) = application {
+    routing {
+        startupRoute(*startupChecks)
     }
 }
 

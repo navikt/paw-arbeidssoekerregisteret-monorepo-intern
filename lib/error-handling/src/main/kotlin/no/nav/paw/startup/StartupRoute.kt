@@ -1,4 +1,4 @@
-package no.nav.paw.arbeidssoekerregisteret.backup.health
+package no.nav.paw.startup
 
 import io.ktor.http.ContentType.Text
 import io.ktor.http.HttpStatusCode.Companion.OK
@@ -11,11 +11,11 @@ import no.nav.paw.health.model.HealthStatus.UNHEALTHY
 
 const val startupPath = "/internal/startup"
 
-fun interface StartupProbe {
+fun interface StartupCheck {
     fun isReady(): Boolean
 }
 
-fun Route.startupRoute(vararg startupChecks: StartupProbe) {
+fun Route.startupRoute(vararg startupChecks: StartupCheck) {
     get(startupPath) {
         val startupComplete = startupChecks.all { startupCheck -> startupCheck.isReady() }
         when (startupComplete) {

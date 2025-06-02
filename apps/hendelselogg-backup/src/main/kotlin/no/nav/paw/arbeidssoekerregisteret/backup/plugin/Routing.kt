@@ -10,13 +10,13 @@ import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.brukerstoetteRout
 import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.backup.health.isDatabaseReady
 import no.nav.paw.arbeidssoekerregisteret.backup.health.isKafkaConsumerReady
-import no.nav.paw.arbeidssoekerregisteret.backup.health.startupRoute
 import no.nav.paw.config.env.ProdGcp
 import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.health.route.healthRoutes
 import no.nav.paw.metrics.route.metricsRoutes
 import no.nav.paw.security.authentication.model.AzureAd
 import no.nav.paw.security.authentication.plugin.autentisering
+import no.nav.paw.startup.startupRoute
 
 fun Application.configureRouting(applicationContext: ApplicationContext) {
     with(applicationContext) {
