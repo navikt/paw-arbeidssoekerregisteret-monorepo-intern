@@ -11,9 +11,9 @@ import io.mockk.every
 import no.nav.paw.arbeidssoekerregisteret.backup.health.isDatabaseReady
 import no.nav.paw.arbeidssoekerregisteret.backup.health.isKafkaConsumerReady
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.configureTestClient
-import no.nav.paw.startup.StartupCheck
-import no.nav.paw.startup.startupPath
-import no.nav.paw.startup.startupRoute
+import no.nav.paw.health.startup.StartupCheck
+import no.nav.paw.health.startup.startupPath
+import no.nav.paw.health.startup.startupRoute
 
 class StartupCheckTest : FreeSpec({
     with(TestApplicationContext.buildWithDatabase()) {
@@ -56,9 +56,7 @@ class StartupCheckTest : FreeSpec({
     }
 })
 
-fun ApplicationTestBuilder.configureInternalTestApplication(
-    vararg startupChecks: StartupCheck,
-) = application {
+fun ApplicationTestBuilder.configureInternalTestApplication(vararg startupChecks: StartupCheck) = application {
     routing {
         startupRoute(*startupChecks)
     }
