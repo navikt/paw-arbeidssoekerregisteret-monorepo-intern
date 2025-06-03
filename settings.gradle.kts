@@ -16,6 +16,7 @@ include(
     "lib:logging",
     "lib:serialization",
     "lib:error-handling",
+    "lib:health",
     "lib:metrics",
     "lib:api-docs",
     "lib:security",
