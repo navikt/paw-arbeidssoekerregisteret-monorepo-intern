@@ -4,6 +4,7 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.kafkakeygenerator.config.KafkaConsumerConfig
 import no.nav.paw.kafkakeygenerator.model.asIdentitet
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysIdentitetRepository
+import no.nav.paw.kafkakeygenerator.utils.SecureLogger
 import no.nav.paw.logging.logger.buildNamedLogger
 import no.nav.person.pdl.aktor.v2.Aktor
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -65,6 +66,12 @@ class PdlAktorKafkaConsumerService(
                     }
                 } catch (e: Exception) {
                     logger.error("Håndterer av aktor-melding feilet", e)
+                    SecureLogger.error(
+                        "Håndterer av aktor-melding feilet for identiteter: {}",
+                        record.value().identifikatorer.associate {
+                            it.idnummer to it.type.name
+                        }
+                    )
                     throw e
                 }
             }
