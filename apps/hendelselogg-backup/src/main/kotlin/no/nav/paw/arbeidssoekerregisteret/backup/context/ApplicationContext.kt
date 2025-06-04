@@ -11,7 +11,7 @@ import no.nav.paw.arbeidssoekerregisteret.backup.config.ApplicationConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.config.SERVER_CONFIG
 import no.nav.paw.arbeidssoekerregisteret.backup.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecordPostgresRepository
-import no.nav.paw.arbeidssoekerregisteret.backup.health.HealthIndicatorConsumerExceptionHandler
+import no.nav.paw.arbeidssoekerregisteret.backup.health.LoggingConsumerExceptionHandler
 import no.nav.paw.arbeidssoekerregisteret.backup.kafka.HwmRebalanceListener
 import no.nav.paw.arbeidssoekerregisteret.backup.metrics.Metrics
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
@@ -79,7 +79,7 @@ data class ApplicationContext(
                 rebalanceListener = hwmRebalanceListener,
                 topics = listOf(applicationConfig.hendelsesloggTopic),
                 consumer = consumer,
-                exceptionHandler = HealthIndicatorConsumerExceptionHandler()
+                exceptionHandler = LoggingConsumerExceptionHandler()
             )
             val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
             val metrics = Metrics(prometheusMeterRegistry)
