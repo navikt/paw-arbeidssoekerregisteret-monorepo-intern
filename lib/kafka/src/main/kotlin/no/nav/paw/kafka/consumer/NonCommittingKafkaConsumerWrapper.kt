@@ -31,6 +31,7 @@ class NonCommittingKafkaConsumerWrapper<K, V>(
             isRunning.set(true)
             onConsume(records)
         } catch (throwable: Throwable) {
+            isRunning.set(false)
             exceptionHandler.handleException(throwable)
         }
     }
