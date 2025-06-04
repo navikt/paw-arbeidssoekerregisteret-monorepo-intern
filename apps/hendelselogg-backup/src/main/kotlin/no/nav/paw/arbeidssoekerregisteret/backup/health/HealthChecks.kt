@@ -11,17 +11,14 @@ fun isDatabaseReady(dataSource: DataSource): Boolean = runCatching {
     dataSource.connection.use { connection ->
         connection.prepareStatement("SELECT 1").execute()
     }
-}.onSuccess {
-    logger.info("Databasen er klar for oppstart")
 }.onFailure { error ->
     logger.error("Databasen er ikke klar enda", error)
 }.getOrDefault(false)
 
 fun isKafkaConsumerReady(consumerWrapper: NonCommittingKafkaConsumerWrapper<Long, Hendelse>): Boolean {
-    val kafkaKlarForOppstart = consumerWrapper.isRunning()
-    when {
-        kafkaKlarForOppstart -> logger.info("Kafka consumer er klar for oppstart.")
-        else -> logger.warn("Kafka consumer er ikke klar for oppstart.")
+    return consumerWrapper.isRunning().also { isRunning ->
+        if (!isRunning) {
+            logger.error("Kafka-consumeren kjører ikke")
+        }
     }
-    return kafkaKlarForOppstart
 }
