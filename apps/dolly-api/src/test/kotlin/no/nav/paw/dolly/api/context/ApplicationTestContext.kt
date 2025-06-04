@@ -50,7 +50,6 @@ class ApplicationTestContext {
     )
     val mockOAuth2Server = MockOAuth2Server()
     private val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-    private val healthIndicatorRepository = HealthIndicatorRepository()
 
     fun createApplicationContext(dollyService: DollyService) = ApplicationContext(
         serverConfig,
@@ -59,7 +58,6 @@ class ApplicationTestContext {
         azureAdM2MConfig,
         kafkaKeysClientMock,
         prometheusMeterRegistry,
-        healthIndicatorRepository,
         kafkaProducerMock,
         dollyService
     )

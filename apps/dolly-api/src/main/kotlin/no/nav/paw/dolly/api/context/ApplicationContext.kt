@@ -8,14 +8,13 @@ import no.nav.paw.client.config.AZURE_M2M_CONFIG
 import no.nav.paw.client.config.AzureAdM2MConfig
 import no.nav.paw.client.factory.createAzureAdM2MTokenClient
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
+import no.nav.paw.dolly.api.client.oppslagClient
 import no.nav.paw.dolly.api.config.APPLICATION_CONFIG
 import no.nav.paw.dolly.api.config.ApplicationConfig
 import no.nav.paw.dolly.api.config.SERVER_CONFIG
 import no.nav.paw.dolly.api.config.ServerConfig
 import no.nav.paw.dolly.api.producer.HendelseKafkaProducer
-import no.nav.paw.dolly.api.client.oppslagClient
 import no.nav.paw.dolly.api.service.DollyService
-import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafka.config.KAFKA_CONFIG_WITH_SCHEME_REG
 import no.nav.paw.kafka.config.KafkaConfig
 import no.nav.paw.kafka.factory.KafkaFactory
@@ -35,9 +34,8 @@ data class ApplicationContext(
     val azureM2MConfig: AzureAdM2MConfig,
     val kafkaKeysClient: KafkaKeysClient,
     val prometheusMeterRegistry: PrometheusMeterRegistry,
-    val healthIndicatorRepository: HealthIndicatorRepository,
     val kafkaProducer: Producer<Long, Hendelse>,
-    val dollyService: DollyService
+    val dollyService: DollyService,
 ) {
     companion object {
         fun create(): ApplicationContext {
@@ -59,8 +57,6 @@ data class ApplicationContext(
             }
 
             val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-
-            val healthIndicatorRepository = HealthIndicatorRepository()
 
             val kafkaFactory = KafkaFactory(kafkaConfig)
 
@@ -85,7 +81,6 @@ data class ApplicationContext(
                 azureM2MConfig,
                 kafkaKeysClient,
                 prometheusMeterRegistry,
-                healthIndicatorRepository,
                 kafkaProducer,
                 dollyService
             )
