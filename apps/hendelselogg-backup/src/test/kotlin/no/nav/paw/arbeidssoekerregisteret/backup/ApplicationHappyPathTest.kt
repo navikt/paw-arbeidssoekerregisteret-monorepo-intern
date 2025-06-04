@@ -4,9 +4,9 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import no.nav.paw.arbeidssoekerregisteret.backup.config.ApplicationConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecordPostgresRepository.readAllNestedRecordsForId
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.initHwm
-import no.nav.paw.arbeidssoekerregisteret.backup.config.ApplicationConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.avsluttet
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.opplysninger
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.readRecord

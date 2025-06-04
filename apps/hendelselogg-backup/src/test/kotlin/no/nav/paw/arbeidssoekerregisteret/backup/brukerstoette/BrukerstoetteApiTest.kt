@@ -22,15 +22,15 @@ import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.BrukerTy
 import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.MetadataResponse
 import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.OpplysningerOmArbeidssoekerResponse
 import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.ProfileringResponse
+import no.nav.paw.arbeidssoekerregisteret.backup.asApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.avvist
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.configureTestApplication
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.configureTestClient
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.opplysninger
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.startet
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.storedHendelseRecord
-import no.nav.paw.arbeidssoekerregisteret.backup.asApplicationContext
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysResponse
-import java.util.UUID
+import java.util.*
 
 class BrukerstoetteApiTest : FreeSpec({
     val testApplicationContext = TestApplicationContext.build()

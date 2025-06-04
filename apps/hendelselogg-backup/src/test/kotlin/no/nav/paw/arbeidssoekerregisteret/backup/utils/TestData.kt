@@ -1,6 +1,5 @@
 package no.nav.paw.arbeidssoekerregisteret.backup.utils
 
-import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Hendelse as ApiHendelse
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.HendelseMetadata
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.HendelseMetadataTidspunktFraKilde
 import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.HendelseMetadataUtfoertAv
@@ -27,6 +26,7 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.random.Random
 import kotlin.random.Random.Default.nextLong
+import no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Hendelse as ApiHendelse
 
 fun genererHendelseSequenceFra(hendelser: List<Hendelse>): Sequence<Hendelse> {
     return sequence {
@@ -138,7 +138,7 @@ fun Hendelse.storedHendelseRecord(
     merged = merged
 )
 
-fun StoredHendelseRecord.apiHendelse(): no.nav.paw.arbeidssoekerregisteret.backup.api.brukerstoette.models.Hendelse =
+fun StoredHendelseRecord.apiHendelse(): ApiHendelse =
     ApiHendelse(
         hendelseId = data.hendelseId,
         hendelseType = data.hendelseType,
