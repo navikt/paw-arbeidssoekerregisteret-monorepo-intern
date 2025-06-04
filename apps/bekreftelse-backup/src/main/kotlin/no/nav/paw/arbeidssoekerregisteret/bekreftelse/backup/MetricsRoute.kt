@@ -1,4 +1,4 @@
-package no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.health
+package no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup
 
 import io.ktor.server.application.*
 import io.ktor.server.metrics.micrometer.*
@@ -24,17 +24,11 @@ fun Application.installMetrics(
     }
 }
 
-fun Routing.configureHealthRoutes(
+fun Routing.configureMetricsRoute(
     prometheusRegistry: PrometheusMeterRegistry
 ) {
     get("/internal/metrics") {
         call.respondText(prometheusRegistry.scrape())
-    }
-    get("/internal/isAlive") {
-        call.respondText("ALIVE")
-    }
-    get("/internal/isReady") {
-        call.respondText("READY")
     }
 }
 

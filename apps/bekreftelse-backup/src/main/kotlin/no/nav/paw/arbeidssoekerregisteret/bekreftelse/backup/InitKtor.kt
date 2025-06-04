@@ -26,10 +26,10 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.api.brukerstoette.models.Feil
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.api.brukerstoette.models.HendelserRequest
 import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.brukerstoette.BrukerstoetteService
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.health.configureHealthRoutes
-import no.nav.paw.arbeidssoekerregisteret.bekreftelse.backup.health.installMetrics
 import no.nav.paw.config.env.ProdGcp
 import no.nav.paw.config.env.currentRuntimeEnvironment
+import no.nav.paw.health.liveness.livenessRoute
+import no.nav.paw.health.readiness.readinessRoute
 import no.nav.paw.logging.logger.buildAuditLogger
 import no.nav.paw.security.authentication.config.SecurityConfig
 import no.nav.paw.security.authentication.model.AzureAd
@@ -56,7 +56,9 @@ fun initKtor(
         }
         routing {
             swaggerUI(path = "docs/brukerstoette", swaggerFile = "openapi/Brukerstoette.yaml")
-            configureHealthRoutes(prometheusMeterRegistry)
+            livenessRoute()
+            readinessRoute()
+            configureMetricsRoute(prometheusMeterRegistry)
             route("/api/v1") {
                 if (currentRuntimeEnvironment is ProdGcp) {
                     autentisering(AzureAd) {

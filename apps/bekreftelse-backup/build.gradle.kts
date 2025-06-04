@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":domain:bekreftelse-paavegneav-avro-schema"))
     implementation(project(":domain:bekreftelsesmelding-avro-schema"))
     implementation(project(":lib:kafka"))
+    implementation(project(":lib:health"))
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:kafka-key-generator-client"))
     implementation(project(":lib:logging"))
