@@ -36,7 +36,7 @@ spec:
     - name: KAFKA_CONSUMER_GROUP_ID_PREFIX_PDL_AKTOR
       value: "paw-kafka-key-generator-pdl-aktor"
     - name: KAFKA_CONSUMER_GROUP_ID_VERSION_PDL_AKTOR
-      value: "1"
+      value: "2"
   ingresses:
     - https://record-key-arbeidssoekerregisteret.intern.dev.nav.no/api/v1/record-key
     - https://record-key-arbeidssoekerregisteret.intern.dev.nav.no/docs/record-key
@@ -45,10 +45,10 @@ spec:
     max: 2
   resources:
     limits:
-      memory: 512Mi
+      memory: 1024Mi
     requests:
-      cpu: 20m
-      memory: 256Mi
+      cpu: 60m
+      memory: 512Mi
   liveness:
     path: /internal/isAlive
     initialDelay: 10
@@ -77,6 +77,9 @@ spec:
       enabled: true
   accessPolicy:
       outbound:
+        rules:
+          - application: logging
+            namespace: nais-system
         external:
           - host: pdl-api.dev-fss-pub.nais.io
       inbound:

@@ -190,8 +190,7 @@ data class ApplicationContext(
             val pdlAktorKafkaConsumerService = PdlAktorKafkaConsumerService(
                 kafkaConsumerConfig = applicationConfig.pdlAktorConsumer,
                 hwmOperations = pdlAktorKafkaHwmOperations,
-                identitetService = identitetService,
-                kafkaKeysIdentitetRepository = kafkaKeysIdentitetRepository
+                identitetService = identitetService
             )
             val pdlAktorConsumerExceptionHandler = HealthIndicatorConsumerExceptionHandler(
                 livenessIndicator = healthIndicatorRepository.livenessIndicator(HealthStatus.HEALTHY),

@@ -7,6 +7,29 @@
     </appender>
     <appender name="STDOUT_JSON" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
+                <marker>TEAM_LOGS</marker>
+            </evaluator>
+            <OnMatch>DENY</OnMatch>
+            <OnMismatch>ACCEPT</OnMismatch>
+        </filter>
+    </appender>
+    <appender name="TEAM_LOGS" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>team-logs.nais-system:5170</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>
+                {"google_cloud_project":"${GOOGLE_CLOUD_PROJECT}","nais_namespace_name":"${NAIS_NAMESPACE}","nais_pod_name":"${HOSTNAME}","nais_container_name":"${NAIS_APP_NAME}"}
+            </customFields>
+            <includeContext>false</includeContext>
+        </encoder>
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
+                <marker>TEAM_LOGS</marker>
+            </evaluator>
+            <OnMatch>ACCEPT</OnMatch>
+            <OnMismatch>DENY</OnMismatch>
+        </filter>
     </appender>
 
     <if condition='"${NAIS_CLUSTER_NAME}" == "prod-gcp"'>
@@ -15,6 +38,9 @@
                 <appender-ref ref="STDOUT_JSON"/>
             </root>
             <logger name="no.nav.paw.pdl.PdlClient" level="WARN"/>
+            <logger name="team-logs-logger" level="INFO" additivity="false">
+                <appender-ref ref="TEAM_LOGS"/>
+            </logger>
         </then>
     </if>
     <if condition='"${NAIS_CLUSTER_NAME}" == "dev-gcp"'>
@@ -24,6 +50,9 @@
             </root>
             <logger name="no.nav.paw" level="DEBUG"/>
             <logger name="no.nav.paw.pdl.PdlClient" level="WARN"/>
+            <logger name="team-logs-logger" level="INFO" additivity="false">
+                <appender-ref ref="TEAM_LOGS"/>
+            </logger>
         </then>
     </if>
     <if condition='"${NAIS_CLUSTER_NAME}" == "NAIS_CLUSTER_NAME_IS_UNDEFINED"'>

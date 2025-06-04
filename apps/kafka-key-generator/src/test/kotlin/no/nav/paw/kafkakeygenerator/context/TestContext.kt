@@ -116,7 +116,6 @@ class TestContext private constructor(
     ),
     val pdlAktorKafkaConsumerService: PdlAktorKafkaConsumerService = PdlAktorKafkaConsumerService(
         kafkaConsumerConfig = applicationConfig.pdlAktorConsumer,
-        kafkaKeysIdentitetRepository = kafkaKeysIdentitetRepository,
         hwmOperations = pdlAktorKafkaHwmOperations,
         identitetService = identitetService
     ),
