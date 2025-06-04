@@ -70,6 +70,9 @@ spec:
       enabled: true
   accessPolicy:
       outbound:
+        rules:
+          - application: logging
+            namespace: nais-system
         external:
           - host: pdl-api.prod-fss-pub.nais.io
       inbound:

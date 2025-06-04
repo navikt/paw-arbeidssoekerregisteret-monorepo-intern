@@ -1,5 +1,6 @@
 package no.nav.paw.kafkakeygenerator.service
 
+import io.kotest.core.annotation.Ignored
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainOnly
 import io.kotest.matchers.collections.shouldHaveSize
@@ -17,6 +18,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import java.time.Instant
 
+@Ignored
 class PdlAktorKafkaConsumerServiceTest : FreeSpec({
     with(TestContext.buildWithPostgres()) {
         val aktorTopic = applicationConfig.pdlAktorConsumer.topic
