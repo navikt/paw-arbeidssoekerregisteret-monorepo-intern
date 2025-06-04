@@ -17,8 +17,8 @@ fun interface ReadinessCheck {
 
 fun Route.readinessRoute(vararg readinessChecks: ReadinessCheck) {
     get(readinessPath) {
-        val startupComplete = readinessChecks.all { readinessCheck -> readinessCheck.isReady() }
-        when (startupComplete) {
+        val applicationReady = readinessChecks.all { readinessCheck -> readinessCheck.isReady() }
+        when (applicationReady) {
             true -> call.respondText(contentType = Text.Plain, status = OK) { HEALTHY.value }
             false -> call.respondText(contentType = Text.Plain, status = ServiceUnavailable) { UNHEALTHY.value }
         }

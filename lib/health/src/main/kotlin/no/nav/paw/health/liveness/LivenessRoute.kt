@@ -17,8 +17,8 @@ fun interface LivenessCheck {
 
 fun Route.livenessRoute(vararg livenessChecks: LivenessCheck) {
     get(livenessPath) {
-        val startupComplete = livenessChecks.all { livenessCheck -> livenessCheck.isAlive() }
-        when (startupComplete) {
+        val applicationAlive = livenessChecks.all { livenessCheck -> livenessCheck.isAlive() }
+        when (applicationAlive) {
             true -> call.respondText(contentType = Text.Plain, status = OK) { HEALTHY.value }
             false -> call.respondText(contentType = Text.Plain, status = ServiceUnavailable) { UNHEALTHY.value }
         }
