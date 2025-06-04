@@ -20,9 +20,6 @@ import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.database.config.DATABASE_CONFIG
 import no.nav.paw.database.config.DatabaseConfig
 import no.nav.paw.database.factory.createHikariDataSource
-import no.nav.paw.health.model.LivenessHealthIndicator
-import no.nav.paw.health.model.ReadinessHealthIndicator
-import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafka.config.KAFKA_CONFIG
 import no.nav.paw.kafka.config.KafkaConfig
 import no.nav.paw.kafka.consumer.NonCommittingKafkaConsumerWrapper
@@ -47,7 +44,6 @@ data class ApplicationContext(
     val additionalMeterBinder: MeterBinder,
     val metrics: Metrics,
     val backupService: BackupService,
-    val healthIndicatorRepository: HealthIndicatorRepository,
 ) {
 
     companion object {
@@ -83,15 +79,11 @@ data class ApplicationContext(
                 rebalanceListener = hwmRebalanceListener,
                 topics = listOf(applicationConfig.hendelsesloggTopic),
                 consumer = consumer,
-                exceptionHandler = HealthIndicatorConsumerExceptionHandler(
-                    LivenessHealthIndicator(),
-                    ReadinessHealthIndicator()
-                )
+                exceptionHandler = HealthIndicatorConsumerExceptionHandler()
             )
             val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
             val metrics = Metrics(prometheusMeterRegistry)
             val backupService = BackupService(HendelseRecordPostgresRepository, metrics)
-            val healthIndicatorRepository = HealthIndicatorRepository()
 
             return ApplicationContext(
                 applicationConfig = applicationConfig,
@@ -106,7 +98,6 @@ data class ApplicationContext(
                 additionalMeterBinder = KafkaClientMetrics(consumer),
                 metrics = metrics,
                 backupService = backupService,
-                healthIndicatorRepository = healthIndicatorRepository,
             )
         }
     }

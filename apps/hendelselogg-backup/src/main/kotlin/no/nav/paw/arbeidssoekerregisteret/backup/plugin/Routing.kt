@@ -12,7 +12,8 @@ import no.nav.paw.arbeidssoekerregisteret.backup.health.isDatabaseReady
 import no.nav.paw.arbeidssoekerregisteret.backup.health.isKafkaConsumerReady
 import no.nav.paw.config.env.ProdGcp
 import no.nav.paw.config.env.currentRuntimeEnvironment
-import no.nav.paw.health.route.healthRoutes
+import no.nav.paw.health.liveness.livenessRoute
+import no.nav.paw.health.readiness.readinessRoute
 import no.nav.paw.health.startup.startupRoute
 import no.nav.paw.metrics.route.metricsRoutes
 import no.nav.paw.security.authentication.model.AzureAd
@@ -26,7 +27,14 @@ fun Application.configureRouting(applicationContext: ApplicationContext) {
                 { isKafkaConsumerReady(hendelseConsumerWrapper) },
                 { isDatabaseReady(dataSource) },
             )
-            healthRoutes(healthIndicatorRepository)
+            livenessRoute(
+                { isKafkaConsumerReady(hendelseConsumerWrapper) },
+                { isDatabaseReady(dataSource) },
+            )
+            readinessRoute(
+                { isKafkaConsumerReady(hendelseConsumerWrapper) },
+                { isDatabaseReady(dataSource) },
+            )
             metricsRoutes(prometheusMeterRegistry)
             apiDocsRoutes()
             route("/api/v1") {

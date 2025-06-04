@@ -19,7 +19,6 @@ import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.database.config.DATABASE_CONFIG
 import no.nav.paw.database.config.DatabaseConfig
 import no.nav.paw.database.factory.createHikariDataSource
-import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafka.consumer.NonCommittingKafkaConsumerWrapper
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.security.authentication.config.SecurityConfig
@@ -43,7 +42,6 @@ data class TestApplicationContext(
     val backupService: BackupService,
     val hendelseConsumer: Consumer<Long, Hendelse>,
     val hendelseConsumerWrapper: NonCommittingKafkaConsumerWrapper<Long, Hendelse>,
-    val healthIndicatorRepository: HealthIndicatorRepository,
 ) {
     companion object {
         fun build(): TestApplicationContext {
@@ -64,7 +62,6 @@ data class TestApplicationContext(
             )
             val metrics = mockk<Metrics>(relaxed = true)
             val backupService = mockk<BackupService>(relaxed = true)
-            val healthIndicatorRepository = HealthIndicatorRepository()
             val hendelseConsumer = mockk<Consumer<Long, Hendelse>>(relaxed = true)
             val hendelseConsumerWrapper = mockk<NonCommittingKafkaConsumerWrapper<Long, Hendelse>>(relaxed = true)
 
@@ -82,7 +79,6 @@ data class TestApplicationContext(
                 backupService = backupService,
                 hendelseConsumer = hendelseConsumer,
                 hendelseConsumerWrapper = hendelseConsumerWrapper,
-                healthIndicatorRepository = healthIndicatorRepository,
             )
         }
 
@@ -113,7 +109,6 @@ fun TestApplicationContext.asApplicationContext(): ApplicationContext =
         metrics = metrics,
         backupService = backupService,
         hendelseConsumer = hendelseConsumer,
-        healthIndicatorRepository = healthIndicatorRepository,
     )
 
 fun initDatabase(dataSource: DataSource): Database {
