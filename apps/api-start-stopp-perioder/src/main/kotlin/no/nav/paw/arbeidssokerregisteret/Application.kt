@@ -17,6 +17,7 @@ import no.nav.paw.arbeidssokerregisteret.config.Config
 import no.nav.paw.arbeidssokerregisteret.plugins.*
 import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutes
 import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutesV2
+import no.nav.paw.arbeidssokerregisteret.routes.egenvurderingRoute
 import no.nav.paw.arbeidssokerregisteret.routes.healthRoutes
 import no.nav.paw.arbeidssokerregisteret.routes.swaggerRoutes
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
@@ -80,6 +81,7 @@ fun Application.module(
         authenticate("tokenx", "azure") {
             arbeidssokerRoutes(opplysningerRequestHandler)
             arbeidssokerRoutesV2(startStoppRequestHandler)
+            egenvurderingRoute()
         }
     }
 }
