@@ -88,7 +88,6 @@ val generatedCodeOutputDir = "${layout.buildDirectory.get()}/generated/"
 mapOf(
     "${layout.projectDirectory}/src/main/resources/openapi/opplysninger.yaml" to "${generatedCodePackageName}.opplysningermottatt",
     "${layout.projectDirectory}/src/main/resources/openapi/startstopp.yaml" to "${generatedCodePackageName}.startstopp",
-    "${layout.projectDirectory}/src/main/resources/openapi/egenvurdering.yaml" to "${generatedCodePackageName}.egenvurdering"
 ).map { (openApiDocFile, pkgName) ->
     val taskName = "generate${pkgName.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}"
     tasks.register(taskName, GenerateTask::class) {

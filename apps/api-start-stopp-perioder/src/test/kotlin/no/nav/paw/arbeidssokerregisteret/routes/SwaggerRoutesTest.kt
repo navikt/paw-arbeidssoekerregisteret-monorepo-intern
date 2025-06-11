@@ -15,7 +15,6 @@ class SwaggerRoutesTest : FunSpec({
                 }
                 client.get("/docs/opplysninger").status shouldBe HttpStatusCode.OK
                 client.get("/docs/startstopp").status shouldBe HttpStatusCode.OK
-                client.get("/docs/egenvurdering").status shouldBe HttpStatusCode.OK
             }
         }
     }
