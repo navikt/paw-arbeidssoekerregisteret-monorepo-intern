@@ -32,15 +32,16 @@ import no.nav.paw.kafkakeygenerator.handler.HealthIndicatorConsumerExceptionHand
 import no.nav.paw.kafkakeygenerator.listener.HwmConsumerRebalanceListener
 import no.nav.paw.kafkakeygenerator.merge.MergeDetector
 import no.nav.paw.kafkakeygenerator.repository.HwmRepository
-import no.nav.paw.kafkakeygenerator.repository.IdentitetHendelseRepository
-import no.nav.paw.kafkakeygenerator.repository.IdentitetKonfliktRepository
+import no.nav.paw.kafkakeygenerator.repository.HendelseRepository
 import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysIdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
+import no.nav.paw.kafkakeygenerator.repository.KonfliktIdentitetRepository
+import no.nav.paw.kafkakeygenerator.repository.KonfliktRepository
 import no.nav.paw.kafkakeygenerator.repository.PeriodeRepository
-import no.nav.paw.kafkakeygenerator.service.IdentitetHendelseService
-import no.nav.paw.kafkakeygenerator.service.IdentitetKonfliktService
+import no.nav.paw.kafkakeygenerator.service.HendelseService
+import no.nav.paw.kafkakeygenerator.service.KonfliktService
 import no.nav.paw.kafkakeygenerator.service.IdentitetService
 import no.nav.paw.kafkakeygenerator.service.KafkaHwmService
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
@@ -64,8 +65,8 @@ data class ApplicationContext(
     val dataSource: DataSource,
     val prometheusMeterRegistry: PrometheusMeterRegistry,
     val healthIndicatorRepository: HealthIndicatorRepository,
-    val identitetKonfliktService: IdentitetKonfliktService,
-    val identitetHendelseService: IdentitetHendelseService,
+    val konfliktService: KonfliktService,
+    val hendelseService: HendelseService,
     val pawHendelseKafkaConsumer: KafkaConsumer<Long, Hendelse>,
     val pawHendelseConsumerExceptionHandler: ConsumerExceptionHandler,
     val pawHendelseKafkaConsumerService: PawHendelseKafkaConsumerService,
@@ -101,31 +102,32 @@ data class ApplicationContext(
             val kafkaKeysRepository = KafkaKeysRepository()
             val kafkaKeysAuditRepository = KafkaKeysAuditRepository()
             val identitetRepository = IdentitetRepository()
-            val identitetKonfliktRepository = IdentitetKonfliktRepository()
-            val identitetHendelseRepository = IdentitetHendelseRepository()
+            val konfliktIdentitetRepository = KonfliktIdentitetRepository()
+            val konfliktRepository = KonfliktRepository(konfliktIdentitetRepository)
+            val hendelseRepository = HendelseRepository()
             val periodeRepository = PeriodeRepository()
 
-            val pawIdentitetProducer = kafkaFactory.createProducer<Long, IdentitetHendelse>(
+            val pawIdentitetHendelseProducer = kafkaFactory.createProducer<Long, IdentitetHendelse>(
                 clientId = applicationConfig.pawIdentitetProducer.clientId,
                 keySerializer = LongSerializer::class,
                 valueSerializer = IdentitetHendelseSerializer::class,
             )
 
-            val identitetHendelseService = IdentitetHendelseService(
+            val hendelseService = HendelseService(
                 applicationConfig = applicationConfig,
-                identitetHendelseRepository = identitetHendelseRepository,
-                pawIdentitetProducer = pawIdentitetProducer
+                hendelseRepository = hendelseRepository,
+                pawIdentitetHendelseProducer = pawIdentitetHendelseProducer
             )
-            val identitetKonfliktService = IdentitetKonfliktService(
+            val konfliktService = KonfliktService(
                 identitetRepository = identitetRepository,
-                identitetKonfliktRepository = identitetKonfliktRepository,
+                konfliktRepository = konfliktRepository,
                 periodeRepository = periodeRepository,
-                identitetHendelseService = identitetHendelseService
+                hendelseService = hendelseService
             )
             val identitetService = IdentitetService(
                 identitetRepository = identitetRepository,
-                identitetKonfliktService = identitetKonfliktService,
-                identitetHendelseService = identitetHendelseService,
+                konfliktService = konfliktService,
+                hendelseService = hendelseService,
                 kafkaKeysIdentitetRepository = kafkaKeysIdentitetRepository
             )
             val pawHendelseKafkaConsumerService = PawHendelseKafkaConsumerService(
@@ -208,8 +210,8 @@ data class ApplicationContext(
                 dataSource = dataSource,
                 prometheusMeterRegistry = prometheusMeterRegistry,
                 healthIndicatorRepository = healthIndicatorRepository,
-                identitetKonfliktService = identitetKonfliktService,
-                identitetHendelseService = identitetHendelseService,
+                konfliktService = konfliktService,
+                hendelseService = hendelseService,
                 pawHendelseKafkaConsumer = pawHendelseKafkaConsumer,
                 pawHendelseConsumerExceptionHandler = pawHendelseConsumerExceptionHandler,
                 pawHendelseKafkaConsumerService = pawHendelseKafkaConsumerService,

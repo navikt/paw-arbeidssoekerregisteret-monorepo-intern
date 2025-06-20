@@ -36,7 +36,9 @@ fun main() {
             ProducerRecord(topic, TestData.key4, TestData.periode4_1),
             ProducerRecord(topic, TestData.key4, TestData.periode4_2),
             ProducerRecord(topic, TestData.key5, TestData.periode5_1),
-            ProducerRecord(topic, TestData.key5, TestData.periode5_2)
+            ProducerRecord(topic, TestData.key5, TestData.periode5_2),
+            ProducerRecord(topic, TestData.key6, TestData.periode6_1),
+            ProducerRecord(topic, TestData.key6, TestData.periode6_2)
         )
 
         try {

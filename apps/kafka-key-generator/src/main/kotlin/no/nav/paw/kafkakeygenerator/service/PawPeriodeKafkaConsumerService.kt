@@ -85,14 +85,14 @@ class PawPeriodeKafkaConsumerService(
                 avsluttetTimestamp = periode.avsluttet?.tidspunkt,
                 sourceTimestamp = sourceTimestamp
             )
-            logger.info("Lagret startet periode (rows affected {})", rowsAffected)
+            logger.info("Oppretter periode (rows affected {})", rowsAffected)
         } else {
             val rowsAffected = periodeRepository.updateAvsluttetTimestamp(
                 periodeId = periode.id,
                 avsluttetTimestamp = periode.avsluttet?.tidspunkt,
                 sourceTimestamp = sourceTimestamp
             )
-            logger.info("Lagret avsluttet periode (rows affected {})", rowsAffected)
+            logger.info("Oppdaterer periode (rows affected {})", rowsAffected)
         }
     }
 }

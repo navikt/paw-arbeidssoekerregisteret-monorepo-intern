@@ -6,20 +6,21 @@ import no.nav.paw.identitet.internehendelser.IdentitetHendelseSerializer
 import no.nav.paw.identitet.internehendelser.IdentiteterEndretHendelse
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
-import no.nav.paw.kafkakeygenerator.model.IdentitetHendelseStatus
-import no.nav.paw.kafkakeygenerator.repository.IdentitetHendelseRepository
+import no.nav.paw.kafkakeygenerator.model.HendelseStatus
+import no.nav.paw.kafkakeygenerator.repository.HendelseRepository
 import no.nav.paw.logging.logger.buildLogger
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
 
-class IdentitetHendelseService(
+class HendelseService(
     applicationConfig: ApplicationConfig,
-    private val identitetHendelseRepository: IdentitetHendelseRepository,
-    private val pawIdentitetProducer: Producer<Long, IdentitetHendelse>
+    private val hendelseRepository: HendelseRepository,
+    private val pawIdentitetHendelseProducer: Producer<Long, IdentitetHendelse>
 ) {
     private val logger = buildLogger
     private val serializer = IdentitetHendelseSerializer()
     private val deserializer = IdentitetHendelseDeserializer()
+    private val version = applicationConfig.pawIdentitetProducer.version
     private val identitetTopic = applicationConfig.pawIdentitetProducer.topic
 
     fun lagreIdentiteterEndretHendelse(
@@ -32,23 +33,24 @@ class IdentitetHendelseService(
             identiteter = identiteter,
             tidligereIdentiteter = tidligereIdentiteter
         )
-        val rowsAffected = identitetHendelseRepository.insert(
+        val rowsAffected = hendelseRepository.insert(
             arbeidssoekerId = arbeidssoekerId,
             aktorId = aktorId,
+            version = version,
             data = serializer.serializeToString(hendelse),
-            status = IdentitetHendelseStatus.VENTER
+            status = HendelseStatus.VENTER
         )
         logger.info(
             "Lagret utgående identitet-hendelse med status {} (rows affected {})",
-            IdentitetHendelseStatus.VENTER.name,
+            HendelseStatus.VENTER.name,
             rowsAffected
         )
     }
 
     fun sendVentendeIdentitetHendelser() {
-        val idList = identitetHendelseRepository.updateStatusByStatusReturning(
-            fraStatus = IdentitetHendelseStatus.VENTER,
-            tilStatus = IdentitetHendelseStatus.PROSESSERER,
+        val idList = hendelseRepository.updateStatusByStatusReturning(
+            fraStatus = HendelseStatus.VENTER,
+            tilStatus = HendelseStatus.PROSESSERER,
         )
         logger.info("Håndterer {} ventende identitet-hendelser", idList.size)
         idList.sorted()
@@ -56,7 +58,7 @@ class IdentitetHendelseService(
     }
 
     private fun sendVentendeIdentitetHendelse(id: Long) {
-        val identitetHendelseRow = identitetHendelseRepository.findById(id)
+        val identitetHendelseRow = hendelseRepository.findById(id)
         if (identitetHendelseRow != null) {
             val hendelse = deserializer.deserializeFromString(identitetHendelseRow.data)
             val record = ProducerRecord<Long, IdentitetHendelse>(
@@ -64,10 +66,10 @@ class IdentitetHendelseService(
                 identitetHendelseRow.arbeidssoekerId,
                 hendelse
             )
-            val metadata = pawIdentitetProducer.send(record).get()
-            val rowsAffected = identitetHendelseRepository.updateStatusById(
+            val metadata = pawIdentitetHendelseProducer.send(record).get()
+            val rowsAffected = hendelseRepository.updateStatusById(
                 id = id,
-                status = IdentitetHendelseStatus.SENDT
+                status = HendelseStatus.SENDT
             )
             logger.info(
                 "Sendte identitet-hendelse på topic {} (offset {}, partition {}) (rows affected {})",

@@ -29,15 +29,16 @@ import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
 import no.nav.paw.kafkakeygenerator.merge.MergeDetector
 import no.nav.paw.kafkakeygenerator.plugin.configureRouting
 import no.nav.paw.kafkakeygenerator.repository.HwmRepository
-import no.nav.paw.kafkakeygenerator.repository.IdentitetHendelseRepository
-import no.nav.paw.kafkakeygenerator.repository.IdentitetKonfliktRepository
+import no.nav.paw.kafkakeygenerator.repository.HendelseRepository
 import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysIdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
+import no.nav.paw.kafkakeygenerator.repository.KonfliktIdentitetRepository
+import no.nav.paw.kafkakeygenerator.repository.KonfliktRepository
 import no.nav.paw.kafkakeygenerator.repository.PeriodeRepository
-import no.nav.paw.kafkakeygenerator.service.IdentitetHendelseService
-import no.nav.paw.kafkakeygenerator.service.IdentitetKonfliktService
+import no.nav.paw.kafkakeygenerator.service.HendelseService
+import no.nav.paw.kafkakeygenerator.service.KonfliktService
 import no.nav.paw.kafkakeygenerator.service.IdentitetService
 import no.nav.paw.kafkakeygenerator.service.KafkaHwmOperations
 import no.nav.paw.kafkakeygenerator.service.KafkaHwmService
@@ -83,24 +84,25 @@ class TestContext private constructor(
     val kafkaKeysIdentitetRepository: KafkaKeysIdentitetRepository = KafkaKeysIdentitetRepository(),
     val identitetRepository: IdentitetRepository = IdentitetRepository(),
     val periodeRepository: PeriodeRepository = PeriodeRepository(),
-    val identitetKonfliktRepository: IdentitetKonfliktRepository = IdentitetKonfliktRepository(),
-    val identitetHendelseRepository: IdentitetHendelseRepository = IdentitetHendelseRepository(),
+    val konfliktIdentitetRepository: KonfliktIdentitetRepository = KonfliktIdentitetRepository(),
+    val konfliktRepository: KonfliktRepository = KonfliktRepository(konfliktIdentitetRepository),
+    val hendelseRepository: HendelseRepository = HendelseRepository(),
     val pawIdentitetProducerMock: Producer<Long, IdentitetHendelse> = mockk<Producer<Long, IdentitetHendelse>>(),
-    val identitetHendelseService: IdentitetHendelseService = IdentitetHendelseService(
+    val hendelseService: HendelseService = HendelseService(
         applicationConfig = applicationConfig,
-        identitetHendelseRepository = identitetHendelseRepository,
-        pawIdentitetProducer = pawIdentitetProducerMock
+        hendelseRepository = hendelseRepository,
+        pawIdentitetHendelseProducer = pawIdentitetProducerMock
     ),
-    val identitetKonfliktService: IdentitetKonfliktService = IdentitetKonfliktService(
+    val konfliktService: KonfliktService = KonfliktService(
         identitetRepository = identitetRepository,
-        identitetKonfliktRepository = identitetKonfliktRepository,
+        konfliktRepository = konfliktRepository,
         periodeRepository = periodeRepository,
-        identitetHendelseService = identitetHendelseService
+        hendelseService = hendelseService
     ),
     val identitetService: IdentitetService = IdentitetService(
         identitetRepository = identitetRepository,
-        identitetKonfliktService = identitetKonfliktService,
-        identitetHendelseService = identitetHendelseService,
+        konfliktService = konfliktService,
+        hendelseService = hendelseService,
         kafkaKeysIdentitetRepository = kafkaKeysIdentitetRepository
     ),
     val pdlService: PdlService = PdlService(pdlClient),

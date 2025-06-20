@@ -13,6 +13,12 @@ fun IdentitetRow.asIdentitet(): Identitet = Identitet(
     gjeldende = gjeldende,
 )
 
+fun KonfliktIdentitetRow.asIdentitet(): Identitet = Identitet(
+    identitet = identitet,
+    type = type,
+    gjeldende = gjeldende,
+)
+
 fun Long.asIdentitet(gjeldende: Boolean): Identitet = Identitet(
     identitet = this.toString(),
     type = IdentitetType.ARBEIDSSOEKERID,
