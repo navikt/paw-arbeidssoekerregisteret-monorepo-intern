@@ -1,5 +1,5 @@
 package no.nav.paw.kafkakeygenerator.model
 
-enum class IdentitetHendelseStatus {
+enum class HendelseStatus {
     VENTER, PROSESSERER, SENDT
 }

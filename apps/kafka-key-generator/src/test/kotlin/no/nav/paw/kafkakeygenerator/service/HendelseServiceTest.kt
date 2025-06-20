@@ -14,7 +14,7 @@ import no.nav.paw.identitet.internehendelser.IdentiteterEndretHendelse
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafkakeygenerator.context.TestContext
-import no.nav.paw.kafkakeygenerator.model.IdentitetHendelseStatus
+import no.nav.paw.kafkakeygenerator.model.HendelseStatus
 import no.nav.paw.kafkakeygenerator.test.TestData
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -22,7 +22,7 @@ import org.apache.kafka.clients.producer.RecordMetadata
 import org.apache.kafka.common.TopicPartition
 import java.util.concurrent.Future
 
-class IdentitetHendelseServiceTest : FreeSpec({
+class HendelseServiceTest : FreeSpec({
     with(TestContext.buildWithPostgres()) {
         val metadata = RecordMetadata(TopicPartition("topic", 1), 1, 1, 1, 1, 1)
         val futureMock = mockk<Future<RecordMetadata>>()
@@ -61,15 +61,16 @@ class IdentitetHendelseServiceTest : FreeSpec({
                 identiteter = listOf(id1, id2, id3_2, id4, id5),
                 tidligereIdentiteter = listOf(id1, id2, id3_1, id5)
             )
-            identitetHendelseRepository.insert(
+            hendelseRepository.insert(
                 arbeidssoekerId = arbeidssoekerId,
                 aktorId = aktorId,
+                version = 1,
                 data = serializer.serializeToString(sendtHendelse),
-                status = IdentitetHendelseStatus.VENTER
+                status = HendelseStatus.VENTER
             )
 
             // WHEN
-            identitetHendelseService.sendVentendeIdentitetHendelser()
+            hendelseService.sendVentendeIdentitetHendelser()
 
             // THEN
             recordSlot.isCaptured shouldBe true

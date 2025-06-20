@@ -66,8 +66,8 @@ fun Application.module(applicationContext: ApplicationContext) {
         )
         installScheduledTaskPlugins(
             applicationConfig = applicationConfig,
-            identitetKonfliktService = identitetKonfliktService,
-            identitetHendelseService = identitetHendelseService
+            konfliktService = konfliktService,
+            hendelseService = hendelseService
         )
         configureRouting(
             meterRegistry = prometheusMeterRegistry,

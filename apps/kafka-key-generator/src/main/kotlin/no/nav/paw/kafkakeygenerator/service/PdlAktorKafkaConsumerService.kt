@@ -58,22 +58,12 @@ class PdlAktorKafkaConsumerService(
                         record.partition(),
                         topic
                     )
-                    /* TODO handleAktor(
+
+                    handleAktor(
                         aktorId = record.key().toString(),
                         aktor = record.value(),
                         sourceTimestamp = Instant.ofEpochMilli(record.timestamp())
-                    )*/
-
-                    if (setOf("2002308243366", "2647237114816").contains(record.key())) {
-                        SecureLogger.warn(
-                            "Aktor partition: {} offset: {} timestamp: {} key: {} value: {}",
-                            record.partition(),
-                            record.offset(),
-                            Instant.ofEpochMilli(record.timestamp()),
-                            record.key(),
-                            record.value()?.asPerson() ?: "null"
-                        )
-                    }
+                    )
                 }
             } catch (e: Exception) {
                 logger.error("Håndterer av aktor-melding feilet", e)
@@ -95,7 +85,7 @@ class PdlAktorKafkaConsumerService(
     ) {
         if (aktor == null) {
             logger.info("Mottok melding om sletting av identiteter")
-            identitetService.identiteterSkalSlettes(aktorId)
+            identitetService.identiteterSkalSlettes(aktorId, sourceTimestamp)
         } else {
             logger.info("Mottok melding om oppdatering av identiteter")
             val identiteter = aktor.identifikatorer

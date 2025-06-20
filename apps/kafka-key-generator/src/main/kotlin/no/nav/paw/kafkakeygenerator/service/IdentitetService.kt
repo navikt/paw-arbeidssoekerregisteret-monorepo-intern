@@ -3,8 +3,10 @@ package no.nav.paw.kafkakeygenerator.service
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafkakeygenerator.exception.IdentitetIkkeFunnetException
+import no.nav.paw.kafkakeygenerator.model.IdentitetRow
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KafkaKeyRow
+import no.nav.paw.kafkakeygenerator.model.KonfliktType
 import no.nav.paw.kafkakeygenerator.model.asIdentitet
 import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysIdentitetRepository
@@ -13,8 +15,8 @@ import java.time.Instant
 
 class IdentitetService(
     private val identitetRepository: IdentitetRepository,
-    private val identitetKonfliktService: IdentitetKonfliktService,
-    private val identitetHendelseService: IdentitetHendelseService,
+    private val konfliktService: KonfliktService,
+    private val hendelseService: HendelseService,
     private val kafkaKeysIdentitetRepository: KafkaKeysIdentitetRepository
 ) {
     private val logger = buildLogger
@@ -22,8 +24,11 @@ class IdentitetService(
     fun identiteterSkalOppdateres(
         identiteter: List<Identitet>
     ) {
-        // TODO: Vil feile om person ikke har aktør-id, men det skal vel ikke kunne skje?
-        val aktorId = identiteter.first { it.type == IdentitetType.AKTORID }.identitet
+        // Vil feile om person ikke har aktiv aktør-id, men det skal vel ikke kunne skje?
+        val aktorId = identiteter
+            .filter { it.type == IdentitetType.AKTORID }
+            .first { it.gjeldende }
+            .identitet
         identiteterSkalOppdateres(
             aktorId = aktorId,
             identiteter = identiteter,
@@ -39,10 +44,20 @@ class IdentitetService(
         val identitetSet = identiteter
             .map { it.identitet }
             .toSet()
-
+        val eksisterendeIdentitetRows = identitetRepository
+            .findByAktorIdOrIdentiteter(
+                aktorId = aktorId,
+                identiteter = identitetSet
+            )
+        val arbeidssoekerIdSet = eksisterendeIdentitetRows
+            .map { it.arbeidssoekerId }
+            .toMutableSet()
+        val aktorIdSet = eksisterendeIdentitetRows
+            .map { it.aktorId }
+            .toSet()
         val eksisterendeKafkaKeyRows = kafkaKeysIdentitetRepository
-            .findByIdentiteter(identitetSet)
-        val arbeidssoekerIdSet = eksisterendeKafkaKeyRows
+            .findByIdentiteter(identiteter = identitetSet)
+        arbeidssoekerIdSet += eksisterendeKafkaKeyRows
             .map { it.arbeidssoekerId }
             .toSet()
 
@@ -51,30 +66,45 @@ class IdentitetService(
                 "Ignorer aktor-melding fordi person ikke er arbeidssøker ({} identiteter)",
                 identiteter.size
             )
-        } else if (arbeidssoekerIdSet.size > 1) {
+        } else if (aktorIdSet.isNotEmpty() && !aktorIdSet.contains(aktorId)) {
             logger.warn(
-                "Pauser aktor-melding fordi arbeidssøker har flere arbeidssøker-ider ({} identiteter)",
+                "Pauser aktor-melding som splitt fordi person har ny aktør-ID ({} identiteter)",
                 identiteter.size
             )
-            identiteterMedKonflikt(
+            identiteterSkalSplittes(
                 aktorId = aktorId,
                 identiteter = identiteter,
                 sourceTimestamp = sourceTimestamp,
+                eksisterendeIdentitetRows = eksisterendeIdentitetRows
+            )
+        } else if (arbeidssoekerIdSet.size > 1) {
+            logger.warn(
+                "Pauser aktor-melding som merge fordi arbeidssøker har flere arbeidssøker-ider ({} identiteter)",
+                identiteter.size
+            )
+            identiteterSkalMerges(
+                aktorId = aktorId,
+                identiteter = identiteter,
+                sourceTimestamp = sourceTimestamp,
+                eksisterendeIdentitetRows = eksisterendeIdentitetRows,
                 eksisterendeKafkaKeyRows = eksisterendeKafkaKeyRows
             )
         } else {
             logger.info("Endrer identiteter for arbeidssøker ({} identiteter)", identiteter.size)
-            val arbeidssoekerId = arbeidssoekerIdSet.first()
             identiteterSkalEndres(
                 aktorId = aktorId,
                 identiteter = identiteter,
                 sourceTimestamp = sourceTimestamp,
-                arbeidssoekerId = arbeidssoekerId
+                arbeidssoekerId = arbeidssoekerIdSet.first(),
+                eksisterendeIdentitetRows = eksisterendeIdentitetRows
             )
         }
     }
 
-    fun identiteterSkalSlettes(aktorId: String) {
+    fun identiteterSkalSlettes(
+        aktorId: String,
+        sourceTimestamp: Instant
+    ) {
         val eksisterendeIdentitetRows = identitetRepository
             .findByAktorId(aktorId)
 
@@ -98,27 +128,52 @@ class IdentitetService(
                     .toMutableList()
                     .apply { add(arbeidssoekerId.asIdentitet(gjeldende = true)) }
 
-                identitetHendelseService.lagreIdentiteterEndretHendelse(
+                hendelseService.lagreIdentiteterEndretHendelse(
                     aktorId = aktorId,
                     arbeidssoekerId = arbeidssoekerId,
-                    identiteter = mutableListOf(),
+                    identiteter = emptyList(),
                     tidligereIdentiteter = tidligereIdentiteter
                 )
             } else {
-                identitetKonfliktService.lagreVentendeIdentitetKonflikt(aktorId)
+                konfliktService.lagreVentendeKonflikt(
+                    aktorId = aktorId,
+                    type = KonfliktType.SLETT,
+                    sourceTimestamp = sourceTimestamp,
+                    identiteter = emptyList()
+                )
             }
         }
     }
 
-    fun identiteterMedKonflikt(
+    fun identiteterSkalSplittes(
         aktorId: String,
         identiteter: List<Identitet>,
         sourceTimestamp: Instant,
+        eksisterendeIdentitetRows: List<IdentitetRow>
+    ) {
+        val aktorIdSet = eksisterendeIdentitetRows
+            .map { it.aktorId }
+            .toSet()
+        identitetRepository.updateStatusByAktorIdList(
+            status = IdentitetStatus.SPLITT,
+            aktorIdList = aktorIdSet
+        )
+        konfliktService.lagreVentendeKonflikt(
+            aktorId = aktorId,
+            type = KonfliktType.SPLITT,
+            sourceTimestamp = sourceTimestamp,
+            identiteter = identiteter,
+        )
+    }
+
+    fun identiteterSkalMerges(
+        aktorId: String,
+        identiteter: List<Identitet>,
+        sourceTimestamp: Instant,
+        eksisterendeIdentitetRows: List<IdentitetRow>,
         eksisterendeKafkaKeyRows: List<KafkaKeyRow>
     ) {
-        val identitetRows = identitetRepository
-            .findByAktorId(aktorId)
-        val identiteterSet = identitetRows
+        val identiteterSet = eksisterendeIdentitetRows
             .map { it.identitet }
             .toSet()
         val nyesteArbeidssoekerId = eksisterendeKafkaKeyRows.maxOf { it.arbeidssoekerId }
@@ -131,12 +186,12 @@ class IdentitetService(
                     val rowsAffected = identitetRepository.updateGjeldendeAndStatusByIdentitet(
                         identitet = identitet.identitet,
                         gjeldende = identitet.gjeldende,
-                        status = IdentitetStatus.KONFLIKT
+                        status = IdentitetStatus.MERGE
                     )
                     logger.info(
                         "Oppdaterer identitet av type {} med status {} (rows affected {})",
                         identitet.type.name,
-                        IdentitetStatus.KONFLIKT.name,
+                        IdentitetStatus.MERGE.name,
                         rowsAffected
                     )
                 } else {
@@ -147,47 +202,53 @@ class IdentitetService(
                         identitet = identitet.identitet,
                         type = identitet.type,
                         gjeldende = identitet.gjeldende,
-                        status = IdentitetStatus.KONFLIKT,
+                        status = IdentitetStatus.MERGE,
                         sourceTimestamp = sourceTimestamp
                     )
                     logger.info(
-                        "Lagret identitet av type {} med status {} (rows affected {})",
+                        "Oppretter identitet av type {} med status {} (rows affected {})",
                         identitet.type.name,
-                        IdentitetStatus.KONFLIKT.name,
+                        IdentitetStatus.MERGE.name,
                         rowsAffected
                     )
                 }
             }
 
-        identitetKonfliktService.lagreVentendeIdentitetKonflikt(aktorId)
+        konfliktService.lagreVentendeKonflikt(
+            aktorId = aktorId,
+            type = KonfliktType.MERGE,
+            sourceTimestamp = sourceTimestamp,
+            identiteter = identiteter
+        )
     }
 
     fun identiteterSkalEndres(
         aktorId: String,
         identiteter: List<Identitet>,
         sourceTimestamp: Instant,
-        arbeidssoekerId: Long
+        arbeidssoekerId: Long,
+        eksisterendeIdentitetRows: List<IdentitetRow>
     ) {
-        val eksisterendeIdentitetRows = identitetRepository
-            .findByAktorId(aktorId)
-        val identiteterMap = eksisterendeIdentitetRows
-            .associate { it.identitet to it.gjeldende }
+        val identitetSet = identiteter
+            .map { it.identitet }
+            .toSet()
+        val eksisterendeIdentitetSet = eksisterendeIdentitetRows
+            .map { it.identitet }
+            .toSet()
 
         val endredeIdentiteter = identiteter
             .map { identitet ->
-                val erGjeldende = identiteterMap[identitet.identitet]
-                if (erGjeldende != null) {
-                    if (erGjeldende != identitet.gjeldende) {
-                        val rowsAffected = identitetRepository.updateGjeldendeByIdentitet(
-                            identitet = identitet.identitet,
-                            gjeldende = identitet.gjeldende
-                        )
-                        logger.info(
-                            "Oppdaterer identitet av type {} (rows affected {})",
-                            identitet.type.name,
-                            rowsAffected
-                        )
-                    }
+                if (eksisterendeIdentitetSet.contains(identitet.identitet)) {
+                    val rowsAffected = identitetRepository.updateByIdentitet(
+                        identitet = identitet.identitet,
+                        aktorId = aktorId,
+                        gjeldende = identitet.gjeldende
+                    )
+                    logger.info(
+                        "Oppdaterer identitet av type {} (rows affected {})",
+                        identitet.type.name,
+                        rowsAffected
+                    )
                 } else {
                     val rowsAffected = identitetRepository.insert(
                         arbeidssoekerId = arbeidssoekerId,
@@ -199,7 +260,7 @@ class IdentitetService(
                         sourceTimestamp = sourceTimestamp
                     )
                     logger.info(
-                        "Lagret identitet av type {} med status {} (rows affected {})",
+                        "Oppretter identitet av type {} med status {} (rows affected {})",
                         identitet.type.name,
                         IdentitetStatus.AKTIV.name,
                         rowsAffected
@@ -211,14 +272,27 @@ class IdentitetService(
             .toMutableList()
             .apply { add(arbeidssoekerId.asIdentitet(gjeldende = true)) }
 
-        val tidligereIdentiteter = eksisterendeIdentitetRows
-            .map { it.asIdentitet() }
-            .toMutableList()
+        val slettIdentiteter = eksisterendeIdentitetSet
+            .filter { !identitetSet.contains(it) }
+            .toSet()
+        if (slettIdentiteter.isNotEmpty()) {
+            val rowsAffected = identitetRepository.updateStatusByIdentitetList(
+                status = IdentitetStatus.SLETTET,
+                identitetList = slettIdentiteter
+            )
+            logger.info(
+                "Oppdaterer identiteter med status {} (rows affected {})",
+                IdentitetStatus.AKTIV.name,
+                rowsAffected
+            )
+        }
+
+        val tidligereIdentiteter = eksisterendeIdentitetRows.map { it.asIdentitet() }.toMutableList()
         if (tidligereIdentiteter.isNotEmpty()) {
             tidligereIdentiteter.add(arbeidssoekerId.asIdentitet(gjeldende = true))
         }
 
-        identitetHendelseService.lagreIdentiteterEndretHendelse(
+        hendelseService.lagreIdentiteterEndretHendelse(
             arbeidssoekerId = arbeidssoekerId,
             aktorId = aktorId,
             identiteter = endredeIdentiteter,

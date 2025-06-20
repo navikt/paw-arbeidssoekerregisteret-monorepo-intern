@@ -12,23 +12,3 @@ CREATE TABLE identiteter
     updated_timestamp  TIMESTAMP(6),
     UNIQUE (aktor_id, identitet)
 );
-
-CREATE TABLE identitet_konflikter
-(
-    id                 BIGSERIAL PRIMARY KEY,
-    aktor_id           VARCHAR(50)  NOT NULL,
-    status             VARCHAR(50)  NOT NULL,
-    inserted_timestamp TIMESTAMP(6) NOT NULL,
-    updated_timestamp  TIMESTAMP(6)
-);
-
-CREATE TABLE identitet_hendelser
-(
-    id                 BIGSERIAL PRIMARY KEY,
-    arbeidssoeker_id   BIGINT       NOT NULL REFERENCES KafkaKeys (id),
-    aktor_id           VARCHAR(50)  NOT NULL,
-    data               JSONB        NOT NULL,
-    status             VARCHAR(50)  NOT NULL,
-    inserted_timestamp TIMESTAMP(6) NOT NULL,
-    updated_timestamp  TIMESTAMP(6)
-);
