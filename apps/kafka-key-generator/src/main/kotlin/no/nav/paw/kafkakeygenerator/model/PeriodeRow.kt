@@ -6,6 +6,7 @@ import java.time.Instant
 import java.util.*
 
 data class PeriodeRow(
+    val id: Long,
     val periodeId: UUID,
     val identitet: String,
     val startetTimestamp: Instant,
@@ -16,6 +17,7 @@ data class PeriodeRow(
 )
 
 fun ResultRow.asPeriodeRow(): PeriodeRow = PeriodeRow(
+    id = this[PerioderTable.id].value,
     periodeId = this[PerioderTable.periodeId],
     identitet = this[PerioderTable.identitet],
     startetTimestamp = this[PerioderTable.startetTimestamp],

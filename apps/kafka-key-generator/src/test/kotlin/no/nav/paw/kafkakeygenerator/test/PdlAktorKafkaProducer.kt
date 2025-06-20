@@ -8,8 +8,11 @@ import no.nav.paw.kafka.config.KafkaConfig
 import no.nav.paw.kafka.factory.KafkaFactory
 import no.nav.paw.kafkakeygenerator.config.APPLICATION_CONFIG
 import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
+import no.nav.paw.kafkakeygenerator.test.TestData.aktor
+import no.nav.paw.kafkakeygenerator.test.TestData.identifikator
 import no.nav.paw.logging.logger.buildApplicationLogger
 import no.nav.person.pdl.aktor.v2.Aktor
+import no.nav.person.pdl.aktor.v2.Type
 import org.apache.kafka.clients.producer.ProducerRecord
 
 private val logger = buildApplicationLogger
@@ -27,15 +30,26 @@ fun main() {
             valueSerializer = AktorAvroSerializer::class
         )
 
-        val records: List<ProducerRecord<Any, Aktor>> = listOf(
-            //ProducerRecord(topic, TestData.aktorId1, TestData.aktor1_1),
-            //ProducerRecord(topic, TestData.aktorId2, TestData.aktor2_1),
-            //ProducerRecord(topic, TestData.aktorId1, TestData.aktor1_2),
-            //ProducerRecord(topic, TestData.aktorId3, TestData.aktor3_1),
-            //ProducerRecord(topic, TestData.aktorId3, TestData.aktor3_2),
-            ProducerRecord(topic, TestData.aktorId3, TestData.aktor3_3),
-            //ProducerRecord(topic, TestData.aktorId2, TestData.aktor2_2),
+        val aktor1 = "2647237114816" to aktor(
+            listOf(
+                identifikator(ident = "05507646184", type = Type.FOLKEREGISTERIDENT, gjeldende = true),
+                identifikator(ident = "13497632174", type = Type.FOLKEREGISTERIDENT, gjeldende = false),
+                identifikator(ident = "02507637593", type = Type.FOLKEREGISTERIDENT, gjeldende = true),
+                identifikator(ident = "18497638182", type = Type.FOLKEREGISTERIDENT, gjeldende = false),
+                identifikator(ident = "2002308243366", type = Type.AKTORID, gjeldende = false),
+                identifikator(ident = "2647237114816", type = Type.AKTORID, gjeldende = true)
+            )
         )
+        val aktor2 = "2078784314389" to aktor(
+            listOf(
+                identifikator(ident = "13497632174", type = Type.FOLKEREGISTERIDENT, gjeldende = true),
+                identifikator(ident = "2078784314389", type = Type.AKTORID, gjeldende = true)
+            )
+        )
+        val aktors = listOf(aktor1)
+        val records: List<ProducerRecord<Any, Aktor>> = aktors.map {
+            ProducerRecord(topic, it.first, it.second)
+        }
 
         try {
             records.forEach { record ->

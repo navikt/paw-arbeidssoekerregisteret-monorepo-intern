@@ -23,6 +23,7 @@ data class KafkaConsumerConfig(
 }
 
 data class KafkaProducerConfig(
+    val version: Int,
     val topic: String,
     val clientId: String
 )

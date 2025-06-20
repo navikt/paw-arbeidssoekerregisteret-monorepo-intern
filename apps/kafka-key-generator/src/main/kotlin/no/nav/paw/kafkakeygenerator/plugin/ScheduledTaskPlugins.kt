@@ -2,8 +2,8 @@ package no.nav.paw.kafkakeygenerator.plugin
 
 import io.ktor.server.application.Application
 import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
-import no.nav.paw.kafkakeygenerator.service.IdentitetHendelseService
-import no.nav.paw.kafkakeygenerator.service.IdentitetKonfliktService
+import no.nav.paw.kafkakeygenerator.service.HendelseService
+import no.nav.paw.kafkakeygenerator.service.KonfliktService
 import no.nav.paw.logging.logger.buildApplicationLogger
 import no.nav.paw.scheduling.plugin.installScheduledTaskPlugin
 
@@ -11,29 +11,28 @@ private val logger = buildApplicationLogger
 
 fun Application.installScheduledTaskPlugins(
     applicationConfig: ApplicationConfig,
-    identitetKonfliktService: IdentitetKonfliktService,
-    identitetHendelseService: IdentitetHendelseService
+    konfliktService: KonfliktService,
+    hendelseService: HendelseService
 ) {
-    with(applicationConfig.identitetKonfliktJob) {
-        if (enabled) {
+    with(applicationConfig) {
+        if (identitetKonfliktJob.enabled) {
             installScheduledTaskPlugin(
                 name = "IdentitetKonflikt",
-                task = identitetKonfliktService::handleVentendeIdentitetKonflikter,
-                delay = delay,
-                interval = interval
+                task = konfliktService::handleVentendeMergeKonflikter,
+                delay = identitetKonfliktJob.delay,
+                interval = identitetKonfliktJob.interval
             )
             logger.info("Jobb for håndtering av identitet-konflikter er aktiv")
         } else {
             logger.info("Jobb for håndtering av identitet-konflikter er deaktivert")
         }
-    }
-    with(applicationConfig.identitetHendelseJob) {
-        if (enabled) {
+
+        if (identitetHendelseJob.enabled) {
             installScheduledTaskPlugin(
                 name = "IdentitetHendelse",
-                task = identitetHendelseService::sendVentendeIdentitetHendelser,
-                delay = delay,
-                interval = interval
+                task = hendelseService::sendVentendeIdentitetHendelser,
+                delay = identitetHendelseJob.delay,
+                interval = identitetHendelseJob.interval
             )
             logger.info("Jobb for utsending av identitet-hendelser er aktiv")
         } else {

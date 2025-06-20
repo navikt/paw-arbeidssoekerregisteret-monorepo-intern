@@ -37,10 +37,10 @@
             <root level="INFO">
                 <appender-ref ref="STDOUT_JSON"/>
             </root>
-            <logger name="no.nav.paw.pdl.PdlClient" level="WARN"/>
             <logger name="team-logs-logger" level="INFO" additivity="false">
                 <appender-ref ref="TEAM_LOGS"/>
             </logger>
+            <logger name="no.nav.paw.pdl.PdlClient" level="WARN"/>
         </then>
     </if>
     <if condition='"${NAIS_CLUSTER_NAME}" == "dev-gcp"'>
@@ -48,11 +48,11 @@
             <root level="INFO">
                 <appender-ref ref="STDOUT_JSON"/>
             </root>
-            <logger name="no.nav.paw" level="DEBUG"/>
-            <logger name="no.nav.paw.pdl.PdlClient" level="WARN"/>
             <logger name="team-logs-logger" level="INFO" additivity="false">
                 <appender-ref ref="TEAM_LOGS"/>
             </logger>
+            <logger name="no.nav.paw" level="DEBUG"/>
+            <logger name="no.nav.paw.pdl.PdlClient" level="WARN"/>
         </then>
     </if>
     <if condition='"${NAIS_CLUSTER_NAME}" == "NAIS_CLUSTER_NAME_IS_UNDEFINED"'>
@@ -61,6 +61,7 @@
                 <appender-ref ref="STDOUT"/>
             </root>
             <logger name="org.apache.kafka.clients" level="WARN"/>
+            <logger name="team-logs-logger" level="INFO"/>
             <logger name="no.nav.paw" level="DEBUG"/>
         </then>
     </if>
