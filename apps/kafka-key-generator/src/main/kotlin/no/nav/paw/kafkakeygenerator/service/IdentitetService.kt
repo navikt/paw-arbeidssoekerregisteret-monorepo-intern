@@ -1,5 +1,6 @@
 package no.nav.paw.kafkakeygenerator.service
 
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafkakeygenerator.exception.IdentitetIkkeFunnetException
@@ -36,6 +37,7 @@ class IdentitetService(
         )
     }
 
+    @WithSpan
     fun identiteterSkalOppdateres(
         aktorId: String,
         identiteter: List<Identitet>,
@@ -101,6 +103,7 @@ class IdentitetService(
         }
     }
 
+    @WithSpan
     fun identiteterSkalSlettes(
         aktorId: String,
         sourceTimestamp: Instant
@@ -145,6 +148,7 @@ class IdentitetService(
         }
     }
 
+    @WithSpan
     fun identiteterSkalSplittes(
         aktorId: String,
         identiteter: List<Identitet>,
@@ -166,6 +170,7 @@ class IdentitetService(
         )
     }
 
+    @WithSpan
     fun identiteterSkalMerges(
         aktorId: String,
         identiteter: List<Identitet>,
@@ -222,6 +227,7 @@ class IdentitetService(
         )
     }
 
+    @WithSpan
     fun identiteterSkalEndres(
         aktorId: String,
         identiteter: List<Identitet>,
