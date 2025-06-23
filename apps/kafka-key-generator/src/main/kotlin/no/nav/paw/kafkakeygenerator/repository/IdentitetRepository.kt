@@ -31,6 +31,16 @@ class IdentitetRepository {
     }
 
     // TODO: Hvordan håndtere soft-slettede?
+    fun findByIdentiteter(
+        identiteter: Iterable<String>
+    ): List<IdentitetRow> = transaction {
+        IdentiteterTable.selectAll()
+            .orderBy(IdentiteterTable.id)
+            .where { IdentiteterTable.identitet inList identiteter }
+            .map { it.asIdentitetRow() }
+    }
+
+    // TODO: Hvordan håndtere soft-slettede?
     fun findByAktorIdOrIdentiteter(
         aktorId: String,
         identiteter: Iterable<String>
