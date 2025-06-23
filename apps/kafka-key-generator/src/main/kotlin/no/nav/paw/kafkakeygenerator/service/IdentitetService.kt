@@ -46,11 +46,16 @@ class IdentitetService(
         val identitetSet = identiteter
             .map { it.identitet }
             .toSet()
-        val eksisterendeIdentitetRows = identitetRepository
-            .findByAktorIdOrIdentiteter(
-                aktorId = aktorId,
+
+        val eksisterendeIdentitetRows1 = identitetRepository
+            .findByAktorId(
+                aktorId = aktorId
+            ).toSet()
+        val eksisterendeIdentitetRows2 = identitetRepository
+            .findByIdentiteter(
                 identiteter = identitetSet
-            )
+            ).toSet()
+        val eksisterendeIdentitetRows = eksisterendeIdentitetRows1 + eksisterendeIdentitetRows2
         val arbeidssoekerIdSet = eksisterendeIdentitetRows
             .map { it.arbeidssoekerId }
             .toMutableSet()
@@ -153,7 +158,7 @@ class IdentitetService(
         aktorId: String,
         identiteter: List<Identitet>,
         sourceTimestamp: Instant,
-        eksisterendeIdentitetRows: List<IdentitetRow>
+        eksisterendeIdentitetRows: Iterable<IdentitetRow>
     ) {
         val aktorIdSet = eksisterendeIdentitetRows
             .map { it.aktorId }
@@ -175,8 +180,8 @@ class IdentitetService(
         aktorId: String,
         identiteter: List<Identitet>,
         sourceTimestamp: Instant,
-        eksisterendeIdentitetRows: List<IdentitetRow>,
-        eksisterendeKafkaKeyRows: List<KafkaKeyRow>
+        eksisterendeIdentitetRows: Iterable<IdentitetRow>,
+        eksisterendeKafkaKeyRows: Iterable<KafkaKeyRow>
     ) {
         val identiteterSet = eksisterendeIdentitetRows
             .map { it.identitet }
@@ -233,7 +238,7 @@ class IdentitetService(
         identiteter: List<Identitet>,
         sourceTimestamp: Instant,
         arbeidssoekerId: Long,
-        eksisterendeIdentitetRows: List<IdentitetRow>
+        eksisterendeIdentitetRows: Iterable<IdentitetRow>
     ) {
         val identitetSet = identiteter
             .map { it.identitet }
