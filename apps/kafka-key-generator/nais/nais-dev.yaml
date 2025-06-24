@@ -78,6 +78,7 @@ spec:
           - application: paw-arbeidssoekerregisteret-api-dolly
           - application: paw-arbeidssoekerregisteret-bekreftelse-backup
           - application: paw-arbeidssoekerregisteret-api-oppslag-v2
+          - application: paw-arbeidssoekerregisteret-egenvurdering-api
           - application: dp-rapportering-personregister
             namespace: teamdagpenger
           - application: dp-rapportering
