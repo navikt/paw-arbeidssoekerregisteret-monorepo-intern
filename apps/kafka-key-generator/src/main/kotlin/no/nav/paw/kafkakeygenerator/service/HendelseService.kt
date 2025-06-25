@@ -49,14 +49,20 @@ class HendelseService(
     }
 
     fun sendVentendeIdentitetHendelser() {
-        val idList = hendelseRepository.updateStatusByStatusReturning(
-            fraStatus = HendelseStatus.VENTER,
-            tilStatus = HendelseStatus.PROSESSERER,
-            limit = batchSize
-        )
-        logger.info("Håndterer {} ventende identitet-hendelser", idList.size)
-        idList.sorted()
-            .forEach(::sendVentendeIdentitetHendelse)
+        var idList: Set<Long>
+
+        do {
+            idList = hendelseRepository.updateStatusByStatusReturning(
+                fraStatus = HendelseStatus.VENTER,
+                tilStatus = HendelseStatus.PROSESSERER,
+                limit = batchSize
+            ).toSet()
+
+            logger.info("Håndterer {} ventende identitet-hendelser", idList.size)
+
+            idList.sorted()
+                .forEach(::sendVentendeIdentitetHendelse)
+        } while (idList.isNotEmpty())
     }
 
     private fun sendVentendeIdentitetHendelse(id: Long) {
