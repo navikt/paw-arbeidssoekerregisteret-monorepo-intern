@@ -2,6 +2,8 @@ package no.nav.paw.kafkakeygenerator.service
 
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
+import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
+import no.nav.paw.kafkakeygenerator.model.IdentitetRow
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
@@ -14,12 +16,14 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Instant
 
 class KonfliktService(
+    applicationConfig: ApplicationConfig,
     private val identitetRepository: IdentitetRepository,
     private val konfliktRepository: KonfliktRepository,
     private val periodeRepository: PeriodeRepository,
     private val hendelseService: HendelseService
 ) {
     private val logger = buildLogger
+    private val batchSize = applicationConfig.identitetKonfliktJob.batchSize
 
     fun lagreVentendeKonflikt(
         aktorId: String,
@@ -53,14 +57,15 @@ class KonfliktService(
             type = KonfliktType.MERGE,
             fraStatus = KonfliktStatus.VENTER,
             tilStatus = KonfliktStatus.PROSESSERER,
+            limit = batchSize
         )
         logger.info("Håndterer {} ventende idenitet-merges", idList.size)
         idList
             .mapNotNull { konfliktRepository.getById(it) }
-            .forEach { handleVentendeMergeKonflikter(it.aktorId, it.type) }
+            .forEach { handleVentendeMergeKonflikt(it.aktorId, it.type) }
     }
 
-    private fun handleVentendeMergeKonflikter(
+    private fun handleVentendeMergeKonflikt(
         aktorId: String,
         type: KonfliktType
     ) = transaction {
@@ -68,41 +73,12 @@ class KonfliktService(
         if (identitetRows.isEmpty()) {
             throw IllegalStateException("Ingen identiteter funnet for aktorId")
         }
-        val identer = identitetRows
-            .filter { it.type == IdentitetType.FOLKEREGISTERIDENT }
-            .map { it.identitet }
-        val periodeRows = periodeRepository.findByIdentiteter(identer)
-        val aktivePeriodeRows = periodeRows.filter { it.avsluttetTimestamp == null }
 
-        val valgtArbeidssoekerId = if (periodeRows.isEmpty()) {
-            // Ingen perioder. Velger nyeste arbeidssoekerId.
-            identitetRows.maxOf { it.arbeidssoekerId }
-        } else if (aktivePeriodeRows.isEmpty()) {
-            // Ingen aktive perioder. Velger arbeidssoekerId tilhørende nyeste periode.
-            val nyestePeriode = periodeRows
-                .maxBy { it.startetTimestamp.toEpochMilli() } // TODO: Finne siste sluttbrukeraksjon?
-            val valgtIdentitet = identitetRows.find { it.identitet == nyestePeriode.identitet }
-                ?: throw IllegalStateException("Fant ikke identitet for periode")
-            valgtIdentitet.arbeidssoekerId
-        } else if (aktivePeriodeRows.size == 1) {
-            // Én aktiv periode. Velger tilhørende arbeidssoekerId.
-            val aktivPeriode = aktivePeriodeRows.first()
-            val valgtIdentitet = identitetRows.find { it.identitet == aktivPeriode.identitet }
-                ?: throw IllegalStateException("Fant ikke identitet for periode")
-            valgtIdentitet.arbeidssoekerId
-        } else {
-            // Flere aktive perioder. Kan ikke håndtere merge.
-            val rowsAffected = konfliktRepository.updateStatusByAktorIdAndType(
-                aktorId = aktorId,
-                type = type,
-                status = KonfliktStatus.FEILET
-            )
-            logger.error(
-                "Kunne ikke løse merge for identiteter på grunn av at person har aktive perioder på forskjellige identiteter (rows affected {})",
-                rowsAffected
-            )
-            null
-        }
+        val valgtArbeidssoekerId = uledAktivArbeidssoekerId(
+            aktorId = aktorId,
+            type = type,
+            identitetRows = identitetRows
+        )
 
         /*
          * database:
@@ -193,6 +169,50 @@ class KonfliktService(
                     tidligereIdentiteter = tidligereIdentiteter
                 )
             }
+        }
+    }
+
+    private fun uledAktivArbeidssoekerId(
+        aktorId: String,
+        type: KonfliktType,
+        identitetRows: List<IdentitetRow>
+    ): Long? {
+        val folkeregisterIdentiteter = identitetRows
+            .filter { it.type == IdentitetType.FOLKEREGISTERIDENT }
+            .map { it.identitet }
+        val periodeRows = periodeRepository.findByIdentiteter(
+            identitetList = folkeregisterIdentiteter
+        )
+        val aktivePeriodeRows = periodeRows.filter { it.avsluttetTimestamp == null }
+
+        return if (periodeRows.isEmpty()) {
+            // Ingen perioder. Velger nyeste arbeidssoekerId.
+            identitetRows.maxOf { it.arbeidssoekerId }
+        } else if (aktivePeriodeRows.isEmpty()) {
+            // Ingen aktive perioder. Velger arbeidssoekerId tilhørende nyeste periode.
+            val nyestePeriode = periodeRows
+                .maxBy { it.startetTimestamp.toEpochMilli() } // TODO: Finne siste sluttbrukeraksjon?
+            val valgtIdentitet = identitetRows.find { it.identitet == nyestePeriode.identitet }
+                ?: throw IllegalStateException("Fant ikke identitet for periode")
+            valgtIdentitet.arbeidssoekerId
+        } else if (aktivePeriodeRows.size == 1) {
+            // Én aktiv periode. Velger tilhørende arbeidssoekerId.
+            val aktivPeriode = aktivePeriodeRows.first()
+            val valgtIdentitet = identitetRows.find { it.identitet == aktivPeriode.identitet }
+                ?: throw IllegalStateException("Fant ikke identitet for periode")
+            valgtIdentitet.arbeidssoekerId
+        } else {
+            // Flere aktive perioder. Kan ikke håndtere merge.
+            val rowsAffected = konfliktRepository.updateStatusByAktorIdAndType(
+                aktorId = aktorId,
+                type = type,
+                status = KonfliktStatus.FEILET
+            )
+            logger.error(
+                "Kunne ikke løse merge for identiteter på grunn av at person har aktive perioder på forskjellige identiteter (rows affected {})",
+                rowsAffected
+            )
+            null
         }
     }
 }

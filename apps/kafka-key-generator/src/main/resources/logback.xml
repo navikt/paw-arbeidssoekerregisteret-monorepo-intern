@@ -61,6 +61,7 @@
                 <appender-ref ref="STDOUT"/>
             </root>
             <logger name="org.apache.kafka.clients" level="WARN"/>
+            <logger name="io.confluent.kafka.serializers" level="WARN"/>
             <logger name="team-logs-logger" level="INFO"/>
             <logger name="no.nav.paw" level="DEBUG"/>
         </then>

@@ -22,6 +22,7 @@ class HendelseService(
     private val deserializer = IdentitetHendelseDeserializer()
     private val version = applicationConfig.pawIdentitetProducer.version
     private val identitetTopic = applicationConfig.pawIdentitetProducer.topic
+    private val batchSize = applicationConfig.identitetHendelseJob.batchSize
 
     fun lagreIdentiteterEndretHendelse(
         aktorId: String,
@@ -51,6 +52,7 @@ class HendelseService(
         val idList = hendelseRepository.updateStatusByStatusReturning(
             fraStatus = HendelseStatus.VENTER,
             tilStatus = HendelseStatus.PROSESSERER,
+            limit = batchSize
         )
         logger.info("Håndterer {} ventende identitet-hendelser", idList.size)
         idList.sorted()

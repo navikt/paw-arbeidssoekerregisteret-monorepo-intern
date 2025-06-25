@@ -27,21 +27,43 @@ spec:
       value: "paw-kafka-key-generator-paw-perioder"
     - name: KAFKA_CONSUMER_GROUP_ID_VERSION_PAW_PERIODER
       value: "1"
+    - name: KAFKA_TOPIC_PAW_IDENTITETER
+      value: "paw.arbeidssoker-identiteter-beta-v1"
+    - name: KAFKA_PRODUCER_CLIENT_ID_PREFIX_PAW_IDENTITETER
+      value: "paw-kafka-key-generator-paw-identiteter"
+    - name: KAFKA_PRODUCER_CLIENT_ID_VERSION_PAW_IDENTITETER
+      value: "1"
     - name: KAFKA_TOPIC_PDL_AKTOR
       value: "pdl.aktor-v2"
     - name: KAFKA_CONSUMER_GROUP_ID_PREFIX_PDL_AKTOR
       value: "paw-kafka-key-generator-pdl-aktor"
     - name: KAFKA_CONSUMER_GROUP_ID_VERSION_PDL_AKTOR
-      value: "1"
+      value: "2"
+    - name: SCHEDULED_JOB_ENABLED_IDENTITET_KONFLIKT
+      value: "false"
+    - name: SCHEDULED_JOB_DELAY_IDENTITET_KONFLIKT
+      value: "PT3M"
+    - name: SCHEDULED_JOB_INTERVAL_IDENTITET_KONFLIKT
+      value: "PT6M"
+    - name: SCHEDULED_JOB_BATCH_SIZE_IDENTITET_KONFLIKT
+      value: "1000"
+    - name: SCHEDULED_JOB_ENABLED_IDENTITET_HENDELSE
+      value: "false"
+    - name: SCHEDULED_JOB_DELAY_IDENTITET_HENDELSE
+      value: "PT6M"
+    - name: SCHEDULED_JOB_INTERVAL_IDENTITET_HENDELSE
+      value: "PT6M"
+    - name: SCHEDULED_JOB_BATCH_SIZE_IDENTITET_HENDELSE
+      value: "1000"
   replicas:
     min: 2
     max: 2
   resources:
     limits:
-      memory: 512Mi
+      memory: 1024Mi
     requests:
-      cpu: 50m
-      memory: 256Mi
+      cpu: 60m
+      memory: 512Mi
   liveness:
     path: /internal/isAlive
     initialDelay: 10
