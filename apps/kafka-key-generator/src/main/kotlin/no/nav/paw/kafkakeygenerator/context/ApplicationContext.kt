@@ -31,8 +31,8 @@ import no.nav.paw.kafkakeygenerator.config.ServerConfig
 import no.nav.paw.kafkakeygenerator.handler.HealthIndicatorConsumerExceptionHandler
 import no.nav.paw.kafkakeygenerator.listener.HwmConsumerRebalanceListener
 import no.nav.paw.kafkakeygenerator.merge.MergeDetector
-import no.nav.paw.kafkakeygenerator.repository.HwmRepository
 import no.nav.paw.kafkakeygenerator.repository.HendelseRepository
+import no.nav.paw.kafkakeygenerator.repository.HwmRepository
 import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysIdentitetRepository
@@ -41,10 +41,10 @@ import no.nav.paw.kafkakeygenerator.repository.KonfliktIdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KonfliktRepository
 import no.nav.paw.kafkakeygenerator.repository.PeriodeRepository
 import no.nav.paw.kafkakeygenerator.service.HendelseService
-import no.nav.paw.kafkakeygenerator.service.KonfliktService
 import no.nav.paw.kafkakeygenerator.service.IdentitetService
 import no.nav.paw.kafkakeygenerator.service.KafkaHwmService
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
+import no.nav.paw.kafkakeygenerator.service.KonfliktService
 import no.nav.paw.kafkakeygenerator.service.PawHendelseKafkaConsumerService
 import no.nav.paw.kafkakeygenerator.service.PawPeriodeKafkaConsumerService
 import no.nav.paw.kafkakeygenerator.service.PdlAktorKafkaConsumerService
@@ -119,6 +119,7 @@ data class ApplicationContext(
                 pawIdentitetHendelseProducer = pawIdentitetHendelseProducer
             )
             val konfliktService = KonfliktService(
+                applicationConfig = applicationConfig,
                 identitetRepository = identitetRepository,
                 konfliktRepository = konfliktRepository,
                 periodeRepository = periodeRepository,

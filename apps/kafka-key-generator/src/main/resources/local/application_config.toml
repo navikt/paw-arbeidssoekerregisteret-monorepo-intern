@@ -16,14 +16,16 @@ groupIdPrefix = "paw-kafka-key-generator-pdl-aktor"
 [pawIdentitetProducer]
 version = 1
 topic = "paw.arbeidssoker-identiteter-v1"
-clientId = "paw-kafka-key-generator-paw-identiteter-producer-v1"
+clientIdPrefix = "paw-kafka-key-generator-paw-identiteter"
 
 [identitetKonfliktJob]
 enabled = true
-delay = "PT5M"
-interval = "PT5M"
+delay = "PT3M"
+interval = "PT6M"
+batchSize = 10
 
 [identitetHendelseJob]
 enabled = true
-delay = "PT5M"
-interval = "PT5M"
+delay = "PT6M"
+interval = "PT6M"
+batchSize = 10
