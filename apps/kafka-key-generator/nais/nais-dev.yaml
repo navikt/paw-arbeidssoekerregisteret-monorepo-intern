@@ -40,7 +40,7 @@ spec:
     - name: KAFKA_CONSUMER_GROUP_ID_VERSION_PDL_AKTOR
       value: "2"
     - name: SCHEDULED_JOB_ENABLED_IDENTITET_KONFLIKT
-      value: "false"
+      value: "true"
     - name: SCHEDULED_JOB_DELAY_IDENTITET_KONFLIKT
       value: "PT3M"
     - name: SCHEDULED_JOB_INTERVAL_IDENTITET_KONFLIKT
@@ -48,7 +48,7 @@ spec:
     - name: SCHEDULED_JOB_BATCH_SIZE_IDENTITET_KONFLIKT
       value: "1000"
     - name: SCHEDULED_JOB_ENABLED_IDENTITET_HENDELSE
-      value: "false"
+      value: "true"
     - name: SCHEDULED_JOB_DELAY_IDENTITET_HENDELSE
       value: "PT6M"
     - name: SCHEDULED_JOB_INTERVAL_IDENTITET_HENDELSE
