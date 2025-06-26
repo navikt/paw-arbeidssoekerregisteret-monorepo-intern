@@ -71,7 +71,7 @@ spec:
           - application: paw-arbeidssoekerregisteret-bekreftelse-tjeneste
           - application: paw-arbeidssoekerregisteret-bekreftelse-backup
           - application: paw-arbeidssoekerregisteret-api-oppslag-v2
-          - application: paw-arbeidssoekerregisteret-egenvurdering-api
+          - application: paw-arbeidssoekerregisteret-api-egenvurdering
           - application: dp-rapportering-personregister
             namespace: teamdagpenger
           - application: dp-rapportering
