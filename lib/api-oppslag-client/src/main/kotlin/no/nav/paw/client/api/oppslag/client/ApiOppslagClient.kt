@@ -8,6 +8,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 import no.nav.paw.client.api.oppslag.exception.PerioderOppslagResponseException
 import no.nav.paw.client.api.oppslag.models.ArbeidssoekerperiodeRequest
 import no.nav.paw.client.api.oppslag.models.ArbeidssoekerperiodeResponse
@@ -28,12 +29,12 @@ class ApiOppslagClient(
             contentType(ContentType.Application.Json)
             setBody(ArbeidssoekerperiodeRequest(identitet))
         }
-        return response.let {
-            when (it.status) {
-                HttpStatusCode.OK -> it.body<List<ArbeidssoekerperiodeResponse>>()
+        return response.let { response ->
+            when {
+                response.status.isSuccess() -> response.body<List<ArbeidssoekerperiodeResponse>>()
                 else -> {
-                    val body = it.body<String>()
-                    throw PerioderOppslagResponseException(it.status, "Henting av perioder feilet. body=$body")
+                    val body = response.body<String>()
+                    throw PerioderOppslagResponseException(response.status, "Henting av perioder feilet. body=$body")
                 }
             }
         }
