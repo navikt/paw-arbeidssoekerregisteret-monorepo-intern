@@ -25,7 +25,14 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
+import no.nav.paw.identitet.internehendelser.IdentitetHendelse
+import no.nav.paw.identitet.internehendelser.IdentitetHendelseDeserializer
+import no.nav.paw.identitet.internehendelser.IdentitetHendelseSerializer
+import no.nav.paw.identitet.internehendelser.IdentiteterEndretHendelse
+import no.nav.paw.identitet.internehendelser.IdentiteterMergetHendelse
 import no.nav.paw.identitet.internehendelser.vo.Identitet
+import no.nav.paw.kafkakeygenerator.model.HendelseRow
+import no.nav.paw.kafkakeygenerator.model.HendelseStatus
 import no.nav.paw.kafkakeygenerator.model.IdentitetRow
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktRow
@@ -53,6 +60,8 @@ import java.util.*
 import kotlin.random.Random.Default.nextLong
 
 private val objectMapper = buildObjectMapper
+private val hendelseSerializer: IdentitetHendelseSerializer = IdentitetHendelseSerializer()
+private val hendelseDeserializer: IdentitetHendelseDeserializer = IdentitetHendelseDeserializer()
 
 fun MockRequestHandleScope.genererResponse(it: HttpRequestData): HttpResponseData {
     val body = (it.body as TextContent).text
@@ -88,6 +97,7 @@ object TestData {
     const val fnr7 = "07017012345"
     const val fnr8 = "08017012345"
     const val fnr9 = "09017012345"
+    const val fnr10 = "10017012345"
     const val dnr1 = "41017012345"
     const val dnr2 = "42017012345"
     const val dnr3 = "43017012345"
@@ -108,6 +118,7 @@ object TestData {
     const val aktorId8_1 = "200008017012345"
     const val aktorId8_2 = "200008017012346"
     const val aktorId9 = "200009017012345"
+    const val aktorId10 = "200010017012345"
     const val npId1 = "900001017012345"
     const val npId2 = "900002017012345"
     const val npId3 = "900003017012345"
@@ -118,6 +129,7 @@ object TestData {
     const val npId8_1 = "900008017012345"
     const val npId8_2 = "900008017012346"
     const val npId9 = "900009017012345"
+    const val npId10 = "900010017012345"
     val periodeId1_1 = UUID.fromString("4c0cb50a-3b4a-45df-b5b6-2cb45f04d19b")
     val periodeId1_2 = UUID.fromString("095639e7-4240-42eb-813b-a1c003556e74")
     val periodeId2_1 = UUID.fromString("0fc3de47-a6cd-4ad5-8433-53235738200d")
@@ -240,6 +252,13 @@ object TestData {
             identifikator(ident = npId8_2, type = Type.NPID, gjeldende = true),
             identifikator(ident = dnr8, type = Type.FOLKEREGISTERIDENT, gjeldende = false),
             identifikator(ident = fnr8, type = Type.FOLKEREGISTERIDENT, gjeldende = true)
+        )
+    )
+    val aktor10 = aktor(
+        listOf(
+            identifikator(ident = aktorId10, type = Type.AKTORID, gjeldende = true),
+            identifikator(ident = npId10, type = Type.NPID, gjeldende = true),
+            identifikator(ident = fnr10, type = Type.FOLKEREGISTERIDENT, gjeldende = true)
         )
     )
 
@@ -509,6 +528,42 @@ fun IdentitetRow.asWrapper(): IdentitetWrapper = IdentitetWrapper(
     arbeidssoekerId = arbeidssoekerId,
     aktorId = aktorId,
     identitet = Identitet(identitet, type, gjeldende),
+    status = status
+)
+
+data class IdentitetHendelseWrapper(
+    val type: String,
+    val identiteter: List<Identitet>,
+    val tidligereIdentiteter: List<Identitet> = emptyList(),
+)
+
+fun IdentitetHendelse.asWrapper(): IdentitetHendelseWrapper {
+    return when (this) {
+        is IdentiteterEndretHendelse -> IdentitetHendelseWrapper(
+            type = hendelseType,
+            identiteter = identiteter,
+            tidligereIdentiteter = tidligereIdentiteter,
+        )
+
+        is IdentiteterMergetHendelse -> IdentitetHendelseWrapper(
+            type = hendelseType,
+            identiteter = identiteter,
+            tidligereIdentiteter = tidligereIdentiteter,
+        )
+    }
+}
+
+data class HendelseWrapper(
+    val arbeidssoekerId: Long? = null,
+    val aktorId: String,
+    val hendelse: IdentitetHendelseWrapper,
+    val status: HendelseStatus
+)
+
+fun HendelseRow.asWrapper(): HendelseWrapper = HendelseWrapper(
+    arbeidssoekerId = arbeidssoekerId,
+    aktorId = aktorId,
+    hendelse = hendelseDeserializer.deserializeFromString(data).asWrapper(),
     status = status
 )
 

@@ -1,10 +1,10 @@
 package no.nav.paw.kafkakeygenerator.service
 
 import io.kotest.core.spec.style.FreeSpec
+import io.kotest.matchers.collections.shouldContainOnly
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.types.shouldBeTypeOf
-import no.nav.paw.identitet.internehendelser.IdentiteterEndretHendelse
+import no.nav.paw.identitet.internehendelser.IDENTITETER_MERGET_HENDELSE_TYPE
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafkakeygenerator.context.TestContext
@@ -13,8 +13,12 @@ import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
 import no.nav.paw.kafkakeygenerator.model.asIdentitet
+import no.nav.paw.kafkakeygenerator.test.HendelseWrapper
+import no.nav.paw.kafkakeygenerator.test.IdentitetHendelseWrapper
+import no.nav.paw.kafkakeygenerator.test.IdentitetWrapper
 import no.nav.paw.kafkakeygenerator.test.TestData
 import no.nav.paw.kafkakeygenerator.test.TestData.asIdentitetsnummer
+import no.nav.paw.kafkakeygenerator.test.asWrapper
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import java.time.Duration
 import java.time.Instant
@@ -47,6 +51,10 @@ class KonfliktServiceTest : FreeSpec({
                     .fold(onLeft = { null }, onRight = { it })!!.value
                 val arbeidssoekerId3 = kafkaKeysRepository.opprett(fnr2.asIdentitetsnummer())
                     .fold(onLeft = { null }, onRight = { it })!!.value
+                val arbId1 = arbeidssoekerId1.asIdentitet(true)
+                val arbId2 = arbeidssoekerId2.asIdentitet(true)
+                val arbId3 = arbeidssoekerId3.asIdentitet(true)
+
                 identitetRepository.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
@@ -115,94 +123,82 @@ class KonfliktServiceTest : FreeSpec({
                 val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
                 identitetRows shouldHaveSize 5
 
-                // 1
-                val identitetRow1 = identitetRows[0]
-                identitetRow1.aktorId shouldBe aktorId.identitet
-                identitetRow1.arbeidssoekerId shouldBe arbeidssoekerId3
-                identitetRow1.asIdentitet() shouldBe aktorId
-                identitetRow1.status shouldBe IdentitetStatus.AKTIV
-
-                // 2
-                val identitetRow2 = identitetRows[1]
-                identitetRow2.aktorId shouldBe aktorId.identitet
-                identitetRow2.arbeidssoekerId shouldBe arbeidssoekerId3
-                identitetRow2.asIdentitet() shouldBe npId
-                identitetRow2.status shouldBe IdentitetStatus.AKTIV
-
-                // 3
-                val identitetRow3 = identitetRows[2]
-                identitetRow3.aktorId shouldBe aktorId.identitet
-                identitetRow3.arbeidssoekerId shouldBe arbeidssoekerId3
-                identitetRow3.asIdentitet() shouldBe dnr
-                identitetRow3.status shouldBe IdentitetStatus.AKTIV
-
-                // 4
-                val identitetRow4 = identitetRows[3]
-                identitetRow4.aktorId shouldBe aktorId.identitet
-                identitetRow4.arbeidssoekerId shouldBe arbeidssoekerId3
-                identitetRow4.asIdentitet() shouldBe fnr1
-                identitetRow4.status shouldBe IdentitetStatus.AKTIV
-
-                // 5
-                val identitetRow5 = identitetRows[4]
-                identitetRow5.aktorId shouldBe aktorId.identitet
-                identitetRow5.arbeidssoekerId shouldBe arbeidssoekerId3
-                identitetRow5.asIdentitet() shouldBe fnr2
-                identitetRow5.status shouldBe IdentitetStatus.AKTIV
+                identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId3,
+                        aktorId = aktorId.identitet,
+                        identitet = aktorId,
+                        status = IdentitetStatus.AKTIV
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId3,
+                        aktorId = aktorId.identitet,
+                        identitet = npId,
+                        status = IdentitetStatus.AKTIV
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId3,
+                        aktorId = aktorId.identitet,
+                        identitet = dnr,
+                        status = IdentitetStatus.AKTIV
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId3,
+                        aktorId = aktorId.identitet,
+                        identitet = fnr1,
+                        status = IdentitetStatus.AKTIV
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId3,
+                        aktorId = aktorId.identitet,
+                        identitet = fnr2,
+                        status = IdentitetStatus.AKTIV
+                    )
+                )
 
                 val hendelseRows = hendelseRepository.findByAktorId(aktorId.identitet)
                 hendelseRows shouldHaveSize 3
-
-                // 1
-                val hendelseRow1 = hendelseRows[0]
-                hendelseRow1.arbeidssoekerId shouldBe arbeidssoekerId3
-                hendelseRow1.aktorId shouldBe aktorId.identitet
-                hendelseRow1.status shouldBe HendelseStatus.VENTER
-                val hendelse1 = deserializer.deserializeFromString(hendelseRow1.data)
-                val endretHendelse1 = hendelse1.shouldBeTypeOf<IdentiteterEndretHendelse>()
-                endretHendelse1.identiteter shouldHaveSize 8
-                identitetRow1.asIdentitet() shouldBe endretHendelse1.identiteter[0]
-                identitetRow2.asIdentitet() shouldBe endretHendelse1.identiteter[1]
-                identitetRow3.asIdentitet() shouldBe endretHendelse1.identiteter[2]
-                identitetRow4.asIdentitet() shouldBe endretHendelse1.identiteter[3]
-                identitetRow5.asIdentitet() shouldBe endretHendelse1.identiteter[4]
-                arbeidssoekerId3.asIdentitet(gjeldende = true) shouldBe endretHendelse1.identiteter[5]
-                arbeidssoekerId1.asIdentitet(gjeldende = false) shouldBe endretHendelse1.identiteter[6]
-                arbeidssoekerId2.asIdentitet(gjeldende = false) shouldBe endretHendelse1.identiteter[7]
-
-                // 2
-                val hendelseRow2 = hendelseRows[1]
-                hendelseRow2.arbeidssoekerId shouldBe arbeidssoekerId1
-                hendelseRow2.aktorId shouldBe aktorId.identitet
-                hendelseRow2.status shouldBe HendelseStatus.VENTER
-                val hendelse2 = deserializer.deserializeFromString(hendelseRow2.data)
-                val endretHendelse2 = hendelse2.shouldBeTypeOf<IdentiteterEndretHendelse>()
-                endretHendelse2.identiteter shouldHaveSize 8
-                identitetRow1.asIdentitet() shouldBe endretHendelse2.identiteter[0]
-                identitetRow2.asIdentitet() shouldBe endretHendelse2.identiteter[1]
-                identitetRow3.asIdentitet() shouldBe endretHendelse2.identiteter[2]
-                identitetRow4.asIdentitet() shouldBe endretHendelse2.identiteter[3]
-                identitetRow5.asIdentitet() shouldBe endretHendelse2.identiteter[4]
-                arbeidssoekerId3.asIdentitet(gjeldende = true) shouldBe endretHendelse2.identiteter[5]
-                arbeidssoekerId1.asIdentitet(gjeldende = false) shouldBe endretHendelse2.identiteter[6]
-                arbeidssoekerId2.asIdentitet(gjeldende = false) shouldBe endretHendelse2.identiteter[7]
-
-                // 3
-                val hendelseRow3 = hendelseRows[2]
-                hendelseRow3.arbeidssoekerId shouldBe arbeidssoekerId2
-                hendelseRow3.aktorId shouldBe aktorId.identitet
-                hendelseRow3.status shouldBe HendelseStatus.VENTER
-                val hendelse3 = deserializer.deserializeFromString(hendelseRow3.data)
-                val endretHendelse3 = hendelse3.shouldBeTypeOf<IdentiteterEndretHendelse>()
-                endretHendelse3.identiteter shouldHaveSize 8
-                identitetRow1.asIdentitet() shouldBe endretHendelse3.identiteter[0]
-                identitetRow2.asIdentitet() shouldBe endretHendelse3.identiteter[1]
-                identitetRow3.asIdentitet() shouldBe endretHendelse3.identiteter[2]
-                identitetRow4.asIdentitet() shouldBe endretHendelse3.identiteter[3]
-                identitetRow5.asIdentitet() shouldBe endretHendelse3.identiteter[4]
-                arbeidssoekerId3.asIdentitet(gjeldende = true) shouldBe endretHendelse3.identiteter[5]
-                arbeidssoekerId1.asIdentitet(gjeldende = false) shouldBe endretHendelse3.identiteter[6]
-                arbeidssoekerId2.asIdentitet(gjeldende = false) shouldBe endretHendelse3.identiteter[7]
+                hendelseRows.map { it.asWrapper() } shouldContainOnly listOf(
+                    HendelseWrapper(
+                        arbeidssoekerId = arbeidssoekerId1,
+                        aktorId = aktorId.identitet,
+                        status = HendelseStatus.VENTER,
+                        hendelse = IdentitetHendelseWrapper(
+                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
+                            identiteter = emptyList(),
+                            tidligereIdentiteter = listOf(aktorId, npId, dnr, arbId1)
+                        )
+                    ),
+                    HendelseWrapper(
+                        arbeidssoekerId = arbeidssoekerId2,
+                        aktorId = aktorId.identitet,
+                        status = HendelseStatus.VENTER,
+                        hendelse = IdentitetHendelseWrapper(
+                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
+                            identiteter = emptyList(),
+                            tidligereIdentiteter = listOf(fnr1, arbId2)
+                        )
+                    ),
+                    HendelseWrapper(
+                        arbeidssoekerId = arbeidssoekerId3,
+                        aktorId = aktorId.identitet,
+                        status = HendelseStatus.VENTER,
+                        hendelse = IdentitetHendelseWrapper(
+                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
+                            identiteter = listOf(
+                                aktorId,
+                                npId,
+                                dnr,
+                                fnr1,
+                                fnr2,
+                                arbId1.copy(gjeldende = false),
+                                arbId2.copy(gjeldende = false),
+                                arbId3
+                            ),
+                            tidligereIdentiteter = listOf(fnr2, arbId3)
+                        )
+                    )
+                )
             }
 
             "Skal håndtere merge-konflikt med kun avsluttede perioder" {
@@ -221,6 +217,10 @@ class KonfliktServiceTest : FreeSpec({
                     .fold(onLeft = { null }, onRight = { it })!!.value
                 val arbeidssoekerId3 = kafkaKeysRepository.opprett(fnr2.asIdentitetsnummer())
                     .fold(onLeft = { null }, onRight = { it })!!.value
+                val arbId1 = arbeidssoekerId1.asIdentitet(true)
+                val arbId2 = arbeidssoekerId2.asIdentitet(true)
+                val arbId3 = arbeidssoekerId3.asIdentitet(true)
+
                 identitetRepository.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
@@ -305,97 +305,85 @@ class KonfliktServiceTest : FreeSpec({
                 konfliktRow1.aktorId shouldBe aktorId.identitet
                 konfliktRow1.type shouldBe KonfliktType.MERGE
                 konfliktRow1.status shouldBe KonfliktStatus.FULLFOERT
+
                 val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
                 identitetRows shouldHaveSize 5
-
-                // 1
-                val identitetRow1 = identitetRows[0]
-                identitetRow1.aktorId shouldBe aktorId.identitet
-                identitetRow1.arbeidssoekerId shouldBe arbeidssoekerId1
-                identitetRow1.asIdentitet() shouldBe aktorId
-                identitetRow1.status shouldBe IdentitetStatus.AKTIV
-
-                // 2
-                val identitetRow2 = identitetRows[1]
-                identitetRow2.aktorId shouldBe aktorId.identitet
-                identitetRow2.arbeidssoekerId shouldBe arbeidssoekerId1
-                identitetRow2.asIdentitet() shouldBe npId
-                identitetRow2.status shouldBe IdentitetStatus.AKTIV
-
-                // 3
-                val identitetRow3 = identitetRows[2]
-                identitetRow3.aktorId shouldBe aktorId.identitet
-                identitetRow3.arbeidssoekerId shouldBe arbeidssoekerId1
-                identitetRow3.asIdentitet() shouldBe dnr
-                identitetRow3.status shouldBe IdentitetStatus.AKTIV
-
-                // 4
-                val identitetRow4 = identitetRows[3]
-                identitetRow4.aktorId shouldBe aktorId.identitet
-                identitetRow4.arbeidssoekerId shouldBe arbeidssoekerId1
-                identitetRow4.asIdentitet() shouldBe fnr1
-                identitetRow4.status shouldBe IdentitetStatus.AKTIV
-
-                // 5
-                val identitetRow5 = identitetRows[4]
-                identitetRow5.aktorId shouldBe aktorId.identitet
-                identitetRow5.arbeidssoekerId shouldBe arbeidssoekerId1
-                identitetRow5.asIdentitet() shouldBe fnr2
-                identitetRow5.status shouldBe IdentitetStatus.AKTIV
+                identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId1,
+                        aktorId = aktorId.identitet,
+                        identitet = aktorId,
+                        status = IdentitetStatus.AKTIV
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId1,
+                        aktorId = aktorId.identitet,
+                        identitet = npId,
+                        status = IdentitetStatus.AKTIV
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId1,
+                        aktorId = aktorId.identitet,
+                        identitet = dnr,
+                        status = IdentitetStatus.AKTIV
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId1,
+                        aktorId = aktorId.identitet,
+                        identitet = fnr1,
+                        status = IdentitetStatus.AKTIV
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId1,
+                        aktorId = aktorId.identitet,
+                        identitet = fnr2,
+                        status = IdentitetStatus.AKTIV
+                    )
+                )
 
                 val hendelseRows = hendelseRepository.findByAktorId(aktorId.identitet)
                 hendelseRows shouldHaveSize 3
-
-                // 1
-                val hendelseRow1 = hendelseRows[0]
-                hendelseRow1.arbeidssoekerId shouldBe arbeidssoekerId1
-                hendelseRow1.aktorId shouldBe aktorId.identitet
-                hendelseRow1.status shouldBe HendelseStatus.VENTER
-                val hendelse1 = deserializer.deserializeFromString(hendelseRow1.data)
-                val endretHendelse1 = hendelse1.shouldBeTypeOf<IdentiteterEndretHendelse>()
-                endretHendelse1.identiteter shouldHaveSize 8
-                identitetRow1.asIdentitet() shouldBe endretHendelse1.identiteter[0]
-                identitetRow2.asIdentitet() shouldBe endretHendelse1.identiteter[1]
-                identitetRow3.asIdentitet() shouldBe endretHendelse1.identiteter[2]
-                identitetRow4.asIdentitet() shouldBe endretHendelse1.identiteter[3]
-                identitetRow5.asIdentitet() shouldBe endretHendelse1.identiteter[4]
-                arbeidssoekerId1.asIdentitet(gjeldende = true) shouldBe endretHendelse1.identiteter[5]
-                arbeidssoekerId2.asIdentitet(gjeldende = false) shouldBe endretHendelse1.identiteter[6]
-                arbeidssoekerId3.asIdentitet(gjeldende = false) shouldBe endretHendelse1.identiteter[7]
-
-                // 2
-                val hendelseRow2 = hendelseRows[1]
-                hendelseRow2.arbeidssoekerId shouldBe arbeidssoekerId2
-                hendelseRow2.aktorId shouldBe aktorId.identitet
-                hendelseRow2.status shouldBe HendelseStatus.VENTER
-                val hendelse2 = deserializer.deserializeFromString(hendelseRow2.data)
-                val endretHendelse2 = hendelse2.shouldBeTypeOf<IdentiteterEndretHendelse>()
-                endretHendelse2.identiteter shouldHaveSize 8
-                identitetRow1.asIdentitet() shouldBe endretHendelse2.identiteter[0]
-                identitetRow2.asIdentitet() shouldBe endretHendelse2.identiteter[1]
-                identitetRow3.asIdentitet() shouldBe endretHendelse2.identiteter[2]
-                identitetRow4.asIdentitet() shouldBe endretHendelse2.identiteter[3]
-                identitetRow5.asIdentitet() shouldBe endretHendelse2.identiteter[4]
-                arbeidssoekerId1.asIdentitet(gjeldende = true) shouldBe endretHendelse2.identiteter[5]
-                arbeidssoekerId2.asIdentitet(gjeldende = false) shouldBe endretHendelse2.identiteter[6]
-                arbeidssoekerId3.asIdentitet(gjeldende = false) shouldBe endretHendelse2.identiteter[7]
-
-                // 3
-                val hendelseRow3 = hendelseRows[2]
-                hendelseRow3.arbeidssoekerId shouldBe arbeidssoekerId3
-                hendelseRow3.aktorId shouldBe aktorId.identitet
-                hendelseRow3.status shouldBe HendelseStatus.VENTER
-                val hendelse3 = deserializer.deserializeFromString(hendelseRow3.data)
-                val endretHendelse3 = hendelse3.shouldBeTypeOf<IdentiteterEndretHendelse>()
-                endretHendelse3.identiteter shouldHaveSize 8
-                identitetRow1.asIdentitet() shouldBe endretHendelse3.identiteter[0]
-                identitetRow2.asIdentitet() shouldBe endretHendelse3.identiteter[1]
-                identitetRow3.asIdentitet() shouldBe endretHendelse3.identiteter[2]
-                identitetRow4.asIdentitet() shouldBe endretHendelse3.identiteter[3]
-                identitetRow5.asIdentitet() shouldBe endretHendelse3.identiteter[4]
-                arbeidssoekerId1.asIdentitet(gjeldende = true) shouldBe endretHendelse3.identiteter[5]
-                arbeidssoekerId2.asIdentitet(gjeldende = false) shouldBe endretHendelse3.identiteter[6]
-                arbeidssoekerId3.asIdentitet(gjeldende = false) shouldBe endretHendelse3.identiteter[7]
+                hendelseRows.map { it.asWrapper() } shouldContainOnly listOf(
+                    HendelseWrapper(
+                        arbeidssoekerId = arbeidssoekerId1,
+                        aktorId = aktorId.identitet,
+                        status = HendelseStatus.VENTER,
+                        hendelse = IdentitetHendelseWrapper(
+                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
+                            identiteter = listOf(
+                                aktorId,
+                                npId,
+                                dnr,
+                                fnr1,
+                                fnr2,
+                                arbId1,
+                                arbId2.copy(gjeldende = false),
+                                arbId3.copy(gjeldende = false)
+                            ),
+                            tidligereIdentiteter = listOf(aktorId, npId, dnr, arbId1)
+                        )
+                    ),
+                    HendelseWrapper(
+                        arbeidssoekerId = arbeidssoekerId2,
+                        aktorId = aktorId.identitet,
+                        status = HendelseStatus.VENTER,
+                        hendelse = IdentitetHendelseWrapper(
+                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
+                            identiteter = emptyList(),
+                            tidligereIdentiteter = listOf(fnr1, arbId2)
+                        )
+                    ),
+                    HendelseWrapper(
+                        arbeidssoekerId = arbeidssoekerId3,
+                        aktorId = aktorId.identitet,
+                        status = HendelseStatus.VENTER,
+                        hendelse = IdentitetHendelseWrapper(
+                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
+                            identiteter = emptyList(),
+                            tidligereIdentiteter = listOf(fnr2, arbId3)
+                        )
+                    )
+                )
             }
 
             "Skal håndtere merge-konflikt med én aktiv periode" {
@@ -414,6 +402,10 @@ class KonfliktServiceTest : FreeSpec({
                     .fold(onLeft = { null }, onRight = { it })!!.value
                 val arbeidssoekerId3 = kafkaKeysRepository.opprett(Identitetsnummer(fnr2.identitet))
                     .fold(onLeft = { null }, onRight = { it })!!.value
+                val arbId1 = arbeidssoekerId1.asIdentitet(true)
+                val arbId2 = arbeidssoekerId2.asIdentitet(true)
+                val arbId3 = arbeidssoekerId3.asIdentitet(true)
+
                 identitetRepository.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
@@ -497,97 +489,85 @@ class KonfliktServiceTest : FreeSpec({
                 konflikt.aktorId shouldBe aktorId.identitet
                 konflikt.type shouldBe KonfliktType.MERGE
                 konflikt.status shouldBe KonfliktStatus.FULLFOERT
+
                 val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
                 identitetRows shouldHaveSize 5
-
-                // 1
-                val identitetRow1 = identitetRows[0]
-                identitetRow1.aktorId shouldBe aktorId.identitet
-                identitetRow1.arbeidssoekerId shouldBe arbeidssoekerId2
-                identitetRow1.asIdentitet() shouldBe aktorId
-                identitetRow1.status shouldBe IdentitetStatus.AKTIV
-
-                // 2
-                val identitetRow2 = identitetRows[1]
-                identitetRow2.aktorId shouldBe aktorId.identitet
-                identitetRow2.arbeidssoekerId shouldBe arbeidssoekerId2
-                identitetRow2.asIdentitet() shouldBe npId
-                identitetRow2.status shouldBe IdentitetStatus.AKTIV
-
-                // 3
-                val identitetRow3 = identitetRows[2]
-                identitetRow3.aktorId shouldBe aktorId.identitet
-                identitetRow3.arbeidssoekerId shouldBe arbeidssoekerId2
-                identitetRow3.asIdentitet() shouldBe dnr
-                identitetRow3.status shouldBe IdentitetStatus.AKTIV
-
-                // 4
-                val identitetRow4 = identitetRows[3]
-                identitetRow4.aktorId shouldBe aktorId.identitet
-                identitetRow4.arbeidssoekerId shouldBe arbeidssoekerId2
-                identitetRow4.asIdentitet() shouldBe fnr1
-                identitetRow4.status shouldBe IdentitetStatus.AKTIV
-
-                // 5
-                val identitetRow5 = identitetRows[4]
-                identitetRow5.aktorId shouldBe aktorId.identitet
-                identitetRow5.arbeidssoekerId shouldBe arbeidssoekerId2
-                identitetRow5.asIdentitet() shouldBe fnr2
-                identitetRow5.status shouldBe IdentitetStatus.AKTIV
+                identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId2,
+                        aktorId = aktorId.identitet,
+                        identitet = aktorId,
+                        status = IdentitetStatus.AKTIV
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId2,
+                        aktorId = aktorId.identitet,
+                        identitet = npId,
+                        status = IdentitetStatus.AKTIV
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId2,
+                        aktorId = aktorId.identitet,
+                        identitet = dnr,
+                        status = IdentitetStatus.AKTIV
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId2,
+                        aktorId = aktorId.identitet,
+                        identitet = fnr1,
+                        status = IdentitetStatus.AKTIV
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId2,
+                        aktorId = aktorId.identitet,
+                        identitet = fnr2,
+                        status = IdentitetStatus.AKTIV
+                    )
+                )
 
                 val hendelseRows = hendelseRepository.findByAktorId(aktorId.identitet)
                 hendelseRows shouldHaveSize 3
-
-                // 1
-                val hendelseRow1 = hendelseRows[0]
-                hendelseRow1.arbeidssoekerId shouldBe arbeidssoekerId2
-                hendelseRow1.aktorId shouldBe aktorId.identitet
-                hendelseRow1.status shouldBe HendelseStatus.VENTER
-                val hendelse1 = deserializer.deserializeFromString(hendelseRow1.data)
-                val endretHendelse1 = hendelse1.shouldBeTypeOf<IdentiteterEndretHendelse>()
-                endretHendelse1.identiteter shouldHaveSize 8
-                identitetRow1.asIdentitet() shouldBe endretHendelse1.identiteter[0]
-                identitetRow2.asIdentitet() shouldBe endretHendelse1.identiteter[1]
-                identitetRow3.asIdentitet() shouldBe endretHendelse1.identiteter[2]
-                identitetRow4.asIdentitet() shouldBe endretHendelse1.identiteter[3]
-                identitetRow5.asIdentitet() shouldBe endretHendelse1.identiteter[4]
-                arbeidssoekerId2.asIdentitet(gjeldende = true) shouldBe endretHendelse1.identiteter[5]
-                arbeidssoekerId1.asIdentitet(gjeldende = false) shouldBe endretHendelse1.identiteter[6]
-                arbeidssoekerId3.asIdentitet(gjeldende = false) shouldBe endretHendelse1.identiteter[7]
-
-                // 2
-                val hendelseRow2 = hendelseRows[1]
-                hendelseRow2.arbeidssoekerId shouldBe arbeidssoekerId1
-                hendelseRow2.aktorId shouldBe aktorId.identitet
-                hendelseRow2.status shouldBe HendelseStatus.VENTER
-                val hendelse2 = deserializer.deserializeFromString(hendelseRow2.data)
-                val endretHendelse2 = hendelse2.shouldBeTypeOf<IdentiteterEndretHendelse>()
-                endretHendelse2.identiteter shouldHaveSize 8
-                identitetRow1.asIdentitet() shouldBe endretHendelse2.identiteter[0]
-                identitetRow2.asIdentitet() shouldBe endretHendelse2.identiteter[1]
-                identitetRow3.asIdentitet() shouldBe endretHendelse2.identiteter[2]
-                identitetRow4.asIdentitet() shouldBe endretHendelse2.identiteter[3]
-                identitetRow5.asIdentitet() shouldBe endretHendelse2.identiteter[4]
-                arbeidssoekerId2.asIdentitet(gjeldende = true) shouldBe endretHendelse2.identiteter[5]
-                arbeidssoekerId1.asIdentitet(gjeldende = false) shouldBe endretHendelse2.identiteter[6]
-                arbeidssoekerId3.asIdentitet(gjeldende = false) shouldBe endretHendelse2.identiteter[7]
-
-                // 3
-                val hendelseRow3 = hendelseRows[2]
-                hendelseRow3.arbeidssoekerId shouldBe arbeidssoekerId3
-                hendelseRow3.aktorId shouldBe aktorId.identitet
-                hendelseRow3.status shouldBe HendelseStatus.VENTER
-                val hendelse3 = deserializer.deserializeFromString(hendelseRow3.data)
-                val endretHendelse3 = hendelse3.shouldBeTypeOf<IdentiteterEndretHendelse>()
-                endretHendelse3.identiteter shouldHaveSize 8
-                identitetRow1.asIdentitet() shouldBe endretHendelse3.identiteter[0]
-                identitetRow2.asIdentitet() shouldBe endretHendelse3.identiteter[1]
-                identitetRow3.asIdentitet() shouldBe endretHendelse3.identiteter[2]
-                identitetRow4.asIdentitet() shouldBe endretHendelse3.identiteter[3]
-                identitetRow5.asIdentitet() shouldBe endretHendelse3.identiteter[4]
-                arbeidssoekerId2.asIdentitet(gjeldende = true) shouldBe endretHendelse3.identiteter[5]
-                arbeidssoekerId1.asIdentitet(gjeldende = false) shouldBe endretHendelse3.identiteter[6]
-                arbeidssoekerId3.asIdentitet(gjeldende = false) shouldBe endretHendelse3.identiteter[7]
+                hendelseRows.map { it.asWrapper() } shouldContainOnly listOf(
+                    HendelseWrapper(
+                        arbeidssoekerId = arbeidssoekerId1,
+                        aktorId = aktorId.identitet,
+                        status = HendelseStatus.VENTER,
+                        hendelse = IdentitetHendelseWrapper(
+                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
+                            identiteter = emptyList(),
+                            tidligereIdentiteter = listOf(aktorId, npId, dnr, arbId1)
+                        )
+                    ),
+                    HendelseWrapper(
+                        arbeidssoekerId = arbeidssoekerId2,
+                        aktorId = aktorId.identitet,
+                        status = HendelseStatus.VENTER,
+                        hendelse = IdentitetHendelseWrapper(
+                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
+                            identiteter = listOf(
+                                aktorId,
+                                npId,
+                                dnr,
+                                fnr1,
+                                fnr2,
+                                arbId1.copy(gjeldende = false),
+                                arbId2,
+                                arbId3.copy(gjeldende = false)
+                            ),
+                            tidligereIdentiteter = listOf(fnr1, arbId2)
+                        )
+                    ),
+                    HendelseWrapper(
+                        arbeidssoekerId = arbeidssoekerId3,
+                        aktorId = aktorId.identitet,
+                        status = HendelseStatus.VENTER,
+                        hendelse = IdentitetHendelseWrapper(
+                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
+                            identiteter = emptyList(),
+                            tidligereIdentiteter = listOf(fnr2, arbId3)
+                        )
+                    )
+                )
             }
 
             "Skal håndtere merge-konflikt med to aktive perioder" {
@@ -691,43 +671,41 @@ class KonfliktServiceTest : FreeSpec({
                 konfliktRow1.aktorId shouldBe aktorId.identitet
                 konfliktRow1.type shouldBe KonfliktType.MERGE
                 konfliktRow1.status shouldBe KonfliktStatus.FEILET
+
                 val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
                 identitetRows shouldHaveSize 5
-
-                // 1
-                val identitetRow1 = identitetRows[0]
-                identitetRow1.aktorId shouldBe aktorId.identitet
-                identitetRow1.arbeidssoekerId shouldBe arbeidssoekerId1
-                identitetRow1.asIdentitet() shouldBe aktorId
-                identitetRow1.status shouldBe IdentitetStatus.MERGE
-
-                // 2
-                val identitetRow2 = identitetRows[1]
-                identitetRow2.aktorId shouldBe aktorId.identitet
-                identitetRow2.arbeidssoekerId shouldBe arbeidssoekerId1
-                identitetRow2.asIdentitet() shouldBe npId
-                identitetRow2.status shouldBe IdentitetStatus.MERGE
-
-                // 3
-                val identitetRow3 = identitetRows[2]
-                identitetRow3.aktorId shouldBe aktorId.identitet
-                identitetRow3.arbeidssoekerId shouldBe arbeidssoekerId1
-                identitetRow3.asIdentitet() shouldBe dnr
-                identitetRow3.status shouldBe IdentitetStatus.MERGE
-
-                // 4
-                val identitetRow4 = identitetRows[3]
-                identitetRow4.aktorId shouldBe aktorId.identitet
-                identitetRow4.arbeidssoekerId shouldBe arbeidssoekerId2
-                identitetRow4.asIdentitet() shouldBe fnr1
-                identitetRow4.status shouldBe IdentitetStatus.MERGE
-
-                // 5
-                val identitetRow5 = identitetRows[4]
-                identitetRow5.aktorId shouldBe aktorId.identitet
-                identitetRow5.arbeidssoekerId shouldBe arbeidssoekerId3
-                identitetRow5.asIdentitet() shouldBe fnr2
-                identitetRow5.status shouldBe IdentitetStatus.MERGE
+                identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId1,
+                        aktorId = aktorId.identitet,
+                        identitet = aktorId,
+                        status = IdentitetStatus.MERGE
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId1,
+                        aktorId = aktorId.identitet,
+                        identitet = npId,
+                        status = IdentitetStatus.MERGE
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId1,
+                        aktorId = aktorId.identitet,
+                        identitet = dnr,
+                        status = IdentitetStatus.MERGE
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId2,
+                        aktorId = aktorId.identitet,
+                        identitet = fnr1,
+                        status = IdentitetStatus.MERGE
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId3,
+                        aktorId = aktorId.identitet,
+                        identitet = fnr2,
+                        status = IdentitetStatus.MERGE
+                    )
+                )
 
                 val hendelseRows = hendelseRepository.findByAktorId(aktorId.identitet)
                 hendelseRows shouldHaveSize 0

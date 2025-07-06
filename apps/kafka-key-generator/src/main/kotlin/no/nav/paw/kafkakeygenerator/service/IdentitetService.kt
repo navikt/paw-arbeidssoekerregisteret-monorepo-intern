@@ -52,6 +52,7 @@ class IdentitetService(
                 aktorId = aktorId,
                 identiteter = identitetSet
             ).toSet()
+        val eksisterendeIdentiteter = eksisterendeIdentitetRows.map { it.asIdentitet() }
         val arbeidssoekerIdSet = eksisterendeIdentitetRows
             .map { it.arbeidssoekerId }
             .toMutableSet()
@@ -92,8 +93,13 @@ class IdentitetService(
                 eksisterendeIdentitetRows = eksisterendeIdentitetRows,
                 eksisterendeKafkaKeyRows = eksisterendeKafkaKeyRows
             )
+        } else if (identiteter.size == eksisterendeIdentiteter.size && identiteter == eksisterendeIdentiteter) {
+            logger.info(
+                "Ignorer aktor-melding fordi alle identiteter eksisterer allerede ({} identiteter)",
+                identiteter.size
+            )
         } else {
-            logger.info("Endrer identiteter for arbeidssøker ({} identiteter)", identiteter.size)
+            logger.info("Håndterer endringer i identiteter for arbeidssøker ({} identiteter)", identiteter.size)
             identiteterSkalEndres(
                 aktorId = aktorId,
                 identiteter = identiteter,
@@ -128,9 +134,12 @@ class IdentitetService(
             if (arbeidssoekerIdList.size == 1) {
                 val arbeidssoekerId = arbeidssoekerIdList.first()
                 val tidligereIdentiteter = eksisterendeIdentitetRows
+                    .filter { it.status != IdentitetStatus.SLETTET }
                     .map { it.asIdentitet() }
                     .toMutableList()
-                    .apply { add(arbeidssoekerId.asIdentitet(gjeldende = true)) }
+                if (tidligereIdentiteter.isNotEmpty()) {
+                    tidligereIdentiteter += arbeidssoekerId.asIdentitet(gjeldende = true)
+                }
 
                 hendelseService.lagreIdentiteterEndretHendelse(
                     aktorId = aktorId,
@@ -179,46 +188,22 @@ class IdentitetService(
         eksisterendeIdentitetRows: Iterable<IdentitetRow>,
         eksisterendeKafkaKeyRows: Iterable<KafkaKeyRow>
     ) {
-        val identiteterSet = eksisterendeIdentitetRows
-            .map { it.identitet }
+        val arbeidssoekerIdSet = eksisterendeIdentitetRows
+            .map { it.arbeidssoekerId }
+            .toMutableSet()
+        arbeidssoekerIdSet += eksisterendeKafkaKeyRows
+            .map { it.arbeidssoekerId }
             .toSet()
-        val nyesteArbeidssoekerId = eksisterendeKafkaKeyRows.maxOf { it.arbeidssoekerId }
-        val kafkaKeyMap = eksisterendeKafkaKeyRows
-            .associate { it.identitetsnummer to it.arbeidssoekerId }
+        val nyesteArbeidssoekerId = arbeidssoekerIdSet.maxOf { it }
 
-        identiteter
-            .map { identitet ->
-                if (identiteterSet.contains(identitet.identitet)) {
-                    val rowsAffected = identitetRepository.updateGjeldendeAndStatusByIdentitet(
-                        identitet = identitet.identitet,
-                        gjeldende = identitet.gjeldende,
-                        status = IdentitetStatus.MERGE
-                    )
-                    logger.info(
-                        "Oppdaterer identitet av type {} med status {} (rows affected {})",
-                        identitet.type.name,
-                        IdentitetStatus.MERGE.name,
-                        rowsAffected
-                    )
-                } else {
-                    val arbeidssoekerId = kafkaKeyMap[identitet.identitet] ?: nyesteArbeidssoekerId
-                    val rowsAffected = identitetRepository.insert(
-                        arbeidssoekerId = arbeidssoekerId,
-                        aktorId = aktorId,
-                        identitet = identitet.identitet,
-                        type = identitet.type,
-                        gjeldende = identitet.gjeldende,
-                        status = IdentitetStatus.MERGE,
-                        sourceTimestamp = sourceTimestamp
-                    )
-                    logger.info(
-                        "Oppretter identitet av type {} med status {} (rows affected {})",
-                        identitet.type.name,
-                        IdentitetStatus.MERGE.name,
-                        rowsAffected
-                    )
-                }
-            }
+        lagreIdentiteter(
+            aktorId = aktorId,
+            identiteter = identiteter,
+            sourceTimestamp = sourceTimestamp,
+            arbeidssoekerId = nyesteArbeidssoekerId,
+            eksisterendeIdentitetRows = eksisterendeIdentitetRows,
+            status = IdentitetStatus.MERGE
+        )
 
         konfliktService.lagreVentendeKonflikt(
             aktorId = aktorId,
@@ -236,6 +221,40 @@ class IdentitetService(
         arbeidssoekerId: Long,
         eksisterendeIdentitetRows: Iterable<IdentitetRow>
     ) {
+        val endredeIdentiteter = lagreIdentiteter(
+            aktorId = aktorId,
+            identiteter = identiteter,
+            sourceTimestamp = sourceTimestamp,
+            arbeidssoekerId = arbeidssoekerId,
+            eksisterendeIdentitetRows = eksisterendeIdentitetRows,
+            status = IdentitetStatus.AKTIV
+        )
+
+        val tidligereIdentiteter = eksisterendeIdentitetRows
+            .filter { it.aktorId == aktorId }
+            .filter { it.status != IdentitetStatus.SLETTET }
+            .map { it.asIdentitet() }
+            .toMutableList()
+        if (tidligereIdentiteter.isNotEmpty()) {
+            tidligereIdentiteter += arbeidssoekerId.asIdentitet(gjeldende = true)
+        }
+
+        hendelseService.lagreIdentiteterEndretHendelse(
+            arbeidssoekerId = arbeidssoekerId,
+            aktorId = aktorId,
+            identiteter = endredeIdentiteter,
+            tidligereIdentiteter = tidligereIdentiteter
+        )
+    }
+
+    private fun lagreIdentiteter(
+        aktorId: String,
+        identiteter: List<Identitet>,
+        sourceTimestamp: Instant,
+        arbeidssoekerId: Long,
+        eksisterendeIdentitetRows: Iterable<IdentitetRow>,
+        status: IdentitetStatus
+    ): List<Identitet> {
         val identitetSet = identiteter
             .map { it.identitet }
             .toSet()
@@ -243,17 +262,38 @@ class IdentitetService(
             .map { it.identitet }
             .toSet()
 
-        val endredeIdentiteter = identiteter
+        eksisterendeIdentitetRows
+            .filter { !identitetSet.contains(it.identitet) }
+            .forEach { identitet ->
+                val rowsAffected = identitetRepository.updateByIdentitet(
+                    identitet = identitet.identitet,
+                    aktorId = aktorId,
+                    gjeldende = identitet.gjeldende,
+                    status = IdentitetStatus.SLETTET,
+                    sourceTimestamp = sourceTimestamp
+                )
+                logger.info(
+                    "Oppdaterer identitet av type {} med status {} (rows affected {})",
+                    identitet.type.name,
+                    IdentitetStatus.SLETTET.name,
+                    rowsAffected
+                )
+            }
+
+        return identiteter
             .map { identitet ->
                 if (eksisterendeIdentitetSet.contains(identitet.identitet)) {
                     val rowsAffected = identitetRepository.updateByIdentitet(
                         identitet = identitet.identitet,
                         aktorId = aktorId,
-                        gjeldende = identitet.gjeldende
+                        gjeldende = identitet.gjeldende,
+                        status = status,
+                        sourceTimestamp = sourceTimestamp
                     )
                     logger.info(
-                        "Oppdaterer identitet av type {} (rows affected {})",
+                        "Oppdaterer identitet av type {} med status {} (rows affected {})",
                         identitet.type.name,
+                        status.name,
                         rowsAffected
                     )
                 } else {
@@ -263,47 +303,21 @@ class IdentitetService(
                         identitet = identitet.identitet,
                         type = identitet.type,
                         gjeldende = identitet.gjeldende,
-                        status = IdentitetStatus.AKTIV,
+                        status = status,
                         sourceTimestamp = sourceTimestamp
                     )
                     logger.info(
                         "Oppretter identitet av type {} med status {} (rows affected {})",
                         identitet.type.name,
-                        IdentitetStatus.AKTIV.name,
+                        status.name,
                         rowsAffected
                     )
                 }
+
                 identitetRepository.getByIdentitet(identitet.identitet)
                     ?.asIdentitet() ?: throw IdentitetIkkeFunnetException("Identitet ikke funnet")
             }
             .toMutableList()
             .apply { add(arbeidssoekerId.asIdentitet(gjeldende = true)) }
-
-        val slettIdentiteter = eksisterendeIdentitetSet
-            .filter { !identitetSet.contains(it) }
-            .toSet()
-        if (slettIdentiteter.isNotEmpty()) {
-            val rowsAffected = identitetRepository.updateStatusByIdentitetList(
-                status = IdentitetStatus.SLETTET,
-                identitetList = slettIdentiteter
-            )
-            logger.info(
-                "Oppdaterer identiteter med status {} (rows affected {})",
-                IdentitetStatus.AKTIV.name,
-                rowsAffected
-            )
-        }
-
-        val tidligereIdentiteter = eksisterendeIdentitetRows.map { it.asIdentitet() }.toMutableList()
-        if (tidligereIdentiteter.isNotEmpty()) {
-            tidligereIdentiteter.add(arbeidssoekerId.asIdentitet(gjeldende = true))
-        }
-
-        hendelseService.lagreIdentiteterEndretHendelse(
-            arbeidssoekerId = arbeidssoekerId,
-            aktorId = aktorId,
-            identiteter = endredeIdentiteter,
-            tidligereIdentiteter = tidligereIdentiteter
-        )
     }
 }

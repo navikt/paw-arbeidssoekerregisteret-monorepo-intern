@@ -71,8 +71,8 @@ import javax.sql.DataSource
 
 class TestContext private constructor(
     val mockOAuth2Server: MockOAuth2Server = MockOAuth2Server(),
-    val serializer: IdentitetHendelseSerializer = IdentitetHendelseSerializer(),
-    val deserializer: IdentitetHendelseDeserializer = IdentitetHendelseDeserializer(),
+    val hendelseSerializer: IdentitetHendelseSerializer = IdentitetHendelseSerializer(),
+    val hendelseDeserializer: IdentitetHendelseDeserializer = IdentitetHendelseDeserializer(),
     val applicationConfig: ApplicationConfig = loadNaisOrLocalConfiguration(APPLICATION_CONFIG),
     val dataSource: DataSource,
     val initSql: List<String> = emptyList(),

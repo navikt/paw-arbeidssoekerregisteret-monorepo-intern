@@ -75,29 +75,20 @@ class IdentitetRepository {
     fun updateByIdentitet(
         identitet: String,
         aktorId: String,
-        gjeldende: Boolean
+        gjeldende: Boolean,
+        status: IdentitetStatus,
+        sourceTimestamp: Instant
     ): Int = transaction {
         IdentiteterTable.update(where = {
             (IdentiteterTable.identitet eq identitet) and
                     ((IdentiteterTable.aktorId neq aktorId) or
-                            (IdentiteterTable.gjeldende neq gjeldende))
+                            (IdentiteterTable.gjeldende neq gjeldende) or
+                            (IdentiteterTable.status neq status))
         }) {
             it[IdentiteterTable.aktorId] = aktorId
             it[IdentiteterTable.gjeldende] = gjeldende
-            it[updatedTimestamp] = Instant.now()
-        }
-    }
-
-    fun updateGjeldendeAndStatusByIdentitet(
-        identitet: String,
-        gjeldende: Boolean,
-        status: IdentitetStatus
-    ): Int = transaction {
-        IdentiteterTable.update(where = {
-            (IdentiteterTable.identitet eq identitet)
-        }) {
-            it[IdentiteterTable.gjeldende] = gjeldende
             it[IdentiteterTable.status] = status
+            it[IdentiteterTable.sourceTimestamp] = sourceTimestamp
             it[updatedTimestamp] = Instant.now()
         }
     }

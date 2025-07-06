@@ -4,19 +4,15 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainOnly
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import no.nav.paw.identitet.internehendelser.IDENTITETER_ENDRET_HENDELSE_TYPE
+import no.nav.paw.identitet.internehendelser.IdentiteterEndretHendelse
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafkakeygenerator.context.TestContext
-import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
-import no.nav.paw.kafkakeygenerator.model.KafkaKeyRow
-import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
-import no.nav.paw.kafkakeygenerator.model.KonfliktType
-import no.nav.paw.kafkakeygenerator.test.IdentitetWrapper
-import no.nav.paw.kafkakeygenerator.test.KonfliktWrapper
-import no.nav.paw.kafkakeygenerator.test.TestData
+import no.nav.paw.kafkakeygenerator.model.*
+import no.nav.paw.kafkakeygenerator.test.*
 import no.nav.paw.kafkakeygenerator.test.TestData.asIdentitetsnummer
 import no.nav.paw.kafkakeygenerator.test.TestData.asRecords
-import no.nav.paw.kafkakeygenerator.test.asWrapper
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import no.nav.person.pdl.aktor.v2.Aktor
@@ -91,6 +87,12 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
         }
 
         "Skal lagre endring på ideniteter for arbeidssøker" {
+            /**
+             * melding 1: aktorId -> dnr(gjeldende)
+             * melding 2: aktorId -> dnr, fnr1, fnr2(gjeldende)
+             * melding 3: aktorId -> dnr, fnr2(gjeldende)
+             * melding 4: aktorId -> null(tombstone)
+             */
             val aktorId = Identitet(TestData.aktorId3, IdentitetType.AKTORID, true)
             val npId = Identitet(TestData.npId3, IdentitetType.NPID, true)
             val dnr = Identitet(TestData.dnr3, IdentitetType.FOLKEREGISTERIDENT, true)
@@ -98,10 +100,21 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             val fnr2 = Identitet(TestData.fnr3_2, IdentitetType.FOLKEREGISTERIDENT, true)
             val arbeidssoekerId = kafkaKeysRepository.opprett(Identitetsnummer(dnr.identitet))
                 .fold(onLeft = { null }, onRight = { it })!!.value
+            val arbId = Identitet(arbeidssoekerId.toString(), IdentitetType.ARBEIDSSOEKERID, true)
+            val identiteter1 = listOf(aktorId, npId, dnr, arbId)
+            val identiteter2 = listOf(
+                aktorId, npId, dnr.copy(gjeldende = false), fnr1.copy(gjeldende = false), fnr2, arbId
+            )
+            val identiteter3 = listOf(
+                aktorId, npId, dnr.copy(gjeldende = false), fnr2, arbId
+            )
+            val aktor1 = TestData.aktor3_1
+            val aktor2 = TestData.aktor3_2
+            val aktor3 = TestData.aktor3_3
 
             // GIVEN
             val records1: ConsumerRecords<Any, Aktor> = listOf(
-                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 5, aktorId.identitet, TestData.aktor3_1),
+                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 5, aktorId.identitet, aktor1),
             ).asRecords()
 
             // WHEN
@@ -131,7 +144,13 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 )
             )
             konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 1
+            val hendelseRows1 = hendelseRepository.findByAktorId(aktorId.identitet)
+            hendelseRows1 shouldHaveSize 1
+            val hendelser1 = hendelseRows1
+                .map { hendelseDeserializer.deserializeFromString(it.data) }
+                .map { it as IdentiteterEndretHendelse }
+            hendelser1[0].identiteter shouldBe identiteter1
+            hendelser1[0].tidligereIdentiteter shouldBe emptyList()
             val kafkaKeyRow1 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow1 shouldBe KafkaKeyRow(arbeidssoekerId, dnr.identitet)
             kafkaKeysIdentitetRepository.find(fnr1.asIdentitetsnummer()) shouldBe null
@@ -143,7 +162,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
 
             // GIVEN
             val records2: ConsumerRecords<Any, Aktor> = listOf(
-                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 6, aktorId.identitet, TestData.aktor3_2)
+                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 6, aktorId.identitet, aktor2)
             ).asRecords()
 
             // WHEN
@@ -185,7 +204,15 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 )
             )
             konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 2
+            val hendelseRows2 = hendelseRepository.findByAktorId(aktorId.identitet)
+            hendelseRows2 shouldHaveSize 2
+            val hendelser2 = hendelseRows2
+                .map { hendelseDeserializer.deserializeFromString(it.data) }
+                .map { it as IdentiteterEndretHendelse }
+            hendelser2[0].identiteter shouldBe identiteter1
+            hendelser2[0].tidligereIdentiteter shouldBe emptyList()
+            hendelser2[1].identiteter shouldBe identiteter2
+            hendelser2[1].tidligereIdentiteter shouldBe identiteter1
             val kafkaKeyRow2 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow2 shouldBe KafkaKeyRow(arbeidssoekerId, dnr.identitet)
             kafkaKeysIdentitetRepository.find(fnr1.asIdentitetsnummer()) shouldBe null
@@ -197,7 +224,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
 
             // GIVEN
             val records3: ConsumerRecords<Any, Aktor> = listOf(
-                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 7, aktorId.identitet, TestData.aktor3_3)
+                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 7, aktorId.identitet, aktor3)
             ).asRecords()
 
             // WHEN
@@ -239,7 +266,17 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 )
             )
             konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 3
+            val hendelseRows3 = hendelseRepository.findByAktorId(aktorId.identitet)
+            hendelseRows3 shouldHaveSize 3
+            val hendelser3 = hendelseRows3
+                .map { hendelseDeserializer.deserializeFromString(it.data) }
+                .map { it as IdentiteterEndretHendelse }
+            hendelser3[0].identiteter shouldBe identiteter1
+            hendelser3[0].tidligereIdentiteter shouldBe emptyList()
+            hendelser3[1].identiteter shouldBe identiteter2
+            hendelser3[1].tidligereIdentiteter shouldBe identiteter1
+            hendelser3[2].identiteter shouldBe identiteter3
+            hendelser3[2].tidligereIdentiteter shouldBe identiteter2
             val kafkaKeyRow3 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow3 shouldBe KafkaKeyRow(arbeidssoekerId, dnr.identitet)
             kafkaKeysIdentitetRepository.find(fnr1.asIdentitetsnummer()) shouldBe null
@@ -293,7 +330,19 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 )
             )
             konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 4
+            val hendelseRows4 = hendelseRepository.findByAktorId(aktorId.identitet)
+            hendelseRows4 shouldHaveSize 4
+            val hendelser4 = hendelseRows4
+                .map { hendelseDeserializer.deserializeFromString(it.data) }
+                .map { it as IdentiteterEndretHendelse }
+            hendelser4[0].identiteter shouldBe identiteter1
+            hendelser4[0].tidligereIdentiteter shouldBe emptyList()
+            hendelser4[1].identiteter shouldBe identiteter2
+            hendelser4[1].tidligereIdentiteter shouldBe identiteter1
+            hendelser4[2].identiteter shouldBe identiteter3
+            hendelser4[2].tidligereIdentiteter shouldBe identiteter2
+            hendelser4[3].identiteter shouldBe emptyList()
+            hendelser4[3].tidligereIdentiteter shouldBe identiteter3
             val kafkaKeyRow4 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow4 shouldBe KafkaKeyRow(arbeidssoekerId, dnr.identitet)
             kafkaKeysIdentitetRepository.find(fnr1.asIdentitetsnummer()) shouldBe null
@@ -305,6 +354,11 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
         }
 
         "Skal lagre merge-konflikt for melding med dnr så for fnr for arbeidssøker med to arbeidssøkerIder" {
+            /**
+             * melding 1: aktorId -> dnr(gjeldende)
+             * melding 2: aktorId -> dnr, fnr(gjeldende)
+             * melding 3: aktorId -> null(tombstone)
+             */
             // GIVEN
             val aktorId = Identitet(TestData.aktorId4, IdentitetType.AKTORID, true)
             val npId = Identitet(TestData.npId4, IdentitetType.NPID, true)
@@ -314,8 +368,13 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 .fold(onLeft = { null }, onRight = { it })!!.value
             val arbeidssoekerId2 = kafkaKeysRepository.opprett(fnr.asIdentitetsnummer())
                 .fold(onLeft = { null }, onRight = { it })!!.value
+            val arbId1 = Identitet(arbeidssoekerId1.toString(), IdentitetType.ARBEIDSSOEKERID, true)
+            val identiteter1 = listOf(aktorId, npId, dnr, arbId1)
+            val aktor1 = TestData.aktor4_1
+            val aktor2 = TestData.aktor4_2
+
             val records1: ConsumerRecords<Any, Aktor> = listOf(
-                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 9, aktorId.identitet, TestData.aktor4_1)
+                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 9, aktorId.identitet, aktor1)
             ).asRecords()
 
             // WHEN
@@ -348,6 +407,19 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             konfliktRows1 shouldHaveSize 0
             val hendelseRows1 = hendelseRepository.findByAktorId(aktorId.identitet)
             hendelseRows1 shouldHaveSize 1
+            hendelseRows1.map { it.asWrapper() } shouldContainOnly listOf(
+                HendelseWrapper(
+                    arbeidssoekerId = arbeidssoekerId1,
+                    aktorId = aktorId.identitet,
+                    status = HendelseStatus.VENTER,
+                    hendelse = IdentitetHendelseWrapper(
+                        type = IDENTITETER_ENDRET_HENDELSE_TYPE,
+                        identiteter = identiteter1,
+                        tidligereIdentiteter = emptyList()
+                    )
+                )
+            )
+
             val kafkaKeyRow1 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow1 shouldBe KafkaKeyRow(arbeidssoekerId1, dnr.identitet)
             val kfnr1 = kafkaKeysIdentitetRepository.find(fnr.asIdentitetsnummer())
@@ -359,7 +431,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
 
             // GIVEN
             val records2: ConsumerRecords<Any, Aktor> = listOf(
-                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 10, aktorId.identitet, TestData.aktor4_2)
+                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 10, aktorId.identitet, aktor2)
             ).asRecords()
 
             // WHEN
@@ -406,6 +478,19 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             )
             val hendelseRows2 = hendelseRepository.findByAktorId(aktorId.identitet)
             hendelseRows2 shouldHaveSize 1
+            hendelseRows2.map { it.asWrapper() } shouldContainOnly listOf(
+                HendelseWrapper(
+                    arbeidssoekerId = arbeidssoekerId1,
+                    aktorId = aktorId.identitet,
+                    status = HendelseStatus.VENTER,
+                    hendelse = IdentitetHendelseWrapper(
+                        type = IDENTITETER_ENDRET_HENDELSE_TYPE,
+                        identiteter = identiteter1,
+                        tidligereIdentiteter = emptyList()
+                    )
+                )
+            )
+
             val kafkaKeyRow2 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow2 shouldBe KafkaKeyRow(arbeidssoekerId1, dnr.identitet)
             val kafkaKeyRow3 = kafkaKeysIdentitetRepository.find(fnr.asIdentitetsnummer())
@@ -470,6 +555,19 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             )
             val hendelseRows3 = hendelseRepository.findByAktorId(aktorId.identitet)
             hendelseRows3 shouldHaveSize 1
+            hendelseRows3.map { it.asWrapper() } shouldContainOnly listOf(
+                HendelseWrapper(
+                    arbeidssoekerId = arbeidssoekerId1,
+                    aktorId = aktorId.identitet,
+                    status = HendelseStatus.VENTER,
+                    hendelse = IdentitetHendelseWrapper(
+                        type = IDENTITETER_ENDRET_HENDELSE_TYPE,
+                        identiteter = identiteter1,
+                        tidligereIdentiteter = emptyList()
+                    )
+                )
+            )
+
             val kafkaKeyRow4 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow4 shouldBe KafkaKeyRow(arbeidssoekerId1, dnr.identitet)
             val kafkaKeyRow5 = kafkaKeysIdentitetRepository.find(fnr.asIdentitetsnummer())
@@ -481,6 +579,10 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
         }
 
         "Skal lagre splitt-konflikt for melding med fnr på ny aktørId for arbeidssøker" {
+            /**
+             * melding 1: aktorId1 -> dnr, fnr(gjeldende)
+             * melding 2: aktorId2 -> fnr(gjeldende)
+             */
             // GIVEN
             val aktorId1 = Identitet(TestData.aktorId7_1, IdentitetType.AKTORID, true)
             val aktorId2 = Identitet(TestData.aktorId7_2, IdentitetType.AKTORID, true)
@@ -489,44 +591,11 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             val fnr = Identitet(TestData.fnr7, IdentitetType.FOLKEREGISTERIDENT, true)
             val arbeidssoekerId = kafkaKeysRepository.opprett(dnr.asIdentitetsnummer())
                 .fold(onLeft = { null }, onRight = { it })!!.value
+            val arbId1 = Identitet(arbeidssoekerId.toString(), IdentitetType.ARBEIDSSOEKERID, true)
+            val identiteter1 = listOf(aktorId1, npId, dnr, fnr, arbId1)
             val aktor1 = TestData.aktor7_1
             val aktor2 = TestData.aktor7_2
-            identitetRepository.insert(
-                arbeidssoekerId = arbeidssoekerId,
-                aktorId = aktorId1.identitet,
-                identitet = dnr.identitet,
-                type = dnr.type,
-                status = IdentitetStatus.AKTIV,
-                gjeldende = false,
-                sourceTimestamp = Instant.now()
-            )
-            identitetRepository.insert(
-                arbeidssoekerId = arbeidssoekerId,
-                aktorId = aktorId1.identitet,
-                identitet = fnr.identitet,
-                type = fnr.type,
-                status = IdentitetStatus.AKTIV,
-                gjeldende = true,
-                sourceTimestamp = Instant.now()
-            )
-            identitetRepository.insert(
-                arbeidssoekerId = arbeidssoekerId,
-                aktorId = aktorId1.identitet,
-                identitet = aktorId1.identitet,
-                type = aktorId1.type,
-                status = IdentitetStatus.AKTIV,
-                gjeldende = true,
-                sourceTimestamp = Instant.now()
-            )
-            identitetRepository.insert(
-                arbeidssoekerId = arbeidssoekerId,
-                aktorId = aktorId1.identitet,
-                identitet = npId.identitet,
-                type = npId.type,
-                status = IdentitetStatus.AKTIV,
-                gjeldende = true,
-                sourceTimestamp = Instant.now()
-            )
+
             val records1: ConsumerRecords<Any, Aktor> = listOf(
                 ConsumerRecord<Any, Aktor>(aktorTopic, 0, 12, aktorId1.identitet, aktor1),
             ).asRecords()
@@ -568,6 +637,11 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             konfliktRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
             val hendelseRows1 = hendelseRepository.findByAktorId(aktorId1.identitet)
             hendelseRows1 shouldHaveSize 1
+            val hendelser1 = hendelseRows1
+                .map { hendelseDeserializer.deserializeFromString(it.data) }
+                .map { it as IdentiteterEndretHendelse }
+            hendelser1[0].identiteter shouldBe identiteter1
+            hendelser1[0].tidligereIdentiteter shouldBe emptyList()
             hendelseRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
             val kafkaKeyRow1 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow1 shouldBe KafkaKeyRow(arbeidssoekerId, dnr.identitet)
@@ -629,6 +703,11 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             )
             val hendelseRows2 = hendelseRepository.findByAktorId(aktorId1.identitet)
             hendelseRows2 shouldHaveSize 1
+            val hendelser2 = hendelseRows2
+                .map { hendelseDeserializer.deserializeFromString(it.data) }
+                .map { it as IdentiteterEndretHendelse }
+            hendelser2[0].identiteter shouldBe identiteter1
+            hendelser2[0].tidligereIdentiteter shouldBe emptyList()
             hendelseRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
             val kafkaKeyRow2 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow2 shouldBe KafkaKeyRow(arbeidssoekerId, dnr.identitet)
@@ -641,6 +720,11 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
         }
 
         "Skal lagre endring på ideniteter med ny aktørId for arbeidssøker" {
+            /**
+             * melding 1: aktorId1 -> dnr(gjeldende)
+             * melding 2: aktorId2 -> fnr(gjeldende)
+             * melding 3: aktorId2 -> dnr, fnr(gjeldende)
+             */
             val aktorId1 = Identitet(TestData.aktorId8_1, IdentitetType.AKTORID, true)
             val aktorId2 = Identitet(TestData.aktorId8_2, IdentitetType.AKTORID, true)
             val npId1 = Identitet(TestData.npId8_1, IdentitetType.NPID, true)
@@ -649,7 +733,19 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             val fnr = Identitet(TestData.fnr8, IdentitetType.FOLKEREGISTERIDENT, true)
             val arbeidssoekerId = kafkaKeysRepository.opprett(dnr.asIdentitetsnummer())
                 .fold(onLeft = { null }, onRight = { it })!!.value
+            val arbId1 = Identitet(arbeidssoekerId.toString(), IdentitetType.ARBEIDSSOEKERID, true)
             kafkaKeysRepository.lagre(fnr.asIdentitetsnummer(), ArbeidssoekerId(arbeidssoekerId))
+            val identiteter1 = listOf(aktorId1, npId1, dnr, arbId1)
+            val identiteter2 = listOf(aktorId2, npId2, fnr, arbId1)
+            val identiteter3 = listOf(
+                aktorId1.copy(gjeldende = false),
+                aktorId2,
+                npId1.copy(gjeldende = false),
+                npId2,
+                dnr.copy(gjeldende = false),
+                fnr,
+                arbId1
+            )
             val aktor1 = TestData.aktor8_1
             val aktor2 = TestData.aktor8_2
             val aktor3 = TestData.aktor8_3
@@ -690,6 +786,11 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             konfliktRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
             val hendelseRows1 = hendelseRepository.findByAktorId(aktorId1.identitet)
             hendelseRows1 shouldHaveSize 1
+            val hendelser1 = hendelseRows1
+                .map { hendelseDeserializer.deserializeFromString(it.data) }
+                .map { it as IdentiteterEndretHendelse }
+            hendelser1[0].identiteter shouldBe identiteter1
+            hendelser1[0].tidligereIdentiteter shouldBe emptyList()
             hendelseRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
             kafkaKeysIdentitetRepository.find(aktorId1.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(aktorId2.asIdentitetsnummer()) shouldBe null
@@ -758,8 +859,18 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             konfliktRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
             val hendelseRows2 = hendelseRepository.findByAktorId(aktorId1.identitet)
             hendelseRows2 shouldHaveSize 1
+            val hendelser2 = hendelseRows2
+                .map { hendelseDeserializer.deserializeFromString(it.data) }
+                .map { it as IdentiteterEndretHendelse }
+            hendelser2[0].identiteter shouldBe identiteter1
+            hendelser2[0].tidligereIdentiteter shouldBe emptyList()
             val hendelseRows3 = hendelseRepository.findByAktorId(aktorId2.identitet)
             hendelseRows3 shouldHaveSize 1
+            val hendelser3 = hendelseRows3
+                .map { hendelseDeserializer.deserializeFromString(it.data) }
+                .map { it as IdentiteterEndretHendelse }
+            hendelser3[0].identiteter shouldBe identiteter2
+            hendelser3[0].tidligereIdentiteter shouldBe emptyList()
             kafkaKeysIdentitetRepository.find(aktorId1.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(aktorId2.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(npId1.asIdentitetsnummer()) shouldBe null
@@ -824,8 +935,20 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             konfliktRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
             val hendelseRows4 = hendelseRepository.findByAktorId(aktorId1.identitet)
             hendelseRows4 shouldHaveSize 1
+            val hendelser4 = hendelseRows4
+                .map { hendelseDeserializer.deserializeFromString(it.data) }
+                .map { it as IdentiteterEndretHendelse }
+            hendelser4[0].identiteter shouldBe identiteter1
+            hendelser4[0].tidligereIdentiteter shouldBe emptyList()
             val hendelseRows5 = hendelseRepository.findByAktorId(aktorId2.identitet)
             hendelseRows5 shouldHaveSize 2
+            val hendelser5 = hendelseRows5
+                .map { hendelseDeserializer.deserializeFromString(it.data) }
+                .map { it as IdentiteterEndretHendelse }
+            hendelser5[0].identiteter shouldBe identiteter2
+            hendelser5[0].tidligereIdentiteter shouldBe emptyList()
+            hendelser5[1].identiteter shouldBe identiteter3
+            hendelser5[1].tidligereIdentiteter shouldBe identiteter2
             kafkaKeysIdentitetRepository.find(aktorId1.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(aktorId2.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(npId1.asIdentitetsnummer()) shouldBe null
@@ -927,6 +1050,108 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             kafkaKeysIdentitetRepository.find(fnr.asIdentitetsnummer()) shouldBe null
             val hwmRow = pdlAktorKafkaHwmOperations.getHwm(aktorTopic, 0)
             hwmRow.offset shouldBe 17
+        }
+
+        "Skal ignorere duplikate meldinger" {
+            // GIVEN
+            val aktorId = Identitet(TestData.aktorId10, IdentitetType.AKTORID, true)
+            val npId = Identitet(TestData.npId10, IdentitetType.NPID, true)
+            val fnr = Identitet(TestData.fnr10, IdentitetType.FOLKEREGISTERIDENT, true)
+            val arbeidssoekerId = kafkaKeysRepository.opprett(fnr.asIdentitetsnummer())
+                .fold(onLeft = { null }, onRight = { it })!!.value
+            val identiteter = TestData.aktor10.identifikatorer.map { it.asIdentitet() } +
+                    Identitet(arbeidssoekerId.toString(), IdentitetType.ARBEIDSSOEKERID, true)
+
+            val records1: ConsumerRecords<Any, Aktor> = listOf(
+                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 18, aktorId.identitet, TestData.aktor10),
+            ).asRecords()
+
+            // WHEN
+            pdlAktorKafkaConsumerService.handleRecords(records1)
+
+            // THEN
+            val identitetRows1 = identitetRepository.findByAktorId(aktorId.identitet)
+            identitetRows1 shouldHaveSize 3
+            identitetRows1.map { it.asWrapper() } shouldContainOnly listOf(
+                IdentitetWrapper(
+                    arbeidssoekerId = arbeidssoekerId,
+                    aktorId = aktorId.identitet,
+                    identitet = aktorId,
+                    status = IdentitetStatus.AKTIV
+                ),
+                IdentitetWrapper(
+                    arbeidssoekerId = arbeidssoekerId,
+                    aktorId = aktorId.identitet,
+                    identitet = npId,
+                    status = IdentitetStatus.AKTIV
+                ),
+                IdentitetWrapper(
+                    arbeidssoekerId = arbeidssoekerId,
+                    aktorId = aktorId.identitet,
+                    identitet = fnr,
+                    status = IdentitetStatus.AKTIV
+                )
+            )
+            konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
+            val hendelseRows1 = hendelseRepository.findByAktorId(aktorId.identitet)
+            hendelseRows1 shouldHaveSize 1
+            val hendelser1 = hendelseRows1
+                .map { hendelseDeserializer.deserializeFromString(it.data) }
+                .map { it as IdentiteterEndretHendelse }
+            hendelser1[0].identiteter shouldBe identiteter
+            hendelser1[0].tidligereIdentiteter shouldBe emptyList()
+            kafkaKeysIdentitetRepository.find(aktorId.asIdentitetsnummer()) shouldBe null
+            kafkaKeysIdentitetRepository.find(npId.asIdentitetsnummer()) shouldBe null
+            val kafkaKeyRow1 = kafkaKeysIdentitetRepository.find(fnr.asIdentitetsnummer())
+            kafkaKeyRow1 shouldBe KafkaKeyRow(arbeidssoekerId, fnr.identitet)
+            val hwmRow1 = pdlAktorKafkaHwmOperations.getHwm(aktorTopic, 0)
+            hwmRow1.offset shouldBe 18
+
+            // GIVEN
+            val records2: ConsumerRecords<Any, Aktor> = listOf(
+                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 19, aktorId.identitet, TestData.aktor10),
+            ).asRecords()
+
+            // WHEN
+            pdlAktorKafkaConsumerService.handleRecords(records2)
+
+            // THEN
+            val identitetRows2 = identitetRepository.findByAktorId(aktorId.identitet)
+            identitetRows2 shouldHaveSize 3
+            identitetRows2.map { it.asWrapper() } shouldContainOnly listOf(
+                IdentitetWrapper(
+                    arbeidssoekerId = arbeidssoekerId,
+                    aktorId = aktorId.identitet,
+                    identitet = aktorId,
+                    status = IdentitetStatus.AKTIV
+                ),
+                IdentitetWrapper(
+                    arbeidssoekerId = arbeidssoekerId,
+                    aktorId = aktorId.identitet,
+                    identitet = npId,
+                    status = IdentitetStatus.AKTIV
+                ),
+                IdentitetWrapper(
+                    arbeidssoekerId = arbeidssoekerId,
+                    aktorId = aktorId.identitet,
+                    identitet = fnr,
+                    status = IdentitetStatus.AKTIV
+                )
+            )
+            konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
+            val hendelseRows2 = hendelseRepository.findByAktorId(aktorId.identitet)
+            hendelseRows2 shouldHaveSize 1
+            val hendelser2 = hendelseRows1
+                .map { hendelseDeserializer.deserializeFromString(it.data) }
+                .map { it as IdentiteterEndretHendelse }
+            hendelser2[0].identiteter shouldBe identiteter
+            hendelser2[0].tidligereIdentiteter shouldBe emptyList()
+            kafkaKeysIdentitetRepository.find(aktorId.asIdentitetsnummer()) shouldBe null
+            kafkaKeysIdentitetRepository.find(npId.asIdentitetsnummer()) shouldBe null
+            val kafkaKeyRow2 = kafkaKeysIdentitetRepository.find(fnr.asIdentitetsnummer())
+            kafkaKeyRow2 shouldBe KafkaKeyRow(arbeidssoekerId, fnr.identitet)
+            val hwmRow2 = pdlAktorKafkaHwmOperations.getHwm(aktorTopic, 0)
+            hwmRow2.offset shouldBe 19
         }
     }
 })

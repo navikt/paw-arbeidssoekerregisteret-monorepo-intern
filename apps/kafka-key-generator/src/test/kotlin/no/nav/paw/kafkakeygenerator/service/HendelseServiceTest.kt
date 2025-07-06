@@ -9,8 +9,10 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import no.nav.paw.identitet.internehendelser.IDENTITETER_ENDRET_HENDELSE_TYPE
+import no.nav.paw.identitet.internehendelser.IDENTITETER_MERGET_HENDELSE_TYPE
 import no.nav.paw.identitet.internehendelser.IdentitetHendelse
 import no.nav.paw.identitet.internehendelser.IdentiteterEndretHendelse
+import no.nav.paw.identitet.internehendelser.IdentiteterMergetHendelse
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafkakeygenerator.context.TestContext
@@ -39,7 +41,7 @@ class HendelseServiceTest : FreeSpec({
             confirmVerified(futureMock, pawIdentitetProducerMock)
         }
 
-        "Skal sende ventende hendelser" {
+        "Skal sende ventende identiteter-endret-hendelser" {
             // GIVEN
             val aktorId = TestData.aktorId1
             val npId = TestData.npId1
@@ -65,7 +67,7 @@ class HendelseServiceTest : FreeSpec({
                 arbeidssoekerId = arbeidssoekerId,
                 aktorId = aktorId,
                 version = 1,
-                data = serializer.serializeToString(sendtHendelse),
+                data = hendelseSerializer.serializeToString(sendtHendelse),
                 status = HendelseStatus.VENTER
             )
 
@@ -78,6 +80,53 @@ class HendelseServiceTest : FreeSpec({
             record.key() shouldBe arbeidssoekerId
             record.value().hendelseType shouldBe IDENTITETER_ENDRET_HENDELSE_TYPE
             val mottattHendelse = record.value().shouldBeTypeOf<IdentiteterEndretHendelse>()
+            mottattHendelse.hendelseId shouldBe sendtHendelse.hendelseId
+            mottattHendelse.hendelseType shouldBe sendtHendelse.hendelseType
+            mottattHendelse.identiteter shouldBe sendtHendelse.identiteter
+            mottattHendelse.tidligereIdentiteter shouldBe sendtHendelse.tidligereIdentiteter
+            verify { futureMock.get() }
+            verify { pawIdentitetProducerMock.send(any<ProducerRecord<Long, IdentitetHendelse>>()) }
+        }
+
+        "Skal sende ventende identiteter-merget-hendelser" {
+            // GIVEN
+            val aktorId = TestData.aktorId2
+            val npId = TestData.npId2
+            val dnr = TestData.dnr2
+            val fnr = TestData.fnr2_1
+            val arbeidssoekerId = kafkaKeysRepository.opprett(Identitetsnummer(dnr))
+                .fold(onLeft = { null }, onRight = { it })!!.value
+            val id1 = Identitet(identitet = aktorId, type = IdentitetType.AKTORID, gjeldende = true)
+            val id2 = Identitet(identitet = npId, type = IdentitetType.NPID, gjeldende = true)
+            val id3_1 = Identitet(identitet = dnr, type = IdentitetType.FOLKEREGISTERIDENT, gjeldende = true)
+            val id3_2 = Identitet(identitet = dnr, type = IdentitetType.FOLKEREGISTERIDENT, gjeldende = false)
+            val id4 = Identitet(identitet = fnr, type = IdentitetType.FOLKEREGISTERIDENT, gjeldende = true)
+            val id5 = Identitet(
+                identitet = arbeidssoekerId.toString(),
+                type = IdentitetType.ARBEIDSSOEKERID,
+                gjeldende = true
+            )
+            val sendtHendelse = IdentiteterMergetHendelse(
+                identiteter = listOf(id1, id2, id3_2, id4, id5),
+                tidligereIdentiteter = listOf(id1, id2, id3_1, id5)
+            )
+            hendelseRepository.insert(
+                arbeidssoekerId = arbeidssoekerId,
+                aktorId = aktorId,
+                version = 1,
+                data = hendelseSerializer.serializeToString(sendtHendelse),
+                status = HendelseStatus.VENTER
+            )
+
+            // WHEN
+            hendelseService.sendVentendeIdentitetHendelser()
+
+            // THEN
+            recordSlot.isCaptured shouldBe true
+            val record = recordSlot.captured
+            record.key() shouldBe arbeidssoekerId
+            record.value().hendelseType shouldBe IDENTITETER_MERGET_HENDELSE_TYPE
+            val mottattHendelse = record.value().shouldBeTypeOf<IdentiteterMergetHendelse>()
             mottattHendelse.hendelseId shouldBe sendtHendelse.hendelseId
             mottattHendelse.hendelseType shouldBe sendtHendelse.hendelseType
             mottattHendelse.identiteter shouldBe sendtHendelse.identiteter

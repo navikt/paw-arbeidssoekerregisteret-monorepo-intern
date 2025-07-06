@@ -1,9 +1,6 @@
 package no.nav.paw.kafkakeygenerator.service
 
-import no.nav.paw.identitet.internehendelser.IdentitetHendelse
-import no.nav.paw.identitet.internehendelser.IdentitetHendelseDeserializer
-import no.nav.paw.identitet.internehendelser.IdentitetHendelseSerializer
-import no.nav.paw.identitet.internehendelser.IdentiteterEndretHendelse
+import no.nav.paw.identitet.internehendelser.*
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
 import no.nav.paw.kafkakeygenerator.model.HendelseStatus
@@ -30,10 +27,37 @@ class HendelseService(
         identiteter: List<Identitet>,
         tidligereIdentiteter: List<Identitet>
     ) {
-        val hendelse = IdentiteterEndretHendelse(
-            identiteter = identiteter,
-            tidligereIdentiteter = tidligereIdentiteter
+        lagreIdentiteterHendelse(
+            aktorId = aktorId,
+            arbeidssoekerId = arbeidssoekerId,
+            hendelse = IdentiteterEndretHendelse(
+                identiteter = identiteter,
+                tidligereIdentiteter = tidligereIdentiteter
+            )
         )
+    }
+
+    fun lagreIdentiteterMergetHendelse(
+        aktorId: String,
+        arbeidssoekerId: Long,
+        identiteter: List<Identitet>,
+        tidligereIdentiteter: List<Identitet>
+    ) {
+        lagreIdentiteterHendelse(
+            aktorId = aktorId,
+            arbeidssoekerId = arbeidssoekerId,
+            hendelse = IdentiteterMergetHendelse(
+                identiteter = identiteter,
+                tidligereIdentiteter = tidligereIdentiteter
+            )
+        )
+    }
+
+    fun lagreIdentiteterHendelse(
+        aktorId: String,
+        arbeidssoekerId: Long,
+        hendelse: IdentitetHendelse
+    ) {
         val rowsAffected = hendelseRepository.insert(
             arbeidssoekerId = arbeidssoekerId,
             aktorId = aktorId,
