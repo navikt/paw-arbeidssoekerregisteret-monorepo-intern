@@ -41,6 +41,7 @@ class IdentitetHendelseDeserializer(
         val node = objectMapper.readTree(data)
         return when (val hendelseType = node.get("hendelseType")?.asText()) {
             IDENTITETER_ENDRET_HENDELSE_TYPE -> objectMapper.readValue<IdentiteterEndretHendelse>(node.traverse())
+            IDENTITETER_MERGET_HENDELSE_TYPE -> objectMapper.readValue<IdentiteterMergetHendelse>(node.traverse())
             else -> throw IllegalArgumentException("Ukjent hendelseType: $hendelseType")
         }
     }
@@ -50,6 +51,7 @@ class IdentitetHendelseDeserializer(
         return when (val hendelseType = node.get("hendelseType")?.asText()) {
             null -> throw IllegalArgumentException("Hendelse mangler type")
             IDENTITETER_ENDRET_HENDELSE_TYPE -> objectMapper.treeToValue(node, IdentiteterEndretHendelse::class.java)
+            IDENTITETER_MERGET_HENDELSE_TYPE -> objectMapper.treeToValue(node, IdentiteterMergetHendelse::class.java)
             else -> throw IllegalArgumentException("Ukjent hendelseType: $hendelseType")
         }
     }

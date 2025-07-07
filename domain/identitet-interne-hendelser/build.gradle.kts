@@ -9,12 +9,9 @@ dependencies {
     implementation(libs.jackson.core)
     compileOnly(libs.kafka.clients)
 
-    testImplementation(libs.test.junit5.runner)
-    testImplementation(libs.test.kotest.assertionsCore)
+    testImplementation(libs.bundles.testLibsWithUnitTesting)
     testImplementation(libs.kafka.clients)
 }
-
-val jvmMajorVersion: String by project
 
 group = "no.nav.paw.arbeidssokerregisteret.internt.schema"
 
@@ -38,7 +35,12 @@ publishing {
 }
 
 java {
+    val jvmMajorVersion: String by project
     toolchain {
         languageVersion = JavaLanguageVersion.of(jvmMajorVersion)
     }
+}
+
+tasks.named<Test>("test") {
+    useJUnitPlatform()
 }
