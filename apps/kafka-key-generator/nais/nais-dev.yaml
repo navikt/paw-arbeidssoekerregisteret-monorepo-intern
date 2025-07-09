@@ -28,7 +28,7 @@ spec:
     - name: KAFKA_CONSUMER_GROUP_ID_VERSION_PAW_PERIODER
       value: "1"
     - name: KAFKA_TOPIC_PAW_IDENTITETER
-      value: "paw.arbeidssoker-identiteter-beta-v2"
+      value: "paw.arbeidssoker-identiteter-beta-v3"
     - name: KAFKA_PRODUCER_CLIENT_ID_PREFIX_PAW_IDENTITETER
       value: "paw-kafka-key-generator-paw-identiteter"
     - name: KAFKA_PRODUCER_CLIENT_ID_VERSION_PAW_IDENTITETER

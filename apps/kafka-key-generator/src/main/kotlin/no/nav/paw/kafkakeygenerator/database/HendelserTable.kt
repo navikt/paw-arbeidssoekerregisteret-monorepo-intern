@@ -9,6 +9,8 @@ object HendelserTable : LongIdTable("hendelser") {
     val aktorId = varchar("aktor_id", 50)
     val version = integer("version")
     val data = jsonb("data")
+    val partition = integer("kafka_partition").nullable()
+    val offset = long("kafka_offset").nullable()
     val status = enumerationByName<HendelseStatus>("status", 50)
     val insertedTimestamp = timestamp("inserted_timestamp")
     val updatedTimestamp = timestamp("updated_timestamp").nullable()

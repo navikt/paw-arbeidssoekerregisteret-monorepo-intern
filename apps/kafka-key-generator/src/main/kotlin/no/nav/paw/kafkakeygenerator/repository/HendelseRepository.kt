@@ -49,13 +49,17 @@ class HendelseRepository {
         }.insertedCount
     }
 
-    fun updateStatusById(
+    fun updateById(
         id: Long,
+        partition: Int,
+        offset: Long,
         status: HendelseStatus
     ): Int = transaction {
         HendelserTable.update(where = {
             (HendelserTable.id eq id)
         }) {
+            it[HendelserTable.partition] = partition
+            it[HendelserTable.offset] = offset
             it[HendelserTable.status] = status
             it[updatedTimestamp] = Instant.now()
         }

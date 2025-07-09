@@ -97,7 +97,9 @@ class TestContext private constructor(
         applicationConfig = applicationConfig,
         identitetRepository = identitetRepository,
         konfliktRepository = konfliktRepository,
+        konfliktIdentitetRepository = konfliktIdentitetRepository,
         periodeRepository = periodeRepository,
+        kafkaKeysIdentitetRepository = kafkaKeysIdentitetRepository,
         hendelseService = hendelseService
     ),
     val identitetService: IdentitetService = IdentitetService(

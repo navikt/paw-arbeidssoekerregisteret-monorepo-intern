@@ -52,7 +52,8 @@ class IdentitetService(
                 aktorId = aktorId,
                 identiteter = identitetSet
             ).toSet()
-        val eksisterendeIdentiteter = eksisterendeIdentitetRows.map { it.asIdentitet() }
+        val eksisterendeIdentiteter = eksisterendeIdentitetRows
+            .map { it.asIdentitet() }
         val arbeidssoekerIdSet = eksisterendeIdentitetRows
             .map { it.arbeidssoekerId }
             .toMutableSet()

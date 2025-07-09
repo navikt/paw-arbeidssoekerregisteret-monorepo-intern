@@ -166,7 +166,7 @@ class KonfliktServiceTest : FreeSpec({
                         hendelse = IdentitetHendelseWrapper(
                             type = IDENTITETER_MERGET_HENDELSE_TYPE,
                             identiteter = emptyList(),
-                            tidligereIdentiteter = listOf(aktorId, npId, dnr, arbId1)
+                            tidligereIdentiteter = listOf(aktorId, npId, dnr, arbId1).sortedBy { it.type.ordinal }
                         )
                     ),
                     HendelseWrapper(
@@ -176,7 +176,7 @@ class KonfliktServiceTest : FreeSpec({
                         hendelse = IdentitetHendelseWrapper(
                             type = IDENTITETER_MERGET_HENDELSE_TYPE,
                             identiteter = emptyList(),
-                            tidligereIdentiteter = listOf(fnr1, arbId2)
+                            tidligereIdentiteter = listOf(fnr1, arbId2).sortedBy { it.type.ordinal }
                         )
                     ),
                     HendelseWrapper(
@@ -194,8 +194,8 @@ class KonfliktServiceTest : FreeSpec({
                                 arbId1.copy(gjeldende = false),
                                 arbId2.copy(gjeldende = false),
                                 arbId3
-                            ),
-                            tidligereIdentiteter = listOf(fnr2, arbId3)
+                            ).sortedBy { it.type.ordinal },
+                            tidligereIdentiteter = listOf(fnr2, arbId3).sortedBy { it.type.ordinal }
                         )
                     )
                 )
@@ -359,8 +359,8 @@ class KonfliktServiceTest : FreeSpec({
                                 arbId1,
                                 arbId2.copy(gjeldende = false),
                                 arbId3.copy(gjeldende = false)
-                            ),
-                            tidligereIdentiteter = listOf(aktorId, npId, dnr, arbId1)
+                            ).sortedBy { it.type.ordinal },
+                            tidligereIdentiteter = listOf(aktorId, npId, dnr, arbId1).sortedBy { it.type.ordinal }
                         )
                     ),
                     HendelseWrapper(
@@ -370,7 +370,7 @@ class KonfliktServiceTest : FreeSpec({
                         hendelse = IdentitetHendelseWrapper(
                             type = IDENTITETER_MERGET_HENDELSE_TYPE,
                             identiteter = emptyList(),
-                            tidligereIdentiteter = listOf(fnr1, arbId2)
+                            tidligereIdentiteter = listOf(fnr1, arbId2).sortedBy { it.type.ordinal }
                         )
                     ),
                     HendelseWrapper(
@@ -380,7 +380,7 @@ class KonfliktServiceTest : FreeSpec({
                         hendelse = IdentitetHendelseWrapper(
                             type = IDENTITETER_MERGET_HENDELSE_TYPE,
                             identiteter = emptyList(),
-                            tidligereIdentiteter = listOf(fnr2, arbId3)
+                            tidligereIdentiteter = listOf(fnr2, arbId3).sortedBy { it.type.ordinal }
                         )
                     )
                 )
@@ -535,7 +535,7 @@ class KonfliktServiceTest : FreeSpec({
                         hendelse = IdentitetHendelseWrapper(
                             type = IDENTITETER_MERGET_HENDELSE_TYPE,
                             identiteter = emptyList(),
-                            tidligereIdentiteter = listOf(aktorId, npId, dnr, arbId1)
+                            tidligereIdentiteter = listOf(aktorId, npId, dnr, arbId1).sortedBy { it.type.ordinal }
                         )
                     ),
                     HendelseWrapper(
@@ -553,8 +553,8 @@ class KonfliktServiceTest : FreeSpec({
                                 arbId1.copy(gjeldende = false),
                                 arbId2,
                                 arbId3.copy(gjeldende = false)
-                            ),
-                            tidligereIdentiteter = listOf(fnr1, arbId2)
+                            ).sortedBy { it.type.ordinal },
+                            tidligereIdentiteter = listOf(fnr1, arbId2).sortedBy { it.type.ordinal }
                         )
                     ),
                     HendelseWrapper(
@@ -564,7 +564,7 @@ class KonfliktServiceTest : FreeSpec({
                         hendelse = IdentitetHendelseWrapper(
                             type = IDENTITETER_MERGET_HENDELSE_TYPE,
                             identiteter = emptyList(),
-                            tidligereIdentiteter = listOf(fnr2, arbId3)
+                            tidligereIdentiteter = listOf(fnr2, arbId3).sortedBy { it.type.ordinal }
                         )
                     )
                 )
@@ -709,6 +709,102 @@ class KonfliktServiceTest : FreeSpec({
 
                 val hendelseRows = hendelseRepository.findByAktorId(aktorId.identitet)
                 hendelseRows shouldHaveSize 0
+            }
+
+            "Skal håndtere merge-konflikt uten lagrede identiteter" {
+                // GIVEN
+                val aktorId = Identitet(TestData.aktorId5, IdentitetType.AKTORID, true)
+                val npId = Identitet(TestData.npId5, IdentitetType.NPID, true)
+                val dnr = Identitet(TestData.dnr5, IdentitetType.FOLKEREGISTERIDENT, false)
+                val fnr = Identitet(TestData.fnr5, IdentitetType.FOLKEREGISTERIDENT, true)
+                val arbeidssoekerId1 = kafkaKeysRepository.opprett(aktorId.asIdentitetsnummer())
+                    .fold(onLeft = { null }, onRight = { it })!!.value
+                val arbeidssoekerId2 = kafkaKeysRepository.opprett(dnr.asIdentitetsnummer())
+                    .fold(onLeft = { null }, onRight = { it })!!.value
+                val arbId1 = arbeidssoekerId1.asIdentitet(true)
+                val arbId2 = arbeidssoekerId2.asIdentitet(true)
+
+                konfliktRepository.insert(
+                    aktorId = aktorId.identitet,
+                    type = KonfliktType.MERGE,
+                    status = KonfliktStatus.VENTER,
+                    sourceTimestamp = Instant.now(),
+                    identiteter = listOf(aktorId, npId, dnr, fnr)
+                )
+
+                // WHEN
+                konfliktService.handleVentendeMergeKonflikter()
+
+                // THEN
+                val konfliktRows = konfliktRepository.findByAktorId(aktorId.identitet)
+                konfliktRows shouldHaveSize 1
+
+                val konfliktRow1 = konfliktRows[0]
+                konfliktRow1.aktorId shouldBe aktorId.identitet
+                konfliktRow1.type shouldBe KonfliktType.MERGE
+                konfliktRow1.status shouldBe KonfliktStatus.FULLFOERT
+
+                val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
+                identitetRows shouldHaveSize 4
+
+                identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId2,
+                        aktorId = aktorId.identitet,
+                        identitet = aktorId,
+                        status = IdentitetStatus.AKTIV
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId2,
+                        aktorId = aktorId.identitet,
+                        identitet = npId,
+                        status = IdentitetStatus.AKTIV
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId2,
+                        aktorId = aktorId.identitet,
+                        identitet = dnr,
+                        status = IdentitetStatus.AKTIV
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId2,
+                        aktorId = aktorId.identitet,
+                        identitet = fnr,
+                        status = IdentitetStatus.AKTIV
+                    )
+                )
+
+                val hendelseRows = hendelseRepository.findByAktorId(aktorId.identitet)
+                hendelseRows shouldHaveSize 2
+                hendelseRows.map { it.asWrapper() } shouldContainOnly listOf(
+                    HendelseWrapper(
+                        arbeidssoekerId = arbeidssoekerId1,
+                        aktorId = aktorId.identitet,
+                        status = HendelseStatus.VENTER,
+                        hendelse = IdentitetHendelseWrapper(
+                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
+                            identiteter = emptyList(),
+                            tidligereIdentiteter = listOf(arbId1)
+                        )
+                    ),
+                    HendelseWrapper(
+                        arbeidssoekerId = arbeidssoekerId2,
+                        aktorId = aktorId.identitet,
+                        status = HendelseStatus.VENTER,
+                        hendelse = IdentitetHendelseWrapper(
+                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
+                            identiteter = listOf(
+                                aktorId,
+                                npId,
+                                fnr,
+                                dnr,
+                                arbId1.copy(gjeldende = false),
+                                arbId2,
+                            ).sortedBy { it.type.ordinal },
+                            tidligereIdentiteter = listOf(arbId2)
+                        )
+                    )
+                )
             }
         }
     }

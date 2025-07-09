@@ -10,6 +10,8 @@ data class HendelseRow(
     val aktorId: String,
     val version: Int,
     val data: String,
+    val partition: Int?,
+    val offset: Long?,
     val status: HendelseStatus,
     val insertedTimestamp: Instant,
     val updatedTimestamp: Instant? = null,
@@ -21,6 +23,8 @@ fun ResultRow.asHendelseRow(): HendelseRow = HendelseRow(
     aktorId = this[HendelserTable.aktorId],
     version = this[HendelserTable.version],
     data = this[HendelserTable.data],
+    partition = this[HendelserTable.partition],
+    offset = this[HendelserTable.offset],
     status = this[HendelserTable.status],
     insertedTimestamp = this[HendelserTable.insertedTimestamp],
     updatedTimestamp = this[HendelserTable.updatedTimestamp]
