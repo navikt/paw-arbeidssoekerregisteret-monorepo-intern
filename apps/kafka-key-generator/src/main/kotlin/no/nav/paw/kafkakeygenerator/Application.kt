@@ -12,6 +12,7 @@ import no.nav.paw.kafkakeygenerator.context.ApplicationContext
 import no.nav.paw.kafkakeygenerator.plugin.configureRouting
 import no.nav.paw.kafkakeygenerator.plugin.installCustomLoggingPlugin
 import no.nav.paw.kafkakeygenerator.plugin.installKafkaPlugins
+import no.nav.paw.kafkakeygenerator.plugin.installScheduledTaskPlugins
 import no.nav.paw.logging.logger.buildApplicationLogger
 import no.nav.paw.metrics.plugin.installWebAppMetricsPlugin
 import no.nav.paw.security.authentication.plugin.installAuthenticationPlugin
@@ -24,13 +25,13 @@ fun main() {
     val appName = applicationContext.serverConfig.runtimeEnvironment.appNameOrDefaultForLocal()
 
     with(applicationContext.serverConfig) {
-        logger.info("Starter $appName med hostname $host og port $port")
+        logger.info("Starter {} med hostname {} og port {}", appName, host, port)
 
         embeddedServer(factory = Netty, port = port) {
             module(applicationContext)
         }.apply {
             addShutdownHook {
-                logger.info("Avslutter $appName")
+                logger.info("Avslutter {}", appName)
                 stop(gracePeriodMillis, timeoutMillis)
             }
             start(wait = true)
@@ -50,10 +51,23 @@ fun Application.module(applicationContext: ApplicationContext) {
         )
         installDatabasePlugin(dataSource)
         installKafkaPlugins(
-            kafkaTopologyConfig = kafkaTopologyConfig,
-            pawHendelseKafkaConsumer = pawHendelseKafkaConsumer,
+            applicationConfig = applicationConfig,
+            pawHendelseConsumer = pawHendelseKafkaConsumer,
+            pawHendelseConsumerExceptionHandler = pawHendelseConsumerExceptionHandler,
             pawHendelseKafkaConsumerService = pawHendelseKafkaConsumerService,
-            pawHendelseConsumerExceptionHandler = pawHendelseConsumerExceptionHandler
+            pawPeriodeConsumer = pawPeriodeConsumer,
+            pawPeriodeConsumerExceptionHandler = pawPeriodeConsumerExceptionHandler,
+            pawPeriodeHwmRebalanceListener = pawPeriodeConsumerRebalanceListener,
+            pawPeriodeKafkaConsumerService = pawPeriodeKafkaConsumerService,
+            pdlAktorConsumer = pdlAktorConsumer,
+            pdlAktorConsumerExceptionHandler = pdlAktorConsumerExceptionHandler,
+            pdlAktorHwmRebalanceListener = pdlAktorConsumerRebalanceListener,
+            pdlAktorKafkaConsumerService = pdlAktorKafkaConsumerService
+        )
+        installScheduledTaskPlugins(
+            applicationConfig = applicationConfig,
+            konfliktService = konfliktService,
+            hendelseService = hendelseService
         )
         configureRouting(
             meterRegistry = prometheusMeterRegistry,

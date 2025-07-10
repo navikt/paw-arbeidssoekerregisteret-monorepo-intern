@@ -21,6 +21,16 @@
               "ident": "01017012345",
               "gruppe": "FOLKEREGISTERIDENT",
               "historisk": false
+            },
+            {
+              "ident": "41017012345",
+              "gruppe": "FOLKEREGISTERIDENT",
+              "historisk": true
+            },
+            {
+              "ident": "200001017012345",
+              "gruppe": "AKTORID",
+              "historisk": false
             }
           ]
         }

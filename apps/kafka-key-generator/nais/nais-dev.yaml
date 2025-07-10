@@ -15,10 +15,46 @@ spec:
       value: "api://dev-fss.pdl.pdl-api/.default"
     - name: PDL_TEMA
       value: "OPP"
-    - name: KAFKA_CONSUMER_GROUP_ID
-      value: "paw-kafka-key-generator-v1"
-    - name: KAFKA_TOPIC_PAW_ARBEIDSSOKER_HENDELSESLOGG
+    - name: KAFKA_TOPIC_PAW_HENDELSESLOGG
       value: "paw.arbeidssoker-hendelseslogg-v1"
+    - name: KAFKA_CONSUMER_GROUP_ID_PREFIX_PAW_HENDELSESLOGG
+      value: "paw-kafka-key-generator"
+    - name: KAFKA_CONSUMER_GROUP_ID_VERSION_PAW_HENDELSESLOGG
+      value: "1"
+    - name: KAFKA_TOPIC_PAW_PERIODER
+      value: "paw.arbeidssokerperioder-v1"
+    - name: KAFKA_CONSUMER_GROUP_ID_PREFIX_PAW_PERIODER
+      value: "paw-kafka-key-generator-paw-perioder"
+    - name: KAFKA_CONSUMER_GROUP_ID_VERSION_PAW_PERIODER
+      value: "1"
+    - name: KAFKA_TOPIC_PAW_IDENTITETER
+      value: "paw.arbeidssoker-identiteter-beta-v3"
+    - name: KAFKA_PRODUCER_CLIENT_ID_PREFIX_PAW_IDENTITETER
+      value: "paw-kafka-key-generator-paw-identiteter"
+    - name: KAFKA_PRODUCER_CLIENT_ID_VERSION_PAW_IDENTITETER
+      value: "1"
+    - name: KAFKA_TOPIC_PDL_AKTOR
+      value: "pdl.aktor-v2"
+    - name: KAFKA_CONSUMER_GROUP_ID_PREFIX_PDL_AKTOR
+      value: "paw-kafka-key-generator-pdl-aktor"
+    - name: KAFKA_CONSUMER_GROUP_ID_VERSION_PDL_AKTOR
+      value: "2"
+    - name: SCHEDULED_JOB_ENABLED_IDENTITET_KONFLIKT
+      value: "false"
+    - name: SCHEDULED_JOB_DELAY_IDENTITET_KONFLIKT
+      value: "PT3M"
+    - name: SCHEDULED_JOB_INTERVAL_IDENTITET_KONFLIKT
+      value: "PT6M"
+    - name: SCHEDULED_JOB_BATCH_SIZE_IDENTITET_KONFLIKT
+      value: "1000"
+    - name: SCHEDULED_JOB_ENABLED_IDENTITET_HENDELSE
+      value: "true"
+    - name: SCHEDULED_JOB_DELAY_IDENTITET_HENDELSE
+      value: "PT6M"
+    - name: SCHEDULED_JOB_INTERVAL_IDENTITET_HENDELSE
+      value: "PT6M"
+    - name: SCHEDULED_JOB_BATCH_SIZE_IDENTITET_HENDELSE
+      value: "1000"
   ingresses:
     - https://record-key-arbeidssoekerregisteret.intern.dev.nav.no/api/v1/record-key
     - https://record-key-arbeidssoekerregisteret.intern.dev.nav.no/docs/record-key
@@ -27,10 +63,10 @@ spec:
     max: 2
   resources:
     limits:
-      memory: 512Mi
+      memory: 1024Mi
     requests:
-      cpu: 20m
-      memory: 256Mi
+      cpu: 60m
+      memory: 512Mi
   liveness:
     path: /internal/isAlive
     initialDelay: 10
@@ -59,6 +95,9 @@ spec:
       enabled: true
   accessPolicy:
       outbound:
+        rules:
+          - application: logging
+            namespace: nais-system
         external:
           - host: pdl-api.dev-fss-pub.nais.io
       inbound:

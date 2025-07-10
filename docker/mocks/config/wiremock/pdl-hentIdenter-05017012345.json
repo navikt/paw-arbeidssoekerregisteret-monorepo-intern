@@ -18,14 +18,9 @@
         "hentIdenter": {
           "identer": [
             {
-              "ident": "04017012345",
-              "gruppe": "FOLKEREGISTERIDENT",
+              "ident": "200001017012345",
+              "gruppe": "AKTORID",
               "historisk": false
-            },
-            {
-              "ident": "05017012345",
-              "gruppe": "FOLKEREGISTERIDENT",
-              "historisk": true
             }
           ]
         }

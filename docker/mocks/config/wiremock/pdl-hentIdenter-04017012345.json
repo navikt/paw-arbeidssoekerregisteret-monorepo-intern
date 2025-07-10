@@ -23,9 +23,9 @@
               "historisk": false
             },
             {
-              "ident": "05017012345",
-              "gruppe": "FOLKEREGISTERIDENT",
-              "historisk": true
+              "ident": "200004017012345",
+              "gruppe": "AKTORID",
+              "historisk": false
             }
           ]
         }

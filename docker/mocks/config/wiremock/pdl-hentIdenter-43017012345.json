@@ -1,0 +1,35 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/pdl",
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$.variables[?(@.ident == '43017012345')]"
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/graphql-response+json"
+    },
+    "jsonBody": {
+      "data": {
+        "hentIdenter": {
+          "identer": [
+            {
+              "ident": "43017012345",
+              "gruppe": "FOLKEREGISTERIDENT",
+              "historisk": false
+            },
+            {
+              "ident": "200003017012345",
+              "gruppe": "AKTORID",
+              "historisk": false
+            }
+          ]
+        }
+      }
+    }
+  }
+}

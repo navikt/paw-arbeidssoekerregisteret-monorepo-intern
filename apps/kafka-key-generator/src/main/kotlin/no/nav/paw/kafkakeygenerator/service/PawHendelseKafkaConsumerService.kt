@@ -4,8 +4,8 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerSammenslaatt
-import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
+import no.nav.paw.kafkakeygenerator.repository.KafkaKeysIdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
 import no.nav.paw.kafkakeygenerator.utils.countKafkaFailed
 import no.nav.paw.kafkakeygenerator.utils.countKafkaIgnored
@@ -14,24 +14,22 @@ import no.nav.paw.kafkakeygenerator.utils.countKafkaProcessed
 import no.nav.paw.kafkakeygenerator.utils.countKafkaReceived
 import no.nav.paw.kafkakeygenerator.utils.countKafkaUpdated
 import no.nav.paw.kafkakeygenerator.utils.countKafkaVerified
-import no.nav.paw.kafkakeygenerator.utils.kafkaConflictGauge
+import no.nav.paw.kafkakeygenerator.utils.kafkaHendelseConflictGauge
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Audit
 import no.nav.paw.kafkakeygenerator.vo.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
-import no.nav.paw.logging.logger.buildErrorLogger
 import no.nav.paw.logging.logger.buildLogger
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class PawHendelseKafkaConsumerService(
     private val meterRegistry: MeterRegistry,
-    private val identitetRepository: IdentitetRepository,
+    private val kafkaKeysIdentitetRepository: KafkaKeysIdentitetRepository,
     private val kafkaKeysRepository: KafkaKeysRepository,
     private val kafkaKeysAuditRepository: KafkaKeysAuditRepository,
 ) {
     private val logger = buildLogger
-    private val errorLogger = buildErrorLogger
 
     @WithSpan
     fun handleRecords(records: ConsumerRecords<Long, Hendelse>) {
@@ -88,9 +86,15 @@ class PawHendelseKafkaConsumerService(
 
         transaction {
             identitetsnummerSet.forEach { identitetsnummer ->
-                val kafkaKey = identitetRepository.find(identitetsnummer)
+                val kafkaKey = kafkaKeysIdentitetRepository.find(identitetsnummer)
                 if (kafkaKey != null) {
-                    updateIdentitet(identitetsnummer, fraArbeidssoekerId, tilArbeidssoekerId, kafkaKey.second)
+                    val eksisterendeArbeidssoekerId = ArbeidssoekerId(kafkaKey.arbeidssoekerId)
+                    updateIdentitet(
+                        identitetsnummer,
+                        fraArbeidssoekerId,
+                        tilArbeidssoekerId,
+                        eksisterendeArbeidssoekerId
+                    )
                 } else {
                     insertIdentitet(identitetsnummer, tilArbeidssoekerId)
                 }
@@ -117,7 +121,7 @@ class PawHendelseKafkaConsumerService(
             kafkaKeysAuditRepository.insert(audit)
         } else if (eksisterendeArbeidssoekerId == fraArbeidssoekerId) {
             logger.info("Identitetsnummer oppdateres med annen ArbeidsøkerId")
-            val count = identitetRepository.update(identitetsnummer, tilArbeidssoekerId)
+            val count = kafkaKeysIdentitetRepository.update(identitetsnummer, tilArbeidssoekerId)
             if (count != 0) {
                 meterRegistry.countKafkaUpdated()
                 val audit = Audit(
@@ -149,7 +153,7 @@ class PawHendelseKafkaConsumerService(
             )
             kafkaKeysAuditRepository.insert(audit)
             val conflicts = kafkaKeysAuditRepository.findByStatus(IdentitetStatus.KONFLIKT)
-            meterRegistry.kafkaConflictGauge(conflicts.size)
+            meterRegistry.kafkaHendelseConflictGauge("paw.arbeidssoker-hendelseslogg-v1", conflicts.size)
         }
     }
 
@@ -159,7 +163,7 @@ class PawHendelseKafkaConsumerService(
         tilArbeidssoekerId: ArbeidssoekerId
     ) {
         logger.info("Identitetsnummer opprettes med eksisterende ArbeidsøkerId")
-        val count = identitetRepository.insert(identitetsnummer, tilArbeidssoekerId)
+        val count = kafkaKeysIdentitetRepository.insert(identitetsnummer, tilArbeidssoekerId)
         if (count != 0) {
             meterRegistry.countKafkaInserted()
             val audit = Audit(

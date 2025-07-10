@@ -65,25 +65,37 @@ fun MeterRegistry.countKafkaFailed() {
     genericCounter("kafka", "database", "failed")
 }
 
-fun <T : Number> MeterRegistry.genericGauge(
-    number: T,
-    source: String,
-    target: String,
-    action: String
+fun <T : Number> MeterRegistry.kafkaGauge(
+    topic: String,
+    partition: Int,
+    suffix: String,
+    action: String,
+    number: T
 ) {
     gauge(
-        "${METRIC_PREFIX}_antall_hendelser",
+        "${METRIC_PREFIX}_${suffix}_gauge",
         Tags.of(
-            Tag.of("source", source),
-            Tag.of("target", target),
-            Tag.of("action", action)
+            Tag.of("source", "kafka"),
+            Tag.of("target", "database"),
+            Tag.of("action", action),
+            Tag.of("kafka_topic", topic),
+            Tag.of("kafka_partition", "$partition")
         ),
         number
     )
 }
 
-fun <T : Number> MeterRegistry.kafkaConflictGauge(
-    number: T
+fun <T : Number> MeterRegistry.kafkaHendelseConflictGauge(
+    topic: String,
+    count: T
 ) {
-    genericGauge(number, "kafka", "database", "conflict")
+    kafkaGauge(topic, -1, "hendelse", "conflict", count)
+}
+
+fun MeterRegistry.kafkaReceivedGauge(
+    topic: String,
+    partition: Int,
+    offset: Long
+) {
+    kafkaGauge(topic, partition, "hwm", "update", offset)
 }

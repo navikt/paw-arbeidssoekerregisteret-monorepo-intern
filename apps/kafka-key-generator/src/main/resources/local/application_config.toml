@@ -1,0 +1,31 @@
+[pawHendelseConsumer]
+version = 1
+topic = "paw.arbeidssoker-hendelseslogg-v1"
+groupIdPrefix = "paw-kafka-key-generator"
+
+[pawPeriodeConsumer]
+version = 1
+topic = "paw.arbeidssokerperioder-v1"
+groupIdPrefix = "paw-kafka-key-generator-paw-perioder"
+
+[pdlAktorConsumer]
+version = 1
+topic = "pdl.aktor-v2"
+groupIdPrefix = "paw-kafka-key-generator-pdl-aktor"
+
+[pawIdentitetProducer]
+version = 1
+topic = "paw.arbeidssoker-identiteter-v1"
+clientIdPrefix = "paw-kafka-key-generator-paw-identiteter"
+
+[identitetKonfliktJob]
+enabled = true
+delay = "PT3M"
+interval = "PT6M"
+batchSize = 10
+
+[identitetHendelseJob]
+enabled = true
+delay = "PT6M"
+interval = "PT6M"
+batchSize = 10

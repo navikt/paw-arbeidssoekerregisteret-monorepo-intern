@@ -1,10 +1,34 @@
 package no.nav.paw.kafkakeygenerator.vo
 
-data class Failure(
-    val system: String,
-    val code: FailureCode,
-    val exception: Exception? = null
-)
+import no.nav.paw.pdl.graphql.generated.hentidenter.IdentInformasjon
+
+interface Failure {
+    fun system(): String
+    fun code(): FailureCode
+    fun exception(): Exception?
+}
+
+data class GenericFailure(
+    private val system: String,
+    private val code: FailureCode,
+    private val exception: Exception? = null
+) : Failure {
+    override fun system(): String = system
+    override fun code(): FailureCode = code
+    override fun exception(): Exception? = exception
+}
+
+data class IdentitetFailure(
+    private val system: String,
+    private val code: FailureCode,
+    private val exception: Exception? = null,
+    private val identInformasjon: List<IdentInformasjon>
+) : Failure {
+    override fun system(): String = system
+    override fun code(): FailureCode = code
+    override fun exception(): Exception? = exception
+    fun identInformasjon(): List<IdentInformasjon> = identInformasjon
+}
 
 enum class FailureCode {
     PDL_NOT_FOUND,
@@ -40,22 +64,28 @@ fun <R> Either<Exception, R>.mapToFailure(
     }
 }
 
-suspend fun <R> Either<Failure, R>.suspendingRecover(failureCode: FailureCode, f: suspend () -> Either<Failure, R>): Either<Failure, R> {
+suspend fun <R> Either<Failure, R>.suspendingRecover(
+    failureCode: FailureCode,
+    f: suspend (Failure) -> Either<Failure, R>
+): Either<Failure, R> {
     return when (this) {
         is Right -> this
-        is Left -> if (left.code == failureCode) {
-            f()
+        is Left -> if (left.code() == failureCode) {
+            f(left)
         } else {
             this
         }
     }
 }
 
-fun <R> Either<Failure, R>.recover(failureCode: FailureCode, f: () -> Either<Failure, R>): Either<Failure, R> {
+fun <R> Either<Failure, R>.recover(
+    failureCode: FailureCode,
+    f: (Failure) -> Either<Failure, R>
+): Either<Failure, R> {
     return when (this) {
         is Right -> this
-        is Left -> if (left.code == failureCode) {
-            f()
+        is Left -> if (left.code() == failureCode) {
+            f(left)
         } else {
             this
         }

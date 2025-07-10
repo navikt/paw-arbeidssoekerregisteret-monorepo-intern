@@ -1,8 +1,7 @@
-
 plugins {
     kotlin("jvm")
-    application
     id("jib-distroless")
+    application
 }
 
 val jvmMajorVersion: String by project
@@ -19,7 +18,11 @@ dependencies {
     implementation(project(":lib:http-client-utils"))
     implementation(project(":lib:pdl-client"))
     implementation(project(":lib:kafka"))
+    implementation(project(":lib:scheduling"))
     implementation(project(":domain:interne-hendelser"))
+    implementation(project(":domain:identitet-interne-hendelser"))
+    implementation(project(":domain:main-avro-schema"))
+    implementation(project(":domain:pdl-aktoer-schema"))
 
     // NAV
     implementation(libs.nav.common.log)
@@ -27,8 +30,10 @@ dependencies {
     implementation(libs.nav.security.tokenClientCore)
     implementation(libs.nav.security.tokenValidationKtorV3)
 
-    // Kafka (for å beregne partisjonsnummer)
+    // Kafka
     implementation(libs.kafka.clients)
+    implementation(libs.avro.kafkaSerializer)
+    implementation(libs.avro.kafkaStreamsSerde)
 
     // Ktor
     implementation(libs.ktor.serialization.jackson)
@@ -75,6 +80,7 @@ dependencies {
     testImplementation(libs.test.testContainers.postgresql)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.client.mock)
+    testImplementation(libs.test.mockOauth2Server)
 }
 
 java {
