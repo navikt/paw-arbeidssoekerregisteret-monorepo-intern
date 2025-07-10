@@ -82,8 +82,26 @@ fun <T : Number> MeterRegistry.genericGauge(
     )
 }
 
-fun <T : Number> MeterRegistry.kafkaConflictGauge(
+fun <T : Number> MeterRegistry.gaugeKafkaConflict(
     number: T
 ) {
     genericGauge(number, "kafka", "database", "conflict")
+}
+
+fun MeterRegistry.gaugeKafkaReceived(
+    topic: String,
+    partition: Int,
+    offset: Long
+) {
+    gauge(
+        "${METRIC_PREFIX}_antall_hendelser",
+        Tags.of(
+            Tag.of("source", "kafka"),
+            Tag.of("target", "database"),
+            Tag.of("action", "received"),
+            Tag.of("kafka_topic", topic),
+            Tag.of("kafka_partition", "$partition")
+        ),
+        offset
+    )
 }

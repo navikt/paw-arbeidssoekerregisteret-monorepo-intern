@@ -117,6 +117,7 @@ class TestContext private constructor(
     ),
     val pdlAktorKafkaHwmOperations: KafkaHwmOperations = KafkaHwmService(
         kafkaConsumerConfig = applicationConfig.pdlAktorConsumer,
+        meterRegistry = meterRegistry,
         hwmRepository = hwmRepository
     ),
     val pdlAktorKafkaConsumerService: PdlAktorKafkaConsumerService = PdlAktorKafkaConsumerService(

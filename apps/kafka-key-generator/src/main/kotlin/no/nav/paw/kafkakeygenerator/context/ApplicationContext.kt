@@ -162,6 +162,7 @@ data class ApplicationContext(
             )
             val pawPeriodeKafkaHwmOperations = KafkaHwmService(
                 kafkaConsumerConfig = applicationConfig.pawPeriodeConsumer,
+                meterRegistry = prometheusMeterRegistry,
                 hwmRepository = hwmRepository
             )
             val pawPeriodeConsumer = kafkaFactory.createKafkaAvroValueConsumer<Long, Periode>(
@@ -185,6 +186,7 @@ data class ApplicationContext(
             )
             val pdlAktorKafkaHwmOperations = KafkaHwmService(
                 kafkaConsumerConfig = applicationConfig.pdlAktorConsumer,
+                meterRegistry = prometheusMeterRegistry,
                 hwmRepository = hwmRepository
             )
             val pdlAktorConsumer = kafkaFactory.createKafkaAvroValueConsumer<Any, Aktor>(

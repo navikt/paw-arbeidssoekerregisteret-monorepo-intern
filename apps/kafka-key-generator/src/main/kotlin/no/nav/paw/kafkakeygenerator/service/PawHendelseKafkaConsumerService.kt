@@ -14,7 +14,7 @@ import no.nav.paw.kafkakeygenerator.utils.countKafkaProcessed
 import no.nav.paw.kafkakeygenerator.utils.countKafkaReceived
 import no.nav.paw.kafkakeygenerator.utils.countKafkaUpdated
 import no.nav.paw.kafkakeygenerator.utils.countKafkaVerified
-import no.nav.paw.kafkakeygenerator.utils.kafkaConflictGauge
+import no.nav.paw.kafkakeygenerator.utils.gaugeKafkaConflict
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Audit
 import no.nav.paw.kafkakeygenerator.vo.IdentitetStatus
@@ -153,7 +153,7 @@ class PawHendelseKafkaConsumerService(
             )
             kafkaKeysAuditRepository.insert(audit)
             val conflicts = kafkaKeysAuditRepository.findByStatus(IdentitetStatus.KONFLIKT)
-            meterRegistry.kafkaConflictGauge(conflicts.size)
+            meterRegistry.gaugeKafkaConflict(conflicts.size)
         }
     }
 
