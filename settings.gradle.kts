@@ -1,6 +1,6 @@
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
-    kotlin("jvm") version "2.1.21" apply false
+    kotlin("jvm") version "2.2.0" apply false
     kotlin("plugin.serialization") version "2.1.21" apply false
     id("com.google.cloud.tools.jib") version "3.4.5" apply false
     id("org.openapi.generator") version "7.13.0" apply false
