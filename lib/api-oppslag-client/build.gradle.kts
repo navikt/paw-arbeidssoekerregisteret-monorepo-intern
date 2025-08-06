@@ -16,7 +16,7 @@ dependencies {
     implementation(libs.ktor.client.contentNegotiation)
     implementation(libs.ktor.serialization.jackson)
 
-    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.bundles.unit.testing.kotest)
     testImplementation(libs.ktor.client.mock)
 }
 

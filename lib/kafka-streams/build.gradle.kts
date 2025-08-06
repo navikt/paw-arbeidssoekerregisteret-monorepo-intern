@@ -13,7 +13,7 @@ dependencies {
     implementation(libs.micrometer.registryPrometheus)
 
     // Test
-    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.bundles.unit.testing.kotest)
 }
 
 tasks.withType<Test>().configureEach {

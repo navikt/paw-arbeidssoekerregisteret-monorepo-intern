@@ -15,7 +15,7 @@ dependencies {
     implementation(libs.ktor.client.logging)
     api(libs.graphql.ktor.client)
 
-    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.bundles.unit.testing.kotest)
     testImplementation(libs.ktor.client.mock)
     testImplementation(libs.kotlinx.coroutines.core)
 }

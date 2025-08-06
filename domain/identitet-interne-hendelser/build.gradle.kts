@@ -9,7 +9,7 @@ dependencies {
     implementation(libs.jackson.core)
     compileOnly(libs.kafka.clients)
 
-    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.bundles.unit.testing.kotest)
     testImplementation(libs.kafka.clients)
 }
 

@@ -15,7 +15,7 @@ dependencies {
     implementation(libs.opentelemetry.annotations)
 
     //Test
-    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.bundles.unit.testing.kotest)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.server.contentNegotiation)
     testImplementation(libs.ktor.server.statusPages)

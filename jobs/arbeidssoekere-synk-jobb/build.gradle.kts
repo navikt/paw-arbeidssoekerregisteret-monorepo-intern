@@ -39,7 +39,7 @@ dependencies {
     implementation(libs.database.flyway.postgres)
 
     // Test
-    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.bundles.unit.testing.kotest)
     testImplementation(libs.ktor.client.mock)
     testImplementation(libs.test.testContainers.postgresql)
 }

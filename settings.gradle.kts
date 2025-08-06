@@ -1,3 +1,5 @@
+rootProject.name = "paw-arbeidssoekerregisteret-monorepo-intern"
+
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
     kotlin("jvm") version "2.1.21" apply false
@@ -7,8 +9,6 @@ plugins {
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1" apply false
     id("com.expediagroup.graphql") version "8.8.0" apply false
 }
-
-rootProject.name = "paw-arbeidssoekerregisteret-monorepo-intern"
 
 include(
     // libs

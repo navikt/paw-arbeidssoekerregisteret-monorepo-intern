@@ -25,7 +25,7 @@ dependencies {
     implementation(project(":lib:database"))
 
 
-    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.bundles.ktor.server.instrumented)
     implementation(libs.arrow.core.core)
     implementation(libs.ktor.server.cors)
     implementation(libs.ktor.server.swagger)
@@ -68,7 +68,7 @@ dependencies {
     // Testing
     testImplementation(project(":test:test-data-lib"))
     testImplementation(project(":lib:kafka-key-generator-client"))
-    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.bundles.unit.testing.kotest)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.client.cio)
     testImplementation(libs.ktor.client.mock)

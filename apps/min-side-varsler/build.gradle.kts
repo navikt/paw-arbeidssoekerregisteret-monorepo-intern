@@ -23,7 +23,7 @@ dependencies {
     implementation(project(":domain:main-avro-schema"))
 
     // Ktor
-    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.bundles.ktor.server.instrumented)
 
     // Serialization
     implementation(libs.ktor.serialization.jackson)
@@ -65,7 +65,7 @@ dependencies {
     // Testing
     testImplementation(project(":test:test-data-lib"))
     testImplementation(project(":lib:kafka-key-generator-client"))
-    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.bundles.unit.testing.kotest)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.client.cio)
     testImplementation(libs.ktor.client.mock)

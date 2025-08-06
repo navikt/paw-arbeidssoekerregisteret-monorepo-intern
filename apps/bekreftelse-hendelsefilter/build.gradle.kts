@@ -16,7 +16,7 @@ dependencies {
     implementation(project(":domain:bekreftelse-paavegneav-avro-schema"))
 
     // Server
-    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.bundles.ktor.server.instrumented)
 
     // Logging
     implementation(libs.logbackClassic)
@@ -34,7 +34,7 @@ dependencies {
 
     // Test
     testImplementation(libs.ktor.server.test.host)
-    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.bundles.unit.testing.kotest)
     testImplementation(libs.kafka.streams.test)
 }
 

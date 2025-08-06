@@ -24,7 +24,7 @@ dependencies {
     implementation(libs.database.bigquery.client)
 
     // Server
-    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.bundles.ktor.server.instrumented)
 
     // Serialization
     implementation(libs.jackson.datatypeJsr310)
@@ -41,7 +41,7 @@ dependencies {
     implementation(libs.opentelemetry.annotations)
 
     // Testing
-    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.bundles.unit.testing.kotest)
     testImplementation(project(":test:test-data-lib"))
 }
 

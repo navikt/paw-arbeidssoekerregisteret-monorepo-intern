@@ -18,7 +18,7 @@ dependencies {
     implementation(project(":domain:interne-hendelser"))
 
     // Server
-    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.bundles.ktor.server.instrumented)
 
     // Serialization
     implementation(libs.ktor.serialization.jackson)
@@ -45,7 +45,7 @@ dependencies {
     // Testing
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kafka.streams.test)
-    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.bundles.unit.testing.kotest)
     testImplementation(project(":test:test-data-lib"))
 }
 

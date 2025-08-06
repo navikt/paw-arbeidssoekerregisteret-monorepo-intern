@@ -24,7 +24,7 @@ dependencies {
 
     implementation(libs.micrometer.registryPrometheus)
     implementation(libs.ktor.server.core)
-    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.bundles.ktor.server.instrumented)
     implementation(libs.ktor.server.netty)
     implementation(libs.ktor.server.coreJvm)
 

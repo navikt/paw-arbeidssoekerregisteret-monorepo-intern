@@ -22,7 +22,7 @@ dependencies {
 
     implementation(libs.arrow.core.core)
     implementation(libs.arrow.functions)
-    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.bundles.ktor.server.instrumented)
     implementation(libs.ktor.server.cors)
     implementation(libs.ktor.server.swagger)
     implementation(libs.ktor.server.callId)

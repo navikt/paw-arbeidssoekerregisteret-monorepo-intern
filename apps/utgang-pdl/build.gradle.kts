@@ -27,7 +27,7 @@ dependencies {
 
     implementation(libs.kafka.streams.core)
 
-    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.bundles.ktor.server.instrumented)
     implementation(libs.micrometer.registryPrometheus)
     implementation(libs.opentelemetry.api)
     implementation(libs.opentelemetry.annotations)
@@ -56,7 +56,7 @@ dependencies {
     testImplementation(libs.test.testContainers.core)
     testImplementation(libs.test.mockOauth2Server)
     testImplementation(libs.test.mockk.core)
-    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.bundles.unit.testing.kotest)
     testImplementation(libs.kafka.streams.test)
 }
 

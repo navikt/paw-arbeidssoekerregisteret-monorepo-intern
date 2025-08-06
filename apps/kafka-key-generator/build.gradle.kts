@@ -39,7 +39,7 @@ dependencies {
     implementation(libs.ktor.serialization.jackson)
 
     // Ktor Server
-    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.bundles.ktor.server.instrumented)
     implementation(libs.ktor.server.cors)
     implementation(libs.ktor.server.swagger)
     implementation(libs.ktor.server.callId)
@@ -75,7 +75,7 @@ dependencies {
     implementation(libs.logstashLogbackEncoder)
 
     // Tester
-    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.bundles.unit.testing.kotest)
     testImplementation(libs.test.testContainers.core)
     testImplementation(libs.test.testContainers.postgresql)
     testImplementation(libs.ktor.server.test.host)

@@ -12,7 +12,7 @@ dependencies {
     //Test
     testImplementation(project(":lib:pdl-client"))
     testImplementation(libs.nav.security.mockOauth2Server)
-    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.bundles.unit.testing.kotest)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.client.contentNegotiation)
     testImplementation(libs.ktor.serialization.jackson)

@@ -23,7 +23,7 @@ dependencies {
     implementation(project(":domain:interne-hendelser"))
 
     // Server
-    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.bundles.ktor.server.instrumented)
     implementation(libs.ktor.server.contentNegotiation)
     implementation(libs.ktor.server.statusPages)
     implementation(libs.ktor.server.cors)
@@ -66,7 +66,7 @@ dependencies {
     // Test
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.client.mock)
-    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.bundles.unit.testing.kotest)
     testImplementation(libs.test.mockOauth2Server)
 }
 

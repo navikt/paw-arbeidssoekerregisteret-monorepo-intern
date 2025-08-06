@@ -22,7 +22,7 @@ dependencies {
     implementation(project(":domain:arbeidssoeker-regler"))
     implementation(libs.arrow.functions)
     implementation(libs.arrow.integration.jackson)
-    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.bundles.ktor.server.instrumented)
     implementation(libs.micrometer.registryPrometheus)
     implementation(libs.opentelemetry.annotations)
     implementation(libs.hoplite.core)

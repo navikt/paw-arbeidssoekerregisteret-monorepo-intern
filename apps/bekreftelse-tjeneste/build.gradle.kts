@@ -20,7 +20,7 @@ dependencies {
     implementation(project(":domain:bekreftelsesmelding-avro-schema"))
 
     // Server
-    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.bundles.ktor.server.instrumented)
 
     // Serialization
     implementation(libs.ktor.serialization.jackson)
@@ -49,7 +49,7 @@ dependencies {
     // Testing
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kafka.streams.test)
-    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.bundles.unit.testing.kotest)
     testImplementation(project(":test:test-data-lib"))
     testImplementation(project(":test:kafka-streams-test-functions"))
 }

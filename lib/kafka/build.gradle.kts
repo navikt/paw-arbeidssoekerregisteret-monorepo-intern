@@ -12,7 +12,7 @@ dependencies {
     implementation(libs.kafka.clients)
 
     // Test
-    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.bundles.unit.testing.kotest)
 }
 
 

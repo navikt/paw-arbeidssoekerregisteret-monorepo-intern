@@ -1,115 +1,115 @@
 [versions]
-noNavSecurityVersion = "5.0.29"
-noNavSecurityMockOauth2ServerVersion = "2.2.1"
-noNavCommonVersion = "3.2025.04.01_09.46-936a3ae3d5d9"
-noNavTmsVarselBuilderVersion = "2.1.1"
-arbeidssokerregisteretVersion = "1.25.03.10.2-1"
-bekreftelseSchemaVersion = "1.25.03.26.32-1"
-arrowVersion = "2.1.2"
-arrowJacksonIntegrationVersion = "0.15.1"
-comSksamuelHopliteVersion = "2.9.0"
-graphqlClientVersion = "8.8.0"
-orgApacheKafkaVersion = "3.9.0"
-ioConfluentKafkaVersion = "7.9.1"
-orgApacheAvroVersion = "1.12.0"
-comFasterxmlJacksonVersion = "2.19.0"
-kotlinExposedVersion = "0.61.0"
-logstashVersion = "8.1"
-logbackVersion = "1.5.18"
-kotestVersion = "5.9.1"
-mockkVersion = "1.14.2"
-testContainersVersion = "1.21.1"
-micrometerVersion = "1.15.1"
-otelTargetSdkVersion = "1.51.0"
-otelInstrumentationVersion = "2.16.0"
-postgresDriverVersion = "42.7.7"
-h2DatabaseVersion = "2.3.232"
-bigqueryVersion = "26.62.0"
-flywayVersion = "11.9.1"
-hikariVersion = "6.3.0"
-kotlinxCoroutinesVersion = "1.10.2"
-kotlinxSerializationJsonVersion = "1.8.1"
-ktorVersion = "3.2.0"
+nav-paw-schema-main = "1.25.03.10.2-1"
+nav-paw-schema-bekreftelse = "1.25.03.26.32-1"
+nav-common = "3.2025.04.01_09.46-936a3ae3d5d9"
+nav-security = "5.0.29"
+nav-security-mock-oauth2-server = "2.2.1"
+nav-tms-varsel = "2.1.1"
+arrow = "2.1.2"
+arrow-jackson = "0.15.1"
+hoplite = "2.9.0"
+graphql-client = "8.8.0"
+kafka = "3.9.0"
+confluent-kafka = "7.9.1"
+avro = "1.12.0"
+jackson = "2.19.0"
+exposed = "0.61.0"
+logstash = "8.1"
+logback = "1.5.18"
+kotest = "5.9.1"
+mockk = "1.14.2"
+testcontainers = "1.21.1"
+micrometer = "1.15.1"
+otel-api = "1.51.0"
+otel-instrumentation = "2.16.0"
+postgres = "42.7.7"
+h2-database = "2.3.232"
+bigquery = "26.62.0"
+flyway = "11.9.1"
+hikari = "6.3.0"
+kotlinx-coroutines = "1.10.2"
+kotlinx-serialization = "1.8.1"
+ktor = "3.2.0"
 
 [libraries]
-arrow-core-core = { group = "io.arrow-kt", name = "arrow-core", version.ref = "arrowVersion" }
-arrow-functions = { group = "io.arrow-kt", name = "arrow-functions", version.ref = "arrowVersion" }
-arrow-integration-jackson = { group = "io.arrow-kt", name = "arrow-integrations-jackson-module", version.ref = "arrowJacksonIntegrationVersion" }
-logbackClassic = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logbackVersion" }
-logstashLogbackEncoder = { group = "net.logstash.logback", name = "logstash-logback-encoder", version.ref = "logstashVersion" }
-kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesVersion" }
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJsonVersion" }
-ktor-client-contentNegotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktorVersion" }
-ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktorVersion" }
-ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktorVersion" }
-ktor-client-mock = { group = "io.ktor", name = "ktor-client-mock", version.ref = "ktorVersion" }
-ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktorVersion" }
-ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktorVersion" }
-ktor-server-cors = { group = "io.ktor", name = "ktor-server-cors", version.ref = "ktorVersion" }
-ktor-server-swagger = { group = "io.ktor", name = "ktor-server-swagger", version.ref = "ktorVersion" }
-ktor-server-callId = { group = "io.ktor", name = "ktor-server-call-id", version.ref = "ktorVersion" }
-ktor-server-callLogging = { group = "io.ktor", name = "ktor-server-call-logging", version.ref = "ktorVersion" }
-ktor-server-statusPages = { group = "io.ktor", name = "ktor-server-status-pages", version.ref = "ktorVersion" }
-ktor-server-contentNegotiation = { group = "io.ktor", name = "ktor-server-content-negotiation", version.ref = "ktorVersion" }
-ktor-server-coreJvm = { group = "io.ktor", name = "ktor-server-core-jvm", version.ref = "ktorVersion" }
-ktor-server-core = { group = "io.ktor", name = "ktor-server-core", version.ref = "ktorVersion" }
-ktor-server-openapi = { group = "io.ktor", name = "ktor-server-openapi", version.ref = "ktorVersion" }
-ktor-server-netty = { group = "io.ktor", name = "ktor-server-netty", version.ref = "ktorVersion" }
-ktor-server-auth = { group = "io.ktor", name = "ktor-server-auth", version.ref = "ktorVersion" }
-ktor-server-metricsMicrometer = { group = "io.ktor", name = "ktor-server-metrics-micrometer", version.ref = "ktorVersion" }
-ktor-serialization-jvm = { group = "io.ktor", name = "ktor-serialization-jvm", version.ref = "ktorVersion" }
-ktor-serialization-jackson = { group = "io.ktor", name = "ktor-serialization-jackson", version.ref = "ktorVersion" }
-ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktorVersion" }
-ktor-server-test-host = { group = "io.ktor", name = "ktor-server-test-host", version.ref = "ktorVersion" }
+arrow-core-core = { group = "io.arrow-kt", name = "arrow-core", version.ref = "arrow" }
+arrow-functions = { group = "io.arrow-kt", name = "arrow-functions", version.ref = "arrow" }
+arrow-integration-jackson = { group = "io.arrow-kt", name = "arrow-integrations-jackson-module", version.ref = "arrow-jackson" }
+logbackClassic = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logback" }
+logstashLogbackEncoder = { group = "net.logstash.logback", name = "logstash-logback-encoder", version.ref = "logstash" }
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+ktor-client-contentNegotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
+ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
+ktor-client-mock = { group = "io.ktor", name = "ktor-client-mock", version.ref = "ktor" }
+ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
+ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
+ktor-server-cors = { group = "io.ktor", name = "ktor-server-cors", version.ref = "ktor" }
+ktor-server-swagger = { group = "io.ktor", name = "ktor-server-swagger", version.ref = "ktor" }
+ktor-server-callId = { group = "io.ktor", name = "ktor-server-call-id", version.ref = "ktor" }
+ktor-server-callLogging = { group = "io.ktor", name = "ktor-server-call-logging", version.ref = "ktor" }
+ktor-server-statusPages = { group = "io.ktor", name = "ktor-server-status-pages", version.ref = "ktor" }
+ktor-server-contentNegotiation = { group = "io.ktor", name = "ktor-server-content-negotiation", version.ref = "ktor" }
+ktor-server-coreJvm = { group = "io.ktor", name = "ktor-server-core-jvm", version.ref = "ktor" }
+ktor-server-core = { group = "io.ktor", name = "ktor-server-core", version.ref = "ktor" }
+ktor-server-openapi = { group = "io.ktor", name = "ktor-server-openapi", version.ref = "ktor" }
+ktor-server-netty = { group = "io.ktor", name = "ktor-server-netty", version.ref = "ktor" }
+ktor-server-auth = { group = "io.ktor", name = "ktor-server-auth", version.ref = "ktor" }
+ktor-server-metricsMicrometer = { group = "io.ktor", name = "ktor-server-metrics-micrometer", version.ref = "ktor" }
+ktor-serialization-jvm = { group = "io.ktor", name = "ktor-serialization-jvm", version.ref = "ktor" }
+ktor-serialization-jackson = { group = "io.ktor", name = "ktor-serialization-jackson", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-server-test-host = { group = "io.ktor", name = "ktor-server-test-host", version.ref = "ktor" }
 
-opentelemetry-api = { group = "io.opentelemetry", name = "opentelemetry-api", version.ref = "otelTargetSdkVersion" }
-opentelemetry-annotations = { group = "io.opentelemetry.instrumentation", name = "opentelemetry-instrumentation-annotations", version.ref = "otelInstrumentationVersion" }
-opentelemetry-sdk = { group = "io.opentelemetry", name = "opentelemetry-sdk", version.ref = "otelTargetSdkVersion" }
-micrometer-registryPrometheus = { group = "io.micrometer", name = "micrometer-registry-prometheus", version.ref = "micrometerVersion" }
-kafka-clients = { group = "org.apache.kafka", name = "kafka-clients", version.ref = "orgApacheKafkaVersion" }
-kafka-streams-core = { group = "org.apache.kafka", name = "kafka-streams", version.ref = "orgApacheKafkaVersion" }
-kafka-streams-test = { group = "org.apache.kafka", name = "kafka-streams-test-utils", version.ref = "orgApacheKafkaVersion" }
-avro-core = { group = "org.apache.avro", name = "avro", version.ref = "orgApacheAvroVersion" }
-avro-kafkaSerializer = { group = "io.confluent", name = "kafka-avro-serializer", version.ref = "ioConfluentKafkaVersion" }
-avro-kafkaStreamsSerde = { group = "io.confluent", name = "kafka-streams-avro-serde", version.ref = "ioConfluentKafkaVersion" }
-jackson-datatypeJsr310 = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version.ref = "comFasterxmlJacksonVersion" }
-jackson-dataformat-csv = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-csv", version.ref = "comFasterxmlJacksonVersion" }
-jackson-kotlin = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "comFasterxmlJacksonVersion" }
-jackson-core = { group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "comFasterxmlJacksonVersion" }
-graphql-ktor-client = { group = "com.expediagroup", name = "graphql-kotlin-ktor-client", version.ref = "graphqlClientVersion" }
-hoplite-core = { group = "com.sksamuel.hoplite", name = "hoplite-core", version.ref = "comSksamuelHopliteVersion" }
-hoplite-toml = { group = "com.sksamuel.hoplite", name = "hoplite-toml", version.ref = "comSksamuelHopliteVersion" }
-hoplite-yaml = { group = "com.sksamuel.hoplite", name = "hoplite-yaml", version.ref = "comSksamuelHopliteVersion" }
-exposed-core = { group = "org.jetbrains.exposed", name = "exposed-core", version.ref = "kotlinExposedVersion" }
-exposed-json = { group = "org.jetbrains.exposed", name = "exposed-json", version.ref = "kotlinExposedVersion" }
-exposed-crypt = { group = "org.jetbrains.exposed", name = "exposed-crypt", version.ref = "kotlinExposedVersion" }
-exposed-dao = { group = "org.jetbrains.exposed", name = "exposed-dao", version.ref = "kotlinExposedVersion" }
-exposed-jdbc = { group = "org.jetbrains.exposed", name = "exposed-jdbc", version.ref = "kotlinExposedVersion" }
-exposed-javaTime = { group = "org.jetbrains.exposed", name = "exposed-java-time", version.ref = "kotlinExposedVersion" }
-test-junit5-runner = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotestVersion" }
-test-kotest-assertionsCore = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotestVersion" }
-test-mockk-core = { group = "io.mockk", name = "mockk", version.ref = "mockkVersion" }
-test-testContainers-core = { group = "org.testcontainers", name = "testcontainers", version.ref = "testContainersVersion" }
-test-testContainers-postgresql = { group = "org.testcontainers", name = "postgresql", version.ref = "testContainersVersion" }
-test-mockOauth2Server = { group = "no.nav.security", name = "mock-oauth2-server", version.ref = "noNavSecurityMockOauth2ServerVersion" }
-database-postgres-driver = { group = "org.postgresql", name = "postgresql", version.ref = "postgresDriverVersion" }
-database-flyway-core = { group = "org.flywaydb", name = "flyway-core", version.ref = "flywayVersion" }
-database-flyway-postgres = { group = "org.flywaydb", name = "flyway-database-postgresql", version.ref = "flywayVersion" }
-database-hikari-connectionPool = { group = "com.zaxxer", name = "HikariCP", version.ref = "hikariVersion" }
-database-h2 = { group = "com.h2database", name = "h2", version.ref = "h2DatabaseVersion" }
-database-bigquery-librariesBom = { group = "com.google.cloud", name = "libraries-bom", version.ref = "bigqueryVersion" }
+opentelemetry-api = { group = "io.opentelemetry", name = "opentelemetry-api", version.ref = "otel-api" }
+opentelemetry-annotations = { group = "io.opentelemetry.instrumentation", name = "opentelemetry-instrumentation-annotations", version.ref = "otel-instrumentation" }
+opentelemetry-sdk = { group = "io.opentelemetry", name = "opentelemetry-sdk", version.ref = "otel-api" }
+micrometer-registryPrometheus = { group = "io.micrometer", name = "micrometer-registry-prometheus", version.ref = "micrometer" }
+kafka-clients = { group = "org.apache.kafka", name = "kafka-clients", version.ref = "kafka" }
+kafka-streams-core = { group = "org.apache.kafka", name = "kafka-streams", version.ref = "kafka" }
+kafka-streams-test = { group = "org.apache.kafka", name = "kafka-streams-test-utils", version.ref = "kafka" }
+avro-core = { group = "org.apache.avro", name = "avro", version.ref = "avro" }
+avro-kafkaSerializer = { group = "io.confluent", name = "kafka-avro-serializer", version.ref = "confluent-kafka" }
+avro-kafkaStreamsSerde = { group = "io.confluent", name = "kafka-streams-avro-serde", version.ref = "confluent-kafka" }
+jackson-datatypeJsr310 = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version.ref = "jackson" }
+jackson-dataformat-csv = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-csv", version.ref = "jackson" }
+jackson-kotlin = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "jackson" }
+jackson-core = { group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "jackson" }
+graphql-ktor-client = { group = "com.expediagroup", name = "graphql-kotlin-ktor-client", version.ref = "graphql-client" }
+hoplite-core = { group = "com.sksamuel.hoplite", name = "hoplite-core", version.ref = "hoplite" }
+hoplite-toml = { group = "com.sksamuel.hoplite", name = "hoplite-toml", version.ref = "hoplite" }
+hoplite-yaml = { group = "com.sksamuel.hoplite", name = "hoplite-yaml", version.ref = "hoplite" }
+exposed-core = { group = "org.jetbrains.exposed", name = "exposed-core", version.ref = "exposed" }
+exposed-json = { group = "org.jetbrains.exposed", name = "exposed-json", version.ref = "exposed" }
+exposed-crypt = { group = "org.jetbrains.exposed", name = "exposed-crypt", version.ref = "exposed" }
+exposed-dao = { group = "org.jetbrains.exposed", name = "exposed-dao", version.ref = "exposed" }
+exposed-jdbc = { group = "org.jetbrains.exposed", name = "exposed-jdbc", version.ref = "exposed" }
+exposed-javaTime = { group = "org.jetbrains.exposed", name = "exposed-java-time", version.ref = "exposed" }
+test-junit5-runner = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest" }
+test-kotest-assertionsCore = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotest" }
+test-mockk-core = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+test-testContainers-core = { group = "org.testcontainers", name = "testcontainers", version.ref = "testcontainers" }
+test-testContainers-postgresql = { group = "org.testcontainers", name = "postgresql", version.ref = "testcontainers" }
+test-mockOauth2Server = { group = "no.nav.security", name = "mock-oauth2-server", version.ref = "nav-security-mock-oauth2-server" }
+database-postgres-driver = { group = "org.postgresql", name = "postgresql", version.ref = "postgres" }
+database-flyway-core = { group = "org.flywaydb", name = "flyway-core", version.ref = "flyway" }
+database-flyway-postgres = { group = "org.flywaydb", name = "flyway-database-postgresql", version.ref = "flyway" }
+database-hikari-connectionPool = { group = "com.zaxxer", name = "HikariCP", version.ref = "hikari" }
+database-h2 = { group = "com.h2database", name = "h2", version.ref = "h2-database" }
+database-bigquery-librariesBom = { group = "com.google.cloud", name = "libraries-bom", version.ref = "bigquery" }
 database-bigquery-client = { group = "com.google.cloud", name = "google-cloud-bigquery"}
-nav-common-tokenClient = { group = "no.nav.common", name = "token-client", version.ref = "noNavCommonVersion" }
-nav-common-log = { group = "no.nav.common", name = "log", version.ref = "noNavCommonVersion" }
-nav-common-auditLog = { group = "no.nav.common", name = "audit-log", version.ref = "noNavCommonVersion" }
-nav-security-tokenClientCore = { group = "no.nav.security", name = "token-client-core", version.ref = "noNavSecurityVersion" }
-nav-security-tokenValidationKtorV3 = { group = "no.nav.security", name = "token-validation-ktor-v3", version.ref = "noNavSecurityVersion" }
-nav-security-mockOauth2Server = { group = "no.nav.security", name = "mock-oauth2-server", version.ref = "noNavSecurityMockOauth2ServerVersion" }
-nav-tms-varsel-kotlinBuilder = { group = "no.nav.tms.varsel", name = "kotlin-builder", version.ref = "noNavTmsVarselBuilderVersion" }
-nav-paw-schema-main = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "main-avro-schema", version.ref = "arbeidssokerregisteretVersion" }
-nav-paw-schema-bekreftelse-paavegneav = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "bekreftelse-paavegneav-schema", version.ref = "bekreftelseSchemaVersion" }
-nav-paw-schema-bekreftelsesmelding = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "bekreftelsesmelding-schema", version.ref = "bekreftelseSchemaVersion" }
+nav-common-tokenClient = { group = "no.nav.common", name = "token-client", version.ref = "nav-common" }
+nav-common-log = { group = "no.nav.common", name = "log", version.ref = "nav-common" }
+nav-common-auditLog = { group = "no.nav.common", name = "audit-log", version.ref = "nav-common" }
+nav-security-tokenClientCore = { group = "no.nav.security", name = "token-client-core", version.ref = "nav-security" }
+nav-security-tokenValidationKtorV3 = { group = "no.nav.security", name = "token-validation-ktor-v3", version.ref = "nav-security" }
+nav-security-mockOauth2Server = { group = "no.nav.security", name = "mock-oauth2-server", version.ref = "nav-security-mock-oauth2-server" }
+nav-tms-varsel-kotlinBuilder = { group = "no.nav.tms.varsel", name = "kotlin-builder", version.ref = "nav-tms-varsel" }
+nav-paw-schema-main = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "main-avro-schema", version.ref = "nav-paw-schema-main" }
+nav-paw-schema-bekreftelse-paavegneav = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "bekreftelse-paavegneav-schema", version.ref = "nav-paw-schema-bekreftelse" }
+nav-paw-schema-bekreftelsesmelding = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "bekreftelsesmelding-schema", version.ref = "nav-paw-schema-bekreftelse" }
 
 [bundles]
-ktorServerWithNettyAndMicrometer = ["ktor-server-core", "ktor-server-coreJvm", "ktor-server-netty", "ktor-server-metricsMicrometer"]
-testLibsWithUnitTesting = ["test-junit5-runner", "test-kotest-assertionsCore", "test-mockk-core"]
+ktor-server-instrumented = ["ktor-server-core", "ktor-server-coreJvm", "ktor-server-netty", "ktor-server-metricsMicrometer"]
+unit-testing-kotest = ["test-junit5-runner", "test-kotest-assertionsCore", "test-mockk-core"]

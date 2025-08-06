@@ -8,7 +8,7 @@ dependencies {
     compileOnly(libs.kotlinx.coroutines.core)
 
     // Test
-    testImplementation(libs.bundles.testLibsWithUnitTesting)
+    testImplementation(libs.bundles.unit.testing.kotest)
 }
 
 tasks.withType<Test>().configureEach {

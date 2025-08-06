@@ -16,7 +16,7 @@ dependencies {
     implementation(project(":lib:error-handling"))
 
     //implementation(libs.arrow.core.core)
-    implementation(libs.bundles.ktorServerWithNettyAndMicrometer)
+    implementation(libs.bundles.ktor.server.instrumented)
     implementation(libs.micrometer.registryPrometheus)
     implementation(libs.hoplite.core)
     implementation(libs.hoplite.toml)
