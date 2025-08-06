@@ -74,7 +74,7 @@ dependencies {
     testImplementation(libs.ktor.client.mock)
     testImplementation(libs.ktor.client.contentNegotiation)
     testImplementation(libs.test.testContainers.postgresql)
-    testImplementation(libs.test.mockOauth2Server)
+    testImplementation(libs.nav.security.mockOauth2Server)
     testImplementation(libs.test.kotest.assertionsCore)
 }
 

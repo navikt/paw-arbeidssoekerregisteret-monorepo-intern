@@ -73,7 +73,7 @@ dependencies {
     testImplementation(libs.kafka.streams.test)
     testImplementation(libs.database.h2)
     testImplementation(libs.test.testContainers.postgresql)
-    testImplementation(libs.test.mockOauth2Server)
+    testImplementation(libs.nav.security.mockOauth2Server)
 }
 
 application {

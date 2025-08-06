@@ -41,7 +41,7 @@ dependencies {
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.test.junit5.runner)
     testImplementation(libs.test.kotest.assertionsCore)
-    testImplementation(libs.test.mockOauth2Server)
+    testImplementation(libs.nav.security.mockOauth2Server)
     testImplementation(libs.test.mockk.core)
     testImplementation(project(":lib:tilgangskontroll-client"))
 }

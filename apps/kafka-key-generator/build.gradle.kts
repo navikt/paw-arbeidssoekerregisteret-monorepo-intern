@@ -80,7 +80,7 @@ dependencies {
     testImplementation(libs.test.testContainers.postgresql)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.client.mock)
-    testImplementation(libs.test.mockOauth2Server)
+    testImplementation(libs.nav.security.mockOauth2Server)
 }
 
 java {

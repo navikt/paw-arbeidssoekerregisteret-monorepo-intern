@@ -67,7 +67,7 @@ dependencies {
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.client.mock)
     testImplementation(libs.bundles.unit.testing.kotest)
-    testImplementation(libs.test.mockOauth2Server)
+    testImplementation(libs.nav.security.mockOauth2Server)
 }
 
 java {

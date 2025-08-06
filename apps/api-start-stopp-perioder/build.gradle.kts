@@ -53,7 +53,7 @@ dependencies {
     testImplementation(libs.test.junit5.runner)
     testImplementation(libs.test.kotest.assertionsCore)
     testImplementation(libs.test.testContainers.core)
-    testImplementation(libs.test.mockOauth2Server)
+    testImplementation(libs.nav.security.mockOauth2Server)
     testImplementation(libs.test.mockk.core)
 }
 sourceSets {
