@@ -5,7 +5,6 @@ plugins {
 dependencies {
     implementation(project(":lib:error-handling"))
     implementation(project(":lib:common-model"))
-    implementation(project(":lib:logging"))
     implementation(libs.ktor.server.auth)
     implementation(libs.logbackClassic)
     implementation(libs.nav.security.tokenValidationKtorV3)

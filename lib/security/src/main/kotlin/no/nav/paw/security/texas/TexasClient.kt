@@ -8,9 +8,6 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import no.nav.paw.logging.logger.buildApplicationLogger
-
-val logger = buildApplicationLogger
 
 class TexasClient(
     private val config: TexasClientConfig,
@@ -27,14 +24,11 @@ class TexasClient(
                 )
             )
         }
-        return response.body<OnBehalfOfResponse>().also {
-            when {
-                response.status == HttpStatusCode.OK -> logger.debug("Token veksling vellykket for bruker.")
-                response.status.value != 200 -> {
-                    throw TokenExchangeException("Klarte ikke å veksle token. Statuskode: ${response.status.value}")
-                }
-            }
+
+        if (response.status != HttpStatusCode.OK) {
+            throw TokenExchangeException("Klarte ikke å veksle token. Statuskode: ${response.status.value}")
         }
+        return response.body<OnBehalfOfResponse>()
     }
 }
 

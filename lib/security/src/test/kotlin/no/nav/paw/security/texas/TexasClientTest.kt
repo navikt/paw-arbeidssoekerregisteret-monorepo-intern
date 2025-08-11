@@ -1,5 +1,6 @@
 package no.nav.paw.security.texas
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
@@ -48,6 +49,31 @@ class TexasClientTest : FreeSpec({
         }
     }
 
+    "TokenExchangeException ved ikke-200 status" - {
+        val forventetStatusKode = HttpStatusCode.BadRequest
+        val mockEngine = MockEngine {
+            respond(
+                content = """{ "error": "noe gikk galt" }""",
+                status = forventetStatusKode,
+                headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            )
+        }
+
+        val texasClient = TexasClient(
+            config = TexasClientConfig(
+                endpoint = texasTestEndpoint,
+                identityProvider = "tokenx",
+                target = "target-app"
+            ),
+            httpClient = testClient(mockEngine)
+        )
+
+        runBlocking {
+            shouldThrow<TokenExchangeException> {
+                texasClient.getOnBehalfOfToken("ugyldig-token")
+            }.message shouldBe "Klarte ikke å veksle token. Statuskode: ${forventetStatusKode.value}"
+        }
+    }
 })
 
 private fun testClient(mockEngine: MockEngine) = HttpClient(mockEngine) {
