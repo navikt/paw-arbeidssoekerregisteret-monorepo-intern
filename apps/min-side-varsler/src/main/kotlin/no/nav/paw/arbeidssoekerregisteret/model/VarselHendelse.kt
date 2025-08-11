@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonValue
 import java.time.Instant
 
 data class VarselHendelse(
-    @JsonProperty("@event_name") val eventName: VarselEventName,
+    @field:JsonProperty("@event_name") val eventName: VarselEventName,
     val status: VarselStatus?,
     val varselId: String,
     val varseltype: VarselType,

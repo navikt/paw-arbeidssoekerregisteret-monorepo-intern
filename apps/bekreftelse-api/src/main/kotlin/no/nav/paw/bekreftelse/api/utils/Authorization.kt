@@ -27,7 +27,5 @@ fun Bruker<*>.hentSluttbrukerIdentitet(identitetsnummer: String?): Identitetsnum
 
         is Anonym -> identitetsnummer?.asIdentitetsnummer()
             ?: throw IngenTilgangException("Anonym må sende med identitetsnummer for sluttbruker")
-
-        else -> throw IngenTilgangException("Endepunkt kan ikke benyttes av ukjent brukergruppe")
     }
 }

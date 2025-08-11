@@ -13,14 +13,14 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.OpplysningerOmArbeidssoeke
  * Først når alle tilstander er oppdatert til ny versjon, kan den gamle versjonen fjernes.
  */
 data class TilstandV1(
-    @JsonProperty("recordScope") override val hendelseScope: HendelseScope<Long>,
-    @JsonProperty("gjeldeneTilstand") val gjeldeneTilstand: GjeldeneTilstand,
-    @JsonProperty("gjeldeneIdentitetsnummer") val gjeldeneIdentitetsnummer: String,
-    @JsonProperty("alleIdentitetsnummer") val alleIdentitetsnummer: Set<String>,
-    @JsonProperty("gjeldenePeriode") val gjeldenePeriode: Periode?,
-    @JsonProperty("forrigePeriode") val forrigePeriode: Periode?,
-    @JsonProperty("sisteOpplysningerOmArbeidssoeker") val sisteOpplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker?,
-    @JsonProperty("forrigeOpplysningerOmArbeidssoeker") val forrigeOpplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker?
+    @field:JsonProperty("recordScope") override val hendelseScope: HendelseScope<Long>,
+    @field:JsonProperty("gjeldeneTilstand") val gjeldeneTilstand: GjeldeneTilstand,
+    @field:JsonProperty("gjeldeneIdentitetsnummer") val gjeldeneIdentitetsnummer: String,
+    @field:JsonProperty("alleIdentitetsnummer") val alleIdentitetsnummer: Set<String>,
+    @field:JsonProperty("gjeldenePeriode") val gjeldenePeriode: Periode?,
+    @field:JsonProperty("forrigePeriode") val forrigePeriode: Periode?,
+    @field:JsonProperty("sisteOpplysningerOmArbeidssoeker") val sisteOpplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker?,
+    @field:JsonProperty("forrigeOpplysningerOmArbeidssoeker") val forrigeOpplysningerOmArbeidssoeker: OpplysningerOmArbeidssoeker?
 ) : HasRecordScope<Long> {
     @JsonProperty("classVersion") val classVersion: String = TilstandV1.classVersion
 
