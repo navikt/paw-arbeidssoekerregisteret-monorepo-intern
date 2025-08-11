@@ -16,7 +16,7 @@ import java.util.*
 data class ProblemDetails(
     val id: UUID = UUID.randomUUID(),
     val type: URI = ErrorType.default().build(),
-    @JsonSerialize(using = HttpStatusCodeSerializer::class) @JsonDeserialize(using = HttpStatusCodeDeserializer::class) val status: HttpStatusCode,
+    @field:JsonSerialize(using = HttpStatusCodeSerializer::class) @field:JsonDeserialize(using = HttpStatusCodeDeserializer::class) val status: HttpStatusCode,
     val title: String,
     val detail: String? = null,
     val instance: String,
