@@ -1,15 +1,16 @@
 package no.nav.paw.security.texas
 
+import TexasClient
+import TokenExchangeException
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
-import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.types.beInstanceOf
+import io.kotest.matchers.string.shouldContain
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.http.ContentType
+import io.ktor.http.ContentType.Application
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -21,66 +22,93 @@ import no.nav.paw.serialization.jackson.configureJackson
 class TexasClientTest : FreeSpec({
     val texasTestEndpoint = "https://texas/token"
 
-    "Kan veksle token" - {
+    "Kan veksle token for bruker" {
+        val expectedToken = "vekslet_token_bruker"
         val mockEngine = MockEngine { request ->
             request.method shouldBe HttpMethod.Post
             request.url.toString() shouldBe texasTestEndpoint
 
             respond(
-                content = """{ "access_token": "vekslet_token" }""",
+                content = """{ "access_token": "$expectedToken" }""",
                 status = HttpStatusCode.OK,
-                headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                headers = headersOf(HttpHeaders.ContentType, Application.Json.toString())
             )
         }
 
         val texasClient = TexasClient(
             config = TexasClientConfig(
                 endpoint = texasTestEndpoint,
-                identityProvider = "tokenx",
                 target = "target-app"
             ),
             httpClient = testClient(mockEngine)
         )
 
         runBlocking {
-            val response = texasClient.getOnBehalfOfToken(userToken = "user-token")
-            response should beInstanceOf<OnBehalfOfResponse>()
-            response.accessToken shouldBe "vekslet_token"
+            val response = texasClient.exchangeOnBehalfOfBrukerToken(
+                OnBehalfOfBrukerRequest(userToken = "user-token", target = "target-app")
+            )
+            response.accessToken shouldBe "vekslet_token_bruker"
         }
     }
 
-    "TokenExchangeException ved ikke-200 status" - {
-        val forventetStatusKode = HttpStatusCode.BadRequest
-        val mockEngine = MockEngine {
+    "Kan veksle token for ansatt" {
+        val expectedToken = "vekslet_token_ansatt"
+        val target = "target-app"
+        val mockEngine = MockEngine { request ->
+            request.method shouldBe HttpMethod.Post
+            request.url.toString() shouldBe texasTestEndpoint
+
             respond(
-                content = """{ "error": "noe gikk galt" }""",
-                status = forventetStatusKode,
-                headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                content = """{ "access_token": "$expectedToken" }""",
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, Application.Json.toString())
             )
         }
 
         val texasClient = TexasClient(
-            config = TexasClientConfig(
-                endpoint = texasTestEndpoint,
-                identityProvider = "tokenx",
-                target = "target-app"
-            ),
+            config = TexasClientConfig(endpoint = texasTestEndpoint, target),
             httpClient = testClient(mockEngine)
         )
 
         runBlocking {
-            shouldThrow<TokenExchangeException> {
-                texasClient.getOnBehalfOfToken("ugyldig-token")
-            }.message shouldBe "Klarte ikke å veksle token. Statuskode: ${forventetStatusKode.value}"
+            val response = texasClient.exchangeOnBehalfOfAnsattToken(
+                OnBehalfOfAnsattRequest(userToken = "user-token", target)
+            )
+            response.accessToken shouldBe expectedToken
+        }
+    }
+
+    "Kaster TokenExchangeException ved ikke-200 statuskode" {
+        val expectedStatusCode = HttpStatusCode.BadRequest
+        val target = "target-app"
+        val mockEngine = MockEngine {
+            respond(
+                content = """{ "error": "no token for you" }""",
+                status = expectedStatusCode,
+                headers = headersOf(HttpHeaders.ContentType, Application.Json.toString())
+            )
+        }
+
+        val texasClient = TexasClient(
+            config = TexasClientConfig(endpoint = texasTestEndpoint, target),
+            httpClient = testClient(mockEngine)
+        )
+
+        runBlocking {
+            val tokenExchangeException = shouldThrow<TokenExchangeException> {
+                texasClient.exchangeOnBehalfOfBrukerToken(
+                    OnBehalfOfBrukerRequest(userToken = "user-token", target)
+                )
+            }
+            tokenExchangeException.message shouldContain "Statuskode: ${expectedStatusCode.value}"
         }
     }
 })
 
-private fun testClient(mockEngine: MockEngine) = HttpClient(mockEngine) {
+private fun testClient(mockEngine: MockEngine): HttpClient = HttpClient(mockEngine) {
     install(ContentNegotiation) {
         jackson {
             configureJackson()
         }
     }
 }
-
