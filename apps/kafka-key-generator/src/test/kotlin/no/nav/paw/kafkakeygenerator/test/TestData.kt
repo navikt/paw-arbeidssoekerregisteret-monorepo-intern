@@ -30,6 +30,8 @@ import no.nav.paw.identitet.internehendelser.IdentitetHendelseDeserializer
 import no.nav.paw.identitet.internehendelser.IdentitetHendelseSerializer
 import no.nav.paw.identitet.internehendelser.IdentiteterEndretHendelse
 import no.nav.paw.identitet.internehendelser.IdentiteterMergetHendelse
+import no.nav.paw.identitet.internehendelser.IdentiteterSlettetHendelse
+import no.nav.paw.identitet.internehendelser.IdentiteterSplittetHendelse
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.kafkakeygenerator.model.HendelseRow
 import no.nav.paw.kafkakeygenerator.model.HendelseStatus
@@ -548,6 +550,18 @@ fun IdentitetHendelse.asWrapper(): IdentitetHendelseWrapper {
         is IdentiteterMergetHendelse -> IdentitetHendelseWrapper(
             type = hendelseType,
             identiteter = identiteter,
+            tidligereIdentiteter = tidligereIdentiteter,
+        )
+
+        is IdentiteterSplittetHendelse -> IdentitetHendelseWrapper(
+            type = hendelseType,
+            identiteter = identiteter,
+            tidligereIdentiteter = tidligereIdentiteter,
+        )
+
+        is IdentiteterSlettetHendelse -> IdentitetHendelseWrapper(
+            type = hendelseType,
+            identiteter = emptyList(),
             tidligereIdentiteter = tidligereIdentiteter,
         )
     }
