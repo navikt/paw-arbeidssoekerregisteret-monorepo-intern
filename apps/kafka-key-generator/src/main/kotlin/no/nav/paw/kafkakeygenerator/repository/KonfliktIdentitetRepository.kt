@@ -6,6 +6,8 @@ import no.nav.paw.kafkakeygenerator.database.KonflikterTable
 import no.nav.paw.kafkakeygenerator.model.KonfliktIdentitetRow
 import no.nav.paw.kafkakeygenerator.model.asKonfliktIdentitetRow
 import org.jetbrains.exposed.sql.JoinType
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -45,5 +47,15 @@ class KonfliktIdentitetRepository {
             it[KonfliktIdentiteterTable.gjeldende] = identitet.gjeldende
             it[insertedTimestamp] = Instant.now()
         }.insertedCount
+    }
+
+    fun deleteByKonfliktIdAndIdentitet(
+        konfliktId: Long,
+        identitet: String
+    ): Int = transaction {
+        KonfliktIdentiteterTable.deleteWhere {
+            KonfliktIdentiteterTable.id eq konfliktId
+            KonfliktIdentiteterTable.identitet eq identitet
+        }
     }
 }

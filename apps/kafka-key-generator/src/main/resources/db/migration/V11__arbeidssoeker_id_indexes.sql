@@ -1,0 +1,1 @@
+CREATE INDEX identiteter_arbeidssoeker_id_idx ON identiteter (arbeidssoeker_id);

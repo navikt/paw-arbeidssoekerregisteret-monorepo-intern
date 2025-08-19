@@ -269,7 +269,7 @@ class IdentitetService(
                 val rowsAffected = identitetRepository.updateByIdentitet(
                     identitet = identitet.identitet,
                     aktorId = aktorId,
-                    gjeldende = identitet.gjeldende,
+                    gjeldende = false,
                     status = IdentitetStatus.SLETTET,
                     sourceTimestamp = sourceTimestamp
                 )

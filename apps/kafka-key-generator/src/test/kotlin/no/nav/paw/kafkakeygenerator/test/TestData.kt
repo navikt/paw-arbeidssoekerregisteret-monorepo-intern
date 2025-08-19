@@ -218,6 +218,14 @@ object TestData {
             identifikator(ident = fnr4_1, type = Type.FOLKEREGISTERIDENT, gjeldende = true)
         )
     )
+    val aktor4_3 = aktor(
+        listOf(
+            identifikator(ident = aktorId4, type = Type.AKTORID, gjeldende = true),
+            identifikator(ident = npId4, type = Type.NPID, gjeldende = true),
+            identifikator(ident = dnr4, type = Type.FOLKEREGISTERIDENT, gjeldende = false),
+            identifikator(ident = fnr4_2, type = Type.FOLKEREGISTERIDENT, gjeldende = true)
+        )
+    )
     val aktor7_1 = aktor(
         listOf(
             identifikator(ident = aktorId7_1, type = Type.AKTORID, gjeldende = true),

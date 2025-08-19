@@ -34,6 +34,7 @@ class KonfliktService(
         sourceTimestamp: Instant,
         identiteter: List<Identitet>
     ) {
+        val nyeIdentiteterSet = identiteter.map { it.identitet }.toSet()
         val identitetMergeRows = konfliktRepository.findByAktorIdAndType(aktorId, type)
         if (identitetMergeRows.isEmpty()) {
             val status = KonfliktStatus.VENTER
@@ -51,7 +52,29 @@ class KonfliktService(
                 rowsAffected
             )
         } else {
-            logger.info("Innslag for konflikt type {} finnes allerede", type.name)
+            val identitetMergeRow = identitetMergeRows.first()
+            val konfliktId = identitetMergeRow.id
+            val eksisterendeIdeniteterSet = identitetMergeRow.identiteter.map { it.identitet }.toSet()
+
+            val rowsAffected1 = identitetMergeRow.identiteter
+                .map { it.identitet }
+                .filter { !nyeIdentiteterSet.contains(it) }
+                .sumOf { identitet ->
+                    konfliktIdentitetRepository
+                        .deleteByKonfliktIdAndIdentitet(konfliktId, identitet)
+                }
+
+            val rowsAffected2 = identiteter
+                .filter { !eksisterendeIdeniteterSet.contains(it.identitet) }
+                .sumOf { identitet ->
+                    konfliktIdentitetRepository.insert(konfliktId, identitet)
+                }
+            logger.info(
+                "Oppdaterte konflikt type {} ({} rows deleted, {} rows inserted)",
+                type.name,
+                rowsAffected1,
+                rowsAffected2
+            )
         }
     }
 
