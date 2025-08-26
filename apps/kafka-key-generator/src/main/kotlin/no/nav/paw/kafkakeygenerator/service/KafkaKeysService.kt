@@ -8,7 +8,9 @@ import no.nav.paw.kafkakeygenerator.api.v2.LokaleAlias
 import no.nav.paw.kafkakeygenerator.api.v2.publicTopicKeyFunction
 import no.nav.paw.kafkakeygenerator.mergedetector.findMerge
 import no.nav.paw.kafkakeygenerator.mergedetector.hentLagretData
+import no.nav.paw.kafkakeygenerator.mergedetector.vo.LagretData
 import no.nav.paw.kafkakeygenerator.mergedetector.vo.MergeDetected
+import no.nav.paw.kafkakeygenerator.mergedetector.vo.NoMergeDetected
 import no.nav.paw.kafkakeygenerator.model.asIdentitet
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
 import no.nav.paw.kafkakeygenerator.utils.countRestApiFailed
@@ -19,6 +21,7 @@ import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.CallId
 import no.nav.paw.kafkakeygenerator.vo.Either
 import no.nav.paw.kafkakeygenerator.vo.Failure
+import no.nav.paw.kafkakeygenerator.vo.FailureCode
 import no.nav.paw.kafkakeygenerator.vo.FailureCode.CONFLICT
 import no.nav.paw.kafkakeygenerator.vo.FailureCode.DB_NOT_FOUND
 import no.nav.paw.kafkakeygenerator.vo.IdentitetFailure
@@ -88,8 +91,9 @@ class KafkaKeysService(
                     hentArbeidssoekerId = kafkaKeysRepository::hent,
                     info = info
                 ).map { info to it }
+                    .recover(DB_NOT_FOUND) { right(info to null) }
             }
-            .map { (info, lagretDatra) -> info to findMerge(lagretDatra) }
+            .map { (info, lagretData) -> info to lagretData?.let { findMerge(it) } }
             .map { (info, merge) ->
                 InfoResponse(
                     info = info,
