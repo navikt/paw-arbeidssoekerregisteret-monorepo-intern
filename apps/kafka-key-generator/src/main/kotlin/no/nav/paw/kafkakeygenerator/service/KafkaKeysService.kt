@@ -134,6 +134,24 @@ class KafkaKeysService(
                         }
                     )
                 )
+            }.recover(DB_NOT_FOUND) {
+                right(Info(
+                    identitetsnummer = identitet.value,
+                    lagretData = null,
+                    pdlData = pdlIdInfo.fold(
+                        { PdlData(error = it.code().name, id = null) },
+                        {
+                            PdlData(
+                                error = null,
+                                id = it.map { identInfo ->
+                                    PdlId(
+                                        gruppe = identInfo.gruppe.name,
+                                        id = identInfo.ident,
+                                        gjeldende = !identInfo.historisk
+                                    )
+                                })
+                        }
+                )))
             }
     }
 
