@@ -2,32 +2,55 @@ package no.nav.paw.kafkakeygenerator.api.v2
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainOnly
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.ktor.client.call.body
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.post
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
+import io.mockk.Called
+import io.mockk.clearAllMocks
+import io.mockk.confirmVerified
+import io.mockk.every
+import io.mockk.verify
+import no.nav.paw.identitet.internehendelser.IdentitetHendelse
+import no.nav.paw.identitet.internehendelser.IdentiteterEndretHendelse
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
+import no.nav.paw.kafka.producer.sendBlocking
 import no.nav.paw.kafkakeygenerator.context.TestContext
 import no.nav.paw.kafkakeygenerator.context.TestContext.Companion.setJsonBody
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
+import no.nav.paw.kafkakeygenerator.model.asIdentitet
 import no.nav.paw.kafkakeygenerator.test.IdentitetWrapper
 import no.nav.paw.kafkakeygenerator.test.TestData
 import no.nav.paw.kafkakeygenerator.test.TestData.asIdentitetsnummer
 import no.nav.paw.kafkakeygenerator.test.asWrapper
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.clients.producer.RecordMetadata
+import org.apache.kafka.common.TopicPartition
 
 class ApiEndepunktV2Test : FreeSpec({
     with(TestContext.buildWithPostgres()) {
+        val identitetRecordMetadata =
+            RecordMetadata(TopicPartition(applicationConfig.pawIdentitetProducer.topic, 0), 1, 0, 0, 0, 0)
 
         beforeSpec {
             setUp()
             mockOAuth2Server.start()
         }
-
+        beforeEach { clearAllMocks() }
+        afterTest {
+            verify { pawHendelseloggProducerMock wasNot Called }
+            confirmVerified(
+                pawIdentitetProducerMock,
+                pawHendelseloggProducerMock
+            )
+        }
         afterSpec {
             tearDown()
             mockOAuth2Server.shutdown()
@@ -44,6 +67,11 @@ class ApiEndepunktV2Test : FreeSpec({
                 val npId = Identitet(TestData.npId4, IdentitetType.NPID, true)
                 val dnr = Identitet(TestData.dnr4, IdentitetType.FOLKEREGISTERIDENT, true)
                 val fnr = Identitet(TestData.fnr4_1, IdentitetType.FOLKEREGISTERIDENT, true)
+                val identitetProducerRecordList = mutableListOf<ProducerRecord<Long, IdentitetHendelse>>()
+
+                every {
+                    pawIdentitetProducerMock.sendBlocking(capture(identitetProducerRecordList))
+                } returns identitetRecordMetadata
 
                 // WHEN
                 val response1 = client.post("/api/v2/hentEllerOpprett") {
@@ -62,7 +90,6 @@ class ApiEndepunktV2Test : FreeSpec({
                 kafkaKeyRow1!!.identitetsnummer shouldBe dnr.identitet
                 kafkaKeyRow1.arbeidssoekerId shouldBe body1.id
 
-                /* TODO Utkoblet
                 val identitetRow1 = identitetRepository.getByIdentitet(dnr.identitet)
                 identitetRow1 shouldNotBe null
                 identitetRow1!!.aktorId shouldBe aktorId.identitet
@@ -88,7 +115,7 @@ class ApiEndepunktV2Test : FreeSpec({
                         identitet = dnr,
                         status = IdentitetStatus.AKTIV
                     )
-                )*/
+                )
 
                 // WHEN
                 val response2 = client.post("/api/v2/hentEllerOpprett") {
@@ -107,7 +134,6 @@ class ApiEndepunktV2Test : FreeSpec({
                 kafkaKeyRow2!!.identitetsnummer shouldBe fnr.identitet
                 kafkaKeyRow2.arbeidssoekerId shouldBe body2.id
 
-                /* TODO: Utkoblet
                 val identitetRow2 = identitetRepository.getByIdentitet(fnr.identitet)
                 identitetRow2 shouldNotBe null
                 identitetRow2!!.aktorId shouldBe aktorId.identitet
@@ -139,7 +165,38 @@ class ApiEndepunktV2Test : FreeSpec({
                         identitet = fnr,
                         status = IdentitetStatus.AKTIV
                     )
-                )*/
+                )
+
+                verify(exactly = 2) { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
+                identitetProducerRecordList shouldHaveSize 2
+                val identitetRecord1 = identitetProducerRecordList[0]
+                val identitetRecord2 = identitetProducerRecordList[1]
+                identitetRecord1.key() shouldBe body1.id
+                identitetRecord1.value().shouldBeInstanceOf<IdentiteterEndretHendelse> { hendelse ->
+                    hendelse.identiteter shouldContainOnly listOf(
+                        aktorId,
+                        npId,
+                        dnr,
+                        body1.id.asIdentitet(gjeldende = true)
+                    )
+                    hendelse.tidligereIdentiteter shouldBe emptyList()
+                }
+                identitetRecord2.key() shouldBe body1.id
+                identitetRecord2.value().shouldBeInstanceOf<IdentiteterEndretHendelse> { hendelse ->
+                    hendelse.identiteter shouldContainOnly listOf(
+                        aktorId,
+                        npId,
+                        dnr.copy(gjeldende = false),
+                        fnr,
+                        body1.id.asIdentitet(gjeldende = true)
+                    )
+                    hendelse.tidligereIdentiteter shouldContainOnly listOf(
+                        aktorId,
+                        npId,
+                        dnr,
+                        body1.id.asIdentitet(gjeldende = true)
+                    )
+                }
             }
         }
     }

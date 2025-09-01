@@ -17,3 +17,5 @@ fun <K, V> Producer<K, V>.sendDeferred(record: ProducerRecord<K, V>): Deferred<R
     }
     return deferred
 }
+
+fun <K, V> Producer<K, V>.sendBlocking(record: ProducerRecord<K, V>): RecordMetadata = send(record).get()

@@ -1,4 +1,4 @@
-package no.nav.paw.kafkakeygenerator
+package no.nav.paw.kafkakeygenerator.test
 
 import org.apache.kafka.clients.producer.internals.BuiltInPartitioner
 import org.apache.kafka.common.serialization.Serdes

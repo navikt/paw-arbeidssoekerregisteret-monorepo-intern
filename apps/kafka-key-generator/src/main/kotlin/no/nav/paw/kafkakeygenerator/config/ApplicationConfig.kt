@@ -9,6 +9,7 @@ data class ApplicationConfig(
     val pawPeriodeConsumer: KafkaConsumerConfig,
     val pdlAktorConsumer: KafkaConsumerConfig,
     val pawIdentitetProducer: KafkaProducerConfig,
+    val pawHendelseloggProducer: KafkaProducerConfig,
     val identitetKonfliktJob: ScheduledJobConfig,
     val identitetHendelseJob: ScheduledJobConfig
 )
