@@ -93,6 +93,30 @@ class IdentitetRepository {
         }
     }
 
+    fun updateByIdentitet(
+        identitet: String,
+        aktorId: String,
+        arbeidssoekerId: Long,
+        gjeldende: Boolean,
+        status: IdentitetStatus,
+        sourceTimestamp: Instant
+    ): Int = transaction {
+        IdentiteterTable.update(where = {
+            (IdentiteterTable.identitet eq identitet) and
+                    ((IdentiteterTable.aktorId neq aktorId) or
+                            (IdentiteterTable.arbeidssoekerId neq arbeidssoekerId) or
+                            (IdentiteterTable.gjeldende neq gjeldende) or
+                            (IdentiteterTable.status neq status))
+        }) {
+            it[IdentiteterTable.aktorId] = aktorId
+            it[IdentiteterTable.arbeidssoekerId] = arbeidssoekerId
+            it[IdentiteterTable.gjeldende] = gjeldende
+            it[IdentiteterTable.status] = status
+            it[IdentiteterTable.sourceTimestamp] = sourceTimestamp
+            it[updatedTimestamp] = Instant.now()
+        }
+    }
+
     fun updateStatusByAktorId(
         aktorId: String,
         status: IdentitetStatus
@@ -111,18 +135,6 @@ class IdentitetRepository {
     ): Int = transaction {
         IdentiteterTable.update(where = {
             (IdentiteterTable.aktorId inList aktorIdList)
-        }) {
-            it[IdentiteterTable.status] = status
-            it[updatedTimestamp] = Instant.now()
-        }
-    }
-
-    fun updateStatusByIdentitetList(
-        status: IdentitetStatus,
-        identitetList: Iterable<String>
-    ): Int = transaction {
-        IdentiteterTable.update(where = {
-            (IdentiteterTable.identitet inList identitetList)
         }) {
             it[IdentiteterTable.status] = status
             it[updatedTimestamp] = Instant.now()

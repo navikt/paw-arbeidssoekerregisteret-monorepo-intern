@@ -18,6 +18,7 @@ import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.error.plugin.installErrorHandlingPlugin
 import no.nav.paw.health.repository.HealthIndicatorRepository
@@ -25,7 +26,9 @@ import no.nav.paw.identitet.internehendelser.IdentitetHendelse
 import no.nav.paw.identitet.internehendelser.IdentitetHendelseDeserializer
 import no.nav.paw.identitet.internehendelser.IdentitetHendelseSerializer
 import no.nav.paw.kafkakeygenerator.config.APPLICATION_CONFIG
+import no.nav.paw.kafkakeygenerator.config.ServerConfig
 import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
+import no.nav.paw.kafkakeygenerator.config.SERVER_CONFIG
 import no.nav.paw.kafkakeygenerator.merge.MergeDetector
 import no.nav.paw.kafkakeygenerator.plugin.configureRouting
 import no.nav.paw.kafkakeygenerator.repository.HendelseRepository
@@ -73,6 +76,7 @@ class TestContext private constructor(
     val mockOAuth2Server: MockOAuth2Server = MockOAuth2Server(),
     val hendelseSerializer: IdentitetHendelseSerializer = IdentitetHendelseSerializer(),
     val hendelseDeserializer: IdentitetHendelseDeserializer = IdentitetHendelseDeserializer(),
+    val serverConfig: ServerConfig = loadNaisOrLocalConfiguration(SERVER_CONFIG),
     val applicationConfig: ApplicationConfig = loadNaisOrLocalConfiguration(APPLICATION_CONFIG),
     val dataSource: DataSource,
     val initSql: List<String> = emptyList(),
@@ -88,10 +92,13 @@ class TestContext private constructor(
     val konfliktRepository: KonfliktRepository = KonfliktRepository(konfliktIdentitetRepository),
     val hendelseRepository: HendelseRepository = HendelseRepository(),
     val pawIdentitetProducerMock: Producer<Long, IdentitetHendelse> = mockk<Producer<Long, IdentitetHendelse>>(),
+    val pawHendelseloggProducerMock: Producer<Long, Hendelse> = mockk<Producer<Long, Hendelse>>(),
     val hendelseService: HendelseService = HendelseService(
+        serverConfig = serverConfig,
         applicationConfig = applicationConfig,
         hendelseRepository = hendelseRepository,
-        pawIdentitetHendelseProducer = pawIdentitetProducerMock
+        pawIdentitetHendelseProducer = pawIdentitetProducerMock,
+        pawHendelseloggHendelseProducer = pawHendelseloggProducerMock
     ),
     val konfliktService: KonfliktService = KonfliktService(
         applicationConfig = applicationConfig,

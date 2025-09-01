@@ -9,5 +9,5 @@ data class IdentiteterSlettetHendelse(
     override val hendelseId: UUID = UUID.randomUUID(),
     override val hendelseTidspunkt: Instant = Instant.now()
 ) : IdentitetHendelse {
-    override val hendelseType: String = IDENTITETER_SLETTET_HENDELSE_TYPE
+    override val hendelseType: String = IDENTITETER_SLETTET_V1_HENDELSE_TYPE
 }

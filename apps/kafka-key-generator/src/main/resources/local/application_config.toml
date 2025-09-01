@@ -18,6 +18,11 @@ version = 1
 topic = "paw.arbeidssoker-identiteter-v1"
 clientIdPrefix = "paw-kafka-key-generator-paw-identiteter"
 
+[pawHendelseloggProducer]
+version = 1
+topic = "paw.arbeidssoker-hendelseslogg-v1"
+clientIdPrefix = "paw-kafka-key-generator-paw-hendelseslogg"
+
 [identitetKonfliktJob]
 enabled = true
 delay = "PT3M"
@@ -25,7 +30,7 @@ interval = "PT6M"
 batchSize = 10
 
 [identitetHendelseJob]
-enabled = true
+enabled = false
 delay = "PT6M"
 interval = "PT6M"
 batchSize = 10

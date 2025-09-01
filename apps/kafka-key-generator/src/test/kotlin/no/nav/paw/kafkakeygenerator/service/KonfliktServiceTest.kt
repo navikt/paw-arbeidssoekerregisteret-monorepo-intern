@@ -4,35 +4,54 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainOnly
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import no.nav.paw.identitet.internehendelser.IDENTITETER_MERGET_HENDELSE_TYPE
+import io.kotest.matchers.types.shouldBeInstanceOf
+import io.mockk.Called
+import io.mockk.clearAllMocks
+import io.mockk.confirmVerified
+import io.mockk.every
+import io.mockk.verify
+import no.nav.paw.arbeidssokerregisteret.intern.v1.ArbeidssoekerIdFlettetInn
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
+import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerSammenslaatt
+import no.nav.paw.identitet.internehendelser.IdentitetHendelse
+import no.nav.paw.identitet.internehendelser.IdentiteterMergetHendelse
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
+import no.nav.paw.kafka.producer.sendBlocking
+import no.nav.paw.kafkakeygenerator.api.v2.publicTopicKeyFunction
 import no.nav.paw.kafkakeygenerator.context.TestContext
-import no.nav.paw.kafkakeygenerator.model.HendelseStatus
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
 import no.nav.paw.kafkakeygenerator.model.asIdentitet
-import no.nav.paw.kafkakeygenerator.test.HendelseWrapper
-import no.nav.paw.kafkakeygenerator.test.IdentitetHendelseWrapper
 import no.nav.paw.kafkakeygenerator.test.IdentitetWrapper
 import no.nav.paw.kafkakeygenerator.test.TestData
 import no.nav.paw.kafkakeygenerator.test.TestData.asIdentitetsnummer
 import no.nav.paw.kafkakeygenerator.test.asWrapper
+import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.clients.producer.RecordMetadata
+import org.apache.kafka.common.TopicPartition
 import java.time.Duration
 import java.time.Instant
 
 class KonfliktServiceTest : FreeSpec({
     with(TestContext.buildWithPostgres()) {
+        val identitetRecordMetadata =
+            RecordMetadata(TopicPartition(applicationConfig.pawIdentitetProducer.topic, 0), 1, 0, 0, 0, 0)
+        val hendelsesloggRecordMetadata =
+            RecordMetadata(TopicPartition(applicationConfig.pawHendelseloggProducer.topic, 0), 1, 0, 0, 0, 0)
 
-        beforeSpec {
-            setUp()
+        beforeEach { clearAllMocks() }
+        beforeSpec { setUp() }
+        afterTest {
+            confirmVerified(
+                pawIdentitetProducerMock,
+                pawHendelseloggProducerMock
+            )
         }
-
-        afterSpec {
-            tearDown()
-        }
+        afterSpec { tearDown() }
 
         /**
          * ----- MERGE -----
@@ -42,8 +61,8 @@ class KonfliktServiceTest : FreeSpec({
                 // GIVEN
                 val aktorId = Identitet(TestData.aktorId1, IdentitetType.AKTORID, true)
                 val npId = Identitet(TestData.npId1, IdentitetType.NPID, true)
-                val dnr = Identitet(TestData.dnr1, IdentitetType.FOLKEREGISTERIDENT, false)
-                val fnr1 = Identitet(TestData.fnr1_1, IdentitetType.FOLKEREGISTERIDENT, false)
+                val dnr = Identitet(TestData.dnr1, IdentitetType.FOLKEREGISTERIDENT, true)
+                val fnr1 = Identitet(TestData.fnr1_1, IdentitetType.FOLKEREGISTERIDENT, true)
                 val fnr2 = Identitet(TestData.fnr1_2, IdentitetType.FOLKEREGISTERIDENT, true)
                 val arbeidssoekerId1 = kafkaKeysRepository.opprett(dnr.asIdentitetsnummer())
                     .fold(onLeft = { null }, onRight = { it })!!.value
@@ -54,6 +73,18 @@ class KonfliktServiceTest : FreeSpec({
                 val arbId1 = arbeidssoekerId1.asIdentitet(true)
                 val arbId2 = arbeidssoekerId2.asIdentitet(true)
                 val arbId3 = arbeidssoekerId3.asIdentitet(true)
+                val recordKey1 = publicTopicKeyFunction(ArbeidssoekerId(arbeidssoekerId1)).value
+                val recordKey2 = publicTopicKeyFunction(ArbeidssoekerId(arbeidssoekerId2)).value
+                val recordKey3 = publicTopicKeyFunction(ArbeidssoekerId(arbeidssoekerId3)).value
+                val identitetProducerRecordList = mutableListOf<ProducerRecord<Long, IdentitetHendelse>>()
+                val hendelseloggProducerRecordList = mutableListOf<ProducerRecord<Long, Hendelse>>()
+
+                every {
+                    pawIdentitetProducerMock.sendBlocking(capture(identitetProducerRecordList))
+                } returns identitetRecordMetadata
+                every {
+                    pawHendelseloggProducerMock.sendBlocking(capture(hendelseloggProducerRecordList))
+                } returns hendelsesloggRecordMetadata
 
                 identitetRepository.insert(
                     arbeidssoekerId = arbeidssoekerId1,
@@ -105,7 +136,7 @@ class KonfliktServiceTest : FreeSpec({
                     type = KonfliktType.MERGE,
                     status = KonfliktStatus.VENTER,
                     sourceTimestamp = Instant.now(),
-                    identiteter = listOf(aktorId, npId, dnr, fnr1, fnr2)
+                    identiteter = listOf(aktorId, npId, fnr1.copy(gjeldende = false), fnr2)
                 )
 
                 // WHEN
@@ -137,15 +168,15 @@ class KonfliktServiceTest : FreeSpec({
                         status = IdentitetStatus.AKTIV
                     ),
                     IdentitetWrapper(
-                        arbeidssoekerId = arbeidssoekerId3,
+                        arbeidssoekerId = arbeidssoekerId1,
                         aktorId = aktorId.identitet,
-                        identitet = dnr,
-                        status = IdentitetStatus.AKTIV
+                        identitet = dnr.copy(gjeldende = false),
+                        status = IdentitetStatus.SLETTET
                     ),
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId3,
                         aktorId = aktorId.identitet,
-                        identitet = fnr1,
+                        identitet = fnr1.copy(gjeldende = false),
                         status = IdentitetStatus.AKTIV
                     ),
                     IdentitetWrapper(
@@ -156,57 +187,91 @@ class KonfliktServiceTest : FreeSpec({
                     )
                 )
 
-                val hendelseRows = hendelseRepository.findByAktorId(aktorId.identitet)
-                hendelseRows shouldHaveSize 3
-                hendelseRows.map { it.asWrapper() } shouldContainOnly listOf(
-                    HendelseWrapper(
-                        arbeidssoekerId = arbeidssoekerId1,
-                        aktorId = aktorId.identitet,
-                        status = HendelseStatus.VENTER,
-                        hendelse = IdentitetHendelseWrapper(
-                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
-                            identiteter = emptyList(),
-                            tidligereIdentiteter = listOf(aktorId, npId, dnr, arbId1).sortedBy { it.type.ordinal }
-                        )
-                    ),
-                    HendelseWrapper(
-                        arbeidssoekerId = arbeidssoekerId2,
-                        aktorId = aktorId.identitet,
-                        status = HendelseStatus.VENTER,
-                        hendelse = IdentitetHendelseWrapper(
-                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
-                            identiteter = emptyList(),
-                            tidligereIdentiteter = listOf(fnr1, arbId2).sortedBy { it.type.ordinal }
-                        )
-                    ),
-                    HendelseWrapper(
-                        arbeidssoekerId = arbeidssoekerId3,
-                        aktorId = aktorId.identitet,
-                        status = HendelseStatus.VENTER,
-                        hendelse = IdentitetHendelseWrapper(
-                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
-                            identiteter = listOf(
-                                aktorId,
-                                npId,
-                                dnr,
-                                fnr1,
-                                fnr2,
-                                arbId1.copy(gjeldende = false),
-                                arbId2.copy(gjeldende = false),
-                                arbId3
-                            ).sortedBy { it.type.ordinal },
-                            tidligereIdentiteter = listOf(fnr2, arbId3).sortedBy { it.type.ordinal }
-                        )
+                hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
+
+                verify(exactly = 3) { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
+                identitetProducerRecordList shouldHaveSize 3
+                val identitetRecord1 = identitetProducerRecordList[0]
+                val identitetRecord2 = identitetProducerRecordList[1]
+                val identitetRecord3 = identitetProducerRecordList[2]
+                identitetRecord1.key() shouldBe arbeidssoekerId1
+                identitetRecord1.value().shouldBeInstanceOf<IdentiteterMergetHendelse> { hendelse ->
+                    hendelse.identiteter shouldBe emptyList()
+                    hendelse.tidligereIdentiteter shouldContainOnly listOf(aktorId, npId, dnr, arbId1)
+                }
+                identitetRecord2.key() shouldBe arbeidssoekerId2
+                identitetRecord2.value().shouldBeInstanceOf<IdentiteterMergetHendelse> { hendelse ->
+                    hendelse.identiteter shouldBe emptyList()
+                    hendelse.tidligereIdentiteter shouldContainOnly listOf(fnr1, arbId2)
+                }
+                identitetRecord3.key() shouldBe arbeidssoekerId3
+                identitetRecord3.value().shouldBeInstanceOf<IdentiteterMergetHendelse> { hendelse ->
+                    hendelse.identiteter shouldContainOnly listOf(
+                        aktorId,
+                        npId,
+                        fnr1.copy(gjeldende = false),
+                        fnr2,
+                        arbId1.copy(gjeldende = false),
+                        arbId2.copy(gjeldende = false),
+                        arbId3
                     )
-                )
+                    hendelse.tidligereIdentiteter shouldContainOnly listOf(fnr2, arbId3)
+                }
+
+                verify(exactly = 4) { pawHendelseloggProducerMock.sendBlocking(any<ProducerRecord<Long, Hendelse>>()) }
+                hendelseloggProducerRecordList shouldHaveSize 4
+                val hendelseloggRecord1 = hendelseloggProducerRecordList[0]
+                val hendelseloggRecord2 = hendelseloggProducerRecordList[1]
+                val hendelseloggRecord3 = hendelseloggProducerRecordList[2]
+                val hendelseloggRecord4 = hendelseloggProducerRecordList[3]
+                hendelseloggRecord1.key() shouldBe recordKey1
+                hendelseloggRecord1.value().shouldBeInstanceOf<IdentitetsnummerSammenslaatt> { hendelse ->
+                    hendelse.id shouldBe arbeidssoekerId1
+                    hendelse.identitetsnummer shouldBe dnr.identitet
+                    hendelse.flyttedeIdentitetsnumre shouldContainOnly setOf(
+                        aktorId.identitet,
+                        npId.identitet,
+                        dnr.identitet
+                    )
+                    hendelse.flyttetTilArbeidssoekerId shouldBe arbeidssoekerId3
+                }
+                hendelseloggRecord2.key() shouldBe recordKey3
+                hendelseloggRecord2.value().shouldBeInstanceOf<ArbeidssoekerIdFlettetInn> { hendelse ->
+                    hendelse.id shouldBe arbeidssoekerId3
+                    hendelse.identitetsnummer shouldBe fnr2.identitet
+                    hendelse.kilde.arbeidssoekerId shouldBe arbeidssoekerId1
+                    hendelse.kilde.identitetsnummer shouldContainOnly setOf(
+                        aktorId.identitet,
+                        npId.identitet,
+                        dnr.identitet
+                    )
+                }
+                hendelseloggRecord3.key() shouldBe recordKey2
+                hendelseloggRecord3.value().shouldBeInstanceOf<IdentitetsnummerSammenslaatt> { hendelse ->
+                    hendelse.id shouldBe arbeidssoekerId2
+                    hendelse.identitetsnummer shouldBe fnr1.identitet
+                    hendelse.flyttedeIdentitetsnumre shouldContainOnly setOf(
+                        fnr1.identitet
+                    )
+                    hendelse.flyttetTilArbeidssoekerId shouldBe arbeidssoekerId3
+                }
+                hendelseloggRecord4.key() shouldBe recordKey3
+                hendelseloggRecord4.value().shouldBeInstanceOf<ArbeidssoekerIdFlettetInn> { hendelse ->
+                    hendelse.id shouldBe arbeidssoekerId3
+                    hendelse.identitetsnummer shouldBe fnr2.identitet
+                    hendelse.kilde.arbeidssoekerId shouldBe arbeidssoekerId2
+                    hendelse.kilde.identitetsnummer shouldContainOnly setOf(
+                        fnr1.identitet
+                    )
+                }
             }
 
             "Skal håndtere merge-konflikt med kun avsluttede perioder" {
                 // GIVEN
                 val aktorId = Identitet(TestData.aktorId2, IdentitetType.AKTORID, true)
                 val npId = Identitet(TestData.npId2, IdentitetType.NPID, true)
-                val dnr = Identitet(TestData.dnr2, IdentitetType.FOLKEREGISTERIDENT, false)
-                val fnr1 = Identitet(TestData.fnr2_1, IdentitetType.FOLKEREGISTERIDENT, false)
+                val dnr = Identitet(TestData.dnr2, IdentitetType.FOLKEREGISTERIDENT, true)
+                val fnr1 = Identitet(TestData.fnr2_1, IdentitetType.FOLKEREGISTERIDENT, true)
                 val fnr2 = Identitet(TestData.fnr2_2, IdentitetType.FOLKEREGISTERIDENT, true)
                 val periodeId1 = TestData.periodeId2_1
                 val periodeId2 = TestData.periodeId2_2
@@ -220,6 +285,18 @@ class KonfliktServiceTest : FreeSpec({
                 val arbId1 = arbeidssoekerId1.asIdentitet(true)
                 val arbId2 = arbeidssoekerId2.asIdentitet(true)
                 val arbId3 = arbeidssoekerId3.asIdentitet(true)
+                val recordKey1 = publicTopicKeyFunction(ArbeidssoekerId(arbeidssoekerId1)).value
+                val recordKey2 = publicTopicKeyFunction(ArbeidssoekerId(arbeidssoekerId2)).value
+                val recordKey3 = publicTopicKeyFunction(ArbeidssoekerId(arbeidssoekerId3)).value
+                val identitetProducerRecordList = mutableListOf<ProducerRecord<Long, IdentitetHendelse>>()
+                val hendelseloggProducerRecordList = mutableListOf<ProducerRecord<Long, Hendelse>>()
+
+                every {
+                    pawIdentitetProducerMock.sendBlocking(capture(identitetProducerRecordList))
+                } returns identitetRecordMetadata
+                every {
+                    pawHendelseloggProducerMock.sendBlocking(capture(hendelseloggProducerRecordList))
+                } returns hendelsesloggRecordMetadata
 
                 identitetRepository.insert(
                     arbeidssoekerId = arbeidssoekerId1,
@@ -271,7 +348,7 @@ class KonfliktServiceTest : FreeSpec({
                     type = KonfliktType.MERGE,
                     status = KonfliktStatus.VENTER,
                     sourceTimestamp = Instant.now(),
-                    identiteter = listOf(aktorId, npId, dnr, fnr1, fnr2)
+                    identiteter = listOf(aktorId, npId, dnr.copy(gjeldende = false), fnr1.copy(gjeldende = false), fnr2)
                 )
                 periodeRepository.insert(
                     periodeId = periodeId1,
@@ -324,13 +401,13 @@ class KonfliktServiceTest : FreeSpec({
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId1,
                         aktorId = aktorId.identitet,
-                        identitet = dnr,
+                        identitet = dnr.copy(gjeldende = false),
                         status = IdentitetStatus.AKTIV
                     ),
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId1,
                         aktorId = aktorId.identitet,
-                        identitet = fnr1,
+                        identitet = fnr1.copy(gjeldende = false),
                         status = IdentitetStatus.AKTIV
                     ),
                     IdentitetWrapper(
@@ -341,57 +418,88 @@ class KonfliktServiceTest : FreeSpec({
                     )
                 )
 
-                val hendelseRows = hendelseRepository.findByAktorId(aktorId.identitet)
-                hendelseRows shouldHaveSize 3
-                hendelseRows.map { it.asWrapper() } shouldContainOnly listOf(
-                    HendelseWrapper(
-                        arbeidssoekerId = arbeidssoekerId1,
-                        aktorId = aktorId.identitet,
-                        status = HendelseStatus.VENTER,
-                        hendelse = IdentitetHendelseWrapper(
-                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
-                            identiteter = listOf(
-                                aktorId,
-                                npId,
-                                dnr,
-                                fnr1,
-                                fnr2,
-                                arbId1,
-                                arbId2.copy(gjeldende = false),
-                                arbId3.copy(gjeldende = false)
-                            ).sortedBy { it.type.ordinal },
-                            tidligereIdentiteter = listOf(aktorId, npId, dnr, arbId1).sortedBy { it.type.ordinal }
-                        )
-                    ),
-                    HendelseWrapper(
-                        arbeidssoekerId = arbeidssoekerId2,
-                        aktorId = aktorId.identitet,
-                        status = HendelseStatus.VENTER,
-                        hendelse = IdentitetHendelseWrapper(
-                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
-                            identiteter = emptyList(),
-                            tidligereIdentiteter = listOf(fnr1, arbId2).sortedBy { it.type.ordinal }
-                        )
-                    ),
-                    HendelseWrapper(
-                        arbeidssoekerId = arbeidssoekerId3,
-                        aktorId = aktorId.identitet,
-                        status = HendelseStatus.VENTER,
-                        hendelse = IdentitetHendelseWrapper(
-                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
-                            identiteter = emptyList(),
-                            tidligereIdentiteter = listOf(fnr2, arbId3).sortedBy { it.type.ordinal }
-                        )
+                hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
+
+                verify(exactly = 3) { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
+                identitetProducerRecordList shouldHaveSize 3
+                val identitetRecord1 = identitetProducerRecordList[0]
+                val identitetRecord2 = identitetProducerRecordList[1]
+                val identitetRecord3 = identitetProducerRecordList[2]
+                identitetRecord1.key() shouldBe arbeidssoekerId1
+                identitetRecord1.value().shouldBeInstanceOf<IdentiteterMergetHendelse> { hendelse ->
+                    hendelse.identiteter shouldContainOnly listOf(
+                        aktorId,
+                        npId,
+                        dnr.copy(gjeldende = false),
+                        fnr1.copy(gjeldende = false),
+                        fnr2,
+                        arbId1,
+                        arbId2.copy(gjeldende = false),
+                        arbId3.copy(gjeldende = false)
                     )
-                )
+                    hendelse.tidligereIdentiteter shouldContainOnly listOf(aktorId, npId, dnr, arbId1)
+                }
+                identitetRecord2.key() shouldBe arbeidssoekerId2
+                identitetRecord2.value().shouldBeInstanceOf<IdentiteterMergetHendelse> { hendelse ->
+                    hendelse.identiteter shouldBe emptyList()
+                    hendelse.tidligereIdentiteter shouldContainOnly listOf(fnr1, arbId2)
+                }
+                identitetRecord3.key() shouldBe arbeidssoekerId3
+                identitetRecord3.value().shouldBeInstanceOf<IdentiteterMergetHendelse> { hendelse ->
+                    hendelse.identiteter shouldBe emptyList()
+                    hendelse.tidligereIdentiteter shouldContainOnly listOf(fnr2, arbId3)
+                }
+
+                verify(exactly = 4) { pawHendelseloggProducerMock.sendBlocking(any<ProducerRecord<Long, Hendelse>>()) }
+                hendelseloggProducerRecordList shouldHaveSize 4
+                val hendelseloggRecord1 = hendelseloggProducerRecordList[0]
+                val hendelseloggRecord2 = hendelseloggProducerRecordList[1]
+                val hendelseloggRecord3 = hendelseloggProducerRecordList[2]
+                val hendelseloggRecord4 = hendelseloggProducerRecordList[3]
+                hendelseloggRecord1.key() shouldBe recordKey2
+                hendelseloggRecord1.value().shouldBeInstanceOf<IdentitetsnummerSammenslaatt> { hendelse ->
+                    hendelse.id shouldBe arbeidssoekerId2
+                    hendelse.identitetsnummer shouldBe fnr1.identitet
+                    hendelse.flyttedeIdentitetsnumre shouldContainOnly setOf(
+                        fnr1.identitet
+                    )
+                    hendelse.flyttetTilArbeidssoekerId shouldBe arbeidssoekerId1
+                }
+                hendelseloggRecord2.key() shouldBe recordKey1
+                hendelseloggRecord2.value().shouldBeInstanceOf<ArbeidssoekerIdFlettetInn> { hendelse ->
+                    hendelse.id shouldBe arbeidssoekerId1
+                    hendelse.identitetsnummer shouldBe fnr2.identitet
+                    hendelse.kilde.arbeidssoekerId shouldBe arbeidssoekerId2
+                    hendelse.kilde.identitetsnummer shouldContainOnly setOf(
+                        fnr1.identitet
+                    )
+                }
+                hendelseloggRecord3.key() shouldBe recordKey3
+                hendelseloggRecord3.value().shouldBeInstanceOf<IdentitetsnummerSammenslaatt> { hendelse ->
+                    hendelse.id shouldBe arbeidssoekerId3
+                    hendelse.identitetsnummer shouldBe fnr2.identitet
+                    hendelse.flyttedeIdentitetsnumre shouldContainOnly setOf(
+                        fnr2.identitet
+                    )
+                    hendelse.flyttetTilArbeidssoekerId shouldBe arbeidssoekerId1
+                }
+                hendelseloggRecord4.key() shouldBe recordKey1
+                hendelseloggRecord4.value().shouldBeInstanceOf<ArbeidssoekerIdFlettetInn> { hendelse ->
+                    hendelse.id shouldBe arbeidssoekerId1
+                    hendelse.identitetsnummer shouldBe fnr2.identitet
+                    hendelse.kilde.arbeidssoekerId shouldBe arbeidssoekerId3
+                    hendelse.kilde.identitetsnummer shouldContainOnly setOf(
+                        fnr2.identitet
+                    )
+                }
             }
 
             "Skal håndtere merge-konflikt med én aktiv periode" {
                 // GIVEN
                 val aktorId = Identitet(TestData.aktorId3, IdentitetType.AKTORID, true)
                 val npId = Identitet(TestData.npId3, IdentitetType.NPID, true)
-                val dnr = Identitet(TestData.dnr3, IdentitetType.FOLKEREGISTERIDENT, false)
-                val fnr1 = Identitet(TestData.fnr3_1, IdentitetType.FOLKEREGISTERIDENT, false)
+                val dnr = Identitet(TestData.dnr3, IdentitetType.FOLKEREGISTERIDENT, true)
+                val fnr1 = Identitet(TestData.fnr3_1, IdentitetType.FOLKEREGISTERIDENT, true)
                 val fnr2 = Identitet(TestData.fnr3_2, IdentitetType.FOLKEREGISTERIDENT, true)
                 val periodeId1 = TestData.periodeId3_1
                 val periodeId2 = TestData.periodeId3_2
@@ -405,6 +513,18 @@ class KonfliktServiceTest : FreeSpec({
                 val arbId1 = arbeidssoekerId1.asIdentitet(true)
                 val arbId2 = arbeidssoekerId2.asIdentitet(true)
                 val arbId3 = arbeidssoekerId3.asIdentitet(true)
+                val recordKey1 = publicTopicKeyFunction(ArbeidssoekerId(arbeidssoekerId1)).value
+                val recordKey2 = publicTopicKeyFunction(ArbeidssoekerId(arbeidssoekerId2)).value
+                val recordKey3 = publicTopicKeyFunction(ArbeidssoekerId(arbeidssoekerId3)).value
+                val identitetProducerRecordList = mutableListOf<ProducerRecord<Long, IdentitetHendelse>>()
+                val hendelseloggProducerRecordList = mutableListOf<ProducerRecord<Long, Hendelse>>()
+
+                every {
+                    pawIdentitetProducerMock.sendBlocking(capture(identitetProducerRecordList))
+                } returns identitetRecordMetadata
+                every {
+                    pawHendelseloggProducerMock.sendBlocking(capture(hendelseloggProducerRecordList))
+                } returns hendelsesloggRecordMetadata
 
                 identitetRepository.insert(
                     arbeidssoekerId = arbeidssoekerId1,
@@ -456,7 +576,7 @@ class KonfliktServiceTest : FreeSpec({
                     type = KonfliktType.MERGE,
                     status = KonfliktStatus.VENTER,
                     sourceTimestamp = Instant.now(),
-                    identiteter = listOf(aktorId, npId, dnr, fnr1, fnr2)
+                    identiteter = listOf(aktorId, npId, dnr.copy(gjeldende = false), fnr1, fnr2.copy(gjeldende = false))
                 )
                 periodeRepository.insert(
                     periodeId = periodeId1,
@@ -508,7 +628,7 @@ class KonfliktServiceTest : FreeSpec({
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId2,
                         aktorId = aktorId.identitet,
-                        identitet = dnr,
+                        identitet = dnr.copy(gjeldende = false),
                         status = IdentitetStatus.AKTIV
                     ),
                     IdentitetWrapper(
@@ -520,62 +640,97 @@ class KonfliktServiceTest : FreeSpec({
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId2,
                         aktorId = aktorId.identitet,
-                        identitet = fnr2,
+                        identitet = fnr2.copy(gjeldende = false),
                         status = IdentitetStatus.AKTIV
                     )
                 )
 
-                val hendelseRows = hendelseRepository.findByAktorId(aktorId.identitet)
-                hendelseRows shouldHaveSize 3
-                hendelseRows.map { it.asWrapper() } shouldContainOnly listOf(
-                    HendelseWrapper(
-                        arbeidssoekerId = arbeidssoekerId1,
-                        aktorId = aktorId.identitet,
-                        status = HendelseStatus.VENTER,
-                        hendelse = IdentitetHendelseWrapper(
-                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
-                            identiteter = emptyList(),
-                            tidligereIdentiteter = listOf(aktorId, npId, dnr, arbId1).sortedBy { it.type.ordinal }
-                        )
-                    ),
-                    HendelseWrapper(
-                        arbeidssoekerId = arbeidssoekerId2,
-                        aktorId = aktorId.identitet,
-                        status = HendelseStatus.VENTER,
-                        hendelse = IdentitetHendelseWrapper(
-                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
-                            identiteter = listOf(
-                                aktorId,
-                                npId,
-                                dnr,
-                                fnr1,
-                                fnr2,
-                                arbId1.copy(gjeldende = false),
-                                arbId2,
-                                arbId3.copy(gjeldende = false)
-                            ).sortedBy { it.type.ordinal },
-                            tidligereIdentiteter = listOf(fnr1, arbId2).sortedBy { it.type.ordinal }
-                        )
-                    ),
-                    HendelseWrapper(
-                        arbeidssoekerId = arbeidssoekerId3,
-                        aktorId = aktorId.identitet,
-                        status = HendelseStatus.VENTER,
-                        hendelse = IdentitetHendelseWrapper(
-                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
-                            identiteter = emptyList(),
-                            tidligereIdentiteter = listOf(fnr2, arbId3).sortedBy { it.type.ordinal }
-                        )
+                hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
+
+                verify(exactly = 3) { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
+                identitetProducerRecordList shouldHaveSize 3
+                val identitetRecord1 = identitetProducerRecordList[0]
+                val identitetRecord2 = identitetProducerRecordList[1]
+                val identitetRecord3 = identitetProducerRecordList[2]
+                identitetRecord1.key() shouldBe arbeidssoekerId1
+                identitetRecord1.value().shouldBeInstanceOf<IdentiteterMergetHendelse> { hendelse ->
+                    hendelse.identiteter shouldBe emptyList()
+                    hendelse.tidligereIdentiteter shouldContainOnly listOf(aktorId, npId, dnr, arbId1)
+                }
+                identitetRecord2.key() shouldBe arbeidssoekerId2
+                identitetRecord2.value().shouldBeInstanceOf<IdentiteterMergetHendelse> { hendelse ->
+                    hendelse.identiteter shouldContainOnly listOf(
+                        aktorId,
+                        npId,
+                        dnr.copy(gjeldende = false),
+                        fnr1,
+                        fnr2.copy(gjeldende = false),
+                        arbId1.copy(gjeldende = false),
+                        arbId2,
+                        arbId3.copy(gjeldende = false)
                     )
-                )
+                    hendelse.tidligereIdentiteter shouldContainOnly listOf(fnr1, arbId2)
+                }
+                identitetRecord3.key() shouldBe arbeidssoekerId3
+                identitetRecord3.value().shouldBeInstanceOf<IdentiteterMergetHendelse> { hendelse ->
+                    hendelse.identiteter shouldBe emptyList()
+                    hendelse.tidligereIdentiteter shouldContainOnly listOf(fnr2, arbId3)
+                }
+
+                verify(exactly = 4) { pawHendelseloggProducerMock.sendBlocking(any<ProducerRecord<Long, Hendelse>>()) }
+                hendelseloggProducerRecordList shouldHaveSize 4
+                val hendelseloggRecord1 = hendelseloggProducerRecordList[0]
+                val hendelseloggRecord2 = hendelseloggProducerRecordList[1]
+                val hendelseloggRecord3 = hendelseloggProducerRecordList[2]
+                val hendelseloggRecord4 = hendelseloggProducerRecordList[3]
+                hendelseloggRecord1.key() shouldBe recordKey1
+                hendelseloggRecord1.value().shouldBeInstanceOf<IdentitetsnummerSammenslaatt> { hendelse ->
+                    hendelse.id shouldBe arbeidssoekerId1
+                    hendelse.identitetsnummer shouldBe dnr.identitet
+                    hendelse.flyttedeIdentitetsnumre shouldContainOnly setOf(
+                        aktorId.identitet,
+                        npId.identitet,
+                        dnr.identitet
+                    )
+                    hendelse.flyttetTilArbeidssoekerId shouldBe arbeidssoekerId2
+                }
+                hendelseloggRecord2.key() shouldBe recordKey2
+                hendelseloggRecord2.value().shouldBeInstanceOf<ArbeidssoekerIdFlettetInn> { hendelse ->
+                    hendelse.id shouldBe arbeidssoekerId2
+                    hendelse.identitetsnummer shouldBe fnr1.identitet
+                    hendelse.kilde.arbeidssoekerId shouldBe arbeidssoekerId1
+                    hendelse.kilde.identitetsnummer shouldContainOnly setOf(
+                        aktorId.identitet,
+                        npId.identitet,
+                        dnr.identitet
+                    )
+                }
+                hendelseloggRecord3.key() shouldBe recordKey3
+                hendelseloggRecord3.value().shouldBeInstanceOf<IdentitetsnummerSammenslaatt> { hendelse ->
+                    hendelse.id shouldBe arbeidssoekerId3
+                    hendelse.identitetsnummer shouldBe fnr2.identitet
+                    hendelse.flyttedeIdentitetsnumre shouldContainOnly setOf(
+                        fnr2.identitet
+                    )
+                    hendelse.flyttetTilArbeidssoekerId shouldBe arbeidssoekerId2
+                }
+                hendelseloggRecord4.key() shouldBe recordKey2
+                hendelseloggRecord4.value().shouldBeInstanceOf<ArbeidssoekerIdFlettetInn> { hendelse ->
+                    hendelse.id shouldBe arbeidssoekerId2
+                    hendelse.identitetsnummer shouldBe fnr1.identitet
+                    hendelse.kilde.arbeidssoekerId shouldBe arbeidssoekerId3
+                    hendelse.kilde.identitetsnummer shouldContainOnly setOf(
+                        fnr2.identitet
+                    )
+                }
             }
 
             "Skal håndtere merge-konflikt med to aktive perioder" {
                 // GIVEN
                 val aktorId = Identitet(TestData.aktorId4, IdentitetType.AKTORID, true)
                 val npId = Identitet(TestData.npId4, IdentitetType.NPID, true)
-                val dnr = Identitet(TestData.dnr4, IdentitetType.FOLKEREGISTERIDENT, false)
-                val fnr1 = Identitet(TestData.fnr4_1, IdentitetType.FOLKEREGISTERIDENT, false)
+                val dnr = Identitet(TestData.dnr4, IdentitetType.FOLKEREGISTERIDENT, true)
+                val fnr1 = Identitet(TestData.fnr4_1, IdentitetType.FOLKEREGISTERIDENT, true)
                 val fnr2 = Identitet(TestData.fnr4_2, IdentitetType.FOLKEREGISTERIDENT, true)
                 val periodeId1 = TestData.periodeId4_1
                 val periodeId2 = TestData.periodeId4_2
@@ -586,13 +741,22 @@ class KonfliktServiceTest : FreeSpec({
                     .fold(onLeft = { null }, onRight = { it })!!.value
                 val arbeidssoekerId3 = kafkaKeysRepository.opprett(Identitetsnummer(fnr2.identitet))
                     .fold(onLeft = { null }, onRight = { it })!!.value
+                val identitetProducerRecordList = mutableListOf<ProducerRecord<Long, IdentitetHendelse>>()
+                val hendelseloggProducerRecordList = mutableListOf<ProducerRecord<Long, Hendelse>>()
+
+                every {
+                    pawIdentitetProducerMock.sendBlocking(capture(identitetProducerRecordList))
+                } returns identitetRecordMetadata
+                every {
+                    pawHendelseloggProducerMock.sendBlocking(capture(hendelseloggProducerRecordList))
+                } returns hendelsesloggRecordMetadata
 
                 identitetRepository.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
                     identitet = aktorId.identitet,
                     type = IdentitetType.AKTORID,
-                    gjeldende = true,
+                    gjeldende = aktorId.gjeldende,
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
@@ -601,7 +765,7 @@ class KonfliktServiceTest : FreeSpec({
                     aktorId = aktorId.identitet,
                     identitet = npId.identitet,
                     type = IdentitetType.NPID,
-                    gjeldende = true,
+                    gjeldende = npId.gjeldende,
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
@@ -610,7 +774,7 @@ class KonfliktServiceTest : FreeSpec({
                     aktorId = aktorId.identitet,
                     identitet = dnr.identitet,
                     type = IdentitetType.FOLKEREGISTERIDENT,
-                    gjeldende = false,
+                    gjeldende = dnr.gjeldende,
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
@@ -619,7 +783,7 @@ class KonfliktServiceTest : FreeSpec({
                     aktorId = aktorId.identitet,
                     identitet = fnr1.identitet,
                     type = IdentitetType.FOLKEREGISTERIDENT,
-                    gjeldende = false,
+                    gjeldende = fnr1.gjeldende,
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(60))
                 )
@@ -628,7 +792,7 @@ class KonfliktServiceTest : FreeSpec({
                     aktorId = aktorId.identitet,
                     identitet = fnr2.identitet,
                     type = IdentitetType.FOLKEREGISTERIDENT,
-                    gjeldende = true,
+                    gjeldende = fnr2.gjeldende,
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(30))
                 )
@@ -638,7 +802,7 @@ class KonfliktServiceTest : FreeSpec({
                     type = KonfliktType.MERGE,
                     status = KonfliktStatus.VENTER,
                     sourceTimestamp = Instant.now(),
-                    identiteter = listOf(aktorId, npId, dnr, fnr1, fnr2)
+                    identiteter = listOf(aktorId, npId, dnr.copy(gjeldende = false), fnr1.copy(gjeldende = false), fnr2)
                 )
 
                 periodeRepository.insert(
@@ -707,15 +871,17 @@ class KonfliktServiceTest : FreeSpec({
                     )
                 )
 
-                val hendelseRows = hendelseRepository.findByAktorId(aktorId.identitet)
-                hendelseRows shouldHaveSize 0
+                hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
+
+                verify { pawIdentitetProducerMock wasNot Called }
+                verify { pawHendelseloggProducerMock wasNot Called }
             }
 
             "Skal håndtere merge-konflikt uten lagrede identiteter" {
                 // GIVEN
                 val aktorId = Identitet(TestData.aktorId5, IdentitetType.AKTORID, true)
                 val npId = Identitet(TestData.npId5, IdentitetType.NPID, true)
-                val dnr = Identitet(TestData.dnr5, IdentitetType.FOLKEREGISTERIDENT, false)
+                val dnr = Identitet(TestData.dnr5, IdentitetType.FOLKEREGISTERIDENT, true)
                 val fnr = Identitet(TestData.fnr5, IdentitetType.FOLKEREGISTERIDENT, true)
                 val arbeidssoekerId1 = kafkaKeysRepository.opprett(aktorId.asIdentitetsnummer())
                     .fold(onLeft = { null }, onRight = { it })!!.value
@@ -723,6 +889,17 @@ class KonfliktServiceTest : FreeSpec({
                     .fold(onLeft = { null }, onRight = { it })!!.value
                 val arbId1 = arbeidssoekerId1.asIdentitet(true)
                 val arbId2 = arbeidssoekerId2.asIdentitet(true)
+                val recordKey1 = publicTopicKeyFunction(ArbeidssoekerId(arbeidssoekerId1)).value
+                val recordKey2 = publicTopicKeyFunction(ArbeidssoekerId(arbeidssoekerId2)).value
+                val identitetProducerRecordList = mutableListOf<ProducerRecord<Long, IdentitetHendelse>>()
+                val hendelseloggProducerRecordList = mutableListOf<ProducerRecord<Long, Hendelse>>()
+
+                every {
+                    pawIdentitetProducerMock.sendBlocking(capture(identitetProducerRecordList))
+                } returns identitetRecordMetadata
+                every {
+                    pawHendelseloggProducerMock.sendBlocking(capture(hendelseloggProducerRecordList))
+                } returns hendelsesloggRecordMetadata
 
                 konfliktRepository.insert(
                     aktorId = aktorId.identitet,
@@ -774,37 +951,52 @@ class KonfliktServiceTest : FreeSpec({
                     )
                 )
 
-                val hendelseRows = hendelseRepository.findByAktorId(aktorId.identitet)
-                hendelseRows shouldHaveSize 2
-                hendelseRows.map { it.asWrapper() } shouldContainOnly listOf(
-                    HendelseWrapper(
-                        arbeidssoekerId = arbeidssoekerId1,
-                        aktorId = aktorId.identitet,
-                        status = HendelseStatus.VENTER,
-                        hendelse = IdentitetHendelseWrapper(
-                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
-                            identiteter = emptyList(),
-                            tidligereIdentiteter = listOf(arbId1)
-                        )
-                    ),
-                    HendelseWrapper(
-                        arbeidssoekerId = arbeidssoekerId2,
-                        aktorId = aktorId.identitet,
-                        status = HendelseStatus.VENTER,
-                        hendelse = IdentitetHendelseWrapper(
-                            type = IDENTITETER_MERGET_HENDELSE_TYPE,
-                            identiteter = listOf(
-                                aktorId,
-                                npId,
-                                fnr,
-                                dnr,
-                                arbId1.copy(gjeldende = false),
-                                arbId2,
-                            ).sortedBy { it.type.ordinal },
-                            tidligereIdentiteter = listOf(arbId2)
-                        )
+                hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
+
+                verify(exactly = 2) { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
+                identitetProducerRecordList shouldHaveSize 2
+                val identitetRecord1 = identitetProducerRecordList[0]
+                val identitetRecord2 = identitetProducerRecordList[1]
+                identitetRecord1.key() shouldBe arbeidssoekerId1
+                identitetRecord1.value().shouldBeInstanceOf<IdentiteterMergetHendelse> { hendelse ->
+                    hendelse.identiteter shouldBe emptyList()
+                    hendelse.tidligereIdentiteter shouldContainOnly listOf(arbId1)
+                }
+                identitetRecord2.key() shouldBe arbeidssoekerId2
+                identitetRecord2.value().shouldBeInstanceOf<IdentiteterMergetHendelse> { hendelse ->
+                    hendelse.identiteter shouldContainOnly listOf(
+                        aktorId,
+                        npId,
+                        fnr,
+                        dnr,
+                        arbId1.copy(gjeldende = false),
+                        arbId2,
                     )
-                )
+                    hendelse.tidligereIdentiteter shouldContainOnly listOf(arbId2)
+                }
+
+                verify(exactly = 2) { pawHendelseloggProducerMock.sendBlocking(any<ProducerRecord<Long, Hendelse>>()) }
+                hendelseloggProducerRecordList shouldHaveSize 2
+                val hendelseloggRecord1 = hendelseloggProducerRecordList[0]
+                val hendelseloggRecord2 = hendelseloggProducerRecordList[1]
+                hendelseloggRecord1.key() shouldBe recordKey1
+                hendelseloggRecord1.value().shouldBeInstanceOf<IdentitetsnummerSammenslaatt> { hendelse ->
+                    hendelse.id shouldBe arbeidssoekerId1
+                    hendelse.identitetsnummer shouldBe aktorId.identitet
+                    hendelse.flyttedeIdentitetsnumre shouldContainOnly setOf(
+                        aktorId.identitet
+                    )
+                    hendelse.flyttetTilArbeidssoekerId shouldBe arbeidssoekerId2
+                }
+                hendelseloggRecord2.key() shouldBe recordKey2
+                hendelseloggRecord2.value().shouldBeInstanceOf<ArbeidssoekerIdFlettetInn> { hendelse ->
+                    hendelse.id shouldBe arbeidssoekerId2
+                    hendelse.identitetsnummer shouldBe fnr.identitet
+                    hendelse.kilde.arbeidssoekerId shouldBe arbeidssoekerId1
+                    hendelse.kilde.identitetsnummer shouldContainOnly setOf(
+                        aktorId.identitet
+                    )
+                }
             }
         }
     }

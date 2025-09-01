@@ -46,7 +46,16 @@ fun main() {
                 identifikator(ident = "2078784314389", type = Type.AKTORID, gjeldende = true)
             )
         )
-        val aktors = listOf(aktor1)
+        val aktor5 = "200005017012345" to aktor(
+            listOf(
+                identifikator(ident = "05017012345", type = Type.FOLKEREGISTERIDENT, gjeldende = true),
+                identifikator(ident = "45017012345", type = Type.FOLKEREGISTERIDENT, gjeldende = false),
+                identifikator(ident = "200005017012345", type = Type.AKTORID, gjeldende = true),
+                identifikator(ident = "200045017012345", type = Type.AKTORID, gjeldende = false)
+            )
+        )
+
+        val aktors = listOf(aktor5)
         val records: List<ProducerRecord<Any, Aktor>> = aktors.map {
             ProducerRecord(topic, it.first, it.second)
         }

@@ -10,5 +10,5 @@ data class IdentiteterSplittetHendelse(
     override val hendelseId: UUID = UUID.randomUUID(),
     override val hendelseTidspunkt: Instant = Instant.now()
 ) : IdentitetHendelse {
-    override val hendelseType: String = IDENTITETER_SPLITTET_HENDELSE_TYPE
+    override val hendelseType: String = IDENTITETER_SPLITTET_V1_HENDELSE_TYPE
 }

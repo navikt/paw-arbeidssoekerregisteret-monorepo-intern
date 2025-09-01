@@ -4,19 +4,24 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainOnly
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import no.nav.paw.identitet.internehendelser.IDENTITETER_ENDRET_HENDELSE_TYPE
+import io.kotest.matchers.types.shouldBeInstanceOf
+import io.mockk.Called
+import io.mockk.clearAllMocks
+import io.mockk.confirmVerified
+import io.mockk.every
+import io.mockk.slot
+import io.mockk.verify
+import no.nav.paw.identitet.internehendelser.IdentitetHendelse
 import no.nav.paw.identitet.internehendelser.IdentiteterEndretHendelse
+import no.nav.paw.identitet.internehendelser.IdentiteterSlettetHendelse
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
+import no.nav.paw.kafka.producer.sendBlocking
 import no.nav.paw.kafkakeygenerator.context.TestContext
-import no.nav.paw.kafkakeygenerator.model.HendelseStatus
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KafkaKeyRow
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
-import no.nav.paw.kafkakeygenerator.model.asIdentitet
-import no.nav.paw.kafkakeygenerator.test.HendelseWrapper
-import no.nav.paw.kafkakeygenerator.test.IdentitetHendelseWrapper
 import no.nav.paw.kafkakeygenerator.test.IdentitetWrapper
 import no.nav.paw.kafkakeygenerator.test.KonfliktWrapper
 import no.nav.paw.kafkakeygenerator.test.TestData
@@ -28,19 +33,37 @@ import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
 import no.nav.person.pdl.aktor.v2.Aktor
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.clients.producer.RecordMetadata
+import org.apache.kafka.common.TopicPartition
 import java.time.Instant
 
 class PdlAktorKafkaConsumerServiceTest : FreeSpec({
     with(TestContext.buildWithPostgres()) {
         val aktorTopic = applicationConfig.pdlAktorConsumer.topic
+        val producerRecordSlot = slot<ProducerRecord<Long, IdentitetHendelse>>()
+        val recordMetadata =
+            RecordMetadata(TopicPartition(applicationConfig.pawIdentitetProducer.topic, 0), 1, 0, 0, 0, 0)
 
         beforeSpec {
+            clearAllMocks()
             setUp()
             pdlAktorKafkaHwmOperations.initHwm(aktorTopic, 1)
+            every {
+                pawIdentitetProducerMock.sendBlocking(capture(producerRecordSlot))
+            } returns recordMetadata
         }
 
         afterSpec {
+            confirmVerified(
+                pawIdentitetProducerMock,
+                pawHendelseloggProducerMock
+            )
             tearDown()
+        }
+
+        afterTest {
+            verify { pawHendelseloggProducerMock wasNot Called }
         }
 
         "Skal ignorere meldinger for personer som ikke er arbeidssøker" {
@@ -69,6 +92,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             kafkaKeysIdentitetRepository.find(fnr.asIdentitetsnummer()) shouldBe null
             val hwmRow = pdlAktorKafkaHwmOperations.getHwm(aktorTopic, 0)
             hwmRow.offset shouldBe 2
+            verify { pawIdentitetProducerMock wasNot Called }
         }
 
         "Skal ignorere meldinger med offset som ikke er over HWM" {
@@ -98,6 +122,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             kafkaKeysIdentitetRepository.find(fnr.asIdentitetsnummer()) shouldBe null
             val hwmRow = pdlAktorKafkaHwmOperations.getHwm(aktorTopic, 0)
             hwmRow.offset shouldBe 4
+            verify { pawIdentitetProducerMock wasNot Called }
         }
 
         /**
@@ -106,7 +131,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
          * melding 3: aktorId -> dnr, fnr2(gjeldende)
          * melding 4: aktorId -> null(tombstone)
          */
-        "Skal lagre endring på ideniteter for arbeidssøker" {
+        "Skal lagre endring på identiteter for arbeidssøker" {
             // TEST DATA
             val aktorId = Identitet(TestData.aktorId3, IdentitetType.AKTORID, true)
             val npId = Identitet(TestData.npId3, IdentitetType.NPID, true)
@@ -159,13 +184,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 )
             )
             konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-            val hendelseRows1 = hendelseRepository.findByAktorId(aktorId.identitet)
-            hendelseRows1 shouldHaveSize 1
-            val hendelser1 = hendelseRows1
-                .map { hendelseDeserializer.deserializeFromString(it.data) }
-                .map { it as IdentiteterEndretHendelse }
-            hendelser1[0].identiteter shouldBe identiteter1
-            hendelser1[0].tidligereIdentiteter shouldBe emptyList()
+            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             val kafkaKeyRow1 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow1 shouldBe KafkaKeyRow(arbeidssoekerId, dnr.identitet)
             kafkaKeysIdentitetRepository.find(fnr1.asIdentitetsnummer()) shouldBe null
@@ -174,6 +193,13 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             kafkaKeysIdentitetRepository.find(npId.asIdentitetsnummer()) shouldBe null
             val hwmRow1 = pdlAktorKafkaHwmOperations.getHwm(aktorTopic, 0)
             hwmRow1.offset shouldBe 5
+            verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
+            producerRecordSlot.isCaptured shouldBe true
+            producerRecordSlot.captured.key() shouldBe arbeidssoekerId
+            producerRecordSlot.captured.value().shouldBeInstanceOf<IdentiteterEndretHendelse> { hendelse ->
+                hendelse.identiteter shouldContainOnly identiteter1
+                hendelse.tidligereIdentiteter shouldBe emptyList()
+            }
 
             // GIVEN
             val records2: ConsumerRecords<Any, Aktor> = listOf(
@@ -219,15 +245,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 )
             )
             konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-            val hendelseRows2 = hendelseRepository.findByAktorId(aktorId.identitet)
-            hendelseRows2 shouldHaveSize 2
-            val hendelser2 = hendelseRows2
-                .map { hendelseDeserializer.deserializeFromString(it.data) }
-                .map { it as IdentiteterEndretHendelse }
-            hendelser2[0].identiteter shouldBe identiteter1
-            hendelser2[0].tidligereIdentiteter shouldBe emptyList()
-            hendelser2[1].identiteter shouldBe identiteter2
-            hendelser2[1].tidligereIdentiteter shouldBe identiteter1
+            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             val kafkaKeyRow2 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow2 shouldBe KafkaKeyRow(arbeidssoekerId, dnr.identitet)
             kafkaKeysIdentitetRepository.find(fnr1.asIdentitetsnummer()) shouldBe null
@@ -236,6 +254,13 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             kafkaKeysIdentitetRepository.find(npId.asIdentitetsnummer()) shouldBe null
             val hwmRow2 = pdlAktorKafkaHwmOperations.getHwm(aktorTopic, 0)
             hwmRow2.offset shouldBe 6
+            verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
+            producerRecordSlot.isCaptured shouldBe true
+            producerRecordSlot.captured.key() shouldBe arbeidssoekerId
+            producerRecordSlot.captured.value().shouldBeInstanceOf<IdentiteterEndretHendelse> { hendelse ->
+                hendelse.identiteter shouldContainOnly identiteter2
+                hendelse.tidligereIdentiteter shouldContainOnly identiteter1
+            }
 
             // GIVEN
             val records3: ConsumerRecords<Any, Aktor> = listOf(
@@ -281,17 +306,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 )
             )
             konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-            val hendelseRows3 = hendelseRepository.findByAktorId(aktorId.identitet)
-            hendelseRows3 shouldHaveSize 3
-            val hendelser3 = hendelseRows3
-                .map { hendelseDeserializer.deserializeFromString(it.data) }
-                .map { it as IdentiteterEndretHendelse }
-            hendelser3[0].identiteter shouldBe identiteter1
-            hendelser3[0].tidligereIdentiteter shouldBe emptyList()
-            hendelser3[1].identiteter shouldBe identiteter2
-            hendelser3[1].tidligereIdentiteter shouldBe identiteter1
-            hendelser3[2].identiteter shouldBe identiteter3
-            hendelser3[2].tidligereIdentiteter shouldBe identiteter2
+            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             val kafkaKeyRow3 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow3 shouldBe KafkaKeyRow(arbeidssoekerId, dnr.identitet)
             kafkaKeysIdentitetRepository.find(fnr1.asIdentitetsnummer()) shouldBe null
@@ -300,6 +315,13 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             kafkaKeysIdentitetRepository.find(npId.asIdentitetsnummer()) shouldBe null
             val hwmRow3 = pdlAktorKafkaHwmOperations.getHwm(aktorTopic, 0)
             hwmRow3.offset shouldBe 7
+            verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
+            producerRecordSlot.isCaptured shouldBe true
+            producerRecordSlot.captured.key() shouldBe arbeidssoekerId
+            producerRecordSlot.captured.value().shouldBeInstanceOf<IdentiteterEndretHendelse> { hendelse ->
+                hendelse.identiteter shouldContainOnly identiteter3
+                hendelse.tidligereIdentiteter shouldContainOnly identiteter2
+            }
 
             // GIVEN
             val records4: ConsumerRecords<Any, Aktor> = listOf(
@@ -345,19 +367,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 )
             )
             konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-            val hendelseRows4 = hendelseRepository.findByAktorId(aktorId.identitet)
-            hendelseRows4 shouldHaveSize 4
-            val hendelser4 = hendelseRows4
-                .map { hendelseDeserializer.deserializeFromString(it.data) }
-                .map { it as IdentiteterEndretHendelse }
-            hendelser4[0].identiteter shouldBe identiteter1
-            hendelser4[0].tidligereIdentiteter shouldBe emptyList()
-            hendelser4[1].identiteter shouldBe identiteter2
-            hendelser4[1].tidligereIdentiteter shouldBe identiteter1
-            hendelser4[2].identiteter shouldBe identiteter3
-            hendelser4[2].tidligereIdentiteter shouldBe identiteter2
-            hendelser4[3].identiteter shouldBe emptyList()
-            hendelser4[3].tidligereIdentiteter shouldBe identiteter3
+            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             val kafkaKeyRow4 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow4 shouldBe KafkaKeyRow(arbeidssoekerId, dnr.identitet)
             kafkaKeysIdentitetRepository.find(fnr1.asIdentitetsnummer()) shouldBe null
@@ -366,6 +376,12 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             kafkaKeysIdentitetRepository.find(npId.asIdentitetsnummer()) shouldBe null
             val hwmRow4 = pdlAktorKafkaHwmOperations.getHwm(aktorTopic, 0)
             hwmRow4.offset shouldBe 8
+            verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
+            producerRecordSlot.isCaptured shouldBe true
+            producerRecordSlot.captured.key() shouldBe arbeidssoekerId
+            producerRecordSlot.captured.value().shouldBeInstanceOf<IdentiteterSlettetHendelse> { hendelse ->
+                hendelse.tidligereIdentiteter shouldContainOnly identiteter3
+            }
         }
 
         /**
@@ -421,23 +437,8 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                     status = IdentitetStatus.AKTIV
                 )
             )
-            val konfliktRows1 = konfliktRepository.findByAktorId(aktorId.identitet)
-            konfliktRows1 shouldHaveSize 0
-            val hendelseRows1 = hendelseRepository.findByAktorId(aktorId.identitet)
-            hendelseRows1 shouldHaveSize 1
-            hendelseRows1.map { it.asWrapper() } shouldContainOnly listOf(
-                HendelseWrapper(
-                    arbeidssoekerId = arbeidssoekerId1,
-                    aktorId = aktorId.identitet,
-                    status = HendelseStatus.VENTER,
-                    hendelse = IdentitetHendelseWrapper(
-                        type = IDENTITETER_ENDRET_HENDELSE_TYPE,
-                        identiteter = listOf(aktorId, npId, dnr, arbId1),
-                        tidligereIdentiteter = emptyList()
-                    )
-                )
-            )
-
+            konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
+            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             val kafkaKeyRow1 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow1 shouldBe KafkaKeyRow(arbeidssoekerId1, dnr.identitet)
             val kafkaKeyRow2 = kafkaKeysIdentitetRepository.find(fnr1.asIdentitetsnummer())
@@ -447,6 +448,13 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             kafkaKeysIdentitetRepository.find(npId.asIdentitetsnummer()) shouldBe null
             val hwmRow1 = pdlAktorKafkaHwmOperations.getHwm(aktorTopic, 0)
             hwmRow1.offset shouldBe 9
+            verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
+            producerRecordSlot.isCaptured shouldBe true
+            producerRecordSlot.captured.key() shouldBe arbeidssoekerId1
+            producerRecordSlot.captured.value().shouldBeInstanceOf<IdentiteterEndretHendelse> { hendelse ->
+                hendelse.identiteter shouldContainOnly listOf(aktorId, npId, dnr, arbId1)
+                hendelse.tidligereIdentiteter shouldBe emptyList()
+            }
 
             // GIVEN
             val records2: ConsumerRecords<Any, Aktor> = listOf(
@@ -495,21 +503,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                     identiteter = listOf(aktorId, npId, dnr.copy(gjeldende = false), fnr1)
                 )
             )
-            val hendelseRows2 = hendelseRepository.findByAktorId(aktorId.identitet)
-            hendelseRows2 shouldHaveSize 1
-            hendelseRows2.map { it.asWrapper() } shouldContainOnly listOf(
-                HendelseWrapper(
-                    arbeidssoekerId = arbeidssoekerId1,
-                    aktorId = aktorId.identitet,
-                    status = HendelseStatus.VENTER,
-                    hendelse = IdentitetHendelseWrapper(
-                        type = IDENTITETER_ENDRET_HENDELSE_TYPE,
-                        identiteter = listOf(aktorId, npId, dnr, arbId1),
-                        tidligereIdentiteter = emptyList()
-                    )
-                )
-            )
-
+            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             val kafkaKeyRow3 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow3 shouldBe KafkaKeyRow(arbeidssoekerId1, dnr.identitet)
             val kafkaKeyRow4 = kafkaKeysIdentitetRepository.find(fnr1.asIdentitetsnummer())
@@ -573,21 +567,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                     identiteter = listOf(aktorId, npId, dnr.copy(gjeldende = false), fnr2)
                 )
             )
-            val hendelseRows3 = hendelseRepository.findByAktorId(aktorId.identitet)
-            hendelseRows3 shouldHaveSize 1
-            hendelseRows3.map { it.asWrapper() } shouldContainOnly listOf(
-                HendelseWrapper(
-                    arbeidssoekerId = arbeidssoekerId1,
-                    aktorId = aktorId.identitet,
-                    status = HendelseStatus.VENTER,
-                    hendelse = IdentitetHendelseWrapper(
-                        type = IDENTITETER_ENDRET_HENDELSE_TYPE,
-                        identiteter = listOf(aktorId, npId, dnr, arbId1),
-                        tidligereIdentiteter = emptyList()
-                    )
-                )
-            )
-
+            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             val kafkaKeyRow5 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow5 shouldBe KafkaKeyRow(arbeidssoekerId1, dnr.identitet)
             val kafkaKeyRow6 = kafkaKeysIdentitetRepository.find(fnr1.asIdentitetsnummer())
@@ -657,21 +637,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                     identiteter = emptyList()
                 )
             )
-            val hendelseRows4 = hendelseRepository.findByAktorId(aktorId.identitet)
-            hendelseRows4 shouldHaveSize 1
-            hendelseRows4.map { it.asWrapper() } shouldContainOnly listOf(
-                HendelseWrapper(
-                    arbeidssoekerId = arbeidssoekerId1,
-                    aktorId = aktorId.identitet,
-                    status = HendelseStatus.VENTER,
-                    hendelse = IdentitetHendelseWrapper(
-                        type = IDENTITETER_ENDRET_HENDELSE_TYPE,
-                        identiteter = listOf(aktorId, npId, dnr, arbId1),
-                        tidligereIdentiteter = emptyList()
-                    )
-                )
-            )
-
+            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             val kafkaKeyRow7 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow7 shouldBe KafkaKeyRow(arbeidssoekerId1, dnr.identitet)
             val kafkaKeyRow8 = kafkaKeysIdentitetRepository.find(fnr1.asIdentitetsnummer())
@@ -741,13 +707,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             identitetRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
             konfliktRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
             konfliktRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
-            val hendelseRows1 = hendelseRepository.findByAktorId(aktorId1.identitet)
-            hendelseRows1 shouldHaveSize 1
-            val hendelser1 = hendelseRows1
-                .map { hendelseDeserializer.deserializeFromString(it.data) }
-                .map { it as IdentiteterEndretHendelse }
-            hendelser1[0].identiteter shouldBe identiteter1
-            hendelser1[0].tidligereIdentiteter shouldBe emptyList()
+            hendelseRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
             hendelseRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
             val kafkaKeyRow1 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow1 shouldBe KafkaKeyRow(arbeidssoekerId, dnr.identitet)
@@ -757,6 +717,13 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             kafkaKeysIdentitetRepository.find(npId.asIdentitetsnummer()) shouldBe null
             val hwmRow1 = pdlAktorKafkaHwmOperations.getHwm(aktorTopic, 0)
             hwmRow1.offset shouldBe 13
+            verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
+            producerRecordSlot.isCaptured shouldBe true
+            producerRecordSlot.captured.key() shouldBe arbeidssoekerId
+            producerRecordSlot.captured.value().shouldBeInstanceOf<IdentiteterEndretHendelse> { hendelse ->
+                hendelse.identiteter shouldContainOnly identiteter1
+                hendelse.tidligereIdentiteter shouldBe emptyList()
+            }
 
             // GIVEN
             val records2: ConsumerRecords<Any, Aktor> = listOf(
@@ -807,13 +774,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                     identiteter = listOf(aktorId2, fnr)
                 )
             )
-            val hendelseRows2 = hendelseRepository.findByAktorId(aktorId1.identitet)
-            hendelseRows2 shouldHaveSize 1
-            val hendelser2 = hendelseRows2
-                .map { hendelseDeserializer.deserializeFromString(it.data) }
-                .map { it as IdentiteterEndretHendelse }
-            hendelser2[0].identiteter shouldBe identiteter1
-            hendelser2[0].tidligereIdentiteter shouldBe emptyList()
+            hendelseRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
             hendelseRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
             val kafkaKeyRow2 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow2 shouldBe KafkaKeyRow(arbeidssoekerId, dnr.identitet)
@@ -825,7 +786,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             hwmRow2.offset shouldBe 14
         }
 
-        "Skal lagre endring på ideniteter med ny aktørId for arbeidssøker" {
+        "Skal lagre endring på identiteter med ny aktørId for arbeidssøker" {
             /**
              * melding 1: aktorId1 -> dnr(gjeldende)
              * melding 2: aktorId2 -> fnr(gjeldende)
@@ -890,13 +851,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             identitetRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
             konfliktRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
             konfliktRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
-            val hendelseRows1 = hendelseRepository.findByAktorId(aktorId1.identitet)
-            hendelseRows1 shouldHaveSize 1
-            val hendelser1 = hendelseRows1
-                .map { hendelseDeserializer.deserializeFromString(it.data) }
-                .map { it as IdentiteterEndretHendelse }
-            hendelser1[0].identiteter shouldBe identiteter1
-            hendelser1[0].tidligereIdentiteter shouldBe emptyList()
+            hendelseRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
             hendelseRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
             kafkaKeysIdentitetRepository.find(aktorId1.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(aktorId2.asIdentitetsnummer()) shouldBe null
@@ -907,6 +862,13 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             kafkaKeyRow2 shouldBe KafkaKeyRow(arbeidssoekerId, fnr.identitet)
             val hwmRow1 = pdlAktorKafkaHwmOperations.getHwm(aktorTopic, 0)
             hwmRow1.offset shouldBe 15
+            verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
+            producerRecordSlot.isCaptured shouldBe true
+            producerRecordSlot.captured.key() shouldBe arbeidssoekerId
+            producerRecordSlot.captured.value().shouldBeInstanceOf<IdentiteterEndretHendelse> { hendelse ->
+                hendelse.identiteter shouldContainOnly identiteter1
+                hendelse.tidligereIdentiteter shouldBe emptyList()
+            }
 
             // GIVEN
             val records2: ConsumerRecords<Any, Aktor> = listOf(
@@ -963,20 +925,8 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             )
             konfliktRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
             konfliktRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
-            val hendelseRows2 = hendelseRepository.findByAktorId(aktorId1.identitet)
-            hendelseRows2 shouldHaveSize 1
-            val hendelser2 = hendelseRows2
-                .map { hendelseDeserializer.deserializeFromString(it.data) }
-                .map { it as IdentiteterEndretHendelse }
-            hendelser2[0].identiteter shouldBe identiteter1
-            hendelser2[0].tidligereIdentiteter shouldBe emptyList()
-            val hendelseRows3 = hendelseRepository.findByAktorId(aktorId2.identitet)
-            hendelseRows3 shouldHaveSize 1
-            val hendelser3 = hendelseRows3
-                .map { hendelseDeserializer.deserializeFromString(it.data) }
-                .map { it as IdentiteterEndretHendelse }
-            hendelser3[0].identiteter shouldBe identiteter2
-            hendelser3[0].tidligereIdentiteter shouldBe emptyList()
+            hendelseRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
+            hendelseRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
             kafkaKeysIdentitetRepository.find(aktorId1.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(aktorId2.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(npId1.asIdentitetsnummer()) shouldBe null
@@ -986,6 +936,13 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             kafkaKeyRow4 shouldBe KafkaKeyRow(arbeidssoekerId, fnr.identitet)
             val hwmRow2 = pdlAktorKafkaHwmOperations.getHwm(aktorTopic, 0)
             hwmRow2.offset shouldBe 16
+            verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
+            producerRecordSlot.isCaptured shouldBe true
+            producerRecordSlot.captured.key() shouldBe arbeidssoekerId
+            producerRecordSlot.captured.value().shouldBeInstanceOf<IdentiteterEndretHendelse> { hendelse ->
+                hendelse.identiteter shouldContainOnly identiteter2
+                hendelse.tidligereIdentiteter shouldBe emptyList()
+            }
 
             // GIVEN
             val records3: ConsumerRecords<Any, Aktor> = listOf(
@@ -1039,22 +996,8 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             )
             konfliktRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
             konfliktRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
-            val hendelseRows4 = hendelseRepository.findByAktorId(aktorId1.identitet)
-            hendelseRows4 shouldHaveSize 1
-            val hendelser4 = hendelseRows4
-                .map { hendelseDeserializer.deserializeFromString(it.data) }
-                .map { it as IdentiteterEndretHendelse }
-            hendelser4[0].identiteter shouldBe identiteter1
-            hendelser4[0].tidligereIdentiteter shouldBe emptyList()
-            val hendelseRows5 = hendelseRepository.findByAktorId(aktorId2.identitet)
-            hendelseRows5 shouldHaveSize 2
-            val hendelser5 = hendelseRows5
-                .map { hendelseDeserializer.deserializeFromString(it.data) }
-                .map { it as IdentiteterEndretHendelse }
-            hendelser5[0].identiteter shouldBe identiteter2
-            hendelser5[0].tidligereIdentiteter shouldBe emptyList()
-            hendelser5[1].identiteter shouldBe identiteter3
-            hendelser5[1].tidligereIdentiteter shouldBe identiteter2
+            hendelseRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
+            hendelseRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
             kafkaKeysIdentitetRepository.find(aktorId1.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(aktorId2.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(npId1.asIdentitetsnummer()) shouldBe null
@@ -1064,6 +1007,13 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             kafkaKeyRow6 shouldBe KafkaKeyRow(arbeidssoekerId, fnr.identitet)
             val hwmRow3 = pdlAktorKafkaHwmOperations.getHwm(aktorTopic, 0)
             hwmRow3.offset shouldBe 17
+            verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
+            producerRecordSlot.isCaptured shouldBe true
+            producerRecordSlot.captured.key() shouldBe arbeidssoekerId
+            producerRecordSlot.captured.value().shouldBeInstanceOf<IdentiteterEndretHendelse> { hendelse ->
+                hendelse.identiteter shouldContainOnly identiteter3
+                hendelse.tidligereIdentiteter shouldContainOnly identiteter2
+            }
         }
 
         "Skal slette identiteter for tombstone-melding" {
@@ -1074,6 +1024,9 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             val fnr = Identitet(TestData.fnr9, IdentitetType.FOLKEREGISTERIDENT, true)
             val arbeidssoekerId = kafkaKeysRepository.opprett(dnr.asIdentitetsnummer())
                 .fold(onLeft = { null }, onRight = { it })!!.value
+            val arbId1 = Identitet(arbeidssoekerId.toString(), IdentitetType.ARBEIDSSOEKERID, true)
+            val identiteter = listOf(aktorId, npId, dnr, fnr, arbId1)
+
             identitetRepository.insert(
                 arbeidssoekerId = arbeidssoekerId,
                 aktorId = aktorId.identitet,
@@ -1147,8 +1100,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 )
             )
             konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-            val hendelseRows = hendelseRepository.findByAktorId(aktorId.identitet)
-            hendelseRows shouldHaveSize 1
+            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             kafkaKeysIdentitetRepository.find(aktorId.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(npId.asIdentitetsnummer()) shouldBe null
             val kafkaKeyRow = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
@@ -1156,6 +1108,12 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             kafkaKeysIdentitetRepository.find(fnr.asIdentitetsnummer()) shouldBe null
             val hwmRow = pdlAktorKafkaHwmOperations.getHwm(aktorTopic, 0)
             hwmRow.offset shouldBe 18
+            verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
+            producerRecordSlot.isCaptured shouldBe true
+            producerRecordSlot.captured.key() shouldBe arbeidssoekerId
+            producerRecordSlot.captured.value().shouldBeInstanceOf<IdentiteterSlettetHendelse> { hendelse ->
+                hendelse.tidligereIdentiteter shouldContainOnly identiteter
+            }
         }
 
         "Skal ignorere duplikate meldinger" {
@@ -1165,8 +1123,8 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             val fnr = Identitet(TestData.fnr10, IdentitetType.FOLKEREGISTERIDENT, true)
             val arbeidssoekerId = kafkaKeysRepository.opprett(fnr.asIdentitetsnummer())
                 .fold(onLeft = { null }, onRight = { it })!!.value
-            val identiteter = TestData.aktor10.identifikatorer.map { it.asIdentitet() } +
-                    Identitet(arbeidssoekerId.toString(), IdentitetType.ARBEIDSSOEKERID, true)
+            val arbId1 = Identitet(arbeidssoekerId.toString(), IdentitetType.ARBEIDSSOEKERID, true)
+            val identiteter = listOf(aktorId, npId, fnr, arbId1)
 
             val records1: ConsumerRecords<Any, Aktor> = listOf(
                 ConsumerRecord<Any, Aktor>(aktorTopic, 0, 19, aktorId.identitet, TestData.aktor10),
@@ -1199,19 +1157,20 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 )
             )
             konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-            val hendelseRows1 = hendelseRepository.findByAktorId(aktorId.identitet)
-            hendelseRows1 shouldHaveSize 1
-            val hendelser1 = hendelseRows1
-                .map { hendelseDeserializer.deserializeFromString(it.data) }
-                .map { it as IdentiteterEndretHendelse }
-            hendelser1[0].identiteter shouldBe identiteter
-            hendelser1[0].tidligereIdentiteter shouldBe emptyList()
+            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             kafkaKeysIdentitetRepository.find(aktorId.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(npId.asIdentitetsnummer()) shouldBe null
             val kafkaKeyRow1 = kafkaKeysIdentitetRepository.find(fnr.asIdentitetsnummer())
             kafkaKeyRow1 shouldBe KafkaKeyRow(arbeidssoekerId, fnr.identitet)
             val hwmRow1 = pdlAktorKafkaHwmOperations.getHwm(aktorTopic, 0)
             hwmRow1.offset shouldBe 19
+            verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
+            producerRecordSlot.isCaptured shouldBe true
+            producerRecordSlot.captured.key() shouldBe arbeidssoekerId
+            producerRecordSlot.captured.value().shouldBeInstanceOf<IdentiteterEndretHendelse> { hendelse ->
+                hendelse.identiteter shouldContainOnly identiteter
+                hendelse.tidligereIdentiteter shouldBe emptyList()
+            }
 
             // GIVEN
             val records2: ConsumerRecords<Any, Aktor> = listOf(
@@ -1245,13 +1204,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 )
             )
             konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-            val hendelseRows2 = hendelseRepository.findByAktorId(aktorId.identitet)
-            hendelseRows2 shouldHaveSize 1
-            val hendelser2 = hendelseRows1
-                .map { hendelseDeserializer.deserializeFromString(it.data) }
-                .map { it as IdentiteterEndretHendelse }
-            hendelser2[0].identiteter shouldBe identiteter
-            hendelser2[0].tidligereIdentiteter shouldBe emptyList()
+            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             kafkaKeysIdentitetRepository.find(aktorId.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(npId.asIdentitetsnummer()) shouldBe null
             val kafkaKeyRow2 = kafkaKeysIdentitetRepository.find(fnr.asIdentitetsnummer())

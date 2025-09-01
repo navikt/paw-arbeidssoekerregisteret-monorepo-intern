@@ -17,24 +17,28 @@ spec:
       value: "OPP"
     - name: KAFKA_TOPIC_PAW_HENDELSESLOGG
       value: "paw.arbeidssoker-hendelseslogg-v1"
+    - name: KAFKA_TOPIC_PAW_PERIODER
+      value: "paw.arbeidssokerperioder-v1"
+    - name: KAFKA_TOPIC_PDL_AKTOR
+      value: "pdl.aktor-v2"
+    - name: KAFKA_TOPIC_PAW_IDENTITETER
+      value: "paw.arbeidssoker-identiteter-beta-v1"
     - name: KAFKA_CONSUMER_GROUP_ID_PREFIX_PAW_HENDELSESLOGG
       value: "paw-kafka-key-generator"
     - name: KAFKA_CONSUMER_GROUP_ID_VERSION_PAW_HENDELSESLOGG
       value: "1"
-    - name: KAFKA_TOPIC_PAW_PERIODER
-      value: "paw.arbeidssokerperioder-v1"
     - name: KAFKA_CONSUMER_GROUP_ID_PREFIX_PAW_PERIODER
       value: "paw-kafka-key-generator-paw-perioder"
     - name: KAFKA_CONSUMER_GROUP_ID_VERSION_PAW_PERIODER
       value: "1"
-    - name: KAFKA_TOPIC_PAW_IDENTITETER
-      value: "paw.arbeidssoker-identiteter-beta-v1"
     - name: KAFKA_PRODUCER_CLIENT_ID_PREFIX_PAW_IDENTITETER
       value: "paw-kafka-key-generator-paw-identiteter"
     - name: KAFKA_PRODUCER_CLIENT_ID_VERSION_PAW_IDENTITETER
       value: "1"
-    - name: KAFKA_TOPIC_PDL_AKTOR
-      value: "pdl.aktor-v2"
+    - name: KAFKA_PRODUCER_CLIENT_ID_PREFIX_PAW_HENDELSESLOGG
+      value: "paw-kafka-key-generator-paw-hendelseslogg"
+    - name: KAFKA_PRODUCER_CLIENT_ID_VERSION_PAW_HENDELSESLOGG
+      value: "1"
     - name: KAFKA_CONSUMER_GROUP_ID_PREFIX_PDL_AKTOR
       value: "paw-kafka-key-generator-pdl-aktor"
     - name: KAFKA_CONSUMER_GROUP_ID_VERSION_PDL_AKTOR

@@ -128,12 +128,12 @@ class IdentitetService(
             )
             logger.info("Mottok tombstone-melding, soft-slettet {} tilhørende identiteter", rowsAffected)
 
-            val arbeidssoekerIdList = eksisterendeIdentitetRows
+            val arbeidssoekerIdSet = eksisterendeIdentitetRows
                 .map { it.arbeidssoekerId }
                 .toSet()
 
-            if (arbeidssoekerIdList.size == 1) {
-                val arbeidssoekerId = arbeidssoekerIdList.first()
+            if (arbeidssoekerIdSet.size == 1) {
+                val arbeidssoekerId = arbeidssoekerIdSet.first()
                 val tidligereIdentiteter = eksisterendeIdentitetRows
                     .filter { it.status != IdentitetStatus.SLETTET }
                     .map { it.asIdentitet() }
@@ -142,10 +142,8 @@ class IdentitetService(
                     tidligereIdentiteter += arbeidssoekerId.asIdentitet(gjeldende = true)
                 }
 
-                hendelseService.lagreIdentiteterEndretHendelse(
-                    aktorId = aktorId,
+                hendelseService.sendIdentiteterSlettetHendelse(
                     arbeidssoekerId = arbeidssoekerId,
-                    identiteter = emptyList(),
                     tidligereIdentiteter = tidligereIdentiteter
                 )
             } else {
@@ -240,9 +238,8 @@ class IdentitetService(
             tidligereIdentiteter += arbeidssoekerId.asIdentitet(gjeldende = true)
         }
 
-        hendelseService.lagreIdentiteterEndretHendelse(
+        hendelseService.sendIdentiteterEndretHendelse(
             arbeidssoekerId = arbeidssoekerId,
-            aktorId = aktorId,
             identiteter = endredeIdentiteter,
             tidligereIdentiteter = tidligereIdentiteter
         )

@@ -1,12 +1,13 @@
 package no.nav.paw.identitet.internehendelser
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
+import kotlin.reflect.KClass
 
 private val buildObjectMapper
     get(): ObjectMapper = jacksonObjectMapper()
@@ -39,23 +40,22 @@ class IdentitetHendelseDeserializer(
 ) : Deserializer<IdentitetHendelse> {
     override fun deserialize(topic: String?, data: ByteArray?): IdentitetHendelse {
         val node = objectMapper.readTree(data)
-        return when (val hendelseType = node.get("hendelseType")?.asText()) {
-            IDENTITETER_ENDRET_HENDELSE_TYPE -> objectMapper.readValue<IdentiteterEndretHendelse>(node.traverse())
-            IDENTITETER_MERGET_HENDELSE_TYPE -> objectMapper.readValue<IdentiteterMergetHendelse>(node.traverse())
-            IDENTITETER_SPLITTET_HENDELSE_TYPE -> objectMapper.readValue<IdentiteterSplittetHendelse>(node.traverse())
-            IDENTITETER_SLETTET_HENDELSE_TYPE -> objectMapper.readValue<IdentiteterSlettetHendelse>(node.traverse())
-            else -> throw IllegalArgumentException("Ukjent hendelseType: $hendelseType")
-        }
+        val hendelseClass = node.asHendelseClass()
+        return objectMapper.treeToValue(node, hendelseClass.java)
     }
 
     fun deserializeFromString(json: String): IdentitetHendelse {
         val node = objectMapper.readTree(json)
-        return when (val hendelseType = node.get("hendelseType")?.asText()) {
-            null -> throw IllegalArgumentException("Hendelse mangler type")
-            IDENTITETER_ENDRET_HENDELSE_TYPE -> objectMapper.treeToValue(node, IdentiteterEndretHendelse::class.java)
-            IDENTITETER_MERGET_HENDELSE_TYPE -> objectMapper.treeToValue(node, IdentiteterMergetHendelse::class.java)
-            IDENTITETER_SPLITTET_HENDELSE_TYPE -> objectMapper.treeToValue(node, IdentiteterSplittetHendelse::class.java)
-            IDENTITETER_SLETTET_HENDELSE_TYPE -> objectMapper.treeToValue(node, IdentiteterSlettetHendelse::class.java)
+        val hendelseClass = node.asHendelseClass()
+        return objectMapper.treeToValue(node, hendelseClass.java)
+    }
+
+    private fun JsonNode.asHendelseClass(): KClass<out IdentitetHendelse> {
+        return when (val hendelseType = get("hendelseType")?.asText()) {
+            IDENTITETER_ENDRET_V1_HENDELSE_TYPE -> IdentiteterEndretHendelse::class
+            IDENTITETER_MERGET_V1_HENDELSE_TYPE -> IdentiteterMergetHendelse::class
+            IDENTITETER_SPLITTET_V1_HENDELSE_TYPE -> IdentiteterSplittetHendelse::class
+            IDENTITETER_SLETTET_V1_HENDELSE_TYPE -> IdentiteterSlettetHendelse::class
             else -> throw IllegalArgumentException("Ukjent hendelseType: $hendelseType")
         }
     }

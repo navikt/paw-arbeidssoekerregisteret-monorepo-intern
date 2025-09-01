@@ -8,6 +8,7 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
+import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerializer
 import no.nav.paw.client.config.AZURE_M2M_CONFIG
 import no.nav.paw.client.config.AzureAdM2MConfig
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
@@ -112,11 +113,18 @@ data class ApplicationContext(
                 keySerializer = LongSerializer::class,
                 valueSerializer = IdentitetHendelseSerializer::class,
             )
+            val pawHendelseloggHendelseProducer = kafkaFactory.createProducer<Long, Hendelse>(
+                clientId = applicationConfig.pawHendelseloggProducer.clientId,
+                keySerializer = LongSerializer::class,
+                valueSerializer = HendelseSerializer::class,
+            )
 
             val hendelseService = HendelseService(
+                serverConfig = serverConfig,
                 applicationConfig = applicationConfig,
                 hendelseRepository = hendelseRepository,
-                pawIdentitetHendelseProducer = pawIdentitetHendelseProducer
+                pawIdentitetHendelseProducer = pawIdentitetHendelseProducer,
+                pawHendelseloggHendelseProducer = pawHendelseloggHendelseProducer
             )
             val konfliktService = KonfliktService(
                 applicationConfig = applicationConfig,

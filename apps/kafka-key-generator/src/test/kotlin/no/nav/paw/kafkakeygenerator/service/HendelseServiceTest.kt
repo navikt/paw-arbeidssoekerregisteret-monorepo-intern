@@ -8,8 +8,8 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import no.nav.paw.identitet.internehendelser.IDENTITETER_ENDRET_HENDELSE_TYPE
-import no.nav.paw.identitet.internehendelser.IDENTITETER_MERGET_HENDELSE_TYPE
+import no.nav.paw.identitet.internehendelser.IDENTITETER_ENDRET_V1_HENDELSE_TYPE
+import no.nav.paw.identitet.internehendelser.IDENTITETER_MERGET_V1_HENDELSE_TYPE
 import no.nav.paw.identitet.internehendelser.IdentitetHendelse
 import no.nav.paw.identitet.internehendelser.IdentiteterEndretHendelse
 import no.nav.paw.identitet.internehendelser.IdentiteterMergetHendelse
@@ -78,7 +78,7 @@ class HendelseServiceTest : FreeSpec({
             recordSlot.isCaptured shouldBe true
             val record = recordSlot.captured
             record.key() shouldBe arbeidssoekerId
-            record.value().hendelseType shouldBe IDENTITETER_ENDRET_HENDELSE_TYPE
+            record.value().hendelseType shouldBe IDENTITETER_ENDRET_V1_HENDELSE_TYPE
             val mottattHendelse = record.value().shouldBeTypeOf<IdentiteterEndretHendelse>()
             mottattHendelse.hendelseId shouldBe sendtHendelse.hendelseId
             mottattHendelse.hendelseType shouldBe sendtHendelse.hendelseType
@@ -125,7 +125,7 @@ class HendelseServiceTest : FreeSpec({
             recordSlot.isCaptured shouldBe true
             val record = recordSlot.captured
             record.key() shouldBe arbeidssoekerId
-            record.value().hendelseType shouldBe IDENTITETER_MERGET_HENDELSE_TYPE
+            record.value().hendelseType shouldBe IDENTITETER_MERGET_V1_HENDELSE_TYPE
             val mottattHendelse = record.value().shouldBeTypeOf<IdentiteterMergetHendelse>()
             mottattHendelse.hendelseId shouldBe sendtHendelse.hendelseId
             mottattHendelse.hendelseType shouldBe sendtHendelse.hendelseType
