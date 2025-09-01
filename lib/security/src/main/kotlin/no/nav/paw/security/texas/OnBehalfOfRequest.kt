@@ -7,7 +7,7 @@ import no.nav.paw.security.texas.IdentityProvider.TOKEN_X
 sealed interface OnBehalfOfRequest {
     val userToken: String
     val target: String
-    val identityProvider: IdentityProvider
+    val identityProvider: String
 }
 
 data class OnBehalfOfBrukerRequest(
@@ -16,7 +16,7 @@ data class OnBehalfOfBrukerRequest(
     override val target: String,
 ) : OnBehalfOfRequest {
     @field:JsonProperty("identity_provider")
-    override val identityProvider: IdentityProvider = TOKEN_X
+    override val identityProvider: String = TOKEN_X.value
 }
 
 data class OnBehalfOfAnsattRequest(
@@ -25,5 +25,5 @@ data class OnBehalfOfAnsattRequest(
     override val target: String,
 ) : OnBehalfOfRequest {
     @field:JsonProperty("identity_provider")
-    override val identityProvider: IdentityProvider = AZURE_AD
+    override val identityProvider: String = AZURE_AD.value
 }
