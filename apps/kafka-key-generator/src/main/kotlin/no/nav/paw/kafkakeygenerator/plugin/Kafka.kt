@@ -48,6 +48,7 @@ fun Application.installKafkaPlugins(
             rebalanceListener = pawPeriodeHwmRebalanceListener
         )
     }
+    /* TODO Utkoblet
     install(KafkaConsumerPlugin<Any, Aktor>("PdlAktor")) {
         this.onInit = pdlAktorHwmRebalanceListener::onPartitionsReady
         this.onConsume = pdlAktorKafkaConsumerService::handleRecords
@@ -57,5 +58,5 @@ fun Application.installKafkaPlugins(
             exceptionHandler = pdlAktorConsumerExceptionHandler,
             rebalanceListener = pdlAktorHwmRebalanceListener
         )
-    }
+    }*/
 }
