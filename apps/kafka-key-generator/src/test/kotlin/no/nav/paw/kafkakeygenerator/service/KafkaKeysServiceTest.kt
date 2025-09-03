@@ -196,7 +196,7 @@ class KafkaKeysServiceTest : FreeSpec({
             "Skal gi ingen treff for ukjent person i PDL" {
                 val person3KafkaKeys = listOf(
                     TestData.dnr6,
-                    TestData.fnr5
+                    TestData.fnr5_1
                 ).map(::hentEllerOpprett)
                 person3KafkaKeys.filterIsInstance<Left<Failure>>().size shouldBe 2
                 person3KafkaKeys.filterIsInstance<Right<Long>>().size shouldBe 0

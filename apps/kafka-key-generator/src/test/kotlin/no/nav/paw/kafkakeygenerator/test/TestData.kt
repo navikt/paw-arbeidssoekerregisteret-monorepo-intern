@@ -94,8 +94,10 @@ object TestData {
     const val fnr3_2 = "03017012346"
     const val fnr4_1 = "04017012345"
     const val fnr4_2 = "04017012346"
-    const val fnr5 = "05017012345"
-    const val fnr6 = "06017012345"
+    const val fnr5_1 = "05017012345"
+    const val fnr5_2 = "05017012346"
+    const val fnr6_1 = "06017012345"
+    const val fnr6_2 = "06017012346"
     const val fnr7 = "07017012345"
     const val fnr8 = "08017012345"
     const val fnr9 = "09017012345"
@@ -324,7 +326,7 @@ object TestData {
     )
     val periode5_2 = periodeAvsluttet(
         periodeId = periodeId5_2,
-        identitetsnummer = fnr5,
+        identitetsnummer = fnr5_1,
         startet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(60))),
         avsluttet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(30)))
     )
@@ -335,7 +337,7 @@ object TestData {
     )
     val periode6_2 = periodeAvsluttet(
         periodeId = periodeId6,
-        identitetsnummer = fnr6,
+        identitetsnummer = fnr6_1,
         startet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(120))),
         avsluttet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(90)))
     )

@@ -21,6 +21,7 @@ import no.nav.paw.kafka.producer.sendBlocking
 import no.nav.paw.kafkakeygenerator.api.v2.publicTopicKeyFunction
 import no.nav.paw.kafkakeygenerator.context.TestContext
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
+import no.nav.paw.kafkakeygenerator.model.KafkaKeyRow
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
 import no.nav.paw.kafkakeygenerator.model.asIdentitet
@@ -150,10 +151,12 @@ class KonfliktServiceTest : FreeSpec({
                 konfliktRow1.aktorId shouldBe aktorId.identitet
                 konfliktRow1.type shouldBe KonfliktType.MERGE
                 konfliktRow1.status shouldBe KonfliktStatus.FULLFOERT
+                konfliktRow1.identiteter.map { it.asIdentitet() } shouldContainOnly listOf(
+                    aktorId, npId, fnr1.copy(gjeldende = false), fnr2
+                )
 
                 val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
                 identitetRows shouldHaveSize 5
-
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId3,
@@ -185,6 +188,19 @@ class KonfliktServiceTest : FreeSpec({
                         identitet = fnr2,
                         status = IdentitetStatus.AKTIV
                     )
+                )
+
+                val kafkaKeyRows = kafkaKeysIdentitetRepository
+                    .findByIdentiteter(
+                        identiteter = setOf(
+                            aktorId.identitet, npId.identitet, dnr.identitet, fnr1.identitet, fnr2.identitet
+                        )
+                    )
+                kafkaKeyRows shouldHaveSize 3
+                kafkaKeyRows shouldContainOnly listOf(
+                    KafkaKeyRow(arbeidssoekerId1, dnr.identitet),
+                    KafkaKeyRow(arbeidssoekerId2, fnr1.identitet),
+                    KafkaKeyRow(arbeidssoekerId3, fnr2.identitet)
                 )
 
                 hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
@@ -382,6 +398,9 @@ class KonfliktServiceTest : FreeSpec({
                 konfliktRow1.aktorId shouldBe aktorId.identitet
                 konfliktRow1.type shouldBe KonfliktType.MERGE
                 konfliktRow1.status shouldBe KonfliktStatus.FULLFOERT
+                konfliktRow1.identiteter.map { it.asIdentitet() } shouldContainOnly listOf(
+                    aktorId, npId, dnr.copy(gjeldende = false), fnr1.copy(gjeldende = false), fnr2
+                )
 
                 val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
                 identitetRows shouldHaveSize 5
@@ -416,6 +435,19 @@ class KonfliktServiceTest : FreeSpec({
                         identitet = fnr2,
                         status = IdentitetStatus.AKTIV
                     )
+                )
+
+                val kafkaKeyRows = kafkaKeysIdentitetRepository
+                    .findByIdentiteter(
+                        identiteter = setOf(
+                            aktorId.identitet, npId.identitet, dnr.identitet, fnr1.identitet, fnr2.identitet
+                        )
+                    )
+                kafkaKeyRows shouldHaveSize 3
+                kafkaKeyRows shouldContainOnly listOf(
+                    KafkaKeyRow(arbeidssoekerId1, dnr.identitet),
+                    KafkaKeyRow(arbeidssoekerId2, fnr1.identitet),
+                    KafkaKeyRow(arbeidssoekerId3, fnr2.identitet)
                 )
 
                 hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
@@ -605,10 +637,13 @@ class KonfliktServiceTest : FreeSpec({
                 // THEN
                 val konfliktRows = konfliktRepository.findByAktorId(aktorId.identitet)
                 konfliktRows shouldHaveSize 1
-                val konflikt = konfliktRows.first()
-                konflikt.aktorId shouldBe aktorId.identitet
-                konflikt.type shouldBe KonfliktType.MERGE
-                konflikt.status shouldBe KonfliktStatus.FULLFOERT
+                val konfliktRow1 = konfliktRows.first()
+                konfliktRow1.aktorId shouldBe aktorId.identitet
+                konfliktRow1.type shouldBe KonfliktType.MERGE
+                konfliktRow1.status shouldBe KonfliktStatus.FULLFOERT
+                konfliktRow1.identiteter.map { it.asIdentitet() } shouldContainOnly listOf(
+                    aktorId, npId, dnr.copy(gjeldende = false), fnr1, fnr2.copy(gjeldende = false)
+                )
 
                 val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
                 identitetRows shouldHaveSize 5
@@ -643,6 +678,19 @@ class KonfliktServiceTest : FreeSpec({
                         identitet = fnr2.copy(gjeldende = false),
                         status = IdentitetStatus.AKTIV
                     )
+                )
+
+                val kafkaKeyRows = kafkaKeysIdentitetRepository
+                    .findByIdentiteter(
+                        identiteter = setOf(
+                            aktorId.identitet, npId.identitet, dnr.identitet, fnr1.identitet, fnr2.identitet
+                        )
+                    )
+                kafkaKeyRows shouldHaveSize 3
+                kafkaKeyRows shouldContainOnly listOf(
+                    KafkaKeyRow(arbeidssoekerId1, dnr.identitet),
+                    KafkaKeyRow(arbeidssoekerId2, fnr1.identitet),
+                    KafkaKeyRow(arbeidssoekerId3, fnr2.identitet)
                 )
 
                 hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
@@ -835,6 +883,9 @@ class KonfliktServiceTest : FreeSpec({
                 konfliktRow1.aktorId shouldBe aktorId.identitet
                 konfliktRow1.type shouldBe KonfliktType.MERGE
                 konfliktRow1.status shouldBe KonfliktStatus.FEILET
+                konfliktRow1.identiteter.map { it.asIdentitet() } shouldContainOnly listOf(
+                    aktorId, npId, dnr.copy(gjeldende = false), fnr1.copy(gjeldende = false), fnr2
+                )
 
                 val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
                 identitetRows shouldHaveSize 5
@@ -871,6 +922,19 @@ class KonfliktServiceTest : FreeSpec({
                     )
                 )
 
+                val kafkaKeyRows = kafkaKeysIdentitetRepository
+                    .findByIdentiteter(
+                        identiteter = setOf(
+                            aktorId.identitet, npId.identitet, dnr.identitet, fnr1.identitet, fnr2.identitet
+                        )
+                    )
+                kafkaKeyRows shouldHaveSize 3
+                kafkaKeyRows shouldContainOnly listOf(
+                    KafkaKeyRow(arbeidssoekerId1, dnr.identitet),
+                    KafkaKeyRow(arbeidssoekerId2, fnr1.identitet),
+                    KafkaKeyRow(arbeidssoekerId3, fnr2.identitet)
+                )
+
                 hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
 
                 verify { pawIdentitetProducerMock wasNot Called }
@@ -882,7 +946,8 @@ class KonfliktServiceTest : FreeSpec({
                 val aktorId = Identitet(TestData.aktorId5, IdentitetType.AKTORID, true)
                 val npId = Identitet(TestData.npId5, IdentitetType.NPID, true)
                 val dnr = Identitet(TestData.dnr5, IdentitetType.FOLKEREGISTERIDENT, true)
-                val fnr = Identitet(TestData.fnr5, IdentitetType.FOLKEREGISTERIDENT, true)
+                val fnr1 = Identitet(TestData.fnr5_1, IdentitetType.FOLKEREGISTERIDENT, true)
+                val fnr2 = Identitet(TestData.fnr5_2, IdentitetType.FOLKEREGISTERIDENT, true)
                 val arbeidssoekerId1 = kafkaKeysRepository.opprett(aktorId.asIdentitetsnummer())
                     .fold(onLeft = { null }, onRight = { it })!!.value
                 val arbeidssoekerId2 = kafkaKeysRepository.opprett(dnr.asIdentitetsnummer())
@@ -906,7 +971,7 @@ class KonfliktServiceTest : FreeSpec({
                     type = KonfliktType.MERGE,
                     status = KonfliktStatus.VENTER,
                     sourceTimestamp = Instant.now(),
-                    identiteter = listOf(aktorId, npId, dnr, fnr)
+                    identiteter = listOf(aktorId, npId, dnr.copy(gjeldende = false), fnr1.copy(gjeldende = false), fnr2)
                 )
 
                 // WHEN
@@ -920,10 +985,12 @@ class KonfliktServiceTest : FreeSpec({
                 konfliktRow1.aktorId shouldBe aktorId.identitet
                 konfliktRow1.type shouldBe KonfliktType.MERGE
                 konfliktRow1.status shouldBe KonfliktStatus.FULLFOERT
+                konfliktRow1.identiteter.map { it.asIdentitet() } shouldContainOnly listOf(
+                    aktorId, npId, dnr.copy(gjeldende = false), fnr1.copy(gjeldende = false), fnr2
+                )
 
                 val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
-                identitetRows shouldHaveSize 4
-
+                identitetRows shouldHaveSize 5
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId2,
@@ -940,15 +1007,33 @@ class KonfliktServiceTest : FreeSpec({
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId2,
                         aktorId = aktorId.identitet,
-                        identitet = dnr,
+                        identitet = dnr.copy(gjeldende = false),
                         status = IdentitetStatus.AKTIV
                     ),
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId2,
                         aktorId = aktorId.identitet,
-                        identitet = fnr,
+                        identitet = fnr1.copy(gjeldende = false),
+                        status = IdentitetStatus.AKTIV
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId2,
+                        aktorId = aktorId.identitet,
+                        identitet = fnr2,
                         status = IdentitetStatus.AKTIV
                     )
+                )
+
+                val kafkaKeyRows = kafkaKeysIdentitetRepository
+                    .findByIdentiteter(
+                        identiteter = setOf(
+                            aktorId.identitet, npId.identitet, dnr.identitet, fnr1.identitet, fnr2.identitet
+                        )
+                    )
+                kafkaKeyRows shouldHaveSize 2
+                kafkaKeyRows shouldContainOnly listOf(
+                    KafkaKeyRow(arbeidssoekerId1, aktorId.identitet),
+                    KafkaKeyRow(arbeidssoekerId2, dnr.identitet),
                 )
 
                 hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
@@ -967,8 +1052,9 @@ class KonfliktServiceTest : FreeSpec({
                     hendelse.identiteter shouldContainOnly listOf(
                         aktorId,
                         npId,
-                        fnr,
-                        dnr,
+                        dnr.copy(gjeldende = false),
+                        fnr1.copy(gjeldende = false),
+                        fnr2,
                         arbId1.copy(gjeldende = false),
                         arbId2,
                     )
@@ -991,7 +1077,7 @@ class KonfliktServiceTest : FreeSpec({
                 hendelseloggRecord2.key() shouldBe recordKey2
                 hendelseloggRecord2.value().shouldBeInstanceOf<ArbeidssoekerIdFlettetInn> { hendelse ->
                     hendelse.id shouldBe arbeidssoekerId2
-                    hendelse.identitetsnummer shouldBe fnr.identitet
+                    hendelse.identitetsnummer shouldBe fnr2.identitet
                     hendelse.kilde.arbeidssoekerId shouldBe arbeidssoekerId1
                     hendelse.kilde.identitetsnummer shouldContainOnly setOf(
                         aktorId.identitet
