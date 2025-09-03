@@ -45,7 +45,7 @@ class PdlAktorKafkaConsumerService(
                 )
 
                 if (rowsAffected == 0) {
-                    logger.warn(
+                    logger.info(
                         "Ignorerer aktor-melding på grunn av at offset {} på partition {} fra topic {} ikke er over HWM",
                         record.offset(),
                         record.partition(),
@@ -84,10 +84,10 @@ class PdlAktorKafkaConsumerService(
         sourceTimestamp: Instant
     ) {
         if (aktor == null) {
-            logger.info("Mottok melding om sletting av identiteter")
+            logger.debug("Mottok melding om sletting av identiteter")
             identitetService.identiteterSkalSlettes(aktorId, sourceTimestamp)
         } else {
-            logger.info("Mottok melding om oppdatering av identiteter")
+            logger.debug("Mottok melding om oppdatering av identiteter")
             val identiteter = aktor.identifikatorer
                 .map { it.asIdentitet() }
             identitetService.identiteterSkalOppdateres(aktorId, identiteter, sourceTimestamp)
