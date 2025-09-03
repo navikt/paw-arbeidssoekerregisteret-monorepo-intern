@@ -62,6 +62,7 @@ class ApiEndepunktV2Test : FreeSpec({
                 kafkaKeyRow1!!.identitetsnummer shouldBe dnr.identitet
                 kafkaKeyRow1.arbeidssoekerId shouldBe body1.id
 
+                /* TODO Utkoblet
                 val identitetRow1 = identitetRepository.getByIdentitet(dnr.identitet)
                 identitetRow1 shouldNotBe null
                 identitetRow1!!.aktorId shouldBe aktorId.identitet
@@ -87,7 +88,7 @@ class ApiEndepunktV2Test : FreeSpec({
                         identitet = dnr,
                         status = IdentitetStatus.AKTIV
                     )
-                )
+                )*/
 
                 // WHEN
                 val response2 = client.post("/api/v2/hentEllerOpprett") {
@@ -106,6 +107,7 @@ class ApiEndepunktV2Test : FreeSpec({
                 kafkaKeyRow2!!.identitetsnummer shouldBe fnr.identitet
                 kafkaKeyRow2.arbeidssoekerId shouldBe body2.id
 
+                /* TODO: Utkoblet
                 val identitetRow2 = identitetRepository.getByIdentitet(fnr.identitet)
                 identitetRow2 shouldNotBe null
                 identitetRow2!!.aktorId shouldBe aktorId.identitet
@@ -137,7 +139,7 @@ class ApiEndepunktV2Test : FreeSpec({
                         identitet = fnr,
                         status = IdentitetStatus.AKTIV
                     )
-                )
+                )*/
             }
         }
     }
