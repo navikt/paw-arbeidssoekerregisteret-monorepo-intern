@@ -2,6 +2,7 @@ package no.nav.paw.kafkakeygenerator.service
 
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.identitet.internehendelser.vo.Identitet
+import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafkakeygenerator.exception.IdentitetIkkeFunnetException
 import no.nav.paw.kafkakeygenerator.model.IdentitetRow
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
@@ -25,7 +26,6 @@ class IdentitetService(
         identiteter: List<Identitet>
     ) {
         // Vil feile om person ikke har aktiv aktør-id, men det skal vel ikke kunne skje?
-        /* TODO Utkoblet
         val aktorId = identiteter
             .filter { it.type == IdentitetType.AKTORID }
             .first { it.gjeldende }
@@ -34,7 +34,7 @@ class IdentitetService(
             aktorId = aktorId,
             identiteter = identiteter,
             sourceTimestamp = Instant.now()
-        )*/
+        )
     }
 
     @WithSpan

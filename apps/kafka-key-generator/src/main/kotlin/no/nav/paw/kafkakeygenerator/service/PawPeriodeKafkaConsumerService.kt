@@ -46,7 +46,7 @@ class PawPeriodeKafkaConsumerService(
                 )
 
                 if (rowsAffected == 0) {
-                    logger.warn(
+                    logger.info(
                         "Ignorerer periode-melding på grunn av at offset {} på partition {} fra topic {} ikke er over HWM",
                         record.offset(),
                         record.partition(),

@@ -36,11 +36,11 @@ class PawHendelseKafkaConsumerService(
         records
             .onEach { record ->
                 logger.info(
-                    "Mottok hendelse av type {} på topic: {}, partition: {}, offset {}",
+                    "Mottok hendelse av type {} med offset {} på partition {} fra topic {}",
                     record.value().hendelseType,
-                    record.topic(),
+                    record.offset(),
                     record.partition(),
-                    record.offset()
+                    record.topic()
                 )
             }
             .map { it.value() }

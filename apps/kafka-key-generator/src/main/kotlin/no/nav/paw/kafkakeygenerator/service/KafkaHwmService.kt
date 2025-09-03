@@ -46,7 +46,7 @@ class KafkaHwmService(
                     MDC.put("kafka_topic", topic)
                     MDC.put("kafka_partition", "$partition")
                     MDC.put("kafka_offset", "$offset")
-                    logger.info("Updating HWM to offset {} for partition {} on topic {}", offset, partition, topic)
+                    logger.debug("Updating HWM to offset {} for partition {} on topic {}", offset, partition, topic)
                     meterRegistry.kafkaReceivedGauge(topic, partition, offset)
                     hwmRepository.update(version, topic, partition, offset, timestamp, Instant.now())
                 } finally {
