@@ -40,7 +40,7 @@ spec:
       enabled: true
   env:
     - name: API_OPPSLAG_SCOPE
-      value: "api://dev-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag/.default"
+      value: "api://dev-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag-v2/.default"
     - name: KAFKA_KEYS_SCOPE
       value: "api://dev-gcp.paw.paw-kafka-key-generator/.default"
     - name: KAFKA_PAW_ARBEIDSSOKER_HENDELSESLOGG_TOPIC
@@ -68,5 +68,5 @@ spec:
       rules:
         - application: paw-kafka-key-generator
           namespace: paw
-        - application: paw-arbeidssoekerregisteret-api-oppslag
+        - application: paw-arbeidssoekerregisteret-api-oppslag-v2
           namespace: paw

@@ -10,7 +10,8 @@ jib {
     container {
         jvmFlags = listOf("-XX:ActiveProcessorCount=4", "-XX:+UseZGC", "-XX:+ZGenerational")
         environment = mapOf(
-            "IMAGE_WITH_VERSION" to "${image ?: project.name}:${project.version}"
+            "IMAGE_WITH_VERSION" to "${image ?: project.name}:${project.version}",
+
         )
     }
 }

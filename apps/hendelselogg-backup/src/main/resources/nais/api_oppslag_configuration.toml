@@ -1,4 +1,4 @@
-baseUrl="http://paw-arbeidssoekerregisteret-api-oppslag"
+baseUrl="http://paw-arbeidssoekerregisteret-api-oppslag-v2"
 scope="${API_OPPSLAG_SCOPE}"
 perioderPath="/api/v1/veileder/arbeidssoekerperioder"
 opplysningerPath="/api/v1/veileder/opplysninger-om-arbeidssoeker"

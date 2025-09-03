@@ -48,7 +48,7 @@ spec:
           - id: 88b552ab-2cd9-41e1-bd44-3868605d6f6a
   env:
     - name: API_OPPSLAG_SCOPE
-      value: "api://prod-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag/.default"
+      value: "api://prod-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag-v2/.default"
     - name: KAFKA_KEYS_SCOPE
       value: "api://prod-gcp.paw.paw-kafka-key-generator/.default"
     - name: KAFKA_PAW_ARBEIDSSOKER_HENDELSESLOGG_TOPIC
@@ -74,5 +74,5 @@ spec:
       rules:
         - application: paw-kafka-key-generator
           namespace: paw
-        - application: paw-arbeidssoekerregisteret-api-oppslag
+        - application: paw-arbeidssoekerregisteret-api-oppslag-v2
           namespace: paw
