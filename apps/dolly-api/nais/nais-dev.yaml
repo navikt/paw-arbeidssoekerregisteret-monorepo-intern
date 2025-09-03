@@ -14,7 +14,7 @@ spec:
     - name: KAFKA_KEYS_SCOPE
       value: "api://dev-gcp.paw.paw-kafka-key-generator/.default"
     - name: OPPSLAG_SCOPE
-      value: "api://dev-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag/.default"
+      value: "api://dev-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag-v2/.default"
   replicas:
     min: 2
     max: 2
@@ -48,7 +48,7 @@ spec:
     outbound:
       rules:
         - application: paw-kafka-key-generator
-        - application: paw-arbeidssoekerregisteret-api-oppslag
+        - application: paw-arbeidssoekerregisteret-api-oppslag-v2
     inbound:
       rules:
         - application: azure-token-generator

@@ -5,5 +5,5 @@ producerId = "${NAIS_APP_NAME}-v1-producer"
 hendelsesloggTopic = "${HENDELSESLOGG_TOPIC}"
 
 [oppslagClientConfig]
-url = "http://paw-arbeidssoekerregisteret-api-oppslag/api/v1/veileder/arbeidssoekerperioder-aggregert?siste=true"
+url = "http://paw-arbeidssoekerregisteret-api-oppslag-v2/api/v1/veileder/arbeidssoekerperioder-aggregert?siste=true"
 scope = "${OPPSLAG_SCOPE}"
