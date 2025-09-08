@@ -2,7 +2,7 @@
 plugins {
     kotlin("jvm")
     id("com.github.davidmc24.gradle.plugin.avro")
-    id("jib-distroless")
+    id("jib-chainguard")
     application
 }
 val jvmMajorVersion: String by project

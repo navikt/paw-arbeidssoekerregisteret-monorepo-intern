@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm")
     application
-    id("jib-distroless")
+    id("jib-chainguard")
 }
 
 val jvmMajorVersion: String by project

@@ -1,7 +1,7 @@
 
 plugins {
     kotlin("jvm")
-    id("jib-distroless")
+    id("jib-chainguard")
     application
 }
 

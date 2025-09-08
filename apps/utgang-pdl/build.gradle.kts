@@ -1,6 +1,6 @@
 plugins {
     kotlin("jvm")
-    id("jib-distroless")
+    id("jib-chainguard")
     id("com.github.davidmc24.gradle.plugin.avro")
     application
 }

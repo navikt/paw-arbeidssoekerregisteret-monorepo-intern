@@ -6,7 +6,7 @@ plugins {
     kotlin("jvm")
     id("org.openapi.generator")
     application
-    id("jib-distroless")
+    id("jib-chainguard")
 }
 
 val jvmMajorVersion: String by project
