@@ -14,7 +14,7 @@ import org.jetbrains.exposed.sql.update
 import java.time.Instant
 
 class IdentitetRepository {
-    // TODO: Hvordan håndtere soft-slettede?
+    // OBS! Har med soft-slettede
     fun getByIdentitet(identitet: String): IdentitetRow? = transaction {
         IdentiteterTable.selectAll()
             .where { IdentiteterTable.identitet eq identitet }
@@ -22,7 +22,7 @@ class IdentitetRepository {
             .singleOrNull()
     }
 
-    // TODO: Hvordan håndtere soft-slettede?
+    // OBS! Har med soft-slettede
     fun findByAktorId(aktorId: String): List<IdentitetRow> = transaction {
         IdentiteterTable.selectAll()
             .orderBy(IdentiteterTable.id)
@@ -30,17 +30,15 @@ class IdentitetRepository {
             .map { it.asIdentitetRow() }
     }
 
-    // TODO: Hvordan håndtere soft-slettede?
-    fun findByIdentiteter(
-        identiteter: Iterable<String>
-    ): List<IdentitetRow> = transaction {
+    // OBS! Har med soft-slettede
+    fun findByArbeidssoekerId(arbeidssoekerId: Long): List<IdentitetRow> = transaction {
         IdentiteterTable.selectAll()
             .orderBy(IdentiteterTable.id)
-            .where { IdentiteterTable.identitet inList identiteter }
+            .where { IdentiteterTable.arbeidssoekerId eq arbeidssoekerId }
             .map { it.asIdentitetRow() }
     }
 
-    // TODO: Hvordan håndtere soft-slettede?
+    // OBS! Har med soft-slettede
     fun findByAktorIdOrIdentiteter(
         aktorId: String,
         identiteter: Iterable<String>
@@ -117,39 +115,30 @@ class IdentitetRepository {
         }
     }
 
-    fun updateStatusByAktorId(
+    fun updateGjeldendeAndStatusByAktorId(
         aktorId: String,
+        gjeldende: Boolean,
         status: IdentitetStatus
     ): Int = transaction {
         IdentiteterTable.update(where = {
-            (IdentiteterTable.aktorId eq aktorId)
+            (IdentiteterTable.aktorId eq aktorId) and
+                    ((IdentiteterTable.gjeldende neq gjeldende) or
+                            (IdentiteterTable.status neq status))
         }) {
+            it[IdentiteterTable.gjeldende] = gjeldende
             it[IdentiteterTable.status] = status
             it[updatedTimestamp] = Instant.now()
         }
     }
 
-    fun updateStatusByAktorIdList(
+    fun updateStatusByNotSlettetAndAktorIdList(
         status: IdentitetStatus,
         aktorIdList: Iterable<String>
     ): Int = transaction {
         IdentiteterTable.update(where = {
-            (IdentiteterTable.aktorId inList aktorIdList)
+            (IdentiteterTable.status neq IdentitetStatus.SLETTET) and
+                    (IdentiteterTable.aktorId inList aktorIdList)
         }) {
-            it[IdentiteterTable.status] = status
-            it[updatedTimestamp] = Instant.now()
-        }
-    }
-
-    fun updateArbeidssoekerIdAndStatusByAktorId(
-        aktorId: String,
-        arbeidssoekerId: Long,
-        status: IdentitetStatus
-    ): Int = transaction {
-        IdentiteterTable.update(where = {
-            (IdentiteterTable.aktorId eq aktorId)
-        }) {
-            it[IdentiteterTable.arbeidssoekerId] = arbeidssoekerId
             it[IdentiteterTable.status] = status
             it[updatedTimestamp] = Instant.now()
         }

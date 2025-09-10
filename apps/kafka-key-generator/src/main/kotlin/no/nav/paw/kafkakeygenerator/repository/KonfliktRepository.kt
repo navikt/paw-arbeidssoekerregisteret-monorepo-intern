@@ -70,6 +70,18 @@ class KonfliktRepository(
         statement.insertedCount + identiteterInsertedCount
     }
 
+    fun updateStatusByAktorIdAndStatus(
+        aktorId: String,
+        fraStatus: KonfliktStatus,
+        tilStatus: KonfliktStatus
+    ): Int = transaction {
+        KonflikterTable.update(
+            where = { (KonflikterTable.aktorId eq aktorId) and (KonflikterTable.status eq fraStatus) }) {
+            it[KonflikterTable.status] = tilStatus
+            it[updatedTimestamp] = Instant.now()
+        }
+    }
+
     fun updateStatusByAktorIdAndType(
         aktorId: String,
         type: KonfliktType,

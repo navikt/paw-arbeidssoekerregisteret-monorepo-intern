@@ -26,9 +26,9 @@ import no.nav.paw.identitet.internehendelser.IdentitetHendelse
 import no.nav.paw.identitet.internehendelser.IdentitetHendelseDeserializer
 import no.nav.paw.identitet.internehendelser.IdentitetHendelseSerializer
 import no.nav.paw.kafkakeygenerator.config.APPLICATION_CONFIG
-import no.nav.paw.kafkakeygenerator.config.ServerConfig
 import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
 import no.nav.paw.kafkakeygenerator.config.SERVER_CONFIG
+import no.nav.paw.kafkakeygenerator.config.ServerConfig
 import no.nav.paw.kafkakeygenerator.merge.MergeDetector
 import no.nav.paw.kafkakeygenerator.plugin.configureRouting
 import no.nav.paw.kafkakeygenerator.repository.HendelseRepository
@@ -146,7 +146,7 @@ class TestContext private constructor(
         )
     }
 
-    fun setUp() {
+    fun setUp(): TestContext {
         Database.connect(dataSource)
         initSql.forEach { it.runAsSql() }
         Flyway.configure()
@@ -154,10 +154,12 @@ class TestContext private constructor(
             .baselineOnMigrate(true)
             .load()
             .migrate()
+        return this
     }
 
-    fun tearDown() {
+    fun tearDown(): TestContext {
         dataSource.connection.close()
+        return this
     }
 
     private fun MockOAuth2Server.authProviders(): List<AuthProvider> {

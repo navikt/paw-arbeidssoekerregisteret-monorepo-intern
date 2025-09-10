@@ -18,8 +18,6 @@ import io.mockk.every
 import io.mockk.verify
 import no.nav.paw.identitet.internehendelser.IdentitetHendelse
 import no.nav.paw.identitet.internehendelser.IdentiteterEndretHendelse
-import no.nav.paw.identitet.internehendelser.vo.Identitet
-import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafka.producer.sendBlocking
 import no.nav.paw.kafkakeygenerator.context.TestContext
 import no.nav.paw.kafkakeygenerator.context.TestContext.Companion.setJsonBody
@@ -63,10 +61,10 @@ class ApiEndepunktV2Test : FreeSpec({
                 val token = mockOAuth2Server.issueAzureToken()
 
                 // GIVEN
-                val aktorId = Identitet(TestData.aktorId4, IdentitetType.AKTORID, true)
-                val npId = Identitet(TestData.npId4, IdentitetType.NPID, true)
-                val dnr = Identitet(TestData.dnr4, IdentitetType.FOLKEREGISTERIDENT, true)
-                val fnr = Identitet(TestData.fnr4_1, IdentitetType.FOLKEREGISTERIDENT, true)
+                val aktorId = TestData.aktorId4
+                val npId = TestData.npId4
+                val dnr = TestData.dnr4
+                val fnr = TestData.fnr4_1
                 val identitetProducerRecordList = mutableListOf<ProducerRecord<Long, IdentitetHendelse>>()
 
                 every {

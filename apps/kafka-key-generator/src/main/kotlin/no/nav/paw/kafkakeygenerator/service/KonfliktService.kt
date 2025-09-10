@@ -29,6 +29,16 @@ class KonfliktService(
     private val logger = buildLogger
     private val batchSize = applicationConfig.identitetKonfliktJob.batchSize
 
+    fun slettVentendeKonflikter(
+        aktorId: String
+    ) {
+        konfliktRepository.updateStatusByAktorIdAndStatus(
+            aktorId = aktorId,
+            fraStatus = KonfliktStatus.VENTER,
+            tilStatus = KonfliktStatus.SLETTET
+        )
+    }
+
     fun lagreVentendeKonflikt(
         aktorId: String,
         type: KonfliktType,

@@ -34,6 +34,7 @@ class PawHendelseKafkaConsumerService(
     @WithSpan
     fun handleRecords(records: ConsumerRecords<Long, Hendelse>) {
         records
+            .asSequence()
             .onEach { record ->
                 logger.info(
                     "Mottok hendelse av type {} med offset {} på partition {} fra topic {}",

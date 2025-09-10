@@ -47,25 +47,20 @@ class HendelseServiceTest : FreeSpec({
             val npId = TestData.npId1
             val dnr = TestData.dnr1
             val fnr = TestData.fnr1_1
-            val arbeidssoekerId = kafkaKeysRepository.opprett(Identitetsnummer(dnr))
+            val arbeidssoekerId = kafkaKeysRepository.opprett(Identitetsnummer(dnr.identitet))
                 .fold(onLeft = { null }, onRight = { it })!!.value
-            val id1 = Identitet(identitet = aktorId, type = IdentitetType.AKTORID, gjeldende = true)
-            val id2 = Identitet(identitet = npId, type = IdentitetType.NPID, gjeldende = true)
-            val id3_1 = Identitet(identitet = dnr, type = IdentitetType.FOLKEREGISTERIDENT, gjeldende = true)
-            val id3_2 = Identitet(identitet = dnr, type = IdentitetType.FOLKEREGISTERIDENT, gjeldende = false)
-            val id4 = Identitet(identitet = fnr, type = IdentitetType.FOLKEREGISTERIDENT, gjeldende = true)
-            val id5 = Identitet(
+            val arbId = Identitet(
                 identitet = arbeidssoekerId.toString(),
                 type = IdentitetType.ARBEIDSSOEKERID,
                 gjeldende = true
             )
             val sendtHendelse = IdentiteterEndretHendelse(
-                identiteter = listOf(id1, id2, id3_2, id4, id5),
-                tidligereIdentiteter = listOf(id1, id2, id3_1, id5)
+                identiteter = listOf(aktorId, npId, dnr.copy(gjeldende = false), fnr, arbId),
+                tidligereIdentiteter = listOf(aktorId, npId, dnr, arbId)
             )
             hendelseRepository.insert(
                 arbeidssoekerId = arbeidssoekerId,
-                aktorId = aktorId,
+                aktorId = aktorId.identitet,
                 version = 1,
                 data = hendelseSerializer.serializeToString(sendtHendelse),
                 status = HendelseStatus.VENTER
@@ -94,25 +89,20 @@ class HendelseServiceTest : FreeSpec({
             val npId = TestData.npId2
             val dnr = TestData.dnr2
             val fnr = TestData.fnr2_1
-            val arbeidssoekerId = kafkaKeysRepository.opprett(Identitetsnummer(dnr))
+            val arbeidssoekerId = kafkaKeysRepository.opprett(Identitetsnummer(dnr.identitet))
                 .fold(onLeft = { null }, onRight = { it })!!.value
-            val id1 = Identitet(identitet = aktorId, type = IdentitetType.AKTORID, gjeldende = true)
-            val id2 = Identitet(identitet = npId, type = IdentitetType.NPID, gjeldende = true)
-            val id3_1 = Identitet(identitet = dnr, type = IdentitetType.FOLKEREGISTERIDENT, gjeldende = true)
-            val id3_2 = Identitet(identitet = dnr, type = IdentitetType.FOLKEREGISTERIDENT, gjeldende = false)
-            val id4 = Identitet(identitet = fnr, type = IdentitetType.FOLKEREGISTERIDENT, gjeldende = true)
-            val id5 = Identitet(
+            val arbId = Identitet(
                 identitet = arbeidssoekerId.toString(),
                 type = IdentitetType.ARBEIDSSOEKERID,
                 gjeldende = true
             )
             val sendtHendelse = IdentiteterMergetHendelse(
-                identiteter = listOf(id1, id2, id3_2, id4, id5),
-                tidligereIdentiteter = listOf(id1, id2, id3_1, id5)
+                identiteter = listOf(aktorId, npId, dnr.copy(gjeldende = false), fnr, arbId),
+                tidligereIdentiteter = listOf(aktorId, npId, dnr, arbId)
             )
             hendelseRepository.insert(
                 arbeidssoekerId = arbeidssoekerId,
-                aktorId = aktorId,
+                aktorId = aktorId.identitet,
                 version = 1,
                 data = hendelseSerializer.serializeToString(sendtHendelse),
                 status = HendelseStatus.VENTER
