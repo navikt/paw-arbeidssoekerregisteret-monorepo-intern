@@ -3,7 +3,6 @@ package no.nav.paw.kafkakeygenerator.service
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
-import no.nav.paw.kafkakeygenerator.exception.IdentitetIkkeFunnetException
 import no.nav.paw.kafkakeygenerator.model.IdentitetRow
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KafkaKeyRow
@@ -21,6 +20,27 @@ class IdentitetService(
     private val kafkaKeysIdentitetRepository: KafkaKeysIdentitetRepository
 ) {
     private val logger = buildLogger
+
+    fun hent(identitet: String): Identitet? {
+        return identitetRepository
+            .getByIdentitet(identitet)
+            ?.takeIf { it.status != IdentitetStatus.SLETTET }
+            ?.asIdentitet()
+    }
+
+    fun finnForAktorId(aktorId: String): List<Identitet> {
+        return identitetRepository
+            .findByAktorId(aktorId)
+            .filter { it.status != IdentitetStatus.SLETTET }
+            .map { it.asIdentitet() }
+    }
+
+    fun finnForArbeidssoekerId(arbeidssoekerId: Long): List<Identitet> {
+        return identitetRepository
+            .findByArbeidssoekerId(arbeidssoekerId)
+            .filter { it.status != IdentitetStatus.SLETTET }
+            .map { it.asIdentitet() }
+    }
 
     fun identiteterSkalOppdateres(
         identiteter: List<Identitet>
@@ -122,8 +142,13 @@ class IdentitetService(
         if (eksisterendeIdentitetRows.isEmpty()) {
             logger.info("Ignorer tombstone-melding fordi ingen lagrede identiteter funnet")
         } else {
-            val rowsAffected = identitetRepository.updateStatusByAktorId(
+            konfliktService.slettVentendeKonflikter(
+                aktorId = aktorId
+            )
+
+            val rowsAffected = identitetRepository.updateGjeldendeAndStatusByAktorId(
                 aktorId = aktorId,
+                gjeldende = false,
                 status = IdentitetStatus.SLETTET
             )
             logger.info("Mottok tombstone-melding, soft-slettet {} tilhørende identiteter", rowsAffected)
@@ -158,7 +183,7 @@ class IdentitetService(
     }
 
     @WithSpan
-    fun identiteterSkalSplittes(
+    private fun identiteterSkalSplittes(
         aktorId: String,
         identiteter: List<Identitet>,
         sourceTimestamp: Instant,
@@ -167,7 +192,7 @@ class IdentitetService(
         val aktorIdSet = eksisterendeIdentitetRows
             .map { it.aktorId }
             .toSet()
-        identitetRepository.updateStatusByAktorIdList(
+        identitetRepository.updateStatusByNotSlettetAndAktorIdList(
             status = IdentitetStatus.SPLITT,
             aktorIdList = aktorIdSet
         )
@@ -180,7 +205,7 @@ class IdentitetService(
     }
 
     @WithSpan
-    fun identiteterSkalMerges(
+    private fun identiteterSkalMerges(
         aktorId: String,
         identiteter: List<Identitet>,
         sourceTimestamp: Instant,
@@ -213,7 +238,7 @@ class IdentitetService(
     }
 
     @WithSpan
-    fun identiteterSkalEndres(
+    private fun identiteterSkalEndres(
         aktorId: String,
         identiteter: List<Identitet>,
         sourceTimestamp: Instant,
@@ -278,8 +303,8 @@ class IdentitetService(
                 )
             }
 
-        return identiteter
-            .map { identitet ->
+        identiteter
+            .forEach { identitet ->
                 if (eksisterendeIdentitetSet.contains(identitet.identitet)) {
                     val rowsAffected = identitetRepository.updateByIdentitet(
                         identitet = identitet.identitet,
@@ -311,10 +336,11 @@ class IdentitetService(
                         rowsAffected
                     )
                 }
-
-                identitetRepository.getByIdentitet(identitet.identitet)
-                    ?.asIdentitet() ?: throw IdentitetIkkeFunnetException("Identitet ikke funnet")
             }
+
+        return identitetRepository.findByAktorId(aktorId)
+            .filter { it.status != IdentitetStatus.SLETTET }
+            .map { it.asIdentitet() }
             .toMutableList()
             .apply { add(arbeidssoekerId.asIdentitet(gjeldende = true)) }
     }

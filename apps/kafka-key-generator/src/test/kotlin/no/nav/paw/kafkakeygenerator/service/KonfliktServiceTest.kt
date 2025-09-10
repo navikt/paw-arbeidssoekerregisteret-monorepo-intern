@@ -15,7 +15,6 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerSammenslaatt
 import no.nav.paw.identitet.internehendelser.IdentitetHendelse
 import no.nav.paw.identitet.internehendelser.IdentiteterMergetHendelse
-import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafka.producer.sendBlocking
 import no.nav.paw.kafkakeygenerator.api.v2.publicTopicKeyFunction
@@ -60,11 +59,11 @@ class KonfliktServiceTest : FreeSpec({
         "Tester for merge-konflikter" - {
             "Skal håndtere merge-konflikt uten perioder" {
                 // GIVEN
-                val aktorId = Identitet(TestData.aktorId1, IdentitetType.AKTORID, true)
-                val npId = Identitet(TestData.npId1, IdentitetType.NPID, true)
-                val dnr = Identitet(TestData.dnr1, IdentitetType.FOLKEREGISTERIDENT, true)
-                val fnr1 = Identitet(TestData.fnr1_1, IdentitetType.FOLKEREGISTERIDENT, true)
-                val fnr2 = Identitet(TestData.fnr1_2, IdentitetType.FOLKEREGISTERIDENT, true)
+                val aktorId = TestData.aktorId1
+                val npId = TestData.npId1
+                val dnr = TestData.dnr1
+                val fnr1 = TestData.fnr1_1
+                val fnr2 = TestData.fnr1_2
                 val arbeidssoekerId1 = kafkaKeysRepository.opprett(dnr.asIdentitetsnummer())
                     .fold(onLeft = { null }, onRight = { it })!!.value
                 val arbeidssoekerId2 = kafkaKeysRepository.opprett(fnr1.asIdentitetsnummer())
@@ -284,11 +283,11 @@ class KonfliktServiceTest : FreeSpec({
 
             "Skal håndtere merge-konflikt med kun avsluttede perioder" {
                 // GIVEN
-                val aktorId = Identitet(TestData.aktorId2, IdentitetType.AKTORID, true)
-                val npId = Identitet(TestData.npId2, IdentitetType.NPID, true)
-                val dnr = Identitet(TestData.dnr2, IdentitetType.FOLKEREGISTERIDENT, true)
-                val fnr1 = Identitet(TestData.fnr2_1, IdentitetType.FOLKEREGISTERIDENT, true)
-                val fnr2 = Identitet(TestData.fnr2_2, IdentitetType.FOLKEREGISTERIDENT, true)
+                val aktorId = TestData.aktorId2
+                val npId = TestData.npId2
+                val dnr = TestData.dnr2
+                val fnr1 = TestData.fnr2_1
+                val fnr2 = TestData.fnr2_2
                 val periodeId1 = TestData.periodeId2_1
                 val periodeId2 = TestData.periodeId2_2
                 val periodeId3 = TestData.periodeId2_3
@@ -528,11 +527,11 @@ class KonfliktServiceTest : FreeSpec({
 
             "Skal håndtere merge-konflikt med én aktiv periode" {
                 // GIVEN
-                val aktorId = Identitet(TestData.aktorId3, IdentitetType.AKTORID, true)
-                val npId = Identitet(TestData.npId3, IdentitetType.NPID, true)
-                val dnr = Identitet(TestData.dnr3, IdentitetType.FOLKEREGISTERIDENT, true)
-                val fnr1 = Identitet(TestData.fnr3_1, IdentitetType.FOLKEREGISTERIDENT, true)
-                val fnr2 = Identitet(TestData.fnr3_2, IdentitetType.FOLKEREGISTERIDENT, true)
+                val aktorId = TestData.aktorId3
+                val npId = TestData.npId3
+                val dnr = TestData.dnr3
+                val fnr1 = TestData.fnr3_1
+                val fnr2 = TestData.fnr3_2
                 val periodeId1 = TestData.periodeId3_1
                 val periodeId2 = TestData.periodeId3_2
                 val periodeId3 = TestData.periodeId3_3
@@ -775,11 +774,11 @@ class KonfliktServiceTest : FreeSpec({
 
             "Skal håndtere merge-konflikt med to aktive perioder" {
                 // GIVEN
-                val aktorId = Identitet(TestData.aktorId4, IdentitetType.AKTORID, true)
-                val npId = Identitet(TestData.npId4, IdentitetType.NPID, true)
-                val dnr = Identitet(TestData.dnr4, IdentitetType.FOLKEREGISTERIDENT, true)
-                val fnr1 = Identitet(TestData.fnr4_1, IdentitetType.FOLKEREGISTERIDENT, true)
-                val fnr2 = Identitet(TestData.fnr4_2, IdentitetType.FOLKEREGISTERIDENT, true)
+                val aktorId = TestData.aktorId4
+                val npId = TestData.npId4
+                val dnr = TestData.dnr4
+                val fnr1 = TestData.fnr4_1
+                val fnr2 = TestData.fnr4_2
                 val periodeId1 = TestData.periodeId4_1
                 val periodeId2 = TestData.periodeId4_2
                 val periodeId3 = TestData.periodeId4_3
@@ -943,11 +942,11 @@ class KonfliktServiceTest : FreeSpec({
 
             "Skal håndtere merge-konflikt uten lagrede identiteter" {
                 // GIVEN
-                val aktorId = Identitet(TestData.aktorId5, IdentitetType.AKTORID, true)
-                val npId = Identitet(TestData.npId5, IdentitetType.NPID, true)
-                val dnr = Identitet(TestData.dnr5, IdentitetType.FOLKEREGISTERIDENT, true)
-                val fnr1 = Identitet(TestData.fnr5_1, IdentitetType.FOLKEREGISTERIDENT, true)
-                val fnr2 = Identitet(TestData.fnr5_2, IdentitetType.FOLKEREGISTERIDENT, true)
+                val aktorId = TestData.aktorId5
+                val npId = TestData.npId5
+                val dnr = TestData.dnr5
+                val fnr1 = TestData.fnr5_1
+                val fnr2 = TestData.fnr5_2
                 val arbeidssoekerId1 = kafkaKeysRepository.opprett(aktorId.asIdentitetsnummer())
                     .fold(onLeft = { null }, onRight = { it })!!.value
                 val arbeidssoekerId2 = kafkaKeysRepository.opprett(dnr.asIdentitetsnummer())

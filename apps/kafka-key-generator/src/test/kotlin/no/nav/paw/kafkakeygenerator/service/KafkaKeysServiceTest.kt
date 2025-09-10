@@ -13,8 +13,6 @@ import io.mockk.every
 import io.mockk.verify
 import no.nav.paw.identitet.internehendelser.IdentitetHendelse
 import no.nav.paw.identitet.internehendelser.IdentiteterEndretHendelse
-import no.nav.paw.identitet.internehendelser.vo.Identitet
-import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafka.producer.sendBlocking
 import no.nav.paw.kafkakeygenerator.api.v2.hentLokaleAlias
 import no.nav.paw.kafkakeygenerator.context.TestContext
@@ -54,12 +52,12 @@ class KafkaKeysServiceTest : FreeSpec({
         "Test suite for hentEllerOpprett()" - {
             "Skal gi samme nøkkel for alle identer for person1" {
                 // GIVEN
-                val aktorId = Identitet(TestData.aktorId1, IdentitetType.AKTORID, true)
-                val npId = Identitet(TestData.npId1, IdentitetType.NPID, true)
-                val dnr = Identitet(TestData.dnr1, IdentitetType.FOLKEREGISTERIDENT, true)
-                val fnr1 = Identitet(TestData.fnr1_1, IdentitetType.FOLKEREGISTERIDENT, true)
-                val fnr2 = Identitet(TestData.fnr1_2, IdentitetType.FOLKEREGISTERIDENT, true)
-                val identiteter = listOf(aktorId.identitet, dnr.identitet, fnr1.identitet, fnr2.identitet)
+                val aktorId = TestData.aktorId1
+                val npId = TestData.npId1
+                val dnr = TestData.dnr1
+                val fnr1 = TestData.fnr1_1
+                val fnr2 = TestData.fnr1_2
+                val identiteter = listOf(aktorId, dnr, fnr1, fnr2).map { it.identitet }
                 val identitetProducerRecordList = mutableListOf<ProducerRecord<Long, IdentitetHendelse>>()
 
                 every {
@@ -127,12 +125,12 @@ class KafkaKeysServiceTest : FreeSpec({
 
             "Skal gi samme nøkkel for alle identer for person2" {
                 // GIVEN
-                val aktorId = Identitet(TestData.aktorId2, IdentitetType.AKTORID, true)
-                val npId = Identitet(TestData.npId2, IdentitetType.NPID, true)
-                val dnr = Identitet(TestData.dnr2, IdentitetType.FOLKEREGISTERIDENT, true)
-                val fnr1 = Identitet(TestData.fnr2_1, IdentitetType.FOLKEREGISTERIDENT, true)
-                val fnr2 = Identitet(TestData.fnr2_2, IdentitetType.FOLKEREGISTERIDENT, true)
-                val identiteter = listOf(aktorId.identitet, dnr.identitet, fnr1.identitet, fnr2.identitet)
+                val aktorId = TestData.aktorId2
+                val npId = TestData.npId2
+                val dnr = TestData.dnr2
+                val fnr1 = TestData.fnr2_1
+                val fnr2 = TestData.fnr2_2
+                val identiteter = listOf(aktorId, dnr, fnr1, fnr2).map { it.identitet }
                 val identitetProducerRecordList = mutableListOf<ProducerRecord<Long, IdentitetHendelse>>()
 
                 every {
@@ -185,10 +183,10 @@ class KafkaKeysServiceTest : FreeSpec({
             }
 
             "Skal gi forskjellig nøkkel for person1 og person2" {
-                hentEllerOpprett(TestData.aktorId1) shouldNotBe hentEllerOpprett(TestData.aktorId2)
-                hentEllerOpprett(TestData.dnr1) shouldNotBe hentEllerOpprett(TestData.dnr2)
-                hentEllerOpprett(TestData.dnr1) shouldNotBe hentEllerOpprett(TestData.aktorId2)
-                hentEllerOpprett(TestData.dnr2) shouldNotBe hentEllerOpprett(TestData.aktorId1)
+                hentEllerOpprett(TestData.aktorId1.identitet) shouldNotBe hentEllerOpprett(TestData.aktorId2.identitet)
+                hentEllerOpprett(TestData.dnr1.identitet) shouldNotBe hentEllerOpprett(TestData.dnr2.identitet)
+                hentEllerOpprett(TestData.dnr1.identitet) shouldNotBe hentEllerOpprett(TestData.aktorId2.identitet)
+                hentEllerOpprett(TestData.dnr2.identitet) shouldNotBe hentEllerOpprett(TestData.aktorId1.identitet)
 
                 verify { pawIdentitetProducerMock wasNot Called }
             }
@@ -197,7 +195,9 @@ class KafkaKeysServiceTest : FreeSpec({
                 val person3KafkaKeys = listOf(
                     TestData.dnr6,
                     TestData.fnr5_1
-                ).map(::hentEllerOpprett)
+                )
+                    .map { it.identitet }
+                    .map(::hentEllerOpprett)
                 person3KafkaKeys.filterIsInstance<Left<Failure>>().size shouldBe 2
                 person3KafkaKeys.filterIsInstance<Right<Long>>().size shouldBe 0
                 person3KafkaKeys.forEach {

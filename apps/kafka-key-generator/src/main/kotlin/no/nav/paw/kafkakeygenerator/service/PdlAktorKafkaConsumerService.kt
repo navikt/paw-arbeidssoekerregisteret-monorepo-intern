@@ -27,7 +27,9 @@ class PdlAktorKafkaConsumerService(
             } else {
                 logger.debug("Mottok {} aktor-meldinger fra {}", records.count(), topic)
                 transaction {
-                    records.forEach(::handleRecord)
+                    records
+                        .asSequence()
+                        .forEach(::handleRecord)
                 }
             }
         }
@@ -45,7 +47,7 @@ class PdlAktorKafkaConsumerService(
                 )
 
                 if (rowsAffected == 0) {
-                    logger.info(
+                    logger.warn(
                         "Ignorerer aktor-melding på grunn av at offset {} på partition {} fra topic {} ikke er over HWM",
                         record.offset(),
                         record.partition(),

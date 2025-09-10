@@ -33,6 +33,10 @@ import no.nav.paw.identitet.internehendelser.IdentiteterMergetHendelse
 import no.nav.paw.identitet.internehendelser.IdentiteterSlettetHendelse
 import no.nav.paw.identitet.internehendelser.IdentiteterSplittetHendelse
 import no.nav.paw.identitet.internehendelser.vo.Identitet
+import no.nav.paw.identitet.internehendelser.vo.IdentitetType
+import no.nav.paw.identitet.internehendelser.vo.IdentitetType.AKTORID
+import no.nav.paw.identitet.internehendelser.vo.IdentitetType.FOLKEREGISTERIDENT
+import no.nav.paw.identitet.internehendelser.vo.IdentitetType.NPID
 import no.nav.paw.kafkakeygenerator.model.HendelseRow
 import no.nav.paw.kafkakeygenerator.model.HendelseStatus
 import no.nav.paw.kafkakeygenerator.model.IdentitetRow
@@ -86,54 +90,73 @@ object TestData {
     const val key7 = -100007L
     const val key8 = -100008L
     const val key9 = -100009L
-    const val fnr1_1 = "01017012345"
-    const val fnr1_2 = "01017012346"
-    const val fnr2_1 = "02017012345"
-    const val fnr2_2 = "02017012346"
-    const val fnr3_1 = "03017012345"
-    const val fnr3_2 = "03017012346"
-    const val fnr4_1 = "04017012345"
-    const val fnr4_2 = "04017012346"
-    const val fnr5_1 = "05017012345"
-    const val fnr5_2 = "05017012346"
-    const val fnr6_1 = "06017012345"
-    const val fnr6_2 = "06017012346"
-    const val fnr7 = "07017012345"
-    const val fnr8 = "08017012345"
-    const val fnr9 = "09017012345"
-    const val fnr10 = "10017012345"
-    const val dnr1 = "41017012345"
-    const val dnr2 = "42017012345"
-    const val dnr3 = "43017012345"
-    const val dnr4 = "44017012345"
-    const val dnr5 = "45017012345"
-    const val dnr6 = "46017012345"
-    const val dnr7 = "47017012345"
-    const val dnr8 = "48017012345"
-    const val dnr9 = "49017012345"
-    const val aktorId1 = "200001017012345"
-    const val aktorId2 = "200002017012345"
-    const val aktorId3 = "200003017012345"
-    const val aktorId4 = "200004017012345"
-    const val aktorId5 = "200005017012345"
-    const val aktorId6 = "200006017012345"
-    const val aktorId7_1 = "200007017012345"
-    const val aktorId7_2 = "200007017012346"
-    const val aktorId8_1 = "200008017012345"
-    const val aktorId8_2 = "200008017012346"
-    const val aktorId9 = "200009017012345"
-    const val aktorId10 = "200010017012345"
-    const val npId1 = "900001017012345"
-    const val npId2 = "900002017012345"
-    const val npId3 = "900003017012345"
-    const val npId4 = "900004017012345"
-    const val npId5 = "900005017012345"
-    const val npId6 = "900006017012345"
-    const val npId7 = "900007017012345"
-    const val npId8_1 = "900008017012345"
-    const val npId8_2 = "900008017012346"
-    const val npId9 = "900009017012345"
-    const val npId10 = "900010017012345"
+    const val arbeidssoekerId1 = 100001L
+    const val arbeidssoekerId2 = 100002L
+    const val arbeidssoekerId3 = 100003L
+    const val arbeidssoekerId4 = 100004L
+    const val arbeidssoekerId5 = 100005L
+    const val arbeidssoekerId6 = 100006L
+    const val arbeidssoekerId7 = 100007L
+    const val arbeidssoekerId8 = 100008L
+    const val arbeidssoekerId9 = 100009L
+    val arbId1 = Identitet(identitet = "$arbeidssoekerId1", type = IdentitetType.ARBEIDSSOEKERID, gjeldende = true)
+    val arbId2 = Identitet(identitet = "$arbeidssoekerId2", type = IdentitetType.ARBEIDSSOEKERID, gjeldende = true)
+    val arbId3 = Identitet(identitet = "$arbeidssoekerId3", type = IdentitetType.ARBEIDSSOEKERID, gjeldende = true)
+    val arbId4 = Identitet(identitet = "$arbeidssoekerId4", type = IdentitetType.ARBEIDSSOEKERID, gjeldende = true)
+    val arbId5 = Identitet(identitet = "$arbeidssoekerId5", type = IdentitetType.ARBEIDSSOEKERID, gjeldende = true)
+    val arbId6 = Identitet(identitet = "$arbeidssoekerId6", type = IdentitetType.ARBEIDSSOEKERID, gjeldende = true)
+    val arbId7 = Identitet(identitet = "$arbeidssoekerId7", type = IdentitetType.ARBEIDSSOEKERID, gjeldende = true)
+    val arbId8 = Identitet(identitet = "$arbeidssoekerId8", type = IdentitetType.ARBEIDSSOEKERID, gjeldende = true)
+    val arbId9 = Identitet(identitet = "$arbeidssoekerId9", type = IdentitetType.ARBEIDSSOEKERID, gjeldende = true)
+    val dnr1 = Identitet(identitet = "41017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val dnr2 = Identitet(identitet = "42017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val dnr3 = Identitet(identitet = "43017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val dnr4 = Identitet(identitet = "44017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val dnr5 = Identitet(identitet = "45017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val dnr6 = Identitet(identitet = "46017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val dnr7 = Identitet(identitet = "47017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val dnr8 = Identitet(identitet = "48017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val dnr9 = Identitet(identitet = "49017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr1_1 = Identitet(identitet = "01017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr1_2 = Identitet(identitet = "01017012346", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr2_1 = Identitet(identitet = "02017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr2_2 = Identitet(identitet = "02017012346", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr3_1 = Identitet(identitet = "03017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr3_2 = Identitet(identitet = "03017012346", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr4_1 = Identitet(identitet = "04017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr4_2 = Identitet(identitet = "04017012346", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr5_1 = Identitet(identitet = "05017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr5_2 = Identitet(identitet = "05017012346", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr6_1 = Identitet(identitet = "06017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr6_2 = Identitet(identitet = "06017012346", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr7_1 = Identitet(identitet = "07017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr7_2 = Identitet(identitet = "07017012346", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr8 = Identitet(identitet = "08017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr9 = Identitet(identitet = "09017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr10 = Identitet(identitet = "10017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val aktorId1 = Identitet(identitet = "200001017012345", type = AKTORID, gjeldende = true)
+    val aktorId2 = Identitet(identitet = "200002017012345", type = AKTORID, gjeldende = true)
+    val aktorId3 = Identitet(identitet = "200003017012345", type = AKTORID, gjeldende = true)
+    val aktorId4 = Identitet(identitet = "200004017012345", type = AKTORID, gjeldende = true)
+    val aktorId5 = Identitet(identitet = "200005017012345", type = AKTORID, gjeldende = true)
+    val aktorId6 = Identitet(identitet = "200006017012345", type = AKTORID, gjeldende = true)
+    val aktorId7_1 = Identitet(identitet = "200007017012345", type = AKTORID, gjeldende = true)
+    val aktorId7_2 = Identitet(identitet = "200007017012346", type = AKTORID, gjeldende = true)
+    val aktorId8_1 = Identitet(identitet = "200008017012345", type = AKTORID, gjeldende = true)
+    val aktorId8_2 = Identitet(identitet = "200008017012346", type = AKTORID, gjeldende = true)
+    val aktorId9 = Identitet(identitet = "200009017012345", type = AKTORID, gjeldende = true)
+    val aktorId10 = Identitet(identitet = "200010017012345", type = AKTORID, gjeldende = true)
+    val npId1 = Identitet(identitet = "900001017012345", type = NPID, gjeldende = true)
+    val npId2 = Identitet(identitet = "900002017012345", type = NPID, gjeldende = true)
+    val npId3 = Identitet(identitet = "900003017012345", type = NPID, gjeldende = true)
+    val npId4 = Identitet(identitet = "900004017012345", type = NPID, gjeldende = true)
+    val npId5 = Identitet(identitet = "900005017012345", type = NPID, gjeldende = true)
+    val npId6 = Identitet(identitet = "900006017012345", type = NPID, gjeldende = true)
+    val npId7 = Identitet(identitet = "900007017012345", type = NPID, gjeldende = true)
+    val npId8_1 = Identitet(identitet = "900008017012345", type = NPID, gjeldende = true)
+    val npId8_2 = Identitet(identitet = "900008017012346", type = NPID, gjeldende = true)
+    val npId9 = Identitet(identitet = "900009017012345", type = NPID, gjeldende = true)
+    val npId10 = Identitet(identitet = "900010017012345", type = NPID, gjeldende = true)
     val periodeId1_1 = UUID.fromString("4c0cb50a-3b4a-45df-b5b6-2cb45f04d19b")
     val periodeId1_2 = UUID.fromString("095639e7-4240-42eb-813b-a1c003556e74")
     val periodeId2_1 = UUID.fromString("0fc3de47-a6cd-4ad5-8433-53235738200d")
@@ -152,192 +175,126 @@ object TestData {
     val navName1 = "Kari Normann"
 
     val aktor1_1 = aktor(
-        listOf(
-            identifikator(ident = aktorId1, type = Type.AKTORID, gjeldende = true),
-            identifikator(ident = npId1, type = Type.NPID, gjeldende = true),
-            identifikator(ident = dnr1, type = Type.FOLKEREGISTERIDENT, gjeldende = true)
-        )
+        listOf(aktorId1, npId1, dnr1).map { it.asIdentifikator() }
     )
     val aktor1_2 = aktor(
-        listOf(
-            identifikator(ident = aktorId1, type = Type.AKTORID, gjeldende = true),
-            identifikator(ident = npId1, type = Type.NPID, gjeldende = true),
-            identifikator(ident = dnr1, type = Type.FOLKEREGISTERIDENT, gjeldende = false),
-            identifikator(ident = fnr1_1, type = Type.FOLKEREGISTERIDENT, gjeldende = true)
-        )
+        listOf(aktorId1, npId1, dnr1.copy(gjeldende = false), fnr1_1).map { it.asIdentifikator() }
     )
     val aktor2_1 = aktor(
-        listOf(
-            identifikator(ident = aktorId2, type = Type.AKTORID, gjeldende = true),
-            identifikator(ident = npId2, type = Type.NPID, gjeldende = true),
-            identifikator(ident = dnr2, type = Type.FOLKEREGISTERIDENT, gjeldende = true)
-        )
+        listOf(aktorId2, npId2, dnr2).map { it.asIdentifikator() }
     )
     val aktor2_2 = aktor(
-        listOf(
-            identifikator(ident = aktorId2, type = Type.AKTORID, gjeldende = true),
-            identifikator(ident = npId2, type = Type.NPID, gjeldende = true),
-            identifikator(ident = dnr2, type = Type.FOLKEREGISTERIDENT, gjeldende = false),
-            identifikator(ident = fnr2_1, type = Type.FOLKEREGISTERIDENT, gjeldende = true)
-        )
+        listOf(aktorId2, npId2, dnr2.copy(gjeldende = false), fnr2_1).map { it.asIdentifikator() }
     )
     val aktor3_1 = aktor(
-        listOf(
-            identifikator(ident = aktorId3, type = Type.AKTORID, gjeldende = true),
-            identifikator(ident = npId3, type = Type.NPID, gjeldende = true),
-            identifikator(ident = dnr3, type = Type.FOLKEREGISTERIDENT, gjeldende = true)
-        )
+        listOf(aktorId3, npId3, dnr3).map { it.asIdentifikator() }
     )
     val aktor3_2 = aktor(
-        listOf(
-            identifikator(ident = aktorId3, type = Type.AKTORID, gjeldende = true),
-            identifikator(ident = npId3, type = Type.NPID, gjeldende = true),
-            identifikator(ident = dnr3, type = Type.FOLKEREGISTERIDENT, gjeldende = false),
-            identifikator(ident = fnr3_1, type = Type.FOLKEREGISTERIDENT, gjeldende = false),
-            identifikator(ident = fnr3_2, type = Type.FOLKEREGISTERIDENT, gjeldende = true)
-        )
+        listOf(aktorId3, npId3, dnr3.copy(gjeldende = false), fnr3_1.copy(gjeldende = false), fnr3_2)
+            .map { it.asIdentifikator() }
     )
     val aktor3_3 = aktor(
-        listOf(
-            identifikator(ident = aktorId3, type = Type.AKTORID, gjeldende = true),
-            identifikator(ident = npId3, type = Type.NPID, gjeldende = true),
-            identifikator(ident = dnr3, type = Type.FOLKEREGISTERIDENT, gjeldende = false),
-            identifikator(ident = fnr3_2, type = Type.FOLKEREGISTERIDENT, gjeldende = true)
-        )
+        listOf(aktorId3, npId3, dnr3.copy(gjeldende = false), fnr3_2).map { it.asIdentifikator() }
     )
     val aktor4_1 = aktor(
-        listOf(
-            identifikator(ident = aktorId4, type = Type.AKTORID, gjeldende = true),
-            identifikator(ident = npId4, type = Type.NPID, gjeldende = true),
-            identifikator(ident = dnr4, type = Type.FOLKEREGISTERIDENT, gjeldende = true)
-        )
+        listOf(aktorId4, npId4, dnr4).map { it.asIdentifikator() }
     )
     val aktor4_2 = aktor(
-        listOf(
-            identifikator(ident = aktorId4, type = Type.AKTORID, gjeldende = true),
-            identifikator(ident = npId4, type = Type.NPID, gjeldende = true),
-            identifikator(ident = dnr4, type = Type.FOLKEREGISTERIDENT, gjeldende = false),
-            identifikator(ident = fnr4_1, type = Type.FOLKEREGISTERIDENT, gjeldende = true)
-        )
+        listOf(aktorId4, npId4, dnr4.copy(gjeldende = false), fnr4_1).map { it.asIdentifikator() }
     )
     val aktor4_3 = aktor(
-        listOf(
-            identifikator(ident = aktorId4, type = Type.AKTORID, gjeldende = true),
-            identifikator(ident = npId4, type = Type.NPID, gjeldende = true),
-            identifikator(ident = dnr4, type = Type.FOLKEREGISTERIDENT, gjeldende = false),
-            identifikator(ident = fnr4_2, type = Type.FOLKEREGISTERIDENT, gjeldende = true)
-        )
+        listOf(aktorId4, npId4, dnr4.copy(gjeldende = false), fnr4_2).map { it.asIdentifikator() }
     )
     val aktor7_1 = aktor(
-        listOf(
-            identifikator(ident = aktorId7_1, type = Type.AKTORID, gjeldende = true),
-            identifikator(ident = npId7, type = Type.NPID, gjeldende = true),
-            identifikator(ident = dnr7, type = Type.FOLKEREGISTERIDENT, gjeldende = false),
-            identifikator(ident = fnr7, type = Type.FOLKEREGISTERIDENT, gjeldende = true)
-        )
+        listOf(aktorId7_1, npId7, dnr7.copy(gjeldende = false), fnr7_1).map { it.asIdentifikator() }
     )
     val aktor7_2 = aktor(
-        listOf(
-            identifikator(ident = aktorId7_2, type = Type.AKTORID, gjeldende = true),
-            identifikator(ident = fnr7, type = Type.FOLKEREGISTERIDENT, gjeldende = true)
-        )
+        listOf(aktorId7_2, fnr7_1).map { it.asIdentifikator() }
     )
     val aktor8_1 = aktor(
-        listOf(
-            identifikator(ident = aktorId8_1, type = Type.AKTORID, gjeldende = true),
-            identifikator(ident = npId8_1, type = Type.NPID, gjeldende = true),
-            identifikator(ident = dnr8, type = Type.FOLKEREGISTERIDENT, gjeldende = true)
-        )
+        listOf(aktorId8_1, npId8_1, dnr8).map { it.asIdentifikator() }
     )
     val aktor8_2 = aktor(
-        listOf(
-            identifikator(ident = aktorId8_2, type = Type.AKTORID, gjeldende = true),
-            identifikator(ident = npId8_2, type = Type.NPID, gjeldende = true),
-            identifikator(ident = fnr8, type = Type.FOLKEREGISTERIDENT, gjeldende = true)
-        )
+        listOf(aktorId8_2, npId8_2, fnr8).map { it.asIdentifikator() }
     )
     val aktor8_3 = aktor(
         listOf(
-            identifikator(ident = aktorId8_1, type = Type.AKTORID, gjeldende = false),
-            identifikator(ident = aktorId8_2, type = Type.AKTORID, gjeldende = true),
-            identifikator(ident = npId8_1, type = Type.NPID, gjeldende = false),
-            identifikator(ident = npId8_2, type = Type.NPID, gjeldende = true),
-            identifikator(ident = dnr8, type = Type.FOLKEREGISTERIDENT, gjeldende = false),
-            identifikator(ident = fnr8, type = Type.FOLKEREGISTERIDENT, gjeldende = true)
-        )
+            aktorId8_1.copy(gjeldende = false),
+            aktorId8_2,
+            npId8_1.copy(gjeldende = false),
+            npId8_2,
+            dnr8.copy(gjeldende = false),
+            fnr8
+        ).map { it.asIdentifikator() }
     )
     val aktor10 = aktor(
-        listOf(
-            identifikator(ident = aktorId10, type = Type.AKTORID, gjeldende = true),
-            identifikator(ident = npId10, type = Type.NPID, gjeldende = true),
-            identifikator(ident = fnr10, type = Type.FOLKEREGISTERIDENT, gjeldende = true)
-        )
+        listOf(aktorId10, npId10, fnr10).map { it.asIdentifikator() }
     )
 
     val periode1_1 = periodeStartet(
         periodeId = periodeId1_1,
-        identitetsnummer = dnr1,
+        identitetsnummer = dnr1.identitet,
         startet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(30)))
     )
     val periode2_1 = periodeAvsluttet(
         periodeId = periodeId2_1,
-        identitetsnummer = dnr2,
+        identitetsnummer = dnr2.identitet,
         startet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(150))),
         avsluttet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(120)))
     )
     val periode2_2 = periodeAvsluttet(
         periodeId = periodeId2_2,
-        identitetsnummer = fnr2_1,
+        identitetsnummer = fnr2_1.identitet,
         startet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(90))),
         avsluttet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(60)))
     )
     val periode2_3 = periodeStartet(
         periodeId = periodeId2_3,
-        identitetsnummer = fnr2_2,
+        identitetsnummer = fnr2_2.identitet,
         startet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(30)))
     )
     val periode3_1 = periodeStartet(
         periodeId = periodeId3_1,
-        identitetsnummer = dnr3,
+        identitetsnummer = dnr3.identitet,
         startet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(60)))
     )
     val periode3_2 = periodeStartet(
         periodeId = periodeId3_2,
-        identitetsnummer = fnr3_1,
+        identitetsnummer = fnr3_1.identitet,
         startet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(30)))
     )
     val periode4_1 = periodeAvsluttet(
         periodeId = periodeId4_1,
-        identitetsnummer = dnr4,
+        identitetsnummer = dnr4.identitet,
         startet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(120))),
         avsluttet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(90)))
     )
     val periode4_2 = periodeAvsluttet(
         periodeId = periodeId4_2,
-        identitetsnummer = dnr4,
+        identitetsnummer = dnr4.identitet,
         startet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(60))),
         avsluttet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(30)))
     )
     val periode5_1 = periodeAvsluttet(
         periodeId = periodeId5_1,
-        identitetsnummer = dnr5,
+        identitetsnummer = dnr5.identitet,
         startet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(120))),
         avsluttet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(90)))
     )
     val periode5_2 = periodeAvsluttet(
         periodeId = periodeId5_2,
-        identitetsnummer = fnr5_1,
+        identitetsnummer = fnr5_1.identitet,
         startet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(60))),
         avsluttet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(30)))
     )
     val periode6_1 = periodeAvsluttet(
         periodeId = periodeId6,
-        identitetsnummer = dnr6,
+        identitetsnummer = dnr6.identitet,
         startet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(120)))
     )
     val periode6_2 = periodeAvsluttet(
         periodeId = periodeId6,
-        identitetsnummer = fnr6_1,
+        identitetsnummer = fnr6_1.identitet,
         startet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(120))),
         avsluttet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(90)))
     )
@@ -448,13 +405,13 @@ object TestData {
 
     fun periodeStartet(
         periodeId: UUID = periodeId1_1,
-        identitetsnummer: String = fnr1_1,
+        identitetsnummer: String = fnr1_1.identitet,
         startet: no.nav.paw.arbeidssokerregisteret.api.v1.Metadata = periodeMetadata()
     ): Periode = Periode(periodeId, identitetsnummer, startet, null)
 
     fun periodeAvsluttet(
         periodeId: UUID = periodeId1_1,
-        identitetsnummer: String = fnr1_1,
+        identitetsnummer: String = fnr1_1.identitet,
         startet: no.nav.paw.arbeidssokerregisteret.api.v1.Metadata = periodeMetadata(
             tidspunkt = Instant.now().minus(Duration.ofDays(30))
         ),
@@ -462,18 +419,13 @@ object TestData {
     ): Periode = Periode(periodeId, identitetsnummer, startet, avsluttet)
 
     fun identifikator(
-        ident: String = fnr1_1,
+        ident: String = fnr1_1.identitet,
         type: Type = Type.FOLKEREGISTERIDENT,
         gjeldende: Boolean = true
     ): Identifikator = Identifikator(ident, type, gjeldende)
 
     fun aktor(
-        identifikatorer: List<Identifikator> = listOf(
-            identifikator(ident = fnr1_1, type = Type.FOLKEREGISTERIDENT, gjeldende = true),
-            identifikator(ident = dnr1, type = Type.FOLKEREGISTERIDENT, gjeldende = false),
-            identifikator(ident = aktorId1, type = Type.AKTORID, gjeldende = true),
-            identifikator(ident = npId1, type = Type.NPID, gjeldende = true)
-        )
+        identifikatorer: List<Identifikator> = aktor1_2.identifikatorer
     ): Aktor = Aktor(identifikatorer)
 
     fun <K, V> List<ConsumerRecord<K, V>>.asRecords(): ConsumerRecords<K, V> {
@@ -506,21 +458,30 @@ object TestData {
             ))
     }
 
+    fun IdentitetType.asType(): Type = when (this) {
+        NPID -> Type.NPID
+        AKTORID -> Type.AKTORID
+        FOLKEREGISTERIDENT -> Type.FOLKEREGISTERIDENT
+        else -> throw IllegalArgumentException("Ukjent type")
+    }
+
+    fun Identitet.asIdentifikator(): Identifikator = Identifikator(identitet, type.asType(), gjeldende)
+
     fun HentIdenter.asResponse(): KotlinxGraphQLResponse<HentIdenter.Result> = when (variables.ident) {
-        dnr1 -> aktor1_1.asGraphQLResponse()
-        fnr1_1 -> aktor1_1.asGraphQLResponse()
-        fnr1_2 -> aktor1_1.asGraphQLResponse()
-        aktorId1 -> aktor1_1.asGraphQLResponse()
-        dnr2 -> aktor2_1.asGraphQLResponse()
-        fnr2_1 -> aktor2_1.asGraphQLResponse()
-        fnr2_2 -> aktor2_1.asGraphQLResponse()
-        aktorId2 -> aktor2_1.asGraphQLResponse()
-        dnr3 -> aktor3_1.asGraphQLResponse()
-        fnr3_1 -> aktor3_1.asGraphQLResponse()
-        fnr3_2 -> aktor3_1.asGraphQLResponse()
-        aktorId3 -> aktor3_1.asGraphQLResponse()
-        dnr4 -> aktor4_1.asGraphQLResponse()
-        fnr4_1 -> aktor4_2.asGraphQLResponse()
+        dnr1.identitet -> aktor1_1.asGraphQLResponse()
+        fnr1_1.identitet -> aktor1_1.asGraphQLResponse()
+        fnr1_2.identitet -> aktor1_1.asGraphQLResponse()
+        aktorId1.identitet -> aktor1_1.asGraphQLResponse()
+        dnr2.identitet -> aktor2_1.asGraphQLResponse()
+        fnr2_1.identitet -> aktor2_1.asGraphQLResponse()
+        fnr2_2.identitet -> aktor2_1.asGraphQLResponse()
+        aktorId2.identitet -> aktor2_1.asGraphQLResponse()
+        dnr3.identitet -> aktor3_1.asGraphQLResponse()
+        fnr3_1.identitet -> aktor3_1.asGraphQLResponse()
+        fnr3_2.identitet -> aktor3_1.asGraphQLResponse()
+        aktorId3.identitet -> aktor3_1.asGraphQLResponse()
+        dnr4.identitet -> aktor4_1.asGraphQLResponse()
+        fnr4_1.identitet -> aktor4_2.asGraphQLResponse()
         else -> aktor(identifikatorer = emptyList()).asGraphQLResponse()
     }
 
