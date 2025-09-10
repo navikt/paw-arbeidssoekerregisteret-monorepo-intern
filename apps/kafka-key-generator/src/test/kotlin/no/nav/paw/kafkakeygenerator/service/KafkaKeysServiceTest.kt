@@ -87,6 +87,7 @@ class KafkaKeysServiceTest : FreeSpec({
                         .map { it.identitetsnummer } shouldContainOnly identiteter
                 }
 
+                /*
                 val arbeidssoekerId = arbeidssoekerIdList.first().value
                 val arbId = arbeidssoekerId.asIdentitet(gjeldende = true)
                 val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
@@ -121,6 +122,7 @@ class KafkaKeysServiceTest : FreeSpec({
                     hendelse.identiteter shouldContainOnly listOf(aktorId, npId, dnr, arbId)
                     hendelse.tidligereIdentiteter shouldBe emptyList()
                 }
+                 */
             }
 
             "Skal gi samme nøkkel for alle identer for person2" {
@@ -146,6 +148,7 @@ class KafkaKeysServiceTest : FreeSpec({
                 val arbeidssoekerIdList = kafkaKeys.filterIsInstance<Right<ArbeidssoekerId>>().map { it.right }
                 arbeidssoekerIdList.distinct().size shouldBe 1
 
+                /*
                 val arbeidssoekerId = arbeidssoekerIdList.first().value
                 val arbId = arbeidssoekerId.asIdentitet(gjeldende = true)
                 val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
@@ -180,6 +183,7 @@ class KafkaKeysServiceTest : FreeSpec({
                     hendelse.identiteter shouldContainOnly listOf(aktorId, npId, dnr, arbId)
                     hendelse.tidligereIdentiteter shouldBe emptyList()
                 }
+                 */
             }
 
             "Skal gi forskjellig nøkkel for person1 og person2" {

@@ -46,6 +46,7 @@ class IdentitetService(
         identiteter: List<Identitet>
     ) {
         // Vil feile om person ikke har aktiv aktør-id, men det skal vel ikke kunne skje?
+        /*
         val aktorId = identiteter
             .filter { it.type == IdentitetType.AKTORID }
             .first { it.gjeldende }
@@ -55,6 +56,7 @@ class IdentitetService(
             identiteter = identiteter,
             sourceTimestamp = Instant.now()
         )
+         */
     }
 
     @WithSpan
@@ -114,7 +116,7 @@ class IdentitetService(
                 eksisterendeIdentitetRows = eksisterendeIdentitetRows,
                 eksisterendeKafkaKeyRows = eksisterendeKafkaKeyRows
             )
-        } else if (identiteter.size == eksisterendeIdentiteter.size && identiteter == eksisterendeIdentiteter) {
+        } else if (identiteter.size == eksisterendeIdentiteter.size && identiteter.containsAll(eksisterendeIdentiteter)) {
             logger.info(
                 "Ignorer aktor-melding fordi alle identiteter eksisterer allerede ({} identiteter)",
                 identiteter.size
