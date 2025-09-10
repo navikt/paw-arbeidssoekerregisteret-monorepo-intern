@@ -46,7 +46,6 @@ class IdentitetService(
         identiteter: List<Identitet>
     ) {
         // Vil feile om person ikke har aktiv aktør-id, men det skal vel ikke kunne skje?
-        /*
         val aktorId = identiteter
             .filter { it.type == IdentitetType.AKTORID }
             .first { it.gjeldende }
@@ -56,7 +55,6 @@ class IdentitetService(
             identiteter = identiteter,
             sourceTimestamp = Instant.now()
         )
-         */
     }
 
     @WithSpan
