@@ -22,7 +22,7 @@ spec:
     - name: KAFKA_TOPIC_PDL_AKTOR
       value: "pdl.aktor-v2"
     - name: KAFKA_TOPIC_PAW_IDENTITETER
-      value: "paw.arbeidssoker-identiteter-beta-v5"
+      value: "paw.arbeidssoker-identiteter-v1"
     - name: KAFKA_CONSUMER_GROUP_ID_PREFIX_PAW_HENDELSESLOGG
       value: "paw-kafka-key-generator"
     - name: KAFKA_CONSUMER_GROUP_ID_VERSION_PAW_HENDELSESLOGG

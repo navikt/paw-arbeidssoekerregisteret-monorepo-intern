@@ -1,8 +1,11 @@
 package no.nav.paw.kafkakeygenerator.api.v2
 
 import io.kotest.core.spec.style.FreeSpec
+import io.kotest.matchers.collections.shouldContainOnly
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.ktor.client.call.body
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.post
@@ -14,11 +17,16 @@ import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.verify
 import no.nav.paw.identitet.internehendelser.IdentitetHendelse
+import no.nav.paw.identitet.internehendelser.IdentiteterEndretHendelse
 import no.nav.paw.kafka.producer.sendBlocking
 import no.nav.paw.kafkakeygenerator.context.TestContext
 import no.nav.paw.kafkakeygenerator.context.TestContext.Companion.setJsonBody
+import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
+import no.nav.paw.kafkakeygenerator.model.asIdentitet
+import no.nav.paw.kafkakeygenerator.test.IdentitetWrapper
 import no.nav.paw.kafkakeygenerator.test.TestData
 import no.nav.paw.kafkakeygenerator.test.TestData.asIdentitetsnummer
+import no.nav.paw.kafkakeygenerator.test.asWrapper
 import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
@@ -80,7 +88,6 @@ class ApiEndepunktV2Test : FreeSpec({
                 kafkaKeyRow1!!.identitetsnummer shouldBe dnr.identitet
                 kafkaKeyRow1.arbeidssoekerId shouldBe body1.id
 
-                /*
                 val identitetRow1 = identitetRepository.getByIdentitet(dnr.identitet)
                 identitetRow1 shouldNotBe null
                 identitetRow1!!.aktorId shouldBe aktorId.identitet
@@ -107,7 +114,6 @@ class ApiEndepunktV2Test : FreeSpec({
                         status = IdentitetStatus.AKTIV
                     )
                 )
-                 */
 
                 // WHEN
                 val response2 = client.post("/api/v2/hentEllerOpprett") {
@@ -126,7 +132,6 @@ class ApiEndepunktV2Test : FreeSpec({
                 kafkaKeyRow2!!.identitetsnummer shouldBe fnr.identitet
                 kafkaKeyRow2.arbeidssoekerId shouldBe body2.id
 
-                /*
                 val identitetRow2 = identitetRepository.getByIdentitet(fnr.identitet)
                 identitetRow2 shouldNotBe null
                 identitetRow2!!.aktorId shouldBe aktorId.identitet
@@ -190,7 +195,6 @@ class ApiEndepunktV2Test : FreeSpec({
                         body1.id.asIdentitet(gjeldende = true)
                     )
                 }
-                 */
             }
         }
     }
