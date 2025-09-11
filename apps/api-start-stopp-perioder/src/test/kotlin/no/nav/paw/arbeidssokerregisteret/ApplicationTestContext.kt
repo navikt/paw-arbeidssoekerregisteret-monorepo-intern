@@ -3,7 +3,6 @@ package no.nav.paw.arbeidssokerregisteret
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.nimbusds.jwt.SignedJWT
-import io.kotest.assertions.fail
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -44,6 +43,7 @@ import no.nav.paw.pdl.graphql.generated.hentperson.UtflyttingFraNorge
 import no.nav.paw.pdl.graphql.generated.hentperson.Vegadresse
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import org.apache.kafka.clients.producer.ProducerRecord
+import kotlin.test.DefaultAsserter.fail
 
 
 fun HttpClientConfig<out io.ktor.client.engine.HttpClientEngineConfig>.defaultConfig() {
@@ -58,9 +58,9 @@ fun HttpClientConfig<out io.ktor.client.engine.HttpClientEngineConfig>.defaultCo
 
 fun MockOAuth2Server.personToken(id: String, acr: String = "idporten-loa-high"): Pair<Map<String, Any>, SignedJWT> =
     mapOf(
-    "acr" to acr,
-    "pid" to id
-).let { it.plus("issuer" to "tokenx") to issueToken(claims = it) }
+        "acr" to acr,
+        "pid" to id
+    ).let { it.plus("issuer" to "tokenx") to issueToken(claims = it) }
 
 fun MockOAuth2Server.ansattToken(navAnsatt: NavAnsatt): Pair<Map<String, Any>, SignedJWT> =
     mapOf(

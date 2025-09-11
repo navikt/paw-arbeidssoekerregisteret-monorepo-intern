@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssoeker.synk.test
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.kotest.common.runBlocking
+import kotlinx.coroutines.runBlocking
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.OutgoingContent
 import io.ktor.utils.io.ByteReadChannel

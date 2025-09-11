@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.testdata
 
-import io.kotest.common.runBlocking
+import kotlinx.coroutines.runBlocking
 import io.ktor.http.HttpStatusCode
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
 import no.nav.paw.arbeidssokerregisteret.bosatt

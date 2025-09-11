@@ -1,6 +1,5 @@
 package no.nav.paw.kafkakeymaintenance.pdlprocessor.lagring
 
-import io.kotest.assertions.fail
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.should
@@ -22,6 +21,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import kotlin.test.DefaultAsserter.fail
 
 class DataTableFunctionsKtTest : FreeSpec({
     "Database relaterte tester".config(enabled = true) - {

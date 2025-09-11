@@ -39,7 +39,7 @@ abstract class CsvReader<T : Any>(csvSchema: CsvSchema, kClass: KClass<T>) {
         .readerFor(kClass.java)
         .with(csvSchema)
 
-    fun readValues(uri: URI): MappingIterator<T> = csvReader.readValues(uri.toURL())
+    fun readValues(uri: URI): MappingIterator<T> = csvReader.readValues(uri.toURL().openStream())
     fun readValues(path: Path): MappingIterator<T> {
         if (!java.nio.file.Files.exists(path)) {
             throw IllegalStateException("$path ikke funnet")
