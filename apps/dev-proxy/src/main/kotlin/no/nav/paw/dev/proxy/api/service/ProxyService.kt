@@ -35,11 +35,10 @@ class ProxyService(private val httpClient: HttpClient) {
         val contentType = clientResponse.contentType()
         val body: JsonNode? = clientResponse.body<String>()
             .let {
+                logger.info("Received proxy response, status: {}", clientResponse.status)
                 if (it.isBlank()) {
-                    logger.info("Received proxy response, status: {}, no body", clientResponse.status)
                     null
-                } else if (contentType != null && contentType == ContentType.Application.Json) {
-                    logger.info("Received proxy response, status: {}, body:\n{}", clientResponse.status, it)
+                } else if (contentType != null && contentType.withoutParameters() == ContentType.Application.Json) {
                     objectMapper.readTree(it)
                 } else {
                     TextNode(it)
