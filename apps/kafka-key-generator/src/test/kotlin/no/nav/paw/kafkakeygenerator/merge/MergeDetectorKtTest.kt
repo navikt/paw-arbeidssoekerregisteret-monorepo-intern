@@ -1,17 +1,13 @@
 package no.nav.paw.kafkakeygenerator.merge
 
 import io.kotest.core.spec.style.FreeSpec
-import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.sequences.shouldBeEmpty
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
-import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
 import no.nav.paw.pdl.graphql.generated.enums.IdentGruppe
 import no.nav.paw.pdl.graphql.generated.hentidenter.IdentInformasjon
-import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
 
 class MergeDetectorKtTest : FreeSpec({
 

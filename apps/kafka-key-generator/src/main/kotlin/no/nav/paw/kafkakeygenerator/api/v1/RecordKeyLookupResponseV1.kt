@@ -1,6 +1,6 @@
-package no.nav.paw.kafkakeygenerator.api.recordkey
+package no.nav.paw.kafkakeygenerator.api.v1
 
-import no.nav.paw.kafkakeygenerator.vo.RecordKey
+import no.nav.paw.kafkakeygenerator.model.RecordKey
 
 data class RecordKeyLookupResponseV1(
     val key: Long

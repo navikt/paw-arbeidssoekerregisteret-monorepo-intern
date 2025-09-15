@@ -15,10 +15,10 @@ import no.nav.paw.kafkakeygenerator.utils.countKafkaReceived
 import no.nav.paw.kafkakeygenerator.utils.countKafkaUpdated
 import no.nav.paw.kafkakeygenerator.utils.countKafkaVerified
 import no.nav.paw.kafkakeygenerator.utils.kafkaHendelseConflictGauge
-import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.vo.Audit
-import no.nav.paw.kafkakeygenerator.vo.IdentitetStatus
-import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.model.Audit
+import no.nav.paw.kafkakeygenerator.model.KafkaKeyStatus
+import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
 import no.nav.paw.logging.logger.buildLogger
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -116,7 +116,7 @@ class PawHendelseKafkaConsumerService(
             val audit = Audit(
                 identitetsnummer = identitetsnummer,
                 tidligereArbeidssoekerId = fraArbeidssoekerId,
-                identitetStatus = IdentitetStatus.VERIFISERT,
+                identitetStatus = KafkaKeyStatus.VERIFISERT,
                 detaljer = "Ingen endringer"
             )
             kafkaKeysAuditRepository.insert(audit)
@@ -128,7 +128,7 @@ class PawHendelseKafkaConsumerService(
                 val audit = Audit(
                     identitetsnummer = identitetsnummer,
                     tidligereArbeidssoekerId = eksisterendeArbeidssoekerId,
-                    identitetStatus = IdentitetStatus.OPPDATERT,
+                    identitetStatus = KafkaKeyStatus.OPPDATERT,
                     detaljer = "Bytte av arbeidsøkerId fra ${eksisterendeArbeidssoekerId.value} til ${tilArbeidssoekerId.value}"
                 )
                 kafkaKeysAuditRepository.insert(audit)
@@ -138,7 +138,7 @@ class PawHendelseKafkaConsumerService(
                 val audit = Audit(
                     identitetsnummer = identitetsnummer,
                     tidligereArbeidssoekerId = eksisterendeArbeidssoekerId,
-                    identitetStatus = IdentitetStatus.IKKE_OPPDATERT,
+                    identitetStatus = KafkaKeyStatus.IKKE_OPPDATERT,
                     detaljer = "Kunne ikke bytte arbeidsøkerId fra ${eksisterendeArbeidssoekerId.value} til ${tilArbeidssoekerId.value}"
                 )
                 kafkaKeysAuditRepository.insert(audit)
@@ -149,11 +149,11 @@ class PawHendelseKafkaConsumerService(
             val audit = Audit(
                 identitetsnummer = identitetsnummer,
                 tidligereArbeidssoekerId = fraArbeidssoekerId,
-                identitetStatus = IdentitetStatus.KONFLIKT,
+                identitetStatus = KafkaKeyStatus.KONFLIKT,
                 detaljer = "Eksisterende arbeidsøkerId ${eksisterendeArbeidssoekerId.value} stemmer ikke med arbeidsøkerId fra hendelse ${fraArbeidssoekerId.value}"
             )
             kafkaKeysAuditRepository.insert(audit)
-            val conflicts = kafkaKeysAuditRepository.findByStatus(IdentitetStatus.KONFLIKT)
+            val conflicts = kafkaKeysAuditRepository.findByStatus(KafkaKeyStatus.KONFLIKT)
             meterRegistry.kafkaHendelseConflictGauge("paw.arbeidssoker-hendelseslogg-v1", conflicts.size)
         }
     }
@@ -170,7 +170,7 @@ class PawHendelseKafkaConsumerService(
             val audit = Audit(
                 identitetsnummer = identitetsnummer,
                 tidligereArbeidssoekerId = tilArbeidssoekerId,
-                identitetStatus = IdentitetStatus.OPPRETTET,
+                identitetStatus = KafkaKeyStatus.OPPRETTET,
                 detaljer = "Opprettet ident for arbeidsøkerId ${tilArbeidssoekerId.value}"
             )
             kafkaKeysAuditRepository.insert(audit)
@@ -180,7 +180,7 @@ class PawHendelseKafkaConsumerService(
             val audit = Audit(
                 identitetsnummer = identitetsnummer,
                 tidligereArbeidssoekerId = tilArbeidssoekerId,
-                identitetStatus = IdentitetStatus.IKKE_OPPRETTET,
+                identitetStatus = KafkaKeyStatus.IKKE_OPPRETTET,
                 detaljer = "Kunne ikke opprette ident for arbeidsøkerId ${tilArbeidssoekerId.value}"
             )
             kafkaKeysAuditRepository.insert(audit)

@@ -8,11 +8,11 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.kafkakeygenerator.context.TestContext
 import no.nav.paw.kafkakeygenerator.test.TestData
 import no.nav.paw.kafkakeygenerator.test.TestData.asHendelseRecords
-import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.vo.FailureCode
-import no.nav.paw.kafkakeygenerator.vo.GenericFailure
-import no.nav.paw.kafkakeygenerator.vo.IdentitetStatus
-import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.model.FailureCode
+import no.nav.paw.kafkakeygenerator.model.GenericFailure
+import no.nav.paw.kafkakeygenerator.model.KafkaKeyStatus
+import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
 
 class PawHendelseKafkaConsumerServiceTest : FreeSpec({
     with(TestContext.buildWithPostgres()) {
@@ -120,10 +120,10 @@ class PawHendelseKafkaConsumerServiceTest : FreeSpec({
                         val audit2 = auditResult2.first()
                         val audit3 = auditResult3.first()
                         audit2.identitetsnummer shouldBe identitetsnummer2
-                        audit2.identitetStatus shouldBe IdentitetStatus.VERIFISERT
+                        audit2.identitetStatus shouldBe KafkaKeyStatus.VERIFISERT
                         audit2.tidligereArbeidssoekerId shouldBe fraArbeidssoekerId
                         audit3.identitetsnummer shouldBe identitetsnummer3
-                        audit3.identitetStatus shouldBe IdentitetStatus.KONFLIKT
+                        audit3.identitetStatus shouldBe KafkaKeyStatus.KONFLIKT
                         audit3.tidligereArbeidssoekerId shouldBe fraArbeidssoekerId
                     }
                 }
@@ -171,13 +171,13 @@ class PawHendelseKafkaConsumerServiceTest : FreeSpec({
                     val audit2 = auditResult2.first()
                     val audit3 = auditResult3.first()
                     audit1.identitetsnummer shouldBe identitetsnummer1
-                    audit1.identitetStatus shouldBe IdentitetStatus.VERIFISERT
+                    audit1.identitetStatus shouldBe KafkaKeyStatus.VERIFISERT
                     audit1.tidligereArbeidssoekerId shouldBe fraArbeidssoekerId
                     audit2.identitetsnummer shouldBe identitetsnummer2
-                    audit2.identitetStatus shouldBe IdentitetStatus.OPPDATERT
+                    audit2.identitetStatus shouldBe KafkaKeyStatus.OPPDATERT
                     audit2.tidligereArbeidssoekerId shouldBe fraArbeidssoekerId
                     audit3.identitetsnummer shouldBe identitetsnummer3
-                    audit3.identitetStatus shouldBe IdentitetStatus.OPPRETTET
+                    audit3.identitetStatus shouldBe KafkaKeyStatus.OPPRETTET
                     audit3.tidligereArbeidssoekerId shouldBe tilArbeidssoekerId
                 }
             }

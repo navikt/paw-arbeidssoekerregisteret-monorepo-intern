@@ -1,10 +1,10 @@
-package no.nav.paw.kafkakeygenerator.api.recordkey.functions
+package no.nav.paw.kafkakeygenerator.api.v1.functions
 
 import io.ktor.http.HttpStatusCode
-import no.nav.paw.kafkakeygenerator.api.recordkey.FailureResponseV1
-import no.nav.paw.kafkakeygenerator.api.recordkey.Feilkode
-import no.nav.paw.kafkakeygenerator.vo.Failure
-import no.nav.paw.kafkakeygenerator.vo.FailureCode
+import no.nav.paw.kafkakeygenerator.api.v1.FailureResponseV1
+import no.nav.paw.kafkakeygenerator.api.v1.Feilkode
+import no.nav.paw.kafkakeygenerator.model.Failure
+import no.nav.paw.kafkakeygenerator.model.FailureCode
 
 fun mapFailure(result: Failure) =
     when (result.code()) {

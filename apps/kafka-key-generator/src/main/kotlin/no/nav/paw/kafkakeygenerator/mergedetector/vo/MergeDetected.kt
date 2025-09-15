@@ -1,7 +1,7 @@
 package no.nav.paw.kafkakeygenerator.mergedetector.vo
 
-import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
 
 interface MergeDetectorResult {
     val id: Identitetsnummer

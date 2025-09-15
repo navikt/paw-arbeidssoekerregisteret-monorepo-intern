@@ -1,7 +1,7 @@
 package no.nav.paw.kafkakeygenerator.api.v2
 
-import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.vo.RecordKey
+import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.model.RecordKey
 
 //Endring av denne verdien krever replay av eventlog til nye topics!!
 const val PUBLIC_KEY_MODULO_VALUE = 7_500

@@ -7,8 +7,8 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.health.route.healthRoutes
 import no.nav.paw.kafkakeygenerator.api.internal.mergeDetectorRoutes
-import no.nav.paw.kafkakeygenerator.api.recordkey.configureRecordKeyApi
-import no.nav.paw.kafkakeygenerator.api.v2.konfigurerApiV2
+import no.nav.paw.kafkakeygenerator.api.v1.apiV1Routes
+import no.nav.paw.kafkakeygenerator.api.v2.apiV2Routes
 import no.nav.paw.kafkakeygenerator.merge.MergeDetector
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
 import no.nav.paw.metrics.route.metricsRoutes
@@ -22,10 +22,10 @@ fun Application.configureRouting(
     routing {
         healthRoutes(healthIndicatorRepository)
         metricsRoutes(meterRegistry)
-        mergeDetectorRoutes(mergeDetector)
         swaggerUI(path = "docs", swaggerFile = "openapi/documentation.yaml")
         swaggerUI(path = "docs/record-key", swaggerFile = "openapi/record-key-api-spec.yaml")
-        konfigurerApiV2(kafkaKeysService)
-        configureRecordKeyApi(kafkaKeysService)
+        mergeDetectorRoutes(mergeDetector)
+        apiV1Routes(kafkaKeysService)
+        apiV2Routes(kafkaKeysService)
     }
 }

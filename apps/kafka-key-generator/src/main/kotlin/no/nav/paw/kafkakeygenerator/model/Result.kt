@@ -1,4 +1,4 @@
-package no.nav.paw.kafkakeygenerator.vo
+package no.nav.paw.kafkakeygenerator.model
 
 import no.nav.paw.pdl.graphql.generated.hentidenter.IdentInformasjon
 

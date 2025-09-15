@@ -3,13 +3,13 @@ package no.nav.paw.kafkakeygenerator.merge
 import no.nav.paw.kafkakeygenerator.mergedetector.vo.MergeDetected
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
 import no.nav.paw.kafkakeygenerator.service.PdlService
-import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.vo.Either
-import no.nav.paw.kafkakeygenerator.vo.Failure
-import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
-import no.nav.paw.kafkakeygenerator.vo.Left
-import no.nav.paw.kafkakeygenerator.vo.Right
-import no.nav.paw.kafkakeygenerator.vo.right
+import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.model.Either
+import no.nav.paw.kafkakeygenerator.model.Failure
+import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.model.Left
+import no.nav.paw.kafkakeygenerator.model.Right
+import no.nav.paw.kafkakeygenerator.model.right
 import no.nav.paw.pdl.graphql.generated.hentidenter.IdentInformasjon
 import org.slf4j.LoggerFactory
 

@@ -1,15 +1,15 @@
-package no.nav.paw.kafkakeygenerator.api.recordkey.functions
+package no.nav.paw.kafkakeygenerator.api.v1.functions
 
 import io.ktor.http.HttpStatusCode
-import no.nav.paw.kafkakeygenerator.api.recordkey.RecordKeyResponse
-import no.nav.paw.kafkakeygenerator.api.recordkey.recordKeyLookupResponseV1
+import no.nav.paw.kafkakeygenerator.api.v1.RecordKeyResponse
+import no.nav.paw.kafkakeygenerator.api.v1.recordKeyLookupResponseV1
 import no.nav.paw.kafkakeygenerator.api.v2.publicTopicKeyFunction
-import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.vo.CallId
-import no.nav.paw.kafkakeygenerator.vo.Either
-import no.nav.paw.kafkakeygenerator.vo.Failure
-import no.nav.paw.kafkakeygenerator.vo.FailureCode
-import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.model.CallId
+import no.nav.paw.kafkakeygenerator.model.Either
+import no.nav.paw.kafkakeygenerator.model.Failure
+import no.nav.paw.kafkakeygenerator.model.FailureCode
+import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
 import org.slf4j.Logger
 
 suspend fun (suspend (CallId, Identitetsnummer) -> Either<Failure, ArbeidssoekerId>).recordKey(

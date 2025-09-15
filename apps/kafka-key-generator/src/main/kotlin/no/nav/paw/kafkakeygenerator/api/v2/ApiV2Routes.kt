@@ -13,16 +13,16 @@ import io.ktor.server.routing.route
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
 import no.nav.paw.kafkakeygenerator.utils.getCallId
-import no.nav.paw.kafkakeygenerator.vo.FailureCode
-import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
-import no.nav.paw.kafkakeygenerator.vo.Left
-import no.nav.paw.kafkakeygenerator.vo.Right
+import no.nav.paw.kafkakeygenerator.model.FailureCode
+import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.model.Left
+import no.nav.paw.kafkakeygenerator.model.Right
 import no.nav.paw.security.authentication.model.AzureAd
 import no.nav.paw.security.authentication.plugin.autentisering
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-fun Routing.konfigurerApiV2(
+fun Routing.apiV2Routes(
     kafkaKeysService: KafkaKeysService
 ) {
     val logger = LoggerFactory.getLogger("api")

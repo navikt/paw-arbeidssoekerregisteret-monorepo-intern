@@ -1,4 +1,4 @@
-package no.nav.paw.kafkakeygenerator.api.recordkey
+package no.nav.paw.kafkakeygenerator.api.v1
 
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -7,16 +7,16 @@ import io.ktor.server.routing.RoutingContext
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.opentelemetry.instrumentation.annotations.WithSpan
-import no.nav.paw.kafkakeygenerator.api.recordkey.functions.recordKey
+import no.nav.paw.kafkakeygenerator.api.v1.functions.recordKey
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
 import no.nav.paw.kafkakeygenerator.utils.getCallId
-import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
 import no.nav.paw.security.authentication.model.AzureAd
 import no.nav.paw.security.authentication.plugin.autentisering
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-fun Routing.configureRecordKeyApi(
+fun Routing.apiV1Routes(
     kafkaKeysService: KafkaKeysService
 ) {
     val logger = LoggerFactory.getLogger("record-key-api")

@@ -1,13 +1,13 @@
 package no.nav.paw.kafkakeygenerator.api.v2
 
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
-import no.nav.paw.kafkakeygenerator.vo.Either
-import no.nav.paw.kafkakeygenerator.vo.Failure
-import no.nav.paw.kafkakeygenerator.vo.FailureCode
-import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
-import no.nav.paw.kafkakeygenerator.vo.flatten
-import no.nav.paw.kafkakeygenerator.vo.recover
-import no.nav.paw.kafkakeygenerator.vo.right
+import no.nav.paw.kafkakeygenerator.model.Either
+import no.nav.paw.kafkakeygenerator.model.Failure
+import no.nav.paw.kafkakeygenerator.model.FailureCode
+import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.model.flatten
+import no.nav.paw.kafkakeygenerator.model.recover
+import no.nav.paw.kafkakeygenerator.model.right
 
 fun KafkaKeysService.hentLokaleAlias(
     antallPartisjoner: Int,
