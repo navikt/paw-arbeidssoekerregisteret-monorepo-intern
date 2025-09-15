@@ -20,25 +20,12 @@ class IdentitetService(
 ) {
     private val logger = buildLogger
 
-    fun hent(identitet: String): Identitet? {
-        return identitetRepository
-            .getByIdentitet(identitet)
-            ?.takeIf { it.status != IdentitetStatus.SLETTET }
-            ?.asIdentitet()
-    }
-
     fun finnForAktorId(aktorId: String): List<Identitet> {
         return identitetRepository
             .findByAktorId(aktorId)
             .filter { it.status != IdentitetStatus.SLETTET }
             .map { it.asIdentitet() }
-    }
-
-    fun finnForArbeidssoekerId(arbeidssoekerId: Long): List<Identitet> {
-        return identitetRepository
-            .findByArbeidssoekerId(arbeidssoekerId)
-            .filter { it.status != IdentitetStatus.SLETTET }
-            .map { it.asIdentitet() }
+            .sortedBy { it.type.ordinal }
     }
 
     fun identiteterSkalOppdateres(

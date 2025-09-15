@@ -36,7 +36,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
               example:
-                id: "3cd944fb-6187-41a8-91b2-b172f2baf890"
+                id: "eea6958a-273d-4dbc-9c85-faaa37530cbf"
                 type: "urn:paw:http:kunne-ikke-tolke-forespoersel"
                 status: 400
                 title: "Bad Request"
@@ -50,7 +50,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
               example:
-                id: "3cd944fb-6187-41a8-91b2-b172f2baf890"
+                id: "b88c0266-dd7f-40c1-9f8e-d7e511c36792"
                 type: "urn:paw:default:ukjent-feil"
                 status: 500
                 title: "Internal Server Error"
@@ -87,7 +87,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
               example:
-                id: "3cd944fb-6187-41a8-91b2-b172f2baf890"
+                id: "2854b631-e39c-48ff-975c-9e2195a0abc9"
                 type: "urn:paw:http:kunne-ikke-tolke-forespoersel"
                 status: 400
                 title: "Bad Request"
@@ -101,12 +101,77 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
               example:
-                id: "3cd944fb-6187-41a8-91b2-b172f2baf890"
+                id: "9173d40e-6dd8-42e2-814a-ba5228cc4a41"
                 type: "urn:paw:default:ukjent-feil"
                 status: 500
                 title: "Internal Server Error"
                 detail: "Ukjent feil"
                 instance: "/api/v2/hentEllerOpprett"
+                timestamp: "2021-01-01T12:00:00.000Z"
+  /api/v2/identiteter:
+    post:
+      operationId: postIdentiteter
+      description: "Finn ideniteter"
+      parameters:
+        - name: "traceparent"
+          in: "header"
+          required: false
+          schema:
+            type: "string"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IdentitetRequest"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IdentitetResponse"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                id: "3cd944fb-6187-41a8-91b2-b172f2baf890"
+                type: "urn:paw:http:kunne-ikke-tolke-forespoersel"
+                status: 400
+                title: "Bad Request"
+                detail: "Kunne ikke tolke forespørsel"
+                instance: "/api/v2/identiteter"
+                timestamp: "2021-01-01T12:00:00.000Z"
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                id: "f853cf14-3361-4cd3-ab07-44bac7778480"
+                type: "urn:paw:identiteter:identiteter-ikke-funnet"
+                status: 404
+                title: "Not Found"
+                detail: "Fant ingen tilknyttede identiteter"
+                instance: "/api/v2/identiteter"
+                timestamp: "2021-01-01T12:00:00.000Z"
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                id: "896a8d1e-8e76-445a-bb62-5e37971e3410"
+                type: "urn:paw:default:ukjent-feil"
+                status: 500
+                title: "Internal Server Error"
+                detail: "Ukjent feil"
+                instance: "/api/v2/identiteter"
                 timestamp: "2021-01-01T12:00:00.000Z"
   /internal/isAlive:
     get:
@@ -212,9 +277,114 @@ components:
         key:
           type: "integer"
           format: "int64"
+      required:
+        - id
+        - key
       example:
         id: 1234
         key: -1234
+    IdentitetRequest:
+      type: "object"
+      properties:
+        identitet:
+          type: "string"
+      required:
+        - "identitet"
+      example:
+        identitet: "01017012345"
+    IdentitetResponse:
+      type: "object"
+      properties:
+        arbeidssoekerId:
+          type: "integer"
+          format: "int64"
+        recordKey:
+          type: "integer"
+          format: "int64"
+        identiteter:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Identitet"
+        pdlIdentiteter:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Identitet"
+        konflikter:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Konflikt"
+      required:
+        - "arbeidssoekerId"
+        - "recordKey"
+        - "identiteter"
+      example:
+        arbeidssoekerId: 10170
+        recordKey: 170
+        identiteter:
+          - identitet: "200001017012345"
+            type: "AKTORID"
+            gjeldende: true
+          - identitet: "2010170"
+            type: "ARBEIDSSOEKERID"
+            gjeldende: true
+          - identitet: "01017012345"
+            type: "FOLKEREGISTERIDENT"
+            gjeldende: true
+    Identitet:
+      type: "object"
+      properties:
+        identitet:
+          type: "string"
+        type:
+          $ref: "#/components/schemas/IdentitetType"
+        gjeldende:
+          type: "boolean"
+      required:
+        - identitet
+        - type
+        - gjeldende
+      example:
+        identitet: "01017012345"
+        type: "FOLKEREGISTERIDENT"
+        gjeldende: true
+    IdentitetType:
+      type: "string"
+      enum:
+        - "FOLKEREGISTERIDENT"
+        - "AKTORID"
+        - "NPID"
+        - "ARBEIDSSOEKERID"
+        - "UKJENT_VERDI"
+    Konflikt:
+      type: object
+      properties:
+        type:
+          $ref: "#/components/schemas/KonfliktType"
+        detaljer:
+          $ref: "#/components/schemas/MergeKonflikt"
+      required:
+        - type
+    MergeKonflikt:
+      type: object
+      properties:
+        aktorIdListe:
+          type: "array"
+          items:
+            type: "string"
+        arbeidssoekerIdListe:
+          type: "array"
+          items:
+            type: "integer"
+            format: "int64"
+      required:
+        - aktorIdListe
+        - arbeidssoekerIdListe
+    KonfliktType:
+      type: "string"
+      enum:
+        - "MERGE"
+        - "SPLITT"
+        - "SLETT"
     ProblemDetails:
       type: object
       properties:

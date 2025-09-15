@@ -1,5 +1,7 @@
 package no.nav.paw.kafkakeygenerator.service
 
+import no.nav.paw.kafkakeygenerator.exception.PdlIdentiteterIkkeFunnetException
+import no.nav.paw.kafkakeygenerator.exception.PdlTekniskFeilException
 import no.nav.paw.kafkakeygenerator.model.CallId
 import no.nav.paw.kafkakeygenerator.model.Either
 import no.nav.paw.kafkakeygenerator.model.Failure
@@ -17,22 +19,48 @@ import no.nav.paw.pdl.graphql.generated.enums.IdentGruppe
 import no.nav.paw.pdl.graphql.generated.hentidenter.IdentInformasjon
 import no.nav.paw.pdl.hentIdenter
 import no.nav.paw.pdl.hentIdenterBolk
+import java.util.*
+
+private const val CONSUMER_ID = "paw-arbeidssoekerregisteret"
+private const val PDL_BEHANDLINGSNUMMER = "B452"
 
 class PdlService(private val pdlClient: PdlClient) {
-    private val consumerId = "paw-arbeidssoekerregisteret"
-    private val behandlingsnummer = "B452"
+
+    suspend fun finnIdentiteter(
+        identitet: String,
+        historikk: Boolean = true,
+        callId: UUID = UUID.randomUUID()
+    ): List<IdentInformasjon> {
+        try {
+            return pdlClient.hentIdenter(
+                ident = identitet,
+                historikk = historikk,
+                callId = callId.toString(),
+                navConsumerId = CONSUMER_ID,
+                behandlingsnummer = PDL_BEHANDLINGSNUMMER
+            ) ?: emptyList()
+        } catch (exception: PdlException) {
+            if (exception.errors?.any { it.message.contains("Fant ikke person") } == true) {
+                throw PdlIdentiteterIkkeFunnetException()
+            } else {
+                throw PdlTekniskFeilException()
+            }
+        }
+    }
 
     suspend fun hentIdenter(
         identiteter: List<Identitetsnummer>,
+        historikk: Boolean = true,
+        callId: UUID = UUID.randomUUID()
     ): Either<Failure, Map<String, List<IdentInformasjon>>> =
         suspendeableAttempt {
             pdlClient.hentIdenterBolk(
                 identer = identiteter.map { it.value },
                 grupper = listOf(IdentGruppe.FOLKEREGISTERIDENT),
-                historikk = true,
-                behandlingsnummer = behandlingsnummer,
-                callId = null,
-                navConsumerId = null
+                historikk = historikk,
+                callId = callId.toString(),
+                navConsumerId = CONSUMER_ID,
+                behandlingsnummer = PDL_BEHANDLINGSNUMMER
             )
         }.mapToFailure { exception ->
             when (exception) {
@@ -47,14 +75,13 @@ class PdlService(private val pdlClient: PdlClient) {
         historikk: Boolean = false
     ): Either<Failure, List<IdentInformasjon>> {
         return suspendeableAttempt {
-            pdlClient
-                .hentIdenter(
-                    ident = identitet.value,
-                    callId = callId.value,
-                    navConsumerId = consumerId,
-                    behandlingsnummer = behandlingsnummer,
-                    historikk = historikk
-                )
+            pdlClient.hentIdenter(
+                ident = identitet.value,
+                historikk = historikk,
+                callId = callId.value,
+                navConsumerId = CONSUMER_ID,
+                behandlingsnummer = PDL_BEHANDLINGSNUMMER
+            )
         }.mapToFailure { exception ->
             when (exception) {
                 is PdlException -> mapPdlException(exception)
@@ -68,16 +95,6 @@ class PdlService(private val pdlClient: PdlClient) {
             }
         }
     }
-
-    suspend fun hentIdentiter(
-        callId: CallId,
-        identitet: Identitetsnummer,
-        historikk: Boolean = false
-    ): Either<Failure, List<String>> = hentIdentInformasjon(
-        callId = callId,
-        identitet = identitet,
-        historikk = historikk
-    ).map { liste -> liste.map { it.ident } }
 
     private fun mapPdlException(ex: PdlException): GenericFailure {
         return if (ex.errors?.any { it.message.contains("Fant ikke person") } == true) {

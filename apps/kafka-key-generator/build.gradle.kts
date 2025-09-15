@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    id("org.openapi.generator")
     id("jib-chainguard")
     application
 }
@@ -93,6 +94,22 @@ application {
     mainClass.set("no.nav.paw.kafkakeygenerator.ApplicationKt")
 }
 
+sourceSets {
+    main {
+        kotlin {
+            srcDir("${layout.buildDirectory.get()}/generated/src/main/kotlin")
+        }
+    }
+}
+
+tasks.named("compileKotlin") {
+    dependsOn("openApiValidate", "openApiGenerate")
+}
+
+tasks.named("compileTestKotlin") {
+    dependsOn("openApiValidate", "openApiGenerate")
+}
+
 tasks.withType(Jar::class) {
     manifest {
         attributes["Implementation-Version"] = project.version
@@ -103,4 +120,31 @@ tasks.withType(Jar::class) {
 
 tasks.named<Test>("test") {
     useJUnitPlatform()
+}
+
+val openApiDocFile = "${layout.projectDirectory}/src/main/resources/openapi/documentation.yaml"
+
+openApiValidate {
+    inputSpec = openApiDocFile
+}
+
+openApiGenerate {
+    generatorName = "kotlin"
+    inputSpec = openApiDocFile
+    outputDir = "${layout.buildDirectory.get()}/generated/"
+    packageName = "no.nav.paw.kafkakeygenerator.api"
+    configOptions = mapOf(
+        "serializationLibrary" to "jackson",
+        "enumPropertyNaming" to "original",
+    )
+    globalProperties = mapOf(
+        "apis" to "none",
+        "models" to ""
+    )
+    typeMappings = mapOf(
+        "DateTime" to "Instant"
+    )
+    importMappings = mapOf(
+        "Instant" to "java.time.Instant"
+    )
 }
