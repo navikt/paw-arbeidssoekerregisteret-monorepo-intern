@@ -1,9 +1,12 @@
 package no.nav.paw.dev.proxy.api.service
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.TextNode
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.request
 import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
@@ -29,14 +32,17 @@ class ProxyService(private val httpClient: HttpClient) {
             headers.appendAll(requestHeaders)
             setBody(proxyRequest.body)
         }
-        val body = clientResponse.body<String>()
+        val contentType = clientResponse.contentType()
+        val body: JsonNode? = clientResponse.body<String>()
             .let {
                 if (it.isBlank()) {
                     logger.info("Received proxy response, status: {}, no body", clientResponse.status)
                     null
-                } else {
+                } else if (contentType != null && contentType == ContentType.Application.Json) {
                     logger.info("Received proxy response, status: {}, body:\n{}", clientResponse.status, it)
                     objectMapper.readTree(it)
+                } else {
+                    TextNode(it)
                 }
             }
         logger.debug("Proxy response headers: {}", clientResponse.headers)
@@ -44,7 +50,7 @@ class ProxyService(private val httpClient: HttpClient) {
             method = proxyRequest.method,
             url = proxyRequest.url,
             status = clientResponse.status,
-            contentType = clientResponse.contentType(),
+            contentType = contentType,
             headers = clientResponse.headers,
             body = body
         )
