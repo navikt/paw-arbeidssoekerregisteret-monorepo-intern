@@ -11,19 +11,23 @@ import io.ktor.server.routing.RoutingContext
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.opentelemetry.instrumentation.annotations.WithSpan
-import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
-import no.nav.paw.kafkakeygenerator.utils.getCallId
+import no.nav.paw.kafkakeygenerator.api.models.IdentitetRequest
+import no.nav.paw.kafkakeygenerator.api.models.IdentitetResponse
 import no.nav.paw.kafkakeygenerator.model.FailureCode
 import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
 import no.nav.paw.kafkakeygenerator.model.Left
 import no.nav.paw.kafkakeygenerator.model.Right
+import no.nav.paw.kafkakeygenerator.service.IdentitetResponseService
+import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
+import no.nav.paw.kafkakeygenerator.utils.getCallId
 import no.nav.paw.security.authentication.model.AzureAd
 import no.nav.paw.security.authentication.plugin.autentisering
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 fun Routing.apiV2Routes(
-    kafkaKeysService: KafkaKeysService
+    kafkaKeysService: KafkaKeysService,
+    identitetResponseService: IdentitetResponseService
 ) {
     val logger = LoggerFactory.getLogger("api")
     route("/api/v2") {
@@ -39,6 +43,17 @@ fun Routing.apiV2Routes(
             }
             post("/lokalInfo") {
                 hentLokalInfo(kafkaKeysService, logger)
+            }
+            post("identiteter") {
+                val request = call.receive<IdentitetRequest>()
+                val visKonflikter = call.queryParameters["visKonflikter"]?.toBooleanStrictOrNull() ?: false
+                val hentPdl = call.queryParameters["hentPdl"]?.toBooleanStrictOrNull() ?: false
+                val response = identitetResponseService.finnForIdentitet(
+                    identitet = request.identitet,
+                    visKonflikter = visKonflikter,
+                    hentPdl = hentPdl
+                )
+                call.respond<IdentitetResponse>(response)
             }
         }
     }

@@ -42,6 +42,7 @@ import no.nav.paw.kafkakeygenerator.repository.KonfliktIdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KonfliktRepository
 import no.nav.paw.kafkakeygenerator.repository.PeriodeRepository
 import no.nav.paw.kafkakeygenerator.service.HendelseService
+import no.nav.paw.kafkakeygenerator.service.IdentitetResponseService
 import no.nav.paw.kafkakeygenerator.service.IdentitetService
 import no.nav.paw.kafkakeygenerator.service.KafkaHwmService
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
@@ -66,6 +67,8 @@ data class ApplicationContext(
     val dataSource: DataSource,
     val prometheusMeterRegistry: PrometheusMeterRegistry,
     val healthIndicatorRepository: HealthIndicatorRepository,
+    val identitetService: IdentitetService,
+    val identitetResponseService: IdentitetResponseService,
     val konfliktService: KonfliktService,
     val hendelseService: HendelseService,
     val pawHendelseKafkaConsumer: KafkaConsumer<Long, Hendelse>,
@@ -154,6 +157,10 @@ data class ApplicationContext(
                 pdlService = pdlService,
                 identitetService = identitetService
             )
+            val identitetResponseService = IdentitetResponseService(
+                identitetRepository = identitetRepository,
+                pdlService = pdlService
+            )
             val mergeDetector = MergeDetector(
                 kafkaKeysRepository = kafkaKeysRepository,
                 pdlService = pdlService
@@ -223,6 +230,8 @@ data class ApplicationContext(
                 dataSource = dataSource,
                 prometheusMeterRegistry = prometheusMeterRegistry,
                 healthIndicatorRepository = healthIndicatorRepository,
+                identitetService = identitetService,
+                identitetResponseService = identitetResponseService,
                 konfliktService = konfliktService,
                 hendelseService = hendelseService,
                 pawHendelseKafkaConsumer = pawHendelseKafkaConsumer,

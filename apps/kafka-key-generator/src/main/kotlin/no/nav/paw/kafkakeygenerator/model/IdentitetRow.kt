@@ -2,6 +2,7 @@ package no.nav.paw.kafkakeygenerator.model
 
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafkakeygenerator.database.IdentiteterTable
+import org.jetbrains.exposed.sql.Alias
 import org.jetbrains.exposed.sql.ResultRow
 import java.time.Instant
 
@@ -30,3 +31,19 @@ fun ResultRow.asIdentitetRow(): IdentitetRow = IdentitetRow(
     insertedTimestamp = this[IdentiteterTable.insertedTimestamp],
     updatedTimestamp = this[IdentiteterTable.updatedTimestamp]
 )
+
+fun Pair<Alias<IdentiteterTable>, ResultRow>.asIdentitetRow(): IdentitetRow {
+    val (alias, row) = this
+    return IdentitetRow(
+        id = row[alias[IdentiteterTable.id]].value,
+        arbeidssoekerId = row[alias[IdentiteterTable.arbeidssoekerId]],
+        aktorId = row[alias[IdentiteterTable.aktorId]],
+        identitet = row[alias[IdentiteterTable.identitet]],
+        type = row[alias[IdentiteterTable.type]],
+        gjeldende = row[alias[IdentiteterTable.gjeldende]],
+        status = row[alias[IdentiteterTable.status]],
+        sourceTimestamp = row[alias[IdentiteterTable.sourceTimestamp]],
+        insertedTimestamp = row[alias[IdentiteterTable.insertedTimestamp]],
+        updatedTimestamp = row[alias[IdentiteterTable.updatedTimestamp]]
+    )
+}

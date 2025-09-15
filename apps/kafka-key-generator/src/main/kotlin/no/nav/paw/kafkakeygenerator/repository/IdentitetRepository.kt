@@ -5,6 +5,8 @@ import no.nav.paw.kafkakeygenerator.database.IdentiteterTable
 import no.nav.paw.kafkakeygenerator.model.IdentitetRow
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.asIdentitetRow
+import org.jetbrains.exposed.sql.JoinType
+import org.jetbrains.exposed.sql.alias
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.or
@@ -20,6 +22,17 @@ class IdentitetRepository {
             .where { IdentiteterTable.identitet eq identitet }
             .map { it.asIdentitetRow() }
             .singleOrNull()
+    }
+
+    // OBS! Har med soft-slettede
+    fun findByIdentitet(identitet: String): List<IdentitetRow> = transaction {
+        val i1 = IdentiteterTable.alias("i1")
+        val i2 = IdentiteterTable.alias("i2")
+        i1.join(i2, JoinType.INNER, i1[IdentiteterTable.arbeidssoekerId], i2[IdentiteterTable.arbeidssoekerId])
+            .select(i2.columns)
+            .where { i1[IdentiteterTable.identitet] eq identitet }
+            .map { i2 to it }
+            .map { it.asIdentitetRow() }
     }
 
     // OBS! Har med soft-slettede
