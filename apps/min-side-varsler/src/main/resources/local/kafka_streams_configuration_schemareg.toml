@@ -1,5 +1,5 @@
 brokers = "localhost:9092"
-applicationIdPrefix = "paw.paw-arbeidssoekerregisteret-bekreftelse-min-side-varsler"
+applicationIdPrefix = "paw.paw-arbeidssoekerregisteret-min-side-varsler"
 
 [schemaRegistry]
 url = "http://localhost:8082"

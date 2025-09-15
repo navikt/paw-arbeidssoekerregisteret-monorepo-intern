@@ -108,6 +108,7 @@ spec:
         rules:
           - application: azure-token-generator
             namespace: nais
+          - application: paw-dev-proxy
           - application: paw-brukerstotte
           - application: paw-kafka-key-maintenance
           - application: paw-microfrontend-toggler
@@ -117,7 +118,6 @@ spec:
           - application: paw-arbeidssoekerregisteret-hendelselogg-backup
           - application: paw-arbeidssoekerregisteret-api-bekreftelse
           - application: paw-arbeidssoekerregisteret-bekreftelse-tjeneste
-          - application: paw-arbeidssoekerregisteret-bekreftelse-min-side-varsler
           - application: paw-arbeidssoekerregisteret-api-dolly
           - application: paw-arbeidssoekerregisteret-bekreftelse-backup
           - application: paw-arbeidssoekerregisteret-api-oppslag-v2

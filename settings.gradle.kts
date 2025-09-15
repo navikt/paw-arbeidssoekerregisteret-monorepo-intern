@@ -64,6 +64,7 @@ include(
     "apps:dolly-api",
     "apps:min-side-varsler",
     "apps:bigquery-stats-adapter",
+    "apps:dev-proxy",
 )
 
 dependencyResolutionManagement {

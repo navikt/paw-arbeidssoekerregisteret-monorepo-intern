@@ -1,0 +1,79 @@
+name: Dev Proxy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/dev-proxy/**'
+      - 'lib/**'
+      - 'domain/**'
+      - 'dev-proxy.yaml'
+      - 'gradle/**'
+      - 'settings.gradle.kts'
+      - 'gradle.properties'
+      - 'gradlew'
+      - 'gradlew.bat'
+
+env:
+  MODULE: dev-proxy
+  IMAGE: europe-north1-docker.pkg.dev/nais-management-233d/paw/paw-dev-proxy
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          java-version: 21
+          distribution: temurin
+          cache: gradle
+      - name: Set version
+        run: echo "VERSION=$(date +'%y.%m.%d').${{ github.run_number }}-${{ github.run_attempt }}" >> $GITHUB_ENV
+      - name: Login GAR
+        uses: nais/login@v0
+        with:
+          team: paw
+      - name: Build and push image with Gradle
+        id: docker-build-push
+        working-directory: ./
+        env:
+          ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "image=${{ env.IMAGE }}:${{ env.VERSION }}" >> $GITHUB_OUTPUT
+          echo -Pversion=${{ env.VERSION }} -Pimage=${{ env.IMAGE }} :apps:${{ env.MODULE }}:build :apps:${{ env.MODULE }}:jib
+          ./gradlew -Pversion=${{ env.VERSION }} -Pimage=${{ env.IMAGE }} :apps:${{ env.MODULE }}:build :apps:${{ env.MODULE }}:jib
+          echo "DIGEST=$(cat ./apps/${{ env.MODULE }}/build/jib-image.digest)" >> $GITHUB_ENV
+      - name: Attest and sign image
+        uses: nais/attest-sign@v1.5.18
+        with:
+          image_ref: ${{ env.IMAGE }}@${{ env.DIGEST }}
+
+  deploy-dev:
+    if: github.ref == 'refs/heads/main'
+    name: Deploy to dev-gcp
+    needs:
+      - build
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Deploy to GCP
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: dev-gcp
+          RESOURCE: ./apps/${{ env.MODULE }}/nais/nais-dev.yaml
+          VAR: image=${{ needs.build.outputs.image }}
