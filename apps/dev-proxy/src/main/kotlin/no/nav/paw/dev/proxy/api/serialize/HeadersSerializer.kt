@@ -8,8 +8,10 @@ import io.ktor.http.Headers
 class HeadersSerializer : JsonSerializer<Headers>() {
     override fun serialize(value: Headers?, generator: JsonGenerator, provider: SerializerProvider) {
         if (value == null) return
-        val headers = mutableMapOf<String, List<String>>()
-        value.forEach { name, values -> headers[name] = values }
+        val headers = mutableMapOf<String, String?>()
+        value.forEach { name, values ->
+            headers[name] = values.firstOrNull()
+        }
         generator.writeObject(headers)
     }
 }
