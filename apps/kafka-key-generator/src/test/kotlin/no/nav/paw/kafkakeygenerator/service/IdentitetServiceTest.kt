@@ -16,6 +16,7 @@ import no.nav.paw.identitet.internehendelser.IdentiteterSlettetHendelse
 import no.nav.paw.kafka.producer.sendBlocking
 import no.nav.paw.kafkakeygenerator.context.TestContext
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
+import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
 import no.nav.paw.kafkakeygenerator.model.asIdentitet
@@ -23,7 +24,6 @@ import no.nav.paw.kafkakeygenerator.test.IdentitetWrapper
 import no.nav.paw.kafkakeygenerator.test.KonfliktWrapper
 import no.nav.paw.kafkakeygenerator.test.TestData
 import no.nav.paw.kafkakeygenerator.test.asWrapper
-import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.apache.kafka.common.TopicPartition
@@ -122,7 +122,8 @@ class IdentitetServiceTest : FreeSpec({
                     aktorId2,
                     dnr2.copy(gjeldende = false),
                     fnr2_1.copy(gjeldende = false),
-                    fnr2_2
+                    fnr2_2,
+                    arbId2
                 )
                 identitetService.finnForAktorId(aktorId3.identitet) shouldHaveSize 0
                 identitetRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
@@ -184,7 +185,11 @@ class IdentitetServiceTest : FreeSpec({
                 // THEN
                 identitetService.finnForAktorId(aktorId1.identitet) shouldHaveSize 0
                 val identiteter = identitetService.finnForAktorId(aktorId2.identitet)
-                identiteter shouldContainOnly listOf(aktorId2, dnr2)
+                identiteter shouldContainOnly listOf(
+                    aktorId2,
+                    dnr2,
+                    arbId2
+                )
                 identitetService.finnForAktorId(aktorId3.identitet) shouldHaveSize 0
                 identitetRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
                 val identitetRows = identitetRepository.findByAktorId(aktorId2.identitet)
@@ -257,7 +262,12 @@ class IdentitetServiceTest : FreeSpec({
                 // THEN
                 identitetService.finnForAktorId(aktorId1.identitet) shouldHaveSize 0
                 val identiteter = identitetService.finnForAktorId(aktorId2.identitet)
-                identiteter shouldContainOnly listOf(aktorId2, dnr2.copy(gjeldende = false), fnr2_1)
+                identiteter shouldContainOnly listOf(
+                    aktorId2,
+                    dnr2.copy(gjeldende = false),
+                    fnr2_1,
+                    arbId2
+                )
                 identitetService.finnForAktorId(aktorId3.identitet) shouldHaveSize 0
                 identitetRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
                 val identitetRows = identitetRepository.findByAktorId(aktorId2.identitet)
@@ -346,7 +356,12 @@ class IdentitetServiceTest : FreeSpec({
                 // THEN
                 identitetService.finnForAktorId(aktorId1.identitet) shouldHaveSize 0
                 val identiteter = identitetService.finnForAktorId(aktorId2.identitet)
-                identiteter shouldContainOnly listOf(aktorId2, dnr2.copy(gjeldende = false), fnr2_1)
+                identiteter shouldContainOnly listOf(
+                    aktorId2,
+                    dnr2.copy(gjeldende = false),
+                    fnr2_1,
+                    arbId2
+                )
                 identitetService.finnForAktorId(aktorId3.identitet) shouldHaveSize 0
                 identitetRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
                 val identitetRows = identitetRepository.findByAktorId(aktorId2.identitet)
@@ -548,7 +563,11 @@ class IdentitetServiceTest : FreeSpec({
 
                 // THEN
                 val identiteter = identitetService.finnForAktorId(aktorId7_1.identitet)
-                identiteter shouldContainOnly listOf(aktorId7_1, dnr7)
+                identiteter shouldContainOnly listOf(
+                    aktorId7_1,
+                    dnr7,
+                    arbId7_1
+                )
                 identitetService.finnForAktorId(aktorId7_2.identitet) shouldHaveSize 0
                 val identitetRows = identitetRepository.findByAktorId(aktorId7_1.identitet)
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
@@ -637,9 +656,17 @@ class IdentitetServiceTest : FreeSpec({
 
                 // THEN
                 val identiteter1 = identitetService.finnForAktorId(aktorId7_1.identitet)
-                identiteter1 shouldContainOnly listOf(aktorId7_1, dnr7)
+                identiteter1 shouldContainOnly listOf(
+                    aktorId7_1,
+                    dnr7,
+                    arbId7_1
+                )
                 val identiteter2 = identitetService.finnForAktorId(aktorId7_2.identitet)
-                identiteter2 shouldContainOnly listOf(aktorId7_2, fnr7_1)
+                identiteter2 shouldContainOnly listOf(
+                    aktorId7_2,
+                    fnr7_1,
+                    arbId7_2
+                )
                 val identitetRows1 = identitetRepository.findByAktorId(aktorId7_1.identitet)
                 identitetRows1.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
@@ -762,7 +789,8 @@ class IdentitetServiceTest : FreeSpec({
                     aktorId7_2.copy(gjeldende = false),
                     dnr7.copy(gjeldende = false),
                     fnr7_1.copy(gjeldende = false),
-                    fnr7_2
+                    fnr7_2,
+                    arbId7_1
                 )
                 identitetService.finnForAktorId(aktorId7_2.identitet) shouldHaveSize 0
                 val identitetRows1 = identitetRepository.findByAktorId(aktorId7_1.identitet)
