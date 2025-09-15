@@ -215,6 +215,50 @@ components:
       example:
         id: 1234
         key: -1234
+    IdentitetRequest:
+      type: "object"
+      properties:
+        identitet:
+          type: "string"
+      required:
+        - "identitet"
+      example:
+        identitet: "01017012345"
+    IdenitetResponse:
+      type: "array"
+      items:
+        $ref: "#/components/schemas/Identitet"
+      example:
+        - identitet: "200001017012345"
+          type: "AKTORID"
+          gjeldende: true
+        - identitet: "2010170"
+          type: "ARBEIDSSOEKERID"
+          gjeldende: true
+        - identitet: "01017012345"
+          type: "FOLKEREGISTERIDENT"
+          gjeldende: true
+    Identitet:
+      type: "object"
+      properties:
+        identitet:
+          type: "string"
+        type:
+          $ref: "#/components/schemas/IdenitetType"
+        gjeldende:
+          type: "boolean"
+      example:
+        identitet: "01017012345"
+        type: "FOLKEREGISTERIDENT"
+        gjeldende: true
+    IdenitetType:
+      type: "string"
+      enum:
+        - "FOLKEREGISTERIDENT"
+        - "AKTORID"
+        - "NPID"
+        - "ARBEIDSSOEKERID"
+        - "UKJENT_VERDI"
     ProblemDetails:
       type: object
       properties:

@@ -11,19 +11,22 @@ import io.ktor.server.routing.RoutingContext
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.opentelemetry.instrumentation.annotations.WithSpan
-import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
-import no.nav.paw.kafkakeygenerator.utils.getCallId
 import no.nav.paw.kafkakeygenerator.model.FailureCode
+import no.nav.paw.kafkakeygenerator.model.IdentitetRequest
 import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
 import no.nav.paw.kafkakeygenerator.model.Left
 import no.nav.paw.kafkakeygenerator.model.Right
+import no.nav.paw.kafkakeygenerator.service.IdentitetService
+import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
+import no.nav.paw.kafkakeygenerator.utils.getCallId
 import no.nav.paw.security.authentication.model.AzureAd
 import no.nav.paw.security.authentication.plugin.autentisering
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 fun Routing.apiV2Routes(
-    kafkaKeysService: KafkaKeysService
+    kafkaKeysService: KafkaKeysService,
+    identitetService: IdentitetService
 ) {
     val logger = LoggerFactory.getLogger("api")
     route("/api/v2") {
@@ -39,6 +42,11 @@ fun Routing.apiV2Routes(
             }
             post("/lokalInfo") {
                 hentLokalInfo(kafkaKeysService, logger)
+            }
+            post("identiteter") {
+                val request = call.receive<IdentitetRequest>()
+                val identiteter = identitetService.finnForIdentitet(request.identitet)
+                call.respond(identiteter)
             }
         }
     }

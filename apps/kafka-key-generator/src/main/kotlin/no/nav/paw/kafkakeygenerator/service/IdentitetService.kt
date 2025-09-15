@@ -21,25 +21,41 @@ class IdentitetService(
 ) {
     private val logger = buildLogger
 
-    fun hent(identitet: String): Identitet? {
-        return identitetRepository
-            .getByIdentitet(identitet)
+    fun finnForIdentitet(identitet: String): List<Identitet> {
+        return identitetRepository.getByIdentitet(identitet)
             ?.takeIf { it.status != IdentitetStatus.SLETTET }
-            ?.asIdentitet()
+            ?.let { finnForArbeidssoekerId(it.arbeidssoekerId) } ?: emptyList()
     }
 
     fun finnForAktorId(aktorId: String): List<Identitet> {
-        return identitetRepository
+        val identitetRows = identitetRepository
             .findByAktorId(aktorId)
             .filter { it.status != IdentitetStatus.SLETTET }
-            .map { it.asIdentitet() }
+        return if (identitetRows.isEmpty()) {
+            emptyList()
+        } else {
+            val arbeidssoekerId = identitetRows.first().arbeidssoekerId
+            identitetRows
+                .map { it.asIdentitet() }
+                .toMutableList()
+                .apply { add(arbeidssoekerId.asIdentitet(true)) }
+                .sortedBy { it.type.ordinal }
+        }
     }
 
     fun finnForArbeidssoekerId(arbeidssoekerId: Long): List<Identitet> {
-        return identitetRepository
+        val identitetRows = identitetRepository
             .findByArbeidssoekerId(arbeidssoekerId)
             .filter { it.status != IdentitetStatus.SLETTET }
-            .map { it.asIdentitet() }
+        return if (identitetRows.isEmpty()) {
+            emptyList()
+        } else {
+            identitetRows
+                .map { it.asIdentitet() }
+                .toMutableList()
+                .apply { add(arbeidssoekerId.asIdentitet(true)) }
+                .sortedBy { it.type.ordinal }
+        }
     }
 
     fun identiteterSkalOppdateres(

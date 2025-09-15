@@ -30,6 +30,11 @@ import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
 import no.nav.paw.kafkakeygenerator.config.SERVER_CONFIG
 import no.nav.paw.kafkakeygenerator.config.ServerConfig
 import no.nav.paw.kafkakeygenerator.merge.MergeDetector
+import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.model.CallId
+import no.nav.paw.kafkakeygenerator.model.Either
+import no.nav.paw.kafkakeygenerator.model.Failure
+import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
 import no.nav.paw.kafkakeygenerator.plugin.configureRouting
 import no.nav.paw.kafkakeygenerator.repository.HendelseRepository
 import no.nav.paw.kafkakeygenerator.repository.HwmRepository
@@ -53,11 +58,6 @@ import no.nav.paw.kafkakeygenerator.test.TestData
 import no.nav.paw.kafkakeygenerator.test.buildPostgresDataSource
 import no.nav.paw.kafkakeygenerator.test.genererResponse
 import no.nav.paw.kafkakeygenerator.test.runAsSql
-import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.model.CallId
-import no.nav.paw.kafkakeygenerator.model.Either
-import no.nav.paw.kafkakeygenerator.model.Failure
-import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
 import no.nav.paw.pdl.PdlClient
 import no.nav.paw.security.authentication.config.AuthProvider
 import no.nav.paw.security.authentication.config.AuthProviderRequiredClaims
@@ -182,8 +182,9 @@ class TestContext private constructor(
             configureRouting(
                 meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
                 healthIndicatorRepository = HealthIndicatorRepository(),
+                mergeDetector = MergeDetector(pdlService, kafkaKeysRepository),
                 kafkaKeysService = kafkaKeysService,
-                mergeDetector = MergeDetector(pdlService, kafkaKeysRepository)
+                identitetService = identitetService
             )
         }
     }
