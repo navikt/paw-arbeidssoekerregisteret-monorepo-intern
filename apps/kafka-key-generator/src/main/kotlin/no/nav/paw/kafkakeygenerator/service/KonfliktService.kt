@@ -290,7 +290,9 @@ class KonfliktService(
         } else if (aktivePeriodeRows.isEmpty()) {
             // Ingen aktive perioder. Velger arbeidssoekerId tilhørende nyeste periode.
             val nyestePeriode = periodeRows
-                .maxBy { it.startetTimestamp.toEpochMilli() } // TODO: Finne siste sluttbrukeraksjon?
+                .maxBy {
+                    it.avsluttetTimestamp?.toEpochMilli() ?: it.startetTimestamp.toEpochMilli()
+                }
             val valgtIdentitet = eksisterendeKafkaKeyRows.find { it.identitetsnummer == nyestePeriode.identitet }
                 ?: throw IllegalStateException("Fant ikke identitet for periode")
             valgtIdentitet.arbeidssoekerId
