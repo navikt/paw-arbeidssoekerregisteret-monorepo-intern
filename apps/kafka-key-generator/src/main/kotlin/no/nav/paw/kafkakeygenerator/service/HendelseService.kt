@@ -12,7 +12,6 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.TidspunktFraKilde
 import no.nav.paw.config.env.appImageOrDefaultForLocal
 import no.nav.paw.identitet.internehendelser.IdentitetHendelse
 import no.nav.paw.identitet.internehendelser.IdentitetHendelseDeserializer
-import no.nav.paw.identitet.internehendelser.IdentitetHendelseSerializer
 import no.nav.paw.identitet.internehendelser.IdentiteterEndretHendelse
 import no.nav.paw.identitet.internehendelser.IdentiteterMergetHendelse
 import no.nav.paw.identitet.internehendelser.IdentiteterSlettetHendelse
@@ -38,12 +37,11 @@ class HendelseService(
     private val pawHendelseloggHendelseProducer: Producer<Long, Hendelse>
 ) {
     private val logger = buildLogger
-    private val serializer = IdentitetHendelseSerializer()
     private val deserializer = IdentitetHendelseDeserializer()
     private val env = serverConfig.runtimeEnvironment
-    private val version = applicationConfig.pawIdentitetProducer.version
     private val aktorTopic = applicationConfig.pdlAktorConsumer.topic
     private val identitetTopic = applicationConfig.pawIdentitetProducer.topic
+    private val hendelseloggTopic = applicationConfig.pawHendelseloggProducer.topic
     private val batchSize = applicationConfig.identitetHendelseJob.batchSize
 
     fun sendIdentiteterEndretHendelse(
@@ -190,7 +188,7 @@ class HendelseService(
         hendelse: Hendelse
     ) {
         val recordKey = publicTopicKeyFunction(ArbeidssoekerId(arbeidssoekerId))
-        val record = ProducerRecord(identitetTopic, recordKey.value, hendelse)
+        val record = ProducerRecord(hendelseloggTopic, recordKey.value, hendelse)
         val metadata = pawHendelseloggHendelseProducer.sendBlocking(record)
         logger.info(
             "Sendte identitet-hendelse på topic {} (offset {}, partition {})",
