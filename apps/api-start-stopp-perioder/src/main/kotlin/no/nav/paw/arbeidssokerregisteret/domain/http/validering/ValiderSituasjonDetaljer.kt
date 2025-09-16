@@ -10,10 +10,13 @@ val validationRules =
     listOf(
         Detaljer::prosent to ::isValidPercentage,
         Detaljer::stillingStyrk08 to ::validateStyrk08,
-        Detaljer::stilling to ::isNotEmptyString
+        Detaljer::stilling to ::isNotEmptyString,
+        Detaljer::stilling to ::validerFritekstFelt
     )
 
 val ingenDetaljer: Detaljer = Detaljer(null, null, null)
+
+val fritekstRegex = Regex(("^[^{}<>;]+$"))
 
 fun validerDetaljer(situasjonMedDetaljer: JobbsituasjonMedDetaljer): Either<ValidationErrorResult, Unit> =
     validationRules
@@ -48,4 +51,14 @@ fun validateStyrk08(key: String, styrk: String): Either<ValidationErrorResult, U
         Unit.right()
     } else {
         ValidationErrorResult(setOf(key), "Styrk08 må være 1-4 siffer. Styrk08 var $styrk").left()
+    }
+
+fun validerFritekstFelt(key: String, stilling: String): Either<ValidationErrorResult, Unit> =
+    if (fritekstRegex.matches(stilling)) {
+        Unit.right()
+    } else {
+        ValidationErrorResult(
+            fields = setOf(key),
+            message = "$key kan bare inneholde bokstaver, tall og vanlige spesialtegn. $key var $stilling"
+        ).left()
     }
