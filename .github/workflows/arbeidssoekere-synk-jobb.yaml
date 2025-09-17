@@ -49,7 +49,7 @@ jobs:
           ./gradlew -Pversion=${{ env.VERSION }} -Pimage=${{ env.IMAGE }} :jobs:${{ env.MODULE }}:build :jobs:${{ env.MODULE }}:jib
           echo "DIGEST=$(cat ./jobs/${{ env.MODULE }}/build/jib-image.digest)" >> $GITHUB_ENV
       - name: Attest and sign image
-        uses: nais/attest-sign@v1.5.18
+        uses: nais/attest-sign@v1.5.19
         with:
           image_ref: ${{ env.IMAGE }}@${{ env.DIGEST }}
 
