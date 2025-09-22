@@ -42,6 +42,8 @@ import no.nav.paw.serialization.jackson.configureJackson
 import no.nav.paw.serialization.plugin.installContentNegotiationPlugin
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import org.apache.kafka.clients.producer.MockProducer
+import org.apache.kafka.clients.producer.Partitioner
+import org.apache.kafka.common.Cluster
 import org.apache.kafka.common.serialization.StringSerializer
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
@@ -155,7 +157,22 @@ open class TestContext(
             val eksternVarselRepository = EksterntVarselRepository()
             val bestillingRepository = BestillingRepository()
             val bestiltVarselRepository = BestiltVarselRepository()
-            val varselKafkaProducer = MockProducer(true, StringSerializer(), StringSerializer())
+            val partitioner = object: Partitioner {
+                override fun partition(
+                    topic: String?,
+                    key: Any?,
+                    keyBytes: ByteArray?,
+                    value: Any?,
+                    valueBytes: ByteArray?,
+                    cluster: Cluster?
+                ): Int { return 0 }
+
+                override fun close() {}
+
+                override fun configure(configs: Map<String?, *>?) {}
+
+            }
+            val varselKafkaProducer = MockProducer(true, partitioner,StringSerializer(), StringSerializer())
             val varselMeldingBygger = VarselMeldingBygger(
                 runtimeEnvironment = serverConfig.runtimeEnvironment,
                 minSideVarselConfig = loadNaisOrLocalConfiguration<MinSideVarselConfig>(MIN_SIDE_VARSEL_CONFIG)

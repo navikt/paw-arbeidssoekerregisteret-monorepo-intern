@@ -76,9 +76,9 @@ class ConsumerHandlerLogicTest : StringSpec({
         val bekreftelseRecord = ConsumerRecord(context.bekreftelseTopic, 0, 100L, 1234L, bekreftelseData)
         val paaVegneAvRecord = ConsumerRecord(context.paaVegneAvTopic, 0, 100L, 1234L, paaVegneAvData)
 
-        val hendelsesRecords = ConsumerRecords(mapOf(hendelseTopicPartition to listOf(hendelseRecord)))
-        val bekreftelseRecords = ConsumerRecords(mapOf(bekreftelseTopicPartition to listOf(bekreftelseRecord)))
-        val paaVegneAvRecords = ConsumerRecords(mapOf(paaVegneAvTopicPartition to listOf(paaVegneAvRecord)))
+        val hendelsesRecords = ConsumerRecords(mapOf(hendelseTopicPartition to listOf(hendelseRecord)), emptyMap())
+        val bekreftelseRecords = ConsumerRecords(mapOf(bekreftelseTopicPartition to listOf(bekreftelseRecord)), emptyMap())
+        val paaVegneAvRecords = ConsumerRecords(mapOf(paaVegneAvTopicPartition to listOf(paaVegneAvRecord)), emptyMap())
 
         transaction {
             val txContext = TransactionContext(context, this)
@@ -176,7 +176,7 @@ class ConsumerHandlerLogicTest : StringSpec({
             hendelse
         )
         val topicPartition = TopicPartition(context.hendelseTopic, 0)
-        val records = ConsumerRecords(mapOf(topicPartition to listOf(record1, record2)))
+        val records = ConsumerRecords(mapOf(topicPartition to listOf(record1, record2)), emptyMap())
 
         transaction {
             val txContext = TransactionContext(context, this)
@@ -304,7 +304,7 @@ class ConsumerHandlerLogicTest : StringSpec({
         }
 
         val topicPartition = TopicPartition(context.hendelseTopic, 0)
-        val consumerRecords = ConsumerRecords(mapOf(topicPartition to records))
+        val consumerRecords = ConsumerRecords(mapOf(topicPartition to records), emptyMap())
 
         transaction {
             val txContext = TransactionContext(context, this)

@@ -71,7 +71,7 @@ class KafkaStreamsFactory private constructor(
             applicationIdSuffix = applicationIdSuffix,
             config = config,
             additionalProperties = additionalProperties + (
-                    StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG to handler.qualifiedName!!)
+                    StreamsConfig.DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG to handler.qualifiedName!!)
         )
 
     fun addPrometheusMeterRegistryToConfig(prometheusMeterRegistry: PrometheusMeterRegistry): KafkaStreamsFactory =

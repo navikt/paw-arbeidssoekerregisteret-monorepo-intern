@@ -11,6 +11,7 @@ import org.apache.kafka.common.MetricName
 import org.apache.kafka.common.PartitionInfo
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.Uuid
+import org.apache.kafka.common.metrics.KafkaMetric
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.CompletableFuture
@@ -32,20 +33,16 @@ class ProducerMock<K, V> : Producer<K, V> {
 
     @Deprecated(message = "Use sendOffsetsToTransaction(Map<TopicPartition, OffsetAndMetadata>, ConsumerGroupMetadata")
     override fun sendOffsetsToTransaction(
-        offsets: MutableMap<TopicPartition, OffsetAndMetadata>?,
-        consumerGroupId: String?
-    ) {
-    }
-
-    override fun sendOffsetsToTransaction(
-        offsets: MutableMap<TopicPartition, OffsetAndMetadata>?,
-        groupMetadata: ConsumerGroupMetadata?
-    ) {
-    }
+        offsets: MutableMap<TopicPartition, OffsetAndMetadata>,
+        consumerGroupMetadata: ConsumerGroupMetadata
+    ) {}
 
     override fun commitTransaction() {}
 
     override fun abortTransaction() {}
+    override fun registerMetricForSubscription(metric: KafkaMetric?) {}
+
+    override fun unregisterMetricFromSubscription(metric: KafkaMetric?) {}
 
     override fun flush() {}
 

@@ -52,5 +52,5 @@ private fun testConsumerRecords(): ConsumerRecords<Long, Hendelse> {
         )
     )
 
-    return ConsumerRecords(records)
+    return ConsumerRecords(records, emptyMap())
 }

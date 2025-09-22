@@ -33,7 +33,7 @@ class ApplicationHappyPathTest : FreeSpec({
             )
             testRecords.addRecord(mergeRecord)
 
-            val testConsumerRecords = ConsumerRecords(testRecords)
+            val testConsumerRecords = ConsumerRecords(testRecords, emptyMap())
 
             backupService.processRecords(
                 records = testConsumerRecords,
