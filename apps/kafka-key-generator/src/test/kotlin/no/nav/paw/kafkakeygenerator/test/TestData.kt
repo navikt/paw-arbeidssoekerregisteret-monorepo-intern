@@ -430,7 +430,7 @@ object TestData {
 
     fun <K, V> List<ConsumerRecord<K, V>>.asRecords(): ConsumerRecords<K, V> {
         val tp = TopicPartition(this.first().topic(), this.first().partition())
-        return ConsumerRecords<K, V>(mapOf(tp to this))
+        return ConsumerRecords<K, V>(mapOf(tp to this), emptyMap())
     }
 
     fun List<Hendelse>.asHendelseRecords(): ConsumerRecords<Long, Hendelse> =

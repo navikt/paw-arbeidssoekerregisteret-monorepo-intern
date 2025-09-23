@@ -5,6 +5,7 @@ import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KafkaKeyRow
+import no.nav.paw.kafkakeygenerator.model.KonfliktRow
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
 import no.nav.paw.kafkakeygenerator.model.asIdentitet
@@ -28,6 +29,15 @@ class KonfliktService(
 ) {
     private val logger = buildLogger
     private val batchSize = applicationConfig.identitetKonfliktJob.batchSize
+
+    fun finnVentendeKonflikter(
+        aktorId: String
+    ): List<KonfliktRow> {
+        return konfliktRepository.findByAktorIdAndStatus(
+            aktorId = aktorId,
+            status = KonfliktStatus.VENTER
+        )
+    }
 
     fun slettVentendeKonflikter(
         aktorId: String
@@ -124,6 +134,10 @@ class KonfliktService(
         val eksisterendeIdentitetSet = eksisterendeIdentitetRows
             .map { it.identitet }
             .toSet()
+        val slettedeIdentitetSet = eksisterendeIdentitetRows
+            .filter { it.status == IdentitetStatus.SLETTET }
+            .map { it.identitet }
+            .toMutableSet()
         val konfliktIdentitetSet = konfliktIdentitetRows
             .map { it.identitet }
             .toSet()
@@ -143,17 +157,19 @@ class KonfliktService(
             // Slett identiteter som ikke var i PDL-hendelse
             eksisterendeIdentitetRows
                 .filter { !konfliktIdentitetSet.contains(it.identitet) }
-                .forEach { identitet ->
+                .forEach { identitetRow ->
+                    slettedeIdentitetSet.add(identitetRow.identitet)
+
                     val rowsAffected = identitetRepository.updateByIdentitet(
-                        identitet = identitet.identitet,
+                        identitet = identitetRow.identitet,
                         aktorId = aktorId,
                         gjeldende = false,
                         status = IdentitetStatus.SLETTET,
-                        sourceTimestamp = identitet.sourceTimestamp
+                        sourceTimestamp = identitetRow.sourceTimestamp
                     )
                     logger.info(
                         "Oppdaterer identitet av type {} med status {} (rows affected {})",
-                        identitet.type.name,
+                        identitetRow.type.name,
                         IdentitetStatus.SLETTET.name,
                         rowsAffected
                     )
@@ -227,16 +243,17 @@ class KonfliktService(
                     )
 
                     if (arbeidssoekerId != gjeldendeArbeidssoekerId) {
-                        val identitetSet = tidligereIdentiteter
+                        val tidligereIdentitetSet = tidligereIdentiteter
                             .map { it.identitet }
+                            .filter { !slettedeIdentitetSet.contains(it) }
                             .toSet() + eksisterendeKafkaKeyRows
                             .filter { it.arbeidssoekerId == arbeidssoekerId }
                             .map { it.identitetsnummer }
+                            .filter { !slettedeIdentitetSet.contains(it) }
                             .toSet()
-                        val tidligereIdent = eksisterendeKafkaKeyRows
-                            .filter { it.arbeidssoekerId == arbeidssoekerId }
-                            .map { it.identitetsnummer }.minByOrNull { it.length }!!
-                        val nyIdent = nyeIdentiteter
+                        val tidligereIdent = tidligereIdentitetSet
+                            .minByOrNull { it.length }!!
+                        val gjeldendeIdentitetSet = nyeIdentiteter
                             .filter { it.type == IdentitetType.FOLKEREGISTERIDENT }
                             .filter { it.gjeldende }
                             .map { it.identitet }
@@ -245,14 +262,14 @@ class KonfliktService(
                             fraArbeidssoekerId = arbeidssoekerId,
                             tilArbeidssoekerId = gjeldendeArbeidssoekerId,
                             identitet = tidligereIdent,
-                            identiteter = identitetSet,
+                            identiteter = tidligereIdentitetSet,
                             sourceTimestamp = sourceTimestamp
                         )
                         hendelseService.sendArbeidssoekerIdFlettetInnHendelse(
                             fraArbeidssoekerId = arbeidssoekerId,
                             tilArbeidssoekerId = gjeldendeArbeidssoekerId,
-                            identitet = nyIdent,
-                            identiteter = identitetSet,
+                            identitet = gjeldendeIdentitetSet,
+                            identiteter = tidligereIdentitetSet,
                             sourceTimestamp = sourceTimestamp
                         )
                     }

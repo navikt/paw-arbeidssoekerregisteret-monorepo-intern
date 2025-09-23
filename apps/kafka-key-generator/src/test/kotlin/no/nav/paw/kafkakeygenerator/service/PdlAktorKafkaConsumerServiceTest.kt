@@ -505,11 +505,10 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             ideniteter2 shouldContainOnly listOf(
                 aktorId,
                 npId,
-                dnr.copy(gjeldende = false),
-                fnr1
+                dnr
             )
             val identitetRows2 = identitetRepository.findByAktorId(aktorId.identitet)
-            identitetRows2 shouldHaveSize 4
+            identitetRows2 shouldHaveSize 3
             identitetRows2.map { it.asWrapper() } shouldContainOnly listOf(
                 IdentitetWrapper(
                     arbeidssoekerId = arbeidssoekerId1,
@@ -526,13 +525,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 IdentitetWrapper(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
-                    identitet = dnr.copy(gjeldende = false),
-                    status = IdentitetStatus.MERGE
-                ),
-                IdentitetWrapper(
-                    arbeidssoekerId = arbeidssoekerId2,
-                    aktorId = aktorId.identitet,
-                    identitet = fnr1,
+                    identitet = dnr,
                     status = IdentitetStatus.MERGE
                 )
             )
@@ -570,11 +563,10 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             ideniteter3 shouldContainOnly listOf(
                 aktorId,
                 npId,
-                dnr.copy(gjeldende = false),
-                fnr2
+                dnr
             )
             val identitetRows3 = identitetRepository.findByAktorId(aktorId.identitet)
-            identitetRows3 shouldHaveSize 5
+            identitetRows3 shouldHaveSize 3
             identitetRows3.map { it.asWrapper() } shouldContainOnly listOf(
                 IdentitetWrapper(
                     arbeidssoekerId = arbeidssoekerId1,
@@ -591,19 +583,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 IdentitetWrapper(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
-                    identitet = dnr.copy(gjeldende = false),
-                    status = IdentitetStatus.MERGE
-                ),
-                IdentitetWrapper(
-                    arbeidssoekerId = arbeidssoekerId2,
-                    aktorId = aktorId.identitet,
-                    identitet = fnr1.copy(gjeldende = false),
-                    status = IdentitetStatus.SLETTET
-                ),
-                IdentitetWrapper(
-                    arbeidssoekerId = arbeidssoekerId2,
-                    aktorId = aktorId.identitet,
-                    identitet = fnr2,
+                    identitet = dnr,
                     status = IdentitetStatus.MERGE
                 )
             )
@@ -638,39 +618,31 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
 
             // THEN
             val ideniteter4 = identitetService.finnForAktorId(aktorId.identitet)
-            ideniteter4 shouldBe emptyList()
+            ideniteter4 shouldContainOnly listOf(
+                aktorId,
+                npId,
+                dnr
+            )
             val identitetRows4 = identitetRepository.findByAktorId(aktorId.identitet)
-            identitetRows4 shouldHaveSize 5
+            identitetRows4 shouldHaveSize 3
             identitetRows4.map { it.asWrapper() } shouldContainOnly listOf(
                 IdentitetWrapper(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
-                    identitet = aktorId.copy(gjeldende = false),
-                    status = IdentitetStatus.SLETTET
+                    identitet = aktorId,
+                    status = IdentitetStatus.MERGE
                 ),
                 IdentitetWrapper(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
-                    identitet = npId.copy(gjeldende = false),
-                    status = IdentitetStatus.SLETTET
+                    identitet = npId,
+                    status = IdentitetStatus.MERGE
                 ),
                 IdentitetWrapper(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
-                    identitet = dnr.copy(gjeldende = false),
-                    status = IdentitetStatus.SLETTET
-                ),
-                IdentitetWrapper(
-                    arbeidssoekerId = arbeidssoekerId2,
-                    aktorId = aktorId.identitet,
-                    identitet = fnr1.copy(gjeldende = false),
-                    status = IdentitetStatus.SLETTET
-                ),
-                IdentitetWrapper(
-                    arbeidssoekerId = arbeidssoekerId2,
-                    aktorId = aktorId.identitet,
-                    identitet = fnr2.copy(gjeldende = false),
-                    status = IdentitetStatus.SLETTET
+                    identitet = dnr,
+                    status = IdentitetStatus.MERGE
                 )
             )
             val konfliktRows4 = konfliktRepository.findByAktorId(aktorId.identitet)
@@ -679,7 +651,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 KonfliktWrapper(
                     aktorId = aktorId.identitet,
                     type = KonfliktType.MERGE,
-                    status = KonfliktStatus.SLETTET,
+                    status = KonfliktStatus.VENTER,
                     identiteter = listOf(aktorId, npId, dnr.copy(gjeldende = false), fnr2)
                 ),
                 KonfliktWrapper(

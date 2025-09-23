@@ -25,8 +25,8 @@ clientIdPrefix = "paw-kafka-key-generator-paw-hendelseslogg"
 
 [identitetKonfliktJob]
 enabled = true
-delay = "PT3M"
-interval = "PT6M"
+delay = "PT5M"
+interval = "PT15M"
 batchSize = 10
 
 [identitetHendelseJob]
