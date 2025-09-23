@@ -2,18 +2,18 @@ package no.nav.paw.kafkakeygenerator.mergedetector
 
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.kafkakeygenerator.mergedetector.vo.LagretData
-import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.vo.Either
-import no.nav.paw.kafkakeygenerator.vo.Failure
-import no.nav.paw.kafkakeygenerator.vo.FailureCode.DB_NOT_FOUND
-import no.nav.paw.kafkakeygenerator.vo.FailureCode.PDL_NOT_FOUND
-import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
-import no.nav.paw.kafkakeygenerator.vo.Info
-import no.nav.paw.kafkakeygenerator.vo.PdlId
-import no.nav.paw.kafkakeygenerator.vo.flatten
-import no.nav.paw.kafkakeygenerator.vo.left
-import no.nav.paw.kafkakeygenerator.vo.recover
-import no.nav.paw.kafkakeygenerator.vo.right
+import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.model.Either
+import no.nav.paw.kafkakeygenerator.model.Failure
+import no.nav.paw.kafkakeygenerator.model.FailureCode.DB_NOT_FOUND
+import no.nav.paw.kafkakeygenerator.model.FailureCode.PDL_NOT_FOUND
+import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.model.Info
+import no.nav.paw.kafkakeygenerator.model.PdlId
+import no.nav.paw.kafkakeygenerator.model.flatten
+import no.nav.paw.kafkakeygenerator.model.left
+import no.nav.paw.kafkakeygenerator.model.recover
+import no.nav.paw.kafkakeygenerator.model.right
 
 @WithSpan
 fun hentLagretData(

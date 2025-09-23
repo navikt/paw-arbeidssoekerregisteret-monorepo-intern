@@ -1,4 +1,4 @@
-package no.nav.paw.kafkakeygenerator.vo
+package no.nav.paw.kafkakeygenerator.model
 
 data class Info(
     val identitetsnummer: String,

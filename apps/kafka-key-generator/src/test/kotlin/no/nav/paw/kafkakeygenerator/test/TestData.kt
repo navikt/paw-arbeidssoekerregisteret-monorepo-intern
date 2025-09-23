@@ -47,8 +47,8 @@ import no.nav.paw.kafkakeygenerator.model.KonfliktType
 import no.nav.paw.kafkakeygenerator.model.asIdentitet
 import no.nav.paw.kafkakeygenerator.test.TestData.asResponse
 import no.nav.paw.kafkakeygenerator.test.TestData.asString
-import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
 import no.nav.paw.pdl.graphql.generated.HentIdenter
 import no.nav.paw.pdl.graphql.generated.enums.IdentGruppe
 import no.nav.paw.pdl.graphql.generated.hentidenter.IdentInformasjon

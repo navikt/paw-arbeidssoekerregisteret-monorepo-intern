@@ -1,6 +1,6 @@
-package no.nav.paw.kafkakeygenerator.vo
+package no.nav.paw.kafkakeygenerator.model
 
-enum class IdentitetStatus {
+enum class AuditIdentitetStatus {
     OPPRETTET,
     OPPDATERT,
     VERIFISERT,

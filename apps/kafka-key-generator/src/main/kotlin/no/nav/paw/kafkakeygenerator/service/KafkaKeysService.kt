@@ -8,33 +8,32 @@ import no.nav.paw.kafkakeygenerator.api.v2.LokaleAlias
 import no.nav.paw.kafkakeygenerator.api.v2.publicTopicKeyFunction
 import no.nav.paw.kafkakeygenerator.mergedetector.findMerge
 import no.nav.paw.kafkakeygenerator.mergedetector.hentLagretData
-import no.nav.paw.kafkakeygenerator.mergedetector.vo.LagretData
 import no.nav.paw.kafkakeygenerator.mergedetector.vo.MergeDetected
-import no.nav.paw.kafkakeygenerator.mergedetector.vo.NoMergeDetected
+import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.model.CallId
+import no.nav.paw.kafkakeygenerator.model.Either
+import no.nav.paw.kafkakeygenerator.model.Failure
+import no.nav.paw.kafkakeygenerator.model.FailureCode
+import no.nav.paw.kafkakeygenerator.model.FailureCode.CONFLICT
+import no.nav.paw.kafkakeygenerator.model.FailureCode.DB_NOT_FOUND
+import no.nav.paw.kafkakeygenerator.model.IdentitetFailure
+import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.model.Info
+import no.nav.paw.kafkakeygenerator.model.LokalIdData
+import no.nav.paw.kafkakeygenerator.model.PdlData
+import no.nav.paw.kafkakeygenerator.model.PdlId
 import no.nav.paw.kafkakeygenerator.model.asIdentitet
+import no.nav.paw.kafkakeygenerator.model.flatMap
+import no.nav.paw.kafkakeygenerator.model.flatten
+import no.nav.paw.kafkakeygenerator.model.left
+import no.nav.paw.kafkakeygenerator.model.recover
+import no.nav.paw.kafkakeygenerator.model.right
+import no.nav.paw.kafkakeygenerator.model.suspendingRecover
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
 import no.nav.paw.kafkakeygenerator.utils.countRestApiFailed
 import no.nav.paw.kafkakeygenerator.utils.countRestApiFetched
 import no.nav.paw.kafkakeygenerator.utils.countRestApiInserted
 import no.nav.paw.kafkakeygenerator.utils.countRestApiReceived
-import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.vo.CallId
-import no.nav.paw.kafkakeygenerator.vo.Either
-import no.nav.paw.kafkakeygenerator.vo.Failure
-import no.nav.paw.kafkakeygenerator.vo.FailureCode
-import no.nav.paw.kafkakeygenerator.vo.FailureCode.CONFLICT
-import no.nav.paw.kafkakeygenerator.vo.FailureCode.DB_NOT_FOUND
-import no.nav.paw.kafkakeygenerator.vo.IdentitetFailure
-import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
-import no.nav.paw.kafkakeygenerator.vo.Info
-import no.nav.paw.kafkakeygenerator.vo.LokalIdData
-import no.nav.paw.kafkakeygenerator.vo.PdlData
-import no.nav.paw.kafkakeygenerator.vo.PdlId
-import no.nav.paw.kafkakeygenerator.vo.flatMap
-import no.nav.paw.kafkakeygenerator.vo.left
-import no.nav.paw.kafkakeygenerator.vo.recover
-import no.nav.paw.kafkakeygenerator.vo.right
-import no.nav.paw.kafkakeygenerator.vo.suspendingRecover
 import no.nav.paw.logging.logger.buildLogger
 import no.nav.paw.pdl.graphql.generated.hentidenter.IdentInformasjon
 import org.apache.kafka.clients.producer.internals.BuiltInPartitioner.partitionForKey
@@ -48,6 +47,17 @@ class KafkaKeysService(
 ) {
     private val logger = buildLogger
     private val keySerializer = Serdes.Long().serializer()
+
+    fun hentLokaleAlias(
+        antallPartisjoner: Int,
+        identiteter: List<String>
+    ): Either<Failure, List<LokaleAlias>> {
+        return identiteter.mapNotNull { identitet ->
+            hentLokaleAlias(antallPartisjoner, Identitetsnummer(identitet))
+                .recover(FailureCode.DB_NOT_FOUND) { right(null) }
+        }.flatten()
+            .map(List<LokaleAlias?>::filterNotNull)
+    }
 
     @WithSpan
     fun hentLokaleAlias(
@@ -135,7 +145,8 @@ class KafkaKeysService(
                     )
                 )
             }.recover(DB_NOT_FOUND) {
-                right(Info(
+                right(
+                    Info(
                     identitetsnummer = identitet.value,
                     lagretData = null,
                     pdlData = pdlIdInfo.fold(
@@ -151,7 +162,7 @@ class KafkaKeysService(
                                     )
                                 })
                         }
-                )))
+                    )))
             }
     }
 

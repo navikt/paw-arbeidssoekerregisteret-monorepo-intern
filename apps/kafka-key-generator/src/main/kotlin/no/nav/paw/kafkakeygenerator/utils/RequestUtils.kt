@@ -1,7 +1,7 @@
 package no.nav.paw.kafkakeygenerator.utils
 
 import io.ktor.server.routing.RoutingRequest
-import no.nav.paw.kafkakeygenerator.vo.CallId
+import no.nav.paw.kafkakeygenerator.model.CallId
 import java.util.*
 
 const val TRACE_PARENT_HEADER_NAME = "traceparent"

@@ -1,16 +1,16 @@
 package no.nav.paw.kafkakeygenerator.service
 
-import no.nav.paw.kafkakeygenerator.vo.CallId
-import no.nav.paw.kafkakeygenerator.vo.Either
-import no.nav.paw.kafkakeygenerator.vo.Failure
-import no.nav.paw.kafkakeygenerator.vo.FailureCode
-import no.nav.paw.kafkakeygenerator.vo.GenericFailure
-import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
-import no.nav.paw.kafkakeygenerator.vo.flatMap
-import no.nav.paw.kafkakeygenerator.vo.left
-import no.nav.paw.kafkakeygenerator.vo.mapToFailure
-import no.nav.paw.kafkakeygenerator.vo.right
-import no.nav.paw.kafkakeygenerator.vo.suspendeableAttempt
+import no.nav.paw.kafkakeygenerator.model.CallId
+import no.nav.paw.kafkakeygenerator.model.Either
+import no.nav.paw.kafkakeygenerator.model.Failure
+import no.nav.paw.kafkakeygenerator.model.FailureCode
+import no.nav.paw.kafkakeygenerator.model.GenericFailure
+import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.model.flatMap
+import no.nav.paw.kafkakeygenerator.model.left
+import no.nav.paw.kafkakeygenerator.model.mapToFailure
+import no.nav.paw.kafkakeygenerator.model.right
+import no.nav.paw.kafkakeygenerator.model.suspendeableAttempt
 import no.nav.paw.pdl.PdlClient
 import no.nav.paw.pdl.PdlException
 import no.nav.paw.pdl.graphql.generated.enums.IdentGruppe

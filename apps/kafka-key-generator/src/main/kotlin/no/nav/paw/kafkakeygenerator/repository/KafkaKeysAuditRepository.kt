@@ -1,10 +1,10 @@
 package no.nav.paw.kafkakeygenerator.repository
 
 import no.nav.paw.kafkakeygenerator.database.KafkaKeysAuditTable
-import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.vo.Audit
-import no.nav.paw.kafkakeygenerator.vo.IdentitetStatus
-import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.model.Audit
+import no.nav.paw.kafkakeygenerator.model.AuditIdentitetStatus
+import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
@@ -26,7 +26,7 @@ class KafkaKeysAuditRepository {
             }
     }
 
-    fun findByStatus(status: IdentitetStatus): List<Audit> = transaction {
+    fun findByStatus(status: AuditIdentitetStatus): List<Audit> = transaction {
         KafkaKeysAuditTable.selectAll()
             .where(KafkaKeysAuditTable.status eq status)
             .map {

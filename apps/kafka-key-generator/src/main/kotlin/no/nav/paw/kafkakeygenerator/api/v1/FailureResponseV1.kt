@@ -1,4 +1,4 @@
-package no.nav.paw.kafkakeygenerator.api.recordkey
+package no.nav.paw.kafkakeygenerator.api.v1
 
 data class FailureResponseV1(
     val message: String,

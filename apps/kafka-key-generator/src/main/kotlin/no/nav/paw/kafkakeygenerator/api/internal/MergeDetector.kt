@@ -2,8 +2,8 @@ package no.nav.paw.kafkakeygenerator.api.internal
 
 import io.ktor.server.routing.Routing
 import no.nav.paw.kafkakeygenerator.merge.MergeDetector
-import no.nav.paw.kafkakeygenerator.vo.Either
-import no.nav.paw.kafkakeygenerator.vo.Failure
+import no.nav.paw.kafkakeygenerator.model.Either
+import no.nav.paw.kafkakeygenerator.model.Failure
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicReference

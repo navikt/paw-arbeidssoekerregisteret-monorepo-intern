@@ -22,7 +22,7 @@ import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
 import no.nav.paw.kafkakeygenerator.config.ServerConfig
 import no.nav.paw.kafkakeygenerator.model.HendelseStatus
 import no.nav.paw.kafkakeygenerator.repository.HendelseRepository
-import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
 import no.nav.paw.logging.logger.buildLogger
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord

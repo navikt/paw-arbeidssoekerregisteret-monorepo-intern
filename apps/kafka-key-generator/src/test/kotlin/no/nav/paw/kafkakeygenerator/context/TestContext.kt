@@ -53,11 +53,11 @@ import no.nav.paw.kafkakeygenerator.test.TestData
 import no.nav.paw.kafkakeygenerator.test.buildPostgresDataSource
 import no.nav.paw.kafkakeygenerator.test.genererResponse
 import no.nav.paw.kafkakeygenerator.test.runAsSql
-import no.nav.paw.kafkakeygenerator.vo.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.vo.CallId
-import no.nav.paw.kafkakeygenerator.vo.Either
-import no.nav.paw.kafkakeygenerator.vo.Failure
-import no.nav.paw.kafkakeygenerator.vo.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.model.CallId
+import no.nav.paw.kafkakeygenerator.model.Either
+import no.nav.paw.kafkakeygenerator.model.Failure
+import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
 import no.nav.paw.pdl.PdlClient
 import no.nav.paw.security.authentication.config.AuthProvider
 import no.nav.paw.security.authentication.config.AuthProviderRequiredClaims

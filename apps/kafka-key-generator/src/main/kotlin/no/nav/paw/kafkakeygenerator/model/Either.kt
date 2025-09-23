@@ -1,4 +1,4 @@
-package no.nav.paw.kafkakeygenerator.vo
+package no.nav.paw.kafkakeygenerator.model
 
 sealed interface Either<out L, out R> {
     fun <R2> map(f: (R) -> R2): Either<L, R2>
