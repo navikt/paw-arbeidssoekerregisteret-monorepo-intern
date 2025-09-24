@@ -44,11 +44,11 @@ spec:
     - name: KAFKA_CONSUMER_GROUP_ID_VERSION_PDL_AKTOR
       value: "2"
     - name: SCHEDULED_JOB_ENABLED_IDENTITET_KONFLIKT
-      value: "false"
+      value: "true"
     - name: SCHEDULED_JOB_DELAY_IDENTITET_KONFLIKT
-      value: "PT10M"
+      value: "PT5M"
     - name: SCHEDULED_JOB_INTERVAL_IDENTITET_KONFLIKT
-      value: "PT1H"
+      value: "PT15M"
     - name: SCHEDULED_JOB_BATCH_SIZE_IDENTITET_KONFLIKT
       value: "1000"
     - name: SCHEDULED_JOB_ENABLED_IDENTITET_HENDELSE

@@ -105,21 +105,29 @@ class KonfliktService(
             status = KonfliktStatus.VENTER,
             rowCount = batchSize
         )
-        val idList = konfliktRepository.updateStatusByIdListReturning(
-            idList = konfliktRows.map { it.id },
-            fraStatus = KonfliktStatus.VENTER,
-            tilStatus = KonfliktStatus.PROSESSERER
-        )
-        logger.info("Håndterer {} ventende identitet-merges", idList.size)
-        idList
-            .mapNotNull { konfliktRepository.getById(it) }
-            .forEach {
-                handleVentendeMergeKonflikt(
-                    aktorId = it.aktorId,
-                    type = it.type,
-                    sourceTimestamp = it.sourceTimestamp
-                )
-            }
+        if (konfliktRows.isEmpty()) {
+            logger.info(
+                "Fant ingen konflikter av type {} med status {}",
+                KonfliktType.MERGE.name,
+                KonfliktStatus.VENTER.name
+            )
+        } else {
+            val idList = konfliktRepository.updateStatusByIdListReturning(
+                idList = konfliktRows.map { it.id },
+                fraStatus = KonfliktStatus.VENTER,
+                tilStatus = KonfliktStatus.PROSESSERER
+            )
+            logger.info("Håndterer {} konflikter av type {}", idList.size, KonfliktType.MERGE.name)
+            idList
+                .mapNotNull { konfliktRepository.getById(it) }
+                .forEach {
+                    handleVentendeMergeKonflikt(
+                        aktorId = it.aktorId,
+                        type = it.type,
+                        sourceTimestamp = it.sourceTimestamp
+                    )
+                }
+        }
     }
 
     private fun handleVentendeMergeKonflikt(

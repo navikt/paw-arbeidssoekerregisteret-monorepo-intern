@@ -4,7 +4,6 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.kafka.consumer.CommittingKafkaConsumerWrapper
 import no.nav.paw.kafka.consumer.NonCommittingKafkaConsumerWrapper
 import no.nav.paw.kafka.handler.ConsumerExceptionHandler
 import no.nav.paw.kafka.plugin.KafkaConsumerPlugin
@@ -30,6 +29,7 @@ fun Application.installKafkaPlugins(
     pdlAktorHwmRebalanceListener: HwmConsumerRebalanceListener,
     pdlAktorKafkaConsumerService: PdlAktorKafkaConsumerService
 ) {
+    /*
     install(KafkaConsumerPlugin<Long, Hendelse>("PawHendelselogg")) {
         this.onConsume = pawHendelseKafkaConsumerService::handleRecords
         this.kafkaConsumerWrapper = CommittingKafkaConsumerWrapper(
@@ -38,6 +38,7 @@ fun Application.installKafkaPlugins(
             exceptionHandler = pawHendelseConsumerExceptionHandler
         )
     }
+     */
     install(KafkaConsumerPlugin<Long, Periode>("PawPeriode")) {
         this.onInit = pawPeriodeHwmRebalanceListener::onPartitionsReady
         this.onConsume = pawPeriodeKafkaConsumerService::handleRecords
