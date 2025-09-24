@@ -15,7 +15,6 @@ import no.nav.paw.kafkakeygenerator.repository.KonfliktIdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KonfliktRepository
 import no.nav.paw.kafkakeygenerator.repository.PeriodeRepository
 import no.nav.paw.logging.logger.buildLogger
-import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Instant
 
 class KonfliktService(
@@ -36,16 +35,6 @@ class KonfliktService(
         return konfliktRepository.findByAktorIdAndStatus(
             aktorId = aktorId,
             status = KonfliktStatus.VENTER
-        )
-    }
-
-    fun slettVentendeKonflikter(
-        aktorId: String
-    ) {
-        konfliktRepository.updateStatusByAktorIdAndStatus(
-            aktorId = aktorId,
-            fraStatus = KonfliktStatus.VENTER,
-            tilStatus = KonfliktStatus.SLETTET
         )
     }
 
@@ -117,7 +106,7 @@ class KonfliktService(
                 fraStatus = KonfliktStatus.VENTER,
                 tilStatus = KonfliktStatus.PROSESSERER
             )
-            logger.info("Håndterer {} konflikter av type {}", idList.size, KonfliktType.MERGE.name)
+            logger.info("Starter prosessering av {} konflikter av type {}", idList.size, KonfliktType.MERGE.name)
             idList
                 .mapNotNull { konfliktRepository.getById(it) }
                 .forEach {
@@ -134,7 +123,8 @@ class KonfliktService(
         aktorId: String,
         type: KonfliktType,
         sourceTimestamp: Instant
-    ) = transaction {
+    ) {
+        logger.info("Håndterer konflikt av type {}", KonfliktType.MERGE.name)
         val eksisterendeIdentitetRows = identitetRepository.findByAktorId(aktorId)
         val konfliktIdentitetRows = konfliktIdentitetRepository.findByAktorId(aktorId)
         val alleIdentitetSet = eksisterendeIdentitetRows
