@@ -89,12 +89,12 @@ class KonfliktService(
     }
 
     fun handleVentendeMergeKonflikter() {
-        val konfliktRows = konfliktRepository.findByTypeAndStatus(
+        val ventendeKonfliktRows = konfliktRepository.findByTypeAndStatus(
             type = KonfliktType.MERGE,
             status = KonfliktStatus.VENTER,
             rowCount = batchSize
         )
-        if (konfliktRows.isEmpty()) {
+        if (ventendeKonfliktRows.isEmpty()) {
             logger.info(
                 "Fant ingen konflikter av type {} med status {}",
                 KonfliktType.MERGE.name,
@@ -102,20 +102,28 @@ class KonfliktService(
             )
         } else {
             val idList = konfliktRepository.updateStatusByIdListReturning(
-                idList = konfliktRows.map { it.id },
+                idList = ventendeKonfliktRows.map { it.id },
                 fraStatus = KonfliktStatus.VENTER,
                 tilStatus = KonfliktStatus.PROSESSERER
             )
-            logger.info("Starter prosessering av {} konflikter av type {}", idList.size, KonfliktType.MERGE.name)
-            idList
-                .mapNotNull { konfliktRepository.getById(it) }
-                .forEach {
-                    handleVentendeMergeKonflikt(
-                        aktorId = it.aktorId,
-                        type = it.type,
-                        sourceTimestamp = it.sourceTimestamp
-                    )
-                }
+
+            val konfliktRows = konfliktRepository.findByIdList(idList)
+
+            logger.info(
+                "Starter prosessering av {}/{}/{} konflikter av type {}",
+                konfliktRows.size,
+                idList.size,
+                ventendeKonfliktRows.size,
+                KonfliktType.MERGE.name
+            )
+
+            konfliktRows.forEach {
+                handleVentendeMergeKonflikt(
+                    aktorId = it.aktorId,
+                    type = it.type,
+                    sourceTimestamp = it.sourceTimestamp
+                )
+            }
         }
     }
 

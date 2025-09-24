@@ -31,6 +31,14 @@ class KonfliktRepository(
             .singleOrNull()
     }
 
+    fun findByIdList(
+        idList: Collection<Long>,
+    ): List<KonfliktRow> = transaction {
+        KonflikterTable.selectAll()
+            .where { KonflikterTable.id inList idList }
+            .map { it.asKonfliktRowMedIdentiteter() }
+    }
+
     fun findByAktorId(
         aktorId: String
     ): List<KonfliktRow> = transaction {
