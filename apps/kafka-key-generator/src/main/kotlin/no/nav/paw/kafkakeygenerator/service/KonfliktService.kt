@@ -100,11 +100,15 @@ class KonfliktService(
     }
 
     fun handleVentendeMergeKonflikter() {
-        val idList = konfliktRepository.updateStatusByTypeAndStatusReturning(
+        val konfliktRows = konfliktRepository.findByTypeAndStatus(
             type = KonfliktType.MERGE,
+            status = KonfliktStatus.VENTER,
+            rowCount = batchSize
+        )
+        val idList = konfliktRepository.updateStatusByIdListReturning(
+            idList = konfliktRows.map { it.id },
             fraStatus = KonfliktStatus.VENTER,
-            tilStatus = KonfliktStatus.PROSESSERER,
-            limit = batchSize
+            tilStatus = KonfliktStatus.PROSESSERER
         )
         logger.info("Håndterer {} ventende identitet-merges", idList.size)
         idList

@@ -60,6 +60,18 @@ class KonfliktRepository(
             .map { it.asKonfliktRowMedIdentiteter() }
     }
 
+    fun findByTypeAndStatus(
+        type: KonfliktType,
+        status: KonfliktStatus,
+        rowCount: Int
+    ): List<KonfliktRow> = transaction {
+        KonflikterTable.selectAll()
+            .where { (KonflikterTable.type eq type) and (KonflikterTable.status eq status) }
+            .orderBy(KonflikterTable.id, SortOrder.ASC)
+            .limit(rowCount)
+            .map { it.asKonfliktRowMedIdentiteter() }
+    }
+
     fun insert(
         aktorId: String,
         type: KonfliktType,
@@ -103,19 +115,14 @@ class KonfliktRepository(
         }
     }
 
-    fun updateStatusByTypeAndStatusReturning(
-        type: KonfliktType,
+    fun updateStatusByIdListReturning(
+        idList: Collection<Long>,
         fraStatus: KonfliktStatus,
         tilStatus: KonfliktStatus,
-        limit: Int = 1000
     ): List<Long> = transaction {
-        val chunkQuery = KonflikterTable.select(KonflikterTable.id)
-            .where { (KonflikterTable.type eq type) and (KonflikterTable.status eq fraStatus) }
-            .orderBy(KonflikterTable.id, SortOrder.ASC)
-            .limit(limit)
         KonflikterTable.updateReturning(
             returning = listOf(KonflikterTable.id),
-            where = { KonflikterTable.id inSubQuery chunkQuery }) {
+            where = { (KonflikterTable.id inList idList) and (KonflikterTable.status eq fraStatus) }) {
             it[KonflikterTable.status] = tilStatus
             it[updatedTimestamp] = Instant.now()
         }.map {
