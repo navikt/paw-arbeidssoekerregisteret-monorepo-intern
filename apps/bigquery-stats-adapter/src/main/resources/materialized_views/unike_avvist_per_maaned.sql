@@ -22,14 +22,4 @@ GROUP BY
     dnummer,
     doed,
     savnet,
-    opphoert_id
-ORDER BY
-    year,
-    month,
-    under_18_aar,
-    er_norsk,
-    ikke_eu,
-    dnummer,
-    doed,
-    savnet,
     opphoert_id;
