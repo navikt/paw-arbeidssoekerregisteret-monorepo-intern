@@ -20,7 +20,9 @@ fun Application.installScheduledTaskPlugins(
                 name = "IdentitetKonflikt",
                 task = konfliktService::handleVentendeMergeKonflikter,
                 delay = identitetKonfliktJob.delay,
-                interval = identitetKonfliktJob.interval
+                interval = identitetKonfliktJob.interval,
+                onFailure = konfliktService::handleMergeJobbFeilet,
+                onAbort = konfliktService::handleMergeJobbAvbrutt
             )
             logger.info("Jobb for håndtering av identitet-konflikter er aktiv")
         } else {

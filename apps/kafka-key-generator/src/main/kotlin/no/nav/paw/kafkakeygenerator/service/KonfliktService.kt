@@ -343,4 +343,12 @@ class KonfliktService(
             null
         }
     }
+
+    fun handleMergeJobbFeilet(throwable: Throwable) {
+        logger.error("Prosessering av konflikter av type ${KonfliktType.MERGE.name} feilet", throwable)
+    }
+
+    fun handleMergeJobbAvbrutt() {
+        logger.warn("Prosessering av konflikter av type ${KonfliktType.MERGE.name} ble avbrutt")
+    }
 }

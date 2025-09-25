@@ -37,18 +37,20 @@ import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType.AKTORID
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType.FOLKEREGISTERIDENT
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType.NPID
+import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.model.HendelseRow
 import no.nav.paw.kafkakeygenerator.model.HendelseStatus
 import no.nav.paw.kafkakeygenerator.model.IdentitetRow
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
+import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
 import no.nav.paw.kafkakeygenerator.model.KonfliktRow
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
 import no.nav.paw.kafkakeygenerator.model.asIdentitet
+import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
+import no.nav.paw.kafkakeygenerator.test.TestData.asIdentitetsnummer
 import no.nav.paw.kafkakeygenerator.test.TestData.asResponse
 import no.nav.paw.kafkakeygenerator.test.TestData.asString
-import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
 import no.nav.paw.pdl.graphql.generated.HentIdenter
 import no.nav.paw.pdl.graphql.generated.enums.IdentGruppe
 import no.nav.paw.pdl.graphql.generated.hentidenter.IdentInformasjon
@@ -299,7 +301,6 @@ object TestData {
         avsluttet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(90)))
     )
 
-
     fun brukerHendelse(): Bruker = Bruker(
         type = BrukerType.SYSTEM,
         id = "paw",
@@ -488,6 +489,11 @@ object TestData {
     fun KotlinxGraphQLResponse<*>.asString(): String = objectMapper.writeValueAsString(this)
 
     fun Identitet.asIdentitetsnummer(): Identitetsnummer = Identitetsnummer(identitet)
+}
+
+fun KafkaKeysRepository.insert(identitet: Identitet): Long {
+    return opprett(identitet.asIdentitetsnummer())
+        .fold(onLeft = { null }, onRight = { it })!!.value
 }
 
 data class IdentitetWrapper(
