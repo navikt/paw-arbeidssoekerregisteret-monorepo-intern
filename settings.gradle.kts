@@ -54,7 +54,6 @@ include(
     "apps:hendelselogg-backup",
     "apps:utgang-pdl",
     "apps:kafka-key-generator",
-    "apps:kafka-key-maintenance",
     "apps:bekreftelse-tjeneste",
     "apps:bekreftelse-api",
     "apps:bekreftelse-utgang",

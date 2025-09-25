@@ -1,2 +1,0 @@
-clientId = "paw-kafka-key-maintenance"
-tokenEndpointUrl = "http://localhost:8081/azure/token"

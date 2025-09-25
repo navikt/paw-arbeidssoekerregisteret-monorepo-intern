@@ -1,1 +1,0 @@
-drop index hwm_offset_idx;
