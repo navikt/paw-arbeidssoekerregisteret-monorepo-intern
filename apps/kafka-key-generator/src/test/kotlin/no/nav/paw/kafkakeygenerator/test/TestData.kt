@@ -25,21 +25,14 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
-import no.nav.paw.identitet.internehendelser.IdentitetHendelse
 import no.nav.paw.identitet.internehendelser.IdentitetHendelseDeserializer
 import no.nav.paw.identitet.internehendelser.IdentitetHendelseSerializer
-import no.nav.paw.identitet.internehendelser.IdentiteterEndretHendelse
-import no.nav.paw.identitet.internehendelser.IdentiteterMergetHendelse
-import no.nav.paw.identitet.internehendelser.IdentiteterSlettetHendelse
-import no.nav.paw.identitet.internehendelser.IdentiteterSplittetHendelse
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType.AKTORID
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType.FOLKEREGISTERIDENT
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType.NPID
 import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.model.HendelseRow
-import no.nav.paw.kafkakeygenerator.model.HendelseStatus
 import no.nav.paw.kafkakeygenerator.model.IdentitetRow
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
@@ -514,48 +507,6 @@ data class IdentitetHendelseWrapper(
     val type: String,
     val identiteter: List<Identitet>,
     val tidligereIdentiteter: List<Identitet> = emptyList(),
-)
-
-fun IdentitetHendelse.asWrapper(): IdentitetHendelseWrapper {
-    return when (this) {
-        is IdentiteterEndretHendelse -> IdentitetHendelseWrapper(
-            type = hendelseType,
-            identiteter = identiteter,
-            tidligereIdentiteter = tidligereIdentiteter,
-        )
-
-        is IdentiteterMergetHendelse -> IdentitetHendelseWrapper(
-            type = hendelseType,
-            identiteter = identiteter,
-            tidligereIdentiteter = tidligereIdentiteter,
-        )
-
-        is IdentiteterSplittetHendelse -> IdentitetHendelseWrapper(
-            type = hendelseType,
-            identiteter = identiteter,
-            tidligereIdentiteter = tidligereIdentiteter,
-        )
-
-        is IdentiteterSlettetHendelse -> IdentitetHendelseWrapper(
-            type = hendelseType,
-            identiteter = emptyList(),
-            tidligereIdentiteter = tidligereIdentiteter,
-        )
-    }
-}
-
-data class HendelseWrapper(
-    val arbeidssoekerId: Long? = null,
-    val aktorId: String,
-    val hendelse: IdentitetHendelseWrapper,
-    val status: HendelseStatus
-)
-
-fun HendelseRow.asWrapper(): HendelseWrapper = HendelseWrapper(
-    arbeidssoekerId = arbeidssoekerId,
-    aktorId = aktorId,
-    hendelse = hendelseDeserializer.deserializeFromString(data).asWrapper(),
-    status = status
 )
 
 data class KonfliktWrapper(

@@ -200,8 +200,6 @@ class KonfliktServiceTest : FreeSpec({
                     KafkaKeyRow(arbeidssoekerId3, fnr2.identitet)
                 )
 
-                hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-
                 verify(exactly = 3) { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
                 identitetProducerRecordList shouldHaveSize 3
                 val identitetRecord1 = identitetProducerRecordList[0]
@@ -442,8 +440,6 @@ class KonfliktServiceTest : FreeSpec({
                     KafkaKeyRow(arbeidssoekerId3, fnr2.identitet)
                 )
 
-                hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-
                 verify(exactly = 3) { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
                 identitetProducerRecordList shouldHaveSize 3
                 val identitetRecord1 = identitetProducerRecordList[0]
@@ -682,8 +678,6 @@ class KonfliktServiceTest : FreeSpec({
                     KafkaKeyRow(arbeidssoekerId3, fnr2.identitet)
                 )
 
-                hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-
                 verify(exactly = 3) { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
                 identitetProducerRecordList shouldHaveSize 3
                 val identitetRecord1 = identitetProducerRecordList[0]
@@ -921,8 +915,6 @@ class KonfliktServiceTest : FreeSpec({
                     KafkaKeyRow(arbeidssoekerId3, fnr2.identitet)
                 )
 
-                hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-
                 verify { pawIdentitetProducerMock wasNot Called }
                 verify { pawHendelseloggProducerMock wasNot Called }
             }
@@ -1019,8 +1011,6 @@ class KonfliktServiceTest : FreeSpec({
                     KafkaKeyRow(arbeidssoekerId1, aktorId.identitet),
                     KafkaKeyRow(arbeidssoekerId2, dnr.identitet),
                 )
-
-                hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
 
                 verify(exactly = 2) { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
                 identitetProducerRecordList shouldHaveSize 2
@@ -1168,8 +1158,6 @@ class KonfliktServiceTest : FreeSpec({
                     KafkaKeyRow(arbeidssoekerId2, fnr.identitet),
                 )
 
-                hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-
                 verify(exactly = 2) { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
                 identitetProducerRecordList shouldHaveSize 2
                 val identitetRecord1 = identitetProducerRecordList[0]
@@ -1252,8 +1240,6 @@ class KonfliktServiceTest : FreeSpec({
                     val (aktorId, dnr, fnr) = i
                     val arbeidssoekerId1 = kafkaKeysRepository.insert(aktorId)
                     val arbeidssoekerId2 = kafkaKeysRepository.insert(dnr)
-                    val arbId1 = arbeidssoekerId1.asIdentitet(true)
-                    val arbId2 = arbeidssoekerId2.asIdentitet(true)
                     val identitetProducerRecordList = mutableListOf<ProducerRecord<Long, IdentitetHendelse>>()
                     val hendelseloggProducerRecordList = mutableListOf<ProducerRecord<Long, Hendelse>>()
 

@@ -18,7 +18,9 @@ import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafka.producer.sendBlocking
 import no.nav.paw.kafkakeygenerator.context.TestContext
+import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
+import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
 import no.nav.paw.kafkakeygenerator.model.KafkaKeyRow
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
@@ -28,8 +30,6 @@ import no.nav.paw.kafkakeygenerator.test.TestData
 import no.nav.paw.kafkakeygenerator.test.TestData.asIdentitetsnummer
 import no.nav.paw.kafkakeygenerator.test.TestData.asRecords
 import no.nav.paw.kafkakeygenerator.test.asWrapper
-import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
 import no.nav.person.pdl.aktor.v2.Aktor
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
@@ -85,7 +85,6 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             identitetService.finnForAktorId(aktorId.identitet) shouldHaveSize 0
             identitetRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             kafkaKeysIdentitetRepository.find(aktorId.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(npId.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer()) shouldBe null
@@ -115,7 +114,6 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             identitetService.finnForAktorId(aktorId.identitet) shouldHaveSize 0
             identitetRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             kafkaKeysIdentitetRepository.find(aktorId.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(npId.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer()) shouldBe null
@@ -178,7 +176,6 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 )
             )
             konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             val kafkaKeyRow1 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow1 shouldBe KafkaKeyRow(arbeidssoekerId, dnr.identitet)
             kafkaKeysIdentitetRepository.find(fnr1.asIdentitetsnummer()) shouldBe null
@@ -247,7 +244,6 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 )
             )
             konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             val kafkaKeyRow2 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow2 shouldBe KafkaKeyRow(arbeidssoekerId, dnr.identitet)
             kafkaKeysIdentitetRepository.find(fnr1.asIdentitetsnummer()) shouldBe null
@@ -322,7 +318,6 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 )
             )
             konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             val kafkaKeyRow3 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow3 shouldBe KafkaKeyRow(arbeidssoekerId, dnr.identitet)
             kafkaKeysIdentitetRepository.find(fnr1.asIdentitetsnummer()) shouldBe null
@@ -392,7 +387,6 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 )
             )
             konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             val kafkaKeyRow4 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow4 shouldBe KafkaKeyRow(arbeidssoekerId, dnr.identitet)
             kafkaKeysIdentitetRepository.find(fnr1.asIdentitetsnummer()) shouldBe null
@@ -474,7 +468,6 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 )
             )
             konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             val kafkaKeyRow1 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow1 shouldBe KafkaKeyRow(arbeidssoekerId1, dnr.identitet)
             val kafkaKeyRow2 = kafkaKeysIdentitetRepository.find(fnr1.asIdentitetsnummer())
@@ -539,7 +532,6 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                     identiteter = listOf(aktorId, npId, dnr.copy(gjeldende = false), fnr1)
                 )
             )
-            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             val kafkaKeyRow3 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow3 shouldBe KafkaKeyRow(arbeidssoekerId1, dnr.identitet)
             val kafkaKeyRow4 = kafkaKeysIdentitetRepository.find(fnr1.asIdentitetsnummer())
@@ -597,7 +589,6 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                     identiteter = listOf(aktorId, npId, dnr.copy(gjeldende = false), fnr2)
                 )
             )
-            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             val kafkaKeyRow5 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow5 shouldBe KafkaKeyRow(arbeidssoekerId1, dnr.identitet)
             val kafkaKeyRow6 = kafkaKeysIdentitetRepository.find(fnr1.asIdentitetsnummer())
@@ -661,7 +652,6 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                     identiteter = emptyList()
                 )
             )
-            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             val kafkaKeyRow7 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow7 shouldBe KafkaKeyRow(arbeidssoekerId1, dnr.identitet)
             val kafkaKeyRow8 = kafkaKeysIdentitetRepository.find(fnr1.asIdentitetsnummer())
@@ -737,8 +727,6 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             identitetRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
             konfliktRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
             konfliktRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
             val kafkaKeyRow1 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow1 shouldBe KafkaKeyRow(arbeidssoekerId, dnr.identitet)
             kafkaKeysIdentitetRepository.find(fnr.asIdentitetsnummer()) shouldBe null
@@ -812,8 +800,6 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                     identiteter = listOf(aktorId2, fnr)
                 )
             )
-            hendelseRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
             val kafkaKeyRow2 = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
             kafkaKeyRow2 shouldBe KafkaKeyRow(arbeidssoekerId, dnr.identitet)
             kafkaKeysIdentitetRepository.find(fnr.asIdentitetsnummer()) shouldBe null
@@ -885,8 +871,6 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             identitetRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
             konfliktRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
             konfliktRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
             kafkaKeysIdentitetRepository.find(aktorId1.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(aktorId2.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(npId1.asIdentitetsnummer()) shouldBe null
@@ -971,8 +955,6 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             )
             konfliktRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
             konfliktRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
             kafkaKeysIdentitetRepository.find(aktorId1.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(aktorId2.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(npId1.asIdentitetsnummer()) shouldBe null
@@ -1052,8 +1034,6 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             )
             konfliktRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
             konfliktRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
             kafkaKeysIdentitetRepository.find(aktorId1.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(aktorId2.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(npId1.asIdentitetsnummer()) shouldBe null
@@ -1165,7 +1145,6 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 )
             )
             konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             kafkaKeysIdentitetRepository.find(aktorId.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(npId.asIdentitetsnummer()) shouldBe null
             val kafkaKeyRow = kafkaKeysIdentitetRepository.find(dnr.asIdentitetsnummer())
@@ -1233,7 +1212,6 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 )
             )
             konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             kafkaKeysIdentitetRepository.find(aktorId.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(npId.asIdentitetsnummer()) shouldBe null
             val kafkaKeyRow1 = kafkaKeysIdentitetRepository.find(fnr.asIdentitetsnummer())
@@ -1286,7 +1264,6 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
                 )
             )
             konfliktRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
-            hendelseRepository.findByAktorId(aktorId.identitet) shouldHaveSize 0
             kafkaKeysIdentitetRepository.find(aktorId.asIdentitetsnummer()) shouldBe null
             kafkaKeysIdentitetRepository.find(npId.asIdentitetsnummer()) shouldBe null
             val kafkaKeyRow2 = kafkaKeysIdentitetRepository.find(fnr.asIdentitetsnummer())

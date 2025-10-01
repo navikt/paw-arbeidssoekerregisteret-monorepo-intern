@@ -7,7 +7,6 @@ import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerializer
 import no.nav.paw.client.config.AZURE_M2M_CONFIG
 import no.nav.paw.client.config.AzureAdM2MConfig
@@ -32,10 +31,8 @@ import no.nav.paw.kafkakeygenerator.config.ServerConfig
 import no.nav.paw.kafkakeygenerator.handler.HealthIndicatorConsumerExceptionHandler
 import no.nav.paw.kafkakeygenerator.listener.HwmConsumerRebalanceListener
 import no.nav.paw.kafkakeygenerator.merge.MergeDetector
-import no.nav.paw.kafkakeygenerator.repository.HendelseRepository
 import no.nav.paw.kafkakeygenerator.repository.HwmRepository
 import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
-import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysIdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
 import no.nav.paw.kafkakeygenerator.repository.KonfliktIdentitetRepository
@@ -47,7 +44,6 @@ import no.nav.paw.kafkakeygenerator.service.IdentitetService
 import no.nav.paw.kafkakeygenerator.service.KafkaHwmService
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
 import no.nav.paw.kafkakeygenerator.service.KonfliktService
-import no.nav.paw.kafkakeygenerator.service.PawHendelseKafkaConsumerService
 import no.nav.paw.kafkakeygenerator.service.PawPeriodeKafkaConsumerService
 import no.nav.paw.kafkakeygenerator.service.PdlAktorKafkaConsumerService
 import no.nav.paw.kafkakeygenerator.service.PdlService
@@ -71,9 +67,6 @@ data class ApplicationContext(
     val identitetResponseService: IdentitetResponseService,
     val konfliktService: KonfliktService,
     val hendelseService: HendelseService,
-    val pawHendelseKafkaConsumer: KafkaConsumer<Long, Hendelse>,
-    val pawHendelseConsumerExceptionHandler: ConsumerExceptionHandler,
-    val pawHendelseKafkaConsumerService: PawHendelseKafkaConsumerService,
     val pawPeriodeConsumer: KafkaConsumer<Long, Periode>,
     val pawPeriodeConsumerExceptionHandler: ConsumerExceptionHandler,
     val pawPeriodeConsumerRebalanceListener: HwmConsumerRebalanceListener,
@@ -104,11 +97,9 @@ data class ApplicationContext(
             val hwmRepository = HwmRepository()
             val kafkaKeysIdentitetRepository = KafkaKeysIdentitetRepository()
             val kafkaKeysRepository = KafkaKeysRepository()
-            val kafkaKeysAuditRepository = KafkaKeysAuditRepository()
             val identitetRepository = IdentitetRepository()
             val konfliktIdentitetRepository = KonfliktIdentitetRepository()
             val konfliktRepository = KonfliktRepository(konfliktIdentitetRepository)
-            val hendelseRepository = HendelseRepository()
             val periodeRepository = PeriodeRepository()
 
             val pawIdentitetHendelseProducer = kafkaFactory.createProducer<Long, IdentitetHendelse>(
@@ -125,7 +116,6 @@ data class ApplicationContext(
             val hendelseService = HendelseService(
                 serverConfig = serverConfig,
                 applicationConfig = applicationConfig,
-                hendelseRepository = hendelseRepository,
                 pawIdentitetHendelseProducer = pawIdentitetHendelseProducer,
                 pawHendelseloggHendelseProducer = pawHendelseloggHendelseProducer
             )
@@ -144,12 +134,6 @@ data class ApplicationContext(
                 hendelseService = hendelseService,
                 kafkaKeysIdentitetRepository = kafkaKeysIdentitetRepository
             )
-            val pawHendelseKafkaConsumerService = PawHendelseKafkaConsumerService(
-                meterRegistry = prometheusMeterRegistry,
-                kafkaKeysIdentitetRepository = kafkaKeysIdentitetRepository,
-                kafkaKeysRepository = kafkaKeysRepository,
-                kafkaKeysAuditRepository = kafkaKeysAuditRepository
-            )
             val pdlService = PdlService(pdlClient = pdlClient)
             val kafkaKeysService = KafkaKeysService(
                 meterRegistry = prometheusMeterRegistry,
@@ -164,16 +148,6 @@ data class ApplicationContext(
             val mergeDetector = MergeDetector(
                 kafkaKeysRepository = kafkaKeysRepository,
                 pdlService = pdlService
-            )
-            val pawHendelseKafkaConsumer = kafkaFactory.createConsumer(
-                groupId = applicationConfig.pawHendelseConsumer.groupId,
-                clientId = applicationConfig.pawHendelseConsumer.clientId,
-                keyDeserializer = LongDeserializer::class,
-                valueDeserializer = HendelseDeserializer::class
-            )
-            val pawHendelseConsumerExceptionHandler = HealthIndicatorConsumerExceptionHandler(
-                livenessIndicator = healthIndicatorRepository.livenessIndicator(HealthStatus.HEALTHY),
-                readinessIndicator = healthIndicatorRepository.readinessIndicator(HealthStatus.HEALTHY)
             )
             val pawPeriodeKafkaHwmOperations = KafkaHwmService(
                 kafkaConsumerConfig = applicationConfig.pawPeriodeConsumer,
@@ -234,9 +208,6 @@ data class ApplicationContext(
                 identitetResponseService = identitetResponseService,
                 konfliktService = konfliktService,
                 hendelseService = hendelseService,
-                pawHendelseKafkaConsumer = pawHendelseKafkaConsumer,
-                pawHendelseConsumerExceptionHandler = pawHendelseConsumerExceptionHandler,
-                pawHendelseKafkaConsumerService = pawHendelseKafkaConsumerService,
                 pawPeriodeConsumer = pawPeriodeConsumer,
                 pawPeriodeConsumerExceptionHandler = pawPeriodeConsumerExceptionHandler,
                 pawPeriodeConsumerRebalanceListener = pawPeriodeConsumerRebalanceListener,
@@ -247,7 +218,10 @@ data class ApplicationContext(
                 pdlAktorKafkaConsumerService = pdlAktorKafkaConsumerService,
                 kafkaKeysService = kafkaKeysService,
                 mergeDetector = mergeDetector,
-                additionalMeterBinders = listOf(KafkaClientMetrics(pawHendelseKafkaConsumer))
+                additionalMeterBinders = listOf(
+                    KafkaClientMetrics(pawPeriodeConsumer),
+                    KafkaClientMetrics(pdlAktorConsumer)
+                )
             )
         }
     }
