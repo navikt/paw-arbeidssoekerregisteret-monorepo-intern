@@ -6,7 +6,6 @@ import no.nav.paw.kafkakeygenerator.api.models.KonfliktType
 import no.nav.paw.kafkakeygenerator.api.models.MergeKonflikt
 import no.nav.paw.kafkakeygenerator.api.v2.asApi
 import no.nav.paw.kafkakeygenerator.api.v2.publicTopicKeyFunction
-import no.nav.paw.kafkakeygenerator.exception.IdentiteterIkkeFunnetException
 import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.asIdentitet
@@ -36,36 +35,44 @@ class IdentitetResponseService(
             .findByIdentitet(identitet)
             .filter { it.status != IdentitetStatus.SLETTET }
         if (identitetRows.isEmpty()) {
-            throw IdentiteterIkkeFunnetException()
-        }
-        val aktorIdListe = identitetRows.map { it.aktorId }.distinct()
-        val arbeidssoekerIdListe = identitetRows.map { it.arbeidssoekerId }.distinct()
-        val arbeidssoekerId = identitetRows.maxOf { it.arbeidssoekerId }
-        val konflikter = if (visKonflikter && (aktorIdListe.size > 1 || arbeidssoekerIdListe.size > 1)) {
-            listOf(
-                Konflikt(
-                    type = KonfliktType.MERGE,
-                    detaljer = MergeKonflikt(
-                        aktorIdListe = aktorIdListe,
-                        arbeidssoekerIdListe = arbeidssoekerIdListe
-                    )
-                )
+            return IdentitetResponse(
+                identiteter = emptyList(),
+                pdlIdentiteter = pdlIdentiteter,
             )
         } else {
-            emptyList()
+            val aktorIdListe = identitetRows.map { it.aktorId }.distinct()
+            val arbeidssoekerIdListe = identitetRows.map { it.arbeidssoekerId }.distinct()
+            val arbeidssoekerId = identitetRows.maxOf { it.arbeidssoekerId }
+            val konflikter = if (visKonflikter) {
+                if (aktorIdListe.size > 1 || arbeidssoekerIdListe.size > 1) {
+                    listOf(
+                        Konflikt(
+                            type = KonfliktType.MERGE,
+                            detaljer = MergeKonflikt(
+                                aktorIdListe = aktorIdListe,
+                                arbeidssoekerIdListe = arbeidssoekerIdListe
+                            )
+                        )
+                    )
+                } else {
+                    emptyList()
+                }
+            } else {
+                null
+            }
+            val identiteter = identitetRows
+                .map { it.asIdentitet() }
+                .toMutableList()
+                .apply { add(arbeidssoekerId.asIdentitet(true)) }
+                .sortedBy { it.type.ordinal }
+                .map { it.asApi() }
+            return IdentitetResponse(
+                arbeidssoekerId = arbeidssoekerId,
+                recordKey = publicTopicKeyFunction(ArbeidssoekerId(arbeidssoekerId)).value,
+                identiteter = identiteter,
+                pdlIdentiteter = pdlIdentiteter,
+                konflikter = konflikter
+            )
         }
-        val identiteter = identitetRows
-            .map { it.asIdentitet() }
-            .toMutableList()
-            .apply { add(arbeidssoekerId.asIdentitet(true)) }
-            .sortedBy { it.type.ordinal }
-            .map { it.asApi() }
-        return IdentitetResponse(
-            arbeidssoekerId = arbeidssoekerId,
-            recordKey = publicTopicKeyFunction(ArbeidssoekerId(arbeidssoekerId)).value,
-            identiteter = identiteter,
-            pdlIdentiteter = pdlIdentiteter,
-            konflikter = konflikter
-        )
     }
 }

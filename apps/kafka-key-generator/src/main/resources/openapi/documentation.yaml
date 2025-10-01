@@ -145,20 +145,6 @@ paths:
                 detail: "Kunne ikke tolke forespørsel"
                 instance: "/api/v2/identiteter"
                 timestamp: "2021-01-01T12:00:00.000Z"
-        "404":
-          description: "Not Found"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-              example:
-                id: "f853cf14-3361-4cd3-ab07-44bac7778480"
-                type: "urn:paw:identiteter:identiteter-ikke-funnet"
-                status: 404
-                title: "Not Found"
-                detail: "Fant ingen tilknyttede identiteter"
-                instance: "/api/v2/identiteter"
-                timestamp: "2021-01-01T12:00:00.000Z"
         "500":
           description: "Internal Server Error"
           content:
@@ -314,8 +300,6 @@ components:
           items:
             $ref: "#/components/schemas/Konflikt"
       required:
-        - "arbeidssoekerId"
-        - "recordKey"
         - "identiteter"
       example:
         arbeidssoekerId: 10170
