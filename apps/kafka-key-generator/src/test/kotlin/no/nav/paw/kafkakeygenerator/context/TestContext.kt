@@ -23,8 +23,6 @@ import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.error.plugin.installErrorHandlingPlugin
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.identitet.internehendelser.IdentitetHendelse
-import no.nav.paw.identitet.internehendelser.IdentitetHendelseDeserializer
-import no.nav.paw.identitet.internehendelser.IdentitetHendelseSerializer
 import no.nav.paw.kafkakeygenerator.config.APPLICATION_CONFIG
 import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
 import no.nav.paw.kafkakeygenerator.config.SERVER_CONFIG
@@ -36,10 +34,8 @@ import no.nav.paw.kafkakeygenerator.model.Either
 import no.nav.paw.kafkakeygenerator.model.Failure
 import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
 import no.nav.paw.kafkakeygenerator.plugin.configureRouting
-import no.nav.paw.kafkakeygenerator.repository.HendelseRepository
 import no.nav.paw.kafkakeygenerator.repository.HwmRepository
 import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
-import no.nav.paw.kafkakeygenerator.repository.KafkaKeysAuditRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysIdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
 import no.nav.paw.kafkakeygenerator.repository.KonfliktIdentitetRepository
@@ -52,7 +48,6 @@ import no.nav.paw.kafkakeygenerator.service.KafkaHwmOperations
 import no.nav.paw.kafkakeygenerator.service.KafkaHwmService
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
 import no.nav.paw.kafkakeygenerator.service.KonfliktService
-import no.nav.paw.kafkakeygenerator.service.PawHendelseKafkaConsumerService
 import no.nav.paw.kafkakeygenerator.service.PdlAktorKafkaConsumerService
 import no.nav.paw.kafkakeygenerator.service.PdlService
 import no.nav.paw.kafkakeygenerator.test.TestData
@@ -75,8 +70,6 @@ import javax.sql.DataSource
 
 class TestContext private constructor(
     val mockOAuth2Server: MockOAuth2Server = MockOAuth2Server(),
-    val hendelseSerializer: IdentitetHendelseSerializer = IdentitetHendelseSerializer(),
-    val hendelseDeserializer: IdentitetHendelseDeserializer = IdentitetHendelseDeserializer(),
     val serverConfig: ServerConfig = loadNaisOrLocalConfiguration(SERVER_CONFIG),
     val applicationConfig: ApplicationConfig = loadNaisOrLocalConfiguration(APPLICATION_CONFIG),
     val dataSource: DataSource,
@@ -85,19 +78,16 @@ class TestContext private constructor(
     val meterRegistry: MeterRegistry = LoggingMeterRegistry(),
     val hwmRepository: HwmRepository = HwmRepository(),
     val kafkaKeysRepository: KafkaKeysRepository = KafkaKeysRepository(),
-    val kafkaKeysAuditRepository: KafkaKeysAuditRepository = KafkaKeysAuditRepository(),
     val kafkaKeysIdentitetRepository: KafkaKeysIdentitetRepository = KafkaKeysIdentitetRepository(),
     val identitetRepository: IdentitetRepository = IdentitetRepository(),
     val periodeRepository: PeriodeRepository = PeriodeRepository(),
     val konfliktIdentitetRepository: KonfliktIdentitetRepository = KonfliktIdentitetRepository(),
     val konfliktRepository: KonfliktRepository = KonfliktRepository(konfliktIdentitetRepository),
-    val hendelseRepository: HendelseRepository = HendelseRepository(),
     val pawIdentitetProducerMock: Producer<Long, IdentitetHendelse> = mockk<Producer<Long, IdentitetHendelse>>(),
     val pawHendelseloggProducerMock: Producer<Long, Hendelse> = mockk<Producer<Long, Hendelse>>(),
     val hendelseService: HendelseService = HendelseService(
         serverConfig = serverConfig,
         applicationConfig = applicationConfig,
-        hendelseRepository = hendelseRepository,
         pawIdentitetHendelseProducer = pawIdentitetProducerMock,
         pawHendelseloggHendelseProducer = pawHendelseloggProducerMock
     ),
@@ -136,12 +126,6 @@ class TestContext private constructor(
         kafkaConsumerConfig = applicationConfig.pdlAktorConsumer,
         hwmOperations = pdlAktorKafkaHwmOperations,
         identitetService = identitetService
-    ),
-    val pawHendelseKafkaConsumerService: PawHendelseKafkaConsumerService = PawHendelseKafkaConsumerService(
-        meterRegistry = meterRegistry,
-        kafkaKeysIdentitetRepository = kafkaKeysIdentitetRepository,
-        kafkaKeysRepository = kafkaKeysRepository,
-        kafkaKeysAuditRepository = kafkaKeysAuditRepository
     )
 ) {
     fun hentEllerOpprett(identitetsnummer: String): Either<Failure, ArbeidssoekerId> = runBlocking {

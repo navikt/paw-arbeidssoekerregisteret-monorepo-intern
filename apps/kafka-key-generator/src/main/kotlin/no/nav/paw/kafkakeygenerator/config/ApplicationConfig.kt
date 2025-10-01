@@ -5,13 +5,12 @@ import java.time.Duration
 const val APPLICATION_CONFIG = "application_config.toml"
 
 data class ApplicationConfig(
-    val pawHendelseConsumer: KafkaConsumerConfig,
     val pawPeriodeConsumer: KafkaConsumerConfig,
     val pdlAktorConsumer: KafkaConsumerConfig,
     val pawIdentitetProducer: KafkaProducerConfig,
     val pawHendelseloggProducer: KafkaProducerConfig,
-    val identitetKonfliktJob: ScheduledJobConfig,
-    val identitetHendelseJob: ScheduledJobConfig
+    val identitetMergeKonfliktJob: ScheduledJobConfig,
+    val identitetSplittKonfliktJob: ScheduledJobConfig
 )
 
 data class KafkaConsumerConfig(

@@ -23,10 +23,6 @@ spec:
       value: "pdl.aktor-v2"
     - name: KAFKA_TOPIC_PAW_IDENTITETER
       value: "paw.arbeidssoker-identiteter-v1"
-    - name: KAFKA_CONSUMER_GROUP_ID_PREFIX_PAW_HENDELSESLOGG
-      value: "paw-kafka-key-generator"
-    - name: KAFKA_CONSUMER_GROUP_ID_VERSION_PAW_HENDELSESLOGG
-      value: "1"
     - name: KAFKA_CONSUMER_GROUP_ID_PREFIX_PAW_PERIODER
       value: "paw-kafka-key-generator-paw-perioder"
     - name: KAFKA_CONSUMER_GROUP_ID_VERSION_PAW_PERIODER
@@ -43,22 +39,10 @@ spec:
       value: "paw-kafka-key-generator-pdl-aktor"
     - name: KAFKA_CONSUMER_GROUP_ID_VERSION_PDL_AKTOR
       value: "2"
-    - name: SCHEDULED_JOB_ENABLED_IDENTITET_KONFLIKT
+    - name: SCHEDULED_JOB_ENABLED_IDENTITET_MERGE_KONFLIKT
       value: "true"
-    - name: SCHEDULED_JOB_DELAY_IDENTITET_KONFLIKT
-      value: "PT5M"
-    - name: SCHEDULED_JOB_INTERVAL_IDENTITET_KONFLIKT
-      value: "PT15M"
-    - name: SCHEDULED_JOB_BATCH_SIZE_IDENTITET_KONFLIKT
-      value: "1000"
-    - name: SCHEDULED_JOB_ENABLED_IDENTITET_HENDELSE
+    - name: SCHEDULED_JOB_ENABLED_IDENTITET_SPLITT_KONFLIKT
       value: "false"
-    - name: SCHEDULED_JOB_DELAY_IDENTITET_HENDELSE
-      value: "PT6M"
-    - name: SCHEDULED_JOB_INTERVAL_IDENTITET_HENDELSE
-      value: "PT6M"
-    - name: SCHEDULED_JOB_BATCH_SIZE_IDENTITET_HENDELSE
-      value: "1000"
   ingresses:
     - https://record-key-arbeidssoekerregisteret.intern.dev.nav.no/api/v1/record-key
     - https://record-key-arbeidssoekerregisteret.intern.dev.nav.no/docs/record-key

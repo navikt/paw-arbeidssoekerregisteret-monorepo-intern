@@ -1,8 +1,3 @@
-[pawHendelseConsumer]
-version = 1
-topic = "paw.arbeidssoker-hendelseslogg-v1"
-groupIdPrefix = "paw-kafka-key-generator"
-
 [pawPeriodeConsumer]
 version = 1
 topic = "paw.arbeidssokerperioder-v1"
@@ -23,14 +18,14 @@ version = 1
 topic = "paw.arbeidssoker-hendelseslogg-v1"
 clientIdPrefix = "paw-kafka-key-generator-paw-hendelseslogg"
 
-[identitetKonfliktJob]
+[identitetMergeKonfliktJob]
 enabled = true
 delay = "PT5M"
-interval = "PT15M"
+interval = "PT13M"
 batchSize = 10
 
-[identitetHendelseJob]
+[identitetSplittKonfliktJob]
 enabled = false
-delay = "PT6M"
-interval = "PT6M"
+delay = "PT4M"
+interval = "PT16M"
 batchSize = 10

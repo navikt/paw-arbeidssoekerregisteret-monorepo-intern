@@ -27,7 +27,7 @@ class KonfliktService(
     private val hendelseService: HendelseService
 ) {
     private val logger = buildLogger
-    private val batchSize = applicationConfig.identitetKonfliktJob.batchSize
+    private val batchSize = applicationConfig.identitetMergeKonfliktJob.batchSize
 
     fun finnVentendeKonflikter(
         aktorId: String

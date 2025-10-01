@@ -22,7 +22,7 @@ fun main() {
     with(applicationConfig) {
         val kafkaFactory = KafkaFactory(kafkaConfig)
         val pawHendelseKafkaProducer = kafkaFactory.createProducer<Long, Hendelse>(
-            clientId = "${pawHendelseConsumer.groupId}-producer",
+            clientId = pawHendelseloggProducer.clientId,
             keySerializer = LongSerializer::class,
             valueSerializer = HendelseSerializer::class
         )
@@ -41,7 +41,7 @@ fun main() {
 
         try {
             logger.info("Sender hendelse {}", value)
-            pawHendelseKafkaProducer.send(ProducerRecord(pawHendelseConsumer.topic, key, value)).get()
+            pawHendelseKafkaProducer.send(ProducerRecord(pawHendelseloggProducer.topic, key, value)).get()
         } catch (e: Exception) {
             logger.error("Send hendelse feilet", e)
         } finally {

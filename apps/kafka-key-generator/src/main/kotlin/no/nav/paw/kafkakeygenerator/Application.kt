@@ -4,7 +4,6 @@ import io.ktor.server.application.Application
 import io.ktor.server.engine.addShutdownHook
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import io.micrometer.core.instrument.binder.kafka.KafkaClientMetrics
 import no.nav.paw.config.env.appNameOrDefaultForLocal
 import no.nav.paw.database.plugin.installDatabasePlugin
 import no.nav.paw.error.plugin.installErrorHandlingPlugin
@@ -47,14 +46,11 @@ fun Application.module(applicationContext: ApplicationContext) {
         installAuthenticationPlugin(securityConfig.authProviders)
         installWebAppMetricsPlugin(
             meterRegistry = prometheusMeterRegistry,
-            additionalMeterBinders = listOf(KafkaClientMetrics(pawHendelseKafkaConsumer))
+            additionalMeterBinders = additionalMeterBinders
         )
         installDatabasePlugin(dataSource)
         installKafkaPlugins(
             applicationConfig = applicationConfig,
-            pawHendelseConsumer = pawHendelseKafkaConsumer,
-            pawHendelseConsumerExceptionHandler = pawHendelseConsumerExceptionHandler,
-            pawHendelseKafkaConsumerService = pawHendelseKafkaConsumerService,
             pawPeriodeConsumer = pawPeriodeConsumer,
             pawPeriodeConsumerExceptionHandler = pawPeriodeConsumerExceptionHandler,
             pawPeriodeHwmRebalanceListener = pawPeriodeConsumerRebalanceListener,
@@ -66,8 +62,7 @@ fun Application.module(applicationContext: ApplicationContext) {
         )
         installScheduledTaskPlugins(
             applicationConfig = applicationConfig,
-            konfliktService = konfliktService,
-            hendelseService = hendelseService
+            konfliktService = konfliktService
         )
         configureRouting(
             meterRegistry = prometheusMeterRegistry,
