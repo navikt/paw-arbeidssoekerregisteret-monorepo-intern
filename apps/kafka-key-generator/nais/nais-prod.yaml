@@ -42,7 +42,7 @@ spec:
     - name: SCHEDULED_JOB_ENABLED_IDENTITET_MERGE_KONFLIKT
       value: "true"
     - name: SCHEDULED_JOB_ENABLED_IDENTITET_SPLITT_KONFLIKT
-      value: "false"
+      value: "true"
   replicas:
     min: 2
     max: 2
@@ -66,7 +66,7 @@ spec:
       enabled: true
       runtime: java
   kafka:
-      pool: nav-prod
+    pool: nav-prod
   gcp:
     sqlInstances:
       - type: POSTGRES_17
@@ -79,31 +79,31 @@ spec:
     application:
       enabled: true
   accessPolicy:
-      outbound:
-        rules:
-          - application: logging
-            namespace: nais-system
-        external:
-          - host: pdl-api.prod-fss-pub.nais.io
-      inbound:
-        rules:
-          - application: paw-brukerstotte
-          - application: paw-microfrontend-toggler
-          - application: paw-kafka-key-maintenance
-          - application: paw-arbeidssokerregisteret-api-inngang
-          - application: paw-arbeidssoekerregisteret-utgang-pdl
-          - application: paw-arbeidssoekerregisteret-utgang-formidlingsgruppe
-          - application: paw-arbeidssoekerregisteret-hendelselogg-backup
-          - application: paw-arbeidssoekerregisteret-api-bekreftelse
-          - application: paw-arbeidssoekerregisteret-bekreftelse-tjeneste
-          - application: paw-arbeidssoekerregisteret-bekreftelse-backup
-          - application: paw-arbeidssoekerregisteret-api-oppslag-v2
-          - application: paw-arbeidssoekerregisteret-api-egenvurdering
-          - application: dp-rapportering-personregister
-            namespace: teamdagpenger
-          - application: dp-rapportering
-            namespace: teamdagpenger
-          - application: dp-meldekortregister
-            namespace: teamdagpenger
-          - application: flex-arbeidssokerregister-oppdatering
-            namespace: flex
+    outbound:
+      rules:
+        - application: logging
+          namespace: nais-system
+      external:
+        - host: pdl-api.prod-fss-pub.nais.io
+    inbound:
+      rules:
+        - application: paw-brukerstotte
+        - application: paw-microfrontend-toggler
+        - application: paw-kafka-key-maintenance
+        - application: paw-arbeidssokerregisteret-api-inngang
+        - application: paw-arbeidssoekerregisteret-utgang-pdl
+        - application: paw-arbeidssoekerregisteret-utgang-formidlingsgruppe
+        - application: paw-arbeidssoekerregisteret-hendelselogg-backup
+        - application: paw-arbeidssoekerregisteret-api-bekreftelse
+        - application: paw-arbeidssoekerregisteret-bekreftelse-tjeneste
+        - application: paw-arbeidssoekerregisteret-bekreftelse-backup
+        - application: paw-arbeidssoekerregisteret-api-oppslag-v2
+        - application: paw-arbeidssoekerregisteret-api-egenvurdering
+        - application: dp-rapportering-personregister
+          namespace: teamdagpenger
+        - application: dp-rapportering
+          namespace: teamdagpenger
+        - application: dp-meldekortregister
+          namespace: teamdagpenger
+        - application: flex-arbeidssokerregister-oppdatering
+          namespace: flex
