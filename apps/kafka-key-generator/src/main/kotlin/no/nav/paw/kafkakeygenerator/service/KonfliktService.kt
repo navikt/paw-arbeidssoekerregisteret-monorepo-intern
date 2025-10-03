@@ -5,6 +5,7 @@ import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KafkaKeyRow
+import no.nav.paw.kafkakeygenerator.model.KonfliktIdentitetRow
 import no.nav.paw.kafkakeygenerator.model.KonfliktRow
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
@@ -18,7 +19,7 @@ import no.nav.paw.logging.logger.buildLogger
 import java.time.Instant
 
 class KonfliktService(
-    applicationConfig: ApplicationConfig,
+    private val applicationConfig: ApplicationConfig,
     private val identitetRepository: IdentitetRepository,
     private val konfliktRepository: KonfliktRepository,
     private val konfliktIdentitetRepository: KonfliktIdentitetRepository,
@@ -27,7 +28,6 @@ class KonfliktService(
     private val hendelseService: HendelseService
 ) {
     private val logger = buildLogger
-    private val batchSize = applicationConfig.identitetMergeKonfliktJob.batchSize
 
     fun finnVentendeKonflikter(
         aktorId: String
@@ -88,53 +88,56 @@ class KonfliktService(
         }
     }
 
-    fun handleVentendeMergeKonflikter() {
+    private fun handleKonflikter(
+        type: KonfliktType,
+        status: KonfliktStatus,
+        batchSize: Int,
+        handleKonflikt: (KonfliktRow) -> Unit
+    ) {
         val ventendeKonfliktRows = konfliktRepository.findByTypeAndStatus(
-            type = KonfliktType.MERGE,
-            status = KonfliktStatus.VENTER,
+            type = type,
+            status = status,
             rowCount = batchSize
         )
         if (ventendeKonfliktRows.isEmpty()) {
             logger.info(
                 "Fant ingen konflikter av type {} med status {}",
-                KonfliktType.MERGE.name,
-                KonfliktStatus.VENTER.name
+                type.name,
+                status.name
             )
         } else {
-            val idList = konfliktRepository.updateStatusByIdListReturning(
+            val konfliktIdList = konfliktRepository.updateStatusByIdListReturning(
                 idList = ventendeKonfliktRows.map { it.id },
-                fraStatus = KonfliktStatus.VENTER,
+                fraStatus = status,
                 tilStatus = KonfliktStatus.PROSESSERER
             )
 
-            val konfliktRows = konfliktRepository.findByIdList(idList)
+            val konfliktRows = konfliktRepository.findByIdList(konfliktIdList)
 
             logger.info(
                 "Starter prosessering av {}/{}/{} konflikter av type {}",
                 konfliktRows.size,
-                idList.size,
+                konfliktIdList.size,
                 ventendeKonfliktRows.size,
-                KonfliktType.MERGE.name
+                type.name
             )
 
-            konfliktRows.forEach {
-                handleVentendeMergeKonflikt(
-                    aktorId = it.aktorId,
-                    type = it.type,
-                    sourceTimestamp = it.sourceTimestamp
-                )
-            }
+            konfliktRows.forEach(handleKonflikt)
         }
     }
 
-    private fun handleVentendeMergeKonflikt(
-        aktorId: String,
-        type: KonfliktType,
-        sourceTimestamp: Instant
-    ) {
+    fun handleVentendeMergeKonflikter() = handleKonflikter(
+        type = KonfliktType.MERGE,
+        status = KonfliktStatus.VENTER,
+        batchSize = applicationConfig.identitetMergeKonfliktJob.batchSize,
+        handleKonflikt = ::handleVentendeMergeKonflikt
+    )
+
+    private fun handleVentendeMergeKonflikt(konfliktRow: KonfliktRow) {
         logger.info("Håndterer konflikt av type {}", KonfliktType.MERGE.name)
-        val eksisterendeIdentitetRows = identitetRepository.findByAktorId(aktorId)
-        val konfliktIdentitetRows = konfliktIdentitetRepository.findByAktorId(aktorId)
+
+        val eksisterendeIdentitetRows = identitetRepository.findByAktorId(konfliktRow.aktorId)
+        val konfliktIdentitetRows = konfliktIdentitetRepository.findByAktorId(konfliktRow.aktorId)
         val alleIdentitetSet = eksisterendeIdentitetRows
             .filter { it.status != IdentitetStatus.SLETTET }
             .map { it.identitet }
@@ -158,30 +161,25 @@ class KonfliktService(
             .toSet()
 
         val gjeldendeArbeidssoekerId = uledGjeldendeArbeidssoekerId(
-            aktorId = aktorId,
-            type = type,
+            aktorId = konfliktRow.aktorId,
+            type = konfliktRow.type,
             eksisterendeKafkaKeyRows = eksisterendeKafkaKeyRows
         )
 
-        if (gjeldendeArbeidssoekerId != null) {
+        if (gjeldendeArbeidssoekerId == null) {
+            logger.warn("Avbryter prosessering av {}-konflikt", KonfliktType.MERGE.name)
+        } else {
             // Slett identiteter som ikke var i PDL-hendelse
             eksisterendeIdentitetRows
                 .filter { !konfliktIdentitetSet.contains(it.identitet) }
                 .forEach { identitetRow ->
                     slettedeIdentitetSet.add(identitetRow.identitet)
 
-                    val rowsAffected = identitetRepository.updateByIdentitet(
+                    slettIdentitet(
+                        aktorId = konfliktRow.aktorId,
                         identitet = identitetRow.identitet,
-                        aktorId = aktorId,
-                        gjeldende = false,
-                        status = IdentitetStatus.SLETTET,
-                        sourceTimestamp = identitetRow.sourceTimestamp
-                    )
-                    logger.info(
-                        "Oppdaterer identitet av type {} med status {} (rows affected {})",
-                        identitetRow.type.name,
-                        IdentitetStatus.SLETTET.name,
-                        rowsAffected
+                        type = identitetRow.type,
+                        sourceTimestamp = konfliktRow.sourceTimestamp
                     )
                 }
 
@@ -189,40 +187,23 @@ class KonfliktService(
             konfliktIdentitetRows
                 .forEach { identitet ->
                     if (eksisterendeIdentitetSet.contains(identitet.identitet)) {
-                        val rowsAffected = identitetRepository.updateByIdentitet(
-                            identitet = identitet.identitet,
-                            aktorId = aktorId,
+                        oppdaterIdentitet(
+                            aktorId = konfliktRow.aktorId,
                             arbeidssoekerId = gjeldendeArbeidssoekerId,
-                            gjeldende = identitet.gjeldende,
-                            status = IdentitetStatus.AKTIV,
-                            sourceTimestamp = sourceTimestamp
-                        )
-                        logger.info(
-                            "Oppdaterer identitet av type {} med status {} (rows affected {})",
-                            identitet.type.name,
-                            IdentitetStatus.AKTIV.name,
-                            rowsAffected
+                            identitet = identitet,
+                            sourceTimestamp = konfliktRow.sourceTimestamp
                         )
                     } else {
-                        val rowsAffected = identitetRepository.insert(
+                        opprettIdentitet(
+                            aktorId = konfliktRow.aktorId,
                             arbeidssoekerId = gjeldendeArbeidssoekerId,
-                            aktorId = aktorId,
-                            identitet = identitet.identitet,
-                            type = identitet.type,
-                            gjeldende = identitet.gjeldende,
-                            status = IdentitetStatus.AKTIV,
-                            sourceTimestamp = sourceTimestamp
-                        )
-                        logger.info(
-                            "Oppretter identitet av type {} med arbeidssoekerId og status {} (rows affected {})",
-                            identitet.type.name,
-                            IdentitetStatus.AKTIV.name,
-                            rowsAffected
+                            identitet = identitet,
+                            sourceTimestamp = konfliktRow.sourceTimestamp
                         )
                     }
                 }
 
-            val nyeIdentiteter = identitetRepository.findByAktorId(aktorId)
+            val nyeIdentiteter = identitetRepository.findByAktorId(konfliktRow.aktorId)
                 .filter { it.status != IdentitetStatus.SLETTET }
                 .map { it.asIdentitet() }
                 .toList()
@@ -273,28 +254,126 @@ class KonfliktService(
                             tilArbeidssoekerId = gjeldendeArbeidssoekerId,
                             identitet = tidligereIdent,
                             identiteter = tidligereIdentitetSet,
-                            sourceTimestamp = sourceTimestamp
+                            sourceTimestamp = konfliktRow.sourceTimestamp
                         )
                         hendelseService.sendArbeidssoekerIdFlettetInnHendelse(
                             fraArbeidssoekerId = arbeidssoekerId,
                             tilArbeidssoekerId = gjeldendeArbeidssoekerId,
                             identitet = gjeldendeIdentitetSet,
                             identiteter = tidligereIdentitetSet,
-                            sourceTimestamp = sourceTimestamp
+                            sourceTimestamp = konfliktRow.sourceTimestamp
                         )
                     }
                 }
 
-            val identitetKonfliktRowsAffected = konfliktRepository
-                .updateStatusByAktorIdAndType(
-                    aktorId = aktorId,
-                    type = type,
-                    status = KonfliktStatus.FULLFOERT
-                )
-            logger.info(
-                "Oppdaterer identitet-merge med status {} (rows affected {})",
-                KonfliktStatus.FULLFOERT.name,
-                identitetKonfliktRowsAffected
+            oppdaterKonflikt(
+                aktorId = konfliktRow.aktorId,
+                type = konfliktRow.type,
+                status = KonfliktStatus.FULLFOERT
+            )
+        }
+    }
+
+    fun handleValgteSplittKonflikter() = handleKonflikter(
+        type = KonfliktType.SPLITT,
+        status = KonfliktStatus.VALGT,
+        batchSize = applicationConfig.identitetSplittKonfliktJob.batchSize,
+        handleKonflikt = ::handleValgtSplittKonflikt
+    )
+
+    fun handleValgtSplittKonflikt(konfliktRow: KonfliktRow) {
+        logger.info("Håndterer konflikt av type {}", konfliktRow.type.name)
+
+        val nyeIdentitetSet = konfliktRow.identiteter
+            .map { it.identitet }
+            .toSet()
+        val eksisterendeIdentitetRows = identitetRepository
+            .findByAktorIdOrIdentiteter(
+                aktorId = konfliktRow.aktorId,
+                identiteter = nyeIdentitetSet
+            )
+        val arbeidssoekerIdSet = eksisterendeIdentitetRows
+            .map { it.arbeidssoekerId }
+            .toSet()
+        if (arbeidssoekerIdSet.size != 1) {
+            // Flere arbeidssøkerIder. Kan ikke håndtere merge.
+            logger.error(
+                "Kunne ikke løse {}-konflikt på grunn av funn av {} arbeidssøkerIder",
+                konfliktRow.type.name,
+                arbeidssoekerIdSet.size,
+            )
+            oppdaterKonflikt(
+                aktorId = konfliktRow.aktorId,
+                type = konfliktRow.type,
+                status = KonfliktStatus.FEILET
+            )
+        } else {
+            val arbeidssoekerId = arbeidssoekerIdSet.first()
+            val eksisterendeIdentitetSet = eksisterendeIdentitetRows
+                .map { it.identitet }
+                .toSet()
+
+            // Slett identiteter som ikke var i PDL-hendelse
+            eksisterendeIdentitetRows
+                .filter { it.status != IdentitetStatus.SLETTET }
+                .filter { !nyeIdentitetSet.contains(it.identitet) }
+                .forEach { identitetRow ->
+                    slettIdentitet(
+                        aktorId = konfliktRow.aktorId,
+                        identitet = identitetRow.identitet,
+                        type = identitetRow.type,
+                        sourceTimestamp = konfliktRow.sourceTimestamp
+                    )
+                }
+
+            // Opprett eller oppdater alle identiteter fra PDL-hendelse
+            konfliktRow.identiteter.forEach { identitet ->
+                if (eksisterendeIdentitetSet.contains(identitet.identitet)) {
+                    oppdaterIdentitet(
+                        aktorId = konfliktRow.aktorId,
+                        arbeidssoekerId = arbeidssoekerId,
+                        identitet = identitet,
+                        sourceTimestamp = konfliktRow.sourceTimestamp
+                    )
+                } else {
+                    opprettIdentitet(
+                        aktorId = konfliktRow.aktorId,
+                        arbeidssoekerId = arbeidssoekerId,
+                        identitet = identitet,
+                        sourceTimestamp = konfliktRow.sourceTimestamp
+                    )
+                }
+            }
+
+            val nyeIdentiteter = identitetRepository.findByAktorId(konfliktRow.aktorId)
+                .filter { it.status != IdentitetStatus.SLETTET }
+                .map { it.asIdentitet() }
+                .toMutableList()
+                .also {
+                    if (it.isNotEmpty()) {
+                        it.add(arbeidssoekerId.asIdentitet(gjeldende = true))
+                    }
+                }
+            val tidligereIdentiteter = eksisterendeIdentitetRows
+                .filter { it.status != IdentitetStatus.SLETTET }
+                .filter { it.aktorId == konfliktRow.aktorId }
+                .map { it.asIdentitet() }
+                .toMutableList()
+                .also {
+                    if (it.isNotEmpty()) {
+                        it.add(arbeidssoekerId.asIdentitet(gjeldende = true))
+                    }
+                }
+            hendelseService.sendIdentiteterSplittetHendelse(
+                arbeidssoekerId = arbeidssoekerId,
+                identiteter = nyeIdentiteter,
+                tidligereIdentiteter = tidligereIdentiteter
+            )
+
+            oppdaterKonflikt(
+                aktorId = konfliktRow.aktorId,
+                type = konfliktRow.type,
+                status = KonfliktStatus.FULLFOERT
             )
         }
     }
@@ -344,11 +423,106 @@ class KonfliktService(
         }
     }
 
+    private fun oppdaterKonflikt(
+        aktorId: String,
+        type: KonfliktType,
+        status: KonfliktStatus
+    ) {
+        val identitetKonfliktRowsAffected = konfliktRepository
+            .updateStatusByAktorIdAndType(
+                aktorId = aktorId,
+                type = type,
+                status = status
+            )
+        logger.info(
+            "Oppdaterer {}-konflikt med status {} (rows affected {})",
+            type.name,
+            status.name,
+            identitetKonfliktRowsAffected
+        )
+    }
+
+    private fun opprettIdentitet(
+        aktorId: String,
+        arbeidssoekerId: Long,
+        identitet: KonfliktIdentitetRow,
+        sourceTimestamp: Instant
+    ) {
+        val rowsAffected = identitetRepository.insert(
+            arbeidssoekerId = arbeidssoekerId,
+            aktorId = aktorId,
+            identitet = identitet.identitet,
+            type = identitet.type,
+            gjeldende = identitet.gjeldende,
+            status = IdentitetStatus.AKTIV,
+            sourceTimestamp = sourceTimestamp
+        )
+        logger.info(
+            "Oppretter identitet av type {} med status {} (rows affected {})",
+            identitet.type.name,
+            IdentitetStatus.AKTIV.name,
+            rowsAffected
+        )
+    }
+
+    private fun oppdaterIdentitet(
+        aktorId: String,
+        arbeidssoekerId: Long,
+        identitet: KonfliktIdentitetRow,
+        sourceTimestamp: Instant
+    ) {
+        val status = IdentitetStatus.AKTIV
+        val rowsAffected = identitetRepository.updateByIdentitet(
+            identitet = identitet.identitet,
+            aktorId = aktorId,
+            arbeidssoekerId = arbeidssoekerId,
+            gjeldende = identitet.gjeldende,
+            status = status,
+            sourceTimestamp = sourceTimestamp
+        )
+        logger.info(
+            "Oppdaterer identitet av type {} med status {} (rows affected {})",
+            identitet.type.name,
+            status.name,
+            rowsAffected
+        )
+    }
+
+    private fun slettIdentitet(
+        aktorId: String,
+        identitet: String,
+        type: IdentitetType,
+        sourceTimestamp: Instant
+    ) {
+        val status = IdentitetStatus.SLETTET
+        val rowsAffected = identitetRepository.updateByIdentitet(
+            identitet = identitet,
+            aktorId = aktorId,
+            gjeldende = false,
+            status = status,
+            sourceTimestamp = sourceTimestamp
+        )
+        logger.info(
+            "Oppdaterer identitet av type {} med status {} (rows affected {})",
+            type.name,
+            status.name,
+            rowsAffected
+        )
+    }
+
     fun handleMergeJobbFeilet(throwable: Throwable) {
         logger.error("Prosessering av konflikter av type ${KonfliktType.MERGE.name} feilet", throwable)
     }
 
     fun handleMergeJobbAvbrutt() {
         logger.warn("Prosessering av konflikter av type ${KonfliktType.MERGE.name} ble avbrutt")
+    }
+
+    fun handleSplittJobbFeilet(throwable: Throwable) {
+        logger.error("Prosessering av konflikter av type ${KonfliktType.SPLITT.name} feilet", throwable)
+    }
+
+    fun handleSplittJobbAvbrutt() {
+        logger.warn("Prosessering av konflikter av type ${KonfliktType.SPLITT.name} ble avbrutt")
     }
 }

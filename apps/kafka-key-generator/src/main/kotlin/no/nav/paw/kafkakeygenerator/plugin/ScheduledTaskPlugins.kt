@@ -31,9 +31,11 @@ fun Application.installScheduledTaskPlugins(
         if (identitetSplittKonfliktJob.enabled) {
             installScheduledTaskPlugin(
                 name = "IdentitetSplittKonflikt",
-                task = {},
+                task = konfliktService::handleValgteSplittKonflikter,
                 delay = identitetSplittKonfliktJob.delay,
-                interval = identitetSplittKonfliktJob.interval
+                interval = identitetSplittKonfliktJob.interval,
+                onFailure = konfliktService::handleSplittJobbFeilet,
+                onAbort = konfliktService::handleSplittJobbAvbrutt
             )
             logger.info("Jobb for håndtering av {}-konflikter er aktiv", KonfliktType.SPLITT.name)
         } else {

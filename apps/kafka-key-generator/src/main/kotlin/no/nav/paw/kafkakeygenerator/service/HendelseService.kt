@@ -14,6 +14,7 @@ import no.nav.paw.identitet.internehendelser.IdentitetHendelse
 import no.nav.paw.identitet.internehendelser.IdentiteterEndretHendelse
 import no.nav.paw.identitet.internehendelser.IdentiteterMergetHendelse
 import no.nav.paw.identitet.internehendelser.IdentiteterSlettetHendelse
+import no.nav.paw.identitet.internehendelser.IdentiteterSplittetHendelse
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.kafka.producer.sendBlocking
 import no.nav.paw.kafkakeygenerator.api.v2.publicTopicKeyFunction
@@ -60,6 +61,20 @@ class HendelseService(
         sendIdentiteterHendelse(
             arbeidssoekerId = arbeidssoekerId,
             hendelse = IdentiteterMergetHendelse(
+                identiteter = identiteter.sortedBy { it.type.ordinal },
+                tidligereIdentiteter = tidligereIdentiteter.sortedBy { it.type.ordinal }
+            )
+        )
+    }
+
+    fun sendIdentiteterSplittetHendelse(
+        arbeidssoekerId: Long,
+        identiteter: List<Identitet>,
+        tidligereIdentiteter: List<Identitet>
+    ) {
+        sendIdentiteterHendelse(
+            arbeidssoekerId = arbeidssoekerId,
+            hendelse = IdentiteterSplittetHendelse(
                 identiteter = identiteter.sortedBy { it.type.ordinal },
                 tidligereIdentiteter = tidligereIdentiteter.sortedBy { it.type.ordinal }
             )

@@ -15,6 +15,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerSammenslaatt
 import no.nav.paw.identitet.internehendelser.IdentitetHendelse
 import no.nav.paw.identitet.internehendelser.IdentiteterMergetHendelse
+import no.nav.paw.identitet.internehendelser.IdentiteterSplittetHendelse
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafka.producer.sendBlocking
@@ -1324,7 +1325,7 @@ class KonfliktServiceTest : FreeSpec({
                 lagredeIdentiteter.forEach { i ->
                     val (i1, i2) = i
                     val (aktorId, dnr, fnr) = i1
-                    val (arbeidssoekerId1, arbeidssoekerId2) = i2
+                    val (_, arbeidssoekerId2) = i2
                     val konfliktRows = konfliktRepository.findByAktorId(aktorId.identitet)
                     konfliktRows shouldHaveSize 1
 
@@ -1364,6 +1365,318 @@ class KonfliktServiceTest : FreeSpec({
 
                 verify(exactly = 20) { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
                 verify(exactly = 20) { pawHendelseloggProducerMock.sendBlocking(any<ProducerRecord<Long, Hendelse>>()) }
+            }
+        }
+
+        /**
+         * ----- SPLITT -----
+         */
+        "Tester for splitt-konflikter" - {
+            "Skal håndtere splitt-konflikt med VENTER-status" {
+                // GIVEN
+                val aktorId = TestData.aktorId7_1
+                val dnr = TestData.dnr7
+                val fnr1 = TestData.fnr7_1
+                val fnr2 = TestData.fnr7_2
+                val arbeidssoekerId = kafkaKeysRepository.insert(dnr)
+                val identitetProducerRecordList = mutableListOf<ProducerRecord<Long, IdentitetHendelse>>()
+
+                every {
+                    pawIdentitetProducerMock.sendBlocking(capture(identitetProducerRecordList))
+                } returns identitetRecordMetadata
+
+                identitetRepository.insert(
+                    arbeidssoekerId = arbeidssoekerId,
+                    aktorId = aktorId.identitet,
+                    identitet = aktorId.identitet,
+                    type = IdentitetType.AKTORID,
+                    gjeldende = false,
+                    status = IdentitetStatus.SLETTET,
+                    sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
+                )
+                identitetRepository.insert(
+                    arbeidssoekerId = arbeidssoekerId,
+                    aktorId = aktorId.identitet,
+                    identitet = dnr.identitet,
+                    type = IdentitetType.FOLKEREGISTERIDENT,
+                    gjeldende = true,
+                    status = IdentitetStatus.AKTIV,
+                    sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
+                )
+
+                konfliktRepository.insert(
+                    aktorId = aktorId.identitet,
+                    type = KonfliktType.SPLITT,
+                    status = KonfliktStatus.VENTER,
+                    sourceTimestamp = Instant.now(),
+                    identiteter = listOf(aktorId, fnr1.copy(gjeldende = false), fnr2)
+                )
+
+                // WHEN
+                konfliktService.handleValgteSplittKonflikter()
+
+                // THEN
+                val konfliktRows = konfliktRepository.findByAktorId(aktorId.identitet)
+                konfliktRows shouldHaveSize 1
+
+                val konfliktRow1 = konfliktRows[0]
+                konfliktRow1.aktorId shouldBe aktorId.identitet
+                konfliktRow1.type shouldBe KonfliktType.SPLITT
+                konfliktRow1.status shouldBe KonfliktStatus.VENTER
+                konfliktRow1.identiteter.map { it.asIdentitet() } shouldContainOnly listOf(
+                    aktorId,
+                    fnr1.copy(gjeldende = false),
+                    fnr2
+                )
+
+                val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
+                identitetRows shouldHaveSize 2
+                identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId,
+                        aktorId = aktorId.identitet,
+                        identitet = aktorId.copy(gjeldende = false),
+                        status = IdentitetStatus.SLETTET
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId,
+                        aktorId = aktorId.identitet,
+                        identitet = dnr,
+                        status = IdentitetStatus.AKTIV
+                    )
+                )
+
+                val kafkaKeyRows = kafkaKeysIdentitetRepository
+                    .findByIdentiteter(
+                        identiteter = setOf(aktorId, dnr, fnr1, fnr2).map { it.identitet }
+                    )
+                kafkaKeyRows shouldHaveSize 1
+                kafkaKeyRows shouldContainOnly listOf(
+                    KafkaKeyRow(arbeidssoekerId, dnr.identitet),
+                )
+
+                identitetProducerRecordList shouldHaveSize 0
+            }
+
+            "Skal håndtere splitt-konflikt med VALGT-status" {
+                // GIVEN
+                val aktorId = TestData.aktorId8_1
+                val dnr1 = TestData.dnr8_1
+                val dnr2 = TestData.dnr8_2
+                val fnr1 = TestData.fnr8_1
+                val fnr2 = TestData.fnr8_2
+                val arbeidssoekerId = kafkaKeysRepository.insert(dnr1)
+                val arbId = arbeidssoekerId.asIdentitet(true)
+                val identitetProducerRecordList = mutableListOf<ProducerRecord<Long, IdentitetHendelse>>()
+
+                every {
+                    pawIdentitetProducerMock.sendBlocking(capture(identitetProducerRecordList))
+                } returns identitetRecordMetadata
+
+                identitetRepository.insert(
+                    arbeidssoekerId = arbeidssoekerId,
+                    aktorId = aktorId.identitet,
+                    identitet = aktorId.identitet,
+                    type = IdentitetType.AKTORID,
+                    gjeldende = false,
+                    status = IdentitetStatus.SLETTET,
+                    sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
+                )
+                identitetRepository.insert(
+                    arbeidssoekerId = arbeidssoekerId,
+                    aktorId = aktorId.identitet,
+                    identitet = dnr1.identitet,
+                    type = IdentitetType.FOLKEREGISTERIDENT,
+                    gjeldende = false,
+                    status = IdentitetStatus.SLETTET,
+                    sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
+                )
+                identitetRepository.insert(
+                    arbeidssoekerId = arbeidssoekerId,
+                    aktorId = aktorId.identitet,
+                    identitet = dnr2.identitet,
+                    type = IdentitetType.FOLKEREGISTERIDENT,
+                    gjeldende = true,
+                    status = IdentitetStatus.AKTIV,
+                    sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
+                )
+
+                konfliktRepository.insert(
+                    aktorId = aktorId.identitet,
+                    type = KonfliktType.SPLITT,
+                    status = KonfliktStatus.VALGT,
+                    sourceTimestamp = Instant.now(),
+                    identiteter = listOf(aktorId, dnr1.copy(gjeldende = false), fnr1.copy(gjeldende = false), fnr2)
+                )
+
+                // WHEN
+                konfliktService.handleValgteSplittKonflikter()
+
+                // THEN
+                val konfliktRows = konfliktRepository.findByAktorId(aktorId.identitet)
+                konfliktRows shouldHaveSize 1
+
+                val konfliktRow1 = konfliktRows[0]
+                konfliktRow1.aktorId shouldBe aktorId.identitet
+                konfliktRow1.type shouldBe KonfliktType.SPLITT
+                konfliktRow1.status shouldBe KonfliktStatus.FULLFOERT
+                konfliktRow1.identiteter.map { it.asIdentitet() } shouldContainOnly listOf(
+                    aktorId,
+                    dnr1.copy(gjeldende = false),
+                    fnr1.copy(gjeldende = false),
+                    fnr2
+                )
+
+                val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
+                identitetRows shouldHaveSize 5
+                identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId,
+                        aktorId = aktorId.identitet,
+                        identitet = aktorId,
+                        status = IdentitetStatus.AKTIV
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId,
+                        aktorId = aktorId.identitet,
+                        identitet = dnr1.copy(gjeldende = false),
+                        status = IdentitetStatus.AKTIV
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId,
+                        aktorId = aktorId.identitet,
+                        identitet = dnr2.copy(gjeldende = false),
+                        status = IdentitetStatus.SLETTET
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId,
+                        aktorId = aktorId.identitet,
+                        identitet = fnr1.copy(gjeldende = false),
+                        status = IdentitetStatus.AKTIV
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId,
+                        aktorId = aktorId.identitet,
+                        identitet = fnr2,
+                        status = IdentitetStatus.AKTIV
+                    )
+                )
+
+                val kafkaKeyRows = kafkaKeysIdentitetRepository
+                    .findByIdentiteter(
+                        identiteter = setOf(aktorId, dnr1, dnr2, fnr1, fnr2).map { it.identitet }
+                    )
+                kafkaKeyRows shouldHaveSize 1
+                kafkaKeyRows shouldContainOnly listOf(
+                    KafkaKeyRow(arbeidssoekerId, dnr1.identitet),
+                )
+
+                verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
+                identitetProducerRecordList shouldHaveSize 1
+                val identitetRecord = identitetProducerRecordList[0]
+                identitetRecord.key() shouldBe arbeidssoekerId
+                identitetRecord.value().shouldBeInstanceOf<IdentiteterSplittetHendelse> { hendelse ->
+                    hendelse.identiteter shouldContainOnly listOf(
+                        aktorId,
+                        dnr1.copy(gjeldende = false),
+                        fnr1.copy(gjeldende = false),
+                        fnr2,
+                        arbId
+                    )
+                    hendelse.tidligereIdentiteter shouldContainOnly listOf(
+                        dnr2,
+                        arbId
+                    )
+                }
+            }
+
+            "Skal håndtere splitt-konflikt med VENTER-status og flere arbeidssoekerIder" {
+                // GIVEN
+                val aktorId = TestData.aktorId9
+                val dnr = TestData.dnr9
+                val fnr1 = TestData.fnr9_1
+                val fnr2 = TestData.fnr9_2
+                val arbeidssoekerId1 = kafkaKeysRepository.insert(aktorId)
+                val arbeidssoekerId2 = kafkaKeysRepository.insert(dnr)
+                val identitetProducerRecordList = mutableListOf<ProducerRecord<Long, IdentitetHendelse>>()
+
+                every {
+                    pawIdentitetProducerMock.sendBlocking(capture(identitetProducerRecordList))
+                } returns identitetRecordMetadata
+
+                identitetRepository.insert(
+                    arbeidssoekerId = arbeidssoekerId1,
+                    aktorId = aktorId.identitet,
+                    identitet = aktorId.identitet,
+                    type = IdentitetType.AKTORID,
+                    gjeldende = false,
+                    status = IdentitetStatus.SLETTET,
+                    sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
+                )
+                identitetRepository.insert(
+                    arbeidssoekerId = arbeidssoekerId2,
+                    aktorId = aktorId.identitet,
+                    identitet = dnr.identitet,
+                    type = IdentitetType.FOLKEREGISTERIDENT,
+                    gjeldende = false,
+                    status = IdentitetStatus.SLETTET,
+                    sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
+                )
+
+                konfliktRepository.insert(
+                    aktorId = aktorId.identitet,
+                    type = KonfliktType.SPLITT,
+                    status = KonfliktStatus.VALGT,
+                    sourceTimestamp = Instant.now(),
+                    identiteter = listOf(aktorId, dnr.copy(gjeldende = false), fnr1.copy(gjeldende = false), fnr2)
+                )
+
+                // WHEN
+                konfliktService.handleValgteSplittKonflikter()
+
+                // THEN
+                val konfliktRows = konfliktRepository.findByAktorId(aktorId.identitet)
+                konfliktRows shouldHaveSize 1
+
+                val konfliktRow1 = konfliktRows[0]
+                konfliktRow1.aktorId shouldBe aktorId.identitet
+                konfliktRow1.type shouldBe KonfliktType.SPLITT
+                konfliktRow1.status shouldBe KonfliktStatus.FEILET
+                konfliktRow1.identiteter.map { it.asIdentitet() } shouldContainOnly listOf(
+                    aktorId,
+                    dnr.copy(gjeldende = false),
+                    fnr1.copy(gjeldende = false),
+                    fnr2
+                )
+
+                val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
+                identitetRows shouldHaveSize 2
+                identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId1,
+                        aktorId = aktorId.identitet,
+                        identitet = aktorId.copy(gjeldende = false),
+                        status = IdentitetStatus.SLETTET
+                    ),
+                    IdentitetWrapper(
+                        arbeidssoekerId = arbeidssoekerId2,
+                        aktorId = aktorId.identitet,
+                        identitet = dnr.copy(gjeldende = false),
+                        status = IdentitetStatus.SLETTET
+                    )
+                )
+
+                val kafkaKeyRows = kafkaKeysIdentitetRepository
+                    .findByIdentiteter(
+                        identiteter = setOf(aktorId, dnr, fnr1, fnr2).map { it.identitet }
+                    )
+                kafkaKeyRows shouldHaveSize 2
+                kafkaKeyRows shouldContainOnly listOf(
+                    KafkaKeyRow(arbeidssoekerId1, aktorId.identitet),
+                    KafkaKeyRow(arbeidssoekerId2, dnr.identitet)
+                )
+
+                identitetProducerRecordList shouldHaveSize 0
             }
         }
     }

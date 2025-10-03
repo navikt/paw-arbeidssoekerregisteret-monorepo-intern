@@ -821,8 +821,8 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             val aktorId2 = TestData.aktorId8_2
             val npId1 = TestData.npId8_1
             val npId2 = TestData.npId8_2
-            val dnr = TestData.dnr8
-            val fnr = TestData.fnr8
+            val dnr = TestData.dnr8_1
+            val fnr = TestData.fnr8_1
             val arbeidssoekerId = kafkaKeysRepository.opprett(dnr.asIdentitetsnummer())
                 .fold(onLeft = { null }, onRight = { it })!!.value
             val arbId1 = Identitet(arbeidssoekerId.toString(), IdentitetType.ARBEIDSSOEKERID, true)
@@ -1065,7 +1065,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             val aktorId = TestData.aktorId9
             val npId = TestData.npId9
             val dnr = TestData.dnr9
-            val fnr = TestData.fnr9
+            val fnr = TestData.fnr9_1
             val arbeidssoekerId = kafkaKeysRepository.opprett(dnr.asIdentitetsnummer())
                 .fold(onLeft = { null }, onRight = { it })!!.value
             val arbId1 = Identitet(arbeidssoekerId.toString(), IdentitetType.ARBEIDSSOEKERID, true)
