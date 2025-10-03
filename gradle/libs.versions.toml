@@ -19,6 +19,7 @@ logback = "1.5.18"
 kotest = "6.0.3"
 mockk = "1.14.5"
 testcontainers = "1.21.3"
+atlassian-oai = "2.46.0"
 micrometer = "1.15.4"
 otel-api = "1.54.1"
 otel-instrumentation = "2.20.1"
@@ -97,6 +98,7 @@ database-hikari-connectionPool = { group = "com.zaxxer", name = "HikariCP", vers
 database-h2 = { group = "com.h2database", name = "h2", version.ref = "h2-database" }
 database-bigquery-librariesBom = { group = "com.google.cloud", name = "libraries-bom", version.ref = "bigquery" }
 database-bigquery-client = { group = "com.google.cloud", name = "google-cloud-bigquery"}
+atlassian-oai-swaggerRequestValidator-core = { group = "com.atlassian.oai", name = "swagger-request-validator-core", version.ref = "atlassian-oai" }
 nav-common-tokenClient = { group = "no.nav.common", name = "token-client", version.ref = "nav-common" }
 nav-common-log = { group = "no.nav.common", name = "log", version.ref = "nav-common" }
 nav-common-auditLog = { group = "no.nav.common", name = "audit-log", version.ref = "nav-common" }

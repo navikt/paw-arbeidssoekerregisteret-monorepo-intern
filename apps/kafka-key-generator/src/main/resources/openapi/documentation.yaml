@@ -345,10 +345,10 @@ components:
         type:
           $ref: "#/components/schemas/KonfliktType"
         detaljer:
-          $ref: "#/components/schemas/MergeKonflikt"
+          $ref: "#/components/schemas/KonfliktDetaljer"
       required:
         - type
-    MergeKonflikt:
+    KonfliktDetaljer:
       type: object
       properties:
         aktorIdListe:

@@ -143,6 +143,7 @@ data class ApplicationContext(
             )
             val identitetResponseService = IdentitetResponseService(
                 identitetRepository = identitetRepository,
+                konfliktRepository = konfliktRepository,
                 pdlService = pdlService
             )
             val mergeDetector = MergeDetector(

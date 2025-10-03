@@ -203,6 +203,14 @@ object TestData {
     val aktor4_3 = aktor(
         listOf(aktorId4, npId4, dnr4.copy(gjeldende = false), fnr4_2).map { it.asIdentifikator() }
     )
+    val aktor5_3 = aktor(
+        listOf(
+            aktorId5,
+            dnr5.copy(gjeldende = false),
+            fnr5_1.copy(gjeldende = false),
+            fnr5_2
+        ).map { it.asIdentifikator() }
+    )
     val aktor7_1 = aktor(
         listOf(aktorId7_1, npId7, dnr7.copy(gjeldende = false), fnr7_1).map { it.asIdentifikator() }
     )
@@ -479,6 +487,7 @@ object TestData {
         aktorId3.identitet -> aktor3_1.asGraphQLResponse()
         dnr4.identitet -> aktor4_1.asGraphQLResponse()
         fnr4_1.identitet -> aktor4_2.asGraphQLResponse()
+        dnr5.identitet -> aktor5_3.asGraphQLResponse()
         else -> aktor(identifikatorer = emptyList()).asGraphQLResponse()
     }
 

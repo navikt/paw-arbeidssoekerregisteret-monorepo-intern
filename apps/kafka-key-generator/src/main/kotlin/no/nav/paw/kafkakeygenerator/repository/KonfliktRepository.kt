@@ -48,6 +48,16 @@ class KonfliktRepository(
             .map { it.asKonfliktRowMedIdentiteter() }
     }
 
+    fun findByAktorIdListAndStatus(
+        aktorIdList: Iterable<String>,
+        status: KonfliktStatus
+    ): List<KonfliktRow> = transaction {
+        KonflikterTable.selectAll()
+            .where { (KonflikterTable.status eq status) and (KonflikterTable.aktorId inList aktorIdList) }
+            .orderBy(KonflikterTable.id, SortOrder.ASC)
+            .map { it.asKonfliktRowMedIdentiteter() }
+    }
+
     fun findByAktorIdAndType(
         aktorId: String,
         type: KonfliktType

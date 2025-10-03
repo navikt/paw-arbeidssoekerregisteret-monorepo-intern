@@ -2,18 +2,22 @@ package no.nav.paw.kafkakeygenerator.service
 
 import no.nav.paw.kafkakeygenerator.api.models.IdentitetResponse
 import no.nav.paw.kafkakeygenerator.api.models.Konflikt
+import no.nav.paw.kafkakeygenerator.api.models.KonfliktDetaljer
 import no.nav.paw.kafkakeygenerator.api.models.KonfliktType
-import no.nav.paw.kafkakeygenerator.api.models.MergeKonflikt
 import no.nav.paw.kafkakeygenerator.api.v2.asApi
 import no.nav.paw.kafkakeygenerator.api.v2.publicTopicKeyFunction
 import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
+import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
+import no.nav.paw.kafkakeygenerator.model.asApi
 import no.nav.paw.kafkakeygenerator.model.asIdentitet
 import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
+import no.nav.paw.kafkakeygenerator.repository.KonfliktRepository
 import no.nav.paw.logging.logger.buildLogger
 
 class IdentitetResponseService(
     private val identitetRepository: IdentitetRepository,
+    private val konfliktRepository: KonfliktRepository,
     private val pdlService: PdlService
 ) {
     private val logger = buildLogger
@@ -40,15 +44,30 @@ class IdentitetResponseService(
                 pdlIdentiteter = pdlIdentiteter,
             )
         } else {
-            val aktorIdListe = identitetRows.map { it.aktorId }.distinct()
-            val arbeidssoekerIdListe = identitetRows.map { it.arbeidssoekerId }.distinct()
             val arbeidssoekerId = identitetRows.maxOf { it.arbeidssoekerId }
             val konflikter = if (visKonflikter) {
-                if (aktorIdListe.size > 1 || arbeidssoekerIdListe.size > 1) {
+                val aktorIdListe = identitetRows.map { it.aktorId }.distinct()
+                val arbeidssoekerIdListe = identitetRows.map { it.arbeidssoekerId }.distinct()
+                val konflikter = konfliktRepository.findByAktorIdListAndStatus(
+                    aktorIdList = aktorIdListe,
+                    status = KonfliktStatus.VENTER
+                )
+                if (konflikter.isNotEmpty()) {
+                    konflikter
+                        .map {
+                            Konflikt(
+                                type = it.type.asApi(),
+                                detaljer = KonfliktDetaljer(
+                                    aktorIdListe = aktorIdListe,
+                                    arbeidssoekerIdListe = arbeidssoekerIdListe
+                                )
+                            )
+                        }
+                } else if (aktorIdListe.size > 1 || arbeidssoekerIdListe.size > 1) {
                     listOf(
                         Konflikt(
                             type = KonfliktType.MERGE,
-                            detaljer = MergeKonflikt(
+                            detaljer = KonfliktDetaljer(
                                 aktorIdListe = aktorIdListe,
                                 arbeidssoekerIdListe = arbeidssoekerIdListe
                             )

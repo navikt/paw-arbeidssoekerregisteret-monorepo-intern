@@ -109,6 +109,7 @@ class TestContext private constructor(
     val pdlService: PdlService = PdlService(pdlClient),
     val identitetResponseService: IdentitetResponseService = IdentitetResponseService(
         identitetRepository = identitetRepository,
+        konfliktRepository = konfliktRepository,
         pdlService = pdlService
     ),
     val kafkaKeysService: KafkaKeysService = KafkaKeysService(
