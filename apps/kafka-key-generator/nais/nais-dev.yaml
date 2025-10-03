@@ -6,7 +6,7 @@ metadata:
   labels:
     team: paw
 spec:
-  image: { { image } }
+  image: {{ image }}
   port: 8080
   env:
     - name: PDL_URL
@@ -69,7 +69,7 @@ spec:
       enabled: true
       runtime: java
   kafka:
-    pool: nav-dev
+      pool: nav-dev
   gcp:
     sqlInstances:
       - type: POSTGRES_17
@@ -82,35 +82,35 @@ spec:
     application:
       enabled: true
   accessPolicy:
-    outbound:
-      rules:
-        - application: logging
-          namespace: nais-system
-      external:
-        - host: pdl-api.dev-fss-pub.nais.io
-    inbound:
-      rules:
-        - application: azure-token-generator
-          namespace: nais
-        - application: paw-dev-proxy
-        - application: paw-brukerstotte
-        - application: paw-kafka-key-maintenance
-        - application: paw-microfrontend-toggler
-        - application: paw-arbeidssokerregisteret-api-inngang
-        - application: paw-arbeidssoekerregisteret-utgang-pdl
-        - application: paw-arbeidssoekerregisteret-utgang-formidlingsgruppe
-        - application: paw-arbeidssoekerregisteret-hendelselogg-backup
-        - application: paw-arbeidssoekerregisteret-api-bekreftelse
-        - application: paw-arbeidssoekerregisteret-bekreftelse-tjeneste
-        - application: paw-arbeidssoekerregisteret-api-dolly
-        - application: paw-arbeidssoekerregisteret-bekreftelse-backup
-        - application: paw-arbeidssoekerregisteret-api-oppslag-v2
-        - application: paw-arbeidssoekerregisteret-api-egenvurdering
-        - application: dp-rapportering-personregister
-          namespace: teamdagpenger
-        - application: dp-rapportering
-          namespace: teamdagpenger
-        - application: dp-meldekortregister
-          namespace: teamdagpenger
-        - application: flex-arbeidssokerregister-oppdatering
-          namespace: flex
+      outbound:
+        rules:
+          - application: logging
+            namespace: nais-system
+        external:
+          - host: pdl-api.dev-fss-pub.nais.io
+      inbound:
+        rules:
+          - application: azure-token-generator
+            namespace: nais
+          - application: paw-dev-proxy
+          - application: paw-brukerstotte
+          - application: paw-kafka-key-maintenance
+          - application: paw-microfrontend-toggler
+          - application: paw-arbeidssokerregisteret-api-inngang
+          - application: paw-arbeidssoekerregisteret-utgang-pdl
+          - application: paw-arbeidssoekerregisteret-utgang-formidlingsgruppe
+          - application: paw-arbeidssoekerregisteret-hendelselogg-backup
+          - application: paw-arbeidssoekerregisteret-api-bekreftelse
+          - application: paw-arbeidssoekerregisteret-bekreftelse-tjeneste
+          - application: paw-arbeidssoekerregisteret-api-dolly
+          - application: paw-arbeidssoekerregisteret-bekreftelse-backup
+          - application: paw-arbeidssoekerregisteret-api-oppslag-v2
+          - application: paw-arbeidssoekerregisteret-api-egenvurdering
+          - application: dp-rapportering-personregister
+            namespace: teamdagpenger
+          - application: dp-rapportering
+            namespace: teamdagpenger
+          - application: dp-meldekortregister
+            namespace: teamdagpenger
+          - application: flex-arbeidssokerregister-oppdatering
+            namespace: flex
