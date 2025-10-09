@@ -16,7 +16,7 @@ suspend fun PdlClient.hentPersonBolk(
             HentPersonBolk.Variables(ident, historisk),
         )
 
-    logger.trace("Henter 'hentPerson' fra PDL")
+    logger.trace("Henter 'hentPersonBolk' fra PDL")
 
     val respons =
         execute(
@@ -28,10 +28,10 @@ suspend fun PdlClient.hentPersonBolk(
         )
 
     respons.errors?.let {
-        throw PdlException("'hentPerson' feilet", it)
+        throw PdlException("'hentPersonBolk' feilet", it)
     }
 
-    logger.trace("Hentet 'hentPerson' fra PDL")
+    logger.trace("Hentet 'hentPersonBolk' fra PDL")
 
     return respons
         .data

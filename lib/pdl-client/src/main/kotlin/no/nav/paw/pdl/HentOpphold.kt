@@ -11,7 +11,7 @@ suspend fun PdlClient.hentOpphold(
 ): List<Opphold>? {
     val query = HentOpphold(HentOpphold.Variables(ident))
 
-    logger.info("Henter 'hentPerson' fra PDL")
+    logger.trace("Henter 'hentOpphold' fra PDL")
 
     val respons =
         execute(
@@ -22,11 +22,11 @@ suspend fun PdlClient.hentOpphold(
         )
 
     respons.errors?.let {
-        logger.error("Henter 'hentPerson' fra PDL feilet med: ${respons.errors}")
-        throw PdlException("'hentPerson' feilet", it)
+        logger.error("Henter 'hentOpphold' fra PDL feilet med: ${respons.errors}")
+        throw PdlException("'hentOpphold' feilet", it)
     }
 
-    logger.info("Hentet 'hentPerson' fra PDL")
+    logger.trace("Hentet 'hentOpphold' fra PDL")
 
     return respons
         .data

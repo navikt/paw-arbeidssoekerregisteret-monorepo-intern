@@ -19,6 +19,9 @@ suspend fun PdlClient.hentIdenterBolk(
             historisk = historikk,
         )
     )
+
+    logger.trace("Henter 'hentIdenterBolk' fra PDL")
+
     val response = execute(
         query = request,
         callId = callId,
@@ -27,11 +30,11 @@ suspend fun PdlClient.hentIdenterBolk(
     )
 
     response.errors?.let {
-        logger.error("Henter 'hentIdenter' fra PDL feilet med: ${response.errors}")
-        throw PdlException("'hentIdenter' fra pdl feilet", it)
+        logger.error("Henter 'hentIdenterBolk' fra PDL feilet med: ${response.errors}")
+        throw PdlException("'hentIdenterBolk' fra pdl feilet", it)
     }
 
-    logger.info("Hentet 'hentIdenter' fra PDL")
+    logger.trace("Hentet 'hentIdenterBolk' fra PDL")
 
     return response
         .data

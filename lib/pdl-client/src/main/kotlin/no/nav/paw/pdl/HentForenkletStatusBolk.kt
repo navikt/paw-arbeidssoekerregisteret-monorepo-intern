@@ -15,6 +15,8 @@ suspend fun PdlClient.hentForenkletStatusBolk(
             HentForenkletStatusBolk.Variables(ident),
         )
 
+    logger.trace("Henter 'hentForenkletStatusBolk' fra PDL")
+
     val response =
         execute(
             query = query,
