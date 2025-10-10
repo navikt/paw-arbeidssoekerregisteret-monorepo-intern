@@ -2,238 +2,189 @@ package no.nav.paw.kafkakeygenerator.service
 
 import io.micrometer.core.instrument.MeterRegistry
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.kafkakeygenerator.api.v2.Alias
 import no.nav.paw.kafkakeygenerator.api.v2.InfoResponse
 import no.nav.paw.kafkakeygenerator.api.v2.LokaleAlias
-import no.nav.paw.kafkakeygenerator.api.v2.publicTopicKeyFunction
-import no.nav.paw.kafkakeygenerator.mergedetector.findMerge
-import no.nav.paw.kafkakeygenerator.mergedetector.hentLagretData
-import no.nav.paw.kafkakeygenerator.mergedetector.vo.MergeDetected
+import no.nav.paw.kafkakeygenerator.exception.IdentitetIkkeFunnetException
 import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.model.CallId
-import no.nav.paw.kafkakeygenerator.model.Either
-import no.nav.paw.kafkakeygenerator.model.Failure
-import no.nav.paw.kafkakeygenerator.model.FailureCode
-import no.nav.paw.kafkakeygenerator.model.FailureCode.CONFLICT
-import no.nav.paw.kafkakeygenerator.model.FailureCode.DB_NOT_FOUND
-import no.nav.paw.kafkakeygenerator.model.IdentitetFailure
+import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
 import no.nav.paw.kafkakeygenerator.model.Info
 import no.nav.paw.kafkakeygenerator.model.LokalIdData
+import no.nav.paw.kafkakeygenerator.model.MergeDetected
 import no.nav.paw.kafkakeygenerator.model.PdlData
 import no.nav.paw.kafkakeygenerator.model.PdlId
 import no.nav.paw.kafkakeygenerator.model.asIdentitet
-import no.nav.paw.kafkakeygenerator.model.flatMap
-import no.nav.paw.kafkakeygenerator.model.flatten
-import no.nav.paw.kafkakeygenerator.model.left
-import no.nav.paw.kafkakeygenerator.model.recover
-import no.nav.paw.kafkakeygenerator.model.right
-import no.nav.paw.kafkakeygenerator.model.suspendingRecover
-import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
-import no.nav.paw.kafkakeygenerator.utils.countRestApiFailed
+import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
+import no.nav.paw.kafkakeygenerator.utils.asRecordKey
 import no.nav.paw.kafkakeygenerator.utils.countRestApiFetched
-import no.nav.paw.kafkakeygenerator.utils.countRestApiInserted
 import no.nav.paw.kafkakeygenerator.utils.countRestApiReceived
 import no.nav.paw.logging.logger.buildLogger
-import no.nav.paw.pdl.graphql.generated.hentidenter.IdentInformasjon
 import org.apache.kafka.clients.producer.internals.BuiltInPartitioner.partitionForKey
 import org.apache.kafka.common.serialization.Serdes
 
 class KafkaKeysService(
     private val meterRegistry: MeterRegistry,
-    private val kafkaKeysRepository: KafkaKeysRepository,
     private val pdlService: PdlService,
+    private val identitetRepository: IdentitetRepository,
     private val identitetService: IdentitetService
 ) {
     private val logger = buildLogger
     private val keySerializer = Serdes.Long().serializer()
 
+    @WithSpan
+    fun hentEllerOppdater(
+        callId: CallId,
+        identitet: Identitetsnummer
+    ): ArbeidssoekerId {
+        meterRegistry.countRestApiFetched()
+        logger.debug("Henter eller oppdaterer arbeidssoekerId for identitet")
+        return hentEllerLagre(
+            callId = callId,
+            identitet = identitet,
+            lagreIdentiteter = identitetService::identiteterSkalOppdateres
+        )
+    }
+
+    @WithSpan
+    fun hentEllerOpprett(
+        callId: CallId,
+        identitet: Identitetsnummer
+    ): ArbeidssoekerId {
+        meterRegistry.countRestApiReceived()
+        logger.debug("Henter eller oppretter arbeidssoekerId for identitet")
+        return hentEllerLagre(
+            callId = callId,
+            identitet = identitet,
+            lagreIdentiteter = identitetService::identiteterSkalOpprettes
+        )
+    }
+
+    private fun hentEllerLagre(
+        callId: CallId,
+        identitet: Identitetsnummer,
+        lagreIdentiteter: (identiteter: List<Identitet>) -> Unit
+    ): ArbeidssoekerId {
+        val identitetRows = identitetRepository.findAllByIdentitet(identitet.value)
+            .filter { it.status != IdentitetStatus.SLETTET }
+        val arbeidssoekerId = identitetRows
+            .find { it.identitet == identitet.value }
+            ?.let { ArbeidssoekerId(it.arbeidssoekerId) }
+            ?: identitetRows
+                .map { ArbeidssoekerId(it.arbeidssoekerId) }
+                .maxByOrNull { it.value }
+        return if (arbeidssoekerId != null) {
+            arbeidssoekerId
+        } else {
+            logger.debug("Ingen arbeidssoekerId funnet for identitet")
+            val identiteter = pdlService.finnIdentiteter(
+                callId = callId,
+                identitet = identitet.value,
+                historikk = true
+            ).map { it.asIdentitet() }
+            lagreIdentiteter(identiteter)
+            val lagredeIdenitetRows = identitetRepository.findAllByIdentitet(identitet.value)
+                .filter { it.status != IdentitetStatus.SLETTET }
+            if (lagredeIdenitetRows.isEmpty()) {
+                throw IdentitetIkkeFunnetException()
+            } else {
+                val lagredeIdenitetRow = lagredeIdenitetRows.find { it.identitet == identitet.value }
+                if (lagredeIdenitetRow != null) {
+                    ArbeidssoekerId(lagredeIdenitetRow.arbeidssoekerId)
+                } else {
+                    ArbeidssoekerId(lagredeIdenitetRows.maxOf { it.arbeidssoekerId })
+                }
+            }
+        }
+    }
+
+    @WithSpan
     fun hentLokaleAlias(
         antallPartisjoner: Int,
         identiteter: List<String>
-    ): Either<Failure, List<LokaleAlias>> {
-        return identiteter.mapNotNull { identitet ->
-            hentLokaleAlias(antallPartisjoner, Identitetsnummer(identitet))
-                .recover(FailureCode.DB_NOT_FOUND) { right(null) }
-        }.flatten()
-            .map(List<LokaleAlias?>::filterNotNull)
+    ): List<LokaleAlias> {
+        return identiteter
+            .map { hentLokaleAlias(antallPartisjoner, it) }
     }
 
     @WithSpan
     fun hentLokaleAlias(
         antallPartisjoner: Int,
-        identitet: Identitetsnummer
-    ): Either<Failure, LokaleAlias> {
-        return kafkaKeysRepository.hent(identitet)
-            .map { arbeidssoekerId ->
-                val recordKey = publicTopicKeyFunction(arbeidssoekerId)
+        identitet: String
+    ): LokaleAlias {
+        val aliases = identitetRepository.findAllByIdentitet(identitet)
+            .filter { it.status != IdentitetStatus.SLETTET }
+            .map {
+                val recordKey = it.arbeidssoekerId.asRecordKey()
+                val partition = partitionForKey(keySerializer.serialize("", recordKey), antallPartisjoner)
                 Alias(
-                    identitetsnummer = identitet.value,
-                    arbeidsoekerId = arbeidssoekerId.value,
-                    recordKey = recordKey.value,
-                    partition = partitionForKey(keySerializer.serialize("", recordKey.value), antallPartisjoner)
-                )
-            }.flatMap { alias ->
-                kafkaKeysRepository.hent(ArbeidssoekerId(alias.arbeidsoekerId))
-                    .map { identiteter ->
-                        identiteter.map { identitetsnummer ->
-                            Alias(
-                                identitetsnummer = identitetsnummer.value,
-                                arbeidsoekerId = alias.arbeidsoekerId,
-                                recordKey = alias.recordKey,
-                                partition = alias.partition
-                            )
-                        }
-                    }
-            }.map { aliases ->
-                LokaleAlias(
-                    identitetsnummer = identitet.value,
-                    koblinger = aliases
+                    identitetsnummer = it.identitet,
+                    arbeidsoekerId = it.arbeidssoekerId,
+                    recordKey = recordKey,
+                    partition = partition
                 )
             }
-    }
-
-    @WithSpan
-    suspend fun validerLagretData(callId: CallId, identitet: Identitetsnummer): Either<Failure, InfoResponse> {
-        return hentInfo(callId, identitet)
-            .flatMap { info ->
-                hentLagretData(
-                    hentArbeidssoekerId = kafkaKeysRepository::hent,
-                    info = info
-                ).map { info to it }
-                    .recover(DB_NOT_FOUND) { right(info to null) }
-            }
-            .map { (info, lagretData) -> info to lagretData?.let { findMerge(it) } }
-            .map { (info, merge) ->
-                InfoResponse(
-                    info = info,
-                    mergeDetected = merge as? MergeDetected
-                )
-            }
-    }
-
-    @WithSpan
-    suspend fun hentInfo(callId: CallId, identitet: Identitetsnummer): Either<Failure, Info> {
-        val pdlIdInfo = pdlService.hentIdentInformasjon(
-            callId = callId,
-            identitet = identitet,
-            historikk = true
+        return LokaleAlias(
+            identitetsnummer = identitet,
+            koblinger = aliases
         )
-        return kafkaKeysRepository.hent(identitet)
-            .map { arbeidssoekerId ->
-                LokalIdData(
-                    arbeidsoekerId = arbeidssoekerId.value,
-                    recordKey = publicTopicKeyFunction(arbeidssoekerId).value
-                )
-            }.map { lokalIdData ->
-                Info(
-                    identitetsnummer = identitet.value,
-                    lagretData = lokalIdData,
-                    pdlData = pdlIdInfo.fold(
-                        { PdlData(error = it.code().name, id = null) },
-                        {
-                            PdlData(
-                                error = null,
-                                id = it.map { identInfo ->
-                                    PdlId(
-                                        gruppe = identInfo.gruppe.name,
-                                        id = identInfo.ident,
-                                        gjeldende = !identInfo.historisk
-                                    )
-                                })
-                        }
-                    )
-                )
-            }.recover(DB_NOT_FOUND) {
-                right(
-                    Info(
-                    identitetsnummer = identitet.value,
-                    lagretData = null,
-                    pdlData = pdlIdInfo.fold(
-                        { PdlData(error = it.code().name, id = null) },
-                        {
-                            PdlData(
-                                error = null,
-                                id = it.map { identInfo ->
-                                    PdlId(
-                                        gruppe = identInfo.gruppe.name,
-                                        id = identInfo.ident,
-                                        gjeldende = !identInfo.historisk
-                                    )
-                                })
-                        }
-                    )))
-            }
     }
 
     @WithSpan
-    fun kunHent(identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> {
-        logger.debug("Henter identer fra database")
-        meterRegistry.countRestApiFetched()
-        return kafkaKeysRepository.hent(identitet)
-    }
-
-    @WithSpan
-    suspend fun hentEllerOppdater(callId: CallId, identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> {
-        logger.debug("Henter identer fra database")
-        meterRegistry.countRestApiFetched()
-        return kafkaKeysRepository.hent(identitet)
-            .suspendingRecover(DB_NOT_FOUND) {
-                sjekkMotAliaser(callId, identitet)
-                    .flatMap { (arbeidssoekerId, identInformasjon) ->
-                        kafkaKeysRepository.lagre(identitet, arbeidssoekerId)
-                        val identiteter = identInformasjon.map { it.asIdentitet() }
-                        identitetService.identiteterSkalOppdateres(identiteter)
-                        right(arbeidssoekerId)
-                    }
-            }
-    }
-
-    @WithSpan
-    suspend fun hentEllerOpprett(callId: CallId, identitet: Identitetsnummer): Either<Failure, ArbeidssoekerId> {
-        meterRegistry.countRestApiReceived()
-        return hentEllerOppdater(callId, identitet)
-            .suspendingRecover(DB_NOT_FOUND) { failure ->
-                logger.debug("Oppretter identer i database")
-                meterRegistry.countRestApiInserted()
-                val result = kafkaKeysRepository.opprett(identitet)
-                if (failure is IdentitetFailure) {
-                    val identiteter = failure.identInformasjon().map { it.asIdentitet() }
-                    identitetService.identiteterSkalOppdateres(identiteter)
-                }
-                result
-            }.recover(CONFLICT) {
-                meterRegistry.countRestApiFailed()
-                kafkaKeysRepository.hent(identitet)
-            }
-    }
-
-    @WithSpan
-    private suspend fun sjekkMotAliaser(
+    fun hentInfo(
         callId: CallId,
         identitet: Identitetsnummer
-    ): Either<Failure, Pair<ArbeidssoekerId, List<IdentInformasjon>>> {
-        logger.debug("Sjekker identer mot PDL")
-        return pdlService.hentIdentInformasjon(
+    ): InfoResponse {
+        val pdlIdentiteter = pdlService.finnIdentiteter(
             callId = callId,
-            identitet = identitet,
+            identitet = identitet.value,
             historikk = true
-        ).flatMap { identiteter ->
-            kafkaKeysRepository.hent(identiteter.map { it.ident })
-                .map { it to identiteter }
-        }.flatMap { (identitetMap, identInformasjon) ->
-            if (identitetMap.isNotEmpty()) {
-                val arbeidssoekerId = identitetMap.values.first()
-                right(arbeidssoekerId to identInformasjon)
-            } else {
-                left(
-                    IdentitetFailure(
-                        system = "database",
-                        code = DB_NOT_FOUND,
-                        identInformasjon = identInformasjon
-                    )
+        )
+        val pdlData = PdlData(
+            error = null,
+            id = pdlIdentiteter.map {
+                PdlId(
+                    gruppe = it.gruppe.name,
+                    id = it.ident,
+                    gjeldende = !it.historisk
                 )
-            }
+            })
+        val alleIdentiteter = identitetRepository.findAllByIdentitet(identitet.value)
+            .filter { it.status != IdentitetStatus.SLETTET }
+
+        val lokalIdData = if (alleIdentiteter.isEmpty()) {
+            null
+        } else {
+            val arbeidssoekerId = alleIdentiteter
+                .find { it.identitet == identitet.value }?.arbeidssoekerId
+                ?: alleIdentiteter.maxOf { it.arbeidssoekerId }
+            LokalIdData(
+                arbeidsoekerId = arbeidssoekerId,
+                recordKey = arbeidssoekerId.asRecordKey()
+            )
         }
+
+        val info = Info(
+            identitetsnummer = identitet.value,
+            lagretData = lokalIdData,
+            pdlData = pdlData
+        )
+
+        val etterArbeidssoekerId = alleIdentiteter
+            .groupBy { it.arbeidssoekerId }
+            .mapKeys { ArbeidssoekerId(it.key) }
+            .mapValues { it.value.map { identitet -> Identitetsnummer(identitet.identitet) } }
+        val merge = if (etterArbeidssoekerId.size > 1) {
+            MergeDetected(identitet, etterArbeidssoekerId)
+        } else {
+            null
+        }
+
+        return InfoResponse(
+            info = info,
+            mergeDetected = merge
+        )
     }
 }

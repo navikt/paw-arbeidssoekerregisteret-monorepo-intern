@@ -1,3 +1,5 @@
 package no.nav.paw.kafkakeygenerator.api.v1
 
-sealed interface RecordKeyResponse
+data class ResponseV1(
+    val key: Long
+)

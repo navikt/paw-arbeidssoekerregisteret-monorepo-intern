@@ -1,0 +1,43 @@
+### POST /api/v1/record-key
+
+POST {{baseUrl}}/api/v1/record-key
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("azure-m2m")}}
+
+{
+    "ident": "41017012345"
+}
+
+### POST /api/v2/hent
+
+POST {{baseUrl}}/api/v2/hent
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("azure-m2m")}}
+
+{
+    "ident": "41017012345"
+}
+
+### POST /api/v2/hentEllerOpprett
+
+POST {{baseUrl}}/api/v2/hentEllerOpprett
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("azure-m2m")}}
+
+{
+    "ident": "05017012346"
+}
+
+### POST /api/v2/identiteter
+
+POST {{baseUrl}}/api/v2/identiteter
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("azure-m2m")}}
+
+{
+    "identitet": "05017012346"
+}

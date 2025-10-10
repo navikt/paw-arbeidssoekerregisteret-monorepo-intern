@@ -19,7 +19,7 @@ fun KonfliktIdentitetRow.asIdentitet(): Identitet = Identitet(
     gjeldende = gjeldende,
 )
 
-fun Long.asIdentitet(gjeldende: Boolean): Identitet = Identitet(
+fun Long.asIdentitet(gjeldende: Boolean = true): Identitet = Identitet(
     identitet = this.toString(),
     type = IdentitetType.ARBEIDSSOEKERID,
     gjeldende = gjeldende,

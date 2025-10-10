@@ -94,6 +94,20 @@ paths:
                 detail: "Kunne ikke tolke forespørsel"
                 instance: "/api/v2/hentEllerOpprett"
                 timestamp: "2021-01-01T12:00:00.000Z"
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                id: "c02b7b96-f3a0-49d4-b659-c04f32874a5b"
+                type: "urn:paw:identiteter:ukjent-identitet"
+                status: 404
+                title: "Not Found"
+                detail: "Ukjent identitet"
+                instance: "/api/v2/hentEllerOpprett"
+                timestamp: "2021-01-01T12:00:00.000Z"
         "500":
           description: "Internal Server Error"
           content:

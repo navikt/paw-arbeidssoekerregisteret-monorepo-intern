@@ -3,15 +3,14 @@ package no.nav.paw.kafkakeygenerator.service
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
+import no.nav.paw.kafkakeygenerator.model.IdentitetRow
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
-import no.nav.paw.kafkakeygenerator.model.KafkaKeyRow
 import no.nav.paw.kafkakeygenerator.model.KonfliktIdentitetRow
 import no.nav.paw.kafkakeygenerator.model.KonfliktRow
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
 import no.nav.paw.kafkakeygenerator.model.asIdentitet
 import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
-import no.nav.paw.kafkakeygenerator.repository.KafkaKeysIdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KonfliktIdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KonfliktRepository
 import no.nav.paw.kafkakeygenerator.repository.PeriodeRepository
@@ -24,7 +23,6 @@ class KonfliktService(
     private val konfliktRepository: KonfliktRepository,
     private val konfliktIdentitetRepository: KonfliktIdentitetRepository,
     private val periodeRepository: PeriodeRepository,
-    private val kafkaKeysIdentitetRepository: KafkaKeysIdentitetRepository,
     private val hendelseService: HendelseService
 ) {
     private val logger = buildLogger
@@ -66,7 +64,7 @@ class KonfliktService(
             val konfliktId = identitetMergeRow.id
             val eksisterendeIdeniteterSet = identitetMergeRow.identiteter.map { it.identitet }.toSet()
 
-            val rowsAffected1 = identitetMergeRow.identiteter
+            val deletedRowCount = identitetMergeRow.identiteter
                 .map { it.identitet }
                 .filter { !nyeIdentiteterSet.contains(it) }
                 .sumOf { identitet ->
@@ -74,16 +72,25 @@ class KonfliktService(
                         .deleteByKonfliktIdAndIdentitet(konfliktId, identitet)
                 }
 
-            val rowsAffected2 = identiteter
+            val insertedRowCount = identiteter
                 .filter { !eksisterendeIdeniteterSet.contains(it.identitet) }
-                .sumOf { identitet ->
+                .forEach { identitet ->
                     konfliktIdentitetRepository.insert(konfliktId, identitet)
                 }
+
+            val updatedRowCount = identiteter
+                .filter { eksisterendeIdeniteterSet.contains(it.identitet) }
+                .forEach { identitet ->
+                    konfliktIdentitetRepository
+                        .updateByKonfliktIdAndIdentitet(konfliktId, identitet)
+                }
+
             logger.info(
-                "Oppdaterte konflikt type {} ({} rows deleted, {} rows inserted)",
+                "Oppdaterte konflikt type {} ({} rows inserted, {} rows updated, {} rows deleted)",
                 type.name,
-                rowsAffected1,
-                rowsAffected2
+                insertedRowCount,
+                updatedRowCount,
+                deletedRowCount
             )
         }
     }
@@ -100,7 +107,7 @@ class KonfliktService(
             rowCount = batchSize
         )
         if (ventendeKonfliktRows.isEmpty()) {
-            logger.info(
+            logger.debug(
                 "Fant ingen konflikter av type {} med status {}",
                 type.name,
                 status.name
@@ -134,16 +141,16 @@ class KonfliktService(
     )
 
     private fun handleVentendeMergeKonflikt(konfliktRow: KonfliktRow) {
-        logger.info("Håndterer konflikt av type {}", KonfliktType.MERGE.name)
+        logger.debug("Håndterer konflikt av type {}", KonfliktType.MERGE.name)
 
-        val eksisterendeIdentitetRows = identitetRepository.findByAktorId(konfliktRow.aktorId)
-        val konfliktIdentitetRows = konfliktIdentitetRepository.findByAktorId(konfliktRow.aktorId)
-        val alleIdentitetSet = eksisterendeIdentitetRows
-            .filter { it.status != IdentitetStatus.SLETTET }
-            .map { it.identitet }
-            .toSet() + konfliktIdentitetRows
+        val endredeIdentitetRows = konfliktRow.identiteter
+        val endredeIdentitetSet = endredeIdentitetRows
             .map { it.identitet }
             .toSet()
+        val eksisterendeIdentitetRows = identitetRepository.findByAktorIdOrIdentiteter(
+            aktorId = konfliktRow.aktorId,
+            identiteter = endredeIdentitetSet
+        )
         val eksisterendeIdentitetSet = eksisterendeIdentitetRows
             .map { it.identitet }
             .toSet()
@@ -151,19 +158,14 @@ class KonfliktService(
             .filter { it.status == IdentitetStatus.SLETTET }
             .map { it.identitet }
             .toMutableSet()
-        val konfliktIdentitetSet = konfliktIdentitetRows
-            .map { it.identitet }
-            .toSet()
-        val eksisterendeKafkaKeyRows = kafkaKeysIdentitetRepository
-            .findByIdentiteter(identiteter = alleIdentitetSet)
-        val arbeidssoekerIdSet = eksisterendeKafkaKeyRows
+        val arbeidssoekerIdSet = eksisterendeIdentitetRows
             .map { it.arbeidssoekerId }
             .toSet()
 
         val gjeldendeArbeidssoekerId = uledGjeldendeArbeidssoekerId(
             aktorId = konfliktRow.aktorId,
             type = konfliktRow.type,
-            eksisterendeKafkaKeyRows = eksisterendeKafkaKeyRows
+            eksisterendeIdentitetRows = eksisterendeIdentitetRows
         )
 
         if (gjeldendeArbeidssoekerId == null) {
@@ -171,7 +173,7 @@ class KonfliktService(
         } else {
             // Slett identiteter som ikke var i PDL-hendelse
             eksisterendeIdentitetRows
-                .filter { !konfliktIdentitetSet.contains(it.identitet) }
+                .filter { !endredeIdentitetSet.contains(it.identitet) }
                 .forEach { identitetRow ->
                     slettedeIdentitetSet.add(identitetRow.identitet)
 
@@ -184,7 +186,7 @@ class KonfliktService(
                 }
 
             // Opprett eller oppdater alle identiteter fra PDL-hendelse
-            konfliktIdentitetRows
+            endredeIdentitetRows
                 .forEach { identitet ->
                     if (eksisterendeIdentitetSet.contains(identitet.identitet)) {
                         oppdaterIdentitet(
@@ -212,7 +214,7 @@ class KonfliktService(
             arbeidssoekerIdSet
                 .sorted()
                 .forEach { arbeidssoekerId ->
-                    val tidligereIdentiteter = eksisterendeIdentitetRows
+                    val eksisterendeIdentiteter = eksisterendeIdentitetRows
                         .filter { it.arbeidssoekerId == arbeidssoekerId }
                         .filter { it.status != IdentitetStatus.SLETTET }
                         .map { it.asIdentitet() }
@@ -227,19 +229,17 @@ class KonfliktService(
                         emptyList()
                     }
 
+                    val tidligereIdentiteter = eksisterendeIdentiteter + listOf(arbeidssoekerId.asIdentitet())
+
                     hendelseService.sendIdentiteterMergetHendelse(
                         arbeidssoekerId = arbeidssoekerId,
-                        identiteter = identiteter,
-                        tidligereIdentiteter = tidligereIdentiteter + listOf(arbeidssoekerId.asIdentitet(gjeldende = true))
+                        identiteter = identiteter.sortedBy { it.type.ordinal },
+                        tidligereIdentiteter = tidligereIdentiteter.sortedBy { it.type.ordinal }
                     )
 
                     if (arbeidssoekerId != gjeldendeArbeidssoekerId) {
-                        val tidligereIdentitetSet = tidligereIdentiteter
+                        val tidligereIdentitetSet = eksisterendeIdentiteter
                             .map { it.identitet }
-                            .filter { !slettedeIdentitetSet.contains(it) }
-                            .toSet() + eksisterendeKafkaKeyRows
-                            .filter { it.arbeidssoekerId == arbeidssoekerId }
-                            .map { it.identitetsnummer }
                             .filter { !slettedeIdentitetSet.contains(it) }
                             .toSet()
                         val tidligereIdent = tidligereIdentitetSet
@@ -282,7 +282,7 @@ class KonfliktService(
     )
 
     fun handleValgtSplittKonflikt(konfliktRow: KonfliktRow) {
-        logger.info("Håndterer konflikt av type {}", konfliktRow.type.name)
+        logger.debug("Håndterer konflikt av type {}", konfliktRow.type.name)
 
         val nyeIdentitetSet = konfliktRow.identiteter
             .map { it.identitet }
@@ -351,7 +351,7 @@ class KonfliktService(
                 .toMutableList()
                 .also {
                     if (it.isNotEmpty()) {
-                        it.add(arbeidssoekerId.asIdentitet(gjeldende = true))
+                        it.add(arbeidssoekerId.asIdentitet())
                     }
                 }
             val tidligereIdentiteter = eksisterendeIdentitetRows
@@ -361,7 +361,7 @@ class KonfliktService(
                 .toMutableList()
                 .also {
                     if (it.isNotEmpty()) {
-                        it.add(arbeidssoekerId.asIdentitet(gjeldende = true))
+                        it.add(arbeidssoekerId.asIdentitet())
                     }
                 }
             hendelseService.sendIdentiteterSplittetHendelse(
@@ -381,10 +381,10 @@ class KonfliktService(
     private fun uledGjeldendeArbeidssoekerId(
         aktorId: String,
         type: KonfliktType,
-        eksisterendeKafkaKeyRows: List<KafkaKeyRow>
+        eksisterendeIdentitetRows: List<IdentitetRow>
     ): Long? {
-        val identiteter = eksisterendeKafkaKeyRows
-            .map { it.identitetsnummer }
+        val identiteter = eksisterendeIdentitetRows
+            .map { it.identitet }
         val periodeRows = periodeRepository.findByIdentiteter(
             identitetList = identiteter
         )
@@ -392,20 +392,20 @@ class KonfliktService(
 
         return if (periodeRows.isEmpty()) {
             // Ingen perioder. Velger nyeste arbeidssoekerId.
-            eksisterendeKafkaKeyRows.maxOf { it.arbeidssoekerId }
+            eksisterendeIdentitetRows.maxOf { it.arbeidssoekerId }
         } else if (aktivePeriodeRows.isEmpty()) {
             // Ingen aktive perioder. Velger arbeidssoekerId tilhørende nyeste periode.
             val nyestePeriode = periodeRows
                 .maxBy {
                     it.avsluttetTimestamp?.toEpochMilli() ?: it.startetTimestamp.toEpochMilli()
                 }
-            val valgtIdentitet = eksisterendeKafkaKeyRows.find { it.identitetsnummer == nyestePeriode.identitet }
+            val valgtIdentitet = eksisterendeIdentitetRows.find { it.identitet == nyestePeriode.identitet }
                 ?: throw IllegalStateException("Fant ikke identitet for periode")
             valgtIdentitet.arbeidssoekerId
         } else if (aktivePeriodeRows.size == 1) {
             // Én aktiv periode. Velger tilhørende arbeidssoekerId.
             val aktivPeriode = aktivePeriodeRows.first()
-            val valgtIdentitet = eksisterendeKafkaKeyRows.find { it.identitetsnummer == aktivPeriode.identitet }
+            val valgtIdentitet = eksisterendeIdentitetRows.find { it.identitet == aktivPeriode.identitet }
                 ?: throw IllegalStateException("Fant ikke identitet for periode")
             valgtIdentitet.arbeidssoekerId
         } else {

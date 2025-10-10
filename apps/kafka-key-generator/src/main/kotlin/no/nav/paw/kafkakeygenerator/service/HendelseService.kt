@@ -17,10 +17,9 @@ import no.nav.paw.identitet.internehendelser.IdentiteterSlettetHendelse
 import no.nav.paw.identitet.internehendelser.IdentiteterSplittetHendelse
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.kafka.producer.sendBlocking
-import no.nav.paw.kafkakeygenerator.api.v2.publicTopicKeyFunction
 import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
 import no.nav.paw.kafkakeygenerator.config.ServerConfig
-import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.utils.asRecordKey
 import no.nav.paw.logging.logger.buildLogger
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -153,8 +152,8 @@ class HendelseService(
         arbeidssoekerId: Long,
         hendelse: Hendelse
     ) {
-        val recordKey = publicTopicKeyFunction(ArbeidssoekerId(arbeidssoekerId))
-        val record = ProducerRecord(hendelseloggTopic, recordKey.value, hendelse)
+        val recordKey = arbeidssoekerId.asRecordKey()
+        val record = ProducerRecord(hendelseloggTopic, recordKey, hendelse)
         val metadata = pawHendelseloggHendelseProducer.sendBlocking(record)
         logger.info(
             "Sendte identitet-hendelse på topic {} (offset {}, partition {})",

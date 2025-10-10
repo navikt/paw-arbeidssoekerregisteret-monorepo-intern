@@ -7,10 +7,12 @@ import no.nav.paw.kafkakeygenerator.model.KonfliktIdentitetRow
 import no.nav.paw.kafkakeygenerator.model.asKonfliktIdentitetRow
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.update
 import java.time.Instant
 
 class KonfliktIdentitetRepository {
@@ -47,6 +49,20 @@ class KonfliktIdentitetRepository {
             it[KonfliktIdentiteterTable.gjeldende] = identitet.gjeldende
             it[insertedTimestamp] = Instant.now()
         }.insertedCount
+    }
+
+    fun updateByKonfliktIdAndIdentitet(
+        konfliktId: Long,
+        identitet: Identitet
+    ): Int = transaction {
+        KonfliktIdentiteterTable.update(where = {
+            (KonfliktIdentiteterTable.konfliktId eq konfliktId) and
+                    (KonfliktIdentiteterTable.identitet eq identitet.identitet) and
+                    (KonfliktIdentiteterTable.gjeldende neq identitet.gjeldende)
+        }) {
+            it[KonfliktIdentiteterTable.gjeldende] = identitet.gjeldende
+            it[insertedTimestamp] = Instant.now()
+        }
     }
 
     fun deleteByKonfliktIdAndIdentitet(

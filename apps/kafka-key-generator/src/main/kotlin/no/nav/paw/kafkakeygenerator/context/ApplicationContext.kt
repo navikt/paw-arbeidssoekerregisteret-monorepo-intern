@@ -30,10 +30,8 @@ import no.nav.paw.kafkakeygenerator.config.SERVER_CONFIG
 import no.nav.paw.kafkakeygenerator.config.ServerConfig
 import no.nav.paw.kafkakeygenerator.handler.HealthIndicatorConsumerExceptionHandler
 import no.nav.paw.kafkakeygenerator.listener.HwmConsumerRebalanceListener
-import no.nav.paw.kafkakeygenerator.merge.MergeDetector
 import no.nav.paw.kafkakeygenerator.repository.HwmRepository
 import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
-import no.nav.paw.kafkakeygenerator.repository.KafkaKeysIdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
 import no.nav.paw.kafkakeygenerator.repository.KonfliktIdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KonfliktRepository
@@ -76,7 +74,6 @@ data class ApplicationContext(
     val pdlAktorConsumerRebalanceListener: HwmConsumerRebalanceListener,
     val pdlAktorKafkaConsumerService: PdlAktorKafkaConsumerService,
     val kafkaKeysService: KafkaKeysService,
-    val mergeDetector: MergeDetector,
     val additionalMeterBinders: List<MeterBinder>
 ) {
     companion object {
@@ -95,7 +92,6 @@ data class ApplicationContext(
             val kafkaFactory = KafkaFactory(kafkaConfig)
 
             val hwmRepository = HwmRepository()
-            val kafkaKeysIdentitetRepository = KafkaKeysIdentitetRepository()
             val kafkaKeysRepository = KafkaKeysRepository()
             val identitetRepository = IdentitetRepository()
             val konfliktIdentitetRepository = KonfliktIdentitetRepository()
@@ -125,29 +121,24 @@ data class ApplicationContext(
                 konfliktRepository = konfliktRepository,
                 konfliktIdentitetRepository = konfliktIdentitetRepository,
                 periodeRepository = periodeRepository,
-                kafkaKeysIdentitetRepository = kafkaKeysIdentitetRepository,
                 hendelseService = hendelseService
             )
             val identitetService = IdentitetService(
+                kafkaKeysRepository = kafkaKeysRepository,
                 identitetRepository = identitetRepository,
                 konfliktService = konfliktService,
                 hendelseService = hendelseService,
-                kafkaKeysIdentitetRepository = kafkaKeysIdentitetRepository
             )
             val pdlService = PdlService(pdlClient = pdlClient)
             val kafkaKeysService = KafkaKeysService(
                 meterRegistry = prometheusMeterRegistry,
-                kafkaKeysRepository = kafkaKeysRepository,
                 pdlService = pdlService,
+                identitetRepository = identitetRepository,
                 identitetService = identitetService
             )
             val identitetResponseService = IdentitetResponseService(
                 identitetRepository = identitetRepository,
                 konfliktRepository = konfliktRepository,
-                pdlService = pdlService
-            )
-            val mergeDetector = MergeDetector(
-                kafkaKeysRepository = kafkaKeysRepository,
                 pdlService = pdlService
             )
             val pawPeriodeKafkaHwmOperations = KafkaHwmService(
@@ -218,7 +209,6 @@ data class ApplicationContext(
                 pdlAktorConsumerRebalanceListener = pdlAktorConsumerRebalanceListener,
                 pdlAktorKafkaConsumerService = pdlAktorKafkaConsumerService,
                 kafkaKeysService = kafkaKeysService,
-                mergeDetector = mergeDetector,
                 additionalMeterBinders = listOf(
                     KafkaClientMetrics(pawPeriodeConsumer),
                     KafkaClientMetrics(pdlAktorConsumer)

@@ -1,16 +1,7 @@
 package no.nav.paw.kafkakeygenerator.test
 
+import com.expediagroup.graphql.client.serialization.types.KotlinxGraphQLError
 import com.expediagroup.graphql.client.serialization.types.KotlinxGraphQLResponse
-import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.client.engine.mock.MockRequestHandleScope
-import io.ktor.client.engine.mock.respond
-import io.ktor.client.request.HttpRequestData
-import io.ktor.client.request.HttpResponseData
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.content.TextContent
-import io.ktor.http.headersOf
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvviksType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.api.v1.TidspunktFraKilde
@@ -18,15 +9,12 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.ArbeidssoekerIdFlettetInn
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 import no.nav.paw.arbeidssokerregisteret.intern.v1.AvvistStoppAvPeriode
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.IdentitetsnummerSammenslaatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Kilde
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
-import no.nav.paw.identitet.internehendelser.IdentitetHendelseDeserializer
-import no.nav.paw.identitet.internehendelser.IdentitetHendelseSerializer
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType.AKTORID
@@ -40,10 +28,8 @@ import no.nav.paw.kafkakeygenerator.model.KonfliktRow
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
 import no.nav.paw.kafkakeygenerator.model.asIdentitet
-import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
-import no.nav.paw.kafkakeygenerator.test.TestData.asIdentitetsnummer
-import no.nav.paw.kafkakeygenerator.test.TestData.asResponse
-import no.nav.paw.kafkakeygenerator.test.TestData.asString
+import no.nav.paw.kafkakeygenerator.test.TestData.asIdentGruppe
+import no.nav.paw.pdl.PdlException
 import no.nav.paw.pdl.graphql.generated.HentIdenter
 import no.nav.paw.pdl.graphql.generated.enums.IdentGruppe
 import no.nav.paw.pdl.graphql.generated.hentidenter.IdentInformasjon
@@ -58,21 +44,8 @@ import org.apache.kafka.common.TopicPartition
 import java.time.Duration
 import java.time.Instant
 import java.util.*
-import kotlin.random.Random.Default.nextLong
 
 private val objectMapper = buildObjectMapper
-private val hendelseSerializer: IdentitetHendelseSerializer = IdentitetHendelseSerializer()
-private val hendelseDeserializer: IdentitetHendelseDeserializer = IdentitetHendelseDeserializer()
-
-fun MockRequestHandleScope.genererResponse(it: HttpRequestData): HttpResponseData {
-    val body = (it.body as TextContent).text
-    val request = objectMapper.readValue<HentIdenter>(body)
-    return respond(
-        content = request.asResponse().asString(),
-        status = HttpStatusCode.OK,
-        headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-    )
-}
 
 object TestData {
 
@@ -82,27 +55,6 @@ object TestData {
     const val key4 = -100004L
     const val key5 = -100005L
     const val key6 = -100006L
-    const val key7 = -100007L
-    const val key8 = -100008L
-    const val key9 = -100009L
-    const val arbeidssoekerId1 = 100001L
-    const val arbeidssoekerId2 = 100002L
-    const val arbeidssoekerId3 = 100003L
-    const val arbeidssoekerId4 = 100004L
-    const val arbeidssoekerId5 = 100005L
-    const val arbeidssoekerId6 = 100006L
-    const val arbeidssoekerId7 = 100007L
-    const val arbeidssoekerId8 = 100008L
-    const val arbeidssoekerId9 = 100009L
-    val arbId1 = Identitet(identitet = "$arbeidssoekerId1", type = IdentitetType.ARBEIDSSOEKERID, gjeldende = true)
-    val arbId2 = Identitet(identitet = "$arbeidssoekerId2", type = IdentitetType.ARBEIDSSOEKERID, gjeldende = true)
-    val arbId3 = Identitet(identitet = "$arbeidssoekerId3", type = IdentitetType.ARBEIDSSOEKERID, gjeldende = true)
-    val arbId4 = Identitet(identitet = "$arbeidssoekerId4", type = IdentitetType.ARBEIDSSOEKERID, gjeldende = true)
-    val arbId5 = Identitet(identitet = "$arbeidssoekerId5", type = IdentitetType.ARBEIDSSOEKERID, gjeldende = true)
-    val arbId6 = Identitet(identitet = "$arbeidssoekerId6", type = IdentitetType.ARBEIDSSOEKERID, gjeldende = true)
-    val arbId7 = Identitet(identitet = "$arbeidssoekerId7", type = IdentitetType.ARBEIDSSOEKERID, gjeldende = true)
-    val arbId8 = Identitet(identitet = "$arbeidssoekerId8", type = IdentitetType.ARBEIDSSOEKERID, gjeldende = true)
-    val arbId9 = Identitet(identitet = "$arbeidssoekerId9", type = IdentitetType.ARBEIDSSOEKERID, gjeldende = true)
     val dnr1 = Identitet(identitet = "41017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
     val dnr2 = Identitet(identitet = "42017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
     val dnr3 = Identitet(identitet = "43017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
@@ -113,6 +65,7 @@ object TestData {
     val dnr8_1 = Identitet(identitet = "48017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
     val dnr8_2 = Identitet(identitet = "48017012346", type = FOLKEREGISTERIDENT, gjeldende = true)
     val dnr9 = Identitet(identitet = "49017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val dnr11 = Identitet(identitet = "51017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
     val fnr1_1 = Identitet(identitet = "01017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
     val fnr1_2 = Identitet(identitet = "01017012346", type = FOLKEREGISTERIDENT, gjeldende = true)
     val fnr2_1 = Identitet(identitet = "02017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
@@ -132,18 +85,23 @@ object TestData {
     val fnr9_1 = Identitet(identitet = "09017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
     val fnr9_2 = Identitet(identitet = "09017012346", type = FOLKEREGISTERIDENT, gjeldende = true)
     val fnr10 = Identitet(identitet = "10017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr11_1 = Identitet(identitet = "11017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr11_2 = Identitet(identitet = "11017012346", type = FOLKEREGISTERIDENT, gjeldende = true)
     val aktorId1 = Identitet(identitet = "200001017012345", type = AKTORID, gjeldende = true)
     val aktorId2 = Identitet(identitet = "200002017012345", type = AKTORID, gjeldende = true)
     val aktorId3 = Identitet(identitet = "200003017012345", type = AKTORID, gjeldende = true)
     val aktorId4 = Identitet(identitet = "200004017012345", type = AKTORID, gjeldende = true)
     val aktorId5 = Identitet(identitet = "200005017012345", type = AKTORID, gjeldende = true)
-    val aktorId6 = Identitet(identitet = "200006017012345", type = AKTORID, gjeldende = true)
+    val aktorId6_1 = Identitet(identitet = "200006017012345", type = AKTORID, gjeldende = true)
+    val aktorId6_2 = Identitet(identitet = "200006017012346", type = AKTORID, gjeldende = true)
     val aktorId7_1 = Identitet(identitet = "200007017012345", type = AKTORID, gjeldende = true)
     val aktorId7_2 = Identitet(identitet = "200007017012346", type = AKTORID, gjeldende = true)
     val aktorId8_1 = Identitet(identitet = "200008017012345", type = AKTORID, gjeldende = true)
     val aktorId8_2 = Identitet(identitet = "200008017012346", type = AKTORID, gjeldende = true)
     val aktorId9 = Identitet(identitet = "200009017012345", type = AKTORID, gjeldende = true)
     val aktorId10 = Identitet(identitet = "200010017012345", type = AKTORID, gjeldende = true)
+    val aktorId11_1 = Identitet(identitet = "200011017012345", type = AKTORID, gjeldende = true)
+    val aktorId11_2 = Identitet(identitet = "200011017012346", type = AKTORID, gjeldende = true)
     val npId1 = Identitet(identitet = "900001017012345", type = NPID, gjeldende = true)
     val npId2 = Identitet(identitet = "900002017012345", type = NPID, gjeldende = true)
     val npId3 = Identitet(identitet = "900003017012345", type = NPID, gjeldende = true)
@@ -155,6 +113,7 @@ object TestData {
     val npId8_2 = Identitet(identitet = "900008017012346", type = NPID, gjeldende = true)
     val npId9 = Identitet(identitet = "900009017012345", type = NPID, gjeldende = true)
     val npId10 = Identitet(identitet = "900010017012345", type = NPID, gjeldende = true)
+    val npId11 = Identitet(identitet = "900010017012345", type = NPID, gjeldende = true)
     val periodeId1_1 = UUID.fromString("4c0cb50a-3b4a-45df-b5b6-2cb45f04d19b")
     val periodeId1_2 = UUID.fromString("095639e7-4240-42eb-813b-a1c003556e74")
     val periodeId2_1 = UUID.fromString("0fc3de47-a6cd-4ad5-8433-53235738200d")
@@ -173,35 +132,52 @@ object TestData {
     val navName1 = "Kari Normann"
 
     val aktor1_1 = aktor(
-        listOf(aktorId1, npId1, dnr1).map { it.asIdentifikator() }
+        listOf(aktorId1, npId1, dnr1)
+            .map { it.asIdentifikator() }
     )
     val aktor1_2 = aktor(
-        listOf(aktorId1, npId1, dnr1.copy(gjeldende = false), fnr1_1).map { it.asIdentifikator() }
+        listOf(aktorId1, npId1, dnr1.copy(gjeldende = false), fnr1_1)
+            .map { it.asIdentifikator() }
+    )
+    val aktor1_3 = aktor(
+        listOf(aktorId1, npId1, dnr1.copy(gjeldende = false), fnr1_1.copy(gjeldende = false), fnr1_2)
+            .map { it.asIdentifikator() }
     )
     val aktor2_1 = aktor(
-        listOf(aktorId2, npId2, dnr2).map { it.asIdentifikator() }
+        listOf(aktorId2, npId2, dnr2)
+            .map { it.asIdentifikator() }
     )
     val aktor2_2 = aktor(
-        listOf(aktorId2, npId2, dnr2.copy(gjeldende = false), fnr2_1).map { it.asIdentifikator() }
+        listOf(aktorId2, npId2, dnr2.copy(gjeldende = false), fnr2_1)
+            .map { it.asIdentifikator() }
+    )
+    val aktor2_3 = aktor(
+        listOf(aktorId2, npId2, dnr2.copy(gjeldende = false), fnr2_1.copy(gjeldende = false), fnr2_2)
+            .map { it.asIdentifikator() }
     )
     val aktor3_1 = aktor(
-        listOf(aktorId3, npId3, dnr3).map { it.asIdentifikator() }
+        listOf(aktorId3, npId3, dnr3)
+            .map { it.asIdentifikator() }
     )
     val aktor3_2 = aktor(
-        listOf(aktorId3, npId3, dnr3.copy(gjeldende = false), fnr3_1.copy(gjeldende = false), fnr3_2)
+        listOf(aktorId3, npId3, dnr3.copy(gjeldende = false), fnr3_1)
             .map { it.asIdentifikator() }
     )
     val aktor3_3 = aktor(
-        listOf(aktorId3, npId3, dnr3.copy(gjeldende = false), fnr3_2).map { it.asIdentifikator() }
+        listOf(aktorId3, npId3, dnr3.copy(gjeldende = false), fnr3_1.copy(gjeldende = false), fnr3_2)
+            .map { it.asIdentifikator() }
     )
     val aktor4_1 = aktor(
-        listOf(aktorId4, npId4, dnr4).map { it.asIdentifikator() }
+        listOf(aktorId4, npId4, dnr4)
+            .map { it.asIdentifikator() }
     )
     val aktor4_2 = aktor(
-        listOf(aktorId4, npId4, dnr4.copy(gjeldende = false), fnr4_1).map { it.asIdentifikator() }
+        listOf(aktorId4, npId4, dnr4.copy(gjeldende = false), fnr4_1)
+            .map { it.asIdentifikator() }
     )
     val aktor4_3 = aktor(
-        listOf(aktorId4, npId4, dnr4.copy(gjeldende = false), fnr4_2).map { it.asIdentifikator() }
+        listOf(aktorId4, npId4, dnr4.copy(gjeldende = false), fnr4_2)
+            .map { it.asIdentifikator() }
     )
     val aktor5_3 = aktor(
         listOf(
@@ -438,10 +414,6 @@ object TestData {
         return ConsumerRecords<K, V>(mapOf(tp to this), emptyMap())
     }
 
-    fun List<Hendelse>.asHendelseRecords(): ConsumerRecords<Long, Hendelse> =
-        this.map { ConsumerRecord("topic", 0, 0, nextLong(), it) }
-            .asRecords()
-
     fun Type.asIdentGruppe(): IdentGruppe = when (this) {
         Type.NPID -> IdentGruppe.NPID
         Type.AKTORID -> IdentGruppe.AKTORID
@@ -470,36 +442,49 @@ object TestData {
         else -> throw IllegalArgumentException("Ukjent type")
     }
 
+    fun IdentitetType.asIdentGruppe(): IdentGruppe = when (this) {
+        NPID -> IdentGruppe.NPID
+        AKTORID -> IdentGruppe.AKTORID
+        FOLKEREGISTERIDENT -> IdentGruppe.FOLKEREGISTERIDENT
+        else -> throw IllegalArgumentException("Ukjent type")
+    }
+
     fun Identitet.asIdentifikator(): Identifikator = Identifikator(identitet, type.asType(), gjeldende)
 
-    fun HentIdenter.asResponse(): KotlinxGraphQLResponse<HentIdenter.Result> = when (variables.ident) {
-        dnr1.identitet -> aktor1_1.asGraphQLResponse()
-        fnr1_1.identitet -> aktor1_1.asGraphQLResponse()
-        fnr1_2.identitet -> aktor1_1.asGraphQLResponse()
-        aktorId1.identitet -> aktor1_1.asGraphQLResponse()
-        dnr2.identitet -> aktor2_1.asGraphQLResponse()
-        fnr2_1.identitet -> aktor2_1.asGraphQLResponse()
-        fnr2_2.identitet -> aktor2_1.asGraphQLResponse()
-        aktorId2.identitet -> aktor2_1.asGraphQLResponse()
-        dnr3.identitet -> aktor3_1.asGraphQLResponse()
-        fnr3_1.identitet -> aktor3_1.asGraphQLResponse()
-        fnr3_2.identitet -> aktor3_1.asGraphQLResponse()
-        aktorId3.identitet -> aktor3_1.asGraphQLResponse()
-        dnr4.identitet -> aktor4_1.asGraphQLResponse()
-        fnr4_1.identitet -> aktor4_2.asGraphQLResponse()
-        dnr5.identitet -> aktor5_3.asGraphQLResponse()
-        else -> aktor(identifikatorer = emptyList()).asGraphQLResponse()
+    fun asPdlAktor(request: HentIdenter): Aktor {
+        return when (request.variables.ident) {
+            aktorId1.identitet -> aktor1_1
+            npId1.identitet -> aktor1_1
+            dnr1.identitet -> aktor1_1
+            fnr1_1.identitet -> aktor1_3
+            fnr1_2.identitet -> aktor1_3
+            aktorId2.identitet -> aktor2_1
+            npId2.identitet -> aktor2_1
+            dnr2.identitet -> aktor2_1
+            fnr2_1.identitet -> aktor2_2
+            fnr2_2.identitet -> aktor2_3
+            aktorId3.identitet -> aktor3_1
+            npId3.identitet -> aktor3_1
+            dnr3.identitet -> aktor3_1
+            fnr3_1.identitet -> aktor3_2
+            fnr3_2.identitet -> aktor3_3
+            aktorId4.identitet -> aktor4_1
+            dnr4.identitet -> aktor4_1
+            fnr4_1.identitet -> aktor4_2
+            fnr4_2.identitet -> aktor4_3
+            dnr5.identitet -> aktor5_3
+            else -> throw PdlException("Fant ikke identiteter", listOf(KotlinxGraphQLError("Fant ikke person")))
+        }
     }
 
     fun KotlinxGraphQLResponse<*>.asString(): String = objectMapper.writeValueAsString(this)
-
-    fun Identitet.asIdentitetsnummer(): Identitetsnummer = Identitetsnummer(identitet)
 }
 
-fun KafkaKeysRepository.insert(identitet: Identitet): Long {
-    return opprett(identitet.asIdentitetsnummer())
-        .fold(onLeft = { null }, onRight = { it })!!.value
-}
+fun Identitet.asIdentInformasjon(): IdentInformasjon = IdentInformasjon(
+    ident = identitet,
+    gruppe = type.asIdentGruppe(),
+    historisk = !gjeldende
+)
 
 data class IdentitetWrapper(
     val arbeidssoekerId: Long,
@@ -513,12 +498,6 @@ fun IdentitetRow.asWrapper(): IdentitetWrapper = IdentitetWrapper(
     aktorId = aktorId,
     identitet = Identitet(identitet, type, gjeldende),
     status = status
-)
-
-data class IdentitetHendelseWrapper(
-    val type: String,
-    val identiteter: List<Identitet>,
-    val tidligereIdentiteter: List<Identitet> = emptyList(),
 )
 
 data class KonfliktWrapper(
