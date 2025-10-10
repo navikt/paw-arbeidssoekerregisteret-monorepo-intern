@@ -78,6 +78,8 @@ spec:
           namespace: paw
         - application: aia-backend
           namespace: paw
+        - application: aia-min-side-ssr
+          namespace: paw
     outbound:
       rules:
         - application: poao-tilgang
