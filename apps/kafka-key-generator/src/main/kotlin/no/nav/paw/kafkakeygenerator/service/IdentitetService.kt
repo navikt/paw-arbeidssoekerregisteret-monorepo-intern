@@ -8,15 +8,16 @@ import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
 import no.nav.paw.kafkakeygenerator.model.asIdentitet
 import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
-import no.nav.paw.kafkakeygenerator.repository.KafkaKeysIdentitetRepository
+import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
 import no.nav.paw.logging.logger.buildLogger
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Instant
 
 class IdentitetService(
+    private val kafkaKeysRepository: KafkaKeysRepository,
     private val identitetRepository: IdentitetRepository,
     private val konfliktService: KonfliktService,
-    private val hendelseService: HendelseService,
-    private val kafkaKeysIdentitetRepository: KafkaKeysIdentitetRepository
+    private val hendelseService: HendelseService
 ) {
     private val logger = buildLogger
 
@@ -26,6 +27,79 @@ class IdentitetService(
             .filter { it.status != IdentitetStatus.SLETTET }
             .map { it.asIdentitet() }
             .sortedBy { it.type.ordinal }
+    }
+
+    fun identiteterSkalOpprettes(
+        identiteter: List<Identitet>
+    ) {
+        transaction {
+            // Vil feile om person ikke har aktiv aktør-id, men det skal vel ikke kunne skje?
+            val aktorId = identiteter
+                .filter { it.type == IdentitetType.AKTORID }
+                .first { it.gjeldende }
+                .identitet
+            identiteterSkalOpprettes(
+                aktorId = aktorId,
+                identiteter = identiteter,
+                sourceTimestamp = Instant.now()
+            )
+        }
+    }
+
+    fun identiteterSkalOpprettes(
+        aktorId: String,
+        identiteter: List<Identitet>,
+        sourceTimestamp: Instant
+    ) = transaction {
+        val identitetSet = identiteter
+            .map { it.identitet }
+            .toSet()
+
+        val eksisterendeIdentitetRows = identitetRepository
+            .findByAktorIdOrIdentiteter(
+                aktorId = aktorId,
+                identiteter = identitetSet
+            )
+
+        if (eksisterendeIdentitetRows.isEmpty()) {
+            logger.debug("Oppretter {} identiteter", identiteter.size)
+
+            val arbeidssoekerId = kafkaKeysRepository.opprett().value
+
+            identiteter.forEach { identitet ->
+                val rowsAffected = identitetRepository.insert(
+                    arbeidssoekerId = arbeidssoekerId,
+                    aktorId = aktorId,
+                    identitet = identitet.identitet,
+                    type = identitet.type,
+                    gjeldende = identitet.gjeldende,
+                    status = IdentitetStatus.AKTIV,
+                    sourceTimestamp = sourceTimestamp
+                )
+                logger.info(
+                    "Oppretter identitet av type {} med status {} (rows affected {})",
+                    identitet.type.name,
+                    IdentitetStatus.AKTIV.name,
+                    rowsAffected
+                )
+            }
+
+            val endredeIdentiteter = identiteter
+                .toMutableList()
+                .apply { add(arbeidssoekerId.asIdentitet()) }
+
+            hendelseService.sendIdentiteterEndretHendelse(
+                arbeidssoekerId = arbeidssoekerId,
+                identiteter = endredeIdentiteter.sortedBy { it.type.ordinal },
+                tidligereIdentiteter = emptyList()
+            )
+        } else {
+            identiteterSkalOppdateres(
+                aktorId = aktorId,
+                identiteter = identiteter,
+                sourceTimestamp = Instant.now()
+            )
+        }
     }
 
     fun identiteterSkalOppdateres(
@@ -49,6 +123,8 @@ class IdentitetService(
         identiteter: List<Identitet>,
         sourceTimestamp: Instant
     ) {
+        logger.debug("Oppdaterer {} identiteter", identiteter.size)
+
         val identitetSet = identiteter
             .map { it.identitet }
             .toSet()
@@ -66,23 +142,18 @@ class IdentitetService(
         val aktorIdSet = eksisterendeIdentitetRows
             .map { it.aktorId }
             .toSet()
-        val eksisterendeKafkaKeyRows = kafkaKeysIdentitetRepository
-            .findByIdentiteter(identiteter = identitetSet)
-        arbeidssoekerIdSet += eksisterendeKafkaKeyRows
-            .map { it.arbeidssoekerId }
-            .toSet()
         val eksisterendeKonfliktRows = konfliktService.finnVentendeKonflikter(
             aktorId = aktorId
         )
 
         if (arbeidssoekerIdSet.isEmpty()) {
             logger.info(
-                "Ignorer aktor-melding fordi person ikke er arbeidssøker ({} identiteter)",
+                "Ignorer oppdatering fordi person ikke er arbeidssøker ({} identiteter)",
                 identiteter.size
             )
         } else if ((aktorIdSet.isNotEmpty() && !aktorIdSet.contains(aktorId)) || eksisterendeKonfliktRows.any { it.type == KonfliktType.SPLITT }) {
             logger.warn(
-                "Pauser aktor-melding som splitt fordi person har ny aktør-ID ({} identiteter)",
+                "Pauser oppdatering som splitt fordi person har ny aktør-ID ({} identiteter)",
                 identiteter.size
             )
             identiteterSkalSplittes(
@@ -93,7 +164,7 @@ class IdentitetService(
             )
         } else if (arbeidssoekerIdSet.size > 1 || eksisterendeKonfliktRows.any { it.type == KonfliktType.MERGE }) {
             logger.warn(
-                "Pauser aktor-melding som merge fordi arbeidssøker har flere arbeidssøker-ider ({} identiteter)",
+                "Pauser oppdatering som merge fordi arbeidssøker har flere arbeidssøker-ider ({} identiteter)",
                 identiteter.size
             )
             identiteterSkalMerges(
@@ -104,7 +175,7 @@ class IdentitetService(
             )
         } else if (identiteter.size == eksisterendeIdentiteter.size && identiteter.containsAll(eksisterendeIdentiteter)) {
             logger.info(
-                "Ignorer aktor-melding fordi alle identiteter eksisterer allerede ({} identiteter)",
+                "Ignorer oppdatering fordi alle identiteter eksisterer allerede ({} identiteter)",
                 identiteter.size
             )
         } else {
@@ -124,6 +195,7 @@ class IdentitetService(
         aktorId: String,
         sourceTimestamp: Instant
     ) {
+        logger.debug("Sletter identiteter for aktørId")
         val eksisterendeIdentitetRows = identitetRepository
             .findByAktorId(aktorId)
 
@@ -153,7 +225,7 @@ class IdentitetService(
                         .map { it.asIdentitet() }
                         .toMutableList()
                     if (tidligereIdentiteter.isNotEmpty()) {
-                        tidligereIdentiteter += arbeidssoekerId.asIdentitet(gjeldende = true)
+                        tidligereIdentiteter += arbeidssoekerId.asIdentitet()
                     }
 
                     hendelseService.sendIdentiteterSlettetHendelse(
@@ -301,7 +373,7 @@ class IdentitetService(
             .filter { it.status != IdentitetStatus.SLETTET }
             .map { it.asIdentitet() }
             .toMutableList()
-            .apply { add(arbeidssoekerId.asIdentitet(gjeldende = true)) }
+            .apply { add(arbeidssoekerId.asIdentitet()) }
 
         val tidligereIdentiteter = eksisterendeIdentitetRows
             .filter { it.aktorId == aktorId }
@@ -309,13 +381,13 @@ class IdentitetService(
             .map { it.asIdentitet() }
             .toMutableList()
         if (tidligereIdentiteter.isNotEmpty()) {
-            tidligereIdentiteter += arbeidssoekerId.asIdentitet(gjeldende = true)
+            tidligereIdentiteter += arbeidssoekerId.asIdentitet()
         }
 
         hendelseService.sendIdentiteterEndretHendelse(
             arbeidssoekerId = arbeidssoekerId,
-            identiteter = endredeIdentiteter,
-            tidligereIdentiteter = tidligereIdentiteter
+            identiteter = endredeIdentiteter.sortedBy { it.type.ordinal },
+            tidligereIdentiteter = tidligereIdentiteter.sortedBy { it.type.ordinal }
         )
     }
 }

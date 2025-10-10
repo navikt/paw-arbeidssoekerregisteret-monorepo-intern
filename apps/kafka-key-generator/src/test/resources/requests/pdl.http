@@ -1,0 +1,13 @@
+### POST hentIdenter
+
+POST {{wiremockBaseUrl}}/pdl
+Accept: application/graphql
+Content-Type: application/graphql
+
+{
+    "query": "query($ident: ID!, historikk: Boolean) {hentIdenter(ident: $ident, historikk: $historikk) {identer {ident,gruppe,historisk}}}",
+    "variables": {
+        "ident":"09017012345",
+        "historikk": true
+    }
+}

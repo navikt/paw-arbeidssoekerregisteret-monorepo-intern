@@ -1,0 +1,50 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/pdl",
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$.variables[?(@.ident == '05017012346')]"
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/graphql-response+json"
+    },
+    "jsonBody": {
+      "data": {
+        "hentIdenter": {
+          "identer": [
+            {
+              "ident": "200005017012345",
+              "gruppe": "AKTORID",
+              "historisk": false
+            },
+            {
+              "ident": "200045017012345",
+              "gruppe": "AKTORID",
+              "historisk": true
+            },
+            {
+              "ident": "45017012345",
+              "gruppe": "FOLKEREGISTERIDENT",
+              "historisk": true
+            },
+            {
+              "ident": "05017012345",
+              "gruppe": "FOLKEREGISTERIDENT",
+              "historisk": true
+            },
+            {
+              "ident": "05017012346",
+              "gruppe": "FOLKEREGISTERIDENT",
+              "historisk": false
+            }
+          ]
+        }
+      }
+    }
+  }
+}

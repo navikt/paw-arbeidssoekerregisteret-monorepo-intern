@@ -5,14 +5,13 @@ import no.nav.paw.kafkakeygenerator.api.models.Konflikt
 import no.nav.paw.kafkakeygenerator.api.models.KonfliktDetaljer
 import no.nav.paw.kafkakeygenerator.api.models.KonfliktType
 import no.nav.paw.kafkakeygenerator.api.v2.asApi
-import no.nav.paw.kafkakeygenerator.api.v2.publicTopicKeyFunction
-import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.asApi
 import no.nav.paw.kafkakeygenerator.model.asIdentitet
 import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
 import no.nav.paw.kafkakeygenerator.repository.KonfliktRepository
+import no.nav.paw.kafkakeygenerator.utils.asRecordKey
 import no.nav.paw.logging.logger.buildLogger
 
 class IdentitetResponseService(
@@ -22,7 +21,7 @@ class IdentitetResponseService(
 ) {
     private val logger = buildLogger
 
-    suspend fun finnForIdentitet(
+    fun finnForIdentitet(
         identitet: String,
         visKonflikter: Boolean = false,
         hentPdl: Boolean = false
@@ -36,7 +35,7 @@ class IdentitetResponseService(
             null
         }
         val identitetRows = identitetRepository
-            .findByIdentitet(identitet)
+            .findAllByIdentitet(identitet)
             .filter { it.status != IdentitetStatus.SLETTET }
         if (identitetRows.isEmpty()) {
             return IdentitetResponse(
@@ -82,12 +81,12 @@ class IdentitetResponseService(
             val identiteter = identitetRows
                 .map { it.asIdentitet() }
                 .toMutableList()
-                .apply { add(arbeidssoekerId.asIdentitet(true)) }
+                .apply { add(arbeidssoekerId.asIdentitet()) }
                 .sortedBy { it.type.ordinal }
                 .map { it.asApi() }
             return IdentitetResponse(
                 arbeidssoekerId = arbeidssoekerId,
-                recordKey = publicTopicKeyFunction(ArbeidssoekerId(arbeidssoekerId)).value,
+                recordKey = arbeidssoekerId.asRecordKey(),
                 identiteter = identiteter,
                 pdlIdentiteter = pdlIdentiteter,
                 konflikter = konflikter

@@ -1,0 +1,27 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/pdl",
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$.variables[?(@.ident == '49017012345')]"
+      }
+    ]
+  },
+  "response": {
+    "status": 500,
+    "headers": {
+      "Content-Type": "application/graphql-response+json"
+    },
+    "jsonBody": {
+      "errors": [
+        {
+          "message": "Teknisk feil",
+          "path": [
+            "/pdl"
+          ]
+        }
+      ]
+    }
+  }
+}

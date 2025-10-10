@@ -1,0 +1,59 @@
+### POST /api/v1/record-key
+
+POST {{devProxyBaseUrl}}/api/v1/proxy
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer Token
+
+{
+    "method": "POST",
+    "url": "http://paw-kafka-key-generator/api/v1/record-key",
+    "body": {
+        "ident": "06498504726"
+    }
+}
+
+### POST /api/v2/hent
+
+POST {{devProxyBaseUrl}}/api/v1/proxy
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer Token
+
+{
+    "method": "POST",
+    "url": "http://paw-kafka-key-generator/api/v2/hent",
+    "body": {
+        "ident": "07498504726"
+    }
+}
+
+### POST /api/v2/hentEllerOpprett
+
+POST {{devProxyBaseUrl}}/api/v1/proxy
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer Token
+
+{
+    "method": "POST",
+    "url": "http://paw-kafka-key-generator/api/v2/hentEllerOpprett",
+    "body": {
+        "ident": "06498504726"
+    }
+}
+
+### POST /api/v2/identiteter
+
+POST {{devProxyBaseUrl}}/api/v1/proxy
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer Token
+
+{
+    "method": "POST",
+    "url": "http://paw-kafka-key-generator/api/v2/identiteter",
+    "body": {
+        "identitet": "06498504726"
+    }
+}

@@ -19,11 +19,10 @@ import no.nav.paw.serialization.plugin.installContentNegotiationPlugin
 
 fun main() {
     val logger = buildApplicationLogger
-
     val applicationContext = ApplicationContext.create()
-    val appName = applicationContext.serverConfig.runtimeEnvironment.appNameOrDefaultForLocal()
 
     with(applicationContext.serverConfig) {
+        val appName = runtimeEnvironment.appNameOrDefaultForLocal()
         logger.info("Starter {} med hostname {} og port {}", appName, host, port)
 
         embeddedServer(factory = Netty, port = port) {
@@ -68,8 +67,7 @@ fun Application.module(applicationContext: ApplicationContext) {
             meterRegistry = prometheusMeterRegistry,
             healthIndicatorRepository = healthIndicatorRepository,
             kafkaKeysService = kafkaKeysService,
-            identitetResponseService = identitetResponseService,
-            mergeDetector = mergeDetector
+            identitetResponseService = identitetResponseService
         )
     }
 }

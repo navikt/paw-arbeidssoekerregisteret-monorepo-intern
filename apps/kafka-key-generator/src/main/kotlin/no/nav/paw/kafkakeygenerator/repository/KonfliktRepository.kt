@@ -8,6 +8,7 @@ import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
 import no.nav.paw.kafkakeygenerator.model.asKonfliktIdentitetRow
 import no.nav.paw.kafkakeygenerator.model.asKonfliktRow
+import no.nav.paw.logging.logger.buildNamedLogger
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.and
@@ -16,7 +17,10 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.sql.updateReturning
+import java.sql.SQLException
 import java.time.Instant
+
+private val logger = buildNamedLogger("database.identiteter")
 
 class KonfliktRepository(
     private val konfliktIdentitetRepository: KonfliktIdentitetRepository
@@ -96,30 +100,23 @@ class KonfliktRepository(
         status: KonfliktStatus,
         sourceTimestamp: Instant,
         identiteter: List<Identitet>
-    ): Int = transaction {
-        val statement = KonflikterTable.insert {
-            it[KonflikterTable.aktorId] = aktorId
-            it[KonflikterTable.type] = type
-            it[KonflikterTable.status] = status
-            it[KonflikterTable.sourceTimestamp] = sourceTimestamp
-            it[insertedTimestamp] = Instant.now()
+    ): Int = runCatching {
+        transaction {
+            val statement = KonflikterTable.insert {
+                it[KonflikterTable.aktorId] = aktorId
+                it[KonflikterTable.type] = type
+                it[KonflikterTable.status] = status
+                it[KonflikterTable.sourceTimestamp] = sourceTimestamp
+                it[insertedTimestamp] = Instant.now()
+            }
+            val id = statement[KonflikterTable.id]
+            val identiteterInsertedCount = identiteter
+                .sumOf { konfliktIdentitetRepository.insert(id.value, it) }
+            statement.insertedCount + identiteterInsertedCount
         }
-        val id = statement[KonflikterTable.id]
-        val identiteterInsertedCount = identiteter
-            .sumOf { konfliktIdentitetRepository.insert(id.value, it) }
-        statement.insertedCount + identiteterInsertedCount
-    }
-
-    fun updateStatusByAktorIdAndStatus(
-        aktorId: String,
-        fraStatus: KonfliktStatus,
-        tilStatus: KonfliktStatus
-    ): Int = transaction {
-        KonflikterTable.update(
-            where = { (KonflikterTable.aktorId eq aktorId) and (KonflikterTable.status eq fraStatus) }) {
-            it[KonflikterTable.status] = tilStatus
-            it[updatedTimestamp] = Instant.now()
-        }
+    }.getOrElse { throwable ->
+        logger.trace("Feil ved insert av konflikt-identitet", throwable)
+        throw SQLException("Feil ved insert av konflikt-identitet")
     }
 
     fun updateStatusByAktorIdAndType(
