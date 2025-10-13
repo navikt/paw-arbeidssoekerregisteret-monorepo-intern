@@ -21,7 +21,7 @@ open class ScheduledAsyncRunner<T>(
             interval,
             delay
         )
-        val timerTask = ScheduledTimerTask<Void>(onRun = onRun, keepRunning = keepRunning)
+        val timerTask = ScheduledTimerTask(onRun = onRun, keepRunning = keepRunning)
         timer.scheduleAtFixedRate(timerTask, delay.toMillis(), interval.toMillis())
     }
 

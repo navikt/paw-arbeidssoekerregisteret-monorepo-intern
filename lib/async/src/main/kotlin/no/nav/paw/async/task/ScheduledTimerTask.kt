@@ -4,14 +4,14 @@ import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
-class ScheduledTimerTask<T>(
+class ScheduledTimerTask(
     private val onRun: () -> Unit,
     private val keepRunning: AtomicBoolean = AtomicBoolean(false)
 ) : TimerTask() {
     private val logger = LoggerFactory.getLogger(this.javaClass)
 
     override fun run() {
-        logger.info("Running scheduled async function")
+        logger.trace("Running scheduled async function")
         do {
             onRun()
         } while (keepRunning.get())

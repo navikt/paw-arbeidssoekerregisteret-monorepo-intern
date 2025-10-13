@@ -30,7 +30,7 @@ val AuthenticationRoutePlugin
         val modifyPrincipal = pluginConfig.modifyPrincipal ?: { it }
 
         on(AuthenticationChecked) { call ->
-            logger.debug("Kjører autentisering")
+            logger.trace("Kjører autentisering")
             val securityContext = modifyPrincipal(call.resolveSecurityContext())
             call.securityContext(securityContext)
         }
