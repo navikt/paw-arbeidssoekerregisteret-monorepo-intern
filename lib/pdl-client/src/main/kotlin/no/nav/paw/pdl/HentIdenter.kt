@@ -39,8 +39,7 @@ suspend fun PdlClient.hentIdenter(
         )
 
     respons.errors?.let {
-        logger.error("Henter 'hentIdenter' fra PDL feilet med: ${respons.errors}")
-        throw PdlException("'hentIdenter' fra pdl feilet", it)
+        throw PdlException("'hentIdenter' fra PDL feilet", it)
     }
 
     logger.trace("Hentet 'hentIdenter' fra PDL")

@@ -22,8 +22,7 @@ suspend fun PdlClient.hentOpphold(
         )
 
     respons.errors?.let {
-        logger.error("Henter 'hentOpphold' fra PDL feilet med: ${respons.errors}")
-        throw PdlException("'hentOpphold' feilet", it)
+        throw PdlException("'hentOpphold' fra PDL feilet", it)
     }
 
     logger.trace("Hentet 'hentOpphold' fra PDL")

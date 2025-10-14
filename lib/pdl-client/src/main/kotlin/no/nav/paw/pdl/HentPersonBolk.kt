@@ -28,7 +28,7 @@ suspend fun PdlClient.hentPersonBolk(
         )
 
     respons.errors?.let {
-        throw PdlException("'hentPersonBolk' feilet", it)
+        throw PdlException("'hentPersonBolk' fra PDL feilet", it)
     }
 
     logger.trace("Hentet 'hentPersonBolk' fra PDL")

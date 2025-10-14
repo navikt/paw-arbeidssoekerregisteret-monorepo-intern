@@ -27,7 +27,7 @@ suspend fun PdlClient.hentForenkletStatus(
         )
 
     response.errors?.let {
-        throw PdlException("'hentForenkletStatus' feilet", it)
+        throw PdlException("'hentForenkletStatus' fra PDL feilet", it)
     }
 
     logger.trace("Hentet 'hentForenkletStatus' fra PDL")

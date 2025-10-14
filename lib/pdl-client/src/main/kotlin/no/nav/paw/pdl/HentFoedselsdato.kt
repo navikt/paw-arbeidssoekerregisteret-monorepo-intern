@@ -27,7 +27,7 @@ suspend fun PdlClient.hentFoedselsdato(
         )
 
     respons.errors?.let {
-        throw PdlException("'hentPerson' feilet", it)
+        throw PdlException("'hentPerson' fra PDL feilet", it)
     }
 
     logger.trace("Hentet 'hentFoedselsdato' fra PDL")

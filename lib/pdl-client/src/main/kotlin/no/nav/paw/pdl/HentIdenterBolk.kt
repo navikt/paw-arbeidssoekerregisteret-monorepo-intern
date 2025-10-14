@@ -30,8 +30,7 @@ suspend fun PdlClient.hentIdenterBolk(
     )
 
     response.errors?.let {
-        logger.error("Henter 'hentIdenterBolk' fra PDL feilet med: ${response.errors}")
-        throw PdlException("'hentIdenterBolk' fra pdl feilet", it)
+        throw PdlException("'hentIdenterBolk' fra PDL feilet", it)
     }
 
     logger.trace("Hentet 'hentIdenterBolk' fra PDL")
