@@ -49,3 +49,5 @@ spec:
     outbound:
       rules:
         - application: paw-kafka-key-generator
+        - application: paw-arbeidssoekerregisteret-api-oppslag-v2
+        - application: paw-arbeidssoekerregisteret-api-ledigestillinger
