@@ -14,8 +14,6 @@ private val sameOrPreviousMondayAdjuster = TemporalAdjusters.previousOrSame(DayO
 
 fun sluttTidForBekreftelsePeriode(startTid: Instant, interval: Duration): Instant {
     val maalDato = startTid + interval
-    //TODO: For testing i dev, hvor vi kan ha intervaller på 1 dag eller mindre, bryr vi oss ikke om magic monday. Fjern denne når vi er ferdig med testing
-    if(interval.toDays() <= 1L) return maalDato
     return sameOrPreviousMondayAdjuster.adjustInto(ofInstant(maalDato, osloTimezone))
     .let(LocalDate::from)
     .let(LocalDate::atStartOfDay)
