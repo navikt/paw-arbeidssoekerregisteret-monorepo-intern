@@ -2,6 +2,7 @@ package no.nav.paw.bekreftelsetjeneste.tilstand
 
 import java.time.DayOfWeek
 import java.time.Duration
+import java.time.Duration.ofHours
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDate.ofInstant
@@ -13,7 +14,9 @@ val osloTimezone: ZoneId = ZoneId.of("Europe/Oslo")
 private val sameOrPreviousMondayAdjuster = TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)
 
 fun sluttTidForBekreftelsePeriode(startTid: Instant, interval: Duration): Instant {
-    val maalDato = startTid + interval
+    //Vi legger på 6 timer slik at vi unngår problemer med sommertid/vintertid når vi justerer til mandag
+    //https://jira.adeo.no/browse/FAGSYSTEM-403157
+    val maalDato = startTid + interval + ofHours(6)
     return sameOrPreviousMondayAdjuster.adjustInto(ofInstant(maalDato, osloTimezone))
     .let(LocalDate::from)
     .let(LocalDate::atStartOfDay)
