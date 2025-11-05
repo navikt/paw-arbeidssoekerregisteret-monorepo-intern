@@ -1,4 +1,4 @@
-package no.nav.paw.kafkakeygenerator.model
+package no.nav.paw.kafkakeygenerator.model.dto
 
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.person.pdl.aktor.v2.Aktor

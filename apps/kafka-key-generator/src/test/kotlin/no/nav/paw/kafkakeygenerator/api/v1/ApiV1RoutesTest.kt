@@ -22,8 +22,10 @@ import no.nav.paw.kafka.producer.sendBlocking
 import no.nav.paw.kafkakeygenerator.api.models.ProblemDetails
 import no.nav.paw.kafkakeygenerator.context.TestContext
 import no.nav.paw.kafkakeygenerator.context.TestContext.Companion.setJsonBody
+import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
+import no.nav.paw.kafkakeygenerator.model.dao.KafkaKeysTable
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
-import no.nav.paw.kafkakeygenerator.model.asIdentitet
+import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.kafkakeygenerator.test.IdentitetWrapper
 import no.nav.paw.kafkakeygenerator.test.TestData
 import no.nav.paw.kafkakeygenerator.test.asWrapper
@@ -113,11 +115,11 @@ class ApiV1RoutesTest : FreeSpec({
                 val dnr = TestData.dnr2
                 val fnr1 = TestData.fnr2_1
                 val fnr2 = TestData.fnr2_2
-                val arbeidssoekerId = kafkaKeysRepository.opprett().value
+                val arbeidssoekerId = KafkaKeysTable.insert().value
                 val arbId = arbeidssoekerId.asIdentitet()
                 val recordKey = arbeidssoekerId.asRecordKey()
 
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId,
                     aktorId = aktorId.identitet,
                     identitet = aktorId.identitet,
@@ -126,7 +128,7 @@ class ApiV1RoutesTest : FreeSpec({
                     status = IdentitetStatus.AKTIV,
                     sourceTimestamp = Instant.now()
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId,
                     aktorId = aktorId.identitet,
                     identitet = dnr.identitet,
@@ -154,7 +156,7 @@ class ApiV1RoutesTest : FreeSpec({
                 val body2 = response1.body<ResponseV1>()
                 body2.key shouldBe recordKey
 
-                val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId.identitet)
                 identitetRows.size shouldBe 5
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(

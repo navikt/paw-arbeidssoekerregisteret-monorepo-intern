@@ -20,14 +20,16 @@ import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType.AKTORID
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType.FOLKEREGISTERIDENT
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType.NPID
-import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.model.IdentitetRow
+import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
+import no.nav.paw.kafkakeygenerator.model.dao.PerioderTable
+import no.nav.paw.kafkakeygenerator.model.dto.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.model.dao.IdentitetRow
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
-import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
-import no.nav.paw.kafkakeygenerator.model.KonfliktRow
+import no.nav.paw.kafkakeygenerator.model.dto.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.model.dao.KonfliktRow
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
-import no.nav.paw.kafkakeygenerator.model.asIdentitet
+import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.kafkakeygenerator.test.TestData.asIdentGruppe
 import no.nav.paw.pdl.PdlException
 import no.nav.paw.pdl.graphql.generated.HentIdenter
@@ -41,6 +43,7 @@ import no.nav.person.pdl.aktor.v2.Type
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.common.TopicPartition
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -478,6 +481,41 @@ object TestData {
     }
 
     fun KotlinxGraphQLResponse<*>.asString(): String = objectMapper.writeValueAsString(this)
+
+    fun hentArbeidssoekerId(identitet: String): Long = IdentiteterTable.getByIdentitet(
+        identitet = identitet
+    )!!.arbeidssoekerId
+
+    fun opprettIdentitet(
+        arbeidssoekerId: Long,
+        aktorId: String,
+        identitet: Identitet,
+        status: IdentitetStatus = IdentitetStatus.AKTIV
+    ) = IdentiteterTable.insert(
+        arbeidssoekerId = arbeidssoekerId,
+        aktorId = aktorId,
+        identitet = identitet.identitet,
+        type = identitet.type,
+        gjeldende = identitet.gjeldende,
+        status = status,
+        sourceTimestamp = Instant.now()
+    )
+
+    fun opprettPeriode(
+        periodeId: UUID,
+        identitet: Identitet,
+        startetTimestamp: Instant,
+        avsluttetTimestamp: Instant? = null,
+        sourceTimestamp: Instant
+    ): Int = transaction {
+        PerioderTable.insert(
+            periodeId = periodeId,
+            identitet = identitet.identitet,
+            startetTimestamp = startetTimestamp,
+            avsluttetTimestamp = avsluttetTimestamp,
+            sourceTimestamp = sourceTimestamp
+        )
+    }
 }
 
 fun Identitet.asIdentInformasjon(): IdentInformasjon = IdentInformasjon(

@@ -1,7 +1,7 @@
-package no.nav.paw.kafkakeygenerator.model
+package no.nav.paw.kafkakeygenerator.model.dao
 
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
-import no.nav.paw.kafkakeygenerator.database.KonfliktIdentiteterTable
+import no.nav.paw.kafkakeygenerator.model.dao.KonfliktIdentiteterTable
 import org.jetbrains.exposed.sql.ResultRow
 import java.time.Instant
 

@@ -2,8 +2,8 @@ package no.nav.paw.kafkakeygenerator.service
 
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.kafkakeygenerator.config.KafkaConsumerConfig
-import no.nav.paw.kafkakeygenerator.model.asIdentitet
-import no.nav.paw.kafkakeygenerator.model.asPerson
+import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
+import no.nav.paw.kafkakeygenerator.model.dto.asPerson
 import no.nav.paw.kafkakeygenerator.utils.SecureLogger
 import no.nav.paw.logging.logger.buildNamedLogger
 import no.nav.person.pdl.aktor.v2.Aktor

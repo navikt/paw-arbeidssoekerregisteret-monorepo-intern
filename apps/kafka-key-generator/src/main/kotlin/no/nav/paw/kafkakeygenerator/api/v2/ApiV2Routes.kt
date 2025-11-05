@@ -7,7 +7,7 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import no.nav.paw.kafkakeygenerator.api.models.IdentitetRequest
 import no.nav.paw.kafkakeygenerator.api.models.IdentitetResponse
-import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.model.dto.Identitetsnummer
 import no.nav.paw.kafkakeygenerator.service.IdentitetResponseService
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
 import no.nav.paw.kafkakeygenerator.utils.asRecordKey

@@ -30,21 +30,13 @@ import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.error.plugin.installErrorHandlingPlugin
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.identitet.internehendelser.IdentitetHendelse
-import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.kafkakeygenerator.config.APPLICATION_CONFIG
 import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
 import no.nav.paw.kafkakeygenerator.config.SERVER_CONFIG
 import no.nav.paw.kafkakeygenerator.config.ServerConfig
-import no.nav.paw.kafkakeygenerator.model.CallId
-import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
-import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.model.dto.CallId
+import no.nav.paw.kafkakeygenerator.model.dto.Identitetsnummer
 import no.nav.paw.kafkakeygenerator.plugin.configureRouting
-import no.nav.paw.kafkakeygenerator.repository.HwmRepository
-import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
-import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
-import no.nav.paw.kafkakeygenerator.repository.KonfliktIdentitetRepository
-import no.nav.paw.kafkakeygenerator.repository.KonfliktRepository
-import no.nav.paw.kafkakeygenerator.repository.PeriodeRepository
 import no.nav.paw.kafkakeygenerator.service.HendelseService
 import no.nav.paw.kafkakeygenerator.service.IdentitetResponseService
 import no.nav.paw.kafkakeygenerator.service.IdentitetService
@@ -73,7 +65,6 @@ import no.nav.security.mock.oauth2.MockOAuth2Server
 import org.apache.kafka.clients.producer.Producer
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
-import java.time.Instant
 import java.util.*
 import javax.sql.DataSource
 
@@ -87,12 +78,6 @@ class TestContext private constructor(
     val initSql: List<String> = emptyList(),
     val pdlClientMock: PdlClient = pdlClientMock(TestData::asPdlAktor),
     val meterRegistry: MeterRegistry = LoggingMeterRegistry(),
-    val hwmRepository: HwmRepository = HwmRepository(),
-    val kafkaKeysRepository: KafkaKeysRepository = KafkaKeysRepository(),
-    val identitetRepository: IdentitetRepository = IdentitetRepository(),
-    val periodeRepository: PeriodeRepository = PeriodeRepository(),
-    val konfliktIdentitetRepository: KonfliktIdentitetRepository = KonfliktIdentitetRepository(),
-    val konfliktRepository: KonfliktRepository = KonfliktRepository(konfliktIdentitetRepository),
     val pawIdentitetProducerMock: Producer<Long, IdentitetHendelse> = mockk<Producer<Long, IdentitetHendelse>>(),
     val pawHendelseloggProducerMock: Producer<Long, Hendelse> = mockk<Producer<Long, Hendelse>>(),
     val hendelseService: HendelseService = HendelseService(
@@ -103,35 +88,25 @@ class TestContext private constructor(
     ),
     val konfliktService: KonfliktService = KonfliktService(
         applicationConfig = applicationConfig,
-        identitetRepository = identitetRepository,
-        konfliktRepository = konfliktRepository,
-        konfliktIdentitetRepository = konfliktIdentitetRepository,
-        periodeRepository = periodeRepository,
         hendelseService = hendelseService
     ),
     val identitetService: IdentitetService = IdentitetService(
-        kafkaKeysRepository = kafkaKeysRepository,
-        identitetRepository = identitetRepository,
         konfliktService = konfliktService,
         hendelseService = hendelseService,
     ),
     val identitetServiceMock: IdentitetService = mockk<IdentitetService>(),
     val pdlService: PdlService = PdlService(pdlClientMock),
     val identitetResponseService: IdentitetResponseService = IdentitetResponseService(
-        identitetRepository = identitetRepository,
-        konfliktRepository = konfliktRepository,
         pdlService = pdlService
     ),
     val kafkaKeysService: KafkaKeysService = KafkaKeysService(
         meterRegistry = meterRegistry,
         pdlService = pdlService,
-        identitetRepository = identitetRepository,
         identitetService = identitetService
     ),
     val pdlAktorKafkaHwmOperations: KafkaHwmOperations = KafkaHwmService(
         kafkaConsumerConfig = applicationConfig.pdlAktorConsumer,
-        meterRegistry = meterRegistry,
-        hwmRepository = hwmRepository
+        meterRegistry = meterRegistry
     ),
     val pdlAktorKafkaConsumerService: PdlAktorKafkaConsumerService = PdlAktorKafkaConsumerService(
         kafkaConsumerConfig = applicationConfig.pdlAktorConsumer,
@@ -247,10 +222,6 @@ fun MockRequestHandleScope.genererResponse(
     )
 }
 
-fun IdentitetRepository.hentArbeidssoekerId(identitet: String): Long = getByIdentitet(
-    identitet = identitet
-)!!.arbeidssoekerId
-
 fun KafkaKeysService.hentEllerOpprett(identitet: String): Long = hentEllerOpprett(
     callId = CallId(UUID.randomUUID().toString()),
     identitet = Identitetsnummer(identitet)
@@ -260,20 +231,3 @@ fun KafkaKeysService.hentEllerOppdater(identitet: String): Long = hentEllerOppda
     callId = CallId(UUID.randomUUID().toString()),
     identitet = Identitetsnummer(identitet)
 ).value
-
-fun IdentitetRepository.opprett(
-    arbeidssoekerId: Long,
-    aktorId: String,
-    identitet: Identitet,
-    status: IdentitetStatus = IdentitetStatus.AKTIV
-) {
-    insert(
-        arbeidssoekerId = arbeidssoekerId,
-        aktorId = aktorId,
-        identitet = identitet.identitet,
-        type = identitet.type,
-        gjeldende = identitet.gjeldende,
-        status = status,
-        sourceTimestamp = Instant.now()
-    )
-}

@@ -20,10 +20,13 @@ import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafka.producer.sendBlocking
 import no.nav.paw.kafkakeygenerator.context.TestContext
+import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
+import no.nav.paw.kafkakeygenerator.model.dao.KafkaKeysTable
+import no.nav.paw.kafkakeygenerator.model.dao.KonflikterTable
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
-import no.nav.paw.kafkakeygenerator.model.asIdentitet
+import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.kafkakeygenerator.test.IdentitetWrapper
 import no.nav.paw.kafkakeygenerator.test.TestData
 import no.nav.paw.kafkakeygenerator.test.asWrapper
@@ -63,9 +66,9 @@ class KonfliktServiceTest : FreeSpec({
                 val dnr = TestData.dnr1
                 val fnr1 = TestData.fnr1_1
                 val fnr2 = TestData.fnr1_2
-                val arbeidssoekerId1 = kafkaKeysRepository.opprett().value
-                val arbeidssoekerId2 = kafkaKeysRepository.opprett().value
-                val arbeidssoekerId3 = kafkaKeysRepository.opprett().value
+                val arbeidssoekerId1 = KafkaKeysTable.insert().value
+                val arbeidssoekerId2 = KafkaKeysTable.insert().value
+                val arbeidssoekerId3 = KafkaKeysTable.insert().value
                 val arbId1 = arbeidssoekerId1.asIdentitet()
                 val arbId2 = arbeidssoekerId2.asIdentitet()
                 val arbId3 = arbeidssoekerId3.asIdentitet()
@@ -82,7 +85,7 @@ class KonfliktServiceTest : FreeSpec({
                     pawHendelseloggProducerMock.sendBlocking(capture(hendelseloggProducerRecordList))
                 } returns hendelsesloggRecordMetadata
 
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
                     identitet = aktorId.identitet,
@@ -91,7 +94,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now()
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
                     identitet = npId.identitet,
@@ -100,7 +103,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now()
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
                     identitet = dnr.identitet,
@@ -109,7 +112,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now()
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId2,
                     aktorId = aktorId.identitet,
                     identitet = fnr1.identitet,
@@ -118,7 +121,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now()
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId3,
                     aktorId = aktorId.identitet,
                     identitet = fnr2.identitet,
@@ -127,7 +130,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now()
                 )
-                konfliktRepository.insert(
+                KonflikterTable.insert(
                     aktorId = aktorId.identitet,
                     type = KonfliktType.MERGE,
                     status = KonfliktStatus.VENTER,
@@ -139,7 +142,7 @@ class KonfliktServiceTest : FreeSpec({
                 konfliktService.handleVentendeMergeKonflikter()
 
                 // THEN
-                val konfliktRows = konfliktRepository.findByAktorId(aktorId.identitet)
+                val konfliktRows = KonflikterTable.findByAktorId(aktorId.identitet)
                 konfliktRows shouldHaveSize 1
 
                 val konfliktRow1 = konfliktRows[0]
@@ -150,7 +153,7 @@ class KonfliktServiceTest : FreeSpec({
                     aktorId, npId, fnr1.copy(gjeldende = false), fnr2
                 )
 
-                val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId.identitet)
                 identitetRows shouldHaveSize 5
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
@@ -270,9 +273,9 @@ class KonfliktServiceTest : FreeSpec({
                 val periodeId1 = TestData.periodeId2_1
                 val periodeId2 = TestData.periodeId2_2
                 val periodeId3 = TestData.periodeId2_3
-                val arbeidssoekerId1 = kafkaKeysRepository.opprett().value
-                val arbeidssoekerId2 = kafkaKeysRepository.opprett().value
-                val arbeidssoekerId3 = kafkaKeysRepository.opprett().value
+                val arbeidssoekerId1 = KafkaKeysTable.insert().value
+                val arbeidssoekerId2 = KafkaKeysTable.insert().value
+                val arbeidssoekerId3 = KafkaKeysTable.insert().value
                 val arbId1 = arbeidssoekerId1.asIdentitet()
                 val arbId2 = arbeidssoekerId2.asIdentitet()
                 val arbId3 = arbeidssoekerId3.asIdentitet()
@@ -289,7 +292,7 @@ class KonfliktServiceTest : FreeSpec({
                     pawHendelseloggProducerMock.sendBlocking(capture(hendelseloggProducerRecordList))
                 } returns hendelsesloggRecordMetadata
 
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
                     identitet = aktorId.identitet,
@@ -298,7 +301,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
                     identitet = npId.identitet,
@@ -307,7 +310,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
                     identitet = dnr.identitet,
@@ -316,7 +319,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId2,
                     aktorId = aktorId.identitet,
                     identitet = fnr1.identitet,
@@ -325,7 +328,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(60))
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId3,
                     aktorId = aktorId.identitet,
                     identitet = fnr2.identitet,
@@ -334,30 +337,30 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(30))
                 )
-                konfliktRepository.insert(
+                KonflikterTable.insert(
                     aktorId = aktorId.identitet,
                     type = KonfliktType.MERGE,
                     status = KonfliktStatus.VENTER,
                     sourceTimestamp = Instant.now(),
                     identiteter = listOf(aktorId, npId, dnr.copy(gjeldende = false), fnr1.copy(gjeldende = false), fnr2)
                 )
-                periodeRepository.insert(
+                TestData.opprettPeriode(
                     periodeId = periodeId1,
-                    identitet = fnr1.identitet,
+                    identitet = fnr1,
                     startetTimestamp = Instant.now().minus(Duration.ofDays(180)),
                     avsluttetTimestamp = Instant.now().minus(Duration.ofDays(150)),
                     sourceTimestamp = Instant.now()
                 )
-                periodeRepository.insert(
+                TestData.opprettPeriode(
                     periodeId = periodeId2,
-                    identitet = fnr2.identitet,
+                    identitet = fnr2,
                     startetTimestamp = Instant.now().minus(Duration.ofDays(120)),
                     avsluttetTimestamp = Instant.now().minus(Duration.ofDays(90)),
                     sourceTimestamp = Instant.now()
                 )
-                periodeRepository.insert(
+                TestData.opprettPeriode(
                     periodeId = periodeId3,
-                    identitet = dnr.identitet,
+                    identitet = dnr,
                     startetTimestamp = Instant.now().minus(Duration.ofDays(60)),
                     avsluttetTimestamp = Instant.now().minus(Duration.ofDays(30)),
                     sourceTimestamp = Instant.now()
@@ -367,7 +370,7 @@ class KonfliktServiceTest : FreeSpec({
                 konfliktService.handleVentendeMergeKonflikter()
 
                 // THEN
-                val konfliktRows = konfliktRepository.findByAktorId(aktorId.identitet)
+                val konfliktRows = KonflikterTable.findByAktorId(aktorId.identitet)
                 konfliktRows shouldHaveSize 1
                 val konfliktRow1 = konfliktRows[0]
                 konfliktRow1.aktorId shouldBe aktorId.identitet
@@ -377,7 +380,7 @@ class KonfliktServiceTest : FreeSpec({
                     aktorId, npId, dnr.copy(gjeldende = false), fnr1.copy(gjeldende = false), fnr2
                 )
 
-                val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId.identitet)
                 identitetRows shouldHaveSize 5
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
@@ -496,9 +499,9 @@ class KonfliktServiceTest : FreeSpec({
                 val periodeId1 = TestData.periodeId3_1
                 val periodeId2 = TestData.periodeId3_2
                 val periodeId3 = TestData.periodeId3_3
-                val arbeidssoekerId1 = kafkaKeysRepository.opprett().value
-                val arbeidssoekerId2 = kafkaKeysRepository.opprett().value
-                val arbeidssoekerId3 = kafkaKeysRepository.opprett().value
+                val arbeidssoekerId1 = KafkaKeysTable.insert().value
+                val arbeidssoekerId2 = KafkaKeysTable.insert().value
+                val arbeidssoekerId3 = KafkaKeysTable.insert().value
                 val arbId1 = arbeidssoekerId1.asIdentitet()
                 val arbId2 = arbeidssoekerId2.asIdentitet()
                 val arbId3 = arbeidssoekerId3.asIdentitet()
@@ -515,7 +518,7 @@ class KonfliktServiceTest : FreeSpec({
                     pawHendelseloggProducerMock.sendBlocking(capture(hendelseloggProducerRecordList))
                 } returns hendelsesloggRecordMetadata
 
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
                     identitet = aktorId.identitet,
@@ -524,7 +527,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
                     identitet = npId.identitet,
@@ -533,7 +536,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
                     identitet = dnr.identitet,
@@ -542,7 +545,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId2,
                     aktorId = aktorId.identitet,
                     identitet = fnr1.identitet,
@@ -551,7 +554,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(60))
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId3,
                     aktorId = aktorId.identitet,
                     identitet = fnr2.identitet,
@@ -560,29 +563,29 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(30))
                 )
-                konfliktRepository.insert(
+                KonflikterTable.insert(
                     aktorId = aktorId.identitet,
                     type = KonfliktType.MERGE,
                     status = KonfliktStatus.VENTER,
                     sourceTimestamp = Instant.now(),
                     identiteter = listOf(aktorId, npId, dnr.copy(gjeldende = false), fnr1, fnr2.copy(gjeldende = false))
                 )
-                periodeRepository.insert(
+                TestData.opprettPeriode(
                     periodeId = periodeId1,
-                    identitet = dnr.identitet,
+                    identitet = dnr,
                     startetTimestamp = Instant.now().minus(Duration.ofDays(180)),
                     avsluttetTimestamp = Instant.now().minus(Duration.ofDays(150)),
                     sourceTimestamp = Instant.now()
                 )
-                periodeRepository.insert(
+                TestData.opprettPeriode(
                     periodeId = periodeId2,
-                    identitet = fnr1.identitet,
+                    identitet = fnr1,
                     startetTimestamp = Instant.now().minus(Duration.ofDays(120)),
                     sourceTimestamp = Instant.now()
                 )
-                periodeRepository.insert(
+                TestData.opprettPeriode(
                     periodeId = periodeId3,
-                    identitet = fnr2.identitet,
+                    identitet = fnr2,
                     startetTimestamp = Instant.now().minus(Duration.ofDays(60)),
                     avsluttetTimestamp = Instant.now().minus(Duration.ofDays(30)),
                     sourceTimestamp = Instant.now()
@@ -592,7 +595,7 @@ class KonfliktServiceTest : FreeSpec({
                 konfliktService.handleVentendeMergeKonflikter()
 
                 // THEN
-                val konfliktRows = konfliktRepository.findByAktorId(aktorId.identitet)
+                val konfliktRows = KonflikterTable.findByAktorId(aktorId.identitet)
                 konfliktRows shouldHaveSize 1
                 val konfliktRow1 = konfliktRows.first()
                 konfliktRow1.aktorId shouldBe aktorId.identitet
@@ -602,7 +605,7 @@ class KonfliktServiceTest : FreeSpec({
                     aktorId, npId, dnr.copy(gjeldende = false), fnr1, fnr2.copy(gjeldende = false)
                 )
 
-                val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId.identitet)
                 identitetRows shouldHaveSize 5
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
@@ -725,9 +728,9 @@ class KonfliktServiceTest : FreeSpec({
                 val periodeId1 = TestData.periodeId4_1
                 val periodeId2 = TestData.periodeId4_2
                 val periodeId3 = TestData.periodeId4_3
-                val arbeidssoekerId1 = kafkaKeysRepository.opprett().value
-                val arbeidssoekerId2 = kafkaKeysRepository.opprett().value
-                val arbeidssoekerId3 = kafkaKeysRepository.opprett().value
+                val arbeidssoekerId1 = KafkaKeysTable.insert().value
+                val arbeidssoekerId2 = KafkaKeysTable.insert().value
+                val arbeidssoekerId3 = KafkaKeysTable.insert().value
                 val identitetProducerRecordList = mutableListOf<ProducerRecord<Long, IdentitetHendelse>>()
                 val hendelseloggProducerRecordList = mutableListOf<ProducerRecord<Long, Hendelse>>()
 
@@ -738,7 +741,7 @@ class KonfliktServiceTest : FreeSpec({
                     pawHendelseloggProducerMock.sendBlocking(capture(hendelseloggProducerRecordList))
                 } returns hendelsesloggRecordMetadata
 
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
                     identitet = aktorId.identitet,
@@ -747,7 +750,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
                     identitet = npId.identitet,
@@ -756,7 +759,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
                     identitet = dnr.identitet,
@@ -765,7 +768,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId2,
                     aktorId = aktorId.identitet,
                     identitet = fnr1.identitet,
@@ -774,7 +777,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(60))
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId3,
                     aktorId = aktorId.identitet,
                     identitet = fnr2.identitet,
@@ -784,7 +787,7 @@ class KonfliktServiceTest : FreeSpec({
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(30))
                 )
 
-                konfliktRepository.insert(
+                KonflikterTable.insert(
                     aktorId = aktorId.identitet,
                     type = KonfliktType.MERGE,
                     status = KonfliktStatus.VENTER,
@@ -792,22 +795,22 @@ class KonfliktServiceTest : FreeSpec({
                     identiteter = listOf(aktorId, npId, dnr.copy(gjeldende = false), fnr1.copy(gjeldende = false), fnr2)
                 )
 
-                periodeRepository.insert(
+                TestData.opprettPeriode(
                     periodeId = periodeId1,
-                    identitet = dnr.identitet,
+                    identitet = dnr,
                     startetTimestamp = Instant.now().minus(Duration.ofDays(180)),
                     avsluttetTimestamp = Instant.now().minus(Duration.ofDays(150)),
                     sourceTimestamp = Instant.now()
                 )
-                periodeRepository.insert(
+                TestData.opprettPeriode(
                     periodeId = periodeId2,
-                    identitet = fnr1.identitet,
+                    identitet = fnr1,
                     startetTimestamp = Instant.now().minus(Duration.ofDays(120)),
                     sourceTimestamp = Instant.now()
                 )
-                periodeRepository.insert(
+                TestData.opprettPeriode(
                     periodeId = periodeId3,
-                    identitet = fnr2.identitet,
+                    identitet = fnr2,
                     startetTimestamp = Instant.now().minus(Duration.ofDays(60)),
                     sourceTimestamp = Instant.now()
                 )
@@ -816,7 +819,7 @@ class KonfliktServiceTest : FreeSpec({
                 konfliktService.handleVentendeMergeKonflikter()
 
                 // THEN
-                val konfliktRows = konfliktRepository.findByAktorId(aktorId.identitet)
+                val konfliktRows = KonflikterTable.findByAktorId(aktorId.identitet)
                 konfliktRows shouldHaveSize 1
                 val konfliktRow1 = konfliktRows.first()
                 konfliktRow1.aktorId shouldBe aktorId.identitet
@@ -826,7 +829,7 @@ class KonfliktServiceTest : FreeSpec({
                     aktorId, npId, dnr.copy(gjeldende = false), fnr1.copy(gjeldende = false), fnr2
                 )
 
-                val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId.identitet)
                 identitetRows shouldHaveSize 5
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
@@ -871,8 +874,8 @@ class KonfliktServiceTest : FreeSpec({
                 val dnr = TestData.dnr6
                 val fnr1 = TestData.fnr6_1
                 val fnr2 = TestData.fnr6_2
-                val arbeidssoekerId1 = kafkaKeysRepository.opprett().value
-                val arbeidssoekerId2 = kafkaKeysRepository.opprett().value
+                val arbeidssoekerId1 = KafkaKeysTable.insert().value
+                val arbeidssoekerId2 = KafkaKeysTable.insert().value
                 val arbId1 = arbeidssoekerId1.asIdentitet()
                 val arbId2 = arbeidssoekerId2.asIdentitet()
                 val recordKey1 = arbeidssoekerId1.asRecordKey()
@@ -887,7 +890,7 @@ class KonfliktServiceTest : FreeSpec({
                     pawHendelseloggProducerMock.sendBlocking(capture(hendelseloggProducerRecordList))
                 } returns hendelsesloggRecordMetadata
 
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
                     identitet = aktorId.identitet,
@@ -896,7 +899,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
                     identitet = dnr.identitet,
@@ -905,7 +908,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId2,
                     aktorId = aktorId.identitet,
                     identitet = fnr1.identitet,
@@ -915,7 +918,7 @@ class KonfliktServiceTest : FreeSpec({
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
 
-                konfliktRepository.insert(
+                KonflikterTable.insert(
                     aktorId = aktorId.identitet,
                     type = KonfliktType.MERGE,
                     status = KonfliktStatus.VENTER,
@@ -927,7 +930,7 @@ class KonfliktServiceTest : FreeSpec({
                 konfliktService.handleVentendeMergeKonflikter()
 
                 // THEN
-                val konfliktRows = konfliktRepository.findByAktorId(aktorId.identitet)
+                val konfliktRows = KonflikterTable.findByAktorId(aktorId.identitet)
                 konfliktRows shouldHaveSize 1
                 val konfliktRow1 = konfliktRows[0]
                 konfliktRow1.aktorId shouldBe aktorId.identitet
@@ -937,7 +940,7 @@ class KonfliktServiceTest : FreeSpec({
                     aktorId, fnr1.copy(gjeldende = false), fnr2
                 )
 
-                val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId.identitet)
                 identitetRows shouldHaveSize 4
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
@@ -1026,8 +1029,8 @@ class KonfliktServiceTest : FreeSpec({
                 val dnr = TestData.dnr11
                 val fnr1 = TestData.fnr11_1
                 val fnr2 = TestData.fnr11_2
-                val arbeidssoekerId1 = kafkaKeysRepository.opprett().value
-                val arbeidssoekerId2 = kafkaKeysRepository.opprett().value
+                val arbeidssoekerId1 = KafkaKeysTable.insert().value
+                val arbeidssoekerId2 = KafkaKeysTable.insert().value
                 val arbId1 = arbeidssoekerId1.asIdentitet()
                 val arbId2 = arbeidssoekerId2.asIdentitet()
                 val recordKey1 = arbeidssoekerId1.asRecordKey()
@@ -1042,7 +1045,7 @@ class KonfliktServiceTest : FreeSpec({
                     pawHendelseloggProducerMock.sendBlocking(capture(hendelseloggProducerRecordList))
                 } returns hendelsesloggRecordMetadata
 
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId1.identitet,
                     identitet = aktorId1.identitet,
@@ -1051,7 +1054,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now()
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId2,
                     aktorId = aktorId2.identitet,
                     identitet = aktorId2.identitet,
@@ -1060,7 +1063,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now()
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId1.identitet,
                     identitet = npId.identitet,
@@ -1069,7 +1072,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now()
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId1.identitet,
                     identitet = dnr.identitet,
@@ -1078,7 +1081,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now()
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId2,
                     aktorId = aktorId2.identitet,
                     identitet = fnr1.identitet,
@@ -1087,7 +1090,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.MERGE,
                     sourceTimestamp = Instant.now()
                 )
-                konfliktRepository.insert(
+                KonflikterTable.insert(
                     aktorId = aktorId2.identitet,
                     type = KonfliktType.MERGE,
                     status = KonfliktStatus.VENTER,
@@ -1106,8 +1109,8 @@ class KonfliktServiceTest : FreeSpec({
                 konfliktService.handleVentendeMergeKonflikter()
 
                 // THEN
-                konfliktRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
-                val konfliktRows = konfliktRepository.findByAktorId(aktorId2.identitet)
+                KonflikterTable.findByAktorId(aktorId1.identitet) shouldHaveSize 0
+                val konfliktRows = KonflikterTable.findByAktorId(aktorId2.identitet)
                 konfliktRows shouldHaveSize 1
                 val konfliktRow1 = konfliktRows[0]
                 konfliktRow1.aktorId shouldBe aktorId2.identitet
@@ -1122,8 +1125,8 @@ class KonfliktServiceTest : FreeSpec({
                     fnr2
                 )
 
-                identitetRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
-                val identitetRows = identitetRepository.findByAktorId(aktorId2.identitet)
+                IdentiteterTable.findByAktorId(aktorId1.identitet) shouldHaveSize 0
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId2.identitet)
                 identitetRows shouldHaveSize 6
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
@@ -1246,8 +1249,8 @@ class KonfliktServiceTest : FreeSpec({
 
                 val lagredeIdentiteter = identiteter.map { i ->
                     val (aktorId, dnr, fnr) = i
-                    val arbeidssoekerId1 = kafkaKeysRepository.opprett().value
-                    val arbeidssoekerId2 = kafkaKeysRepository.opprett().value
+                    val arbeidssoekerId1 = KafkaKeysTable.insert().value
+                    val arbeidssoekerId2 = KafkaKeysTable.insert().value
                     val identitetProducerRecordList = mutableListOf<ProducerRecord<Long, IdentitetHendelse>>()
                     val hendelseloggProducerRecordList = mutableListOf<ProducerRecord<Long, Hendelse>>()
 
@@ -1259,7 +1262,7 @@ class KonfliktServiceTest : FreeSpec({
                     } returns hendelsesloggRecordMetadata
 
 
-                    identitetRepository.insert(
+                    IdentiteterTable.insert(
                         arbeidssoekerId = arbeidssoekerId1,
                         aktorId = aktorId.identitet,
                         identitet = aktorId.identitet,
@@ -1268,7 +1271,7 @@ class KonfliktServiceTest : FreeSpec({
                         status = IdentitetStatus.MERGE,
                         sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                     )
-                    identitetRepository.insert(
+                    IdentiteterTable.insert(
                         arbeidssoekerId = arbeidssoekerId2,
                         aktorId = aktorId.identitet,
                         identitet = dnr.identitet,
@@ -1278,7 +1281,7 @@ class KonfliktServiceTest : FreeSpec({
                         sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                     )
 
-                    konfliktRepository.insert(
+                    KonflikterTable.insert(
                         aktorId = aktorId.identitet,
                         type = KonfliktType.MERGE,
                         status = KonfliktStatus.VENTER,
@@ -1294,7 +1297,7 @@ class KonfliktServiceTest : FreeSpec({
                     val (i1, i2) = i
                     val (aktorId, dnr, fnr) = i1
                     val (arbeidssoekerId1, arbeidssoekerId2) = i2
-                    val konfliktRows = konfliktRepository.findByAktorId(aktorId.identitet)
+                    val konfliktRows = KonflikterTable.findByAktorId(aktorId.identitet)
                     konfliktRows shouldHaveSize 1
 
                     val konfliktRow1 = konfliktRows[0]
@@ -1307,7 +1310,7 @@ class KonfliktServiceTest : FreeSpec({
                         fnr
                     )
 
-                    val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
+                    val identitetRows = IdentiteterTable.findByAktorId(aktorId.identitet)
                     identitetRows shouldHaveSize 2
                     identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                         IdentitetWrapper(
@@ -1333,7 +1336,7 @@ class KonfliktServiceTest : FreeSpec({
                     val (i1, i2) = i
                     val (aktorId, dnr, fnr) = i1
                     val (_, arbeidssoekerId2) = i2
-                    val konfliktRows = konfliktRepository.findByAktorId(aktorId.identitet)
+                    val konfliktRows = KonflikterTable.findByAktorId(aktorId.identitet)
                     konfliktRows shouldHaveSize 1
 
                     val konfliktRow1 = konfliktRows[0]
@@ -1346,7 +1349,7 @@ class KonfliktServiceTest : FreeSpec({
                         fnr
                     )
 
-                    val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
+                    val identitetRows = IdentiteterTable.findByAktorId(aktorId.identitet)
                     identitetRows shouldHaveSize 3
                     identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                         IdentitetWrapper(
@@ -1385,14 +1388,14 @@ class KonfliktServiceTest : FreeSpec({
                 val dnr = TestData.dnr7
                 val fnr1 = TestData.fnr7_1
                 val fnr2 = TestData.fnr7_2
-                val arbeidssoekerId = kafkaKeysRepository.opprett().value
+                val arbeidssoekerId = KafkaKeysTable.insert().value
                 val identitetProducerRecordList = mutableListOf<ProducerRecord<Long, IdentitetHendelse>>()
 
                 every {
                     pawIdentitetProducerMock.sendBlocking(capture(identitetProducerRecordList))
                 } returns identitetRecordMetadata
 
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId,
                     aktorId = aktorId.identitet,
                     identitet = aktorId.identitet,
@@ -1401,7 +1404,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.SLETTET,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId,
                     aktorId = aktorId.identitet,
                     identitet = dnr.identitet,
@@ -1411,7 +1414,7 @@ class KonfliktServiceTest : FreeSpec({
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
 
-                konfliktRepository.insert(
+                KonflikterTable.insert(
                     aktorId = aktorId.identitet,
                     type = KonfliktType.SPLITT,
                     status = KonfliktStatus.VENTER,
@@ -1423,7 +1426,7 @@ class KonfliktServiceTest : FreeSpec({
                 konfliktService.handleValgteSplittKonflikter()
 
                 // THEN
-                val konfliktRows = konfliktRepository.findByAktorId(aktorId.identitet)
+                val konfliktRows = KonflikterTable.findByAktorId(aktorId.identitet)
                 konfliktRows shouldHaveSize 1
 
                 val konfliktRow1 = konfliktRows[0]
@@ -1436,7 +1439,7 @@ class KonfliktServiceTest : FreeSpec({
                     fnr2
                 )
 
-                val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId.identitet)
                 identitetRows shouldHaveSize 2
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
@@ -1463,7 +1466,7 @@ class KonfliktServiceTest : FreeSpec({
                 val dnr2 = TestData.dnr8_2
                 val fnr1 = TestData.fnr8_1
                 val fnr2 = TestData.fnr8_2
-                val arbeidssoekerId = kafkaKeysRepository.opprett().value
+                val arbeidssoekerId = KafkaKeysTable.insert().value
                 val arbId = arbeidssoekerId.asIdentitet()
                 val identitetProducerRecordList = mutableListOf<ProducerRecord<Long, IdentitetHendelse>>()
 
@@ -1471,7 +1474,7 @@ class KonfliktServiceTest : FreeSpec({
                     pawIdentitetProducerMock.sendBlocking(capture(identitetProducerRecordList))
                 } returns identitetRecordMetadata
 
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId,
                     aktorId = aktorId.identitet,
                     identitet = aktorId.identitet,
@@ -1480,7 +1483,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.SLETTET,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId,
                     aktorId = aktorId.identitet,
                     identitet = dnr1.identitet,
@@ -1489,7 +1492,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.SLETTET,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId,
                     aktorId = aktorId.identitet,
                     identitet = dnr2.identitet,
@@ -1499,7 +1502,7 @@ class KonfliktServiceTest : FreeSpec({
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
 
-                konfliktRepository.insert(
+                KonflikterTable.insert(
                     aktorId = aktorId.identitet,
                     type = KonfliktType.SPLITT,
                     status = KonfliktStatus.VALGT,
@@ -1511,7 +1514,7 @@ class KonfliktServiceTest : FreeSpec({
                 konfliktService.handleValgteSplittKonflikter()
 
                 // THEN
-                val konfliktRows = konfliktRepository.findByAktorId(aktorId.identitet)
+                val konfliktRows = KonflikterTable.findByAktorId(aktorId.identitet)
                 konfliktRows shouldHaveSize 1
 
                 val konfliktRow1 = konfliktRows[0]
@@ -1525,7 +1528,7 @@ class KonfliktServiceTest : FreeSpec({
                     fnr2
                 )
 
-                val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId.identitet)
                 identitetRows shouldHaveSize 5
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
@@ -1585,15 +1588,15 @@ class KonfliktServiceTest : FreeSpec({
                 val dnr = TestData.dnr9
                 val fnr1 = TestData.fnr9_1
                 val fnr2 = TestData.fnr9_2
-                val arbeidssoekerId1 = kafkaKeysRepository.opprett().value
-                val arbeidssoekerId2 = kafkaKeysRepository.opprett().value
+                val arbeidssoekerId1 = KafkaKeysTable.insert().value
+                val arbeidssoekerId2 = KafkaKeysTable.insert().value
                 val identitetProducerRecordList = mutableListOf<ProducerRecord<Long, IdentitetHendelse>>()
 
                 every {
                     pawIdentitetProducerMock.sendBlocking(capture(identitetProducerRecordList))
                 } returns identitetRecordMetadata
 
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId1,
                     aktorId = aktorId.identitet,
                     identitet = aktorId.identitet,
@@ -1602,7 +1605,7 @@ class KonfliktServiceTest : FreeSpec({
                     status = IdentitetStatus.SLETTET,
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId2,
                     aktorId = aktorId.identitet,
                     identitet = dnr.identitet,
@@ -1612,7 +1615,7 @@ class KonfliktServiceTest : FreeSpec({
                     sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                 )
 
-                konfliktRepository.insert(
+                KonflikterTable.insert(
                     aktorId = aktorId.identitet,
                     type = KonfliktType.SPLITT,
                     status = KonfliktStatus.VALGT,
@@ -1624,7 +1627,7 @@ class KonfliktServiceTest : FreeSpec({
                 konfliktService.handleValgteSplittKonflikter()
 
                 // THEN
-                val konfliktRows = konfliktRepository.findByAktorId(aktorId.identitet)
+                val konfliktRows = KonflikterTable.findByAktorId(aktorId.identitet)
                 konfliktRows shouldHaveSize 1
 
                 val konfliktRow1 = konfliktRows[0]
@@ -1638,7 +1641,7 @@ class KonfliktServiceTest : FreeSpec({
                     fnr2
                 )
 
-                val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId.identitet)
                 identitetRows shouldHaveSize 2
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(

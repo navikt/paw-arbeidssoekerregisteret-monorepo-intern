@@ -3,26 +3,22 @@ package no.nav.paw.kafkakeygenerator.service
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
-import no.nav.paw.kafkakeygenerator.model.IdentitetRow
+import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
+import no.nav.paw.kafkakeygenerator.model.dao.KonfliktIdentiteterTable
+import no.nav.paw.kafkakeygenerator.model.dao.KonflikterTable
+import no.nav.paw.kafkakeygenerator.model.dao.PerioderTable
+import no.nav.paw.kafkakeygenerator.model.dao.IdentitetRow
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
-import no.nav.paw.kafkakeygenerator.model.KonfliktIdentitetRow
-import no.nav.paw.kafkakeygenerator.model.KonfliktRow
+import no.nav.paw.kafkakeygenerator.model.dao.KonfliktIdentitetRow
+import no.nav.paw.kafkakeygenerator.model.dao.KonfliktRow
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
-import no.nav.paw.kafkakeygenerator.model.asIdentitet
-import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
-import no.nav.paw.kafkakeygenerator.repository.KonfliktIdentitetRepository
-import no.nav.paw.kafkakeygenerator.repository.KonfliktRepository
-import no.nav.paw.kafkakeygenerator.repository.PeriodeRepository
+import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.logging.logger.buildLogger
 import java.time.Instant
 
 class KonfliktService(
     private val applicationConfig: ApplicationConfig,
-    private val identitetRepository: IdentitetRepository,
-    private val konfliktRepository: KonfliktRepository,
-    private val konfliktIdentitetRepository: KonfliktIdentitetRepository,
-    private val periodeRepository: PeriodeRepository,
     private val hendelseService: HendelseService
 ) {
     private val logger = buildLogger
@@ -30,7 +26,7 @@ class KonfliktService(
     fun finnVentendeKonflikter(
         aktorId: String
     ): List<KonfliktRow> {
-        return konfliktRepository.findByAktorIdAndStatus(
+        return KonflikterTable.findByAktorIdAndStatus(
             aktorId = aktorId,
             status = KonfliktStatus.VENTER
         )
@@ -43,10 +39,10 @@ class KonfliktService(
         identiteter: List<Identitet>
     ) {
         val nyeIdentiteterSet = identiteter.map { it.identitet }.toSet()
-        val identitetMergeRows = konfliktRepository.findByAktorIdAndType(aktorId, type)
+        val identitetMergeRows = KonflikterTable.findByAktorIdAndType(aktorId, type)
         if (identitetMergeRows.isEmpty()) {
             val status = KonfliktStatus.VENTER
-            val rowsAffected = konfliktRepository.insert(
+            val rowsAffected = KonflikterTable.insert(
                 aktorId = aktorId,
                 type = type,
                 status = status,
@@ -68,20 +64,20 @@ class KonfliktService(
                 .map { it.identitet }
                 .filter { !nyeIdentiteterSet.contains(it) }
                 .sumOf { identitet ->
-                    konfliktIdentitetRepository
+                    KonfliktIdentiteterTable
                         .deleteByKonfliktIdAndIdentitet(konfliktId, identitet)
                 }
 
             val insertedRowCount = identiteter
                 .filter { !eksisterendeIdeniteterSet.contains(it.identitet) }
                 .forEach { identitet ->
-                    konfliktIdentitetRepository.insert(konfliktId, identitet)
+                    KonfliktIdentiteterTable.insert(konfliktId, identitet)
                 }
 
             val updatedRowCount = identiteter
                 .filter { eksisterendeIdeniteterSet.contains(it.identitet) }
                 .forEach { identitet ->
-                    konfliktIdentitetRepository
+                    KonfliktIdentiteterTable
                         .updateByKonfliktIdAndIdentitet(konfliktId, identitet)
                 }
 
@@ -101,7 +97,7 @@ class KonfliktService(
         batchSize: Int,
         handleKonflikt: (KonfliktRow) -> Unit
     ) {
-        val ventendeKonfliktRows = konfliktRepository.findByTypeAndStatus(
+        val ventendeKonfliktRows = KonflikterTable.findByTypeAndStatus(
             type = type,
             status = status,
             rowCount = batchSize
@@ -113,13 +109,13 @@ class KonfliktService(
                 status.name
             )
         } else {
-            val konfliktIdList = konfliktRepository.updateStatusByIdListReturning(
+            val konfliktIdList = KonflikterTable.updateStatusByIdListReturning(
                 idList = ventendeKonfliktRows.map { it.id },
                 fraStatus = status,
                 tilStatus = KonfliktStatus.PROSESSERER
             )
 
-            val konfliktRows = konfliktRepository.findByIdList(konfliktIdList)
+            val konfliktRows = KonflikterTable.findByIdList(konfliktIdList)
 
             logger.info(
                 "Starter prosessering av {}/{}/{} konflikter av type {}",
@@ -147,7 +143,7 @@ class KonfliktService(
         val endredeIdentitetSet = endredeIdentitetRows
             .map { it.identitet }
             .toSet()
-        val eksisterendeIdentitetRows = identitetRepository.findByAktorIdOrIdentiteter(
+        val eksisterendeIdentitetRows = IdentiteterTable.findByAktorIdOrIdentiteter(
             aktorId = konfliktRow.aktorId,
             identiteter = endredeIdentitetSet
         )
@@ -205,7 +201,7 @@ class KonfliktService(
                     }
                 }
 
-            val nyeIdentiteter = identitetRepository.findByAktorId(konfliktRow.aktorId)
+            val nyeIdentiteter = IdentiteterTable.findByAktorId(konfliktRow.aktorId)
                 .filter { it.status != IdentitetStatus.SLETTET }
                 .map { it.asIdentitet() }
                 .toList()
@@ -287,11 +283,10 @@ class KonfliktService(
         val nyeIdentitetSet = konfliktRow.identiteter
             .map { it.identitet }
             .toSet()
-        val eksisterendeIdentitetRows = identitetRepository
-            .findByAktorIdOrIdentiteter(
-                aktorId = konfliktRow.aktorId,
-                identiteter = nyeIdentitetSet
-            )
+        val eksisterendeIdentitetRows = IdentiteterTable.findByAktorIdOrIdentiteter(
+            aktorId = konfliktRow.aktorId,
+            identiteter = nyeIdentitetSet
+        )
         val arbeidssoekerIdSet = eksisterendeIdentitetRows
             .map { it.arbeidssoekerId }
             .toSet()
@@ -345,7 +340,7 @@ class KonfliktService(
                 }
             }
 
-            val nyeIdentiteter = identitetRepository.findByAktorId(konfliktRow.aktorId)
+            val nyeIdentiteter = IdentiteterTable.findByAktorId(konfliktRow.aktorId)
                 .filter { it.status != IdentitetStatus.SLETTET }
                 .map { it.asIdentitet() }
                 .toMutableList()
@@ -385,7 +380,7 @@ class KonfliktService(
     ): Long? {
         val identiteter = eksisterendeIdentitetRows
             .map { it.identitet }
-        val periodeRows = periodeRepository.findByIdentiteter(
+        val periodeRows = PerioderTable.findByIdentiteter(
             identitetList = identiteter
         )
         val aktivePeriodeRows = periodeRows.filter { it.avsluttetTimestamp == null }
@@ -410,7 +405,7 @@ class KonfliktService(
             valgtIdentitet.arbeidssoekerId
         } else {
             // Flere aktive perioder. Kan ikke håndtere merge.
-            val rowsAffected = konfliktRepository.updateStatusByAktorIdAndType(
+            val rowsAffected = KonflikterTable.updateStatusByAktorIdAndType(
                 aktorId = aktorId,
                 type = type,
                 status = KonfliktStatus.FEILET
@@ -428,12 +423,11 @@ class KonfliktService(
         type: KonfliktType,
         status: KonfliktStatus
     ) {
-        val identitetKonfliktRowsAffected = konfliktRepository
-            .updateStatusByAktorIdAndType(
-                aktorId = aktorId,
-                type = type,
-                status = status
-            )
+        val identitetKonfliktRowsAffected = KonflikterTable.updateStatusByAktorIdAndType(
+            aktorId = aktorId,
+            type = type,
+            status = status
+        )
         logger.info(
             "Oppdaterer {}-konflikt med status {} (rows affected {})",
             type.name,
@@ -448,7 +442,7 @@ class KonfliktService(
         identitet: KonfliktIdentitetRow,
         sourceTimestamp: Instant
     ) {
-        val rowsAffected = identitetRepository.insert(
+        val rowsAffected = IdentiteterTable.insert(
             arbeidssoekerId = arbeidssoekerId,
             aktorId = aktorId,
             identitet = identitet.identitet,
@@ -472,7 +466,7 @@ class KonfliktService(
         sourceTimestamp: Instant
     ) {
         val status = IdentitetStatus.AKTIV
-        val rowsAffected = identitetRepository.updateByIdentitet(
+        val rowsAffected = IdentiteterTable.updateByIdentitet(
             identitet = identitet.identitet,
             aktorId = aktorId,
             arbeidssoekerId = arbeidssoekerId,
@@ -495,7 +489,7 @@ class KonfliktService(
         sourceTimestamp: Instant
     ) {
         val status = IdentitetStatus.SLETTET
-        val rowsAffected = identitetRepository.updateByIdentitet(
+        val rowsAffected = IdentiteterTable.updateByIdentitet(
             identitet = identitet,
             aktorId = aktorId,
             gjeldende = false,

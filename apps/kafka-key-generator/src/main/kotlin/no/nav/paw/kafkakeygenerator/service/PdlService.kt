@@ -4,7 +4,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.paw.kafkakeygenerator.exception.IdentitetIkkeFunnetException
 import no.nav.paw.kafkakeygenerator.exception.PdlTekniskFeilException
 import no.nav.paw.kafkakeygenerator.exception.PdlUkjentIdentitetException
-import no.nav.paw.kafkakeygenerator.model.CallId
+import no.nav.paw.kafkakeygenerator.model.dto.CallId
 import no.nav.paw.logging.logger.buildLogger
 import no.nav.paw.pdl.PdlClient
 import no.nav.paw.pdl.PdlException

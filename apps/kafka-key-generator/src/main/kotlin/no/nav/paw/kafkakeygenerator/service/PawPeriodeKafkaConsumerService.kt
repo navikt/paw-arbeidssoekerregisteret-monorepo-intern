@@ -3,7 +3,7 @@ package no.nav.paw.kafkakeygenerator.service
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.kafkakeygenerator.config.KafkaConsumerConfig
-import no.nav.paw.kafkakeygenerator.repository.PeriodeRepository
+import no.nav.paw.kafkakeygenerator.model.dao.PerioderTable
 import no.nav.paw.logging.logger.buildErrorLogger
 import no.nav.paw.logging.logger.buildLogger
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -13,8 +13,7 @@ import java.time.Instant
 
 class PawPeriodeKafkaConsumerService(
     private val kafkaConsumerConfig: KafkaConsumerConfig,
-    private val hwmOperations: KafkaHwmOperations,
-    private val periodeRepository: PeriodeRepository
+    private val hwmOperations: KafkaHwmOperations
 ) {
 
     private val logger = buildLogger
@@ -77,10 +76,10 @@ class PawPeriodeKafkaConsumerService(
     private fun handlePeriode(
         periode: Periode,
         sourceTimestamp: Instant
-    ) {
-        val periodeRow = periodeRepository.getByPeriodeId(periode.id)
+    ) = transaction {
+        val periodeRow = PerioderTable.getByPeriodeId(periode.id)
         if (periodeRow == null) {
-            val rowsAffected = periodeRepository.insert(
+            val rowsAffected = PerioderTable.insert(
                 periodeId = periode.id,
                 identitet = periode.identitetsnummer,
                 startetTimestamp = periode.startet.tidspunkt,
@@ -89,7 +88,7 @@ class PawPeriodeKafkaConsumerService(
             )
             logger.info("Oppretter periode (rows affected {})", rowsAffected)
         } else {
-            val rowsAffected = periodeRepository.updateAvsluttetTimestamp(
+            val rowsAffected = PerioderTable.updateAvsluttetTimestamp(
                 periodeId = periode.id,
                 avsluttetTimestamp = periode.avsluttet?.tidspunkt,
                 sourceTimestamp = sourceTimestamp

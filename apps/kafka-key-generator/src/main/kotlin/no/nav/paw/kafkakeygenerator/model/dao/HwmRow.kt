@@ -1,6 +1,6 @@
-package no.nav.paw.kafkakeygenerator.model
+package no.nav.paw.kafkakeygenerator.model.dao
 
-import no.nav.paw.kafkakeygenerator.database.HwmTable
+import no.nav.paw.kafkakeygenerator.model.dao.HwmTable
 import org.jetbrains.exposed.sql.ResultRow
 import java.time.Instant
 

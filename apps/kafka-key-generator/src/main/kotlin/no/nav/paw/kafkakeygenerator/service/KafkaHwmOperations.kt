@@ -1,6 +1,6 @@
 package no.nav.paw.kafkakeygenerator.service
 
-import no.nav.paw.kafkakeygenerator.model.Hwm
+import no.nav.paw.kafkakeygenerator.model.dto.Hwm
 import java.time.Instant
 
 interface KafkaHwmOperations {

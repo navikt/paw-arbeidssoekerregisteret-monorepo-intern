@@ -27,19 +27,19 @@ import no.nav.paw.kafkakeygenerator.api.models.KonfliktDetaljer
 import no.nav.paw.kafkakeygenerator.api.models.ProblemDetails
 import no.nav.paw.kafkakeygenerator.context.TestContext
 import no.nav.paw.kafkakeygenerator.context.TestContext.Companion.setJsonBody
-import no.nav.paw.kafkakeygenerator.context.hentArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
+import no.nav.paw.kafkakeygenerator.model.dao.KafkaKeysTable
+import no.nav.paw.kafkakeygenerator.model.dao.KonflikterTable
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
 import no.nav.paw.kafkakeygenerator.model.asApi
-import no.nav.paw.kafkakeygenerator.model.asIdentitet
+import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.kafkakeygenerator.test.IdentitetWrapper
 import no.nav.paw.kafkakeygenerator.test.TestData
 import no.nav.paw.kafkakeygenerator.test.asWrapper
 import no.nav.paw.kafkakeygenerator.test.validateOpenApiSpec
 import no.nav.paw.kafkakeygenerator.utils.asRecordKey
-import no.nav.paw.kafkakeygenerator.utils.publicTopicKeyFunction
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.apache.kafka.common.TopicPartition
@@ -131,11 +131,11 @@ class ApiV2RoutesTest : FreeSpec({
                     val dnr = TestData.dnr2
                     val fnr1 = TestData.fnr2_1
                     val fnr2 = TestData.fnr2_2
-                    val arbeidssoekerId = kafkaKeysRepository.opprett().value
+                    val arbeidssoekerId = KafkaKeysTable.insert().value
                     val arbId = arbeidssoekerId.asIdentitet()
                     val recordKey = arbeidssoekerId.asRecordKey()
 
-                    identitetRepository.insert(
+                    IdentiteterTable.insert(
                         arbeidssoekerId = arbeidssoekerId,
                         aktorId = aktorId.identitet,
                         identitet = aktorId.identitet,
@@ -144,7 +144,7 @@ class ApiV2RoutesTest : FreeSpec({
                         status = IdentitetStatus.AKTIV,
                         sourceTimestamp = Instant.now()
                     )
-                    identitetRepository.insert(
+                    IdentiteterTable.insert(
                         arbeidssoekerId = arbeidssoekerId,
                         aktorId = aktorId.identitet,
                         identitet = dnr.identitet,
@@ -174,7 +174,7 @@ class ApiV2RoutesTest : FreeSpec({
                     body2.id shouldBe arbeidssoekerId
                     body2.key shouldBe recordKey
 
-                    val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
+                    val identitetRows = IdentiteterTable.findByAktorId(aktorId.identitet)
                     identitetRows.size shouldBe 5
                     identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                         IdentitetWrapper(
@@ -252,7 +252,7 @@ class ApiV2RoutesTest : FreeSpec({
                     }.validateOpenApiSpec()
 
                     // THEN
-                    val arbeidssoekerId = identitetRepository.hentArbeidssoekerId(aktorId.identitet)
+                    val arbeidssoekerId = TestData.hentArbeidssoekerId(aktorId.identitet)
                     val arbId = arbeidssoekerId.asIdentitet()
                     val recordKey = arbeidssoekerId.asRecordKey()
 
@@ -261,7 +261,7 @@ class ApiV2RoutesTest : FreeSpec({
                     body1.id shouldBe arbeidssoekerId
                     body1.key shouldBe recordKey
 
-                    val identitetRows1 = identitetRepository.findByAktorId(aktorId.identitet)
+                    val identitetRows1 = IdentiteterTable.findByAktorId(aktorId.identitet)
                     identitetRows1.size shouldBe 3
                     identitetRows1.map { it.asWrapper() } shouldContainOnly listOf(
                         IdentitetWrapper(
@@ -296,7 +296,7 @@ class ApiV2RoutesTest : FreeSpec({
                     body2.id shouldBe arbeidssoekerId
                     body2.key shouldBe recordKey
 
-                    val identitetRows2 = identitetRepository.findByAktorId(aktorId.identitet)
+                    val identitetRows2 = IdentiteterTable.findByAktorId(aktorId.identitet)
                     identitetRows2.size shouldBe 4
                     identitetRows2.map { it.asWrapper() } shouldContainOnly listOf(
                         IdentitetWrapper(
@@ -371,11 +371,11 @@ class ApiV2RoutesTest : FreeSpec({
                     val fnr1 = TestData.fnr4_1
                     val fnr2 = TestData.fnr4_2
 
-                    val arbeidssoekerId = kafkaKeysRepository.opprett().value
+                    val arbeidssoekerId = KafkaKeysTable.insert().value
                     val arbId = arbeidssoekerId.asIdentitet()
                     val recordKey = arbeidssoekerId.asRecordKey()
 
-                    identitetRepository.insert(
+                    IdentiteterTable.insert(
                         arbeidssoekerId = arbeidssoekerId,
                         aktorId = aktorId.identitet,
                         identitet = aktorId.identitet,
@@ -384,7 +384,7 @@ class ApiV2RoutesTest : FreeSpec({
                         status = IdentitetStatus.AKTIV,
                         sourceTimestamp = Instant.now()
                     )
-                    identitetRepository.insert(
+                    IdentiteterTable.insert(
                         arbeidssoekerId = arbeidssoekerId,
                         aktorId = aktorId.identitet,
                         identitet = dnr.identitet,
@@ -406,7 +406,7 @@ class ApiV2RoutesTest : FreeSpec({
                     body1.id shouldBe arbeidssoekerId
                     body1.key shouldBe recordKey
 
-                    val identitetRows1 = identitetRepository.findByAktorId(aktorId.identitet)
+                    val identitetRows1 = IdentiteterTable.findByAktorId(aktorId.identitet)
                     identitetRows1.size shouldBe 2
                     identitetRows1.map { it.asWrapper() } shouldContainOnly listOf(
                         IdentitetWrapper(
@@ -435,7 +435,7 @@ class ApiV2RoutesTest : FreeSpec({
                     body2.id shouldBe arbeidssoekerId
                     body2.key shouldBe recordKey
 
-                    val identitetRows2 = identitetRepository.findByAktorId(aktorId.identitet)
+                    val identitetRows2 = IdentiteterTable.findByAktorId(aktorId.identitet)
                     identitetRows2.size shouldBe 4
                     identitetRows2.map { it.asWrapper() } shouldContainOnly listOf(
                         IdentitetWrapper(
@@ -476,7 +476,7 @@ class ApiV2RoutesTest : FreeSpec({
                     body3.id shouldBe arbeidssoekerId
                     body3.key shouldBe recordKey
 
-                    val identitetRows3 = identitetRepository.findByAktorId(aktorId.identitet)
+                    val identitetRows3 = IdentiteterTable.findByAktorId(aktorId.identitet)
                     identitetRows3.size shouldBe 5
                     identitetRows3.map { it.asWrapper() } shouldContainOnly listOf(
                         IdentitetWrapper(
@@ -564,12 +564,12 @@ class ApiV2RoutesTest : FreeSpec({
                     val dnr = TestData.dnr5
                     val fnr1 = TestData.fnr5_1
                     val fnr2 = TestData.fnr5_2
-                    val arbeidssoekerId1 = kafkaKeysRepository.opprett().value
-                    val arbeidssoekerId2 = kafkaKeysRepository.opprett().value
+                    val arbeidssoekerId1 = KafkaKeysTable.insert().value
+                    val arbeidssoekerId2 = KafkaKeysTable.insert().value
                     val arbId1 = arbeidssoekerId1.asIdentitet()
                     val recordKey1 = arbeidssoekerId1.asRecordKey()
 
-                    identitetRepository.insert(
+                    IdentiteterTable.insert(
                         arbeidssoekerId = arbeidssoekerId1,
                         aktorId = aktorId.identitet,
                         identitet = aktorId.identitet,
@@ -578,7 +578,7 @@ class ApiV2RoutesTest : FreeSpec({
                         status = IdentitetStatus.AKTIV,
                         sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                     )
-                    identitetRepository.insert(
+                    IdentiteterTable.insert(
                         arbeidssoekerId = arbeidssoekerId1,
                         aktorId = aktorId.identitet,
                         identitet = npId.identitet,
@@ -587,7 +587,7 @@ class ApiV2RoutesTest : FreeSpec({
                         status = IdentitetStatus.SLETTET,
                         sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                     )
-                    identitetRepository.insert(
+                    IdentiteterTable.insert(
                         arbeidssoekerId = arbeidssoekerId1,
                         aktorId = aktorId.identitet,
                         identitet = dnr.identitet,
@@ -596,7 +596,7 @@ class ApiV2RoutesTest : FreeSpec({
                         status = IdentitetStatus.AKTIV,
                         sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                     )
-                    identitetRepository.insert(
+                    IdentiteterTable.insert(
                         arbeidssoekerId = arbeidssoekerId2,
                         aktorId = aktorId.identitet,
                         identitet = fnr1.identitet,
@@ -605,7 +605,7 @@ class ApiV2RoutesTest : FreeSpec({
                         status = IdentitetStatus.AKTIV,
                         sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
                     )
-                    konfliktRepository.insert(
+                    KonflikterTable.insert(
                         aktorId = aktorId.identitet,
                         type = KonfliktType.MERGE,
                         status = KonfliktStatus.VENTER,

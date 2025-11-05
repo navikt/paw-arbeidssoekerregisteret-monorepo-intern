@@ -1,6 +1,6 @@
-package no.nav.paw.kafkakeygenerator.model
+package no.nav.paw.kafkakeygenerator.model.dao
 
-import no.nav.paw.kafkakeygenerator.database.PerioderTable
+import no.nav.paw.kafkakeygenerator.model.dao.PerioderTable
 import org.jetbrains.exposed.sql.ResultRow
 import java.time.Instant
 import java.util.*

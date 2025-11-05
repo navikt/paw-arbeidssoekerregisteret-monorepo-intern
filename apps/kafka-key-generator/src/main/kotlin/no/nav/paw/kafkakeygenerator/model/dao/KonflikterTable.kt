@@ -1,18 +1,15 @@
-package no.nav.paw.kafkakeygenerator.repository
+package no.nav.paw.kafkakeygenerator.model.dao
 
 import no.nav.paw.identitet.internehendelser.vo.Identitet
-import no.nav.paw.kafkakeygenerator.database.KonfliktIdentiteterTable
-import no.nav.paw.kafkakeygenerator.database.KonflikterTable
-import no.nav.paw.kafkakeygenerator.model.KonfliktRow
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
-import no.nav.paw.kafkakeygenerator.model.asKonfliktIdentitetRow
-import no.nav.paw.kafkakeygenerator.model.asKonfliktRow
 import no.nav.paw.logging.logger.buildNamedLogger
+import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.javatime.timestamp
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
@@ -20,16 +17,20 @@ import org.jetbrains.exposed.sql.updateReturning
 import java.sql.SQLException
 import java.time.Instant
 
-private val logger = buildNamedLogger("database.identiteter")
+private val logger = buildNamedLogger("database.konflikter")
 
-class KonfliktRepository(
-    private val konfliktIdentitetRepository: KonfliktIdentitetRepository
-) {
+object KonflikterTable : LongIdTable("konflikter") {
+    val aktorId = varchar("aktor_id", 50)
+    val type = enumerationByName<KonfliktType>("type", 50)
+    val status = enumerationByName<KonfliktStatus>("status", 50)
+    val sourceTimestamp = timestamp("source_timestamp")
+    val insertedTimestamp = timestamp("inserted_timestamp")
+    val updatedTimestamp = timestamp("updated_timestamp").nullable()
 
     fun getById(
         id: Long,
     ): KonfliktRow? = transaction {
-        KonflikterTable.selectAll()
+        selectAll()
             .where { KonflikterTable.id eq id }
             .map { it.asKonfliktRowMedIdentiteter() }
             .singleOrNull()
@@ -38,7 +39,7 @@ class KonfliktRepository(
     fun findByIdList(
         idList: Collection<Long>,
     ): List<KonfliktRow> = transaction {
-        KonflikterTable.selectAll()
+        selectAll()
             .where { KonflikterTable.id inList idList }
             .map { it.asKonfliktRowMedIdentiteter() }
     }
@@ -46,7 +47,7 @@ class KonfliktRepository(
     fun findByAktorId(
         aktorId: String
     ): List<KonfliktRow> = transaction {
-        KonflikterTable.selectAll()
+        selectAll()
             .where { KonflikterTable.aktorId eq aktorId }
             .orderBy(KonflikterTable.id, SortOrder.ASC)
             .map { it.asKonfliktRowMedIdentiteter() }
@@ -56,8 +57,8 @@ class KonfliktRepository(
         aktorIdList: Iterable<String>,
         status: KonfliktStatus
     ): List<KonfliktRow> = transaction {
-        KonflikterTable.selectAll()
-            .where { (KonflikterTable.status eq status) and (KonflikterTable.aktorId inList aktorIdList) }
+        selectAll()
+            .where { (KonflikterTable.status eq status) and (aktorId inList aktorIdList) }
             .orderBy(KonflikterTable.id, SortOrder.ASC)
             .map { it.asKonfliktRowMedIdentiteter() }
     }
@@ -66,7 +67,7 @@ class KonfliktRepository(
         aktorId: String,
         type: KonfliktType
     ): List<KonfliktRow> = transaction {
-        KonflikterTable.selectAll()
+        selectAll()
             .where { (KonflikterTable.aktorId eq aktorId) and (KonflikterTable.type eq type) }
             .orderBy(KonflikterTable.id, SortOrder.ASC)
             .map { it.asKonfliktRowMedIdentiteter() }
@@ -76,7 +77,7 @@ class KonfliktRepository(
         aktorId: String,
         status: KonfliktStatus
     ): List<KonfliktRow> = transaction {
-        KonflikterTable.selectAll()
+        selectAll()
             .where { (KonflikterTable.aktorId eq aktorId) and (KonflikterTable.status eq status) }
             .orderBy(KonflikterTable.id, SortOrder.ASC)
             .map { it.asKonfliktRowMedIdentiteter() }
@@ -87,7 +88,7 @@ class KonfliktRepository(
         status: KonfliktStatus,
         rowCount: Int
     ): List<KonfliktRow> = transaction {
-        KonflikterTable.selectAll()
+        selectAll()
             .where { (KonflikterTable.type eq type) and (KonflikterTable.status eq status) }
             .orderBy(KonflikterTable.id, SortOrder.ASC)
             .limit(rowCount)
@@ -102,7 +103,7 @@ class KonfliktRepository(
         identiteter: List<Identitet>
     ): Int = runCatching {
         transaction {
-            val statement = KonflikterTable.insert {
+            val statement = insert {
                 it[KonflikterTable.aktorId] = aktorId
                 it[KonflikterTable.type] = type
                 it[KonflikterTable.status] = status
@@ -111,7 +112,7 @@ class KonfliktRepository(
             }
             val id = statement[KonflikterTable.id]
             val identiteterInsertedCount = identiteter
-                .sumOf { konfliktIdentitetRepository.insert(id.value, it) }
+                .sumOf { KonfliktIdentiteterTable.insert(id.value, it) }
             statement.insertedCount + identiteterInsertedCount
         }
     }.getOrElse { throwable ->
@@ -124,7 +125,7 @@ class KonfliktRepository(
         type: KonfliktType,
         status: KonfliktStatus
     ): Int = transaction {
-        KonflikterTable.update(where = { (KonflikterTable.aktorId eq aktorId) and (KonflikterTable.type eq type) }) {
+        update(where = { (KonflikterTable.aktorId eq aktorId) and (KonflikterTable.type eq type) }) {
             it[KonflikterTable.status] = status
             it[updatedTimestamp] = Instant.now()
         }
@@ -135,9 +136,9 @@ class KonfliktRepository(
         fraStatus: KonfliktStatus,
         tilStatus: KonfliktStatus,
     ): List<Long> = transaction {
-        KonflikterTable.updateReturning(
+        updateReturning(
             returning = listOf(KonflikterTable.id),
-            where = { (KonflikterTable.id inList idList) and (KonflikterTable.status eq fraStatus) }) {
+            where = { (KonflikterTable.id inList idList) and (status eq fraStatus) }) {
             it[KonflikterTable.status] = tilStatus
             it[updatedTimestamp] = Instant.now()
         }.map {
@@ -146,7 +147,7 @@ class KonfliktRepository(
     }
 
     private fun ResultRow.asKonfliktRowMedIdentiteter(): KonfliktRow {
-        val id = get(KonflikterTable.id)
+        val id = get(id)
         val konfliktIdentitetRows = KonfliktIdentiteterTable.selectAll()
             .where { KonfliktIdentiteterTable.konfliktId eq id.value }
             .orderBy(KonfliktIdentiteterTable.id, SortOrder.ASC)

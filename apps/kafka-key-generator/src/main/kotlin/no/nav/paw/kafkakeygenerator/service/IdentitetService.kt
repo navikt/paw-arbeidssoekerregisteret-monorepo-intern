@@ -3,26 +3,24 @@ package no.nav.paw.kafkakeygenerator.service
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
-import no.nav.paw.kafkakeygenerator.model.IdentitetRow
+import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
+import no.nav.paw.kafkakeygenerator.model.dao.KafkaKeysTable
+import no.nav.paw.kafkakeygenerator.model.dao.IdentitetRow
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
-import no.nav.paw.kafkakeygenerator.model.asIdentitet
-import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
-import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
+import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.logging.logger.buildLogger
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Instant
 
 class IdentitetService(
-    private val kafkaKeysRepository: KafkaKeysRepository,
-    private val identitetRepository: IdentitetRepository,
     private val konfliktService: KonfliktService,
     private val hendelseService: HendelseService
 ) {
     private val logger = buildLogger
 
     fun finnForAktorId(aktorId: String): List<Identitet> {
-        return identitetRepository
+        return IdentiteterTable
             .findByAktorId(aktorId)
             .filter { it.status != IdentitetStatus.SLETTET }
             .map { it.asIdentitet() }
@@ -55,19 +53,18 @@ class IdentitetService(
             .map { it.identitet }
             .toSet()
 
-        val eksisterendeIdentitetRows = identitetRepository
-            .findByAktorIdOrIdentiteter(
-                aktorId = aktorId,
-                identiteter = identitetSet
-            )
+        val eksisterendeIdentitetRows = IdentiteterTable.findByAktorIdOrIdentiteter(
+            aktorId = aktorId,
+            identiteter = identitetSet
+        )
 
         if (eksisterendeIdentitetRows.isEmpty()) {
             logger.debug("Oppretter {} identiteter", identiteter.size)
 
-            val arbeidssoekerId = kafkaKeysRepository.opprett().value
+            val arbeidssoekerId = KafkaKeysTable.insert().value
 
             identiteter.forEach { identitet ->
-                val rowsAffected = identitetRepository.insert(
+                val rowsAffected = IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId,
                     aktorId = aktorId,
                     identitet = identitet.identitet,
@@ -129,11 +126,10 @@ class IdentitetService(
             .map { it.identitet }
             .toSet()
 
-        val eksisterendeIdentitetRows = identitetRepository
-            .findByAktorIdOrIdentiteter(
-                aktorId = aktorId,
-                identiteter = identitetSet
-            ).toSet()
+        val eksisterendeIdentitetRows = IdentiteterTable.findByAktorIdOrIdentiteter(
+            aktorId = aktorId,
+            identiteter = identitetSet
+        ).toSet()
         val eksisterendeIdentiteter = eksisterendeIdentitetRows
             .map { it.asIdentitet() }
         val arbeidssoekerIdSet = eksisterendeIdentitetRows
@@ -196,8 +192,7 @@ class IdentitetService(
         sourceTimestamp: Instant
     ) {
         logger.debug("Sletter identiteter for aktørId")
-        val eksisterendeIdentitetRows = identitetRepository
-            .findByAktorId(aktorId)
+        val eksisterendeIdentitetRows = IdentiteterTable.findByAktorId(aktorId)
 
         if (eksisterendeIdentitetRows.none { it.status != IdentitetStatus.SLETTET }) {
             logger.info("Ignorer tombstone-melding fordi ingen aktive identiteter funnet")
@@ -207,7 +202,7 @@ class IdentitetService(
             )
 
             if (eksisterendeKonfliktRows.isEmpty()) {
-                val rowsAffected = identitetRepository.updateGjeldendeAndStatusByAktorId(
+                val rowsAffected = IdentiteterTable.updateGjeldendeAndStatusByAktorId(
                     aktorId = aktorId,
                     gjeldende = false,
                     status = IdentitetStatus.SLETTET
@@ -267,7 +262,7 @@ class IdentitetService(
         val aktorIdSet = eksisterendeIdentitetRows
             .map { it.aktorId }
             .toSet()
-        identitetRepository.updateStatusByNotSlettetAndAktorIdList(
+        IdentiteterTable.updateStatusByNotSlettetAndAktorIdList(
             status = IdentitetStatus.SPLITT,
             aktorIdList = aktorIdSet
         )
@@ -289,7 +284,7 @@ class IdentitetService(
         val aktorIdSet = eksisterendeIdentitetRows
             .map { it.aktorId }
             .toSet()
-        identitetRepository.updateStatusByNotSlettetAndAktorIdList(
+        IdentiteterTable.updateStatusByNotSlettetAndAktorIdList(
             status = IdentitetStatus.MERGE,
             aktorIdList = aktorIdSet
         )
@@ -319,7 +314,7 @@ class IdentitetService(
         eksisterendeIdentitetRows
             .filter { !identitetSet.contains(it.identitet) }
             .forEach { identitet ->
-                val rowsAffected = identitetRepository.updateByIdentitet(
+                val rowsAffected = IdentiteterTable.updateByIdentitet(
                     identitet = identitet.identitet,
                     aktorId = aktorId,
                     gjeldende = false,
@@ -337,7 +332,7 @@ class IdentitetService(
         identiteter
             .forEach { identitet ->
                 if (eksisterendeIdentitetSet.contains(identitet.identitet)) {
-                    val rowsAffected = identitetRepository.updateByIdentitet(
+                    val rowsAffected = IdentiteterTable.updateByIdentitet(
                         identitet = identitet.identitet,
                         aktorId = aktorId,
                         gjeldende = identitet.gjeldende,
@@ -351,7 +346,7 @@ class IdentitetService(
                         rowsAffected
                     )
                 } else {
-                    val rowsAffected = identitetRepository.insert(
+                    val rowsAffected = IdentiteterTable.insert(
                         arbeidssoekerId = arbeidssoekerId,
                         aktorId = aktorId,
                         identitet = identitet.identitet,
@@ -369,7 +364,7 @@ class IdentitetService(
                 }
             }
 
-        val endredeIdentiteter = identitetRepository.findByAktorId(aktorId)
+        val endredeIdentiteter = IdentiteterTable.findByAktorId(aktorId)
             .filter { it.status != IdentitetStatus.SLETTET }
             .map { it.asIdentitet() }
             .toMutableList()

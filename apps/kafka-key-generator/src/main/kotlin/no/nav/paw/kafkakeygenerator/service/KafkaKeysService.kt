@@ -6,18 +6,18 @@ import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.kafkakeygenerator.api.v2.Alias
 import no.nav.paw.kafkakeygenerator.api.v2.InfoResponse
 import no.nav.paw.kafkakeygenerator.api.v2.LokaleAlias
+import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
 import no.nav.paw.kafkakeygenerator.exception.IdentitetIkkeFunnetException
-import no.nav.paw.kafkakeygenerator.model.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.model.CallId
+import no.nav.paw.kafkakeygenerator.model.dto.ArbeidssoekerId
+import no.nav.paw.kafkakeygenerator.model.dto.CallId
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
-import no.nav.paw.kafkakeygenerator.model.Identitetsnummer
-import no.nav.paw.kafkakeygenerator.model.Info
-import no.nav.paw.kafkakeygenerator.model.LokalIdData
-import no.nav.paw.kafkakeygenerator.model.MergeDetected
-import no.nav.paw.kafkakeygenerator.model.PdlData
-import no.nav.paw.kafkakeygenerator.model.PdlId
-import no.nav.paw.kafkakeygenerator.model.asIdentitet
-import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
+import no.nav.paw.kafkakeygenerator.model.dto.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.model.dto.Info
+import no.nav.paw.kafkakeygenerator.model.dto.LokalIdData
+import no.nav.paw.kafkakeygenerator.model.dto.MergeDetected
+import no.nav.paw.kafkakeygenerator.model.dto.PdlData
+import no.nav.paw.kafkakeygenerator.model.dto.PdlId
+import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.kafkakeygenerator.utils.asRecordKey
 import no.nav.paw.kafkakeygenerator.utils.countRestApiFetched
 import no.nav.paw.kafkakeygenerator.utils.countRestApiReceived
@@ -28,7 +28,6 @@ import org.apache.kafka.common.serialization.Serdes
 class KafkaKeysService(
     private val meterRegistry: MeterRegistry,
     private val pdlService: PdlService,
-    private val identitetRepository: IdentitetRepository,
     private val identitetService: IdentitetService
 ) {
     private val logger = buildLogger
@@ -67,7 +66,7 @@ class KafkaKeysService(
         identitet: Identitetsnummer,
         lagreIdentiteter: (identiteter: List<Identitet>) -> Unit
     ): ArbeidssoekerId {
-        val identitetRows = identitetRepository.findAllByIdentitet(identitet.value)
+        val identitetRows = IdentiteterTable.findAllByIdentitet(identitet.value)
             .filter { it.status != IdentitetStatus.SLETTET }
         val arbeidssoekerId = identitetRows
             .find { it.identitet == identitet.value }
@@ -85,7 +84,7 @@ class KafkaKeysService(
                 historikk = true
             ).map { it.asIdentitet() }
             lagreIdentiteter(identiteter)
-            val lagredeIdenitetRows = identitetRepository.findAllByIdentitet(identitet.value)
+            val lagredeIdenitetRows = IdentiteterTable.findAllByIdentitet(identitet.value)
                 .filter { it.status != IdentitetStatus.SLETTET }
             if (lagredeIdenitetRows.isEmpty()) {
                 throw IdentitetIkkeFunnetException()
@@ -114,7 +113,7 @@ class KafkaKeysService(
         antallPartisjoner: Int,
         identitet: String
     ): LokaleAlias {
-        val aliases = identitetRepository.findAllByIdentitet(identitet)
+        val aliases = IdentiteterTable.findAllByIdentitet(identitet)
             .filter { it.status != IdentitetStatus.SLETTET }
             .map {
                 val recordKey = it.arbeidssoekerId.asRecordKey()
@@ -151,7 +150,7 @@ class KafkaKeysService(
                     gjeldende = !it.historisk
                 )
             })
-        val alleIdentiteter = identitetRepository.findAllByIdentitet(identitet.value)
+        val alleIdentiteter = IdentiteterTable.findAllByIdentitet(identitet.value)
             .filter { it.status != IdentitetStatus.SLETTET }
 
         val lokalIdData = if (alleIdentiteter.isEmpty()) {

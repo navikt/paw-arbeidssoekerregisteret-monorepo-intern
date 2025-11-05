@@ -1,4 +1,6 @@
-package no.nav.paw.kafkakeygenerator.model
+package no.nav.paw.kafkakeygenerator.model.dto
+
+import no.nav.paw.kafkakeygenerator.model.dao.HwmRow
 
 data class Hwm(
     val version: Int,

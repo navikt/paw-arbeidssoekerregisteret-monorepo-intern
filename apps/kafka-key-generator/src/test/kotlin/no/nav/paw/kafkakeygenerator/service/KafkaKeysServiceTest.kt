@@ -19,10 +19,12 @@ import no.nav.paw.kafka.producer.sendBlocking
 import no.nav.paw.kafkakeygenerator.context.TestContext
 import no.nav.paw.kafkakeygenerator.context.hentEllerOppdater
 import no.nav.paw.kafkakeygenerator.context.hentEllerOpprett
+import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
+import no.nav.paw.kafkakeygenerator.model.dao.KafkaKeysTable
 import no.nav.paw.kafkakeygenerator.exception.IdentitetIkkeFunnetException
 import no.nav.paw.kafkakeygenerator.exception.PdlUkjentIdentitetException
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
-import no.nav.paw.kafkakeygenerator.model.asIdentitet
+import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.kafkakeygenerator.test.IdentitetWrapper
 import no.nav.paw.kafkakeygenerator.test.TestData
 import no.nav.paw.kafkakeygenerator.test.asWrapper
@@ -80,7 +82,7 @@ class KafkaKeysServiceTest : FreeSpec({
 
                 val arbeidssoekerId = arbeidssoekerIdList.first()
                 val arbId = arbeidssoekerId.asIdentitet()
-                val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId.identitet)
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId,
@@ -159,7 +161,7 @@ class KafkaKeysServiceTest : FreeSpec({
                 val arbeidssoekerId1 = arbeidssoekerIdList1.first()
                 val arbId1 = arbeidssoekerId1.asIdentitet()
 
-                val identitetRows1 = identitetRepository.findByAktorId(aktorId.identitet)
+                val identitetRows1 = IdentiteterTable.findByAktorId(aktorId.identitet)
                 identitetRows1 shouldHaveSize 3
 
                 identitetRows1.map { it.asWrapper() } shouldContainOnly listOf(
@@ -192,7 +194,7 @@ class KafkaKeysServiceTest : FreeSpec({
                 val arbeidssoekerId2 = arbeidssoekerIdList2.first()
                 arbeidssoekerId1 shouldBe arbeidssoekerId2
 
-                val identitetRows2 = identitetRepository.findByAktorId(aktorId.identitet)
+                val identitetRows2 = IdentiteterTable.findByAktorId(aktorId.identitet)
                 identitetRows2 shouldHaveSize 4
 
                 identitetRows2.map { it.asWrapper() } shouldContainOnly listOf(
@@ -231,7 +233,7 @@ class KafkaKeysServiceTest : FreeSpec({
                 val arbeidssoekerId3 = arbeidssoekerIdList3.first()
                 arbeidssoekerId1 shouldBe arbeidssoekerId3
 
-                val identitetRows3 = identitetRepository.findByAktorId(aktorId.identitet)
+                val identitetRows3 = IdentiteterTable.findByAktorId(aktorId.identitet)
                 identitetRows3 shouldHaveSize 5
 
                 identitetRows3.map { it.asWrapper() } shouldContainOnly listOf(
@@ -372,14 +374,14 @@ class KafkaKeysServiceTest : FreeSpec({
                 val dnr = TestData.dnr4
                 val fnr1 = TestData.fnr4_1
                 val fnr2 = TestData.fnr4_2
-                val arbeidssoekerId = kafkaKeysRepository.opprett().value
+                val arbeidssoekerId = KafkaKeysTable.insert().value
                 val identitetProducerRecordList = mutableListOf<ProducerRecord<Long, IdentitetHendelse>>()
 
                 every {
                     pawIdentitetProducerMock.sendBlocking(capture(identitetProducerRecordList))
                 } returns identitetRecordMetadata
 
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId,
                     aktorId = aktorId.identitet,
                     identitet = aktorId.identitet,
@@ -388,7 +390,7 @@ class KafkaKeysServiceTest : FreeSpec({
                     status = IdentitetStatus.AKTIV,
                     sourceTimestamp = Instant.now()
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId,
                     aktorId = aktorId.identitet,
                     identitet = npId.identitet,
@@ -397,7 +399,7 @@ class KafkaKeysServiceTest : FreeSpec({
                     status = IdentitetStatus.AKTIV,
                     sourceTimestamp = Instant.now()
                 )
-                identitetRepository.insert(
+                IdentiteterTable.insert(
                     arbeidssoekerId = arbeidssoekerId,
                     aktorId = aktorId.identitet,
                     identitet = dnr.identitet,
@@ -427,7 +429,7 @@ class KafkaKeysServiceTest : FreeSpec({
                     .map { it.identitet }
 
                 val arbId = arbeidssoekerId.asIdentitet()
-                val identitetRows = identitetRepository.findByAktorId(aktorId.identitet)
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId.identitet)
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId,

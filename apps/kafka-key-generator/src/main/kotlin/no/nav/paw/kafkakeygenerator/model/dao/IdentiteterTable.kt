@@ -1,15 +1,14 @@
-package no.nav.paw.kafkakeygenerator.repository
+package no.nav.paw.kafkakeygenerator.model.dao
 
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
-import no.nav.paw.kafkakeygenerator.database.IdentiteterTable
-import no.nav.paw.kafkakeygenerator.model.IdentitetRow
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
-import no.nav.paw.kafkakeygenerator.model.asIdentitetRow
 import no.nav.paw.logging.logger.buildNamedLogger
+import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.alias
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.javatime.timestamp
 import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -19,20 +18,34 @@ import java.time.Instant
 
 private val logger = buildNamedLogger("database.identiteter")
 
-class IdentitetRepository {
+object IdentiteterTable : LongIdTable("identiteter") {
+    val arbeidssoekerId = long("arbeidssoeker_id").references(KafkaKeysTable.id)
+    val aktorId = varchar("aktor_id", 50)
+    val identitet = varchar("identitet", 50)
+    val type = enumerationByName<IdentitetType>("type", 50)
+    val gjeldende = bool("gjeldende")
+    val status = enumerationByName<IdentitetStatus>("status", 50)
+    val sourceTimestamp = timestamp("source_timestamp")
+    val insertedTimestamp = timestamp("inserted_timestamp")
+    val updatedTimestamp = timestamp("updated_timestamp").nullable()
+
     // OBS! Har med soft-slettede
-    fun getByIdentitet(identitet: String): IdentitetRow? = transaction {
-        IdentiteterTable.selectAll()
+    fun getByIdentitet(
+        identitet: String
+    ): IdentitetRow? = transaction {
+        selectAll()
             .where { IdentiteterTable.identitet eq identitet }
             .map { it.asIdentitetRow() }
             .singleOrNull()
     }
 
     // OBS! Har med soft-slettede
-    fun findAllByIdentitet(identitet: String): List<IdentitetRow> = transaction {
-        val i1 = IdentiteterTable.alias("i1")
-        val i2 = IdentiteterTable.alias("i2")
-        i1.join(i2, JoinType.INNER, i1[IdentiteterTable.arbeidssoekerId], i2[IdentiteterTable.arbeidssoekerId])
+    fun findAllByIdentitet(
+        identitet: String
+    ): List<IdentitetRow> = transaction {
+        val i1 = alias("i1")
+        val i2 = alias("i2")
+        i1.join(i2, JoinType.INNER, i1[arbeidssoekerId], i2[arbeidssoekerId])
             .select(i2.columns)
             .where { i1[IdentiteterTable.identitet] eq identitet }
             .map { i2 to it }
@@ -40,16 +53,20 @@ class IdentitetRepository {
     }
 
     // OBS! Har med soft-slettede
-    fun findByAktorId(aktorId: String): List<IdentitetRow> = transaction {
-        IdentiteterTable.selectAll()
+    fun findByAktorId(
+        aktorId: String
+    ): List<IdentitetRow> = transaction {
+        selectAll()
             .orderBy(IdentiteterTable.id)
             .where { IdentiteterTable.aktorId eq aktorId }
             .map { it.asIdentitetRow() }
     }
 
     // OBS! Har med soft-slettede
-    fun findByArbeidssoekerId(arbeidssoekerId: Long): List<IdentitetRow> = transaction {
-        IdentiteterTable.selectAll()
+    fun findByArbeidssoekerId(
+        arbeidssoekerId: Long
+    ): List<IdentitetRow> = transaction {
+        selectAll()
             .orderBy(IdentiteterTable.id)
             .where { IdentiteterTable.arbeidssoekerId eq arbeidssoekerId }
             .map { it.asIdentitetRow() }
@@ -60,9 +77,9 @@ class IdentitetRepository {
         aktorId: String,
         identiteter: Iterable<String>
     ): List<IdentitetRow> = transaction {
-        IdentiteterTable.selectAll()
+        selectAll()
             .orderBy(IdentiteterTable.id)
-            .where { (IdentiteterTable.aktorId eq aktorId) or (IdentiteterTable.identitet inList identiteter) }
+            .where { (IdentiteterTable.aktorId eq aktorId) or (identitet inList identiteter) }
             .map { it.asIdentitetRow() }
     }
 
@@ -76,7 +93,7 @@ class IdentitetRepository {
         sourceTimestamp: Instant
     ): Int = runCatching {
         transaction {
-            IdentiteterTable.insert {
+            insert {
                 it[IdentiteterTable.arbeidssoekerId] = arbeidssoekerId
                 it[IdentiteterTable.aktorId] = aktorId
                 it[IdentiteterTable.identitet] = identitet
@@ -100,7 +117,7 @@ class IdentitetRepository {
         sourceTimestamp: Instant
     ): Int = runCatching {
         transaction {
-            IdentiteterTable.update(where = {
+            update(where = {
                 (IdentiteterTable.identitet eq identitet) and
                         ((IdentiteterTable.aktorId neq aktorId) or
                                 (IdentiteterTable.gjeldende neq gjeldende) or
@@ -127,7 +144,7 @@ class IdentitetRepository {
         sourceTimestamp: Instant
     ): Int = runCatching {
         transaction {
-            IdentiteterTable.update(where = {
+            update(where = {
                 (IdentiteterTable.identitet eq identitet) and
                         ((IdentiteterTable.aktorId neq aktorId) or
                                 (IdentiteterTable.arbeidssoekerId neq arbeidssoekerId) or
@@ -152,7 +169,7 @@ class IdentitetRepository {
         gjeldende: Boolean,
         status: IdentitetStatus
     ): Int = transaction {
-        IdentiteterTable.update(where = {
+        update(where = {
             (IdentiteterTable.aktorId eq aktorId) and
                     ((IdentiteterTable.gjeldende neq gjeldende) or
                             (IdentiteterTable.status neq status))
@@ -167,9 +184,9 @@ class IdentitetRepository {
         status: IdentitetStatus,
         aktorIdList: Iterable<String>
     ): Int = transaction {
-        IdentiteterTable.update(where = {
+        update(where = {
             (IdentiteterTable.status neq IdentitetStatus.SLETTET) and
-                    (IdentiteterTable.aktorId inList aktorIdList)
+                    (aktorId inList aktorIdList)
         }) {
             it[IdentiteterTable.status] = status
             it[updatedTimestamp] = Instant.now()

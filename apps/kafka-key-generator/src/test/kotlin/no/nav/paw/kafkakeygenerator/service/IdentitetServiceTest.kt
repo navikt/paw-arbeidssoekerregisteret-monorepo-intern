@@ -13,17 +13,19 @@ import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import no.nav.paw.identitet.internehendelser.IdentitetHendelse
 import no.nav.paw.identitet.internehendelser.IdentiteterEndretHendelse
 import no.nav.paw.identitet.internehendelser.IdentiteterSlettetHendelse
 import no.nav.paw.kafka.producer.sendBlocking
 import no.nav.paw.kafkakeygenerator.context.TestContext
-import no.nav.paw.kafkakeygenerator.context.hentArbeidssoekerId
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
-import no.nav.paw.kafkakeygenerator.model.asIdentitet
+import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
+import no.nav.paw.kafkakeygenerator.model.dao.KonflikterTable
+import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.kafkakeygenerator.test.IdentitetWrapper
 import no.nav.paw.kafkakeygenerator.test.KonfliktWrapper
 import no.nav.paw.kafkakeygenerator.test.TestData
@@ -33,6 +35,7 @@ import org.apache.kafka.clients.producer.RecordMetadata
 import org.apache.kafka.common.TopicPartition
 import java.time.Instant
 
+@ExperimentalCoroutinesApi
 class IdentitetServiceTest : FreeSpec({
     with(TestContext.buildWithPostgres().setUp()) {
         val aktorId1 = TestData.aktorId1
@@ -98,12 +101,12 @@ class IdentitetServiceTest : FreeSpec({
                 identitetService.finnForAktorId(aktorId1.identitet) shouldHaveSize 0
                 identitetService.finnForAktorId(aktorId2.identitet) shouldHaveSize 0
                 identitetService.finnForAktorId(aktorId3.identitet) shouldHaveSize 0
-                identitetRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
-                identitetRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
-                identitetRepository.findByAktorId(aktorId3.identitet) shouldHaveSize 0
-                konfliktRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
-                konfliktRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
-                konfliktRepository.findByAktorId(aktorId3.identitet) shouldHaveSize 0
+                IdentiteterTable.findByAktorId(aktorId1.identitet) shouldHaveSize 0
+                IdentiteterTable.findByAktorId(aktorId2.identitet) shouldHaveSize 0
+                IdentiteterTable.findByAktorId(aktorId3.identitet) shouldHaveSize 0
+                IdentiteterTable.findByAktorId(aktorId1.identitet) shouldHaveSize 0
+                IdentiteterTable.findByAktorId(aktorId2.identitet) shouldHaveSize 0
+                IdentiteterTable.findByAktorId(aktorId3.identitet) shouldHaveSize 0
                 verify { pawIdentitetProducerMock wasNot Called }
             }
         }
@@ -123,7 +126,7 @@ class IdentitetServiceTest : FreeSpec({
                 )
 
                 // THEN
-                val arbeidssoekerId2 = identitetRepository.hentArbeidssoekerId(aktorId2.identitet)
+                val arbeidssoekerId2 = TestData.hentArbeidssoekerId(aktorId2.identitet)
                 val arbId2 = arbeidssoekerId2.asIdentitet()
 
                 identitetService.finnForAktorId(aktorId1.identitet) shouldHaveSize 0
@@ -135,8 +138,8 @@ class IdentitetServiceTest : FreeSpec({
                     fnr2_2
                 )
                 identitetService.finnForAktorId(aktorId3.identitet) shouldHaveSize 0
-                identitetRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
-                val identitetRows = identitetRepository.findByAktorId(aktorId2.identitet)
+                IdentiteterTable.findByAktorId(aktorId1.identitet) shouldHaveSize 0
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId2.identitet)
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId2,
@@ -163,10 +166,10 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.AKTIV
                     )
                 )
-                identitetRepository.findByAktorId(aktorId3.identitet) shouldHaveSize 0
-                konfliktRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
-                konfliktRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
-                konfliktRepository.findByAktorId(aktorId3.identitet) shouldHaveSize 0
+                IdentiteterTable.findByAktorId(aktorId3.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId1.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId2.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId3.identitet) shouldHaveSize 0
                 verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
                 producerRecordSlot.isCaptured shouldBe true
                 producerRecordSlot.captured.key() shouldBe arbeidssoekerId2
@@ -191,15 +194,15 @@ class IdentitetServiceTest : FreeSpec({
                 )
 
                 // THEN
-                val arbeidssoekerId2 = identitetRepository.hentArbeidssoekerId(aktorId2.identitet)
+                val arbeidssoekerId2 = TestData.hentArbeidssoekerId(aktorId2.identitet)
                 val arbId2 = arbeidssoekerId2.asIdentitet()
 
                 identitetService.finnForAktorId(aktorId1.identitet) shouldHaveSize 0
                 val identiteter = identitetService.finnForAktorId(aktorId2.identitet)
                 identiteter shouldContainOnly listOf(aktorId2, dnr2)
                 identitetService.finnForAktorId(aktorId3.identitet) shouldHaveSize 0
-                identitetRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
-                val identitetRows = identitetRepository.findByAktorId(aktorId2.identitet)
+                IdentiteterTable.findByAktorId(aktorId1.identitet) shouldHaveSize 0
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId2.identitet)
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId2,
@@ -226,10 +229,10 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.SLETTET
                     )
                 )
-                identitetRepository.findByAktorId(aktorId3.identitet) shouldHaveSize 0
-                konfliktRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
-                konfliktRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
-                konfliktRepository.findByAktorId(aktorId3.identitet) shouldHaveSize 0
+                IdentiteterTable.findByAktorId(aktorId3.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId1.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId2.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId3.identitet) shouldHaveSize 0
                 verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
                 producerRecordSlot.isCaptured shouldBe true
                 producerRecordSlot.captured.key() shouldBe arbeidssoekerId2
@@ -254,15 +257,15 @@ class IdentitetServiceTest : FreeSpec({
                 )
 
                 // THEN
-                val arbeidssoekerId2 = identitetRepository.hentArbeidssoekerId(aktorId2.identitet)
+                val arbeidssoekerId2 = TestData.hentArbeidssoekerId(aktorId2.identitet)
                 val arbId2 = arbeidssoekerId2.asIdentitet()
 
                 identitetService.finnForAktorId(aktorId1.identitet) shouldHaveSize 0
                 val identiteter = identitetService.finnForAktorId(aktorId2.identitet)
                 identiteter shouldContainOnly listOf(aktorId2, dnr2.copy(gjeldende = false), fnr2_1)
                 identitetService.finnForAktorId(aktorId3.identitet) shouldHaveSize 0
-                identitetRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
-                val identitetRows = identitetRepository.findByAktorId(aktorId2.identitet)
+                IdentiteterTable.findByAktorId(aktorId1.identitet) shouldHaveSize 0
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId2.identitet)
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId2,
@@ -289,10 +292,10 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.SLETTET
                     )
                 )
-                identitetRepository.findByAktorId(aktorId3.identitet) shouldHaveSize 0
-                konfliktRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
-                konfliktRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
-                konfliktRepository.findByAktorId(aktorId3.identitet) shouldHaveSize 0
+                IdentiteterTable.findByAktorId(aktorId3.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId1.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId2.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId3.identitet) shouldHaveSize 0
                 verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
                 producerRecordSlot.isCaptured shouldBe true
                 producerRecordSlot.captured.key() shouldBe arbeidssoekerId2
@@ -321,14 +324,14 @@ class IdentitetServiceTest : FreeSpec({
                 )
 
                 // THEN
-                val arbeidssoekerId2 = identitetRepository.hentArbeidssoekerId(aktorId2.identitet)
+                val arbeidssoekerId2 = TestData.hentArbeidssoekerId(aktorId2.identitet)
 
                 identitetService.finnForAktorId(aktorId1.identitet) shouldHaveSize 0
                 val identiteter = identitetService.finnForAktorId(aktorId2.identitet)
                 identiteter shouldContainOnly listOf(aktorId2, dnr2.copy(gjeldende = false), fnr2_1)
                 identitetService.finnForAktorId(aktorId3.identitet) shouldHaveSize 0
-                identitetRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
-                val identitetRows = identitetRepository.findByAktorId(aktorId2.identitet)
+                IdentiteterTable.findByAktorId(aktorId1.identitet) shouldHaveSize 0
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId2.identitet)
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId2,
@@ -355,10 +358,10 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.SLETTET
                     )
                 )
-                identitetRepository.findByAktorId(aktorId3.identitet) shouldHaveSize 0
-                konfliktRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
-                konfliktRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
-                val konfliktRows = konfliktRepository.findByAktorId(aktorId3.identitet)
+                IdentiteterTable.findByAktorId(aktorId3.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId1.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId2.identitet) shouldHaveSize 0
+                val konfliktRows = KonflikterTable.findByAktorId(aktorId3.identitet)
                 konfliktRows shouldHaveSize 1
                 val konfliktRow1 = konfliktRows[0]
                 konfliktRow1.asWrapper() shouldBe KonfliktWrapper(
@@ -383,13 +386,13 @@ class IdentitetServiceTest : FreeSpec({
                 )
 
                 // THEN
-                val arbeidssoekerId2 = identitetRepository.hentArbeidssoekerId(aktorId2.identitet)
+                val arbeidssoekerId2 = TestData.hentArbeidssoekerId(aktorId2.identitet)
                 val arbId2 = arbeidssoekerId2.asIdentitet()
 
                 identitetService.finnForAktorId(aktorId1.identitet) shouldHaveSize 0
                 identitetService.finnForAktorId(aktorId2.identitet) shouldHaveSize 0
                 identitetService.finnForAktorId(aktorId3.identitet) shouldHaveSize 0
-                val identitetRows = identitetRepository.findByAktorId(aktorId2.identitet)
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId2.identitet)
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId2,
@@ -416,9 +419,9 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.SLETTET
                     )
                 )
-                konfliktRepository.findByAktorId(aktorId1.identitet) shouldHaveSize 0
-                konfliktRepository.findByAktorId(aktorId2.identitet) shouldHaveSize 0
-                val konfliktRows = konfliktRepository.findByAktorId(aktorId3.identitet)
+                KonflikterTable.findByAktorId(aktorId1.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId2.identitet) shouldHaveSize 0
+                val konfliktRows = KonflikterTable.findByAktorId(aktorId3.identitet)
                 konfliktRows shouldHaveSize 1
                 val konfliktRow1 = konfliktRows[0]
                 konfliktRow1.asWrapper() shouldBe KonfliktWrapper(
@@ -456,13 +459,13 @@ class IdentitetServiceTest : FreeSpec({
                 )
 
                 // THEN
-                val arbeidssoekerId6_1 = identitetRepository.hentArbeidssoekerId(aktorId6_1.identitet)
+                val arbeidssoekerId6_1 = TestData.hentArbeidssoekerId(aktorId6_1.identitet)
                 val arbId6_1 = arbeidssoekerId6_1.asIdentitet()
 
                 val identiteter = identitetService.finnForAktorId(aktorId6_1.identitet)
                 identiteter shouldContainOnly listOf(aktorId6_1, dnr6)
                 identitetService.finnForAktorId(aktorId6_2.identitet) shouldHaveSize 0
-                val identitetRows = identitetRepository.findByAktorId(aktorId6_1.identitet)
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId6_1.identitet)
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId6_1,
@@ -477,9 +480,9 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.AKTIV
                     ),
                 )
-                identitetRepository.findByAktorId(aktorId6_2.identitet) shouldHaveSize 0
-                konfliktRepository.findByAktorId(aktorId6_1.identitet) shouldHaveSize 0
-                konfliktRepository.findByAktorId(aktorId6_2.identitet) shouldHaveSize 0
+                IdentiteterTable.findByAktorId(aktorId6_2.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId6_1.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId6_2.identitet) shouldHaveSize 0
                 verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
                 producerRecordSlot.isCaptured shouldBe true
                 producerRecordSlot.captured.key() shouldBe arbeidssoekerId6_1
@@ -502,15 +505,15 @@ class IdentitetServiceTest : FreeSpec({
                 )
 
                 // THEN
-                val arbeidssoekerId6_1 = identitetRepository.hentArbeidssoekerId(aktorId6_1.identitet)
-                val arbeidssoekerId6_2 = identitetRepository.hentArbeidssoekerId(aktorId6_2.identitet)
+                val arbeidssoekerId6_1 = TestData.hentArbeidssoekerId(aktorId6_1.identitet)
+                val arbeidssoekerId6_2 = TestData.hentArbeidssoekerId(aktorId6_2.identitet)
                 val arbId6_2 = arbeidssoekerId6_2.asIdentitet()
 
                 val identiteter1 = identitetService.finnForAktorId(aktorId6_1.identitet)
                 identiteter1 shouldContainOnly listOf(aktorId6_1, dnr6)
                 val identiteter2 = identitetService.finnForAktorId(aktorId6_2.identitet)
                 identiteter2 shouldContainOnly listOf(aktorId6_2, fnr6_1)
-                val identitetRows1 = identitetRepository.findByAktorId(aktorId6_1.identitet)
+                val identitetRows1 = IdentiteterTable.findByAktorId(aktorId6_1.identitet)
                 identitetRows1.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId6_1,
@@ -525,7 +528,7 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.AKTIV
                     ),
                 )
-                val identitetRows2 = identitetRepository.findByAktorId(aktorId6_2.identitet)
+                val identitetRows2 = IdentiteterTable.findByAktorId(aktorId6_2.identitet)
                 identitetRows2.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId6_2,
@@ -540,8 +543,8 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.AKTIV
                     ),
                 )
-                konfliktRepository.findByAktorId(aktorId6_1.identitet) shouldHaveSize 0
-                konfliktRepository.findByAktorId(aktorId6_2.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId6_1.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId6_2.identitet) shouldHaveSize 0
                 verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
                 producerRecordSlot.isCaptured shouldBe true
                 producerRecordSlot.captured.key() shouldBe arbeidssoekerId6_2
@@ -569,14 +572,14 @@ class IdentitetServiceTest : FreeSpec({
                 )
 
                 // THEN
-                val arbeidssoekerId6_1 = identitetRepository.hentArbeidssoekerId(aktorId6_1.identitet)
-                val arbeidssoekerId6_2 = identitetRepository.hentArbeidssoekerId(aktorId6_2.identitet)
+                val arbeidssoekerId6_1 = TestData.hentArbeidssoekerId(aktorId6_1.identitet)
+                val arbeidssoekerId6_2 = TestData.hentArbeidssoekerId(aktorId6_2.identitet)
 
                 val identiteter1 = identitetService.finnForAktorId(aktorId6_1.identitet)
                 identiteter1 shouldContainOnly listOf(aktorId6_1, dnr6)
                 val identiteter2 = identitetService.finnForAktorId(aktorId6_2.identitet)
                 identiteter2 shouldContainOnly listOf(aktorId6_2, fnr6_1)
-                val identitetRows1 = identitetRepository.findByAktorId(aktorId6_1.identitet)
+                val identitetRows1 = IdentiteterTable.findByAktorId(aktorId6_1.identitet)
                 identitetRows1.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId6_1,
@@ -591,7 +594,7 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.MERGE
                     ),
                 )
-                val identitetRows2 = identitetRepository.findByAktorId(aktorId6_2.identitet)
+                val identitetRows2 = IdentiteterTable.findByAktorId(aktorId6_2.identitet)
                 identitetRows2.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId6_2,
@@ -606,8 +609,8 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.MERGE
                     ),
                 )
-                konfliktRepository.findByAktorId(aktorId6_1.identitet) shouldHaveSize 0
-                val konfliktRows2 = konfliktRepository.findByAktorId(aktorId6_2.identitet)
+                KonflikterTable.findByAktorId(aktorId6_1.identitet) shouldHaveSize 0
+                val konfliktRows2 = KonflikterTable.findByAktorId(aktorId6_2.identitet)
                 konfliktRows2 shouldHaveSize 1
                 val konfliktRow1 = konfliktRows2[0]
                 konfliktRow1.asWrapper() shouldBe KonfliktWrapper(
@@ -639,14 +642,14 @@ class IdentitetServiceTest : FreeSpec({
                 )
 
                 // THEN
-                val arbeidssoekerId6_1 = identitetRepository.hentArbeidssoekerId(aktorId6_1.identitet)
-                val arbeidssoekerId6_2 = identitetRepository.hentArbeidssoekerId(aktorId6_2.identitet)
+                val arbeidssoekerId6_1 = TestData.hentArbeidssoekerId(aktorId6_1.identitet)
+                val arbeidssoekerId6_2 = TestData.hentArbeidssoekerId(aktorId6_2.identitet)
 
                 val identiteter1 = identitetService.finnForAktorId(aktorId6_1.identitet)
                 identiteter1 shouldContainOnly listOf(aktorId6_1, dnr6)
                 val identiteter2 = identitetService.finnForAktorId(aktorId6_2.identitet)
                 identiteter2 shouldContainOnly listOf(aktorId6_2, fnr6_1)
-                val identitetRows1 = identitetRepository.findByAktorId(aktorId6_1.identitet)
+                val identitetRows1 = IdentiteterTable.findByAktorId(aktorId6_1.identitet)
                 identitetRows1.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId6_1,
@@ -661,7 +664,7 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.MERGE
                     ),
                 )
-                val identitetRows2 = identitetRepository.findByAktorId(aktorId6_2.identitet)
+                val identitetRows2 = IdentiteterTable.findByAktorId(aktorId6_2.identitet)
                 identitetRows2.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId6_2,
@@ -676,8 +679,8 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.MERGE
                     ),
                 )
-                konfliktRepository.findByAktorId(aktorId6_1.identitet) shouldHaveSize 0
-                val konfliktRows2 = konfliktRepository.findByAktorId(aktorId6_2.identitet)
+                KonflikterTable.findByAktorId(aktorId6_1.identitet) shouldHaveSize 0
+                val konfliktRows2 = KonflikterTable.findByAktorId(aktorId6_2.identitet)
                 konfliktRows2 shouldHaveSize 1
                 val konfliktRow1 = konfliktRows2[0]
                 konfliktRow1.asWrapper() shouldBe KonfliktWrapper(
@@ -707,13 +710,13 @@ class IdentitetServiceTest : FreeSpec({
                 )
 
                 // THEN
-                val arbeidssoekerId7_1 = identitetRepository.hentArbeidssoekerId(aktorId7_1.identitet)
+                val arbeidssoekerId7_1 = TestData.hentArbeidssoekerId(aktorId7_1.identitet)
                 val arbId7_1 = arbeidssoekerId7_1.asIdentitet()
 
                 val identiteter = identitetService.finnForAktorId(aktorId7_1.identitet)
                 identiteter shouldContainOnly listOf(aktorId7_1, dnr7)
                 identitetService.finnForAktorId(aktorId7_2.identitet) shouldHaveSize 0
-                val identitetRows = identitetRepository.findByAktorId(aktorId7_1.identitet)
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId7_1.identitet)
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId7_1,
@@ -728,9 +731,9 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.AKTIV
                     ),
                 )
-                identitetRepository.findByAktorId(aktorId7_2.identitet) shouldHaveSize 0
-                konfliktRepository.findByAktorId(aktorId7_1.identitet) shouldHaveSize 0
-                konfliktRepository.findByAktorId(aktorId7_2.identitet) shouldHaveSize 0
+                IdentiteterTable.findByAktorId(aktorId7_2.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId7_1.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId7_2.identitet) shouldHaveSize 0
                 verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
                 producerRecordSlot.isCaptured shouldBe true
                 producerRecordSlot.captured.key() shouldBe arbeidssoekerId7_1
@@ -753,15 +756,15 @@ class IdentitetServiceTest : FreeSpec({
                 )
 
                 // THEN
-                val arbeidssoekerId7_1 = identitetRepository.hentArbeidssoekerId(aktorId7_1.identitet)
-                val arbeidssoekerId7_2 = identitetRepository.hentArbeidssoekerId(aktorId7_2.identitet)
+                val arbeidssoekerId7_1 = TestData.hentArbeidssoekerId(aktorId7_1.identitet)
+                val arbeidssoekerId7_2 = TestData.hentArbeidssoekerId(aktorId7_2.identitet)
                 val arbId7_2 = arbeidssoekerId7_2.asIdentitet()
 
                 val identiteter1 = identitetService.finnForAktorId(aktorId7_1.identitet)
                 identiteter1 shouldContainOnly listOf(aktorId7_1, dnr7)
                 val identiteter2 = identitetService.finnForAktorId(aktorId7_2.identitet)
                 identiteter2 shouldContainOnly listOf(aktorId7_2, fnr7_1)
-                val identitetRows1 = identitetRepository.findByAktorId(aktorId7_1.identitet)
+                val identitetRows1 = IdentiteterTable.findByAktorId(aktorId7_1.identitet)
                 identitetRows1.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId7_1,
@@ -776,7 +779,7 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.AKTIV
                     ),
                 )
-                val identitetRows2 = identitetRepository.findByAktorId(aktorId7_2.identitet)
+                val identitetRows2 = IdentiteterTable.findByAktorId(aktorId7_2.identitet)
                 identitetRows2.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId7_2,
@@ -791,8 +794,8 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.AKTIV
                     ),
                 )
-                konfliktRepository.findByAktorId(aktorId7_1.identitet) shouldHaveSize 0
-                konfliktRepository.findByAktorId(aktorId7_2.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId7_1.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId7_2.identitet) shouldHaveSize 0
                 verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
                 producerRecordSlot.isCaptured shouldBe true
                 producerRecordSlot.captured.key() shouldBe arbeidssoekerId7_2
@@ -821,14 +824,14 @@ class IdentitetServiceTest : FreeSpec({
                 )
 
                 // THEN
-                val arbeidssoekerId7_1 = identitetRepository.hentArbeidssoekerId(aktorId7_1.identitet)
-                val arbeidssoekerId7_2 = identitetRepository.hentArbeidssoekerId(aktorId7_2.identitet)
+                val arbeidssoekerId7_1 = TestData.hentArbeidssoekerId(aktorId7_1.identitet)
+                val arbeidssoekerId7_2 = TestData.hentArbeidssoekerId(aktorId7_2.identitet)
 
                 val identiteter1 = identitetService.finnForAktorId(aktorId7_1.identitet)
                 identiteter1 shouldContainOnly listOf(aktorId7_1, dnr7)
                 val identiteter2 = identitetService.finnForAktorId(aktorId7_2.identitet)
                 identiteter2 shouldContainOnly listOf(aktorId7_2, fnr7_1)
-                val identitetRows1 = identitetRepository.findByAktorId(aktorId7_1.identitet)
+                val identitetRows1 = IdentiteterTable.findByAktorId(aktorId7_1.identitet)
                 identitetRows1.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId7_1,
@@ -843,7 +846,7 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.MERGE
                     ),
                 )
-                val identitetRows2 = identitetRepository.findByAktorId(aktorId7_2.identitet)
+                val identitetRows2 = IdentiteterTable.findByAktorId(aktorId7_2.identitet)
                 identitetRows2.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId7_2,
@@ -858,7 +861,7 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.MERGE
                     ),
                 )
-                val konfliktRows = konfliktRepository.findByAktorId(aktorId7_1.identitet)
+                val konfliktRows = KonflikterTable.findByAktorId(aktorId7_1.identitet)
                 konfliktRows shouldHaveSize 1
                 val konfliktRow1 = konfliktRows[0]
                 konfliktRow1.asWrapper() shouldBe KonfliktWrapper(
@@ -873,7 +876,7 @@ class IdentitetServiceTest : FreeSpec({
                         fnr7_2
                     )
                 )
-                konfliktRepository.findByAktorId(aktorId7_2.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId7_2.identitet) shouldHaveSize 0
                 verify { pawIdentitetProducerMock wasNot Called }
             }
 
@@ -885,14 +888,14 @@ class IdentitetServiceTest : FreeSpec({
                 )
 
                 // THEN
-                val arbeidssoekerId7_1 = identitetRepository.hentArbeidssoekerId(aktorId7_1.identitet)
-                val arbeidssoekerId7_2 = identitetRepository.hentArbeidssoekerId(aktorId7_2.identitet)
+                val arbeidssoekerId7_1 = TestData.hentArbeidssoekerId(aktorId7_1.identitet)
+                val arbeidssoekerId7_2 = TestData.hentArbeidssoekerId(aktorId7_2.identitet)
 
                 val identiteter1 = identitetService.finnForAktorId(aktorId7_1.identitet)
                 identiteter1 shouldContainOnly listOf(aktorId7_1, dnr7)
                 val identiteter2 = identitetService.finnForAktorId(aktorId7_2.identitet)
                 identiteter2 shouldContainOnly listOf(aktorId7_2, fnr7_1)
-                val identitetRows1 = identitetRepository.findByAktorId(aktorId7_1.identitet)
+                val identitetRows1 = IdentiteterTable.findByAktorId(aktorId7_1.identitet)
                 identitetRows1.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId7_1,
@@ -907,7 +910,7 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.MERGE
                     ),
                 )
-                val identitetRows2 = identitetRepository.findByAktorId(aktorId7_2.identitet)
+                val identitetRows2 = IdentiteterTable.findByAktorId(aktorId7_2.identitet)
                 identitetRows2.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId7_2,
@@ -922,7 +925,7 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.MERGE
                     ),
                 )
-                val konfliktRows = konfliktRepository.findByAktorId(aktorId7_1.identitet)
+                val konfliktRows = KonflikterTable.findByAktorId(aktorId7_1.identitet)
                 konfliktRows shouldHaveSize 2
                 val konfliktRow1 = konfliktRows[0]
                 konfliktRow1.asWrapper() shouldBe KonfliktWrapper(
@@ -944,7 +947,7 @@ class IdentitetServiceTest : FreeSpec({
                     status = KonfliktStatus.VENTER,
                     identiteter = listOf()
                 )
-                konfliktRepository.findByAktorId(aktorId7_2.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId7_2.identitet) shouldHaveSize 0
                 verify { pawIdentitetProducerMock wasNot Called }
             }
         }
@@ -959,12 +962,12 @@ class IdentitetServiceTest : FreeSpec({
                 )
 
                 // THEN
-                val arbeidssoekerId9 = identitetRepository.hentArbeidssoekerId(aktorId9.identitet)
+                val arbeidssoekerId9 = TestData.hentArbeidssoekerId(aktorId9.identitet)
                 val arbId9 = arbeidssoekerId9.asIdentitet()
 
                 val identiteter1 = identitetService.finnForAktorId(aktorId9.identitet)
                 identiteter1 shouldContainOnly listOf(aktorId9, dnr9)
-                val identitetRows = identitetRepository.findByAktorId(aktorId9.identitet)
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId9.identitet)
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId9,
@@ -979,7 +982,7 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.AKTIV
                     )
                 )
-                konfliktRepository.findByAktorId(aktorId9.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId9.identitet) shouldHaveSize 0
                 verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
                 producerRecordSlot.isCaptured shouldBe true
                 producerRecordSlot.captured.key() shouldBe arbeidssoekerId9
@@ -1007,7 +1010,7 @@ class IdentitetServiceTest : FreeSpec({
                 )
 
                 // THEN
-                val arbeidssoekerId9 = identitetRepository.hentArbeidssoekerId(aktorId9.identitet)
+                val arbeidssoekerId9 = TestData.hentArbeidssoekerId(aktorId9.identitet)
                 val arbId9 = arbeidssoekerId9.asIdentitet()
 
                 val identiteter = identitetService.finnForAktorId(aktorId9.identitet)
@@ -1017,7 +1020,7 @@ class IdentitetServiceTest : FreeSpec({
                     fnr9_1.copy(gjeldende = false),
                     fnr9_2
                 )
-                val identitetRows = identitetRepository.findByAktorId(aktorId9.identitet)
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId9.identitet)
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId9,
@@ -1044,7 +1047,7 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.AKTIV
                     )
                 )
-                konfliktRepository.findByAktorId(aktorId9.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId9.identitet) shouldHaveSize 0
                 verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
                 producerRecordSlot.isCaptured shouldBe true
                 producerRecordSlot.captured.key() shouldBe arbeidssoekerId9
@@ -1078,7 +1081,7 @@ class IdentitetServiceTest : FreeSpec({
                 )
 
                 // THEN
-                val arbeidssoekerId9 = identitetRepository.hentArbeidssoekerId(aktorId9.identitet)
+                val arbeidssoekerId9 = TestData.hentArbeidssoekerId(aktorId9.identitet)
 
                 val identiteter = identitetService.finnForAktorId(aktorId9.identitet)
                 identiteter shouldContainOnly listOf(
@@ -1087,7 +1090,7 @@ class IdentitetServiceTest : FreeSpec({
                     fnr9_1.copy(gjeldende = false),
                     fnr9_2
                 )
-                val identitetRows = identitetRepository.findByAktorId(aktorId9.identitet)
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId9.identitet)
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId9,
@@ -1114,7 +1117,7 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.AKTIV
                     )
                 )
-                konfliktRepository.findByAktorId(aktorId9.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId9.identitet) shouldHaveSize 0
                 verify { pawIdentitetProducerMock wasNot Called }
             }
 
@@ -1126,11 +1129,11 @@ class IdentitetServiceTest : FreeSpec({
                 )
 
                 // THEN
-                val arbeidssoekerId9 = identitetRepository.hentArbeidssoekerId(aktorId9.identitet)
+                val arbeidssoekerId9 = TestData.hentArbeidssoekerId(aktorId9.identitet)
                 val arbId9 = arbeidssoekerId9.asIdentitet()
 
                 identitetService.finnForAktorId(aktorId9.identitet) shouldHaveSize 0
-                val identitetRows = identitetRepository.findByAktorId(aktorId9.identitet)
+                val identitetRows = IdentiteterTable.findByAktorId(aktorId9.identitet)
                 identitetRows.map { it.asWrapper() } shouldContainOnly listOf(
                     IdentitetWrapper(
                         arbeidssoekerId = arbeidssoekerId9,
@@ -1157,7 +1160,7 @@ class IdentitetServiceTest : FreeSpec({
                         status = IdentitetStatus.SLETTET
                     )
                 )
-                konfliktRepository.findByAktorId(aktorId9.identitet) shouldHaveSize 0
+                KonflikterTable.findByAktorId(aktorId9.identitet) shouldHaveSize 0
                 verify { pawIdentitetProducerMock.sendBlocking(any<ProducerRecord<Long, IdentitetHendelse>>()) }
                 producerRecordSlot.isCaptured shouldBe true
                 producerRecordSlot.captured.key() shouldBe arbeidssoekerId9

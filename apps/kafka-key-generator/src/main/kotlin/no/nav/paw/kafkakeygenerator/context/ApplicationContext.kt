@@ -30,12 +30,6 @@ import no.nav.paw.kafkakeygenerator.config.SERVER_CONFIG
 import no.nav.paw.kafkakeygenerator.config.ServerConfig
 import no.nav.paw.kafkakeygenerator.handler.HealthIndicatorConsumerExceptionHandler
 import no.nav.paw.kafkakeygenerator.listener.HwmConsumerRebalanceListener
-import no.nav.paw.kafkakeygenerator.repository.HwmRepository
-import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
-import no.nav.paw.kafkakeygenerator.repository.KafkaKeysRepository
-import no.nav.paw.kafkakeygenerator.repository.KonfliktIdentitetRepository
-import no.nav.paw.kafkakeygenerator.repository.KonfliktRepository
-import no.nav.paw.kafkakeygenerator.repository.PeriodeRepository
 import no.nav.paw.kafkakeygenerator.service.HendelseService
 import no.nav.paw.kafkakeygenerator.service.IdentitetResponseService
 import no.nav.paw.kafkakeygenerator.service.IdentitetService
@@ -91,13 +85,6 @@ data class ApplicationContext(
             val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
             val kafkaFactory = KafkaFactory(kafkaConfig)
 
-            val hwmRepository = HwmRepository()
-            val kafkaKeysRepository = KafkaKeysRepository()
-            val identitetRepository = IdentitetRepository()
-            val konfliktIdentitetRepository = KonfliktIdentitetRepository()
-            val konfliktRepository = KonfliktRepository(konfliktIdentitetRepository)
-            val periodeRepository = PeriodeRepository()
-
             val pawIdentitetHendelseProducer = kafkaFactory.createProducer<Long, IdentitetHendelse>(
                 clientId = applicationConfig.pawIdentitetProducer.clientId,
                 keySerializer = LongSerializer::class,
@@ -117,15 +104,9 @@ data class ApplicationContext(
             )
             val konfliktService = KonfliktService(
                 applicationConfig = applicationConfig,
-                identitetRepository = identitetRepository,
-                konfliktRepository = konfliktRepository,
-                konfliktIdentitetRepository = konfliktIdentitetRepository,
-                periodeRepository = periodeRepository,
                 hendelseService = hendelseService
             )
             val identitetService = IdentitetService(
-                kafkaKeysRepository = kafkaKeysRepository,
-                identitetRepository = identitetRepository,
                 konfliktService = konfliktService,
                 hendelseService = hendelseService,
             )
@@ -133,18 +114,14 @@ data class ApplicationContext(
             val kafkaKeysService = KafkaKeysService(
                 meterRegistry = prometheusMeterRegistry,
                 pdlService = pdlService,
-                identitetRepository = identitetRepository,
                 identitetService = identitetService
             )
             val identitetResponseService = IdentitetResponseService(
-                identitetRepository = identitetRepository,
-                konfliktRepository = konfliktRepository,
                 pdlService = pdlService
             )
             val pawPeriodeKafkaHwmOperations = KafkaHwmService(
                 kafkaConsumerConfig = applicationConfig.pawPeriodeConsumer,
                 meterRegistry = prometheusMeterRegistry,
-                hwmRepository = hwmRepository
             )
             val pawPeriodeConsumer = kafkaFactory.createKafkaAvroValueConsumer<Long, Periode>(
                 groupId = applicationConfig.pawPeriodeConsumer.groupId,
@@ -154,7 +131,6 @@ data class ApplicationContext(
             val pawPeriodeKafkaConsumerService = PawPeriodeKafkaConsumerService(
                 kafkaConsumerConfig = applicationConfig.pawPeriodeConsumer,
                 hwmOperations = pawPeriodeKafkaHwmOperations,
-                periodeRepository = periodeRepository
             )
             val pawPeriodeConsumerExceptionHandler = HealthIndicatorConsumerExceptionHandler(
                 livenessIndicator = healthIndicatorRepository.livenessIndicator(HealthStatus.HEALTHY),
@@ -168,7 +144,6 @@ data class ApplicationContext(
             val pdlAktorKafkaHwmOperations = KafkaHwmService(
                 kafkaConsumerConfig = applicationConfig.pdlAktorConsumer,
                 meterRegistry = prometheusMeterRegistry,
-                hwmRepository = hwmRepository
             )
             val pdlAktorConsumer = kafkaFactory.createKafkaAvroValueConsumer<Any, Aktor>(
                 groupId = applicationConfig.pdlAktorConsumer.groupId,

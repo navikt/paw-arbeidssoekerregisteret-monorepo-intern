@@ -5,18 +5,16 @@ import no.nav.paw.kafkakeygenerator.api.models.Konflikt
 import no.nav.paw.kafkakeygenerator.api.models.KonfliktDetaljer
 import no.nav.paw.kafkakeygenerator.api.models.KonfliktType
 import no.nav.paw.kafkakeygenerator.api.v2.asApi
+import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
+import no.nav.paw.kafkakeygenerator.model.dao.KonflikterTable
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.asApi
-import no.nav.paw.kafkakeygenerator.model.asIdentitet
-import no.nav.paw.kafkakeygenerator.repository.IdentitetRepository
-import no.nav.paw.kafkakeygenerator.repository.KonfliktRepository
+import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.kafkakeygenerator.utils.asRecordKey
 import no.nav.paw.logging.logger.buildLogger
 
 class IdentitetResponseService(
-    private val identitetRepository: IdentitetRepository,
-    private val konfliktRepository: KonfliktRepository,
     private val pdlService: PdlService
 ) {
     private val logger = buildLogger
@@ -34,7 +32,7 @@ class IdentitetResponseService(
         } else {
             null
         }
-        val identitetRows = identitetRepository
+        val identitetRows = IdentiteterTable
             .findAllByIdentitet(identitet)
             .filter { it.status != IdentitetStatus.SLETTET }
         if (identitetRows.isEmpty()) {
@@ -47,7 +45,7 @@ class IdentitetResponseService(
             val konflikter = if (visKonflikter) {
                 val aktorIdListe = identitetRows.map { it.aktorId }.distinct()
                 val arbeidssoekerIdListe = identitetRows.map { it.arbeidssoekerId }.distinct()
-                val konflikter = konfliktRepository.findByAktorIdListAndStatus(
+                val konflikter = KonflikterTable.findByAktorIdListAndStatus(
                     aktorIdList = aktorIdListe,
                     status = KonfliktStatus.VENTER
                 )
