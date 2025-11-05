@@ -1,11 +1,11 @@
-package no.nav.paw.kafkakeygenerator.service
+package no.nav.paw.kafka.service
 
 import io.micrometer.core.instrument.MeterRegistry
-import no.nav.paw.kafkakeygenerator.config.KafkaConsumerConfig
-import no.nav.paw.kafkakeygenerator.model.dao.HwmTable
-import no.nav.paw.kafkakeygenerator.model.dto.Hwm
-import no.nav.paw.kafkakeygenerator.model.dto.asHwm
-import no.nav.paw.kafkakeygenerator.utils.kafkaReceivedGauge
+import no.nav.paw.kafka.config.KafkaConsumerConfig
+import no.nav.paw.kafka.model.Hwm
+import no.nav.paw.kafka.model.HwmTable
+import no.nav.paw.kafka.model.asHwm
+import no.nav.paw.kafka.util.kafkaHwmUpdateGauge
 import no.nav.paw.logging.logger.buildNamedLogger
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.slf4j.MDC
@@ -34,7 +34,7 @@ class KafkaHwmService(
         partition: Int
     ): Hwm = transaction {
         with(kafkaConsumerConfig) {
-            logger.info("Getting HWM for partition {} on topic {}", partition, topic)
+            logger.info("Getting HWM for partition {}-{}", topic, partition)
             val hwmRow = HwmTable.getByTopicAndPartition(version, topic, partition)
             requireNotNull(hwmRow?.asHwm()) { "No HWM found for partition $partition on topic $topic, init not called?" }
         }
@@ -51,8 +51,8 @@ class KafkaHwmService(
                 MDC.put("kafka_topic", topic)
                 MDC.put("kafka_partition", "$partition")
                 MDC.put("kafka_offset", "$offset")
-                logger.debug("Updating HWM to offset {} for partition {} on topic {}", offset, partition, topic)
-                meterRegistry.kafkaReceivedGauge(topic, partition, offset)
+                logger.debug("Updating HWM to offset {} for partition {}-{}", offset, topic, partition)
+                meterRegistry.kafkaHwmUpdateGauge(topic, partition, offset)
                 HwmTable.update(version, topic, partition, offset, timestamp, Instant.now())
             } finally {
                 MDC.remove("kafka_topic")

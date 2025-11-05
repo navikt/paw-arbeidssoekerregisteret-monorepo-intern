@@ -42,7 +42,7 @@ dependencies {
     implementation(libs.nav.common.auditLog)
     implementation(libs.nav.common.log)
 
-    implementation(libs.micrometer.registryPrometheus)
+    implementation(libs.micrometer.registry.prometheus)
     implementation(libs.opentelemetry.annotations)
     implementation(libs.hoplite.core)
     implementation(libs.hoplite.toml)

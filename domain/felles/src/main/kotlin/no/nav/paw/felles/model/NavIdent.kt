@@ -1,9 +1,9 @@
 package no.nav.paw.felles.model
 
 @JvmInline
-value class NavIdent(val verdi: String) {
+value class NavIdent(val value: String) {
     override fun toString(): String {
-        return "*".repeat(verdi.length)
+        return "*".repeat(value.length)
     }
 }
 

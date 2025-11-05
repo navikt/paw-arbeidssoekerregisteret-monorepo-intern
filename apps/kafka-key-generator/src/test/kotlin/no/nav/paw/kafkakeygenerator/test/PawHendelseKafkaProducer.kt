@@ -3,13 +3,13 @@ package no.nav.paw.kafkakeygenerator.test
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerializer
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
+import no.nav.paw.felles.model.ArbeidssoekerId
+import no.nav.paw.felles.model.Identitetsnummer
 import no.nav.paw.kafka.config.KAFKA_CONFIG_WITH_SCHEME_REG
 import no.nav.paw.kafka.config.KafkaConfig
 import no.nav.paw.kafka.factory.KafkaFactory
 import no.nav.paw.kafkakeygenerator.config.APPLICATION_CONFIG
 import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
-import no.nav.paw.kafkakeygenerator.model.dto.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.model.dto.Identitetsnummer
 import no.nav.paw.logging.logger.buildApplicationLogger
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.LongSerializer

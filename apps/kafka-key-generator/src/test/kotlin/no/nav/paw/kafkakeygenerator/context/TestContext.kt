@@ -28,20 +28,20 @@ import io.mockk.mockk
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.error.plugin.installErrorHandlingPlugin
+import no.nav.paw.felles.model.CallId
+import no.nav.paw.felles.model.Identitetsnummer
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.identitet.internehendelser.IdentitetHendelse
+import no.nav.paw.kafka.service.KafkaHwmOperations
+import no.nav.paw.kafka.service.KafkaHwmService
 import no.nav.paw.kafkakeygenerator.config.APPLICATION_CONFIG
 import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
 import no.nav.paw.kafkakeygenerator.config.SERVER_CONFIG
 import no.nav.paw.kafkakeygenerator.config.ServerConfig
-import no.nav.paw.kafkakeygenerator.model.dto.CallId
-import no.nav.paw.kafkakeygenerator.model.dto.Identitetsnummer
 import no.nav.paw.kafkakeygenerator.plugin.configureRouting
 import no.nav.paw.kafkakeygenerator.service.HendelseService
 import no.nav.paw.kafkakeygenerator.service.IdentitetResponseService
 import no.nav.paw.kafkakeygenerator.service.IdentitetService
-import no.nav.paw.kafkakeygenerator.service.KafkaHwmOperations
-import no.nav.paw.kafkakeygenerator.service.KafkaHwmService
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
 import no.nav.paw.kafkakeygenerator.service.KonfliktService
 import no.nav.paw.kafkakeygenerator.service.PdlAktorKafkaConsumerService
@@ -110,7 +110,7 @@ class TestContext private constructor(
     ),
     val pdlAktorKafkaConsumerService: PdlAktorKafkaConsumerService = PdlAktorKafkaConsumerService(
         kafkaConsumerConfig = applicationConfig.pdlAktorConsumer,
-        hwmOperations = pdlAktorKafkaHwmOperations,
+        kafkaHwmOperations = pdlAktorKafkaHwmOperations,
         identitetService = identitetServiceMock
     )
 ) {

@@ -1,0 +1,1 @@
+ALTER TABLE hwm RENAME TO kafka_hwm;

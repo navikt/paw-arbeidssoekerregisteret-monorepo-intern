@@ -28,7 +28,7 @@ dependencies {
     implementation(libs.kafka.streams.core)
 
     implementation(libs.bundles.ktor.server.instrumented)
-    implementation(libs.micrometer.registryPrometheus)
+    implementation(libs.micrometer.registry.prometheus)
     implementation(libs.opentelemetry.api)
     implementation(libs.opentelemetry.annotations)
 

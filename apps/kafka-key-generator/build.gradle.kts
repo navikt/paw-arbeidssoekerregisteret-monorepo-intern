@@ -9,6 +9,11 @@ val jvmMajorVersion: String by project
 
 dependencies {
     // PAW
+    implementation(project(":domain:felles"))
+    implementation(project(":domain:interne-hendelser"))
+    implementation(project(":domain:identitet-interne-hendelser"))
+    implementation(project(":domain:main-avro-schema"))
+    implementation(project(":domain:pdl-aktoer-schema"))
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:serialization"))
     implementation(project(":lib:logging"))
@@ -19,11 +24,8 @@ dependencies {
     implementation(project(":lib:http-client-utils"))
     implementation(project(":lib:pdl-client"))
     implementation(project(":lib:kafka"))
+    implementation(project(":lib:kafka-hwm"))
     implementation(project(":lib:scheduling"))
-    implementation(project(":domain:interne-hendelser"))
-    implementation(project(":domain:identitet-interne-hendelser"))
-    implementation(project(":domain:main-avro-schema"))
-    implementation(project(":domain:pdl-aktoer-schema"))
 
     // NAV
     implementation(libs.nav.common.log)
@@ -54,7 +56,7 @@ dependencies {
     implementation(libs.ktor.client.logging)
 
     // Micrometer & OTEL
-    implementation(libs.micrometer.registryPrometheus)
+    implementation(libs.micrometer.registry.prometheus)
     implementation(libs.opentelemetry.api)
     implementation(libs.opentelemetry.annotations)
 

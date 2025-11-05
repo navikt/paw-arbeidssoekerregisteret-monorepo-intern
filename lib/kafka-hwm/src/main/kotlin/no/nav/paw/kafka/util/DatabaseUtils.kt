@@ -1,4 +1,4 @@
-package no.nav.paw.kafkakeygenerator.utils
+package no.nav.paw.kafka.util
 
 import org.jetbrains.exposed.sql.CustomFunction
 import org.jetbrains.exposed.sql.Expression

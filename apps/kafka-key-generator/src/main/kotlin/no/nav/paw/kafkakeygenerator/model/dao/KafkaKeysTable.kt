@@ -1,6 +1,6 @@
 package no.nav.paw.kafkakeygenerator.model.dao
 
-import no.nav.paw.kafkakeygenerator.model.dto.ArbeidssoekerId
+import no.nav.paw.felles.model.ArbeidssoekerId
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction

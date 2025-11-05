@@ -2,16 +2,16 @@ package no.nav.paw.kafkakeygenerator.service
 
 import io.micrometer.core.instrument.MeterRegistry
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import no.nav.paw.felles.model.ArbeidssoekerId
+import no.nav.paw.felles.model.CallId
+import no.nav.paw.felles.model.Identitetsnummer
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.kafkakeygenerator.api.v2.Alias
 import no.nav.paw.kafkakeygenerator.api.v2.InfoResponse
 import no.nav.paw.kafkakeygenerator.api.v2.LokaleAlias
-import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
 import no.nav.paw.kafkakeygenerator.exception.IdentitetIkkeFunnetException
-import no.nav.paw.kafkakeygenerator.model.dto.ArbeidssoekerId
-import no.nav.paw.kafkakeygenerator.model.dto.CallId
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
-import no.nav.paw.kafkakeygenerator.model.dto.Identitetsnummer
+import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
 import no.nav.paw.kafkakeygenerator.model.dto.Info
 import no.nav.paw.kafkakeygenerator.model.dto.LokalIdData
 import no.nav.paw.kafkakeygenerator.model.dto.MergeDetected

@@ -1,5 +1,3 @@
-import org.gradle.kotlin.dsl.dependencies
-
 plugins {
     kotlin("jvm")
 }
@@ -14,7 +12,7 @@ dependencies {
     compileOnly(libs.jackson.datatype.jsr310)
     compileOnly(libs.kafka.streams.core)
     compileOnly(libs.logback.classic)
-    compileOnly(libs.micrometer.registryPrometheus)
+    compileOnly(libs.micrometer.registry.prometheus)
     implementation(libs.opentelemetry.annotations)
 
     //Test
