@@ -55,7 +55,7 @@ dependencies {
     implementation(libs.nav.common.auditLog)
 
     // Instrumentation
-    implementation(libs.micrometer.registryPrometheus)
+    implementation(libs.micrometer.registry.prometheus)
     implementation(libs.opentelemetry.api)
     implementation(libs.opentelemetry.annotations)
 

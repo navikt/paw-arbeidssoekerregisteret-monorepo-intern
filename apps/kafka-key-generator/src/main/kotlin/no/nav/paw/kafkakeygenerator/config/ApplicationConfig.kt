@@ -1,5 +1,7 @@
 package no.nav.paw.kafkakeygenerator.config
 
+import no.nav.paw.kafka.config.KafkaConsumerConfig
+import no.nav.paw.kafka.config.KafkaProducerConfig
 import java.time.Duration
 
 const val APPLICATION_CONFIG = "application_config.toml"
@@ -12,23 +14,6 @@ data class ApplicationConfig(
     val identitetMergeKonfliktJob: ScheduledJobConfig,
     val identitetSplittKonfliktJob: ScheduledJobConfig
 )
-
-data class KafkaConsumerConfig(
-    val version: Int,
-    val topic: String,
-    val groupIdPrefix: String,
-) {
-    val groupId: String get() = "$groupIdPrefix-v$version"
-    val clientId: String get() = "$groupIdPrefix-v$version-consumer"
-}
-
-data class KafkaProducerConfig(
-    val version: Int,
-    val topic: String,
-    val clientIdPrefix: String
-) {
-    val clientId: String get() = "$clientIdPrefix-v$version-producer"
-}
 
 data class ScheduledJobConfig(
     val enabled: Boolean,

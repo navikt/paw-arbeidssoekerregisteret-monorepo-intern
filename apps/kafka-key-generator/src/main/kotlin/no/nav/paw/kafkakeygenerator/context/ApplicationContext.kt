@@ -22,6 +22,8 @@ import no.nav.paw.kafka.config.KAFKA_CONFIG_WITH_SCHEME_REG
 import no.nav.paw.kafka.config.KafkaConfig
 import no.nav.paw.kafka.factory.KafkaFactory
 import no.nav.paw.kafka.handler.ConsumerExceptionHandler
+import no.nav.paw.kafka.listener.HwmConsumerRebalanceListener
+import no.nav.paw.kafka.service.KafkaHwmService
 import no.nav.paw.kafkakeygenerator.config.APPLICATION_CONFIG
 import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
 import no.nav.paw.kafkakeygenerator.config.PDL_CLIENT_CONFIG
@@ -29,11 +31,9 @@ import no.nav.paw.kafkakeygenerator.config.PdlClientConfig
 import no.nav.paw.kafkakeygenerator.config.SERVER_CONFIG
 import no.nav.paw.kafkakeygenerator.config.ServerConfig
 import no.nav.paw.kafkakeygenerator.handler.HealthIndicatorConsumerExceptionHandler
-import no.nav.paw.kafkakeygenerator.listener.HwmConsumerRebalanceListener
 import no.nav.paw.kafkakeygenerator.service.HendelseService
 import no.nav.paw.kafkakeygenerator.service.IdentitetResponseService
 import no.nav.paw.kafkakeygenerator.service.IdentitetService
-import no.nav.paw.kafkakeygenerator.service.KafkaHwmService
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
 import no.nav.paw.kafkakeygenerator.service.KonfliktService
 import no.nav.paw.kafkakeygenerator.service.PawPeriodeKafkaConsumerService
@@ -130,7 +130,7 @@ data class ApplicationContext(
             )
             val pawPeriodeKafkaConsumerService = PawPeriodeKafkaConsumerService(
                 kafkaConsumerConfig = applicationConfig.pawPeriodeConsumer,
-                hwmOperations = pawPeriodeKafkaHwmOperations,
+                kafkaHwmOperations = pawPeriodeKafkaHwmOperations,
             )
             val pawPeriodeConsumerExceptionHandler = HealthIndicatorConsumerExceptionHandler(
                 livenessIndicator = healthIndicatorRepository.livenessIndicator(HealthStatus.HEALTHY),
@@ -152,7 +152,7 @@ data class ApplicationContext(
             )
             val pdlAktorKafkaConsumerService = PdlAktorKafkaConsumerService(
                 kafkaConsumerConfig = applicationConfig.pdlAktorConsumer,
-                hwmOperations = pdlAktorKafkaHwmOperations,
+                kafkaHwmOperations = pdlAktorKafkaHwmOperations,
                 identitetService = identitetService
             )
             val pdlAktorConsumerExceptionHandler = HealthIndicatorConsumerExceptionHandler(

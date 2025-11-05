@@ -1,7 +1,8 @@
 package no.nav.paw.kafkakeygenerator.service
 
 import io.opentelemetry.instrumentation.annotations.WithSpan
-import no.nav.paw.kafkakeygenerator.config.KafkaConsumerConfig
+import no.nav.paw.kafka.config.KafkaConsumerConfig
+import no.nav.paw.kafka.service.KafkaHwmOperations
 import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.kafkakeygenerator.model.dto.asPerson
 import no.nav.paw.kafkakeygenerator.utils.SecureLogger
@@ -14,7 +15,7 @@ import java.time.Instant
 
 class PdlAktorKafkaConsumerService(
     private val kafkaConsumerConfig: KafkaConsumerConfig,
-    private val hwmOperations: KafkaHwmOperations,
+    private val kafkaHwmOperations: KafkaHwmOperations,
     private val identitetService: IdentitetService
 ) {
     private val logger = buildNamedLogger("application.kafka")
@@ -39,7 +40,7 @@ class PdlAktorKafkaConsumerService(
     private fun handleRecord(record: ConsumerRecord<Any, Aktor>) {
         with(kafkaConsumerConfig) {
             try {
-                val rowsAffected = hwmOperations.updateHwm(
+                val rowsAffected = kafkaHwmOperations.updateHwm(
                     topic = topic,
                     partition = record.partition(),
                     offset = record.offset(),

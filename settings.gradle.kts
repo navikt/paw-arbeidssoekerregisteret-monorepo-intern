@@ -37,6 +37,7 @@ include(
     "lib:scheduling",
     "lib:http-client-utils",
     "lib:kafka",
+    "lib:kafka-hwm",
     "lib:kafka-streams",
     "lib:kafka-key-generator-client",
     "lib:pdl-client",

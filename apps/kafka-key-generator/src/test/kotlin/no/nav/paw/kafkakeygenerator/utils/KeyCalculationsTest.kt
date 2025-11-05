@@ -2,7 +2,7 @@ package no.nav.paw.kafkakeygenerator.utils
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import no.nav.paw.kafkakeygenerator.model.dto.ArbeidssoekerId
+import no.nav.paw.felles.model.ArbeidssoekerId
 
 /**
  * Enkel test som vil feile ved endring av publicTopicKeyFunction eller nooen av

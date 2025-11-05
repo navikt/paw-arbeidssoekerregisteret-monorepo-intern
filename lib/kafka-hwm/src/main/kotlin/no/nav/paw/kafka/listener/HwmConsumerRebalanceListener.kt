@@ -1,7 +1,7 @@
-package no.nav.paw.kafkakeygenerator.listener
+package no.nav.paw.kafka.listener
 
-import no.nav.paw.kafkakeygenerator.config.KafkaConsumerConfig
-import no.nav.paw.kafkakeygenerator.service.KafkaHwmOperations
+import no.nav.paw.kafka.config.KafkaConsumerConfig
+import no.nav.paw.kafka.service.KafkaHwmOperations
 import no.nav.paw.logging.logger.buildNamedLogger
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -17,7 +17,7 @@ class HwmConsumerRebalanceListener(
     fun onPartitionsReady() {
         val partitionCount = kafkaConsumer.partitionsFor(kafkaConsumerConfig.topic).count()
         val initCount = hwmOperations.initHwm(kafkaConsumerConfig.topic, partitionCount)
-        logger.info("Initialiserte {} av {} partition HWMs", initCount, partitionCount)
+        logger.info("Initialized HWM for {} of {} partitions", initCount, partitionCount)
     }
 
     override fun onPartitionsRevoked(partitions: MutableCollection<TopicPartition>?) {
@@ -35,7 +35,7 @@ class HwmConsumerRebalanceListener(
                 partition to hwm.offset
             }
             seekTo.forEach { (partition, offset) ->
-                logger.info("Seeking to offset {} for partition {}", offset + 1, partition)
+                logger.info("Seeking to HWM offset {} for partition {}", offset + 1, partition)
                 kafkaConsumer.seek(partition, offset + 1)
             }
         }

@@ -17,7 +17,7 @@ dependencies {
 
     //implementation(libs.arrow.core.core)
     implementation(libs.bundles.ktor.server.instrumented)
-    implementation(libs.micrometer.registryPrometheus)
+    implementation(libs.micrometer.registry.prometheus)
     implementation(libs.hoplite.core)
     implementation(libs.hoplite.toml)
     implementation(libs.nav.security.tokenValidationKtorV3)

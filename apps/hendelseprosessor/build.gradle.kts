@@ -22,7 +22,7 @@ dependencies {
     implementation(libs.avro.core)
     implementation(libs.avro.kafkaStreamsSerde)
 
-    implementation(libs.micrometer.registryPrometheus)
+    implementation(libs.micrometer.registry.prometheus)
     implementation(libs.ktor.server.core)
     implementation(libs.bundles.ktor.server.instrumented)
     implementation(libs.ktor.server.netty)

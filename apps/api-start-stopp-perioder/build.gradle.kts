@@ -23,7 +23,7 @@ dependencies {
     implementation(libs.arrow.functions)
     implementation(libs.arrow.integration.jackson)
     implementation(libs.bundles.ktor.server.instrumented)
-    implementation(libs.micrometer.registryPrometheus)
+    implementation(libs.micrometer.registry.prometheus)
     implementation(libs.opentelemetry.annotations)
     implementation(libs.hoplite.core)
     implementation(libs.hoplite.toml)

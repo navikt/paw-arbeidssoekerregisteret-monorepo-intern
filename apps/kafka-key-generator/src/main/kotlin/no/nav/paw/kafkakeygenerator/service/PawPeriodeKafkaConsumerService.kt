@@ -2,7 +2,8 @@ package no.nav.paw.kafkakeygenerator.service
 
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
-import no.nav.paw.kafkakeygenerator.config.KafkaConsumerConfig
+import no.nav.paw.kafka.config.KafkaConsumerConfig
+import no.nav.paw.kafka.service.KafkaHwmOperations
 import no.nav.paw.kafkakeygenerator.model.dao.PerioderTable
 import no.nav.paw.logging.logger.buildErrorLogger
 import no.nav.paw.logging.logger.buildLogger
@@ -13,7 +14,7 @@ import java.time.Instant
 
 class PawPeriodeKafkaConsumerService(
     private val kafkaConsumerConfig: KafkaConsumerConfig,
-    private val hwmOperations: KafkaHwmOperations
+    private val kafkaHwmOperations: KafkaHwmOperations
 ) {
 
     private val logger = buildLogger
@@ -39,7 +40,7 @@ class PawPeriodeKafkaConsumerService(
     private fun handleRecord(record: ConsumerRecord<Long, Periode>) {
         with(kafkaConsumerConfig) {
             try {
-                val rowsAffected = hwmOperations.updateHwm(
+                val rowsAffected = kafkaHwmOperations.updateHwm(
                     topic = topic,
                     partition = record.partition(),
                     offset = record.offset(),

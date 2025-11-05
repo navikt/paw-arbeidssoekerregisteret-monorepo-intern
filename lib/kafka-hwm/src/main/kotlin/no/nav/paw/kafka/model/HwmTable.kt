@@ -1,6 +1,6 @@
-package no.nav.paw.kafkakeygenerator.model.dao
+package no.nav.paw.kafka.model
 
-import no.nav.paw.kafkakeygenerator.utils.max
+import no.nav.paw.kafka.util.max
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
@@ -9,7 +9,7 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 import java.time.Instant
 
-object HwmTable : Table("hwm") {
+object HwmTable : Table("kafka_hwm") {
     val version = integer("version")
     val topic = varchar("kafka_topic", 255)
     val partition = integer("kafka_partition")

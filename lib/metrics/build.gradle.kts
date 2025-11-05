@@ -7,7 +7,7 @@ val jvmMajorVersion: String by project
 dependencies {
     compileOnly(libs.ktor.server.core)
     compileOnly(libs.ktor.server.metricsMicrometer)
-    compileOnly(libs.micrometer.registryPrometheus)
+    compileOnly(libs.micrometer.registry.prometheus)
     testImplementation(libs.test.junit5.runner)
     testImplementation(libs.test.kotest.assertionsCore)
 }
