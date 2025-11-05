@@ -19,8 +19,8 @@ dependencies {
     implementation(libs.bundles.ktor.server.instrumented)
 
     // Logging
-    implementation(libs.logbackClassic)
-    implementation(libs.logstashLogbackEncoder)
+    implementation(libs.logback.classic)
+    implementation(libs.logstash.logback.encoder)
     implementation(libs.nav.common.log)
 
     // Instrumentation

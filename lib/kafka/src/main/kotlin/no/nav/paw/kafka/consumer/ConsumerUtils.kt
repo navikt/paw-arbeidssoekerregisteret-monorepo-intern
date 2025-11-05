@@ -7,12 +7,11 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 fun <K, V> Consumer<K, V>.asSequence(
     stop: AtomicBoolean,
-    pollTimeout: Duration = Duration.ofMillis(500),
-    closeTimeout: Duration = Duration.ofMillis(250)
+    pollTimeout: Duration = Duration.ofMillis(500)
 ): Sequence<ConsumerRecords<K, V>> =
     generateSequence {
         if (stop.get()) {
-            close(closeTimeout)
+            close()
             null
         } else {
             poll(pollTimeout)

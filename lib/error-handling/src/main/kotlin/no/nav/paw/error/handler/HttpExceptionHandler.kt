@@ -38,7 +38,7 @@ suspend fun ApplicationCall.handleException(
     MDC.remove(MDC_ERROR_TYPE_KEY)
     MDC.remove(MDC_EXCEPTION_KEY)
 
-    respond(problemDetails.status, problemDetails)
+    respond<ProblemDetails>(problemDetails.status, problemDetails)
 }
 
 fun resolveProblemDetails(

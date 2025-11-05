@@ -12,7 +12,7 @@ dependencies {
     api(project(":lib:http-client-utils"))
     api(project(":lib:common-model"))
     api(project(":lib:error-handling"))
-    implementation(libs.jackson.datatypeJsr310)
+    implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jackson.kotlin)
     implementation(libs.ktor.client.contentNegotiation)
     implementation(libs.ktor.client.core)

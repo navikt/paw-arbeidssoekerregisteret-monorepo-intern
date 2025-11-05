@@ -31,11 +31,11 @@ dependencies {
 
     // Serialization
     implementation(libs.ktor.serialization.jackson)
-    implementation(libs.jackson.datatypeJsr310)
+    implementation(libs.jackson.datatype.jsr310)
 
     // Logging
-    implementation(libs.logbackClassic)
-    implementation(libs.logstashLogbackEncoder)
+    implementation(libs.logback.classic)
+    implementation(libs.logstash.logback.encoder)
     implementation(libs.nav.common.log)
 
     // Instrumentation

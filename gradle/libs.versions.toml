@@ -3,30 +3,30 @@ nav-paw-schema-main = "1.25.03.10.2-1"
 nav-paw-schema-bekreftelse = "1.25.03.26.32-1"
 nav-common = "3.2025.06.23_14.50-3af3985d8555"
 nav-security = "5.0.34"
-nav-security-mock-oauth2-server = "3.0.0"
+nav-security-mock-oauth2-server = "3.0.1"
 nav-tms-varsel = "2.1.1"
-arrow = "2.1.2"
+arrow = "2.2.0"
 arrow-jackson = "0.15.1"
 hoplite = "2.9.0"
 graphql = "8.8.1"
-kafka = "4.0.0"
-confluent-kafka = "8.0.0"
-avro = "1.12.0"
-jackson = "2.20.0"
+kafka = "4.1.0"
+confluent-kafka = "8.1.0"
+avro = "1.12.1"
+jackson = "2.20.1"
 exposed = "0.61.0"
 logstash = "8.1"
-logback = "1.5.19"
-kotest = "6.0.3"
+logback = "1.5.20"
+kotest = "6.0.4"
 mockk = "1.14.6"
 testcontainers = "1.21.3"
 atlassian-oai = "2.46.0"
-micrometer = "1.15.4"
-otel-api = "1.54.1"
-otel-instrumentation = "2.20.1"
+micrometer = "1.15.5"
+otel-api = "1.55.0"
+otel-instrumentation = "2.21.0"
 postgres = "42.7.8"
 h2-database = "2.4.240"
-bigquery = "26.70.0"
-flyway = "11.14.0"
+bigquery = "26.71.0"
+flyway = "11.15.0"
 hikari = "7.0.2"
 kotlinx-coroutines = "1.10.2"
 kotlinx-serialization = "1.9.0"
@@ -36,8 +36,8 @@ ktor = "3.3.1"
 arrow-core-core = { group = "io.arrow-kt", name = "arrow-core", version.ref = "arrow" }
 arrow-functions = { group = "io.arrow-kt", name = "arrow-functions", version.ref = "arrow" }
 arrow-integration-jackson = { group = "io.arrow-kt", name = "arrow-integrations-jackson-module", version.ref = "arrow-jackson" }
-logbackClassic = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logback" }
-logstashLogbackEncoder = { group = "net.logstash.logback", name = "logstash-logback-encoder", version.ref = "logstash" }
+logback-classic = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logback" }
+logstash-logback-encoder = { group = "net.logstash.logback", name = "logstash-logback-encoder", version.ref = "logstash" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 ktor-client-contentNegotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
@@ -73,7 +73,7 @@ kafka-streams-test = { group = "org.apache.kafka", name = "kafka-streams-test-ut
 avro-core = { group = "org.apache.avro", name = "avro", version.ref = "avro" }
 avro-kafkaSerializer = { group = "io.confluent", name = "kafka-avro-serializer", version.ref = "confluent-kafka" }
 avro-kafkaStreamsSerde = { group = "io.confluent", name = "kafka-streams-avro-serde", version.ref = "confluent-kafka" }
-jackson-datatypeJsr310 = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version.ref = "jackson" }
+jackson-datatype-jsr310 = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version.ref = "jackson" }
 jackson-dataformat-csv = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-csv", version.ref = "jackson" }
 jackson-kotlin = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "jackson" }
 jackson-core = { group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "jackson" }

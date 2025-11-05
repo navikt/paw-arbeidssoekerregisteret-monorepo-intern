@@ -1,4 +1,5 @@
 package no.nav.paw.error.handler
+
 import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.Tags
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
@@ -20,6 +21,7 @@ class KafkaLogAndContinueExceptionHandler : DeserializationExceptionHandler {
     var metrics: PrometheusMeterRegistry? = null
     val log: Logger = LoggerFactory.getLogger(KafkaLogAndContinueExceptionHandler::class.java)
 
+    @Deprecated("Use handle with ErrorHandlerContext instead")
     override fun handle(
         context: ProcessorContext,
         record: ConsumerRecord<ByteArray, ByteArray>,

@@ -9,8 +9,8 @@ dependencies {
     compileOnly(libs.ktor.server.core)
     compileOnly(libs.ktor.server.callId)
     compileOnly(libs.ktor.server.callLogging)
-    compileOnly(libs.logbackClassic)
-    compileOnly(libs.logstashLogbackEncoder)
+    compileOnly(libs.logback.classic)
+    compileOnly(libs.logstash.logback.encoder)
     compileOnly(libs.nav.common.log)
     compileOnly(libs.nav.common.auditLog)
 

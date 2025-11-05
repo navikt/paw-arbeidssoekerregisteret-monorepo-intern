@@ -72,8 +72,8 @@ dependencies {
     implementation(libs.hoplite.toml)
 
     // Logging
-    implementation(libs.logbackClassic)
-    implementation(libs.logstashLogbackEncoder)
+    implementation(libs.logback.classic)
+    implementation(libs.logstash.logback.encoder)
 
     // Tester
     testImplementation(libs.bundles.unit.testing.kotest)

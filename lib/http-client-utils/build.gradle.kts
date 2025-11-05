@@ -9,7 +9,7 @@ dependencies {
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:serialization"))
     implementation(libs.ktor.serialization.jackson)
-    implementation(libs.jackson.datatypeJsr310)
+    implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jackson.kotlin)
     implementation(libs.ktor.client.contentNegotiation)
     implementation(libs.ktor.client.cio)

@@ -27,13 +27,13 @@ dependencies {
     implementation(libs.bundles.ktor.server.instrumented)
 
     // Serialization
-    implementation(libs.jackson.datatypeJsr310)
+    implementation(libs.jackson.datatype.jsr310)
     implementation(libs.avro.core)
     implementation(libs.avro.kafkaSerializer)
 
     // Logging
-    implementation(libs.logbackClassic)
-    implementation(libs.logstashLogbackEncoder)
+    implementation(libs.logback.classic)
+    implementation(libs.logstash.logback.encoder)
     implementation(libs.nav.common.log)
 
     // Instrumentation

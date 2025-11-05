@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    implementation(libs.jackson.datatypeJsr310)
+    implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jackson.kotlin)
     implementation(libs.jackson.core)
     compileOnly(libs.kafka.clients)

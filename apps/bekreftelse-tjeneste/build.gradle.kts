@@ -25,7 +25,7 @@ dependencies {
     // Serialization
     implementation(libs.ktor.serialization.jackson)
     implementation(libs.ktor.serialization.kotlinx.json)
-    implementation(libs.jackson.datatypeJsr310)
+    implementation(libs.jackson.datatype.jsr310)
 
     // Tooling
     implementation(libs.arrow.core.core)
@@ -33,8 +33,8 @@ dependencies {
     implementation(libs.arrow.integration.jackson)
 
     // Logging
-    implementation(libs.logbackClassic)
-    implementation(libs.logstashLogbackEncoder)
+    implementation(libs.logback.classic)
+    implementation(libs.logstash.logback.encoder)
     implementation(libs.nav.common.log)
     implementation(libs.nav.common.auditLog)
 

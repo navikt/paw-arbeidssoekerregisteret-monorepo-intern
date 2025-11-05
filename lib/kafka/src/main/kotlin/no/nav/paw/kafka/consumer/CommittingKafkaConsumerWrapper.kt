@@ -13,7 +13,6 @@ class CommittingKafkaConsumerWrapper<K, V>(
     private val topics: Collection<String>,
     private val consumer: Consumer<K, V>,
     private val pollTimeout: Duration = Duration.ofMillis(100),
-    private val closeTimeout: Duration = Duration.ofMillis(500),
     private val exceptionHandler: ConsumerExceptionHandler = NoopConsumerExceptionHandler(),
     private val rebalanceListener: ConsumerRebalanceListener = NoopConsumerRebalanceListener()
 ) : KafkaConsumerWrapper<K, V> {
@@ -39,6 +38,6 @@ class CommittingKafkaConsumerWrapper<K, V>(
     override fun stop() {
         logger.info("Kafka Consumer stopper å abonnere på topics {} og lukkes", topics)
         consumer.unsubscribe()
-        consumer.close(closeTimeout)
+        consumer.close()
     }
 }

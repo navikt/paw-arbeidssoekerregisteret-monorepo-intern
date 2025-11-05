@@ -12,7 +12,6 @@ import io.ktor.server.plugins.BadRequestException
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.testApplication
-import no.nav.paw.error.model.ErrorType
 import no.nav.paw.error.model.ProblemDetails
 import no.nav.paw.error.model.asHttpErrorType
 import no.nav.paw.error.plugin.ErrorHandlingPlugin

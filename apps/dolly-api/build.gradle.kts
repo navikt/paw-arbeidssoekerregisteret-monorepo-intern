@@ -39,7 +39,7 @@ dependencies {
     // Serialization
     implementation(libs.ktor.serialization.jackson)
     implementation(libs.ktor.serialization.kotlinx.json)
-    implementation(libs.jackson.datatypeJsr310)
+    implementation(libs.jackson.datatype.jsr310)
 
     // Authentication
     implementation(libs.nav.security.tokenValidationKtorV3)
@@ -49,8 +49,8 @@ dependencies {
     implementation(libs.ktor.server.swagger)
 
     // Logging
-    implementation(libs.logbackClassic)
-    implementation(libs.logstashLogbackEncoder)
+    implementation(libs.logback.classic)
+    implementation(libs.logstash.logback.encoder)
     implementation(libs.nav.common.log)
     implementation(libs.nav.common.auditLog)
 

@@ -6,7 +6,7 @@ val jvmMajorVersion: String by project
 
 dependencies {
     compileOnly(libs.kotlinx.coroutines.core)
-    compileOnly(libs.logbackClassic)
+    compileOnly(libs.logback.classic)
 
     testImplementation(libs.test.junit5.runner)
     testImplementation(libs.test.kotest.assertionsCore)

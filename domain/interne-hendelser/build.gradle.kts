@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    compileOnly(libs.jackson.datatypeJsr310)
+    compileOnly(libs.jackson.datatype.jsr310)
     compileOnly(libs.jackson.kotlin)
     compileOnly(libs.jackson.core)
     compileOnly(libs.kafka.clients)
@@ -12,7 +12,7 @@ dependencies {
     testImplementation(libs.test.junit5.runner)
     testImplementation(libs.test.kotest.assertionsCore)
     testImplementation(libs.kafka.clients)
-    testImplementation(libs.jackson.datatypeJsr310)
+    testImplementation(libs.jackson.datatype.jsr310)
     testImplementation(libs.jackson.kotlin)
     testImplementation(libs.jackson.core)
 }

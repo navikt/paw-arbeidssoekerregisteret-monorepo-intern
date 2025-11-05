@@ -32,8 +32,8 @@ dependencies {
     implementation(libs.opentelemetry.api)
     implementation(libs.opentelemetry.annotations)
 
-    implementation(libs.logbackClassic)
-    implementation(libs.logstashLogbackEncoder)
+    implementation(libs.logback.classic)
+    implementation(libs.logstash.logback.encoder)
 
     implementation(libs.nav.common.log)
     implementation(libs.nav.common.tokenClient)
@@ -42,7 +42,7 @@ dependencies {
     implementation(libs.avro.kafkaStreamsSerde)
     implementation(libs.avro.core)
 
-    implementation(libs.jackson.datatypeJsr310)
+    implementation(libs.jackson.datatype.jsr310)
     implementation(libs.ktor.serialization.jackson)
     implementation(libs.ktor.serialization.jvm)
 

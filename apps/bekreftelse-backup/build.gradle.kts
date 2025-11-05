@@ -45,8 +45,8 @@ dependencies {
     implementation(libs.hoplite.toml)
     implementation(libs.nav.common.auditLog)
     implementation(libs.nav.common.log)
-    implementation(libs.logbackClassic)
-    implementation(libs.logstashLogbackEncoder)
+    implementation(libs.logback.classic)
+    implementation(libs.logstash.logback.encoder)
     implementation(libs.kafka.clients)
     implementation(libs.exposed.core)
     implementation(libs.exposed.jdbc)
@@ -55,7 +55,7 @@ dependencies {
     implementation(libs.database.flyway.core)
     implementation(libs.database.flyway.postgres)
 
-    implementation(libs.jackson.datatypeJsr310)
+    implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jackson.kotlin)
 
     testImplementation(libs.test.junit5.runner)

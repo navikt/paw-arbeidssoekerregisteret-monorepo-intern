@@ -10,7 +10,7 @@ dependencies {
     compileOnly(libs.ktor.server.contentNegotiation)
     compileOnly(libs.ktor.serialization.jackson)
     compileOnly(libs.jackson.kotlin)
-    compileOnly(libs.jackson.datatypeJsr310)
+    compileOnly(libs.jackson.datatype.jsr310)
     compileOnly(libs.kafka.clients)
 
     testImplementation(libs.test.junit5.runner)

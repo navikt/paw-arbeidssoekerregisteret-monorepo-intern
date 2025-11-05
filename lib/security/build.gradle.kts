@@ -6,7 +6,7 @@ dependencies {
     implementation(project(":lib:error-handling"))
     implementation(project(":lib:common-model"))
     implementation(libs.ktor.server.auth)
-    implementation(libs.logbackClassic)
+    implementation(libs.logback.classic)
     implementation(libs.nav.security.tokenValidationKtorV3)
     implementation(libs.ktor.serialization.jackson)
 
@@ -18,7 +18,7 @@ dependencies {
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.client.contentNegotiation)
     testImplementation(libs.ktor.client.mock)
-    testImplementation(libs.jackson.datatypeJsr310)
+    testImplementation(libs.jackson.datatype.jsr310)
 }
 
 tasks.withType<Test>().configureEach {

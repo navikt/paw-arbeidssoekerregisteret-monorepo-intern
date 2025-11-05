@@ -48,8 +48,8 @@ dependencies {
     implementation(libs.hoplite.toml)
     implementation(libs.nav.common.auditLog)
     implementation(libs.nav.common.log)
-    implementation(libs.logbackClassic)
-    implementation(libs.logstashLogbackEncoder)
+    implementation(libs.logback.classic)
+    implementation(libs.logstash.logback.encoder)
     implementation(libs.kafka.clients)
 
     // Database
@@ -62,7 +62,7 @@ dependencies {
     implementation(libs.database.hikari.connectionPool)
 
     // Jackson
-    implementation(libs.jackson.datatypeJsr310)
+    implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jackson.kotlin)
 
     // Testing
