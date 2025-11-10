@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.api.extensions
 
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV2ArbeidssokerKanStartePeriodePutRequest
-import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
-import no.nav.paw.arbeidssokerregisteret.domain.tilIdentitetsnummer
+import no.nav.paw.felles.model.Identitetsnummer
+import no.nav.paw.felles.model.asIdentitetsnummer
 
-fun ApiV2ArbeidssokerKanStartePeriodePutRequest.getId(): Identitetsnummer = identitetsnummer.tilIdentitetsnummer()
+fun ApiV2ArbeidssokerKanStartePeriodePutRequest.getId(): Identitetsnummer = identitetsnummer.asIdentitetsnummer()

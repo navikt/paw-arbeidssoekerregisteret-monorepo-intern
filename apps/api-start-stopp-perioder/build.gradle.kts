@@ -11,15 +11,15 @@ plugins {
 val jvmMajorVersion: String by project
 
 dependencies {
-    implementation(project(":lib:common-model"))
+    implementation(project(":domain:felles"))
     implementation(project(":domain:arbeidssoekerregisteret-kotlin"))
     implementation(project(":domain:interne-hendelser"))
+    implementation(project(":domain:arbeidssoeker-regler"))
     implementation(project(":lib:kafka"))
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:kafka-key-generator-client"))
     implementation(project(":lib:pdl-client"))
     implementation(project(":lib:tilgangskontroll-client"))
-    implementation(project(":domain:arbeidssoeker-regler"))
     implementation(libs.arrow.functions)
     implementation(libs.arrow.integration.jackson)
     implementation(libs.bundles.ktor.server.instrumented)

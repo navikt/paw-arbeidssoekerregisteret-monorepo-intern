@@ -36,9 +36,9 @@ import no.nav.paw.bekreftelse.internehendelser.PeriodeAvsluttet
 import no.nav.paw.bekreftelse.internehendelser.meldingMottattHendelseType
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.config.env.appImageOrDefaultForLocal
+import no.nav.paw.felles.model.Identitetsnummer
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.logging.logger.buildLogger
-import no.nav.paw.model.Identitetsnummer
 import no.nav.paw.security.authentication.model.Bruker
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
@@ -56,7 +56,7 @@ class BekreftelseService(
 
     @WithSpan(value = "finnTilgjengeligBekreftelser")
     suspend fun finnTilgjengeligBekreftelser(identitetsnummer: Identitetsnummer): TilgjengeligBekreftelserResponse {
-        val kafkaKeysResponse = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
+        val kafkaKeysResponse = kafkaKeysClient.getIdAndKey(identitetsnummer.value)
 
         return transaction {
             logger.info("Henter tilgjengelige bekreftelser")
@@ -71,7 +71,7 @@ class BekreftelseService(
         identitetsnummer: Identitetsnummer,
         request: MottaBekreftelseRequest
     ) {
-        val kafkaKeysResponse = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
+        val kafkaKeysResponse = kafkaKeysClient.getIdAndKey(identitetsnummer.value)
 
         return transaction {
             logger.info("Har mottatt bekreftelse")

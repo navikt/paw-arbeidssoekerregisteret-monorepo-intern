@@ -20,7 +20,6 @@ import io.ktor.serialization.jackson.jackson
 import io.mockk.coEvery
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV2ArbeidssokerPeriodePutRequest
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feilretting
-import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HarOpplysninger
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
@@ -28,6 +27,7 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.arbeidssokerregisteret.services.PersonInfoService
 import no.nav.paw.arbeidssokerregisteret.testdata.mustBe
+import no.nav.paw.felles.model.Identitetsnummer
 import no.nav.paw.pdl.graphql.generated.enums.Oppholdstillatelse
 import no.nav.paw.pdl.graphql.generated.hentperson.Bostedsadresse
 import no.nav.paw.pdl.graphql.generated.hentperson.Folkeregistermetadata

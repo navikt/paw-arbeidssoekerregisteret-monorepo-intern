@@ -7,9 +7,9 @@ plugins {
 val jvmMajorVersion: String by project
 
 dependencies {
-    api(project(":lib:common-model"))
-    implementation(project(":lib:pdl-client"))
+    api(project(":domain:felles"))
     implementation(project(":domain:interne-hendelser"))
+    implementation(project(":lib:pdl-client"))
     api(libs.arrow.core.core)
     implementation(libs.micrometer.registry.prometheus)
     testImplementation(libs.ktor.server.test.host)

@@ -27,8 +27,8 @@ import no.nav.paw.bekreftelsetjeneste.tilstand.harGraceperiodeUtloept
 import no.nav.paw.bekreftelsetjeneste.tilstand.plus
 import no.nav.paw.bekreftelsetjeneste.tilstand.sisteTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.sluttTidForBekreftelsePeriode
-import no.nav.paw.collections.PawNonEmptyList
-import no.nav.paw.collections.pawNonEmptyListOf
+import no.nav.paw.felles.collection.PawNonEmptyList
+import no.nav.paw.felles.collection.pawNonEmptyListOf
 import no.nav.paw.config.env.appNameOrDefaultForLocal
 import no.nav.paw.config.env.currentRuntimeEnvironment
 import java.util.*

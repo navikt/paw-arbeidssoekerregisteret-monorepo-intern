@@ -4,10 +4,10 @@ import no.nav.common.audit_log.cef.CefMessageEvent
 import no.nav.paw.bekreftelse.api.config.ServerConfig
 import no.nav.paw.error.model.getOrThrow
 import no.nav.paw.error.model.map
+import no.nav.paw.felles.model.Identitetsnummer
+import no.nav.paw.felles.model.NavIdent
 import no.nav.paw.logging.logger.AuditLogger
 import no.nav.paw.logging.logger.buildAuditLogger
-import no.nav.paw.model.Identitetsnummer
-import no.nav.paw.model.NavIdent
 import no.nav.paw.security.authentication.model.Anonym
 import no.nav.paw.security.authentication.model.NavAnsatt
 import no.nav.paw.security.authentication.model.SecurityContext
@@ -66,7 +66,7 @@ class TilgangskontrollAccessPolicy(
                             auditLogger.audit(
                                 runtimeEnvironment = serverConfig.runtimeEnvironment,
                                 aktorIdent = bruker.ident,
-                                sluttbrukerIdent = identitetsnummer.verdi,
+                                sluttbrukerIdent = identitetsnummer.value,
                                 event = action.asCefMessageEvent(),
                                 melding = "NAV-ansatt har benyttet $tilgang-tilgang til informasjon om sluttbruker"
                             )

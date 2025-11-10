@@ -13,7 +13,7 @@ import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstandsLogg
 import no.nav.paw.bekreftelsetjeneste.tilstand.IkkeKlarForUtfylling
 import no.nav.paw.bekreftelsetjeneste.tilstand.VenterSvar
 import no.nav.paw.bekreftelsetjeneste.tilstand.sisteTilstand
-import no.nav.paw.collections.pawNonEmptyListOf
+import no.nav.paw.felles.collection.pawNonEmptyListOf
 
 import java.time.Duration
 import java.time.Instant.parse

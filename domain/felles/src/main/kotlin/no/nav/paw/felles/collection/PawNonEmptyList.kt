@@ -1,4 +1,4 @@
-package no.nav.paw.collections
+package no.nav.paw.felles.collection
 
 /***
  * Veldig enkel NonEmptyList implementasjon

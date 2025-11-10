@@ -4,7 +4,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import no.nav.paw.arbeidssokerregisteret.application.*
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
-import no.nav.paw.collections.pawNonEmptyListOf
+import no.nav.paw.felles.collection.pawNonEmptyListOf
 
 class UtgangProsessorV2KtTest : FreeSpec({
     "Under 18 år registrert via veilarb skal ikke trigge avslutning" {

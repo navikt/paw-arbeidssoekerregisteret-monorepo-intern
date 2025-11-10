@@ -20,6 +20,7 @@ dependencies {
     implementation(project(":lib:kafka-streams"))
     implementation(project(":lib:kafka-key-generator-client"))
     implementation(project(":lib:tilgangskontroll-client"))
+    implementation(project(":domain:felles"))
     implementation(project(":domain:bekreftelse-interne-hendelser"))
     implementation(project(":domain:bekreftelsesmelding-avro-schema"))
 

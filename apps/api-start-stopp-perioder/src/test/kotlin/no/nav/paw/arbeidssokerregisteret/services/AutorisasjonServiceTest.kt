@@ -8,10 +8,10 @@ import no.nav.paw.arbeidssokerregisteret.RequestScope
 import no.nav.paw.arbeidssokerregisteret.TestData
 import no.nav.paw.arbeidssokerregisteret.application.authfaktka.AuthOpplysning.IkkeAnsatt
 import no.nav.paw.arbeidssokerregisteret.application.authfaktka.navAnsattTilgangFakta
-import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.utils.ResolvedClaims
 import no.nav.paw.arbeidssokerregisteret.utils.TokenXPID
 import no.nav.paw.error.model.Data
+import no.nav.paw.felles.model.Identitetsnummer
 import no.nav.paw.tilgangskontroll.client.TilgangsTjenesteForAnsatte
 
 class AutorisasjonServiceTest : FreeSpec({
@@ -48,7 +48,7 @@ class AutorisasjonServiceTest : FreeSpec({
     }
     "verifiser IKKE_NAVANSATT" {
         val autorisasjonService = mockk<AutorisasjonService>()
-        val identitet =  Identitetsnummer("12345678909")
+        val identitet = Identitetsnummer("12345678909")
         val requestScope = RequestScope(
             claims = ResolvedClaims().add(TokenXPID, "12345678909"),
             callId = "123",

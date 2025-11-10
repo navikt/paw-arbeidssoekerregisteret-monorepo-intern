@@ -5,13 +5,19 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.serialization.jackson.*
-import io.ktor.server.auth.*
-import io.ktor.server.routing.*
-import io.ktor.server.testing.*
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.bearerAuth
+import io.ktor.client.request.headers
+import io.ktor.client.request.put
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.append
+import io.ktor.serialization.jackson.jackson
+import io.ktor.server.auth.authenticate
+import io.ktor.server.routing.routing
+import io.ktor.server.testing.testApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -22,10 +28,10 @@ import no.nav.paw.arbeidssokerregisteret.application.StartStoppRequestHandler
 import no.nav.paw.arbeidssokerregisteret.application.grunnlagForGodkjenning
 import no.nav.paw.arbeidssokerregisteret.application.regler.AnsattHarTilgangTilBruker
 import no.nav.paw.arbeidssokerregisteret.auth.configureAuthentication
-import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.plugins.configureHTTP
 import no.nav.paw.arbeidssokerregisteret.plugins.configureSerialization
 import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutesV2
+import no.nav.paw.felles.model.Identitetsnummer
 import no.nav.security.mock.oauth2.MockOAuth2Server
 
 class InngagnSomVeilederTest : FreeSpec({
@@ -93,7 +99,12 @@ class InngagnSomVeilederTest : FreeSpec({
                 }
                 response.status shouldBe HttpStatusCode.NoContent
                 coVerify(exactly = 1) {
-                    startStoppRequestHandler.startArbeidssokerperiode(any(), Identitetsnummer("12345678909"), true, null)
+                    startStoppRequestHandler.startArbeidssokerperiode(
+                        any(),
+                        Identitetsnummer("12345678909"),
+                        true,
+                        null
+                    )
                 }
 
                 val response2 = client.put("/api/v2/arbeidssoker/periode") {
@@ -111,7 +122,10 @@ class InngagnSomVeilederTest : FreeSpec({
                 }
                 response2.status shouldBe HttpStatusCode.NoContent
                 coVerify(exactly = 1) {
-                        startStoppRequestHandler.startArbeidssokerperiode(any(), Identitetsnummer("12345678909"), false, null)
+                    startStoppRequestHandler.startArbeidssokerperiode(
+                        any(),
+                        Identitetsnummer("12345678909"), false, null
+                    )
                 }
             }
         }

@@ -1,13 +1,13 @@
 package no.nav.paw.arbeidssokerregisteret.services
 
-import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.domain.M2MToken
 import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
 import no.nav.paw.arbeidssokerregisteret.utils.auditLogMessage
 import no.nav.paw.arbeidssokerregisteret.utils.autitLogger
 import no.nav.paw.arbeidssokerregisteret.utils.logger
 import no.nav.paw.error.model.getOrThrow
-import no.nav.paw.model.NavIdent
+import no.nav.paw.felles.model.Identitetsnummer
+import no.nav.paw.felles.model.NavIdent
 import no.nav.paw.tilgangskontroll.client.Tilgang
 import no.nav.paw.tilgangskontroll.client.TilgangsTjenesteForAnsatte
 
@@ -23,7 +23,7 @@ class AutorisasjonService(
 
         val harNavAnsattTilgang = tilgangsTjenesteForAnsatte.harAnsattTilgangTilPerson(
             navIdent = NavIdent(navAnsatt.ident),
-            identitetsnummer = no.nav.paw.model.Identitetsnummer(identitetsnummer.verdi),
+            identitetsnummer = identitetsnummer,
             tilgang = Tilgang.SKRIVE
         ).getOrThrow()
 

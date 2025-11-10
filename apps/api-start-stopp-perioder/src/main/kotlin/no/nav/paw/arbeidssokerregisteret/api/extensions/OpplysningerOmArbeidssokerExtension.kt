@@ -1,18 +1,30 @@
 package no.nav.paw.arbeidssokerregisteret.api.extensions
 
-import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.*
+import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.Annet
+import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.Detaljer
+import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.Helse
+import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.Jobbsituasjon
+import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.JobbsituasjonMedDetaljer
 import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.JobbsituasjonMedDetaljer.Beskrivelse
-import no.nav.paw.arbeidssokerregisteret.*
-import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
-import no.nav.paw.arbeidssokerregisteret.domain.tilIdentitetsnummer
+import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.OpplysningerRequest
+import no.nav.paw.arbeidssoekerregisteret.api.opplysningermottatt.models.Utdanning
+import no.nav.paw.arbeidssokerregisteret.GJELDER_FRA_DATO
+import no.nav.paw.arbeidssokerregisteret.GJELDER_TIL_DATO
+import no.nav.paw.arbeidssokerregisteret.PROSENT
+import no.nav.paw.arbeidssokerregisteret.SISTE_ARBEIDSDAG
+import no.nav.paw.arbeidssokerregisteret.SISTE_DAG_MED_LOENN
+import no.nav.paw.arbeidssokerregisteret.STILLING
+import no.nav.paw.arbeidssokerregisteret.STILLING_STYRK08
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.JobbsituasjonBeskrivelse
+import no.nav.paw.felles.model.Identitetsnummer
+import no.nav.paw.felles.model.asIdentitetsnummer
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Annet as AnnetInternal
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Helse as HelseInternal
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Jobbsituasjon as JobbsituasjonInternal
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.JobbsituasjonMedDetaljer as JobbsituasjonMedDetaljerInternal
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Utdanning as UtdanningInternal
 
-fun OpplysningerRequest.getId(): Identitetsnummer = identitetsnummer.tilIdentitetsnummer()
+fun OpplysningerRequest.getId(): Identitetsnummer = identitetsnummer.asIdentitetsnummer()
 
 fun Utdanning?.toInternalApi(): UtdanningInternal? =
     this?.let { utdanning ->

@@ -11,13 +11,13 @@ import no.nav.paw.bekreftelse.api.models.TilgjengeligeBekreftelserRequest
 import no.nav.paw.bekreftelse.api.service.AuthorizationService
 import no.nav.paw.bekreftelse.api.service.BekreftelseService
 import no.nav.paw.bekreftelse.api.utils.hentSluttbrukerIdentitet
-import no.nav.paw.model.asIdentitetsnummer
-import no.nav.paw.security.authentication.plugin.autentisering
+import no.nav.paw.felles.model.asIdentitetsnummer
 import no.nav.paw.security.authentication.model.AzureAd
 import no.nav.paw.security.authentication.model.Bruker
 import no.nav.paw.security.authentication.model.IdPorten
 import no.nav.paw.security.authentication.model.TokenX
 import no.nav.paw.security.authentication.model.bruker
+import no.nav.paw.security.authentication.plugin.autentisering
 import no.nav.paw.security.authorization.interceptor.autorisering
 import no.nav.paw.security.authorization.model.Action
 

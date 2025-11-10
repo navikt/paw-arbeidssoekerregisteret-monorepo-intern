@@ -9,11 +9,11 @@ val jvmMajorVersion: String by project
 
 dependencies {
     // Project
-    implementation(project(":lib:common-model"))
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:error-handling"))
     implementation(project(":lib:kafka-streams"))
     implementation(project(":lib:kafka-key-generator-client"))
+    implementation(project(":domain:felles"))
     implementation(project(":domain:main-avro-schema"))
     implementation(project(":domain:bekreftelse-interne-hendelser"))
     implementation(project(":domain:bekreftelse-paavegneav-avro-schema"))

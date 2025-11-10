@@ -2,11 +2,13 @@ package no.nav.paw.arbeidssokerregisteret.application.authfaktka
 
 import io.opentelemetry.api.trace.Span
 import no.nav.paw.arbeidssokerregisteret.RequestScope
-import no.nav.paw.arbeidssokerregisteret.application.authfaktka.AuthOpplysning.*
+import no.nav.paw.arbeidssokerregisteret.application.authfaktka.AuthOpplysning.AnsattIkkeTilgang
+import no.nav.paw.arbeidssokerregisteret.application.authfaktka.AuthOpplysning.AnsattTilgang
+import no.nav.paw.arbeidssokerregisteret.application.authfaktka.AuthOpplysning.IkkeAnsatt
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
-import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.domain.navAnsatt
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
+import no.nav.paw.felles.model.Identitetsnummer
 
 suspend fun navAnsattTilgangFakta(
     autorisasjonService: AutorisasjonService,

@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.utils
 
-import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
+import no.nav.paw.felles.model.Identitetsnummer
 import java.util.*
 
 abstract class Claim<A : Any>(

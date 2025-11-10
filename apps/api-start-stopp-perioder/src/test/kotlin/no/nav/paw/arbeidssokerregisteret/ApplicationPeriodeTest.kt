@@ -20,7 +20,7 @@ import no.nav.paw.arbeidssokerregisteret.plugins.configureSerialization
 import no.nav.paw.arbeidssokerregisteret.routes.apiRegel
 import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutesV2
 import no.nav.paw.arbeidssokerregisteret.routes.feilmeldingVedAvvist
-import no.nav.paw.collections.pawNonEmptyListOf
+import no.nav.paw.felles.collection.pawNonEmptyListOf
 
 class ApplicationPeriodeTest : FunSpec({
     test("Verifiser at vi returnerer 'Feil' objekt når vi avviser en periode") {

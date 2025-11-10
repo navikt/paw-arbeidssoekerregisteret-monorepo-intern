@@ -7,7 +7,7 @@ import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
-import no.nav.paw.collections.PawNonEmptyList
+import no.nav.paw.felles.collection.PawNonEmptyList
 
 typealias Avvist = Either.Left<PawNonEmptyList<Problem>>
 typealias Godkjent = Either.Right<GrunnlagForGodkjenning>

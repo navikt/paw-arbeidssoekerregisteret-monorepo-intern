@@ -3,6 +3,7 @@ package no.nav.paw.arbeidssokerregisteret.domain
 import no.nav.paw.arbeidssokerregisteret.utils.ResolvedClaims
 import no.nav.paw.arbeidssokerregisteret.utils.TokenXACR
 import no.nav.paw.arbeidssokerregisteret.utils.TokenXPID
+import no.nav.paw.felles.model.Identitetsnummer
 
 data class Sluttbruker(
     val identitetsnummer: Identitetsnummer,

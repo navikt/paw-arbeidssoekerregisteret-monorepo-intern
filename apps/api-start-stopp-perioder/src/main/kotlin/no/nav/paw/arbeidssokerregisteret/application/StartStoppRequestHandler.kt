@@ -5,10 +5,10 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import no.nav.paw.arbeidssokerregisteret.RequestScope
-import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Aarsak
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.collections.PawNonEmptyList
+import no.nav.paw.felles.collection.PawNonEmptyList
+import no.nav.paw.felles.model.Identitetsnummer
 import no.nav.paw.kafka.producer.sendDeferred
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import org.apache.kafka.clients.producer.Producer
@@ -31,7 +31,7 @@ class StartStoppRequestHandler(
         feilretting: Feilretting?
     ): Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning> =
         coroutineScope {
-            val kafkaKeysResponse = async { kafkaKeysClient.getIdAndKey(identitetsnummer.verdi) }
+            val kafkaKeysResponse = async { kafkaKeysClient.getIdAndKey(identitetsnummer.value) }
             val resultat = requestValidator.validerStartAvPeriodeOenske(
                 requestScope = requestScope,
                 identitetsnummer = identitetsnummer,
@@ -61,7 +61,7 @@ class StartStoppRequestHandler(
         identitetsnummer: Identitetsnummer,
         feilretting: Feilretting?
     ): Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning> {
-        val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
+        val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.value)
         val tilgangskontrollResultat = requestValidator.validerRequest(
             requestScope = requestScope,
             identitetsnummer = identitetsnummer,
@@ -104,8 +104,11 @@ class StartStoppRequestHandler(
         return tilgangskontrollResultat
     }
 
-    suspend fun kanRegistreresSomArbeidssoker(requestScope: RequestScope, identitetsnummer: Identitetsnummer): Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning> {
-        val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
+    suspend fun kanRegistreresSomArbeidssoker(
+        requestScope: RequestScope,
+        identitetsnummer: Identitetsnummer
+    ): Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning> {
+        val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.value)
         val resultat = requestValidator.validerStartAvPeriodeOenske(
             requestScope = requestScope,
             identitetsnummer = identitetsnummer,

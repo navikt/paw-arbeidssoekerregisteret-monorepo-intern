@@ -1,14 +1,14 @@
 package no.nav.paw.tilgangskontroll.poaotilgang.api
 
-import no.nav.paw.tilgangskontroll.vo.Identitetsnummer
-import no.nav.paw.tilgangskontroll.vo.NavIdent
+import no.nav.paw.felles.model.Identitetsnummer
+import no.nav.paw.felles.model.NavIdent
 import no.nav.paw.tilgangskontroll.vo.Tilgang
 import java.util.*
 
 data class NavAnsattNavIdentTilgangTilEksternBrukerPolicyInputV1Dto(
     val navIdent: String,
     val norskIdent: String
-): PolicyInput
+) : PolicyInput
 
 fun navAnsattTilgangTilEksternBrukerPolicyInputV1Dto(
     navIdent: NavIdent,

@@ -6,8 +6,8 @@ import arrow.core.recover
 import no.nav.paw.arbeidssokerregisteret.application.*
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
-import no.nav.paw.collections.PawNonEmptyList
-import no.nav.paw.collections.pawNonEmptyListOf
+import no.nav.paw.felles.collection.PawNonEmptyList
+import no.nav.paw.felles.collection.pawNonEmptyListOf
 
 
 fun prosesser(

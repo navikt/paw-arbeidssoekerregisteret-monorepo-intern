@@ -1,10 +1,8 @@
 package no.nav.paw.tilgangskontroll
 
-import no.nav.paw.tilgangskontroll.vo.Identitetsnummer
-import no.nav.paw.tilgangskontroll.vo.NavIdent
+import no.nav.paw.felles.model.Identitetsnummer
+import no.nav.paw.felles.model.NavIdent
 import no.nav.paw.tilgangskontroll.vo.Tilgang
-import org.slf4j.Logger
-import org.slf4j.Marker
 
 fun TilgangsTjenesteForAnsatte.withSecureLogging(secureLogger: SecureLogger): TilgangsTjenesteForAnsatte {
     return LoggingWrapper(secureLogger, this)
@@ -13,7 +11,7 @@ fun TilgangsTjenesteForAnsatte.withSecureLogging(secureLogger: SecureLogger): Ti
 class LoggingWrapper(
     private val secureLogger: SecureLogger,
     private val backend: TilgangsTjenesteForAnsatte
-): TilgangsTjenesteForAnsatte {
+) : TilgangsTjenesteForAnsatte {
     override suspend fun harAnsattTilgangTilPerson(
         navIdent: NavIdent,
         identitetsnummer: Identitetsnummer,
