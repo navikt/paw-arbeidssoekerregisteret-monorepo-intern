@@ -6,9 +6,9 @@ import arrow.core.partially1
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssokerregisteret.RequestScope
-import no.nav.paw.arbeidssokerregisteret.application.authfaktka.systemTilgangFakta
 import no.nav.paw.arbeidssokerregisteret.application.authfaktka.navAnsattTilgangFakta
 import no.nav.paw.arbeidssokerregisteret.application.authfaktka.sluttbrukerTilgangFakta
+import no.nav.paw.arbeidssokerregisteret.application.authfaktka.systemTilgangFakta
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.adreseOpplysning
@@ -21,11 +21,11 @@ import no.nav.paw.arbeidssokerregisteret.application.opplysninger.oppholdstillat
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.plus
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.utflyttingOpplysning
 import no.nav.paw.arbeidssokerregisteret.application.regler.ValideringsRegler
-import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.arbeidssokerregisteret.services.PersonInfoService
 import no.nav.paw.arbeidssokerregisteret.utils.logger
-import no.nav.paw.collections.PawNonEmptyList
+import no.nav.paw.felles.collection.PawNonEmptyList
+import no.nav.paw.felles.model.Identitetsnummer
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 
 class RequestValidator(
@@ -71,7 +71,7 @@ class RequestValidator(
             feilretting = feilretting
         )
             .flatMap { valideringsFakta ->
-                val person = personInfoService.hentPersonInfo(requestScope, identitetsnummer.verdi)
+                val person = personInfoService.hentPersonInfo(requestScope, identitetsnummer.value)
                 val opplysning = person?.let { genererPersonFakta(it) } ?: setOf(DomeneOpplysning.PersonIkkeFunnet)
                 if (person != null) {
                     try {

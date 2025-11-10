@@ -17,8 +17,8 @@ import no.nav.paw.error.model.ErrorType
 import no.nav.paw.error.model.ProblemDetails
 import no.nav.paw.error.model.Response
 import no.nav.paw.error.model.map
-import no.nav.paw.model.Identitetsnummer
-import no.nav.paw.model.NavIdent
+import no.nav.paw.felles.model.Identitetsnummer
+import no.nav.paw.felles.model.NavIdent
 import no.nav.paw.tilgangskontroll.server.models.TilgangskontrollRequestV1
 import no.nav.paw.tilgangskontroll.server.models.TilgangskontrollResponseV1
 import java.util.*
@@ -55,8 +55,8 @@ private class TilgangsTjenesteForAnsatteImpl(
             contentType(ContentType.Application.Json)
             setBody(
                 TilgangskontrollRequestV1(
-                    identitetsnummer = identitetsnummer.verdi,
-                    navAnsattId = navIdent.verdi,
+                    identitetsnummer = identitetsnummer.value,
+                    navAnsattId = navIdent.value,
                     tilgang = tilgang.toApi()
                 )
             )

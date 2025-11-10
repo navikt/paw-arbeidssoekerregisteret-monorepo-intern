@@ -5,7 +5,7 @@ plugins {
 val jvmMajorVersion: String by project
 
 dependencies {
-
+    testImplementation(libs.bundles.unit.testing.kotest)
 }
 
 java {

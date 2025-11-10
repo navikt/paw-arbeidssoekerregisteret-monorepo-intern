@@ -12,21 +12,21 @@ import io.ktor.http.isSuccess
 import io.ktor.http.takeFrom
 import no.nav.paw.error.exception.ServerResponseException
 import no.nav.paw.error.model.ErrorType
+import no.nav.paw.felles.model.Identitetsnummer
+import no.nav.paw.felles.model.NavIdent
 import no.nav.paw.tilgangskontroll.SecureLogger
 import no.nav.paw.tilgangskontroll.TilgangsTjenesteForAnsatte
 import no.nav.paw.tilgangskontroll.poaotilgang.api.DecisionType
 import no.nav.paw.tilgangskontroll.poaotilgang.api.EvaluatePoliciesResponse
 import no.nav.paw.tilgangskontroll.poaotilgang.api.navAnsattTilgangTilEksternBrukerPolicyInputV1Dto
 import no.nav.paw.tilgangskontroll.poaotilgang.api.toEvaluatePoliciesRequest
-import no.nav.paw.tilgangskontroll.vo.Identitetsnummer
-import no.nav.paw.tilgangskontroll.vo.NavIdent
 import no.nav.paw.tilgangskontroll.vo.Tilgang
 import java.net.URI
 
 private const val V1_POLICY_EVEAL_PATH = "/api/v1/policy/evaluate"
 
 class PoaoTilgangsTjeneste(
-    private val secureLogger : SecureLogger,
+    private val secureLogger: SecureLogger,
     private val httpClient: HttpClient,
     poaTilgangUrl: URI,
     private val poaoToken: () -> String

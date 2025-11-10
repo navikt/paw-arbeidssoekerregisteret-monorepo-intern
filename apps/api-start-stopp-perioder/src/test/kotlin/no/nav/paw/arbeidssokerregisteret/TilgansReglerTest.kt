@@ -14,7 +14,7 @@ import no.nav.paw.arbeidssokerregisteret.application.regler.AnsattHarTilgangTilB
 import no.nav.paw.arbeidssokerregisteret.application.regler.IkkeAnsattOgIkkeSystemOgForhaandsgodkjent
 import no.nav.paw.arbeidssokerregisteret.application.regler.SystemHarTilgangTilBruker
 import no.nav.paw.arbeidssokerregisteret.application.regler.ValideringsRegler
-import no.nav.paw.collections.PawNonEmptyList
+import no.nav.paw.felles.collection.PawNonEmptyList
 
 class TilgansReglerTest : FreeSpec({
     "eval av tilgang skal gi" - {

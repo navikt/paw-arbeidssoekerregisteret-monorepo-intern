@@ -6,7 +6,6 @@ import io.kotest.matchers.shouldBe
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
@@ -44,7 +43,7 @@ class TokenxAuthenticationTest : FunSpec({
                 val token = oauth.issueToken(
                     claims = mapOf(
                         "acr" to "idporten-loa-high",
-                        "pid" to TestData.foedselsnummer.verdi
+                        "pid" to TestData.foedselsnummer.value
                     ),
                     issuerId = "wrong-issuer"
                 )
@@ -60,7 +59,7 @@ class TokenxAuthenticationTest : FunSpec({
                 val token = oauth.issueToken(
                     claims = mapOf(
                         "acr" to "idporten-loa-high",
-                        "pid" to TestData.foedselsnummer.verdi
+                        "pid" to TestData.foedselsnummer.value
                     ),
                     audience = "wrong-audience"
                 )
@@ -76,7 +75,7 @@ class TokenxAuthenticationTest : FunSpec({
                 val token = oauth.issueToken(
                     claims = mapOf(
                         "acr" to "idporten-loa-low",
-                        "pid" to TestData.foedselsnummer.verdi
+                        "pid" to TestData.foedselsnummer.value
                     )
                 )
                 val response = client.get(testAuthUrl) { bearerAuth(token.serialize()) }
@@ -105,7 +104,7 @@ class TokenxAuthenticationTest : FunSpec({
                 val token = oauth.issueToken(
                     claims = mapOf(
                         "acr" to "idporten-loa-low",
-                        "pid" to TestData.foedselsnummer.verdi
+                        "pid" to TestData.foedselsnummer.value
                     ),
                     expiry = 0
                 )
@@ -131,7 +130,7 @@ class TokenxAuthenticationTest : FunSpec({
                 val token = oauth.issueToken(
                     claims = mapOf(
                         "acr" to "idporten-loa-high",
-                        "pid" to TestData.foedselsnummer.verdi
+                        "pid" to TestData.foedselsnummer.value
                     )
                 )
                 val response = client.get(testAuthUrl) { bearerAuth(token.serialize()) }
@@ -145,7 +144,7 @@ class TokenxAuthenticationTest : FunSpec({
                 val token = oauth.issueToken(
                     claims = mapOf(
                         "acr" to "idporten-loa-high",
-                        "pid" to TestData.foedselsnummer.verdi
+                        "pid" to TestData.foedselsnummer.value
                     )
                 )
                 routing {
@@ -153,7 +152,7 @@ class TokenxAuthenticationTest : FunSpec({
                         get("/test") {
                             val scope = requestScope()
                             scope.shouldNotBeNull()
-                            scope.claims[TokenXPID]?.verdi shouldBe TestData.foedselsnummer.verdi
+                            scope.claims[TokenXPID]?.value shouldBe TestData.foedselsnummer.value
                             call.respond(HttpStatusCode.OK)
                         }
                     }

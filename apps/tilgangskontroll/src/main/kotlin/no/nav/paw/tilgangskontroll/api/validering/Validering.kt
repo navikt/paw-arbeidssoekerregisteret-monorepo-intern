@@ -3,9 +3,9 @@ package no.nav.paw.tilgangskontroll.api.validering
 import io.ktor.http.HttpStatusCode
 import no.nav.paw.error.exception.ServerResponseException
 import no.nav.paw.error.model.ErrorType
+import no.nav.paw.felles.model.Identitetsnummer
+import no.nav.paw.felles.model.NavIdent
 import no.nav.paw.tilgangskontroll.api.models.TilgangskontrollRequestV1
-import no.nav.paw.tilgangskontroll.vo.Identitetsnummer
-import no.nav.paw.tilgangskontroll.vo.NavIdent
 import no.nav.paw.tilgangskontroll.vo.Tilgang
 
 fun TilgangskontrollRequestV1?.valider(): ValidertTilgangskontrollRequest {

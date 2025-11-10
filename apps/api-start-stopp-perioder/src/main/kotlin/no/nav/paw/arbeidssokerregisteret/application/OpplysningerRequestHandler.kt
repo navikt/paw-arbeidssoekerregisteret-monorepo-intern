@@ -22,7 +22,10 @@ class OpplysningerRequestHandler(
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    suspend fun opprettBrukeropplysninger(requestScope: RequestScope, opplysningerRequest: OpplysningerRequest): Either<Feil, Unit> =
+    suspend fun opprettBrukeropplysninger(
+        requestScope: RequestScope,
+        opplysningerRequest: OpplysningerRequest
+    ): Either<Feil, Unit> =
         either {
             val identitetsnummer = opplysningerRequest.getId()
             requestValidator.validerRequest(
@@ -43,7 +46,7 @@ class OpplysningerRequestHandler(
                         feilKode = Feil.FeilKode.FEIL_VED_LESING_AV_FORESPORSEL
                     )
                 }.bind()
-            val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.verdi)
+            val (id, key) = kafkaKeysClient.getIdAndKey(identitetsnummer.value)
             val hendelse = opplysningerHendelse(requestScope, id, opplysningerRequest)
             val record = ProducerRecord(
                 hendelseTopic,

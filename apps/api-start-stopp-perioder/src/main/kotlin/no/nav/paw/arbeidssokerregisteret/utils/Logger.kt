@@ -4,8 +4,8 @@ import ch.qos.logback.core.util.OptionHelper.getEnv
 import no.nav.common.audit_log.cef.CefMessage
 import no.nav.common.audit_log.cef.CefMessageEvent
 import no.nav.common.audit_log.cef.CefMessageSeverity
-import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
+import no.nav.paw.felles.model.Identitetsnummer
 import org.slf4j.LoggerFactory
 
 inline val <reified T : Any> T.logger get() = LoggerFactory.getLogger(T::class.java.name)
@@ -18,7 +18,7 @@ fun auditLogMessage(identietsnummer: Identitetsnummer, navAnsatt: NavAnsatt, mel
         .name("Sporingslogg")
         .severity(CefMessageSeverity.INFO)
         .sourceUserId(navAnsatt.ident)
-        .destinationUserId(identietsnummer.verdi)
+        .destinationUserId(identietsnummer.value)
         .timeEnded(System.currentTimeMillis())
         .extension("msg", melding)
         .build()

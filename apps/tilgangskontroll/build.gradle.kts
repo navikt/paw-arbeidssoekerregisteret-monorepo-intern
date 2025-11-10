@@ -11,6 +11,7 @@ plugins {
 val jvmMajorVersion: String by project
 
 dependencies {
+    implementation(project(":domain:felles"))
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:http-client-utils"))
     implementation(project(":lib:error-handling"))

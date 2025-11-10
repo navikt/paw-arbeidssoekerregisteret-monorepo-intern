@@ -8,9 +8,9 @@ val jvmMajorVersion: String by project
 val jvmVersion = JavaVersion.valueOf("VERSION_$jvmMajorVersion")
 
 dependencies {
+    api(project(":domain:felles"))
     implementation(project(":lib:hoplite-config"))
     api(project(":lib:http-client-utils"))
-    api(project(":lib:common-model"))
     api(project(":lib:error-handling"))
     implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jackson.kotlin)

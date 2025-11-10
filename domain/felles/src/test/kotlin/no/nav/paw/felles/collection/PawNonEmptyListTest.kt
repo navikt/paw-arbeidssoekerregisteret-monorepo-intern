@@ -1,14 +1,11 @@
-package no.nav.paw.collection
+package no.nav.paw.felles.collection
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import no.nav.paw.collections.max
-import no.nav.paw.collections.pawNonEmptyListOf
-import no.nav.paw.collections.toPawNonEmptyListOrNull
 
-class PawNonEmptyListTest: FreeSpec({
+class PawNonEmptyListTest : FreeSpec({
     "PawNonEmptyList" - {
         "should be able to create a non empty list" {
             val nonEmptyList = pawNonEmptyListOf(1, listOf(2, 3, 4))

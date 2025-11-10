@@ -13,6 +13,8 @@ import io.ktor.server.routing.routing
 import io.ktor.server.testing.testApplication
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.error.model.Data
+import no.nav.paw.felles.model.Identitetsnummer
+import no.nav.paw.felles.model.NavIdent
 import no.nav.paw.tilgangskontroll.client.TilgangskontrollClientConfig
 import no.nav.paw.tilgangskontroll.client.tilgangsTjenesteForAnsatte
 import no.nav.paw.tilgangskontroll.ktorserver.AuthProvider
@@ -22,14 +24,12 @@ import no.nav.paw.tilgangskontroll.ktorserver.configureAuthentication
 import no.nav.paw.tilgangskontroll.ktorserver.installContentNegotiation
 import no.nav.paw.tilgangskontroll.ktorserver.installErrorHandling
 import no.nav.paw.tilgangskontroll.routes.apiV1Tilgang
-import no.nav.paw.tilgangskontroll.vo.Identitetsnummer
-import no.nav.paw.tilgangskontroll.vo.NavIdent
 import no.nav.paw.tilgangskontroll.vo.Tilgang
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-class TilgangskontrollTest: FreeSpec({
+class TilgangskontrollTest : FreeSpec({
     val mockOAuthServer = MockOAuth2Server()
     beforeSpec {
         mockOAuthServer.start()
@@ -73,16 +73,16 @@ class TilgangskontrollTest: FreeSpec({
                 tokenProvider = { token.serialize() }
             )
             tilgangskontrollKlient.harAnsattTilgangTilPerson(
-                navIdent = no.nav.paw.model.NavIdent(ansatt.ident),
-                identitetsnummer = no.nav.paw.model.Identitetsnummer(person.value),
+                navIdent = no.nav.paw.felles.model.NavIdent(ansatt.ident),
+                identitetsnummer = no.nav.paw.felles.model.Identitetsnummer(person.value),
                 tilgang = no.nav.paw.tilgangskontroll.client.Tilgang.LESE
             ) should { response ->
                 response.shouldBeInstanceOf<Data<Boolean>>()
                 response.data shouldBe true
             }
             tilgangskontrollKlient.harAnsattTilgangTilPerson(
-                navIdent = no.nav.paw.model.NavIdent(ansatt.ident),
-                identitetsnummer = no.nav.paw.model.Identitetsnummer(person.value),
+                navIdent = no.nav.paw.felles.model.NavIdent(ansatt.ident),
+                identitetsnummer = no.nav.paw.felles.model.Identitetsnummer(person.value),
                 tilgang = no.nav.paw.tilgangskontroll.client.Tilgang.SKRIVE
             ) should { response ->
                 response.shouldBeInstanceOf<Data<Boolean>>()
@@ -115,7 +115,7 @@ fun Application.configureAuthentication(
                 discoveryUrl = oAuth2Server.wellKnownUrl("default").toString(),
                 clientId = "default"
             )
-    } .let(::AuthProviders)
+    }.let(::AuthProviders)
     configureAuthentication(authProviders)
 }
 

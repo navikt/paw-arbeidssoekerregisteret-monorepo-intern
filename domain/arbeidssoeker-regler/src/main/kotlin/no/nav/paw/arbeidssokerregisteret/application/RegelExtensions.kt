@@ -5,8 +5,8 @@ import arrow.core.left
 import arrow.core.right
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
-import no.nav.paw.collections.PawNonEmptyList
-import no.nav.paw.collections.pawNonEmptyListOf
+import no.nav.paw.felles.collection.PawNonEmptyList
+import no.nav.paw.felles.collection.pawNonEmptyListOf
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning as HendelseOpplysning
 
 

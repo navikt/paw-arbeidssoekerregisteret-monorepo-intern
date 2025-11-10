@@ -1,6 +1,6 @@
 package no.nav.paw.security.authentication.model
 
-import no.nav.paw.model.Identitetsnummer
+import no.nav.paw.felles.model.Identitetsnummer
 import no.nav.paw.security.authorization.exception.UgyldigBearerTokenException
 import java.util.*
 

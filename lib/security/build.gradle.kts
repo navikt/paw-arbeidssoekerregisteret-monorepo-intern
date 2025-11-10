@@ -1,10 +1,12 @@
+import org.gradle.kotlin.dsl.dependencies
+
 plugins {
     kotlin("jvm")
 }
 
 dependencies {
+    api(project(":domain:felles"))
     implementation(project(":lib:error-handling"))
-    implementation(project(":lib:common-model"))
     implementation(libs.ktor.server.auth)
     implementation(libs.logback.classic)
     implementation(libs.nav.security.tokenValidationKtorV3)

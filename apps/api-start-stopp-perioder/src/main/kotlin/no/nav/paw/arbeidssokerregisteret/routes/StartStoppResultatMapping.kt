@@ -37,7 +37,7 @@ import no.nav.paw.arbeidssokerregisteret.application.regler.IkkeTilgang
 import no.nav.paw.arbeidssokerregisteret.application.regler.SystemHarIkkeTilgangTilBruker
 import no.nav.paw.arbeidssokerregisteret.application.regler.SystemHarTilgangTilBruker
 import no.nav.paw.arbeidssokerregisteret.application.regler.UgyldigFeilretting
-import no.nav.paw.collections.PawNonEmptyList
+import no.nav.paw.felles.collection.PawNonEmptyList
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Opplysning as ApiOpplysning
 
 

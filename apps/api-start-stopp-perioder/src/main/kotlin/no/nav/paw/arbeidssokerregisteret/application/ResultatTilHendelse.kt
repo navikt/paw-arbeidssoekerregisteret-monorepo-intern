@@ -9,12 +9,11 @@ import no.nav.paw.arbeidssokerregisteret.application.authfaktka.AuthOpplysning
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
 import no.nav.paw.arbeidssokerregisteret.authOpplysningTilHendelseOpplysning
-import no.nav.paw.arbeidssokerregisteret.domain.Identitetsnummer
 import no.nav.paw.arbeidssokerregisteret.domain.m2mToken
 import no.nav.paw.arbeidssokerregisteret.domain.navAnsatt
 import no.nav.paw.arbeidssokerregisteret.domain.sluttbruker
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Aarsak
+import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 import no.nav.paw.arbeidssokerregisteret.intern.v1.AvvistStoppAvPeriode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
@@ -26,7 +25,8 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.OpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.TidspunktFraKilde
 import no.nav.paw.arbeidssokerregisteret.utils.AzureACR
-import no.nav.paw.collections.PawNonEmptyList
+import no.nav.paw.felles.collection.PawNonEmptyList
+import no.nav.paw.felles.model.Identitetsnummer
 import java.time.Instant
 import java.util.*
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning as HendelseOpplysning
@@ -44,7 +44,7 @@ fun stoppResultatSomHendelse(
         is Either.Left -> AvvistStoppAvPeriode(
             id = id,
             hendelseId = UUID.randomUUID(),
-            identitetsnummer = identitetsnummer.verdi,
+            identitetsnummer = identitetsnummer.value,
             metadata = hendelseMetadata(
                 requestScope = requestScope,
                 aarsak = resultat.value.map { it.regel.id.beskrivelse }.toList().joinToString(". "),
@@ -56,7 +56,7 @@ fun stoppResultatSomHendelse(
         is Either.Right -> Avsluttet(
             id = id,
             hendelseId = UUID.randomUUID(),
-            identitetsnummer = identitetsnummer.verdi,
+            identitetsnummer = identitetsnummer.value,
             metadata = hendelseMetadata(
                 requestScope = requestScope,
                 aarsak = feilretting.aarsak ?: "Stopp av periode",
@@ -100,7 +100,7 @@ fun somHendelse(
         is Either.Left -> Avvist(
             id = id,
             hendelseId = UUID.randomUUID(),
-            identitetsnummer = identitetsnummer.verdi,
+            identitetsnummer = identitetsnummer.value,
             metadata = hendelseMetadata(
                 requestScope = requestScope,
                 aarsak = resultat.value.map { it.regel.id.beskrivelse }.toList().joinToString(". "),
@@ -113,7 +113,7 @@ fun somHendelse(
         is Either.Right -> Startet(
             id = id,
             hendelseId = UUID.randomUUID(),
-            identitetsnummer = identitetsnummer.verdi,
+            identitetsnummer = identitetsnummer.value,
             metadata = hendelseMetadata(
                 requestScope = requestScope,
                 aarsak = resultat.value.regel.id.beskrivelse,
@@ -162,7 +162,7 @@ fun RequestScope.brukerFraClaims(): Bruker {
     return sluttbruker(claims)?.let {
         Bruker(
             type = BrukerType.SLUTTBRUKER,
-            id = it.identitetsnummer.verdi,
+            id = it.identitetsnummer.value,
             sikkerhetsnivaa = it.sikkerhetsnivaa
         )
     } ?: navAnsatt(claims)?.let {
