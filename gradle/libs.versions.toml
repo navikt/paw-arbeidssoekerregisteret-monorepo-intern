@@ -15,18 +15,18 @@ avro = "1.12.1"
 jackson = "2.20.1"
 exposed = "0.61.0"
 logstash = "8.1"
-logback = "1.5.20"
+logback = "1.5.21"
 kotest = "6.0.4"
 mockk = "1.14.6"
 testcontainers = "1.21.3"
 atlassian-oai = "2.46.0"
 micrometer = "1.16.0"
-otel-api = "1.55.0"
+otel-api = "1.56.0"
 otel-instrumentation = "2.21.0"
 postgres = "42.7.8"
 h2-database = "2.4.240"
 bigquery = "26.71.0"
-flyway = "11.16.0"
+flyway = "11.17.0"
 hikari = "7.0.2"
 kotlinx-coroutines = "1.10.2"
 kotlinx-serialization = "1.9.0"
@@ -112,5 +112,14 @@ nav-paw-schema-bekreftelse-paavegneav = { group = "no.nav.paw.arbeidssokerregist
 nav-paw-schema-bekreftelsesmelding = { group = "no.nav.paw.arbeidssokerregisteret.api", name = "bekreftelsesmelding-schema", version.ref = "nav-paw-schema-bekreftelse" }
 
 [bundles]
-ktor-server-instrumented = ["ktor-server-core", "ktor-server-coreJvm", "ktor-server-netty", "ktor-server-metricsMicrometer"]
-unit-testing-kotest = ["test-junit5-runner", "test-kotest-assertionsCore", "test-mockk-core"]
+ktor-server-instrumented = [
+    "ktor-server-core",
+    "ktor-server-coreJvm",
+    "ktor-server-netty",
+    "ktor-server-metricsMicrometer",
+]
+unit-testing-kotest = [
+    "test-junit5-runner",
+    "test-kotest-assertionsCore",
+    "test-mockk-core",
+]
