@@ -65,6 +65,13 @@ spec:
         tier: db-custom-1-6144
         databases:
           - name: hendelselogg
+        flags:
+          - name: "cloudsql.enable_pgaudit"
+            value: "on"
+          - name: "pgaudit.log"
+            value: "write,ddl,role"
+          - name: "pgaudit.log_parameter"
+            value: "on"
   accessPolicy:
     inbound:
       rules:
