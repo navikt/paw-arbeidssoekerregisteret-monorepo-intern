@@ -45,6 +45,7 @@ include(
     "lib:pdl-client",
     "lib:aareg-client",
     "lib:tilgangskontroll-client",
+    "lib:topics",
     // test
     "test:test-data-lib",
     "test:kafka-streams-test-functions",

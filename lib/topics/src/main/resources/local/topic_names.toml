@@ -1,0 +1,6 @@
+periodeTopic="paw.arbeidssokerperioder-v1"
+opplysningerTopic="paw.opplysninger-om-arbeidssoeker-v1"
+profileringTopic="paw.arbeidssoker-profilering-v1"
+bekreftelseTopic="paw.arbeidssoker-bekreftelse-v1"
+paavnegneavTopic="paw.arbeidssoker-bekreftelse-paavegneav-v1"
+egenvurderingTopic="paw.arbeidssoeker-egenvurdering-v1"
