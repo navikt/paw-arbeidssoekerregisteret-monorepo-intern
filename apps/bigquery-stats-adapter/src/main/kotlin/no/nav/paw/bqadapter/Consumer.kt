@@ -11,9 +11,6 @@ import no.nav.paw.bqadapter.bigquery.schema.periodeRad
 import no.nav.paw.health.model.HealthStatus
 import org.apache.kafka.clients.consumer.ConsumerRecord
 
-const val PERIODE_TOPIC = "paw.arbeidssokerperioder-v1"
-const val HENDELSE_TOPIC = "paw.arbeidssoker-hendelseslogg-v1"
-
 data class Record<A : Any>(
     val id: String,
     val value: A
@@ -56,8 +53,8 @@ class RecordsByType(source: Iterable<Record<Any>>)  {
 
 fun AppContext.deserializeRecord(topic: String, bytes: ByteArray): Any? {
     return when (topic) {
-        PERIODE_TOPIC -> periodeDeserializer.deserialize(topic, bytes)
-        HENDELSE_TOPIC -> hendelseDeserializer.deserialize(topic, bytes)
+        topics.periodeTopic -> periodeDeserializer.deserialize(topic, bytes)
+        topics.hendelseloggTopic -> hendelseDeserializer.deserialize(topic, bytes)
         else -> {
             appLogger.warn("Ignoring record from from topic: $topic")
             null

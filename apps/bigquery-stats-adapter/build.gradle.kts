@@ -18,6 +18,7 @@ dependencies {
     implementation(project(":lib:kafka"))
     implementation(project(":lib:error-handling"))
     implementation(project(":lib:metrics"))
+    implementation(project(":lib:topics"))
 
     //Database
     implementation(platform(libs.database.bigquery.librariesBom))

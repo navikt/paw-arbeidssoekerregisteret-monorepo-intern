@@ -78,7 +78,10 @@ fun main() {
         install(KafkaConsumerPlugin<Long, ByteArray>("application_consumer")) {
             onConsume = bigqueryAppContext::handleRecords
             kafkaConsumerWrapper = CommittingKafkaConsumerWrapper(
-                topics = listOf(HENDELSE_TOPIC, PERIODE_TOPIC),
+                topics = listOf(
+                    bigqueryAppContext.topics.hendelseloggTopic,
+                    bigqueryAppContext.topics.periodeTopic
+                ),
                 consumer = consumer,
                 exceptionHandler = { throwable ->
                     livenessHealthIndicator.setUnhealthy()

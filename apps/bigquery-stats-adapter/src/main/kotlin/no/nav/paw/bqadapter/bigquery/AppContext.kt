@@ -2,8 +2,10 @@ package no.nav.paw.bqadapter.bigquery
 
 import com.google.api.services.bigquery.Bigquery
 import com.google.cloud.bigquery.BigQuery
+import no.nav.paw.arbeidssokerregisteret.TopicNames
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
+import no.nav.paw.arbeidssokerregisteret.standardTopicNames
 import no.nav.paw.bqadapter.Encoder
 import no.nav.paw.bqadapter.appLogger
 import no.nav.paw.bqadapter.bigquery.schema.hendelserSchema
@@ -24,7 +26,8 @@ class AppContext(
     val hendelseDeserializer: HendelseDeserializer,
     val periodeDeserializer: Deserializer<Periode>,
     val livenessHealthIndicator: LivenessHealthIndicator,
-    val readinessHealthIndicator: ReadinessHealthIndicator
+    val readinessHealthIndicator: ReadinessHealthIndicator,
+    val topics: TopicNames
 )
 
 fun initBqApp(
@@ -68,6 +71,7 @@ fun initBqApp(
         bqDatabase = BigqueryDatabase(bigqueryTables = tables),
         encoder = encoder,
         hendelseDeserializer = hendelserDeserializer,
-        periodeDeserializer = periodeDeserializer
+        periodeDeserializer = periodeDeserializer,
+        topics = standardTopicNames()
     )
 }

@@ -13,7 +13,8 @@ data class TopicNames(
     val profileringTopic: String,
     val bekreftelseTopic: String,
     val paavnegneavTopic: String,
-    val egenvurderingTopic: String
+    val egenvurderingTopic: String,
+    val hendelseloggTopic: String
 )
 
 fun TopicNames.asList(): List<String> = listOf(
@@ -22,7 +23,8 @@ fun TopicNames.asList(): List<String> = listOf(
     profileringTopic,
     bekreftelseTopic,
     paavnegneavTopic,
-    egenvurderingTopic
+    egenvurderingTopic,
+    hendelseloggTopic
 )
 
 fun standardTopicNames(naisEnv: RuntimeEnvironment = currentRuntimeEnvironment): TopicNames =
