@@ -4,17 +4,13 @@ import com.google.cloud.bigquery.FieldList
 import com.google.cloud.bigquery.StandardSQLTypeName.DATE
 import com.google.cloud.bigquery.StandardSQLTypeName.STRING
 import no.nav.paw.bqadapter.bigquery.schema.ofRequiredType
+import no.nav.paw.bqadapter.bigquery.schema.toBqDateString
 import java.time.Instant
-import java.time.LocalDate.ofInstant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 private const val metadata_tidspunkt = "tidspunkt"
 private const val metadata_kilde = "kilde"
 private const val metadata_aarsak = "aarsak"
 private const val metadata_brukertype = "brukertype"
-private val localTimeZone = ZoneId.of("Europe/Oslo")
-private val dateTimeFormater = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
 val metadataStruct get(): FieldList = FieldList.of(
     metadata_tidspunkt.ofRequiredType(DATE),
@@ -30,7 +26,7 @@ fun metadataStruct(
     brukertype: String
 ): Map<String, Any> {
     return mapOf(
-        metadata_tidspunkt to ofInstant(tidspunkt, localTimeZone).format(dateTimeFormater),
+        metadata_tidspunkt to tidspunkt.toBqDateString(),
         metadata_kilde to kilde,
         metadata_aarsak to aarsak,
         metadata_brukertype to brukertype
