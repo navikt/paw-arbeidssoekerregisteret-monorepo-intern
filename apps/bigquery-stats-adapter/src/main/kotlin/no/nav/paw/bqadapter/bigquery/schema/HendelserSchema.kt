@@ -3,7 +3,6 @@ package no.nav.paw.bqadapter.bigquery.schema
 import com.google.cloud.bigquery.Field.of
 import com.google.cloud.bigquery.Schema
 import com.google.cloud.bigquery.StandardSQLTypeName
-import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.StandardSQLTypeName.STRING
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HarOpplysninger
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
@@ -15,6 +14,7 @@ private const val hendelser_ident = "id"
 private const val hendelser_type = "type"
 private const val hendelser_metadata = "metadata"
 private const val hendelser_options = "options"
+private const val testgruppe = "testgruppe"
 
 val hendelserSchema: Schema
     get() = Schema.of(
@@ -35,6 +35,7 @@ fun hendelseRad(
         hendelser_ident to maskertIdent,
         hendelser_hendelse_id to maskertHendelseId,
         hendelser_type to hendelse.hendelseType,
+        testgruppe to testgruppe(hendelse.identitetsnummer).name.lowercase(),
         hendelser_metadata to metadataStruct(
             tidspunkt = hendelse.metadata.tidspunkt,
             kilde = hendelse.metadata.kilde,
@@ -43,4 +44,17 @@ fun hendelseRad(
         ),
         hendelser_options to ((hendelse as? HarOpplysninger)?.opplysninger?.toList()?.map { it.name.lowercase() } ?: emptyList())
     )
+}
+
+private val testGruppeRegex = Regex("\\d([02468])\\d{9}")
+fun testgruppe(identitetsnummer: String): Testgruppe {
+    return if (testGruppeRegex.matches(identitetsnummer)) {
+        Testgruppe.A
+    } else {
+        Testgruppe.B
+    }
+}
+
+enum class Testgruppe {
+    A, B, Udefinert
 }
