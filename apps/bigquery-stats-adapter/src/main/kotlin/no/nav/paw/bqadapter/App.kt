@@ -13,6 +13,7 @@ import io.ktor.server.routing.routing
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
+import no.nav.paw.bqadapter.bigquery.deserializers
 import no.nav.paw.bqadapter.bigquery.initBqApp
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.health.model.HealthStatus
@@ -66,8 +67,7 @@ fun main() {
         bigquery = BigQueryOptions.getDefaultInstance().getService(),
         project = appConfig.bigqueryProject,
         encoder = encoder,
-        hendelserDeserializer = HendelseDeserializer(),
-        periodeDeserializer = kafkaFactory.kafkaAvroDeSerializer(),
+        deserializers = kafkaFactory.deserializers(),
         bigqueryModel = Bigquery.Builder(
             GoogleNetHttpTransport.newTrustedTransport(),
             GsonFactory.getDefaultInstance(),

@@ -53,8 +53,8 @@ class RecordsByType(source: Iterable<Record<Any>>)  {
 
 fun AppContext.deserializeRecord(topic: String, bytes: ByteArray): Any? {
     return when (topic) {
-        topics.periodeTopic -> periodeDeserializer.deserialize(topic, bytes)
-        topics.hendelseloggTopic -> hendelseDeserializer.deserialize(topic, bytes)
+        topics.periodeTopic -> deserializers.periodeDeserializer.deserialize(topic, bytes)
+        topics.hendelseloggTopic -> deserializers.hendelseDeserializer.deserialize(topic, bytes)
         else -> {
             appLogger.warn("Ignoring record from from topic: $topic")
             null
