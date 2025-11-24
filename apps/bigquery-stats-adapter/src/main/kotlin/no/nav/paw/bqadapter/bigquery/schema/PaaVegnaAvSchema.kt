@@ -45,6 +45,7 @@ fun påVegneAvRad(
         )
 
         else -> mapOf(
+            perioder_correlation_id to maskertPeriodeId,
             tidspunkt to recordTimestamp.toBqDateString(),
             loesning to paaVegneAv.bekreftelsesloesning.name.lowercase(),
             handling to "stopp"
