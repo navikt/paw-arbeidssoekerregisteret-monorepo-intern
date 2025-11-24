@@ -12,7 +12,9 @@ import no.nav.paw.bqadapter.Encoder
 import no.nav.paw.bqadapter.appLogger
 import no.nav.paw.bqadapter.bigquery.schema.bekreftelseSchema
 import no.nav.paw.bqadapter.bigquery.schema.hendelserSchema
+import no.nav.paw.bqadapter.bigquery.schema.paaVegnaAvSchema
 import no.nav.paw.bqadapter.bigquery.schema.perioderSchema
+import no.nav.paw.bqadapter.bigquery.schema.påVegneAvRad
 import no.nav.paw.health.model.LivenessHealthIndicator
 import no.nav.paw.health.model.ReadinessHealthIndicator
 import no.nav.paw.kafka.factory.KafkaFactory
@@ -83,7 +85,7 @@ fun initBqApp(
         PAAVNEGEAV_TABELL to bqAdmin.getOrCreateTable(
             datasetName = INTERNT_DATASET,
             tableName = PAAVNEGEAV_TABELL,
-            schema = bekreftelseSchema
+            schema = paaVegnaAvSchema
         )
     )
 
