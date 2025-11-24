@@ -49,7 +49,7 @@ fun main() {
     val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG_WITH_SCHEME_REG)
     val kafkaFactory = KafkaFactory(kafkaConfig)
     val consumer = kafkaFactory.createConsumer<Long, ByteArray>(
-        groupId = "bq-consumer-v8",
+        groupId = "bq-consumer-v9",
         clientId = "bq-consumer-v3-${System.currentTimeMillis()}",
         keyDeserializer = LongDeserializer::class,
         valueDeserializer = ByteArrayDeserializer::class,
