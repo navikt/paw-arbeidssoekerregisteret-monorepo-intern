@@ -21,6 +21,7 @@ val hendelserSchema: Schema
         hendelser_ident.ofRequiredType(STRING),
         hendelser_hendelse_id.ofRequiredType(STRING),
         hendelser_type.ofRequiredType(STRING),
+        testgruppe.ofRequiredType(STRING),
         of(hendelser_metadata, StandardSQLTypeName.STRUCT, metadataStruct),
         hendelser_options.ofRepeatedType(STRING)
     )
