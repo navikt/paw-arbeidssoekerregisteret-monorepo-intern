@@ -37,6 +37,7 @@ fun bekreftelseRad(
         perioder_correlation_id to maskertPeriodeId,
         tidspunkt to bekreftelse.svar.sendtInnAv.tidspunkt.toBqDateString(),
         loesning to bekreftelse.bekreftelsesloesning.name,
+        brukertype to bekreftelse.svar.sendtInnAv.utfoertAv.type.name.lowercase(),
         gjelder_fra to bekreftelse.svar.gjelderFra.toBqDateString(),
         gjelder_til to bekreftelse.svar.gjelderTil.toBqDateString(),
         har_jobbet to bekreftelse.svar.harJobbetIDennePerioden,
