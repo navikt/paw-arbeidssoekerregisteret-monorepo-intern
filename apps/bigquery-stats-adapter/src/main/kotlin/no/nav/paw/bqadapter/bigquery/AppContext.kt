@@ -10,6 +10,7 @@ import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bqadapter.Encoder
 import no.nav.paw.bqadapter.appLogger
+import no.nav.paw.bqadapter.bigquery.schema.bekreftelseSchema
 import no.nav.paw.bqadapter.bigquery.schema.hendelserSchema
 import no.nav.paw.bqadapter.bigquery.schema.perioderSchema
 import no.nav.paw.health.model.LivenessHealthIndicator
@@ -22,6 +23,8 @@ private val GRAFANA_DATASET = DatasetName("arbeidssoekerregisteret_grafana")
 
 val PERIODE_TABELL = TableName("perioder")
 val HENDELSE_TABELL = TableName("hendelser")
+val BEKRFTELSE_TABELL = TableName("bekreftelser")
+val PAAVNEGEAV_TABELL = TableName("paavnegneav")
 
 class AppContext(
     val bqDatabase: BigqueryDatabase,
@@ -71,10 +74,20 @@ fun initBqApp(
             datasetName = INTERNT_DATASET,
             tableName = HENDELSE_TABELL,
             schema = hendelserSchema
+        ),
+        BEKRFTELSE_TABELL to bqAdmin.getOrCreateTable(
+            datasetName = INTERNT_DATASET,
+            tableName = BEKRFTELSE_TABELL,
+            schema = bekreftelseSchema
+        ),
+        PAAVNEGEAV_TABELL to bqAdmin.getOrCreateTable(
+            datasetName = INTERNT_DATASET,
+            tableName = PAAVNEGEAV_TABELL,
+            schema = bekreftelseSchema
         )
     )
 
-    val views =bqAdmin.createMaterializedViews(
+    val views = bqAdmin.createMaterializedViews(
         datasetName = GRAFANA_DATASET,
         path = views_path
     )
