@@ -2,11 +2,14 @@ package no.nav.paw.bqadapter.bigquery.schema
 
 import com.google.cloud.bigquery.Field
 import com.google.cloud.bigquery.Schema
+import com.google.cloud.bigquery.StandardSQLTypeName
+import com.google.cloud.bigquery.StandardSQLTypeName.BOOL
 import com.google.cloud.bigquery.StandardSQLTypeName.DATE
 import com.google.cloud.bigquery.StandardSQLTypeName.INT64
 import com.google.cloud.bigquery.StandardSQLTypeName.STRING
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
+import no.nav.paw.bekreftelse.paavegneav.v1.vo.Stopp
 import no.nav.paw.bqadapter.Encoder
 import java.time.Duration.ofMillis
 import java.time.Instant
@@ -17,6 +20,7 @@ private const val loesning = "loesning"
 private const val grace_periode_dager_field = "grace_periode_dager"
 private const val intervall_dager_field = "intervall_dager"
 private const val handling = "handling"
+private const val frist_brutt = "frist_brutt"
 
 val paaVegnaAvSchema: Schema
     get() = Schema.of(
@@ -24,8 +28,9 @@ val paaVegnaAvSchema: Schema
         tidspunkt.ofRequiredType(DATE),
         loesning.ofRequiredType(STRING),
         handling.ofRequiredType(STRING),
+        frist_brutt.ofOptionalType(BOOL),
         Field.of(grace_periode_dager_field, INT64),
-        Field.of(intervall_dager_field, INT64),
+        Field.of(intervall_dager_field, INT64)
     )
 
 fun påVegneAvRad(
@@ -44,11 +49,13 @@ fun påVegneAvRad(
             handling to "start"
         )
 
-        else -> mapOf(
+        is Stopp -> mapOf(
             perioder_correlation_id to maskertPeriodeId,
             tidspunkt to recordTimestamp.toBqDateString(),
             loesning to paaVegneAv.bekreftelsesloesning.name.lowercase(),
-            handling to "stopp"
+            handling to "stopp",
+            frist_brutt to paaVegnaAvHandling.fristBrutt
         )
+        else -> throw IllegalArgumentException("Unknown PaaVegneAv handling: ${paaVegnaAvHandling::class.qualifiedName}")
     }
 }
