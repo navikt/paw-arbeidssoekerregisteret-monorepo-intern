@@ -27,6 +27,7 @@ val bekreftelseHendelseSchema: Schema
     get() = Schema.of(
         perioder_correlation_id.ofRequiredType(STRING),
         tidspunkt.ofRequiredType(DATE),
+        bekreftelse_id.ofOptionalType(STRING),
         gjelder_fra.ofOptionalType(DATE),
         gjelder_til.ofOptionalType(DATE),
         hendelse.ofRequiredType(STRING),
