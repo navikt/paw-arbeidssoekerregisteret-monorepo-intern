@@ -36,8 +36,6 @@ val appLogger = LoggerFactory.getLogger("app")
 val periodeIdSaltPath = Paths.get("/var/run/secrets/periode_id/enc_periode")
 val hendelseIdentSaltPath = Paths.get("/var/run/secrets/ident/enc_hendelse")
 
-const val bekreftelse_hendelselogg_topic = "paw.arbeidssoker-bekreftelse-hendelseslogg-v1"
-
 fun main() {
     appLogger.info("Starter app...")
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
@@ -85,7 +83,7 @@ fun main() {
                     bigqueryAppContext.topics.periodeTopic,
                     bigqueryAppContext.topics.paavnegneavTopic,
                     bigqueryAppContext.topics.bekreftelseTopic,
-                    bekreftelse_hendelselogg_topic
+                    bigqueryAppContext.topics.bekreftelseHendelseloggTopic
                 ),
                 consumer = consumer,
                 exceptionHandler = { throwable ->

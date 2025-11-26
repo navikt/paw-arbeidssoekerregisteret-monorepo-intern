@@ -76,7 +76,7 @@ fun AppContext.deserializeRecord(topic: String, bytes: ByteArray): Any? {
         topics.hendelseloggTopic -> deserializers.hendelseDeserializer.deserialize(topic, bytes)
         topics.bekreftelseTopic -> deserializers.bekreftelseDeserializer.deserialize(topic, bytes)
         topics.paavnegneavTopic -> deserializers.påVegneAvDeserializers.deserialize(topic, bytes)
-        bekreftelse_hendelselogg_topic -> deserializers.bekreftelseHendelseDeserializer.deserialize(topic, bytes)
+        topics.bekreftelseHendelseloggTopic -> deserializers.bekreftelseHendelseDeserializer.deserialize(topic, bytes)
         else -> {
             appLogger.warn("Ignoring record from from topic: $topic")
             null
