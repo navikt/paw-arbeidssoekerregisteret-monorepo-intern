@@ -6,6 +6,7 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bqadapter.bigquery.AppContext
+import no.nav.paw.bqadapter.bigquery.BEKREFTELSE_HENDELSE_TABELL
 import no.nav.paw.bqadapter.bigquery.BEKRFTELSE_TABELL
 import no.nav.paw.bqadapter.bigquery.HENDELSE_TABELL
 import no.nav.paw.bqadapter.bigquery.PAAVNEGEAV_TABELL
@@ -125,7 +126,7 @@ fun AppContext.lagreBekreftelserHendelser(records: Iterable<Record<BekreftelseHe
     }.takeIf { it.isNotEmpty() }
         ?.also { bekreftelseRader ->
             bqDatabase.write(
-                tableName = BEKRFTELSE_TABELL,
+                tableName = BEKREFTELSE_HENDELSE_TABELL,
                 rows = bekreftelseRader
             )
         }
