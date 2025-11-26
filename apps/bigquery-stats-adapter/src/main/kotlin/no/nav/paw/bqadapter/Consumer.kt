@@ -46,6 +46,7 @@ fun AppContext.handleRecords(records: Iterable<ConsumerRecord<Long, ByteArray>>)
     lagreHendelser(records.get())
     lagreBekreftelser(records.get())
     lagrePaaVegneAv(records.get())
+    lagreBekreftelserHendelser(records.get())
     if (livenessHealthIndicator.getStatus() == HealthStatus.HEALTHY) {
         readinessHealthIndicator.setHealthy()
     }
@@ -59,6 +60,7 @@ class RecordsByType(source: Iterable<Record<Any>>)  {
         is Hendelse -> Hendelse::class
         is Bekreftelse -> Bekreftelse::class
         is PaaVegneAv -> PaaVegneAv::class
+        is BekreftelseHendelse -> BekreftelseHendelse::class
         else -> throw IllegalArgumentException("Unknown type: ${it.value}")
     } }
     @Suppress("UNCHECKED_CAST")
