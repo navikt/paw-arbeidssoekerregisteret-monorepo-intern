@@ -2,6 +2,7 @@ package no.nav.paw.bqadapter
 
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bqadapter.bigquery.AppContext
@@ -10,6 +11,7 @@ import no.nav.paw.bqadapter.bigquery.HENDELSE_TABELL
 import no.nav.paw.bqadapter.bigquery.PAAVNEGEAV_TABELL
 import no.nav.paw.bqadapter.bigquery.PERIODE_TABELL
 import no.nav.paw.bqadapter.bigquery.Row
+import no.nav.paw.bqadapter.bigquery.schema.bekreftelseHendelseRad
 import no.nav.paw.bqadapter.bigquery.schema.bekreftelseRad
 import no.nav.paw.bqadapter.bigquery.schema.hendelseRad
 import no.nav.paw.bqadapter.bigquery.schema.periodeRad
@@ -71,6 +73,7 @@ fun AppContext.deserializeRecord(topic: String, bytes: ByteArray): Any? {
         topics.hendelseloggTopic -> deserializers.hendelseDeserializer.deserialize(topic, bytes)
         topics.bekreftelseTopic -> deserializers.bekreftelseDeserializer.deserialize(topic, bytes)
         topics.paavnegneavTopic -> deserializers.påVegneAvDeserializers.deserialize(topic, bytes)
+        bekreftelse_hendelselogg_topic -> deserializers.bekreftelseHendelseDeserializer.deserialize(topic, bytes)
         else -> {
             appLogger.warn("Ignoring record from from topic: $topic")
             null
@@ -112,6 +115,18 @@ fun AppContext.lagreBekreftelser(records: Iterable<Record<Bekreftelse>>) {
                 rows = bekreftelseRader
             )
     }
+}
+
+fun AppContext.lagreBekreftelserHendelser(records: Iterable<Record<BekreftelseHendelse>>) {
+    records.map { record ->
+        Row(id = record.id, value = bekreftelseHendelseRad(encoder, record.value))
+    }.takeIf { it.isNotEmpty() }
+        ?.also { bekreftelseRader ->
+            bqDatabase.write(
+                tableName = BEKRFTELSE_TABELL,
+                rows = bekreftelseRader
+            )
+        }
 }
 
 fun AppContext.lagrePaaVegneAv(records: Iterable<Record<PaaVegneAv>>) {

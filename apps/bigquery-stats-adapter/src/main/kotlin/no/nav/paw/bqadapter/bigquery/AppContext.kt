@@ -6,10 +6,13 @@ import no.nav.paw.arbeidssokerregisteret.TopicNames
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.arbeidssokerregisteret.standardTopicNames
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseDeserializer
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bqadapter.Encoder
 import no.nav.paw.bqadapter.appLogger
+import no.nav.paw.bqadapter.bigquery.schema.bekreftelseHendelseSchema
 import no.nav.paw.bqadapter.bigquery.schema.bekreftelseSchema
 import no.nav.paw.bqadapter.bigquery.schema.hendelserSchema
 import no.nav.paw.bqadapter.bigquery.schema.paaVegnaAvSchema
@@ -27,6 +30,7 @@ val PERIODE_TABELL = TableName("perioder")
 val HENDELSE_TABELL = TableName("hendelser")
 val BEKRFTELSE_TABELL = TableName("bekreftelser")
 val PAAVNEGEAV_TABELL = TableName("paavnegneav")
+val BEKREFTELSE_HENDELSE_TABELL = TableName("bekreftelse_hendelser")
 
 class AppContext(
     val bqDatabase: BigqueryDatabase,
@@ -41,14 +45,16 @@ class Deserializers(
     val hendelseDeserializer: HendelseDeserializer,
     val periodeDeserializer: Deserializer<Periode>,
     val bekreftelseDeserializer: Deserializer<Bekreftelse>,
-    val påVegneAvDeserializers: Deserializer<PaaVegneAv>
+    val påVegneAvDeserializers: Deserializer<PaaVegneAv>,
+    val bekreftelseHendelseDeserializer: BekreftelseHendelseDeserializer
 )
 
 fun KafkaFactory.deserializers(): Deserializers = Deserializers(
     hendelseDeserializer = HendelseDeserializer(),
     periodeDeserializer = kafkaAvroDeSerializer(),
     bekreftelseDeserializer = kafkaAvroDeSerializer(),
-    påVegneAvDeserializers = kafkaAvroDeSerializer()
+    påVegneAvDeserializers = kafkaAvroDeSerializer(),
+    bekreftelseHendelseDeserializer = BekreftelseHendelseDeserializer()
 )
 
 fun initBqApp(
@@ -86,6 +92,11 @@ fun initBqApp(
             datasetName = INTERNT_DATASET,
             tableName = PAAVNEGEAV_TABELL,
             schema = paaVegnaAvSchema
+        ),
+        BEKREFTELSE_HENDELSE_TABELL to bqAdmin.getOrCreateTable(
+            datasetName = INTERNT_DATASET,
+            tableName = BEKREFTELSE_HENDELSE_TABELL,
+            schema = bekreftelseHendelseSchema
         )
     )
 

@@ -80,7 +80,8 @@ jobs:
           VAR: image=${{ needs.build.outputs.image }},kafka=nav-dev
 
   deploy-prod:
-    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/dev')
+    #if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/dev')
+    if: false
     name: Deploy to prod-gcp
     needs:
       - build
