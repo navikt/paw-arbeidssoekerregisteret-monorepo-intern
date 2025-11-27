@@ -1,4 +1,6 @@
+# IntelliJ
 *.idea
+http-client.private.env.json
 
 # Compiled class file
 *.class

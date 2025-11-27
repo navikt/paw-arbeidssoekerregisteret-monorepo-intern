@@ -52,3 +52,4 @@ spec:
         - application: paw-arbeidssoekerregisteret-api-oppslag-v2
         - application: paw-arbeidssoekerregisteret-api-ledigestillinger
         - application: paw-arbeidssoekerregisteret-api-mine-stillinger
+        - application: egenvurdering-dialog-tjeneste
