@@ -132,7 +132,7 @@ class BrukerSlutterAaSvareNaarAndreSamlerInnBekreftelserMedKortereFristEnnRegist
             til = "18.04.2025 06:00".timestamp,
             asserts = {
                 it.size shouldBe 1
-                it.first().gjelderFra shouldBe "08.04.2025 05:02".timestamp
+                it.first().gjelderFra shouldBe "07.04.2025 00:00".timestamp
                 it.first().gjelderTil shouldBe "21.04.2025 00:00".timestamp
             }
         )

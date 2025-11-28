@@ -65,7 +65,7 @@ class BrukerKommerTilbakeEnDagFoerFristUtenAaHaLevertNoe : FreeSpec({
                     periodeId = periode.value.id,
                     bekreftelsesloesning = no.nav.paw.bekreftelse.paavegneav.v1.vo.Bekreftelsesloesning.DAGPENGER
                 )),
-                "27.03.2025 19:01".timestamp to ValueWithKafkaKeyData(periode.id, periode.key, bekreftelseMelding(
+                "06.04.2025 19:01".timestamp to ValueWithKafkaKeyData(periode.id, periode.key, bekreftelseMelding(
                     periodeId = periode.value.id,
                     harJobbetIDennePerioden = true,
                     vilFortsetteSomArbeidssoeker = true,
@@ -100,13 +100,13 @@ class BrukerKommerTilbakeEnDagFoerFristUtenAaHaLevertNoe : FreeSpec({
         forventer<BekreftelseTilgjengelig>(
             kilde,
             inputHendelser,
-            fra = "23.03.2025 12:29".timestamp,
-            til = "23.03.2025 13:00".timestamp,
+            fra = "27.03.2025 23:00".timestamp,
+            til = "28.03.2025 13:00".timestamp,
             asserts = { publiserteBekreftelser ->
                 publiserteBekreftelser.size shouldBe 1
                 publiserteBekreftelser.first() should { bekreftelse ->
-                    bekreftelse.gjelderFra shouldBe "03.03.2025 15:26".timestamp
-                    bekreftelse.gjelderTil shouldBe "17.03.2025 00:00".timestamp
+                    bekreftelse.gjelderFra shouldBe "17.03.2025 00:00".timestamp
+                    bekreftelse.gjelderTil shouldBe "31.03.2025 00:00".timestamp
                 }
                 bekreftelseId2803 = publiserteBekreftelser.first().bekreftelseId
             }
@@ -114,12 +114,12 @@ class BrukerKommerTilbakeEnDagFoerFristUtenAaHaLevertNoe : FreeSpec({
         forventer<LeveringsfristUtloept>(
             kilde,
             inputHendelser,
-            fra = "23.03.2025 12:29".timestamp,
-            til = "23.03.2025 13:00".timestamp,
+            fra = "31.03.2025 00:00".timestamp,
+            til = "31.03.2025 00:20".timestamp,
             asserts = { fristUtloeptListe ->
                 fristUtloeptListe.size shouldBe 1
                 fristUtloeptListe.first() should { fristUtloept ->
-                    fristUtloept.leveringsfrist shouldBe "17.03.2025 00:00".timestamp
+                    fristUtloept.leveringsfrist shouldBe "31.03.2025 00:00".timestamp
                     fristUtloept.bekreftelseId shouldBe bekreftelseId2803
                 }
             }
@@ -127,14 +127,14 @@ class BrukerKommerTilbakeEnDagFoerFristUtenAaHaLevertNoe : FreeSpec({
         forventer<RegisterGracePeriodeGjenstaaendeTid>(
             kilde,
             inputHendelser,
-            fra = "27.03.2025 00:30".timestamp,
-            til = "27.03.2025 01:00".timestamp,
+            fra = "03.04.2025 12:00".timestamp,
+            til = "03.04.2025 12:30".timestamp,
         )
         forventer<BekreftelseMeldingMottatt>(
             kilde,
             inputHendelser,
-            fra = "27.03.2025 19:01".timestamp,
-            til = "27.03.2025 19:07".timestamp,
+            fra = "06.04.2025 19:01".timestamp,
+            til = "06.04.2025 19:07".timestamp,
             asserts = { publiserteBekreftelser ->
                 publiserteBekreftelser.size shouldBe 1
                 publiserteBekreftelser.first() should { bekreftelse ->
@@ -146,13 +146,13 @@ class BrukerKommerTilbakeEnDagFoerFristUtenAaHaLevertNoe : FreeSpec({
         forventer<BekreftelseTilgjengelig>(
             kilde,
             inputHendelser,
-            fra = "27.03.2025 23:00".timestamp,
-            til = "28.03.2025 03:00".timestamp,
+            fra = "10.04.2025 23:00".timestamp,
+            til = "11.04.2025 06:00".timestamp,
             asserts = { publiserteBekreftelser ->
                 publiserteBekreftelser.size shouldBe 1
                 publiserteBekreftelser.first() should { bekreftelse ->
-                    bekreftelse.gjelderFra shouldBe "17.03.2025 00:00".timestamp
-                    bekreftelse.gjelderTil shouldBe "31.03.2025 00:00".timestamp
+                    bekreftelse.gjelderFra shouldBe "31.03.2025 00:00".timestamp
+                    bekreftelse.gjelderTil shouldBe "14.04.2025 00:00".timestamp
                 }
                 bekreftelseId1104 = publiserteBekreftelser.first().bekreftelseId
             }
@@ -160,12 +160,12 @@ class BrukerKommerTilbakeEnDagFoerFristUtenAaHaLevertNoe : FreeSpec({
         forventer<LeveringsfristUtloept>(
             kilde,
             inputHendelser,
-            fra = "31.03.2025 00:00".timestamp,
-            til = "31.03.2025 00:09".timestamp,
+            fra = "14.04.2025 00:00".timestamp,
+            til = "14.04.2025 00:09".timestamp,
             asserts = { fristUtloeptListe ->
                 fristUtloeptListe.size shouldBe 1
                 fristUtloeptListe.first() should { fristUtloept ->
-                    fristUtloept.leveringsfrist shouldBe "31.03.2025 00:00".timestamp
+                    fristUtloept.leveringsfrist shouldBe "14.04.2025 00:00".timestamp
                     fristUtloept.bekreftelseId shouldBe bekreftelseId1104
                 }
             }
@@ -173,8 +173,8 @@ class BrukerKommerTilbakeEnDagFoerFristUtenAaHaLevertNoe : FreeSpec({
         forventer<RegisterGracePeriodeGjenstaaendeTid>(
             kilde,
             inputHendelser,
-            fra = "03.04.2025 12:00".timestamp,
-            til = "03.04.2025 12:20".timestamp,
+            fra = "17.04.2025 12:00".timestamp,
+            til = "17.04.2025 12:20".timestamp,
             asserts = { gracePeriodeGjenstaaendeTidListe ->
                 gracePeriodeGjenstaaendeTidListe.size shouldBe 1
                 gracePeriodeGjenstaaendeTidListe.first() should { gracePeriodeGjenstaaendeTid ->
@@ -185,8 +185,8 @@ class BrukerKommerTilbakeEnDagFoerFristUtenAaHaLevertNoe : FreeSpec({
         forventer<RegisterGracePeriodeUtloept>(
             kilde,
             inputHendelser,
-            fra = "07.04.2025 00:00".timestamp,
-            til = "07.04.2025 00:09".timestamp,
+            fra = "21.04.2025 00:00".timestamp,
+            til = "21.04.2025 00:09".timestamp,
             asserts = { gracePeriodeUtloeptListe ->
                 gracePeriodeUtloeptListe.size shouldBe 1
                 gracePeriodeUtloeptListe.first() should { gracePeriodeUtloept ->
@@ -197,8 +197,8 @@ class BrukerKommerTilbakeEnDagFoerFristUtenAaHaLevertNoe : FreeSpec({
         forventer<PeriodeAvsluttet>(
             kilde,
             inputHendelser,
-            fra = "07.04.2025 00:00".timestamp,
-            til = "07.04.2025 00:15".timestamp
+            fra = "21.04.2025 00:00".timestamp,
+            til = "21.04.2025 00:15".timestamp
         )
         "Ingen flere hendelser inntraff" {
             kilde.shouldBeEmpty()

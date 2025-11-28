@@ -46,7 +46,7 @@ fun BekreftelseContext.prosesser(bekreftelseTilstand: BekreftelseTilstand): Bekr
             })(bekreftelseTilstand.bekreftelser)
 
 fun BekreftelseContext.opprettInitielBekreftelse(bekreftelser: List<Bekreftelse>): PawNonEmptyList<Bekreftelse> {
-    val foerste = bekreftelser.firstOrNull { !it.dummy }
+    val foerste = bekreftelser.firstOrNull()
     return if (foerste != null) {
         pawNonEmptyListOf(foerste, bekreftelser.filter { it != foerste})
     } else {

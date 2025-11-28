@@ -12,6 +12,8 @@ import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
 import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstandsLogg
 import no.nav.paw.bekreftelsetjeneste.tilstand.Levert
 import no.nav.paw.bekreftelsetjeneste.tilstand.leggTilNyEllerOppdaterBekreftelse
+import no.nav.paw.bekreftelsetjeneste.tilstand.osloTimezone
+import no.nav.paw.bekreftelsetjeneste.tilstand.sameOrPreviousMondayAdjuster
 import no.nav.paw.bekreftelsetjeneste.tilstand.sisteTilstand
 import no.nav.paw.bekreftelsetjeneste.topology.actionKey
 import no.nav.paw.bekreftelsetjeneste.topology.bekreftelseloesingKey
@@ -20,6 +22,9 @@ import no.nav.paw.bekreftelsetjeneste.topology.intern
 import no.nav.paw.bekreftelsetjeneste.topology.paaVegneAvStoppet
 import org.slf4j.LoggerFactory
 import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalDate.ofInstant
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 private val stoppPaaVegneAvLogger = LoggerFactory.getLogger("stopp_paa_vegne_av")
@@ -74,8 +79,9 @@ private fun stoppPaaVeieneAv(
             .put(AttributeKey.booleanKey("kan_stoppe"), kanStoppe)
             .put(AttributeKey.booleanKey("stopp_periode"), stoppPeriode)
             .put(AttributeKey.stringKey("intervall"), ansvar.intervall.toString())
-            .put(AttributeKey.stringKey("grace_periode"), ansvar.gracePeriode.toString()
-        ).build()
+            .put(
+                AttributeKey.stringKey("grace_periode"), ansvar.gracePeriode.toString()
+            ).build()
     )
     val utgaaendeHandling: Handling? = if (stoppPeriode) {
         SendHendelse(
@@ -90,17 +96,28 @@ private fun stoppPaaVeieneAv(
     } else {
         val sistLeverte = bekreftelseTilstand.bekreftelser
             .filter { it.sisteTilstand() is Levert }
-            .maxByOrNull { it.gjelderFra }
+            .maxByOrNull { it.gjelderTil }
         val potensiellStartDato = sistLeverte?.gjelderTil ?: bekreftelseTilstand.periode.startet
-        if (Duration.between(potensiellStartDato, wallclock.value) > bekreftelseKonfigurasjon.interval.dividedBy(2)) {
+        val potensiellDatoErForLangtBak = Duration.between(potensiellStartDato, wallclock.value) > bekreftelseKonfigurasjon.interval
+        stoppPaaVegneAvLogger.info(
+            "Potensiell startdato: $potensiellStartDato, wallclock: ${wallclock.value.truncatedTo(ChronoUnit.DAYS)}, " +
+                "interval: ${bekreftelseKonfigurasjon.interval}, er_for_langt_bak: $potensiellDatoErForLangtBak")
+        if (potensiellDatoErForLangtBak) {
+            val faktiskStartDato = sameOrPreviousMondayAdjuster.adjustInto(
+                ofInstant(wallclock.value - Duration.ofDays(1), osloTimezone)
+            )
+                .let(LocalDate::from)
+                .let(LocalDate::atStartOfDay)
+                .atZone(osloTimezone)
+                .toInstant()
             SkrivBekreftelseTilstand(
                 bekreftelseTilstand.periode.periodeId,
                 bekreftelseTilstand.leggTilNyEllerOppdaterBekreftelse(
                     ny = Bekreftelse(
                         tilstandsLogg = BekreftelseTilstandsLogg(Levert(wallclock.value), emptyList()),
                         bekreftelseId = UUID.randomUUID(),
-                        gjelderFra = wallclock.value - Duration.ofDays(1),
-                        gjelderTil = wallclock.value,
+                        gjelderFra = faktiskStartDato - Duration.ofDays(1),
+                        gjelderTil = faktiskStartDato,
                         dummy = true
                     )
                 )

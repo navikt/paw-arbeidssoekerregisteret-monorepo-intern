@@ -11,7 +11,7 @@ import java.time.temporal.TemporalAdjusters
 
 val osloTimezone: ZoneId = ZoneId.of("Europe/Oslo")
 
-private val sameOrPreviousMondayAdjuster = TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)
+val sameOrPreviousMondayAdjuster = TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)
 
 fun sluttTidForBekreftelsePeriode(startTid: Instant, interval: Duration): Instant {
     //Vi legger på 6 timer slik at vi unngår problemer med sommertid/vintertid når vi justerer til mandag

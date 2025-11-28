@@ -84,11 +84,11 @@ class BrukerKommerTilbakeOgSkalFortsette : FreeSpec({
                         bekreftelsesloesning = no.nav.paw.bekreftelse.paavegneav.v1.vo.Bekreftelsesloesning.DAGPENGER
                     )
                 ),
-                "29.03.2025 14:54".timestamp to ValueWithKafkaKeyData(
+                "23.03.2025 14:54".timestamp to ValueWithKafkaKeyData(
                     periode.id, periode.key, bekreftelseMelding(
                         periodeId = periode.value.id,
-                        gjelderFra = "18.03.2025 05:02".timestamp,
-                        gjelderTil = "31.03.2025 00:00".timestamp,
+                        gjelderFra = "10.03.2025 00:00".timestamp,
+                        gjelderTil = "24.03.2025 00:00".timestamp,
                         harJobbetIDennePerioden = true,
                         vilFortsetteSomArbeidssoeker = false,
                         bekreftelsesloesning = Bekreftelsesloesning.ARBEIDSSOEKERREGISTERET
@@ -120,33 +120,33 @@ class BrukerKommerTilbakeOgSkalFortsette : FreeSpec({
         forventer<BekreftelseTilgjengelig>(
             kilde,
             inputHendelser,
-            fra = "28.03.2025 00:00".timestamp,
-            til = "28.03.2025 06:00".timestamp,
+            fra = "21.03.2025 00:00".timestamp,
+            til = "21.03.2025 06:00".timestamp,
             asserts = { tilgjengelig ->
                 tilgjengelig.size shouldBe 1
                 tilgjengelig.first() should {
-                    it.gjelderFra shouldBe "18.03.2025 05:02".timestamp
-                    it.gjelderTil shouldBe "31.03.2025 00:00".timestamp
+                    it.gjelderFra shouldBe "10.03.2025 00:00".timestamp
+                    it.gjelderTil shouldBe "24.03.2025 00:00".timestamp
                 }
             }
         )
         forventer<BekreftelseMeldingMottatt>(
             kilde,
             inputHendelser,
-            fra = "29.03.2025 14:54".timestamp,
-            til = "29.03.2025 15:10".timestamp
+            fra = "23.03.2025 14:54".timestamp,
+            til = "23.03.2025 15:10".timestamp
         )
         forventer<BaOmAaAvsluttePeriode>(
             kilde,
             inputHendelser,
-            fra = "29.03.2025 14:54".timestamp,
-            til = "29.03.2025 15:10".timestamp
+            fra = "23.03.2025 14:54".timestamp,
+            til = "23.03.2025 15:10".timestamp
         )
         forventer<PeriodeAvsluttet>(
             kilde,
             inputHendelser,
-            fra = "29.03.2025 14:54".timestamp,
-            til = "29.03.2025 15:10".timestamp
+            fra = "23.03.2025 14:54".timestamp,
+            til = "23.03.2025 15:10".timestamp
         )
         "Ingen flere hendelser inntraff" {
             kilde.shouldBeEmpty()
