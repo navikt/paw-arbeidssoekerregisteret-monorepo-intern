@@ -2,7 +2,7 @@ WITH
 -- Define a fixed start and end date
 DateSeries AS (
     SELECT date AS day
-FROM UNNEST(GENERATE_DATE_ARRAY('2020-01-01', '2026-01-01')) AS date
+FROM UNNEST(GENERATE_DATE_ARRAY('2020-01-01', '2027-01-01')) AS date
     ),
 
 -- Get the latest status for each correlation_id
