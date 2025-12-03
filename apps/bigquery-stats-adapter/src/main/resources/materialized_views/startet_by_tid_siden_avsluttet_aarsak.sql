@@ -68,7 +68,6 @@ SELECT
     startet_tidspunkt,
     startet_brukertype,
     previous_avsluttet_aarsak,
-    time_since_last_avsluttet_bucket,
-    COUNT(*) AS antall_aktive_perioder
+    time_since_last_avsluttet_bucket
 FROM PeriodsWithTimeSinceEnd
 
