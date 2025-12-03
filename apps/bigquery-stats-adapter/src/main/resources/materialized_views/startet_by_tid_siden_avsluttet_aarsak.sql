@@ -71,4 +71,4 @@ SELECT
     time_since_last_avsluttet_bucket,
     COUNT(*) AS antall_aktive_perioder
 FROM PeriodsWithTimeSinceEnd
-GROUP BY startet_tidspunkt, startet_brukertype, previous_avsluttet_aarsak, time_since_last_avsluttet_bucket
+
