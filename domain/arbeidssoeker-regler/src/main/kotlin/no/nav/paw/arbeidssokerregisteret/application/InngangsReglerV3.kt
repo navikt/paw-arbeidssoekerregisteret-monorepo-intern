@@ -44,11 +44,6 @@ object InngangsReglerV3: Regler {
             !ErNorskStatsborger,
             vedTreff = ::grunnlagForGodkjenning
         ),
-        ErStatsborgerILandMedAvtale(
-            ErGbrStatsborger,
-            ErOver18Aar,
-            vedTreff = ::grunnlagForGodkjenning
-        ),
         IkkeBosattINorgeIHenholdTilFolkeregisterloven(
             !BosattEtterFregLoven,
             ErNorskEllerTredjelandsborger,

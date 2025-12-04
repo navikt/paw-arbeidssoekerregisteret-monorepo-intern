@@ -46,11 +46,6 @@ object InngangsReglerV2 : Regler {
             !IkkeBosatt,
             vedTreff = ::grunnlagForGodkjenning
         ),
-        ErStatsborgerILandMedAvtale(
-            ErGbrStatsborger,
-            ErOver18Aar,
-            vedTreff = ::grunnlagForGodkjenning
-        ),
         EuEoesStatsborgerMenHarStatusIkkeBosatt(
             ErEuEoesStatsborger,
             !ErNorskStatsborger,
@@ -71,6 +66,6 @@ object InngangsReglerV2 : Regler {
 
 data object ErNorskEllerTredjelandsborger : Condition {
     override fun eval(opplysninger: Iterable<Opplysning>): Boolean =
-        ErNorskStatsborger in opplysninger || (ErEuEoesStatsborger !in opplysninger && ErGbrStatsborger !in opplysninger)
+        ErNorskStatsborger in opplysninger || (ErEuEoesStatsborger !in opplysninger)
 }
 

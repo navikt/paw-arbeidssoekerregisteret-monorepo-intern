@@ -269,7 +269,8 @@ class RegelEvalTest : FreeSpec({
                         DomeneOpplysning.ErGbrStatsborger
                     )
                 ) should { result ->
-                    result.shouldBeInstanceOf<Godkjent>()
+                    result.shouldBeInstanceOf<Avvist>()
+                    result.value.map { it.regel.id }.toList() shouldBe listOf(IkkeBosattINorgeIHenholdTilFolkeregisterloven)
                 }
             }
             "Gbr statsborger under 18 år skal avvises" {
@@ -280,7 +281,8 @@ class RegelEvalTest : FreeSpec({
                     )
                 ) should { result ->
                     result.shouldBeInstanceOf<Avvist>()
-                    result.value.map { it.regel.id }.toList() shouldBe listOf(Under18Aar)
+                    result.value.map { it.regel.id }.toList() shouldBe listOf(Under18Aar, IkkeBosattINorgeIHenholdTilFolkeregisterloven
+                    )
                 }
             }
             "3. lands statsborger under 18 år skal avvises" {
