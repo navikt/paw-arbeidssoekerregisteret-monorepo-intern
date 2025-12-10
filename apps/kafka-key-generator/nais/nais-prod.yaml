@@ -99,6 +99,7 @@ spec:
         - application: paw-arbeidssoekerregisteret-bekreftelse-backup
         - application: paw-arbeidssoekerregisteret-api-oppslag-v2
         - application: paw-arbeidssoekerregisteret-api-egenvurdering
+        - application: paw-arbeidssoekerregisteret-api-mine-stillinger
         - application: dp-rapportering-personregister
           namespace: teamdagpenger
         - application: dp-rapportering
