@@ -26,7 +26,6 @@ import no.nav.paw.felles.collection.PawNonEmptyList
 import no.nav.paw.felles.model.Identitetsnummer
 import no.nav.paw.pdl.graphql.generated.enums.Endringstype
 import no.nav.paw.pdl.graphql.generated.hentperson.Endring
-import no.nav.paw.pdl.graphql.generated.hentperson.Foedested
 import no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato
 import no.nav.paw.pdl.graphql.generated.hentperson.Folkeregisterpersonstatus
 import no.nav.paw.pdl.graphql.generated.hentperson.Metadata
@@ -137,7 +136,6 @@ class RequestValidatorTest : FreeSpec({
                         personInfoService.hentPersonInfo(requestScope, identitsnummer.value)
                     } returns Person(
                         foedselsdato = listOf(Foedselsdato("2000-01-01", 2000)),
-                        foedested = listOf(Foedested("NOR", "Norge", "NO")),
                         bostedsadresse = emptyList(),
                         folkeregisterpersonstatus = listOf(
                             Folkeregisterpersonstatus(
@@ -185,7 +183,6 @@ class RequestValidatorTest : FreeSpec({
                         personInfoService.hentPersonInfo(requestScope, identitsnummer.value)
                     } returns Person(
                         foedselsdato = listOf(Foedselsdato("2000-01-01", 2000)),
-                        foedested = listOf(Foedested("NOR", "Oslo", "Oslo")),
                         bostedsadresse = emptyList(),
                         folkeregisterpersonstatus = listOf(
                             Folkeregisterpersonstatus(
@@ -219,7 +216,6 @@ class RequestValidatorTest : FreeSpec({
                         personInfoService.hentPersonInfo(requestScope, identitsnummer.value)
                     } returns Person(
                         foedselsdato = listOf(Foedselsdato("2000-01-01", 2000)),
-                        foedested = listOf(Foedested("NOR", "Oslo", "Oslo")),
                         bostedsadresse = emptyList(),
                         folkeregisterpersonstatus = listOf(
                             Folkeregisterpersonstatus(
@@ -278,7 +274,6 @@ class RequestValidatorTest : FreeSpec({
                         personInfoService.hentPersonInfo(requestScope, identitsnummer.value)
                     } returns Person(
                         foedselsdato = emptyList(),
-                        foedested = listOf(Foedested("ARG", "Argentina", "AR")),
                         bostedsadresse = emptyList(),
                         folkeregisterpersonstatus = emptyList(),
                         opphold = emptyList(),
@@ -304,7 +299,6 @@ class RequestValidatorTest : FreeSpec({
                         personInfoService.hentPersonInfo(requestScope, identitsnummer.value)
                     } returns Person(
                         foedselsdato = listOf(Foedselsdato("2000-01-01", 2000)),
-                        foedested = listOf(Foedested("ARG", "Argentina", "AR")),
                         bostedsadresse = emptyList(),
                         folkeregisterpersonstatus = listOf(
                             Folkeregisterpersonstatus(
@@ -337,7 +331,6 @@ class RequestValidatorTest : FreeSpec({
                         personInfoService.hentPersonInfo(requestScope, identitsnummer.value)
                     } returns Person(
                         foedselsdato = listOf(Foedselsdato("2000-01-01", 2000)),
-                        foedested = listOf(Foedested("ARG", "Argentina", "AR")),
                         bostedsadresse = emptyList(),
                         folkeregisterpersonstatus = listOf(
                             Folkeregisterpersonstatus(

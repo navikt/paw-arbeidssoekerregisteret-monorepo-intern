@@ -4,11 +4,6 @@ query($ident: ID!, $historisk: Boolean) {
             foedselsdato
             foedselsaar
         }
-        foedested {
-            foedeland
-            foedested
-            foedekommune
-        }
         statsborgerskap(historikk: $historisk) {
             land
             metadata {

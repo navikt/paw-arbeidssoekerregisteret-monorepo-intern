@@ -19,7 +19,6 @@ import no.nav.paw.arbeidssokerregisteret.routes.apiRegel
 import no.nav.paw.arbeidssokerregisteret.statsborgerskap
 import no.nav.paw.arbeidssokerregisteret.utflytting
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
-import no.nav.paw.pdl.graphql.generated.hentperson.Foedested
 import no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 import no.nav.paw.pdl.graphql.generated.hentperson.Vegadresse
@@ -39,7 +38,6 @@ data object NorskBrukerBosattINorgeUnder18aar : StartPeriodeTestCase {
         foedselsdato = Instant.now().let { dato ->
             Foedselsdato(dateFormatter.format(dato), yearFormatter.format(dato).toInt()).list()
         },
-        foedested = Foedested("NOR", "Bergen", "Bergen").list(),
         statsborgerskap = "NOR".statsborgerskap(),
         opphold = emptyList(),
         folkeregisterpersonstatus = bosatt.folkeregisterpersonstatus(),

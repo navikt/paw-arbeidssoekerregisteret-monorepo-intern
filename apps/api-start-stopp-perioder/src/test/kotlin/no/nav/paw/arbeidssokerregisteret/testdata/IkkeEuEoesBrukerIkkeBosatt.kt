@@ -18,7 +18,6 @@ import no.nav.paw.arbeidssokerregisteret.personToken
 import no.nav.paw.arbeidssokerregisteret.routes.apiRegel
 import no.nav.paw.arbeidssokerregisteret.statsborgerskap
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
-import no.nav.paw.pdl.graphql.generated.hentperson.Foedested
 import no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 import no.nav.paw.pdl.graphql.generated.hentperson.UtenlandskAdresse
@@ -31,7 +30,6 @@ data object IkkeEuEoesBrukerIkkeBosatt : StartPeriodeTestCase {
     override val id = "12345678919"
     override val person = Person(
         foedselsdato = Foedselsdato("2000-03-04", 2000).list(),
-        foedested = Foedested("USA", "New York", "New York").list(),
         statsborgerskap = "USA".statsborgerskap(),
         opphold = ("2018-01-01" to "2018-02-01").opphold(),
         folkeregisterpersonstatus = dNummer.folkeregisterpersonstatus(),

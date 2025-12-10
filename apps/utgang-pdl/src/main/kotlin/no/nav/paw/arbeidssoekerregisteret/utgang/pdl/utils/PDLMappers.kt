@@ -19,7 +19,6 @@ import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Vegadresse
 fun Person.toPerson(): no.nav.paw.pdl.graphql.generated.hentperson.Person =
     no.nav.paw.pdl.graphql.generated.hentperson.Person(
         foedselsdato = this.foedselsdato.toFoedselsdato(),
-        foedested = this.foedested.toFoedested(),
         statsborgerskap = this.statsborgerskap.toStatsborgerskap(),
         opphold = this.opphold.toOpphold(),
         folkeregisterpersonstatus = this.folkeregisterpersonstatus.toFolkeregisterpersonstatus(),
@@ -80,13 +79,6 @@ fun Endring.toEndring(): no.nav.paw.pdl.graphql.generated.hentperson.Endring =
         registrert = this.registrert,
         kilde = this.kilde,
     )
-
-fun List<Foedested>.toFoedested(): List<no.nav.paw.pdl.graphql.generated.hentperson.Foedested> = this.map {
-    no.nav.paw.pdl.graphql.generated.hentperson.Foedested(
-        foedeland = it.foedeland,
-        foedested = it.foedested,
-    )
-}
 
 fun List<Foedselsdato>.toFoedselsdato(): List<no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato> = this.map {
     no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato(

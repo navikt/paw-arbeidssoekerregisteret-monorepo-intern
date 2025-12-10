@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.testdata
 
-import kotlinx.coroutines.runBlocking
 import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.runBlocking
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.AarsakTilAvvisningV2
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
 import no.nav.paw.arbeidssokerregisteret.application.EuEoesStatsborgerMenHarStatusIkkeBosatt
@@ -20,7 +20,6 @@ import no.nav.paw.arbeidssokerregisteret.personToken
 import no.nav.paw.arbeidssokerregisteret.routes.apiRegel
 import no.nav.paw.arbeidssokerregisteret.statsborgerskap
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
-import no.nav.paw.pdl.graphql.generated.hentperson.Foedested
 import no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 import no.nav.paw.pdl.graphql.generated.hentperson.UtenlandskAdresse
@@ -44,7 +43,6 @@ data object SvenskBrukerBosattISverigeUnder18aarMedStatusIkkeBosatt : StartPerio
                 yearFormatter.format(dato).toInt()
             ).list()
         },
-        foedested = Foedested("SWE", "Stockholm", "Stockholm").list(),
         statsborgerskap = "SWE".statsborgerskap(),
         opphold = emptyList(),
         folkeregisterpersonstatus = folkeregisterpersonstatus(dNummer, ikkeBosatt),

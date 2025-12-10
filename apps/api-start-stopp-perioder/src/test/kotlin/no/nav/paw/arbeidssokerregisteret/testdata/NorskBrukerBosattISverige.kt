@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssokerregisteret.testdata
 
-import kotlinx.coroutines.runBlocking
 import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.runBlocking
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.AarsakTilAvvisningV2
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.FeilV2
 import no.nav.paw.arbeidssokerregisteret.application.IkkeBosattINorgeIHenholdTilFolkeregisterloven
@@ -18,7 +18,6 @@ import no.nav.paw.arbeidssokerregisteret.routes.apiRegel
 import no.nav.paw.arbeidssokerregisteret.statsborgerskap
 import no.nav.paw.arbeidssokerregisteret.utflytting
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
-import no.nav.paw.pdl.graphql.generated.hentperson.Foedested
 import no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 import no.nav.paw.pdl.graphql.generated.hentperson.UtenlandskAdresse
@@ -31,7 +30,6 @@ data object NorskBrukerBosattISverige : StartPeriodeTestCase {
     override val id = "12345678909"
     override val person = Person(
         foedselsdato = Foedselsdato("2000-03-04", 2000).list(),
-        foedested = Foedested("NOR", "Bergen", "Bergen").list(),
         statsborgerskap = "NOR".statsborgerskap(),
         opphold = emptyList(),
         folkeregisterpersonstatus = ikkeBosatt.folkeregisterpersonstatus(),

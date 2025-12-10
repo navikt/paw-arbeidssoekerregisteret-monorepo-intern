@@ -18,7 +18,6 @@ import no.nav.paw.arbeidssokerregisteret.list
 import no.nav.paw.arbeidssokerregisteret.setHarTilgangTilBruker
 import no.nav.paw.arbeidssokerregisteret.statsborgerskap
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
-import no.nav.paw.pdl.graphql.generated.hentperson.Foedested
 import no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 import no.nav.paw.pdl.graphql.generated.hentperson.Vegadresse
@@ -32,7 +31,6 @@ data object AnsattRegistrererStartMedTidspunktBakoverITid : StartPeriodeTestCase
     override val forhaandsGodkjent: Boolean = false
     override val person = Person(
         foedselsdato = Foedselsdato("2000-03-04", 2000).list(),
-        foedested = Foedested("NOR", "Oslo", "Oslo").list(),
         statsborgerskap = "NOR".statsborgerskap(),
         opphold = emptyList(),
         folkeregisterpersonstatus = bosatt.folkeregisterpersonstatus(),

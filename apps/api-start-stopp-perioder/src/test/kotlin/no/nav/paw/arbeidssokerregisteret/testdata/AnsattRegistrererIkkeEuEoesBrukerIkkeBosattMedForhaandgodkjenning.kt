@@ -19,7 +19,6 @@ import no.nav.paw.arbeidssokerregisteret.setHarTilgangTilBruker
 import no.nav.paw.arbeidssokerregisteret.statsborgerskap
 import no.nav.paw.arbeidssokerregisteret.utflytting
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
-import no.nav.paw.pdl.graphql.generated.hentperson.Foedested
 import no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 import no.nav.paw.pdl.graphql.generated.hentperson.Vegadresse
@@ -32,7 +31,6 @@ data object AnsattRegistrererIkkeEuEoesBrukerIkkeBosattMedForhaandgodkjenning : 
     override val forhaandsGodkjent: Boolean = true
     override val person = Person(
         foedselsdato = Foedselsdato("2000-03-04", 2000).list(),
-        foedested = Foedested("NOR", "Oslo", "Oslo").list(),
         statsborgerskap = "AFG".statsborgerskap(),
         opphold = ("2018-01-01" to null).opphold(),
         folkeregisterpersonstatus = dNummer.folkeregisterpersonstatus(),

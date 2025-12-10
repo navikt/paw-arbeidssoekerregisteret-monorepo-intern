@@ -12,7 +12,6 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato
-import no.nav.paw.pdl.graphql.generated.hentperson.Foedested
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 import no.nav.paw.pdl.graphql.generated.hentperson.Vegadresse
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -23,7 +22,6 @@ data object AnsattRegistrererUtenTilgangTilBruker: StartPeriodeTestCase {
     override val id = "12345678906"
     override val person = Person(
         foedselsdato = Foedselsdato("2000-03-04", 2000).list(),
-        foedested = Foedested("AFG", "Kabul", "Kabul").list(),
         statsborgerskap = "AFG".statsborgerskap(),
         opphold = ("2018-01-01" to null).opphold(),
         folkeregisterpersonstatus = dNummer.folkeregisterpersonstatus(),

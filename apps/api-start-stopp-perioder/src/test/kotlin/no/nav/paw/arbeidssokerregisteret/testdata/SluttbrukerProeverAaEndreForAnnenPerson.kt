@@ -21,7 +21,6 @@ data object SluttbrukerProeverAaEndreForAnnenPerson : StartPeriodeTestCase {
     override val id: String = "09876543211"
     override val person: Person = Person(
         foedselsdato = emptyList(),
-        foedested = emptyList(),
         statsborgerskap = emptyList(),
         opphold = emptyList(),
         folkeregisterpersonstatus = emptyList(),
