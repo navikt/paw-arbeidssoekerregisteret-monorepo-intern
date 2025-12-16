@@ -18,7 +18,6 @@ import no.nav.paw.arbeidssoekerregisteret.utgang.pdl.kafka.serdes.HendelseState
 import no.nav.paw.arbeidssokerregisteret.application.InngangsReglerV3
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
 import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Foedselsdato
-import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Foedested
 import no.nav.paw.pdl.graphql.generated.hentpersonbolk.HentPersonBolkResult
 import org.apache.kafka.streams.KeyValue
 import org.slf4j.Logger
@@ -31,7 +30,6 @@ class ProcessPdlResultsTest : FreeSpec({
     "processPdlResults should correctly set avsluttPeriode to true if multiple problems in pdlEvaluering" {
         val person = getPerson(
             foedselsdato = Foedselsdato("2014-01-01", 2014),
-            foedested = Foedested("NOR", "Oslo", "Oslo"),
             statsborgerskap = getStatsborgerskap("NOR"),
             opphold = null,
             folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("ikkeBosatt"),
@@ -74,7 +72,6 @@ class ProcessPdlResultsTest : FreeSpec({
 
             val utflyttetPerson = getPerson(
                 foedselsdato = Foedselsdato("2000-01-01", 2000),
-                foedested = Foedested("BRA", "Brasilia", "Brasilia"),
                 statsborgerskap = getStatsborgerskap("BRA"),
                 opphold = null,
                 folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("ikkeBosatt"),
@@ -109,7 +106,6 @@ class ProcessPdlResultsTest : FreeSpec({
 
             val doedPerson = getPerson(
                 foedselsdato = Foedselsdato("2006-01-01", 2006),
-                foedested = Foedested("NOR", "Oslo", "Oslo"),
                 statsborgerskap = getStatsborgerskap("NOR"),
                 opphold = null,
                 folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("doedIFolkeregisteret"),
@@ -144,7 +140,6 @@ class ProcessPdlResultsTest : FreeSpec({
 
             val savnetPerson = getPerson(
                 foedselsdato = Foedselsdato("2006-01-01", 2006),
-                foedested = Foedested("NOR", "Oslo", "Oslo"),
                 statsborgerskap = getStatsborgerskap("NOR"),
                 opphold = null,
                 folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("forsvunnet"),
@@ -181,7 +176,6 @@ class ProcessPdlResultsTest : FreeSpec({
             val logger = mockk<Logger>(relaxed = true)
             val bosattPerson = getPerson(
                 foedselsdato = Foedselsdato("2000-01-01", 2000),
-                foedested = Foedested("NOR", "Oslo", "Oslo"),
                 statsborgerskap = getStatsborgerskap("NOR"),
                 opphold = getOppholdstillatelse(),
                 folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("bosattEtterFolkeregisterloven"),
@@ -215,7 +209,6 @@ class ProcessPdlResultsTest : FreeSpec({
 
             val savnetPerson = getPerson(
                 foedselsdato = Foedselsdato("2000-01-01", 2000),
-                foedested = Foedested("NOR", "Oslo", "Oslo"),
                 statsborgerskap = getStatsborgerskap("NOR"),
                 opphold = getOppholdstillatelse(),
                 folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("forsvunnet"),
@@ -254,7 +247,6 @@ class ProcessPdlResultsTest : FreeSpec({
 
             val bosattPerson = getPerson(
                 foedselsdato = Foedselsdato("2000-01-01", 2000),
-                foedested = Foedested("NOR", "Oslo", "Oslo"),
                 statsborgerskap = getStatsborgerskap("NOR"),
                 opphold = getOppholdstillatelse(),
                 folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("bosattEtterFolkeregisterloven"),
@@ -376,7 +368,6 @@ class ProcessPdlResultsTest : FreeSpec({
 
         val validPerson = getPerson(
             foedselsdato = Foedselsdato("2000-01-01", 2000),
-            foedested = Foedested("NOR", "Oslo", "Oslo"),
             statsborgerskap = getStatsborgerskap("NOR"),
             opphold = getOppholdstillatelse(),
             folkeregisterpersonstatus = getListOfFolkeregisterpersonstatus("bosatt"),

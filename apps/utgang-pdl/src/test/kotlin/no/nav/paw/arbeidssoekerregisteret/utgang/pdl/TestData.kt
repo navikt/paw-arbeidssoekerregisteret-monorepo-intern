@@ -3,7 +3,6 @@ package no.nav.paw.arbeidssoekerregisteret.utgang.pdl
 import no.nav.paw.pdl.graphql.generated.enums.Oppholdstillatelse
 import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Bostedsadresse
 import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Foedselsdato
-import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Foedested
 import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Folkeregisterpersonstatus
 import no.nav.paw.pdl.graphql.generated.hentpersonbolk.HentPersonBolkResult
 import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Metadata
@@ -36,7 +35,6 @@ fun getBostedsadresse(angittFlyttedato: String? = null) = Bostedsadresse(angittF
 
 fun getPerson(
     foedselsdato: Foedselsdato? = null,
-    foedested: Foedested? = null,
     statsborgerskap: Statsborgerskap? = null,
     opphold: Opphold? = null,
     folkeregisterpersonstatus: List<Folkeregisterpersonstatus>? = null,
@@ -45,7 +43,6 @@ fun getPerson(
     utflyttingFraNorge: List<UtflyttingFraNorge> = emptyList()
 ): Person = Person(
     foedselsdato = listOf(foedselsdato ?: Foedselsdato("2000-01-01", 2000)),
-    foedested = listOf(foedested ?: Foedested("NOR", "Oslo", "Oslo")),
     statsborgerskap = listOf(statsborgerskap ?: getStatsborgerskap()),
     opphold = listOf(opphold ?: getOppholdstillatelse()),
     folkeregisterpersonstatus = folkeregisterpersonstatus ?: listOf(getFolkeregisterpersonstatus()),

@@ -2,7 +2,6 @@ package no.nav.paw.arbeidssoekerregisteret.utgang.pdl.utils
 
 import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Bostedsadresse
 import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Endring
-import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Foedested
 import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Foedselsdato
 import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Folkeregistermetadata
 import no.nav.paw.pdl.graphql.generated.hentpersonbolk.Folkeregisterpersonstatus
