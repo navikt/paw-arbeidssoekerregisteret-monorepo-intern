@@ -3,6 +3,7 @@ package no.nav.paw.bqadapter.bigquery
 import com.google.cloud.bigquery.InsertAllRequest
 import com.google.cloud.bigquery.Table
 import no.nav.paw.bqadapter.appLogger
+import java.math.BigInteger
 
 class BigqueryDatabase(
     private val bigqueryTables: Map<TableName, Table>
@@ -25,5 +26,11 @@ class BigqueryDatabase(
         } else {
             appLogger.info("Inserted ${rows.count()} rows into table $tableName")
         }
+    }
+
+    fun isEmpty(tableName: TableName): Boolean {
+        val table = bigqueryTables[tableName] ?: throw IllegalStateException("Table $tableName not found in BigQuery")
+        val result = table.numRows
+        return result == BigInteger.ZERO
     }
 }

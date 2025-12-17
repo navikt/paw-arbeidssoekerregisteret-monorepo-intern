@@ -74,24 +74,27 @@ fun main() {
             HttpCredentialsAdapter(ServiceAccountCredentials.getApplicationDefault())
         ).build()
     )
+    val consumerWrapper = CustomConsumerWrapper(
+        bqDatabase = bigqueryAppContext.bqDatabase,
+        topicNames = bigqueryAppContext.topics,
+        topics = listOf(
+            bigqueryAppContext.topics.hendelseloggTopic,
+            bigqueryAppContext.topics.periodeTopic,
+            bigqueryAppContext.topics.paavnegneavTopic,
+            bigqueryAppContext.topics.bekreftelseTopic,
+            bigqueryAppContext.topics.bekreftelseHendelseloggTopic
+        ),
+        consumer = consumer,
+        exceptionHandler = { throwable ->
+            livenessHealthIndicator.setUnhealthy()
+            readinessHealthIndicator.setUnhealthy()
+            appLogger.error("Error in consumer", throwable)
+        }
+    )
     embeddedServer(factory = Netty, port = 8080) {
         install(KafkaConsumerPlugin<Long, ByteArray>("application_consumer")) {
             onConsume = bigqueryAppContext::handleRecords
-            kafkaConsumerWrapper = CommittingKafkaConsumerWrapper(
-                topics = listOf(
-                    bigqueryAppContext.topics.hendelseloggTopic,
-                    bigqueryAppContext.topics.periodeTopic,
-                    bigqueryAppContext.topics.paavnegneavTopic,
-                    bigqueryAppContext.topics.bekreftelseTopic,
-                    bigqueryAppContext.topics.bekreftelseHendelseloggTopic
-                ),
-                consumer = consumer,
-                exceptionHandler = { throwable ->
-                    livenessHealthIndicator.setUnhealthy()
-                    readinessHealthIndicator.setUnhealthy()
-                    appLogger.error("Error in consumer", throwable)
-                }
-            )
+            kafkaConsumerWrapper = consumerWrapper
         }
         routing {
             metricsRoutes(prometheusMeterRegistry)
