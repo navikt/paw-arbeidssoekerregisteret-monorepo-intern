@@ -133,8 +133,16 @@ fun AppContext.lagreBekreftelserHendelser(records: Iterable<Record<BekreftelseHe
 }
 
 fun AppContext.lagrePaaVegneAv(records: Iterable<Record<PaaVegneAv>>) {
-    records.map { record ->
-        Row(id = record.id, value = påVegneAvRad(encoder, record.recordTimestamp, record.value))
+    records.mapIndexed { index, record ->
+        Row(
+            id = record.id,
+            value = påVegneAvRad(
+                encoder = encoder,
+                recordTimestamp = record.recordTimestamp,
+                paaVegneAv = record.value,
+                batchOrder = index.toLong()
+            )
+        )
     }.takeIf { it.isNotEmpty() }
         ?.also { paaVegneAvRader ->
             bqDatabase.write(

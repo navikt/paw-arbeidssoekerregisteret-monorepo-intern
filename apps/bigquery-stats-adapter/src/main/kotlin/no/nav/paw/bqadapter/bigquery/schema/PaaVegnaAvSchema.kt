@@ -21,6 +21,8 @@ private const val grace_periode_dager_field = "grace_periode_dager"
 private const val intervall_dager_field = "intervall_dager"
 private const val handling = "handling"
 private const val frist_brutt = "frist_brutt"
+private const val insert_tidspunkt = "insert_tidspunkt"
+private const val batch_order = "batch_order"
 
 val paaVegnaAvSchema: Schema
     get() = Schema.of(
@@ -29,6 +31,8 @@ val paaVegnaAvSchema: Schema
         loesning.ofRequiredType(STRING),
         handling.ofRequiredType(STRING),
         frist_brutt.ofOptionalType(BOOL),
+        insert_tidspunkt.ofRequiredType(INT64),
+        batch_order.ofRequiredType(INT64),
         Field.of(grace_periode_dager_field, INT64),
         Field.of(intervall_dager_field, INT64)
     )
@@ -36,7 +40,8 @@ val paaVegnaAvSchema: Schema
 fun påVegneAvRad(
     encoder: Encoder,
     recordTimestamp: Instant,
-    paaVegneAv: PaaVegneAv
+    paaVegneAv: PaaVegneAv,
+    batchOrder: Long
 ): Map<String, Any> {
     val maskertPeriodeId = encoder.encodePeriodeId(paaVegneAv.periodeId)
     return when (val paaVegnaAvHandling = paaVegneAv.handling) {
@@ -46,6 +51,8 @@ fun påVegneAvRad(
             loesning to paaVegneAv.bekreftelsesloesning.name.lowercase(),
             grace_periode_dager_field to ofMillis(paaVegnaAvHandling.graceMS).toDays(),
             intervall_dager_field to ofMillis(paaVegnaAvHandling.intervalMS).toDays(),
+            batch_order to batchOrder,
+            insert_tidspunkt to System.currentTimeMillis(),
             handling to "start"
         )
 
@@ -54,6 +61,8 @@ fun påVegneAvRad(
             tidspunkt to recordTimestamp.toBqDateString(),
             loesning to paaVegneAv.bekreftelsesloesning.name.lowercase(),
             handling to "stopp",
+            batch_order to batchOrder,
+            insert_tidspunkt to System.currentTimeMillis(),
             frist_brutt to paaVegnaAvHandling.fristBrutt
         )
         else -> throw IllegalArgumentException("Unknown PaaVegneAv handling: ${paaVegnaAvHandling::class.qualifiedName}")
