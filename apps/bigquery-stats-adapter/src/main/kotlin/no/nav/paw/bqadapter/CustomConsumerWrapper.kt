@@ -32,8 +32,14 @@ class CustomConsumerWrapper<K, V>(
         if (bqDatabase.isEmpty(PAAVNEGEAV_TABELL)) {
             logger.info("BigQuery-tabellen {} er tom ved oppstart av consumer", PAAVNEGEAV_TABELL)
             val topicPartitions = (0 until 5).map { TopicPartition(topicNames.paavnegneavTopic, it) }
-            consumer.seekToBeginning(topicPartitions)
-            logger.info("Seek to begning: ${topicPartitions.map { "${it.topic()}:${it.partition()}" }}")
+            try {
+                consumer.seekToBeginning(topicPartitions)
+            } catch (ex: Exception) {
+                //Appen går ned uten å logge feil, så derfor catch-log-throw her
+                logger.error("Feil ved seek to beginning for topicPartitions: ${topicPartitions.map { "${it.topic()}:${it.partition()}" }}", ex)
+                throw ex
+            }
+            logger.info("Seek to beginning: ${topicPartitions.map { "${it.topic()}:${it.partition()}" }}")
         } else {
             logger.info("BigQuery-tabellen {} er ikke tom ved oppstart av consumer", PAAVNEGEAV_TABELL)
         }
