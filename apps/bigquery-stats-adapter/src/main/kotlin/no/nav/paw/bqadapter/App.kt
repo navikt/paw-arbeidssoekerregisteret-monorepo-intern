@@ -74,9 +74,7 @@ fun main() {
             HttpCredentialsAdapter(ServiceAccountCredentials.getApplicationDefault())
         ).build()
     )
-    val consumerWrapper = CustomConsumerWrapper(
-        bqDatabase = bigqueryAppContext.bqDatabase,
-        topicNames = bigqueryAppContext.topics,
+    val consumerWrapper = CommittingKafkaConsumerWrapper(
         topics = listOf(
             bigqueryAppContext.topics.hendelseloggTopic,
             bigqueryAppContext.topics.periodeTopic,
@@ -89,7 +87,12 @@ fun main() {
             livenessHealthIndicator.setUnhealthy()
             readinessHealthIndicator.setUnhealthy()
             appLogger.error("Error in consumer", throwable)
-        }
+        },
+        rebalanceListener = CustomRebalancingListener(
+            bqDatabase = bigqueryAppContext.bqDatabase,
+            topicNames = bigqueryAppContext.topics,
+            consumer = consumer
+        )
     )
     embeddedServer(factory = Netty, port = 8080) {
         install(KafkaConsumerPlugin<Long, ByteArray>("application_consumer")) {
