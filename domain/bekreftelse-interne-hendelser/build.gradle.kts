@@ -42,3 +42,8 @@ java {
         languageVersion = JavaLanguageVersion.of(jvmMajorVersion)
     }
 }
+
+
+tasks.named<Test>("test") {
+    useJUnitPlatform()
+}
