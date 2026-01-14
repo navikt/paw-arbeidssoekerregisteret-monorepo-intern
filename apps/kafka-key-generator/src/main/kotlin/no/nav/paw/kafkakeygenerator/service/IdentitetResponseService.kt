@@ -5,11 +5,11 @@ import no.nav.paw.kafkakeygenerator.api.models.Konflikt
 import no.nav.paw.kafkakeygenerator.api.models.KonfliktDetaljer
 import no.nav.paw.kafkakeygenerator.api.models.KonfliktType
 import no.nav.paw.kafkakeygenerator.api.v2.asApi
-import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
-import no.nav.paw.kafkakeygenerator.model.dao.KonflikterTable
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.asApi
+import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
+import no.nav.paw.kafkakeygenerator.model.dao.KonflikterTable
 import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.kafkakeygenerator.utils.asRecordKey
 import no.nav.paw.logging.logger.buildLogger
@@ -43,10 +43,14 @@ class IdentitetResponseService(
         } else {
             val arbeidssoekerId = identitetRows.maxOf { it.arbeidssoekerId }
             val konflikter = if (visKonflikter) {
-                val aktorIdListe = identitetRows.map { it.aktorId }.distinct()
-                val arbeidssoekerIdListe = identitetRows.map { it.arbeidssoekerId }.distinct()
-                val konflikter = KonflikterTable.findByAktorIdListAndStatus(
-                    aktorIdList = aktorIdListe,
+                val aktorIdListe = identitetRows
+                    .map { it.aktorId }
+                    .distinct()
+                val arbeidssoekerIdListe = identitetRows
+                    .map { it.arbeidssoekerId }
+                    .distinct()
+                val konflikter = KonflikterTable.findByIdentitetAndStatus(
+                    identitet = identitet,
                     status = KonfliktStatus.VENTER
                 )
                 if (konflikter.isNotEmpty()) {

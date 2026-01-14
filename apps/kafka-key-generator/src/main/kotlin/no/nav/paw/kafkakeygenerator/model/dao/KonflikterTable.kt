@@ -5,6 +5,7 @@ import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
 import no.nav.paw.logging.logger.buildNamedLogger
 import org.jetbrains.exposed.dao.id.LongIdTable
+import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.and
@@ -27,15 +28,6 @@ object KonflikterTable : LongIdTable("konflikter") {
     val insertedTimestamp = timestamp("inserted_timestamp")
     val updatedTimestamp = timestamp("updated_timestamp").nullable()
 
-    fun getById(
-        id: Long,
-    ): KonfliktRow? = transaction {
-        selectAll()
-            .where { KonflikterTable.id eq id }
-            .map { it.asKonfliktRowMedIdentiteter() }
-            .singleOrNull()
-    }
-
     fun findByIdList(
         idList: Collection<Long>,
     ): List<KonfliktRow> = transaction {
@@ -49,16 +41,6 @@ object KonflikterTable : LongIdTable("konflikter") {
     ): List<KonfliktRow> = transaction {
         selectAll()
             .where { KonflikterTable.aktorId eq aktorId }
-            .orderBy(KonflikterTable.id, SortOrder.ASC)
-            .map { it.asKonfliktRowMedIdentiteter() }
-    }
-
-    fun findByAktorIdListAndStatus(
-        aktorIdList: Iterable<String>,
-        status: KonfliktStatus
-    ): List<KonfliktRow> = transaction {
-        selectAll()
-            .where { (KonflikterTable.status eq status) and (aktorId inList aktorIdList) }
             .orderBy(KonflikterTable.id, SortOrder.ASC)
             .map { it.asKonfliktRowMedIdentiteter() }
     }
@@ -92,6 +74,21 @@ object KonflikterTable : LongIdTable("konflikter") {
             .where { (KonflikterTable.type eq type) and (KonflikterTable.status eq status) }
             .orderBy(KonflikterTable.id, SortOrder.ASC)
             .limit(rowCount)
+            .map { it.asKonfliktRowMedIdentiteter() }
+    }
+
+    fun findByIdentitetAndStatus(
+        identitet: String,
+        status: KonfliktStatus
+    ): List<KonfliktRow> = transaction {
+        join(
+            KonfliktIdentiteterTable,
+            JoinType.INNER,
+            KonflikterTable.id,
+            KonfliktIdentiteterTable.konfliktId
+        ).select(columns)
+            .where { (KonfliktIdentiteterTable.identitet eq identitet) and (KonflikterTable.status eq status) }
+            .orderBy(KonflikterTable.id, SortOrder.ASC)
             .map { it.asKonfliktRowMedIdentiteter() }
     }
 
