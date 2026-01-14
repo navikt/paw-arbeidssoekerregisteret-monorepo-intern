@@ -64,6 +64,8 @@ spec:
       rules:
         - application: paw-brukerstotte
           namespace: paw
+        - application: paw-brukerstotte-test
+          namespace: paw
     outbound:
       rules:
         - application: paw-kafka-key-generator

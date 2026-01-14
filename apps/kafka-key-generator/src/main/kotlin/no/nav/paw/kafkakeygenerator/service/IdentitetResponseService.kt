@@ -1,5 +1,6 @@
 package no.nav.paw.kafkakeygenerator.service
 
+import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafkakeygenerator.api.models.IdentitetResponse
 import no.nav.paw.kafkakeygenerator.api.models.Konflikt
 import no.nav.paw.kafkakeygenerator.api.models.KonfliktDetaljer
@@ -8,11 +9,23 @@ import no.nav.paw.kafkakeygenerator.api.v2.asApi
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.asApi
+import no.nav.paw.kafkakeygenerator.model.dao.IdentitetRow
 import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
+import no.nav.paw.kafkakeygenerator.model.dao.KonfliktRow
 import no.nav.paw.kafkakeygenerator.model.dao.KonflikterTable
 import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.kafkakeygenerator.utils.asRecordKey
 import no.nav.paw.logging.logger.buildLogger
+
+private fun IdentitetRow.aktorIdList(): List<String> {
+    return listOf(aktorId) + if (type == IdentitetType.AKTORID) listOf(identitet) else emptyList()
+}
+
+private fun KonfliktRow.aktorIdList(): List<String> {
+    return (listOf(aktorId) + identiteter
+        .filter { it.type == IdentitetType.AKTORID }
+        .map { it.identitet }).distinct()
+}
 
 class IdentitetResponseService(
     private val pdlService: PdlService
@@ -35,9 +48,9 @@ class IdentitetResponseService(
                 status = KonfliktStatus.VENTER
             )
             val aktorIdListe = (identitetRows
-                .map { it.aktorId }
+                .flatMap { it.aktorIdList() }
                     + konfliktRows
-                .map { it.aktorId })
+                .flatMap { it.aktorIdList() })
                 .distinct()
             val arbeidssoekerIdListe = identitetRows
                 .map { it.arbeidssoekerId }
