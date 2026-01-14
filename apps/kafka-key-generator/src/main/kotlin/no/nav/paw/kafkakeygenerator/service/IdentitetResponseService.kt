@@ -30,18 +30,21 @@ class IdentitetResponseService(
             .filter { it.status != IdentitetStatus.SLETTET }
 
         val konflikter = if (visKonflikter) {
-            val aktorIdListe = identitetRows
+            val konfliktRows = KonflikterTable.findByIdentitetAndStatus(
+                identitet = identitet,
+                status = KonfliktStatus.VENTER
+            )
+            val aktorIdListe = (identitetRows
                 .map { it.aktorId }
+                    + konfliktRows
+                .map { it.aktorId })
                 .distinct()
             val arbeidssoekerIdListe = identitetRows
                 .map { it.arbeidssoekerId }
                 .distinct()
-            val konflikter = KonflikterTable.findByIdentitetAndStatus(
-                identitet = identitet,
-                status = KonfliktStatus.VENTER
-            )
-            if (konflikter.isNotEmpty()) {
-                konflikter
+
+            if (konfliktRows.isNotEmpty()) {
+                konfliktRows
                     .map {
                         Konflikt(
                             type = it.type.asApi(),
