@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.utgang.pdl
 
+import io.kotest.assertions.AssertionErrorBuilder.Companion.fail
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -16,7 +17,6 @@ import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType as BrukerTypeIn
 import java.time.Duration
 import java.time.Instant
 import java.util.*
-import kotlin.test.DefaultAsserter.fail
 
 class ApplicationTest : FreeSpec({
     val periodeId = UUID.randomUUID()

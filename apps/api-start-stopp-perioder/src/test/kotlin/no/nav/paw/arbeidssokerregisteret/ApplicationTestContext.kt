@@ -3,6 +3,7 @@ package no.nav.paw.arbeidssokerregisteret
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.nimbusds.jwt.SignedJWT
+import io.kotest.assertions.AssertionErrorBuilder.Companion.fail
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -43,7 +44,6 @@ import no.nav.paw.pdl.graphql.generated.hentperson.UtflyttingFraNorge
 import no.nav.paw.pdl.graphql.generated.hentperson.Vegadresse
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import org.apache.kafka.clients.producer.ProducerRecord
-import kotlin.test.DefaultAsserter.fail
 
 
 fun HttpClientConfig<out io.ktor.client.engine.HttpClientEngineConfig>.defaultConfig() {

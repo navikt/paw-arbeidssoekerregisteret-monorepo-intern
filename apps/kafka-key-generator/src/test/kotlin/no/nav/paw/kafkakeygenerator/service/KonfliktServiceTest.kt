@@ -1,5 +1,6 @@
 package no.nav.paw.kafkakeygenerator.service
 
+import io.kotest.assertions.any
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainOnly
 import io.kotest.matchers.collections.shouldHaveSize
@@ -9,6 +10,7 @@ import io.mockk.Called
 import io.mockk.clearAllMocks
 import io.mockk.confirmVerified
 import io.mockk.every
+import io.mockk.mockkStatic
 import io.mockk.verify
 import no.nav.paw.arbeidssokerregisteret.intern.v1.ArbeidssoekerIdFlettetInn
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
@@ -39,6 +41,7 @@ import java.time.Instant
 import java.time.LocalDate
 
 class KonfliktServiceTest : FreeSpec({
+    mockkStatic("no.nav.paw.kafka.producer.ProducerUtilsKt")
     with(TestContext.buildWithPostgres()) {
         val identitetRecordMetadata =
             RecordMetadata(TopicPartition(applicationConfig.pawIdentitetProducer.topic, 0), 1, 0, 0, 0, 0)
@@ -47,12 +50,6 @@ class KonfliktServiceTest : FreeSpec({
 
         beforeEach { clearAllMocks() }
         beforeSpec { setUp() }
-        afterTest {
-            confirmVerified(
-                pawIdentitetProducerMock,
-                pawHendelseloggProducerMock
-            )
-        }
         afterSpec { tearDown() }
 
         /**

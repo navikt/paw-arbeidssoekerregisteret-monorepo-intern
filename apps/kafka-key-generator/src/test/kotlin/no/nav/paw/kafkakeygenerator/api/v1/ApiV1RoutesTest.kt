@@ -14,6 +14,7 @@ import io.mockk.Called
 import io.mockk.clearAllMocks
 import io.mockk.confirmVerified
 import io.mockk.every
+import io.mockk.mockkStatic
 import io.mockk.verify
 import no.nav.paw.identitet.internehendelser.IdentitetHendelse
 import no.nav.paw.identitet.internehendelser.IdentiteterEndretHendelse
@@ -36,6 +37,7 @@ import org.apache.kafka.common.TopicPartition
 import java.time.Instant
 
 class ApiV1RoutesTest : FreeSpec({
+    mockkStatic("no.nav.paw.kafka.producer.ProducerUtilsKt")
     with(TestContext.buildWithPostgres()) {
         val identitetRecordMetadata =
             RecordMetadata(TopicPartition(applicationConfig.pawIdentitetProducer.topic, 0), 1, 0, 0, 0, 0)
