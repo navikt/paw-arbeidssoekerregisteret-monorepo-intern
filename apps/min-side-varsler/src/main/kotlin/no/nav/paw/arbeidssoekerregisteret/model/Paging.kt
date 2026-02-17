@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.model
 
-import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.v1.core.SortOrder
 
 enum class Order {
     ASC, DESC

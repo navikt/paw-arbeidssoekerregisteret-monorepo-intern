@@ -13,7 +13,6 @@ import no.nav.paw.arbeidssoekerregisteret.backup.utils.readRecord
 import no.nav.paw.arbeidssoekerregisteret.backup.utils.startet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.ArbeidssoekerIdFlettetInn
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Kilde
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
@@ -52,7 +51,6 @@ class ApplicationHappyPathTest : FreeSpec({
             val nyesteId = testConsumerRecords.records(topic).last().value().id
             val originalId = testConsumerRecords.records(topic).first().value().id
             val hendelser = readAllNestedRecordsForId(
-                hendelseDeserializer = HendelseSerde().deserializer(),
                 arbeidssoekerId = nyesteId,
                 consumerVersion = applicationConfig.consumerVersion,
                 merged = true

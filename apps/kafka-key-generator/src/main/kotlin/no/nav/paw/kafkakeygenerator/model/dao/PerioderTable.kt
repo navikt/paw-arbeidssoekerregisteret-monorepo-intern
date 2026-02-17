@@ -1,16 +1,19 @@
 package no.nav.paw.kafkakeygenerator.model.dao
 
-import org.jetbrains.exposed.dao.id.LongIdTable
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.javatime.timestamp
-import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.update
+import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.core.java.javaUUID
+import org.jetbrains.exposed.v1.javatime.timestamp
+import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.update
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 object PerioderTable : LongIdTable("perioder") {
-    val periodeId = uuid("periode_id")
+    val periodeId = javaUUID("periode_id")
     val identitet = varchar("identitet", 50)
     val startetTimestamp = timestamp("startet_timestamp")
     val avsluttetTimestamp = timestamp("avsluttet_timestamp").nullable()

@@ -1,0 +1,15 @@
+### GET /internal/isAlive
+GET {{baseUrl}}/internal/isAlive
+Accept: application/json
+
+### GET /internal/isReady
+GET {{baseUrl}}/internal/isReady
+Accept: application/json
+
+### GET /internal/hasStarted
+GET {{baseUrl}}/internal/hasStarted
+Accept: application/json
+
+### GET /internal/metrics
+GET {{baseUrl}}/internal/metrics
+Accept: application/json

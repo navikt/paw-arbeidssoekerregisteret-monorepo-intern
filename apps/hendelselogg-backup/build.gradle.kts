@@ -54,6 +54,7 @@ dependencies {
 
     // Database
     implementation(libs.exposed.jdbc)
+    implementation(libs.exposed.json)
     implementation(libs.exposed.javaTime)
     implementation(libs.database.postgres.driver)
     implementation(libs.database.flyway.core)

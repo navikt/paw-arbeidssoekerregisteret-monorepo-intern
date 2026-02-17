@@ -15,7 +15,7 @@ import no.nav.paw.database.config.DATABASE_CONFIG
 import no.nav.paw.database.config.DatabaseConfig
 import no.nav.paw.database.factory.createHikariDataSource
 import no.nav.paw.logging.logger.buildApplicationLogger
-import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.v1.jdbc.Database
 import java.nio.file.Paths
 import kotlin.io.path.name
 import kotlin.system.exitProcess

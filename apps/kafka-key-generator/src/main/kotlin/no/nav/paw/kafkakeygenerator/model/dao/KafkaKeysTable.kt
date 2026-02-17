@@ -1,9 +1,9 @@
 package no.nav.paw.kafkakeygenerator.model.dao
 
 import no.nav.paw.felles.model.ArbeidssoekerId
-import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 object KafkaKeysTable : Table("KafkaKeys") {
     val id = long("id").autoIncrement()

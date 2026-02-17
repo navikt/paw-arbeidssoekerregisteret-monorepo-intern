@@ -64,7 +64,7 @@ import no.nav.person.pdl.aktor.v2.Aktor
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import org.apache.kafka.clients.producer.Producer
 import org.flywaydb.core.Flyway
-import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.v1.jdbc.Database
 import java.util.*
 import javax.sql.DataSource
 

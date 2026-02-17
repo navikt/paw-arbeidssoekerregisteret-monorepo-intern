@@ -1,12 +1,13 @@
 package no.nav.paw.arbeidssoekerregisteret.model
 
-import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.javatime.timestamp
+import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.core.java.javaUUID
+import org.jetbrains.exposed.v1.javatime.timestamp
 
 object VarslerTable : Table("varsler") {
-    val periodeId = uuid("periode_id")
-    val bekreftelseId = uuid("bekreftelse_id").nullable()
-    val varselId = uuid("varsel_id")
+    val periodeId = javaUUID("periode_id")
+    val bekreftelseId = javaUUID("bekreftelse_id").nullable()
+    val varselId = javaUUID("varsel_id")
     val varselKilde = enumerationByName<VarselKilde>("varsel_kilde", 50)
     val varselType = enumerationByName<VarselType>("varsel_type", 50)
     val varselStatus = enumerationByName<VarselStatus>("varsel_status", 50)

@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssoekerregisteret.model
 
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
-import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.v1.core.ResultRow
 import java.time.Instant
 import java.util.*
 

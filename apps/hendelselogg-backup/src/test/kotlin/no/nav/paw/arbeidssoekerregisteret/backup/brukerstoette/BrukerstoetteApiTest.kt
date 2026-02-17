@@ -44,7 +44,7 @@ class BrukerstoetteApiTest : FreeSpec({
                 } returns KafkaKeysResponse(id = 1, key = 1L)
 
                 every {
-                    hendelseRecordRepository.readAllNestedRecordsForId(any(), any(), any(), any())
+                    hendelseRecordRepository.readAllNestedRecordsForId(any(), any(), any())
                 } returns emptyList()
 
                 testApplication {
@@ -111,7 +111,7 @@ class BrukerstoetteApiTest : FreeSpec({
                 val testIdent = UUID.randomUUID()
 
                 every {
-                    hendelseRecordRepository.hentIdentitetsnummerForPeriodeId(any(), any())
+                    hendelseRecordRepository.hentIdentitetsnummerForPeriodeId(any())
                 } returns null
 
                 testApplication {
@@ -137,7 +137,7 @@ class BrukerstoetteApiTest : FreeSpec({
                 } returns KafkaKeysResponse(id = 1, key = 1L)
 
                 every {
-                    hendelseRecordRepository.readAllNestedRecordsForId(any(), any(), any(), any())
+                    hendelseRecordRepository.readAllNestedRecordsForId(any(), any(), any())
                 } returns listOf(
                     avvist(
                         identitetsnummer = "12345678901",
@@ -181,7 +181,7 @@ class BrukerstoetteApiTest : FreeSpec({
                 } returns KafkaKeysResponse(id = 1, key = 1L)
 
                 every {
-                    hendelseRecordRepository.readAllNestedRecordsForId(any(), any(), any(), any())
+                    hendelseRecordRepository.readAllNestedRecordsForId(any(), any(), any())
                 } returns listOf(
                     startet.storedHendelseRecord(arbeidssoekerId = 1),
                     opplysninger.storedHendelseRecord(arbeidssoekerId = 1),

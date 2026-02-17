@@ -24,7 +24,7 @@ import no.nav.paw.arbeidssoekerregisteret.utils.beskjedVarselCounter
 import no.nav.paw.arbeidssoekerregisteret.utils.sendVarsel
 import no.nav.paw.logging.logger.buildApplicationLogger
 import org.apache.kafka.clients.producer.Producer
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.util.*
 
 class BestillingService(

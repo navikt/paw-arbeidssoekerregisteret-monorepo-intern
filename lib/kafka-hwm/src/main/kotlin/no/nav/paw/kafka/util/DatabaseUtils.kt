@@ -1,10 +1,10 @@
 package no.nav.paw.kafka.util
 
-import org.jetbrains.exposed.sql.CustomFunction
-import org.jetbrains.exposed.sql.Expression
-import org.jetbrains.exposed.sql.ExpressionWithColumnType
-import org.jetbrains.exposed.sql.IColumnType
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.wrap
+import org.jetbrains.exposed.v1.core.CustomFunction
+import org.jetbrains.exposed.v1.core.Expression
+import org.jetbrains.exposed.v1.core.ExpressionWithColumnType
+import org.jetbrains.exposed.v1.core.IColumnType
+import org.jetbrains.exposed.v1.core.wrap
 
 infix fun <T> ExpressionWithColumnType<T>.max(t: T): Greatest<T> = Greatest(
     expr1 = this,

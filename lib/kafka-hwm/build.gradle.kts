@@ -7,7 +7,7 @@ dependencies {
     api(project(":lib:logging"))
     api(project(":lib:kafka"))
     implementation(libs.kafka.clients)
-    implementation(libs.exposed.core)
+    implementation(libs.exposed.jdbc)
     implementation(libs.exposed.javaTime)
     implementation(libs.micrometer.core)
 
