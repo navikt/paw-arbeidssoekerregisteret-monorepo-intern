@@ -46,8 +46,8 @@ import org.apache.kafka.clients.producer.Partitioner
 import org.apache.kafka.common.Cluster
 import org.apache.kafka.common.serialization.StringSerializer
 import org.flywaydb.core.Flyway
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.testcontainers.containers.PostgreSQLContainer
@@ -157,7 +157,7 @@ open class TestContext(
             val eksternVarselRepository = EksterntVarselRepository()
             val bestillingRepository = BestillingRepository()
             val bestiltVarselRepository = BestiltVarselRepository()
-            val partitioner = object: Partitioner {
+            val partitioner = object : Partitioner {
                 override fun partition(
                     topic: String?,
                     key: Any?,
@@ -165,14 +165,16 @@ open class TestContext(
                     value: Any?,
                     valueBytes: ByteArray?,
                     cluster: Cluster?
-                ): Int { return 0 }
+                ): Int {
+                    return 0
+                }
 
                 override fun close() {}
 
                 override fun configure(configs: Map<String?, *>?) {}
 
             }
-            val varselKafkaProducer = MockProducer(true, partitioner,StringSerializer(), StringSerializer())
+            val varselKafkaProducer = MockProducer(true, partitioner, StringSerializer(), StringSerializer())
             val varselMeldingBygger = VarselMeldingBygger(
                 runtimeEnvironment = serverConfig.runtimeEnvironment,
                 minSideVarselConfig = loadNaisOrLocalConfiguration<MinSideVarselConfig>(MIN_SIDE_VARSEL_CONFIG)

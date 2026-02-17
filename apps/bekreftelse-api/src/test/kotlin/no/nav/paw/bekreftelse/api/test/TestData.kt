@@ -11,7 +11,7 @@ import no.nav.paw.bekreftelse.api.models.MottaBekreftelseRequest
 import no.nav.paw.bekreftelse.api.models.TilgjengeligeBekreftelserRequest
 import no.nav.paw.bekreftelse.api.repository.BekreftelseRepository
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.time.Duration
 import java.time.Instant
 import java.util.*

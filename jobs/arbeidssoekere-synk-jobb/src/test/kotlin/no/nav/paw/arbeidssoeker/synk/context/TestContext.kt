@@ -11,7 +11,7 @@ import no.nav.paw.arbeidssoeker.synk.test.createTestDataSource
 import no.nav.paw.arbeidssoeker.synk.utils.ArbeidssoekerCsvReader
 import no.nav.paw.arbeidssoeker.synk.utils.flywayMigrate
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
-import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.v1.jdbc.Database
 import kotlin.io.path.toPath
 
 class TestContext {

@@ -43,7 +43,7 @@ import no.nav.person.pdl.aktor.v2.Type
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.common.TopicPartition
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.time.Duration
 import java.time.Instant
 import java.util.*

@@ -42,7 +42,7 @@ import no.nav.paw.logging.logger.buildLogger
 import no.nav.paw.security.authentication.model.Bruker
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 class BekreftelseService(
     private val serverConfig: ServerConfig,

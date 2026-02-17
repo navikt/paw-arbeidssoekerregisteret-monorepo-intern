@@ -17,7 +17,6 @@ import no.nav.paw.arbeidssoekerregisteret.backup.api.oppslagsapi.models.Arbeidss
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecordRepository
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.StoredHendelseRecord
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
-import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
@@ -35,8 +34,7 @@ class BrukerstoetteService(
     private val consumerVersion: Int,
     private val kafkaKeysClient: KafkaKeysClient,
     private val oppslagApiClient: OppslagApiClient,
-    private val hendelseRecordRepository: HendelseRecordRepository,
-    private val hendelseDeserializer: HendelseDeserializer,
+    private val hendelseRecordRepository: HendelseRecordRepository
 ) {
     private val errorLogger = LoggerFactory.getLogger("error_logger")
     private val apiOppslagLogger = LoggerFactory.getLogger("api_oppslag_logger")
@@ -48,8 +46,7 @@ class BrukerstoetteService(
             else -> {
                 val periodeId = runCatching { UUID.fromString(id) }
                     .getOrElse { throw UgyldigIdentFormat("Ugyldig identformat") }
-
-                hendelseRecordRepository.hentIdentitetsnummerForPeriodeId(hendelseDeserializer, periodeId)
+                hendelseRecordRepository.hentIdentitetsnummerForPeriodeId(periodeId)
                     ?: throw FantIkkeIdentitetsnummer("Fant ikke identitetsnummer for periodeId: $periodeId")
             }
         }
@@ -59,7 +56,6 @@ class BrukerstoetteService(
 
         val hendelser = hendelseRecordRepository.readAllNestedRecordsForId(
             consumerVersion,
-            hendelseDeserializer,
             id,
             merged = false
         )

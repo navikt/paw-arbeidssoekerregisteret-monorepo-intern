@@ -3,7 +3,7 @@ package no.nav.paw.arbeidssoeker.synk.model
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import no.nav.paw.arbeidssoeker.synk.config.DefaultVerdier
-import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.v1.core.ResultRow
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime

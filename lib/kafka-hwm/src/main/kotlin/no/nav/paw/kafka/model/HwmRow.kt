@@ -1,6 +1,6 @@
 package no.nav.paw.kafka.model
 
-import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.v1.core.ResultRow
 import java.time.Instant
 
 data class HwmRow(

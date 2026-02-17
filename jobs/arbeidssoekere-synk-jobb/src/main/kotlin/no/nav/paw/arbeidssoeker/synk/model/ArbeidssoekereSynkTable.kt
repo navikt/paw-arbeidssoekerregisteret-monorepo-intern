@@ -1,7 +1,7 @@
 package no.nav.paw.arbeidssoeker.synk.model
 
-import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.javatime.timestamp
+import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.javatime.timestamp
 
 object ArbeidssoekereSynkTable : Table("arbeidssoekere_synk") {
     val version = varchar("version", 20)

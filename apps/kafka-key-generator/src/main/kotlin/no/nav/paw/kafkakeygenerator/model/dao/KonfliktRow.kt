@@ -2,7 +2,7 @@ package no.nav.paw.kafkakeygenerator.model.dao
 
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
-import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.v1.core.ResultRow
 import java.time.Instant
 
 data class KonfliktRow(

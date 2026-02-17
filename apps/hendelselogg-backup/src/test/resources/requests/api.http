@@ -1,0 +1,21 @@
+### POST /api/v1/arbeidssoeker/detaljer med identitetsnummer
+
+POST {{baseUrl}}/api/v1/arbeidssoeker/detaljer
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("azure-m2m")}}
+
+{
+    "identitetsnummer": "10000456175"
+}
+
+### POST /api/v1/arbeidssoeker/detaljer med periodeId
+
+POST {{baseUrl}}/api/v1/arbeidssoeker/detaljer
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("azure-m2m")}}
+
+{
+    "identitetsnummer": "dd7d68d5-7d82-4c9f-aba3-892cc819ec1b"
+}

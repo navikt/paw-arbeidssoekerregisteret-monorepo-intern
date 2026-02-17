@@ -3,14 +3,14 @@ package no.nav.paw.kafkakeygenerator.service
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
-import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
-import no.nav.paw.kafkakeygenerator.model.dao.KafkaKeysTable
-import no.nav.paw.kafkakeygenerator.model.dao.IdentitetRow
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
+import no.nav.paw.kafkakeygenerator.model.dao.IdentitetRow
+import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
+import no.nav.paw.kafkakeygenerator.model.dao.KafkaKeysTable
 import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.logging.logger.buildLogger
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.time.Instant
 
 class IdentitetService(

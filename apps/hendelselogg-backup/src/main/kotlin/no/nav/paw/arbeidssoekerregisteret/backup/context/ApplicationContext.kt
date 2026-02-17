@@ -7,6 +7,7 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.backup.BackupService
 import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.BrukerstoetteService
 import no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette.initClients
+import no.nav.paw.arbeidssoekerregisteret.backup.config.APPLICATION_CONFIG
 import no.nav.paw.arbeidssoekerregisteret.backup.config.ApplicationConfig
 import no.nav.paw.arbeidssoekerregisteret.backup.config.SERVER_CONFIG
 import no.nav.paw.arbeidssoekerregisteret.backup.config.ServerConfig
@@ -26,6 +27,7 @@ import no.nav.paw.kafka.consumer.NonCommittingKafkaConsumerWrapper
 import no.nav.paw.kafka.factory.KafkaFactory
 import no.nav.paw.kafkakeygenerator.auth.AZURE_M2M_CONFIG
 import no.nav.paw.kafkakeygenerator.auth.AzureM2MConfig
+import no.nav.paw.security.authentication.config.SECURITY_CONFIG
 import no.nav.paw.security.authentication.config.SecurityConfig
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.common.serialization.LongDeserializer
@@ -48,13 +50,12 @@ data class ApplicationContext(
 
     companion object {
         fun create(): ApplicationContext {
-
-            val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>("application_config.toml")
+            val applicationConfig = loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG)
             val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
             val databaseConfig = loadNaisOrLocalConfiguration<DatabaseConfig>(DATABASE_CONFIG)
             val azureM2MConfig = loadNaisOrLocalConfiguration<AzureM2MConfig>(AZURE_M2M_CONFIG)
             val serverConfig = loadNaisOrLocalConfiguration<ServerConfig>(SERVER_CONFIG)
-            val securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>("security_config.toml")
+            val securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>(SECURITY_CONFIG)
 
             val dataSource = createHikariDataSource(databaseConfig)
             val (kafkaKeysClient, oppslagApiClient) = initClients(azureM2MConfig)
@@ -62,8 +63,7 @@ data class ApplicationContext(
                 applicationConfig.consumerVersion,
                 kafkaKeysClient,
                 oppslagApiClient,
-                HendelseRecordPostgresRepository,
-                hendelseDeserializer = HendelseDeserializer()
+                HendelseRecordPostgresRepository
             )
 
             val consumer = KafkaFactory(kafkaConfig).createConsumer(

@@ -54,7 +54,7 @@ class HendelseRecordRepositoryTest : FreeSpec({
                 )
             }
             "we can write to the log without errors" {
-                writeRecord(1, hendelseSerde.serializer(), record)
+                writeRecord(1, record)
             }
             val recordVersion2 = ConsumerRecord(
                 record.topic(),
@@ -66,7 +66,7 @@ class HendelseRecordRepositoryTest : FreeSpec({
                 )
             )
             "we can write a different version to the log without errors" {
-                writeRecord(2, hendelseSerde.serializer(), recordVersion2)
+                writeRecord(2, recordVersion2)
             }
             "we can read a record based on id" {
                 val storedData =

@@ -9,7 +9,7 @@ import no.nav.paw.logging.logger.buildErrorLogger
 import no.nav.paw.logging.logger.buildLogger
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.time.Instant
 
 class PawPeriodeKafkaConsumerService(

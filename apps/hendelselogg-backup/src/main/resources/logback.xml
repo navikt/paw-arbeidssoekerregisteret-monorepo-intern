@@ -1,39 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <appender name="STDOUT_JSON" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
-    </appender>
-
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %t %5p %c{1}:%L - %m%n</pattern>
         </encoder>
     </appender>
-
-
-    <appender name="secureLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>/secure-logs/secure.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>/secure-logs/secure.log.%i</fileNamePattern>
-            <minIndex>1</minIndex>
-            <maxIndex>1</maxIndex>
-        </rollingPolicy>
-        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <maxFileSize>50MB</maxFileSize>
-        </triggeringPolicy>
+    <appender name="STDOUT_JSON" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+    </appender>
+    <appender name="TEAM_LOGS" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>team-logs.nais-system:5170</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>
+                {"google_cloud_project":"${GOOGLE_CLOUD_PROJECT}","nais_namespace_name":"${NAIS_NAMESPACE}","nais_pod_name":"${HOSTNAME}","nais_container_name":"${NAIS_APP_NAME}"}
+            </customFields>
+            <includeContext>false</includeContext>
+        </encoder>
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
+                <marker>TEAM_LOGS</marker>
+            </evaluator>
+            <OnMatch>ACCEPT</OnMatch>
+            <OnMismatch>DENY</OnMismatch>
+        </filter>
     </appender>
 
     <if condition='"${NAIS_CLUSTER_NAME}" == "NAIS_CLUSTER_NAME_IS_UNDEFINED"'>
         <then>
             <root level="INFO">
-                <appender-ref ref="CONSOLE"/>
+                <appender-ref ref="STDOUT"/>
             </root>
+            <logger name="no.nav" level="INFO"/>
+            <logger name="Exposed" level="DEBUG"/>
+            <logger name="org.apache.kafka.common" level="WARN"/>
+            <logger name="org.apache.kafka.clients" level="WARN"/>
+            <logger name="io.confluent.kafka.serializers" level="WARN"/>
         </then>
         <else>
             <logger name="tjenestekall" level="DEBUG" additivity="false">
-                <appender-ref ref="secureLog"/>
+                <appender-ref ref="TEAM_LOGS"/>
             </logger>
+            <logger name="no.nav" level="INFO"/>
             <root level="INFO">
                 <appender-ref ref="STDOUT_JSON"/>
             </root>
@@ -41,10 +48,4 @@
     </if>
 
     <include resource="no/nav/common/audit_log/logback-naudit.xml"/>
-
-    <logger name="org.apache.kafka" level="INFO"/>
-    <logger name="io.confluent" level="INFO"/>
-    <logger name="no.nav" level="INFO"/>
-
-
 </configuration>

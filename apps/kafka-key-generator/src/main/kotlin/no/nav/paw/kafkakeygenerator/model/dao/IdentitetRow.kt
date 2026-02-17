@@ -2,8 +2,8 @@ package no.nav.paw.kafkakeygenerator.model.dao
 
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
-import org.jetbrains.exposed.sql.Alias
-import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.v1.core.Alias
+import org.jetbrains.exposed.v1.core.ResultRow
 import java.time.Instant
 
 data class IdentitetRow(

@@ -14,7 +14,6 @@ import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecor
 import no.nav.paw.arbeidssoekerregisteret.backup.database.migrateDatabase
 import no.nav.paw.arbeidssoekerregisteret.backup.metrics.Metrics
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
-import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.database.config.DATABASE_CONFIG
 import no.nav.paw.database.config.DatabaseConfig
@@ -23,7 +22,7 @@ import no.nav.paw.kafka.consumer.NonCommittingKafkaConsumerWrapper
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.security.authentication.config.SecurityConfig
 import org.apache.kafka.clients.consumer.Consumer
-import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.v1.jdbc.Database
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import javax.sql.DataSource
@@ -57,8 +56,7 @@ data class TestApplicationContext(
                 applicationConfig.consumerVersion,
                 kafkaKeysClient,
                 oppslagApiClient,
-                hendelseRecordRepository,
-                HendelseDeserializer(),
+                hendelseRecordRepository
             )
             val metrics = mockk<Metrics>(relaxed = true)
             val backupService = mockk<BackupService>(relaxed = true)

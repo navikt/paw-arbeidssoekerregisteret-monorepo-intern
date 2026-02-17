@@ -4,10 +4,11 @@ import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseTable
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseTable.recordKey
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.StoredHendelseRecord
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.transactions.TransactionManager
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 private val hendelseDeserializer = HendelseDeserializer()
 
@@ -26,7 +27,7 @@ fun readRecord(consumerVersion: Int, partition: Int, offset: Long): StoredHendel
                 recordKey = it[recordKey],
                 arbeidssoekerId = it[HendelseTable.arbeidssoekerId],
                 traceparent = it[HendelseTable.traceparent],
-                data = hendelseDeserializer.deserializeFromString(it[HendelseTable.data]),
+                data = it[HendelseTable.data],
                 merged = false
             )
         }

@@ -7,7 +7,7 @@ import no.nav.paw.kafka.model.HwmTable
 import no.nav.paw.kafka.model.asHwm
 import no.nav.paw.kafka.util.kafkaHwmUpdateGauge
 import no.nav.paw.logging.logger.buildNamedLogger
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.slf4j.MDC
 import java.time.Instant
 
