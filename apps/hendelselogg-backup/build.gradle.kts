@@ -53,7 +53,6 @@ dependencies {
     implementation(libs.kafka.clients)
 
     // Database
-    implementation(libs.exposed.core)
     implementation(libs.exposed.jdbc)
     implementation(libs.exposed.javaTime)
     implementation(libs.database.postgres.driver)
