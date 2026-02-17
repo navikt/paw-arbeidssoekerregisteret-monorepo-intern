@@ -55,7 +55,6 @@ include(
     "apps:api-start-stopp-perioder",
     "apps:hendelseprosessor",
     "apps:hendelselogg-backup",
-    "apps:utgang-pdl",
     "apps:kafka-key-generator",
     "apps:bekreftelse-tjeneste",
     "apps:bekreftelse-api",
