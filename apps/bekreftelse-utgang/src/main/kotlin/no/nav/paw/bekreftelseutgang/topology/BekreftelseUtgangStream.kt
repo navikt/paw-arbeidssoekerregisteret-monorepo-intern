@@ -18,6 +18,7 @@ import no.nav.paw.bekreftelseutgang.tilstand.StateStore
 import no.nav.paw.bekreftelseutgang.tilstand.generateAvsluttetEventIfStateIsComplete
 import no.nav.paw.config.env.appImageOrDefaultForLocal
 import no.nav.paw.kafka.processor.mapNonNull
+import no.nav.paw.kafka.processor.mapRecord
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.Consumed
@@ -40,6 +41,10 @@ fun StreamsBuilder.buildBekreftelseUtgangStream(applicationConfig: ApplicationCo
 
                 newState.generateAvsluttetEventIfStateIsComplete(applicationConfig)
 
+            }.mapRecord(name = "fjern_source_header") { record ->
+                val headers = record.headers()
+                val updatedHeaders = headers.remove("source")
+                record.withHeaders(updatedHeaders)
             }.to(hendelseloggTopic, Produced.with(Serdes.Long(), HendelseSerde()))
     }
 }
