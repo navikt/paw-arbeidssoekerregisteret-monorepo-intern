@@ -11,10 +11,13 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.beInstanceOf
 import no.nav.paw.arbeidssoekerregisteret.context.KafkaTestContext
 import no.nav.paw.arbeidssoekerregisteret.exception.PeriodeIkkeFunnetException
+import no.nav.paw.arbeidssoekerregisteret.model.EksterneVarslerTable
+import no.nav.paw.arbeidssoekerregisteret.model.PerioderTable
 import no.nav.paw.arbeidssoekerregisteret.model.VarselEventName
 import no.nav.paw.arbeidssoekerregisteret.model.VarselKilde
 import no.nav.paw.arbeidssoekerregisteret.model.VarselStatus
 import no.nav.paw.arbeidssoekerregisteret.model.VarselType
+import no.nav.paw.arbeidssoekerregisteret.model.VarslerTable
 import no.nav.paw.arbeidssoekerregisteret.test.TestData
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.tms.varsel.action.EksternKanal
@@ -37,14 +40,14 @@ class TopologyTest : FreeSpec({
                     val key = Random.nextLong()
                     val aapenPeriode = aapenPeriode()
                     periodeTopic.pipeInput(aapenPeriode.asRecord(key))
-                    val periodeRows1 = periodeRepository.findAll()
+                    val periodeRows1 = PerioderTable.findAll()
                     periodeRows1 shouldHaveSize 1
                     val periodeRow1 = periodeRows1[0]
                     periodeRow1.periodeId shouldBe aapenPeriode.id
                     periodeRow1.avsluttetTimestamp shouldBe null
                     periodeRow1.updatedTimestamp shouldBe null
                     periodeVarselTopic.isEmpty shouldBe true
-                    varselRepository.findAll() shouldHaveSize 0
+                    VarslerTable.findAll() shouldHaveSize 0
 
                     val lukketPeriode = lukketPeriode(
                         id = aapenPeriode.id,
@@ -58,15 +61,15 @@ class TopologyTest : FreeSpec({
                         )
                     )
                     periodeTopic.pipeInput(lukketPeriode.asRecord(key))
-                    val periodeRows2 = periodeRepository.findAll()
+                    val periodeRows2 = PerioderTable.findAll()
                     periodeRows2 shouldHaveSize 1
                     val periodeRow2 = periodeRows2[0]
                     periodeRow2.periodeId shouldBe aapenPeriode.id
                     periodeRow2.periodeId shouldBe lukketPeriode.id
                     periodeRow2.avsluttetTimestamp shouldNotBe null
                     periodeRow2.updatedTimestamp shouldNotBe null
-                    varselRepository.findAll() shouldHaveSize 1
-                    val varselRows1 = varselRepository.findByPeriodeId(lukketPeriode.id)
+                    VarslerTable.findAll() shouldHaveSize 1
+                    val varselRows1 = VarslerTable.findByPeriodeId(lukketPeriode.id)
                     varselRows1 shouldHaveSize 1
                     val varselRow1 = varselRows1[0]
                     varselRow1 shouldNotBe null
@@ -95,14 +98,14 @@ class TopologyTest : FreeSpec({
                     val key = Random.nextLong()
                     val aapenPeriode = aapenPeriode()
                     periodeTopic.pipeInput(aapenPeriode.asRecord(key))
-                    val periodeRows1 = periodeRepository.findAll()
+                    val periodeRows1 = PerioderTable.findAll()
                     periodeRows1 shouldHaveSize 1
                     val periodeRow1 = periodeRows1[0]
                     periodeRow1.periodeId shouldBe aapenPeriode.id
                     periodeRow1.avsluttetTimestamp shouldBe null
                     periodeRow1.updatedTimestamp shouldBe null
                     periodeVarselTopic.isEmpty shouldBe true
-                    varselRepository.findAll() shouldHaveSize 0
+                    VarslerTable.findAll() shouldHaveSize 0
 
                     val lukketPeriode = lukketPeriode(
                         id = aapenPeriode.id,
@@ -110,15 +113,15 @@ class TopologyTest : FreeSpec({
                         startet = aapenPeriode.startet
                     )
                     periodeTopic.pipeInput(lukketPeriode.asRecord(key))
-                    val periodeRows2 = periodeRepository.findAll()
+                    val periodeRows2 = PerioderTable.findAll()
                     periodeRows2 shouldHaveSize 1
                     val periodeRow2 = periodeRows2[0]
                     periodeRow2.periodeId shouldBe aapenPeriode.id
                     periodeRow2.periodeId shouldBe lukketPeriode.id
                     periodeRow2.avsluttetTimestamp shouldNotBe null
                     periodeRow2.updatedTimestamp shouldNotBe null
-                    varselRepository.findAll() shouldHaveSize 1
-                    val varselRows1 = varselRepository.findByPeriodeId(lukketPeriode.id)
+                    VarslerTable.findAll() shouldHaveSize 1
+                    val varselRows1 = VarslerTable.findByPeriodeId(lukketPeriode.id)
                     varselRows1 shouldHaveSize 1
                     val varselRow1 = varselRows1[0]
                     varselRow1 shouldNotBe null
@@ -148,14 +151,14 @@ class TopologyTest : FreeSpec({
                     val key = Random.nextLong()
                     val lukketPeriode = lukketPeriode()
                     periodeTopic.pipeInput(lukketPeriode.asRecord(key))
-                    val periodeRows1 = periodeRepository.findAll()
+                    val periodeRows1 = PerioderTable.findAll()
                     periodeRows1 shouldHaveSize 1
                     val periodeRow1 = periodeRows1[0]
                     periodeRow1.periodeId shouldBe lukketPeriode.id
                     periodeRow1.avsluttetTimestamp shouldNotBe null
                     periodeRow1.updatedTimestamp shouldBe null
-                    varselRepository.findAll() shouldHaveSize 1
-                    val varselRows1 = varselRepository.findByPeriodeId(lukketPeriode.id)
+                    VarslerTable.findAll() shouldHaveSize 1
+                    val varselRows1 = VarslerTable.findByPeriodeId(lukketPeriode.id)
                     val varselRow1 = varselRows1[0]
                     varselRow1 shouldNotBe null
                     varselRow1.periodeId shouldBe lukketPeriode.id
@@ -184,7 +187,7 @@ class TopologyTest : FreeSpec({
                     )
                     periodeTopic.pipeInput(aapenPeriode.asRecord(key))
                     periodeVarselTopic.isEmpty shouldBe true
-                    val periodeRows2 = periodeRepository.findAll()
+                    val periodeRows2 = PerioderTable.findAll()
                     periodeRows2 shouldHaveSize 1
                     val periodeRow2 = periodeRows2[0]
                     periodeRow2.periodeId shouldBe aapenPeriode.id
@@ -204,8 +207,8 @@ class TopologyTest : FreeSpec({
                         hendelseTidspunkt = Instant.now().minus(Duration.ofMinutes(10))
                     )
                     bekreftelseHendelseTopic.pipeInput(bekreftelseTilgjengelig.asRecord(key))
-                    varselRepository.findAll() shouldHaveSize 1
-                    val varselRow1 = varselRepository.findByBekreftelseId(bekreftelseTilgjengelig.bekreftelseId)
+                    VarslerTable.findAll() shouldHaveSize 1
+                    val varselRow1 = VarslerTable.findByBekreftelseId(bekreftelseTilgjengelig.bekreftelseId)
                     varselRow1 shouldNotBe null
                     varselRow1!!.periodeId shouldBe bekreftelseTilgjengelig.periodeId
                     varselRow1.bekreftelseId shouldBe bekreftelseTilgjengelig.bekreftelseId
@@ -265,8 +268,8 @@ class TopologyTest : FreeSpec({
                         tidspunkt = Instant.now().minus(Duration.ofMinutes(1))
                     )
                     varselHendelseTopic.pipeInput(oppgaveVarselHendelse5)
-                    varselRepository.findAll() shouldHaveSize 1
-                    val varselRow2 = varselRepository.findByBekreftelseId(bekreftelseTilgjengelig.bekreftelseId)
+                    VarslerTable.findAll() shouldHaveSize 1
+                    val varselRow2 = VarslerTable.findByBekreftelseId(bekreftelseTilgjengelig.bekreftelseId)
                     varselRow2 shouldNotBe null
                     varselRow2!!.periodeId shouldBe bekreftelseTilgjengelig.periodeId
                     varselRow2.bekreftelseId shouldBe bekreftelseTilgjengelig.bekreftelseId
@@ -294,8 +297,8 @@ class TopologyTest : FreeSpec({
                         value.eventName shouldBe EventType.Inaktiver
                     }
                     bekreftelseVarselTopic.isEmpty shouldBe true
-                    varselRepository.findAll() shouldHaveSize 1
-                    eksternVarselRepository.findAll() shouldHaveSize 1
+                    VarslerTable.findAll() shouldHaveSize 1
+                    EksterneVarslerTable.findAll() shouldHaveSize 1
                 }
 
                 "To bekreftelser tilgjengelig så periode avsluttet" {
@@ -307,8 +310,8 @@ class TopologyTest : FreeSpec({
                         hendelseTidspunkt = Instant.now().minus(Duration.ofMinutes(20))
                     )
                     bekreftelseHendelseTopic.pipeInput(bekreftelseTilgjengelig1.asRecord(key))
-                    varselRepository.findAll() shouldHaveSize 1
-                    val varselRow1 = varselRepository.findByBekreftelseId(bekreftelseTilgjengelig1.bekreftelseId)
+                    VarslerTable.findAll() shouldHaveSize 1
+                    val varselRow1 = VarslerTable.findByBekreftelseId(bekreftelseTilgjengelig1.bekreftelseId)
                     varselRow1 shouldNotBe null
                     varselRow1!!.periodeId shouldBe bekreftelseTilgjengelig1.periodeId
                     varselRow1.bekreftelseId shouldBe bekreftelseTilgjengelig1.bekreftelseId
@@ -361,7 +364,7 @@ class TopologyTest : FreeSpec({
                         tidspunkt = Instant.now().minus(Duration.ofMinutes(10))
                     )
                     varselHendelseTopic.pipeInput(oppgaveVarselHendelse4)
-                    val varselRow2 = varselRepository.findByBekreftelseId(bekreftelseTilgjengelig1.bekreftelseId)
+                    val varselRow2 = VarslerTable.findByBekreftelseId(bekreftelseTilgjengelig1.bekreftelseId)
                     varselRow2 shouldNotBe null
                     varselRow2!!.periodeId shouldBe bekreftelseTilgjengelig1.periodeId
                     varselRow2.bekreftelseId shouldBe bekreftelseTilgjengelig1.bekreftelseId
@@ -380,8 +383,8 @@ class TopologyTest : FreeSpec({
                         hendelseTidspunkt = Instant.now().minus(Duration.ofMinutes(10))
                     )
                     bekreftelseHendelseTopic.pipeInput(bekreftelseTilgjengelig2.asRecord(key))
-                    varselRepository.findAll() shouldHaveSize 2
-                    val varselRow3 = varselRepository.findByBekreftelseId(bekreftelseTilgjengelig2.bekreftelseId)
+                    VarslerTable.findAll() shouldHaveSize 2
+                    val varselRow3 = VarslerTable.findByBekreftelseId(bekreftelseTilgjengelig2.bekreftelseId)
                     varselRow3 shouldNotBe null
                     varselRow3!!.periodeId shouldBe bekreftelseTilgjengelig2.periodeId
                     varselRow3.bekreftelseId shouldBe bekreftelseTilgjengelig2.bekreftelseId
@@ -423,9 +426,9 @@ class TopologyTest : FreeSpec({
                         value.eventName shouldBe EventType.Inaktiver
                     }
                     bekreftelseVarselTopic.isEmpty shouldBe true
-                    periodeRepository.findAll() shouldHaveSize 0
-                    varselRepository.findAll() shouldHaveSize 2
-                    eksternVarselRepository.findAll() shouldHaveSize 1
+                    PerioderTable.findAll() shouldHaveSize 0
+                    VarslerTable.findAll() shouldHaveSize 2
+                    EksterneVarslerTable.findAll() shouldHaveSize 1
                 }
 
                 "To bekreftelser tilgjengelig så på vegne av startet" {
@@ -437,8 +440,8 @@ class TopologyTest : FreeSpec({
                         hendelseTidspunkt = Instant.now().minus(Duration.ofMinutes(20))
                     )
                     bekreftelseHendelseTopic.pipeInput(bekreftelseTilgjengelig1.asRecord(key))
-                    varselRepository.findAll() shouldHaveSize 1
-                    val varselRow1 = varselRepository.findByBekreftelseId(bekreftelseTilgjengelig1.bekreftelseId)
+                    VarslerTable.findAll() shouldHaveSize 1
+                    val varselRow1 = VarslerTable.findByBekreftelseId(bekreftelseTilgjengelig1.bekreftelseId)
                     varselRow1 shouldNotBe null
                     varselRow1!!.periodeId shouldBe bekreftelseTilgjengelig1.periodeId
                     varselRow1.bekreftelseId shouldBe bekreftelseTilgjengelig1.bekreftelseId
@@ -491,7 +494,7 @@ class TopologyTest : FreeSpec({
                         tidspunkt = Instant.now().minus(Duration.ofMinutes(10))
                     )
                     varselHendelseTopic.pipeInput(oppgaveVarselHendelse4)
-                    val varselRow2 = varselRepository.findByBekreftelseId(bekreftelseTilgjengelig1.bekreftelseId)
+                    val varselRow2 = VarslerTable.findByBekreftelseId(bekreftelseTilgjengelig1.bekreftelseId)
                     varselRow2 shouldNotBe null
                     varselRow2!!.periodeId shouldBe bekreftelseTilgjengelig1.periodeId
                     varselRow2.bekreftelseId shouldBe bekreftelseTilgjengelig1.bekreftelseId
@@ -510,8 +513,8 @@ class TopologyTest : FreeSpec({
                         hendelseTidspunkt = Instant.now().minus(Duration.ofMinutes(10))
                     )
                     bekreftelseHendelseTopic.pipeInput(bekreftelseTilgjengelig2.asRecord(key))
-                    varselRepository.findAll() shouldHaveSize 2
-                    val varselRow3 = varselRepository.findByBekreftelseId(bekreftelseTilgjengelig2.bekreftelseId)
+                    VarslerTable.findAll() shouldHaveSize 2
+                    val varselRow3 = VarslerTable.findByBekreftelseId(bekreftelseTilgjengelig2.bekreftelseId)
                     varselRow3 shouldNotBe null
                     varselRow3!!.periodeId shouldBe bekreftelseTilgjengelig2.periodeId
                     varselRow3.bekreftelseId shouldBe bekreftelseTilgjengelig2.bekreftelseId
@@ -554,9 +557,9 @@ class TopologyTest : FreeSpec({
                         value.eventName shouldBe EventType.Inaktiver
                     }
                     bekreftelseVarselTopic.isEmpty shouldBe true
-                    periodeRepository.findAll() shouldHaveSize 0
-                    varselRepository.findAll() shouldHaveSize 2
-                    eksternVarselRepository.findAll() shouldHaveSize 1
+                    PerioderTable.findAll() shouldHaveSize 0
+                    VarslerTable.findAll() shouldHaveSize 2
+                    EksterneVarslerTable.findAll() shouldHaveSize 1
                 }
 
                 "Skal ignorere urelevante hendelser" {
@@ -587,10 +590,10 @@ class TopologyTest : FreeSpec({
                     val hendelse6 = eksternGracePeriodeUtloept(periodeId = aapenPeriode.id)
                     bekreftelseHendelseTopic.pipeInput(hendelse6.asRecord(key = key))
 
-                    periodeRepository.findAll() shouldHaveSize 0
-                    eksternVarselRepository.findAll() shouldHaveSize 0
-                    varselRepository.findAll() shouldHaveSize 1
-                    val varselRow = varselRepository.findByBekreftelseId(bekreftelseTilgjengelig.bekreftelseId)
+                    PerioderTable.findAll() shouldHaveSize 0
+                    EksterneVarslerTable.findAll() shouldHaveSize 0
+                    VarslerTable.findAll() shouldHaveSize 1
+                    val varselRow = VarslerTable.findByBekreftelseId(bekreftelseTilgjengelig.bekreftelseId)
                     varselRow shouldNotBe null
                     varselRow!!.periodeId shouldBe bekreftelseTilgjengelig.periodeId
                     varselRow.bekreftelseId shouldBe bekreftelseTilgjengelig.bekreftelseId

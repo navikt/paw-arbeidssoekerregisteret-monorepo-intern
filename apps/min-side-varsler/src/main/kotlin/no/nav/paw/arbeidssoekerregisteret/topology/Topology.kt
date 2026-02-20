@@ -37,7 +37,7 @@ private const val BEKREFTELSE_HENDELSE_PROCESSOR = "processBekreftelseHendelser"
 const val INTERNAL_STATE_STORE = "internalStateStore"
 typealias InternalStateStore = KeyValueStore<UUID, InternalState>
 
-fun StreamsBuilder.internalStateStore(): StreamsBuilder {
+fun StreamsBuilder.addInternalStateStore(): StreamsBuilder {
     addStateStore(
         Stores.keyValueStoreBuilder(
             Stores.persistentKeyValueStore(INTERNAL_STATE_STORE),
@@ -48,7 +48,7 @@ fun StreamsBuilder.internalStateStore(): StreamsBuilder {
     return this
 }
 
-fun StreamsBuilder.periodeKafkaTopology(
+fun StreamsBuilder.addPeriodeStream(
     applicationConfig: ApplicationConfig,
     meterRegistry: MeterRegistry,
     varselService: VarselService
@@ -68,7 +68,7 @@ fun StreamsBuilder.periodeKafkaTopology(
     return this
 }
 
-fun StreamsBuilder.bekreftelseKafkaTopology(
+fun StreamsBuilder.addBekreftelseHendelseStream(
     applicationConfig: ApplicationConfig,
     meterRegistry: MeterRegistry,
     varselService: VarselService
@@ -108,7 +108,7 @@ fun StreamsBuilder.bekreftelseKafkaTopology(
     return this
 }
 
-fun StreamsBuilder.varselHendelserKafkaTopology(
+fun StreamsBuilder.addVarselHendelseStream(
     runtimeEnvironment: RuntimeEnvironment,
     applicationConfig: ApplicationConfig,
     meterRegistry: MeterRegistry,

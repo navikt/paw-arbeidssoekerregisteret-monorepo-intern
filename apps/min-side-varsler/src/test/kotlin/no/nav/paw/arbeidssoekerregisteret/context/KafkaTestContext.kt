@@ -7,17 +7,12 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.config.ApplicationConfig
 import no.nav.paw.arbeidssoekerregisteret.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.model.VarselHendelse
-import no.nav.paw.arbeidssoekerregisteret.repository.BestillingRepository
-import no.nav.paw.arbeidssoekerregisteret.repository.BestiltVarselRepository
-import no.nav.paw.arbeidssoekerregisteret.repository.EksterntVarselRepository
-import no.nav.paw.arbeidssoekerregisteret.repository.PeriodeRepository
-import no.nav.paw.arbeidssoekerregisteret.repository.VarselRepository
 import no.nav.paw.arbeidssoekerregisteret.service.BestillingService
 import no.nav.paw.arbeidssoekerregisteret.service.VarselService
 import no.nav.paw.arbeidssoekerregisteret.topology.INTERNAL_STATE_STORE
-import no.nav.paw.arbeidssoekerregisteret.topology.bekreftelseKafkaTopology
-import no.nav.paw.arbeidssoekerregisteret.topology.periodeKafkaTopology
-import no.nav.paw.arbeidssoekerregisteret.topology.varselHendelserKafkaTopology
+import no.nav.paw.arbeidssoekerregisteret.topology.addBekreftelseHendelseStream
+import no.nav.paw.arbeidssoekerregisteret.topology.addPeriodeStream
+import no.nav.paw.arbeidssoekerregisteret.topology.addVarselHendelseStream
 import no.nav.paw.arbeidssoekerregisteret.utils.InternalStateSerde
 import no.nav.paw.arbeidssoekerregisteret.utils.VarselHendelseSerde
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
@@ -37,7 +32,6 @@ import org.apache.kafka.streams.TopologyTestDriver
 import org.apache.kafka.streams.state.Stores
 import java.util.*
 import javax.sql.DataSource
-import kotlin.collections.set
 
 class KafkaTestContext(
     override val dataSource: DataSource,
@@ -47,11 +41,6 @@ class KafkaTestContext(
     override val applicationConfig: ApplicationConfig,
     override val securityConfig: SecurityConfig,
     override val prometheusMeterRegistry: PrometheusMeterRegistry,
-    override val periodeRepository: PeriodeRepository,
-    override val varselRepository: VarselRepository,
-    override val eksternVarselRepository: EksterntVarselRepository,
-    override val bestillingRepository: BestillingRepository,
-    override val bestiltVarselRepository: BestiltVarselRepository,
     override val varselService: VarselService,
     override val bestillingService: BestillingService,
     val periodeTopic: TestInputTopic<Long, Periode>,
@@ -68,11 +57,6 @@ class KafkaTestContext(
     applicationConfig = applicationConfig,
     securityConfig = securityConfig,
     prometheusMeterRegistry = prometheusMeterRegistry,
-    periodeRepository = periodeRepository,
-    varselRepository = varselRepository,
-    eksternVarselRepository = eksternVarselRepository,
-    bestillingRepository = bestillingRepository,
-    bestiltVarselRepository = bestiltVarselRepository,
     bestillingService = bestillingService,
     varselService = varselService
 ) {
@@ -100,7 +84,7 @@ class KafkaTestContext(
         private fun build(dataSource: DataSource, resetDatabaseSql: List<String>): KafkaTestContext {
             with(TestContext.build(dataSource, resetDatabaseSql)) {
                 val periodeTopology = StreamsBuilder()
-                    .periodeKafkaTopology(
+                    .addPeriodeStream(
                         applicationConfig = applicationConfig,
                         meterRegistry = prometheusMeterRegistry,
                         varselService = varselService
@@ -108,14 +92,14 @@ class KafkaTestContext(
                     .build()
                 val bekreftelseTopology = StreamsBuilder()
                     .inMemoryInternalStateStore()
-                    .bekreftelseKafkaTopology(
+                    .addBekreftelseHendelseStream(
                         applicationConfig = applicationConfig,
                         meterRegistry = prometheusMeterRegistry,
                         varselService = varselService
                     )
                     .build()
                 val varselTopology = StreamsBuilder()
-                    .varselHendelserKafkaTopology(
+                    .addVarselHendelseStream(
                         runtimeEnvironment = serverConfig.runtimeEnvironment,
                         applicationConfig = applicationConfig,
                         meterRegistry = prometheusMeterRegistry,
@@ -166,11 +150,6 @@ class KafkaTestContext(
                     applicationConfig = applicationConfig,
                     securityConfig = securityConfig,
                     prometheusMeterRegistry = prometheusMeterRegistry,
-                    periodeRepository = periodeRepository,
-                    varselRepository = varselRepository,
-                    eksternVarselRepository = eksternVarselRepository,
-                    bestillingRepository = bestillingRepository,
-                    bestiltVarselRepository = bestiltVarselRepository,
                     varselService = varselService,
                     bestillingService = bestillingService,
                     periodeTopic = periodeInputTopic,

@@ -9,6 +9,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
 import no.nav.paw.arbeidssoekerregisteret.api.models.VarselResponse
 import no.nav.paw.arbeidssoekerregisteret.context.TestContext
+import no.nav.paw.arbeidssoekerregisteret.model.VarslerTable
 import no.nav.paw.arbeidssoekerregisteret.test.TestData
 import no.nav.paw.error.model.ProblemDetails
 import no.nav.paw.security.authorization.exception.UgyldigBearerTokenException
@@ -27,9 +28,9 @@ class VarslerRoutesTest : FreeSpec({
                     val varselId1 = UUID.randomUUID()
                     val varselId2 = UUID.randomUUID()
                     val varselId3 = UUID.randomUUID()
-                    varselRepository.insert(insertVarselRow(periodeId = periodeId, varselId = varselId1))
-                    varselRepository.insert(insertVarselRow(periodeId = periodeId, varselId = varselId2))
-                    varselRepository.insert(insertVarselRow(periodeId = periodeId, varselId = varselId3))
+                    VarslerTable.insert(insertVarselRow(periodeId = periodeId, varselId = varselId1))
+                    VarslerTable.insert(insertVarselRow(periodeId = periodeId, varselId = varselId2))
+                    VarslerTable.insert(insertVarselRow(periodeId = periodeId, varselId = varselId3))
 
                     testApplication {
                         configureTestApplication()
@@ -50,8 +51,8 @@ class VarslerRoutesTest : FreeSpec({
                     val periodeId = UUID.randomUUID()
                     val varselId1 = UUID.randomUUID()
                     val varselId2 = UUID.randomUUID()
-                    varselRepository.insert(insertVarselRow(periodeId = periodeId, varselId = varselId1))
-                    varselRepository.insert(insertVarselRow(periodeId = periodeId, varselId = varselId2))
+                    VarslerTable.insert(insertVarselRow(periodeId = periodeId, varselId = varselId1))
+                    VarslerTable.insert(insertVarselRow(periodeId = periodeId, varselId = varselId2))
 
                     testApplication {
                         configureTestApplication()

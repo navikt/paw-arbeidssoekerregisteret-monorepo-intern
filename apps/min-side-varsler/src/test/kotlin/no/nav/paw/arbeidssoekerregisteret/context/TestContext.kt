@@ -18,11 +18,6 @@ import no.nav.paw.arbeidssoekerregisteret.config.MinSideVarselConfig
 import no.nav.paw.arbeidssoekerregisteret.config.SERVER_CONFIG
 import no.nav.paw.arbeidssoekerregisteret.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.model.VarselMeldingBygger
-import no.nav.paw.arbeidssoekerregisteret.repository.BestillingRepository
-import no.nav.paw.arbeidssoekerregisteret.repository.BestiltVarselRepository
-import no.nav.paw.arbeidssoekerregisteret.repository.EksterntVarselRepository
-import no.nav.paw.arbeidssoekerregisteret.repository.PeriodeRepository
-import no.nav.paw.arbeidssoekerregisteret.repository.VarselRepository
 import no.nav.paw.arbeidssoekerregisteret.route.bestillingerRoutes
 import no.nav.paw.arbeidssoekerregisteret.route.varselRoutes
 import no.nav.paw.arbeidssoekerregisteret.service.BestillingService
@@ -48,8 +43,6 @@ import org.apache.kafka.common.serialization.StringSerializer
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import java.time.Duration
@@ -57,7 +50,6 @@ import java.util.*
 import javax.sql.DataSource
 
 open class TestContext(
-    open val logger: Logger = LoggerFactory.getLogger("test.logger"),
     val objectMapper: ObjectMapper = buildObjectMapper,
     open val mockOAuth2Server: MockOAuth2Server,
     open val dataSource: DataSource,
@@ -66,11 +58,6 @@ open class TestContext(
     open val applicationConfig: ApplicationConfig,
     open val securityConfig: SecurityConfig,
     open val prometheusMeterRegistry: PrometheusMeterRegistry,
-    open val periodeRepository: PeriodeRepository,
-    open val varselRepository: VarselRepository,
-    open val eksternVarselRepository: EksterntVarselRepository,
-    open val bestillingRepository: BestillingRepository,
-    open val bestiltVarselRepository: BestiltVarselRepository,
     open val varselService: VarselService,
     open val bestillingService: BestillingService
 ) {
@@ -152,11 +139,6 @@ open class TestContext(
                 loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG)
             val securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>(SECURITY_CONFIG)
             val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-            val periodeRepository = PeriodeRepository()
-            val varselRepository = VarselRepository()
-            val eksternVarselRepository = EksterntVarselRepository()
-            val bestillingRepository = BestillingRepository()
-            val bestiltVarselRepository = BestiltVarselRepository()
             val partitioner = object : Partitioner {
                 override fun partition(
                     topic: String?,
@@ -180,19 +162,12 @@ open class TestContext(
                 minSideVarselConfig = loadNaisOrLocalConfiguration<MinSideVarselConfig>(MIN_SIDE_VARSEL_CONFIG)
             )
             val varselService = VarselService(
-                applicationConfig = applicationConfig,
                 meterRegistry = prometheusMeterRegistry,
-                periodeRepository = periodeRepository,
-                varselRepository = varselRepository,
-                eksterntVarselRepository = eksternVarselRepository,
                 varselMeldingBygger = varselMeldingBygger
             )
             val bestillingService = BestillingService(
                 applicationConfig = applicationConfig,
                 meterRegistry = prometheusMeterRegistry,
-                bestillingRepository = bestillingRepository,
-                bestiltVarselRepository = bestiltVarselRepository,
-                varselRepository = varselRepository,
                 varselKafkaProducer = varselKafkaProducer,
                 varselMeldingBygger = varselMeldingBygger
             )
@@ -205,11 +180,6 @@ open class TestContext(
                 applicationConfig = applicationConfig,
                 securityConfig = securityConfig,
                 prometheusMeterRegistry = prometheusMeterRegistry,
-                periodeRepository = periodeRepository,
-                varselRepository = varselRepository,
-                eksternVarselRepository = eksternVarselRepository,
-                bestillingRepository = bestillingRepository,
-                bestiltVarselRepository = bestiltVarselRepository,
                 varselService = varselService,
                 bestillingService = bestillingService
             )
