@@ -11,17 +11,12 @@ import no.nav.paw.arbeidssoekerregisteret.config.MinSideVarselConfig
 import no.nav.paw.arbeidssoekerregisteret.config.SERVER_CONFIG
 import no.nav.paw.arbeidssoekerregisteret.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.model.VarselMeldingBygger
-import no.nav.paw.arbeidssoekerregisteret.repository.BestillingRepository
-import no.nav.paw.arbeidssoekerregisteret.repository.BestiltVarselRepository
-import no.nav.paw.arbeidssoekerregisteret.repository.EksterntVarselRepository
-import no.nav.paw.arbeidssoekerregisteret.repository.PeriodeRepository
-import no.nav.paw.arbeidssoekerregisteret.repository.VarselRepository
 import no.nav.paw.arbeidssoekerregisteret.service.BestillingService
 import no.nav.paw.arbeidssoekerregisteret.service.VarselService
-import no.nav.paw.arbeidssoekerregisteret.topology.bekreftelseKafkaTopology
-import no.nav.paw.arbeidssoekerregisteret.topology.internalStateStore
-import no.nav.paw.arbeidssoekerregisteret.topology.periodeKafkaTopology
-import no.nav.paw.arbeidssoekerregisteret.topology.varselHendelserKafkaTopology
+import no.nav.paw.arbeidssoekerregisteret.topology.addBekreftelseHendelseStream
+import no.nav.paw.arbeidssoekerregisteret.topology.addInternalStateStore
+import no.nav.paw.arbeidssoekerregisteret.topology.addPeriodeStream
+import no.nav.paw.arbeidssoekerregisteret.topology.addVarselHendelseStream
 import no.nav.paw.arbeidssoekerregisteret.utils.VarselHendelseSerde
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.database.config.DATABASE_CONFIG
@@ -75,11 +70,6 @@ data class ApplicationContext(
             val healthIndicatorRepository = HealthIndicatorRepository()
 
             val dataSource = createHikariDataSource(databaseConfig)
-            val periodeRepository = PeriodeRepository()
-            val varselRepository = VarselRepository()
-            val eksterntVarselRepository = EksterntVarselRepository()
-            val bestillingRepository = BestillingRepository()
-            val bestiltVarselRepository = BestiltVarselRepository()
 
             val varselMeldingBygger = VarselMeldingBygger(serverConfig.runtimeEnvironment, minSideVarselConfig)
 
@@ -91,19 +81,12 @@ data class ApplicationContext(
             )
 
             val varselService = VarselService(
-                applicationConfig = applicationConfig,
                 meterRegistry = prometheusMeterRegistry,
-                periodeRepository = periodeRepository,
-                varselRepository = varselRepository,
-                eksterntVarselRepository = eksterntVarselRepository,
                 varselMeldingBygger = varselMeldingBygger
             )
             val bestillingService = BestillingService(
                 applicationConfig = applicationConfig,
                 meterRegistry = prometheusMeterRegistry,
-                bestillingRepository = bestillingRepository,
-                bestiltVarselRepository = bestiltVarselRepository,
-                varselRepository = varselRepository,
                 varselKafkaProducer = varselKafkaProducer,
                 varselMeldingBygger = varselMeldingBygger
             )
@@ -160,7 +143,7 @@ private fun buildPeriodeKafkaStreams(
     varselService: VarselService
 ): KafkaStreams {
     val kafkaTopology = StreamsBuilder()
-        .periodeKafkaTopology(
+        .addPeriodeStream(
             applicationConfig = applicationConfig,
             meterRegistry = meterRegistry,
             varselService = varselService
@@ -186,8 +169,8 @@ private fun buildBekreftelseKafkaStreams(
     varselService: VarselService
 ): KafkaStreams {
     val kafkaTopology = StreamsBuilder()
-        .internalStateStore()
-        .bekreftelseKafkaTopology(
+        .addInternalStateStore()
+        .addBekreftelseHendelseStream(
             applicationConfig = applicationConfig,
             meterRegistry = meterRegistry,
             varselService = varselService
@@ -214,7 +197,7 @@ private fun buildVarselHendelseKafkaStreams(
     varselService: VarselService
 ): KafkaStreams {
     val kafkaTopology = StreamsBuilder()
-        .varselHendelserKafkaTopology(
+        .addVarselHendelseStream(
             runtimeEnvironment = serverConfig.runtimeEnvironment,
             applicationConfig = applicationConfig,
             meterRegistry = meterRegistry,

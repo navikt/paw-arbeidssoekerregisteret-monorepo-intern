@@ -74,8 +74,8 @@ class VarselMeldingByggerTest : FreeSpec({
                     json shouldContain tekster[2].tekst
                     json shouldContain "\"eksternVarsling\":"
                     json shouldContain eksterntVarsel?.smsTekst!!
-                    json shouldContain eksterntVarsel?.epostTittel!!
-                    json shouldContain eksterntVarsel?.epostTekst!!
+                    json shouldContain eksterntVarsel.epostTittel!!
+                    json shouldContain eksterntVarsel.epostTekst!!
                     json shouldNotContain "\"utsettSendingTil\":"
                 }
             }
@@ -108,8 +108,8 @@ class VarselMeldingByggerTest : FreeSpec({
                     json shouldContain tekster[2].tekst
                     json shouldContain "\"eksternVarsling\":"
                     json shouldContain eksterntVarsel?.smsTekst!!
-                    json shouldContain eksterntVarsel?.epostTittel!!
-                    json shouldContain eksterntVarsel?.epostTekst!!
+                    json shouldContain eksterntVarsel.epostTittel!!
+                    json shouldContain eksterntVarsel.epostTekst!!
                     json shouldContain "\"utsettSendingTil\":\"2025-03-28T09:00:00"
                 }
             }
@@ -142,8 +142,8 @@ class VarselMeldingByggerTest : FreeSpec({
                     json shouldContain tekster[2].tekst
                     json shouldContain "\"eksternVarsling\":"
                     json shouldContain eksterntVarsel?.smsTekst!!
-                    json shouldContain eksterntVarsel?.epostTittel!!
-                    json shouldContain eksterntVarsel?.epostTekst!!
+                    json shouldContain eksterntVarsel.epostTittel!!
+                    json shouldContain eksterntVarsel.epostTekst!!
                     json shouldContain "\"utsettSendingTil\":\"2025-04-04T09:00:00"
                 }
             }

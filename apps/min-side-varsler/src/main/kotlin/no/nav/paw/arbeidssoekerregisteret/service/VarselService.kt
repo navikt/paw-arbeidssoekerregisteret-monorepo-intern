@@ -3,15 +3,17 @@ package no.nav.paw.arbeidssoekerregisteret.service
 import io.micrometer.core.instrument.MeterRegistry
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssoekerregisteret.api.models.VarselResponse
-import no.nav.paw.arbeidssoekerregisteret.config.ApplicationConfig
 import no.nav.paw.arbeidssoekerregisteret.exception.VarselIkkeFunnetException
+import no.nav.paw.arbeidssoekerregisteret.model.EksterneVarslerTable
 import no.nav.paw.arbeidssoekerregisteret.model.Paging
 import no.nav.paw.arbeidssoekerregisteret.model.PeriodeHendelse
+import no.nav.paw.arbeidssoekerregisteret.model.PerioderTable
 import no.nav.paw.arbeidssoekerregisteret.model.VarselEventName
 import no.nav.paw.arbeidssoekerregisteret.model.VarselHendelse
 import no.nav.paw.arbeidssoekerregisteret.model.VarselKilde
 import no.nav.paw.arbeidssoekerregisteret.model.VarselMelding
 import no.nav.paw.arbeidssoekerregisteret.model.VarselMeldingBygger
+import no.nav.paw.arbeidssoekerregisteret.model.VarslerTable
 import no.nav.paw.arbeidssoekerregisteret.model.asInsertEksterntVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.asInsertPeriodeRow
 import no.nav.paw.arbeidssoekerregisteret.model.asInsertVarselRow
@@ -19,9 +21,6 @@ import no.nav.paw.arbeidssoekerregisteret.model.asResponse
 import no.nav.paw.arbeidssoekerregisteret.model.asUpdateEksterntVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.asUpdatePeriodeRow
 import no.nav.paw.arbeidssoekerregisteret.model.asUpdateVarselRow
-import no.nav.paw.arbeidssoekerregisteret.repository.EksterntVarselRepository
-import no.nav.paw.arbeidssoekerregisteret.repository.PeriodeRepository
-import no.nav.paw.arbeidssoekerregisteret.repository.VarselRepository
 import no.nav.paw.arbeidssoekerregisteret.utils.Action
 import no.nav.paw.arbeidssoekerregisteret.utils.bekreftelseHendelseCounter
 import no.nav.paw.arbeidssoekerregisteret.utils.deleteAction
@@ -57,11 +56,7 @@ import org.slf4j.MDC
 import java.util.*
 
 class VarselService(
-    private val applicationConfig: ApplicationConfig,
     private val meterRegistry: MeterRegistry,
-    private val periodeRepository: PeriodeRepository,
-    private val varselRepository: VarselRepository,
-    private val eksterntVarselRepository: EksterntVarselRepository,
     private val varselMeldingBygger: VarselMeldingBygger
 ) {
     private val logger = buildLogger
@@ -69,7 +64,7 @@ class VarselService(
 
     @WithSpan("hentVarsel")
     fun hentVarsel(varselId: UUID): VarselResponse = transaction {
-        varselRepository.findByVarselId(varselId)?.asResponse() ?: throw VarselIkkeFunnetException("Varsel ikke funnet")
+        VarslerTable.findByVarselId(varselId)?.asResponse() ?: throw VarselIkkeFunnetException("Varsel ikke funnet")
     }
 
     @WithSpan("finnVarsler")
@@ -77,7 +72,7 @@ class VarselService(
         periodeId: UUID,
         paging: Paging = Paging.none()
     ): List<VarselResponse> = transaction {
-        varselRepository.findByPeriodeId(periodeId, paging).map { it.asResponse() }
+        VarslerTable.findByPeriodeId(periodeId, paging).map { it.asResponse() }
     }
 
     @WithSpan("mottaPeriode")
@@ -87,7 +82,7 @@ class VarselService(
             mdc.eventName(eventName)
             mdc.readAction()
             logger.info("Prosesserer hendelse {}", eventName)
-            val periodeRow = periodeRepository.findByPeriodeId(periode.id)
+            val periodeRow = PerioderTable.findByPeriodeId(periode.id)
             if (periodeRow != null) {
                 if (periodeRow.avsluttetTimestamp != null) {
                     mdc.ignoreAction()
@@ -98,18 +93,18 @@ class VarselService(
                     logger.debug("Oppdaterer periode {}", periode.id)
                     meterRegistry.updatePeriodeCounter(periode)
                     val updatePeriodeRow = periode.asUpdatePeriodeRow()
-                    periodeRepository.update(updatePeriodeRow)
+                    PerioderTable.update(updatePeriodeRow)
                 }
             } else {
                 mdc.insertAction()
                 logger.debug("Oppretter periode {}", periode.id)
                 meterRegistry.insertPeriodeCounter(periode)
                 val insertPeriodeRow = periode.asInsertPeriodeRow()
-                periodeRepository.insert(insertPeriodeRow)
+                PerioderTable.insert(insertPeriodeRow)
             }
 
             if (periode.avsluttet != null) {
-                val varselRows = varselRepository
+                val varselRows = VarslerTable
                     .findByPeriodeIdAndVarselKilde(periode.id, VarselKilde.PERIODE_AVSLUTTET)
                 if (varselRows.isNotEmpty()) {
                     mdc.ignoreAction()
@@ -125,7 +120,7 @@ class VarselService(
                         periode.id
                     )
                     val insertVarselRow = periode.asInsertVarselRow()
-                    varselRepository.insert(insertVarselRow)
+                    VarslerTable.insert(insertVarselRow)
                     periode.avsluttet.utfoertAv.type
                     val varsel = varselMeldingBygger.opprettPeriodeAvsluttetBeskjed(
                         varselId = insertVarselRow.varselId,
@@ -171,7 +166,7 @@ class VarselService(
         periode: PeriodeHendelse,
         hendelse: BekreftelseTilgjengelig
     ): List<VarselMelding> {
-        val varselRow = varselRepository.findByBekreftelseId(hendelse.bekreftelseId)
+        val varselRow = VarslerTable.findByBekreftelseId(hendelse.bekreftelseId)
         if (varselRow != null) {
             // TODO: Håndtere varsler som ikke er sendt pga feil når melding skulle legges på Kafka
             // TODO: Hvordan finne at melding ikke sendt? Status på eksternt varsel kanskje?
@@ -192,7 +187,7 @@ class VarselService(
             )
             meterRegistry.insertBekreftelseHendelseCounter(hendelse)
             val insertVarselRow = hendelse.asInsertVarselRow()
-            varselRepository.insert(insertVarselRow)
+            VarslerTable.insert(insertVarselRow)
             val varsel = varselMeldingBygger.opprettBekreftelseTilgjengeligOppgave(
                 varselId = insertVarselRow.varselId,
                 identitetsnummer = periode.identitetsnummer,
@@ -203,7 +198,7 @@ class VarselService(
     }
 
     private fun mottaBekreftelseMeldingMottatt(hendelse: BekreftelseMeldingMottatt): List<VarselMelding> {
-        val varselRow = varselRepository.findByBekreftelseId(hendelse.bekreftelseId)
+        val varselRow = VarslerTable.findByBekreftelseId(hendelse.bekreftelseId)
         if (varselRow != null) {
             mdc.deleteAction()
             logger.debug(
@@ -226,7 +221,7 @@ class VarselService(
     }
 
     private fun mottaPeriodeAvsluttetEllerPaaVegneAvStartet(hendelse: BekreftelseHendelse): List<VarselMelding> {
-        val varselRows = varselRepository
+        val varselRows = VarslerTable
             .findByPeriodeIdAndVarselKilde(hendelse.periodeId, VarselKilde.BEKREFTELSE_TILGJENGELIG)
         if (varselRows.isEmpty()) {
             mdc.failAction()
@@ -263,7 +258,7 @@ class VarselService(
             mdc.readAction()
             logger.info("Prosesserer hendelse {}", eventName)
             val varselId = UUID.fromString(hendelse.varselId)
-            val varselRow = varselRepository.findByVarselId(varselId)
+            val varselRow = VarslerTable.findByVarselId(varselId)
             if (varselRow != null) {
                 if (hendelse.eventName == VarselEventName.EKSTERN_STATUS_OPPDATERT) {
                     if (varselRow.eksterntVarsel != null) {
@@ -277,7 +272,7 @@ class VarselService(
                             )
                             meterRegistry.updateVarselHendelseCounter(hendelse)
                             val updateEksterntVarselRow = hendelse.asUpdateEksterntVarselRow()
-                            eksterntVarselRepository.update(updateEksterntVarselRow)
+                            EksterneVarslerTable.update(updateEksterntVarselRow)
                         } else {
                             mdc.ignoreAction()
                             logger.warn(
@@ -300,7 +295,7 @@ class VarselService(
                         )
                         meterRegistry.insertVarselHendelseCounter(hendelse)
                         val insertEksterntVarselRow = hendelse.asInsertEksterntVarselRow()
-                        eksterntVarselRepository.insert(insertEksterntVarselRow)
+                        EksterneVarslerTable.insert(insertEksterntVarselRow)
                     }
                 } else {
                     if (hendelse.tidspunkt.isAfter(varselRow.hendelseTimestamp)) {
@@ -313,7 +308,7 @@ class VarselService(
                         )
                         meterRegistry.updateVarselHendelseCounter(hendelse)
                         val updateVarselRow = hendelse.asUpdateVarselRow()
-                        varselRepository.update(updateVarselRow)
+                        VarslerTable.update(updateVarselRow)
                     } else {
                         mdc.ignoreAction()
                         logger.warn(
