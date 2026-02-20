@@ -17,6 +17,9 @@ import no.nav.paw.kafka.processor.mapNonNull
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
+import java.time.Duration
+import java.time.Duration.ofMinutes
+import kotlin.jvm.optionals.getOrNull
 
 private val appLogger = buildApplicationLogger
 private val clientLogger = buildClientLogger
@@ -95,7 +98,24 @@ fun <T: SpecificRecord> buildKafkaTopology(
         .mapRecord(name = "add_source_header") { record ->
             val headers = record.headers()
             val updatedHeaders = headers.add("source", bekreftelsesloesning.toByteArray())
+            clientLogger.info("Headers for melding på topic {}: {}", sourceTopic, headers.toArray().map { it.key() }.toList())
             record.withHeaders(updatedHeaders)
+        }.mapRecord(name = "update_timestamp") { record ->
+            val systemTime = currentSystemTimeMs()
+            val recordTime = record.timestamp()
+            val diff = Duration.ofMillis(systemTime - recordTime)
+            if  (diff.abs() > ofMinutes(5)) {
+                clientLogger.info(
+                    "Innkommende melding har en tidsstempel som avviker mer enn 5 minutter fra systemtid. topic={}, partition={}, offset={}, record_timestamp={}, system_time={}, diff={}",
+                    this.recordMetadata().map { it.topic() }.getOrNull(),
+                    this.recordMetadata().map { it.partition() }.getOrNull(),
+                    this.recordMetadata().map { it.offset() }.getOrNull(),
+                    record.timestamp(),
+                    systemTime,
+                    diff
+                )
+            }
+            record.withTimestamp(systemTime)
         }
         .to(targetTopic)
 }.build()
