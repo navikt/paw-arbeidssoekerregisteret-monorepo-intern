@@ -14,7 +14,7 @@ import no.nav.paw.error.exception.ServerResponseException
 import no.nav.paw.error.model.ErrorType
 import no.nav.paw.felles.model.Identitetsnummer
 import no.nav.paw.felles.model.NavIdent
-import no.nav.paw.tilgangskontroll.SecureLogger
+import no.nav.paw.logging.logger.TeamLogsLogger
 import no.nav.paw.tilgangskontroll.TilgangsTjenesteForAnsatte
 import no.nav.paw.tilgangskontroll.poaotilgang.api.DecisionType
 import no.nav.paw.tilgangskontroll.poaotilgang.api.EvaluatePoliciesResponse
@@ -26,7 +26,6 @@ import java.net.URI
 private const val V1_POLICY_EVEAL_PATH = "/api/v1/policy/evaluate"
 
 class PoaoTilgangsTjeneste(
-    private val secureLogger: SecureLogger,
     private val httpClient: HttpClient,
     poaTilgangUrl: URI,
     private val poaoToken: () -> String
@@ -54,7 +53,7 @@ class PoaoTilgangsTjeneste(
                 httpResponse.body<EvaluatePoliciesResponse>()
             } else {
                 val body = kotlin.runCatching { httpResponse.body<String>() }.getOrElse { "" }
-                secureLogger.error(
+                TeamLogsLogger.error(
                     "Feil mot poao-tilgang: url='{}', status='{} {}', body='{}'",
                     v1PolicyEvalUri,
                     httpResponse.status.value,

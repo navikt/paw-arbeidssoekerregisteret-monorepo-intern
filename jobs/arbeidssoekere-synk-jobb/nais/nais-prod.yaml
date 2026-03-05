@@ -15,8 +15,6 @@ spec:
   env:
     - name: JOB_ENABLED
       value: "false"
-  secureLogs:
-    enabled: true
   observability:
     autoInstrumentation:
       enabled: true
