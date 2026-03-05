@@ -5,7 +5,6 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.kafka.config.KafkaConsumerConfig
 import no.nav.paw.kafka.service.KafkaHwmOperations
 import no.nav.paw.kafkakeygenerator.model.dao.PerioderTable
-import no.nav.paw.logging.logger.buildErrorLogger
 import no.nav.paw.logging.logger.buildLogger
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
@@ -16,9 +15,7 @@ class PawPeriodeKafkaConsumerService(
     private val kafkaConsumerConfig: KafkaConsumerConfig,
     private val kafkaHwmOperations: KafkaHwmOperations
 ) {
-
     private val logger = buildLogger
-    private val errorLogger = buildErrorLogger
 
     @WithSpan
     fun handleRecords(records: ConsumerRecords<Long, Periode>) {

@@ -12,8 +12,8 @@ import no.nav.paw.arbeidssoeker.synk.model.isNotSuccess
 import no.nav.paw.arbeidssoeker.synk.model.millisSince
 import no.nav.paw.arbeidssoeker.synk.repository.ArbeidssoekerSynkRepository
 import no.nav.paw.arbeidssoeker.synk.utils.traceAndLog
+import no.nav.paw.logging.logger.TeamLogsLogger
 import no.nav.paw.logging.logger.buildApplicationLogger
-import no.nav.paw.logging.logger.buildNamedLogger
 import java.time.Instant
 
 class ArbeidssoekerSynkService(
@@ -22,7 +22,6 @@ class ArbeidssoekerSynkService(
     private val inngangHttpConsumer: InngangHttpConsumer
 ) {
     private val logger = buildApplicationLogger
-    private val secureLogger = buildNamedLogger("secure")
 
     @WithSpan(value = "synkArbeidssoekere")
     fun synkArbeidssoekere(version: String, fileRows: MappingIterator<ArbeidssoekerFileRow>) {
@@ -55,13 +54,13 @@ class ArbeidssoekerSynkService(
     private fun prosesserArbeidssoeker(arbeidssoeker: Arbeidssoeker) {
         val (version, identitetsnummer) = arbeidssoeker
         logger.debug("Prosesserer arbeidssøker for versjon {}", version)
-        secureLogger.info("Prosesserer arbeidssøker {} for versjon {}", identitetsnummer, version)
+        TeamLogsLogger.info("Prosesserer arbeidssøker {} for versjon {}", identitetsnummer, version)
 
         val databaseRow = arbeidssoekerSynkRepository.find(version, identitetsnummer)
         if (databaseRow == null) {
             logger.debug("Fant ingen innslag i databasen for versjon {}", version)
             logger.debug("Kaller API Inngang med tilstand {} og versjon {}", arbeidssoeker.periodeTilstand, version)
-            secureLogger.info(
+            TeamLogsLogger.info(
                 "Kaller API Inngang med tilstand {} for arbeidssøker {} og versjon {}",
                 arbeidssoeker.periodeTilstand,
                 identitetsnummer,
@@ -75,7 +74,7 @@ class ArbeidssoekerSynkService(
         } else if (databaseRow.status.isNotSuccess()) {
             logger.debug("Fant innslag med status {} i databasen for version {}", databaseRow.status, version)
             logger.debug("Kaller API Inngang med tilstand {} og versjon {}", arbeidssoeker.periodeTilstand, version)
-            secureLogger.info(
+            TeamLogsLogger.info(
                 "Kaller API Inngang igjen med tilstand {} for arbeidssøker {} og versjon {}",
                 arbeidssoeker.periodeTilstand,
                 identitetsnummer,
@@ -88,7 +87,7 @@ class ArbeidssoekerSynkService(
             arbeidssoekerSynkRepository.update(version, identitetsnummer, response.status.value)
         } else {
             logger.debug("Ignorerer arbeidssøker med status {} for versjon {}", databaseRow.status, version)
-            secureLogger.info(
+            TeamLogsLogger.info(
                 "Ignorerer arbeidssøker {} med status {} for versjon {} (db versjon {})",
                 identitetsnummer,
                 databaseRow.status,

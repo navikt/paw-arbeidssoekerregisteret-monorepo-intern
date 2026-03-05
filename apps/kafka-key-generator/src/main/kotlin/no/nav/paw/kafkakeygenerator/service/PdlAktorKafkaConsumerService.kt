@@ -5,7 +5,7 @@ import no.nav.paw.kafka.config.KafkaConsumerConfig
 import no.nav.paw.kafka.service.KafkaHwmOperations
 import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.kafkakeygenerator.model.dto.asPerson
-import no.nav.paw.kafkakeygenerator.utils.SecureLogger
+import no.nav.paw.logging.logger.TeamLogsLogger
 import no.nav.paw.logging.logger.buildNamedLogger
 import no.nav.person.pdl.aktor.v2.Aktor
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -70,7 +70,7 @@ class PdlAktorKafkaConsumerService(
                 }
             } catch (e: Exception) {
                 logger.error("Håndterer av aktor-melding feilet", e)
-                SecureLogger.error(
+                TeamLogsLogger.error(
                     "Håndterer av aktor-melding feilet key: {} value: {} timestamp: {}",
                     record.key(),
                     record.value()?.asPerson() ?: "null",
