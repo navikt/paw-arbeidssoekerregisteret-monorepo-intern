@@ -9,6 +9,7 @@ val jvmMajorVersion: String by project
 
 dependencies {
     // Project
+    implementation(project(":lib:logging"))
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:error-handling"))
     implementation(project(":lib:kafka-streams"))

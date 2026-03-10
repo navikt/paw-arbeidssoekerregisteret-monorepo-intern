@@ -5,11 +5,17 @@ import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.vo.Bruker
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelse.melding.v1.vo.BrukerType
-import no.nav.paw.bekreftelsetjeneste.SecureLogger
-import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
 import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
+import no.nav.paw.bekreftelsetjeneste.paavegneav.PaaVegneAvTilstand
 import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
-import no.nav.paw.bekreftelsetjeneste.tilstand.*
+import no.nav.paw.bekreftelsetjeneste.tilstand.Bekreftelse
+import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstand
+import no.nav.paw.bekreftelsetjeneste.tilstand.BekreftelseTilstandsLogg
+import no.nav.paw.bekreftelsetjeneste.tilstand.Levert
+import no.nav.paw.bekreftelsetjeneste.tilstand.filterByStatusAndCount
+import no.nav.paw.bekreftelsetjeneste.tilstand.leggTilNyEllerOppdaterBekreftelse
+import no.nav.paw.bekreftelsetjeneste.tilstand.maksAntallBekreftelserEtterStatus
+import no.nav.paw.logging.logger.TeamLogsLogger
 import org.slf4j.MDC
 
 fun haandterBekreftelseMottatt(
@@ -65,7 +71,7 @@ fun haandterBekreftelseMottatt(
                         }
                 )
             } else {
-                logIdentTilSikkerLogg(
+                logIdentTilTeamLogg(
                     identietetsnummer = gjeldendeTilstand.periode.identitetsnummer,
                     loesning = Loesning.from(melding.bekreftelsesloesning),
                     handling = bekreftelseLevertAction,
@@ -84,7 +90,7 @@ fun haandterBekreftelseMottatt(
     ) to hendelser
 }
 
-fun logIdentTilSikkerLogg(
+fun logIdentTilTeamLogg(
     identietetsnummer: String,
     loesning: Loesning,
     handling: String,
@@ -95,7 +101,7 @@ fun logIdentTilSikkerLogg(
         "handling" to handling,
         "feilMelding" to feilmelding.name
     ) {
-        SecureLogger.info(
+        TeamLogsLogger.info(
             identietetsnummer
         )
     }

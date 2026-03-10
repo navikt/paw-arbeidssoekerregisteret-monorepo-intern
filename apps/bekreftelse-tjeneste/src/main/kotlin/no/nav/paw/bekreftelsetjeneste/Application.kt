@@ -6,17 +6,16 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.routing.routing
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import no.nav.paw.bekreftelsetjeneste.paavegneav.BekreftelsePaaVegneAvSerde
 import no.nav.paw.bekreftelsetjeneste.config.APPLICATION_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelsetjeneste.config.ApplicationConfig
 import no.nav.paw.bekreftelsetjeneste.config.BEKREFTELSE_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
 import no.nav.paw.bekreftelsetjeneste.config.SERVER_CONFIG_FILE_NAME
 import no.nav.paw.bekreftelsetjeneste.config.ServerConfig
-import no.nav.paw.bekreftelsetjeneste.config.StaticConfigValues
 import no.nav.paw.bekreftelsetjeneste.context.ApplicationContext
 import no.nav.paw.bekreftelsetjeneste.metrics.TilstandsGauge
 import no.nav.paw.bekreftelsetjeneste.metrics.init
+import no.nav.paw.bekreftelsetjeneste.paavegneav.BekreftelsePaaVegneAvSerde
 import no.nav.paw.bekreftelsetjeneste.plugins.buildKafkaStreams
 import no.nav.paw.bekreftelsetjeneste.plugins.configureKafka
 import no.nav.paw.bekreftelsetjeneste.plugins.configureMetrics
@@ -27,6 +26,7 @@ import no.nav.paw.config.env.appNameOrDefaultForLocal
 import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.health.route.healthRoutes
+import no.nav.paw.logging.logger.TeamLogsLogger
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
@@ -42,7 +42,7 @@ fun main() {
     val bekreftelseKonfigurasjon = loadNaisOrLocalConfiguration<BekreftelseKonfigurasjon>(BEKREFTELSE_CONFIG_FILE_NAME)
 
     logger.info("Starter: ${currentRuntimeEnvironment.appNameOrDefaultForLocal()}")
-    SecureLogger.info("Logger til team-logs...")
+    TeamLogsLogger.info("Logger til team-logs...")
     val keepGoing = AtomicBoolean(true)
     with(serverConfig) {
         embeddedServer(Netty, port = port) {
@@ -96,7 +96,7 @@ fun Application.module(
         bekreftelseKonfigurasjon = applicationContext.bekreftelseKonfigurasjon
     )
         .stateGaugeTask
-        .handle{ _, ex ->
+        .handle { _, ex ->
             if (ex != null) {
                 logger.error("Metrics oppdateringer er avsluttet med feil", ex)
             } else {

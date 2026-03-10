@@ -6,15 +6,12 @@ import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
-import no.nav.paw.bekreftelsetjeneste.SecureLogger
 import no.nav.paw.bekreftelsetjeneste.config.BekreftelseKonfigurasjon
-import no.nav.paw.bekreftelsetjeneste.paavegneav.Loesning
 import no.nav.paw.bekreftelsetjeneste.paavegneav.WallClock
 import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
 import org.slf4j.LoggerFactory
-import org.slf4j.MDC
 import java.time.Duration.between
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicLong
@@ -71,20 +68,28 @@ fun runPunctuator(
                     /**
                      * Denne kan vi bruke for å logge til team loggs også bruker Google logs til å eksportere til csv.
                      * Når Dagpenge problemene er over fjerner vi hele greien.
-                     if (paaVegneAv?.paaVegneAvList?.any { it.loesning == Loesning.DAGPENGER } == true) {
-                        MDC.put("partition", ctx.taskId().partition().toString())
-                        MDC.put("loesning", Loesning.DAGPENGER.name)
-                        SecureLogger.info("ident ******")
-                        MDC.remove("partition")
-                        MDC.remove("loesning")
+                    if (paaVegneAv?.paaVegneAvList?.any { it.loesning == Loesning.DAGPENGER } == true) {
+                    MDC.put("partition", ctx.taskId().partition().toString())
+                    MDC.put("loesning", Loesning.DAGPENGER.name)
+                    SecureLogger.info("ident ******")
+                    MDC.remove("partition")
+                    MDC.remove("loesning")
                     }**/
                     (paaVegneAv == null).also { registeretHarAnsvaret ->
                         totalt.incrementAndGet()
                         if (registeretHarAnsvaret) {
                             antallRegisterHarAnsvar.incrementAndGet()
-                            punctuatorLogger.trace("[partition: {}]Periode {}, registeret har ansvar", ctx.taskId().partition(), tilstand.periode.periodeId)
+                            punctuatorLogger.trace(
+                                "[partition: {}]Periode {}, registeret har ansvar",
+                                ctx.taskId().partition(),
+                                tilstand.periode.periodeId
+                            )
                         } else {
-                            punctuatorLogger.trace("[partition: {}]Periode {}, registeret har ikke ansvar", ctx.taskId().partition(), tilstand.periode.periodeId)
+                            punctuatorLogger.trace(
+                                "[partition: {}]Periode {}, registeret har ikke ansvar",
+                                ctx.taskId().partition(),
+                                tilstand.periode.periodeId
+                            )
                         }
                     }
                 }
