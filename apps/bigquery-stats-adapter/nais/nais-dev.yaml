@@ -46,3 +46,8 @@ spec:
       - description: Contains materialized views of data from dataset -> arbeidssoekerregisteret_internt
         name: arbeidssoekerregisteret_grafana
         permission: READWRITE
+  accessPolicy:
+    outbound:
+      rules:
+        - application: logging
+          namespace: nais-system

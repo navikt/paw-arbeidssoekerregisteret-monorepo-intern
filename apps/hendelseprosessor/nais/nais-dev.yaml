@@ -39,3 +39,8 @@ spec:
     requests:
       memory: 468Mi
       cpu: 10m
+  accessPolicy:
+    outbound:
+      rules:
+        - application: logging
+          namespace: nais-system

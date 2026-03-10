@@ -35,3 +35,5 @@ spec:
     outbound:
       rules:
         - application: paw-arbeidssokerregisteret-api-inngang
+        - application: logging
+          namespace: nais-system

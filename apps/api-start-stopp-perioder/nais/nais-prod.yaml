@@ -70,6 +70,8 @@ spec:
       rules:
         - application: paw-kafka-key-generator
         - application: paw-tilgangskontroll
+        - application: logging
+          namespace: nais-system
         - application: poao-tilgang
           namespace: poao
       external:
