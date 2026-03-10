@@ -6,13 +6,12 @@ plugins {
 val jvmMajorVersion: String by project
 
 dependencies {
+    implementation(project(":lib:logging"))
     api(libs.kotlinx.serialization.json)
-
     implementation(libs.ktor.client.contentNegotiation)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.ktor.client.logging)
-
     testImplementation(libs.bundles.unit.testing.kotest)
     testImplementation(libs.ktor.client.mock)
 }

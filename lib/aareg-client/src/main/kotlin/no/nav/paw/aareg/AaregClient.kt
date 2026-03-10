@@ -9,6 +9,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.JsonConvertException
+import no.nav.paw.logging.logger.TeamLogsLogger
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.ConnectException
@@ -21,7 +22,6 @@ class AaregClient(
     private val url: String,
     private val getAccessToken: () -> String
 ) {
-    private val sikkerLogger: Logger = LoggerFactory.getLogger("tjenestekall")
     private val logger: Logger = LoggerFactory.getLogger("paw-aareg-client")
     private val httpClient = createHttpClient()
 
@@ -35,7 +35,7 @@ class AaregClient(
                 header("Nav-Personident", ident)
             }.also {
                 logger.info("Hentet arbeidsforhold fra aareg med status=${it.status}")
-                sikkerLogger.debug("Svar fra aareg-API: " + it.bodyAsText())
+                TeamLogsLogger.debug("Svar fra aareg-API: " + it.bodyAsText())
             }.body<List<Arbeidsforhold>>()
             return payload
         } catch (responseException: ResponseException) {
@@ -46,7 +46,7 @@ class AaregClient(
             throw connectException
         } catch (jsonConvertException: JsonConvertException) {
             logger.error("Hente arbeidsforhold callId=[$callId] feilet, kunne ikke lese JSON")
-            sikkerLogger.error("Hente arbeidsforhold callId=[$callId] feilet", jsonConvertException)
+            TeamLogsLogger.error("Hente arbeidsforhold callId=[$callId] feilet", jsonConvertException)
             throw jsonConvertException
         }
     }
