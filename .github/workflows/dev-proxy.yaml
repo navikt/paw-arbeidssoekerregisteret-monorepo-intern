@@ -8,7 +8,7 @@ on:
       - 'apps/dev-proxy/**'
       - 'lib/**'
       - 'domain/**'
-      - 'dev-proxy.yaml'
+      - '.github/workflows/dev-proxy.yaml'
       - 'gradle/**'
       - 'settings.gradle.kts'
       - 'gradle.properties'
