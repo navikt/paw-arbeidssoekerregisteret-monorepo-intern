@@ -35,9 +35,9 @@ fun buildMockHttpClient(
                 periodeTilstand shouldBe jobConfig.defaultVerdier.periodeTilstand.asOpprettPeriodeTilstand()
                 registreringForhaandsGodkjentAvAnsatt shouldBe jobConfig.defaultVerdier.forhaandsgodkjentAvAnsatt
                 if (feilretting != null) {
-                    feilretting?.feilType shouldBe jobConfig.defaultVerdier.feilrettingFeiltype.asOpprettPeriodeFeilType()
-                    feilretting?.melding shouldBe jobConfig.defaultVerdier.feilrettingMelding
-                    feilretting?.tidspunkt shouldNotBe null
+                    feilretting.feilType shouldBe jobConfig.defaultVerdier.feilrettingFeiltype.asOpprettPeriodeFeilType()
+                    feilretting.melding shouldBe jobConfig.defaultVerdier.feilrettingMelding
+                    feilretting.tidspunkt shouldNotBe null
                 }
                 val response = responseMapping[identitetsnummer]
                 if (response != null) {
