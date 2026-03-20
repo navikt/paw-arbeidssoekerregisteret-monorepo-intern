@@ -12,8 +12,7 @@ import no.nav.paw.tracing.ClosableSpan
 import no.nav.paw.tracing.initSpan
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.streams.errors.DeserializationExceptionHandler
-import org.apache.kafka.streams.errors.DeserializationExceptionHandler.DeserializationHandlerResponse
-import org.apache.kafka.streams.processor.ProcessorContext
+import org.apache.kafka.streams.errors.ErrorHandlerContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -21,12 +20,11 @@ class KafkaLogAndContinueExceptionHandler : DeserializationExceptionHandler {
     var metrics: PrometheusMeterRegistry? = null
     val log: Logger = LoggerFactory.getLogger(KafkaLogAndContinueExceptionHandler::class.java)
 
-    @Deprecated("Use handle with ErrorHandlerContext instead")
-    override fun handle(
-        context: ProcessorContext,
+    override fun handleError(
+        context: ErrorHandlerContext,
         record: ConsumerRecord<ByteArray, ByteArray>,
         exception: Exception
-    ): DeserializationHandlerResponse {
+    ): DeserializationExceptionHandler.Response {
         val span = record.traceparent()?.let { traceparent ->
             initSpan(
                 traceparent = traceparent,
@@ -48,17 +46,15 @@ class KafkaLogAndContinueExceptionHandler : DeserializationExceptionHandler {
                 context.taskId(), record.topic(), record.partition(), record.offset(),
                 exception
             )
-            val keyDeserializer = context.keySerde().deserializer()
-            val key = runCatching {
-                keyDeserializer.deserialize(record.topic(), record.headers(), record.key())
-            }.getOrNull()
-            val message = if (key == null) {
-                "invalid record.key: could not be deserialized by ${keyDeserializer::class.simpleName}, key size: ${record.key()?.size} bytes"
+
+            val key = context.sourceRawKey()
+            val value = context.sourceRawValue()
+            val message = if (key == null || key.isEmpty()) {
+                "invalid record.key: could not be deserialized, key size: ${key?.size} bytes"
             } else {
-                "invalid record.value: could not be deserialized by ${
-                    context.valueSerde().deserializer()::class.simpleName
-                }, message size: ${record.value()?.size} bytes"
+                "invalid record.value: could not be deserialized, message size: ${value?.size} bytes"
             }
+
             Span.current().setAllAttributes(
                 Attributes.of(
                     AttributeKey.stringKey("kafka.topic"), record.topic(),
@@ -67,7 +63,8 @@ class KafkaLogAndContinueExceptionHandler : DeserializationExceptionHandler {
                 )
             )
             Span.current().setStatus(StatusCode.ERROR, message)
-            DeserializationHandlerResponse.CONTINUE
+
+            DeserializationExceptionHandler.Response.resume()
         }
     }
 
