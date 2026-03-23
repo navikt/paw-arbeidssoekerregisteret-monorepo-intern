@@ -53,11 +53,11 @@ fun Application.module(applicationContext: ApplicationContext) {
             pawPeriodeConsumer = pawPeriodeConsumer,
             pawPeriodeConsumerExceptionHandler = pawPeriodeConsumerExceptionHandler,
             pawPeriodeHwmRebalanceListener = pawPeriodeConsumerRebalanceListener,
-            pawPeriodeKafkaConsumerService = pawPeriodeKafkaConsumerService,
+            pawPeriodeKafkaConsumer = pawPeriodeKafkaConsumer,
             pdlAktorConsumer = pdlAktorConsumer,
             pdlAktorConsumerExceptionHandler = pdlAktorConsumerExceptionHandler,
             pdlAktorHwmRebalanceListener = pdlAktorConsumerRebalanceListener,
-            pdlAktorKafkaConsumerService = pdlAktorKafkaConsumerService
+            pdlAktorKafkaConsumer = pdlAktorKafkaConsumer
         )
         installScheduledTaskPlugins(
             applicationConfig = applicationConfig,

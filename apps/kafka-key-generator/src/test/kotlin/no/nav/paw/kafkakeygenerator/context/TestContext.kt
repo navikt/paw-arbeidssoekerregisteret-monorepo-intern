@@ -34,18 +34,19 @@ import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.identitet.internehendelser.IdentitetHendelse
 import no.nav.paw.kafka.service.KafkaHwmOperations
 import no.nav.paw.kafka.service.KafkaHwmService
+import no.nav.paw.kafkakeygenerator.client.PawHendelseloggKafkaProducer
+import no.nav.paw.kafkakeygenerator.client.PawIdentitetKafkaProducer
+import no.nav.paw.kafkakeygenerator.client.PdlAktorKafkaConsumer
+import no.nav.paw.kafkakeygenerator.client.PdlRestConsumer
 import no.nav.paw.kafkakeygenerator.config.APPLICATION_CONFIG
 import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
 import no.nav.paw.kafkakeygenerator.config.SERVER_CONFIG
 import no.nav.paw.kafkakeygenerator.config.ServerConfig
 import no.nav.paw.kafkakeygenerator.plugin.configureRouting
-import no.nav.paw.kafkakeygenerator.service.HendelseService
 import no.nav.paw.kafkakeygenerator.service.IdentitetResponseService
 import no.nav.paw.kafkakeygenerator.service.IdentitetService
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
 import no.nav.paw.kafkakeygenerator.service.KonfliktService
-import no.nav.paw.kafkakeygenerator.service.PdlAktorKafkaConsumerService
-import no.nav.paw.kafkakeygenerator.service.PdlService
 import no.nav.paw.kafkakeygenerator.test.TestData
 import no.nav.paw.kafkakeygenerator.test.TestData.asGraphQLResponse
 import no.nav.paw.kafkakeygenerator.test.TestData.asString
@@ -80,35 +81,39 @@ class TestContext private constructor(
     val meterRegistry: MeterRegistry = LoggingMeterRegistry(),
     val pawIdentitetProducerMock: Producer<Long, IdentitetHendelse> = mockk<Producer<Long, IdentitetHendelse>>(),
     val pawHendelseloggProducerMock: Producer<Long, Hendelse> = mockk<Producer<Long, Hendelse>>(),
-    val hendelseService: HendelseService = HendelseService(
-        serverConfig = serverConfig,
+    val pawIdentitetKafkaProducer: PawIdentitetKafkaProducer = PawIdentitetKafkaProducer(
         applicationConfig = applicationConfig,
-        pawIdentitetHendelseProducer = pawIdentitetProducerMock,
-        pawHendelseloggHendelseProducer = pawHendelseloggProducerMock
+        producer = pawIdentitetProducerMock
+    ),
+    val pawHendelseloggKafkaProducer: PawHendelseloggKafkaProducer = PawHendelseloggKafkaProducer(
+        runtimeEnvironment = serverConfig.runtimeEnvironment,
+        applicationConfig = applicationConfig,
+        producer = pawHendelseloggProducerMock
     ),
     val konfliktService: KonfliktService = KonfliktService(
         applicationConfig = applicationConfig,
-        hendelseService = hendelseService
+        pawIdentitetKafkaProducer = pawIdentitetKafkaProducer,
+        pawHendelseloggKafkaProducer = pawHendelseloggKafkaProducer,
     ),
     val identitetService: IdentitetService = IdentitetService(
         konfliktService = konfliktService,
-        hendelseService = hendelseService,
+        pawIdentitetKafkaProducer = pawIdentitetKafkaProducer
     ),
     val identitetServiceMock: IdentitetService = mockk<IdentitetService>(),
-    val pdlService: PdlService = PdlService(pdlClientMock),
+    val pdlRestConsumer: PdlRestConsumer = PdlRestConsumer(pdlClientMock),
     val identitetResponseService: IdentitetResponseService = IdentitetResponseService(
-        pdlService = pdlService
+        pdlRestConsumer = pdlRestConsumer
     ),
     val kafkaKeysService: KafkaKeysService = KafkaKeysService(
         meterRegistry = meterRegistry,
-        pdlService = pdlService,
+        pdlRestConsumer = pdlRestConsumer,
         identitetService = identitetService
     ),
     val pdlAktorKafkaHwmOperations: KafkaHwmOperations = KafkaHwmService(
         kafkaConsumerConfig = applicationConfig.pdlAktorConsumer,
         meterRegistry = meterRegistry
     ),
-    val pdlAktorKafkaConsumerService: PdlAktorKafkaConsumerService = PdlAktorKafkaConsumerService(
+    val pdlAktorKafkaConsumer: PdlAktorKafkaConsumer = PdlAktorKafkaConsumer(
         kafkaConsumerConfig = applicationConfig.pdlAktorConsumer,
         kafkaHwmOperations = pdlAktorKafkaHwmOperations,
         identitetService = identitetServiceMock

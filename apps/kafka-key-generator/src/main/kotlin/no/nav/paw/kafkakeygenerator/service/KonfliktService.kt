@@ -2,24 +2,27 @@ package no.nav.paw.kafkakeygenerator.service
 
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
+import no.nav.paw.kafkakeygenerator.client.PawHendelseloggKafkaProducer
+import no.nav.paw.kafkakeygenerator.client.PawIdentitetKafkaProducer
 import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
-import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
-import no.nav.paw.kafkakeygenerator.model.dao.KonfliktIdentiteterTable
-import no.nav.paw.kafkakeygenerator.model.dao.KonflikterTable
-import no.nav.paw.kafkakeygenerator.model.dao.PerioderTable
-import no.nav.paw.kafkakeygenerator.model.dao.IdentitetRow
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
-import no.nav.paw.kafkakeygenerator.model.dao.KonfliktIdentitetRow
-import no.nav.paw.kafkakeygenerator.model.dao.KonfliktRow
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
+import no.nav.paw.kafkakeygenerator.model.dao.IdentitetRow
+import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
+import no.nav.paw.kafkakeygenerator.model.dao.KonfliktIdentitetRow
+import no.nav.paw.kafkakeygenerator.model.dao.KonfliktIdentiteterTable
+import no.nav.paw.kafkakeygenerator.model.dao.KonfliktRow
+import no.nav.paw.kafkakeygenerator.model.dao.KonflikterTable
+import no.nav.paw.kafkakeygenerator.model.dao.PerioderTable
 import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.logging.logger.buildLogger
 import java.time.Instant
 
 class KonfliktService(
     private val applicationConfig: ApplicationConfig,
-    private val hendelseService: HendelseService
+    private val pawIdentitetKafkaProducer: PawIdentitetKafkaProducer,
+    private val pawHendelseloggKafkaProducer: PawHendelseloggKafkaProducer
 ) {
     private val logger = buildLogger
 
@@ -227,7 +230,7 @@ class KonfliktService(
 
                     val tidligereIdentiteter = eksisterendeIdentiteter + listOf(arbeidssoekerId.asIdentitet())
 
-                    hendelseService.sendIdentiteterMergetHendelse(
+                    pawIdentitetKafkaProducer.sendIdentiteterMergetHendelse(
                         arbeidssoekerId = arbeidssoekerId,
                         identiteter = identiteter.sortedBy { it.type.ordinal },
                         tidligereIdentiteter = tidligereIdentiteter.sortedBy { it.type.ordinal }
@@ -245,14 +248,14 @@ class KonfliktService(
                             .filter { it.gjeldende }
                             .map { it.identitet }
                             .first()
-                        hendelseService.sendIdentitetsnummerSammenslaattHendelse(
+                        pawHendelseloggKafkaProducer.sendIdentitetsnummerSammenslaattHendelse(
                             fraArbeidssoekerId = arbeidssoekerId,
                             tilArbeidssoekerId = gjeldendeArbeidssoekerId,
                             identitet = tidligereIdent,
                             identiteter = tidligereIdentitetSet,
                             sourceTimestamp = konfliktRow.sourceTimestamp
                         )
-                        hendelseService.sendArbeidssoekerIdFlettetInnHendelse(
+                        pawHendelseloggKafkaProducer.sendArbeidssoekerIdFlettetInnHendelse(
                             fraArbeidssoekerId = arbeidssoekerId,
                             tilArbeidssoekerId = gjeldendeArbeidssoekerId,
                             identitet = gjeldendeIdentitetSet,
@@ -359,7 +362,7 @@ class KonfliktService(
                         it.add(arbeidssoekerId.asIdentitet())
                     }
                 }
-            hendelseService.sendIdentiteterSplittetHendelse(
+            pawIdentitetKafkaProducer.sendIdentiteterSplittetHendelse(
                 arbeidssoekerId = arbeidssoekerId,
                 identiteter = nyeIdentiteter,
                 tidligereIdentiteter = tidligereIdentiteter

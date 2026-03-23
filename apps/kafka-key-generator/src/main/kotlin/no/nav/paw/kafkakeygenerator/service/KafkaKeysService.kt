@@ -9,6 +9,7 @@ import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.kafkakeygenerator.api.v2.Alias
 import no.nav.paw.kafkakeygenerator.api.v2.InfoResponse
 import no.nav.paw.kafkakeygenerator.api.v2.LokaleAlias
+import no.nav.paw.kafkakeygenerator.client.PdlRestConsumer
 import no.nav.paw.kafkakeygenerator.exception.IdentitetIkkeFunnetException
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
@@ -27,7 +28,7 @@ import org.apache.kafka.common.serialization.Serdes
 
 class KafkaKeysService(
     private val meterRegistry: MeterRegistry,
-    private val pdlService: PdlService,
+    private val pdlRestConsumer: PdlRestConsumer,
     private val identitetService: IdentitetService
 ) {
     private val logger = buildLogger
@@ -78,7 +79,7 @@ class KafkaKeysService(
             arbeidssoekerId
         } else {
             logger.debug("Ingen arbeidssoekerId funnet for identitet")
-            val identiteter = pdlService.finnIdentiteter(
+            val identiteter = pdlRestConsumer.finnIdentiteter(
                 callId = callId,
                 identitet = identitet.value,
                 historikk = true
@@ -136,7 +137,7 @@ class KafkaKeysService(
         callId: CallId,
         identitet: Identitetsnummer
     ): InfoResponse {
-        val pdlIdentiteter = pdlService.finnIdentiteter(
+        val pdlIdentiteter = pdlRestConsumer.finnIdentiteter(
             callId = callId,
             identitet = identitet.value,
             historikk = true

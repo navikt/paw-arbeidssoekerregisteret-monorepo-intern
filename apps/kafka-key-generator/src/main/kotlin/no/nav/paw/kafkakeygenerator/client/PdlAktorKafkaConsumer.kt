@@ -1,10 +1,11 @@
-package no.nav.paw.kafkakeygenerator.service
+package no.nav.paw.kafkakeygenerator.client
 
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.kafka.config.KafkaConsumerConfig
 import no.nav.paw.kafka.service.KafkaHwmOperations
 import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.kafkakeygenerator.model.dto.asPerson
+import no.nav.paw.kafkakeygenerator.service.IdentitetService
 import no.nav.paw.logging.logger.TeamLogsLogger
 import no.nav.paw.logging.logger.buildNamedLogger
 import no.nav.person.pdl.aktor.v2.Aktor
@@ -13,12 +14,12 @@ import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.time.Instant
 
-class PdlAktorKafkaConsumerService(
+class PdlAktorKafkaConsumer(
     private val kafkaConsumerConfig: KafkaConsumerConfig,
     private val kafkaHwmOperations: KafkaHwmOperations,
     private val identitetService: IdentitetService
 ) {
-    private val logger = buildNamedLogger("application.kafka")
+    private val logger = buildNamedLogger("kafka.consumer.pdl.aktor")
 
     @WithSpan
     fun handleRecords(records: ConsumerRecords<Any, Aktor>) {

@@ -8,8 +8,8 @@ import no.nav.paw.kafka.handler.ConsumerExceptionHandler
 import no.nav.paw.kafka.listener.HwmConsumerRebalanceListener
 import no.nav.paw.kafka.plugin.KafkaConsumerPlugin
 import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
-import no.nav.paw.kafkakeygenerator.service.PawPeriodeKafkaConsumerService
-import no.nav.paw.kafkakeygenerator.service.PdlAktorKafkaConsumerService
+import no.nav.paw.kafkakeygenerator.client.PawPeriodeKafkaConsumer
+import no.nav.paw.kafkakeygenerator.client.PdlAktorKafkaConsumer
 import no.nav.person.pdl.aktor.v2.Aktor
 import org.apache.kafka.clients.consumer.KafkaConsumer
 
@@ -18,15 +18,15 @@ fun Application.installKafkaPlugins(
     pawPeriodeConsumer: KafkaConsumer<Long, Periode>,
     pawPeriodeConsumerExceptionHandler: ConsumerExceptionHandler,
     pawPeriodeHwmRebalanceListener: HwmConsumerRebalanceListener,
-    pawPeriodeKafkaConsumerService: PawPeriodeKafkaConsumerService,
+    pawPeriodeKafkaConsumer: PawPeriodeKafkaConsumer,
     pdlAktorConsumer: KafkaConsumer<Any, Aktor>,
     pdlAktorConsumerExceptionHandler: ConsumerExceptionHandler,
     pdlAktorHwmRebalanceListener: HwmConsumerRebalanceListener,
-    pdlAktorKafkaConsumerService: PdlAktorKafkaConsumerService
+    pdlAktorKafkaConsumer: PdlAktorKafkaConsumer
 ) {
     install(KafkaConsumerPlugin<Long, Periode>("PawPeriode")) {
         this.onInit = pawPeriodeHwmRebalanceListener::onPartitionsReady
-        this.onConsume = pawPeriodeKafkaConsumerService::handleRecords
+        this.onConsume = pawPeriodeKafkaConsumer::handleRecords
         this.kafkaConsumerWrapper = NonCommittingKafkaConsumerWrapper(
             topics = listOf(applicationConfig.pawPeriodeConsumer.topic),
             consumer = pawPeriodeConsumer,
@@ -36,7 +36,7 @@ fun Application.installKafkaPlugins(
     }
     install(KafkaConsumerPlugin<Any, Aktor>("PdlAktor")) {
         this.onInit = pdlAktorHwmRebalanceListener::onPartitionsReady
-        this.onConsume = pdlAktorKafkaConsumerService::handleRecords
+        this.onConsume = pdlAktorKafkaConsumer::handleRecords
         this.kafkaConsumerWrapper = NonCommittingKafkaConsumerWrapper(
             topics = listOf(applicationConfig.pdlAktorConsumer.topic),
             consumer = pdlAktorConsumer,

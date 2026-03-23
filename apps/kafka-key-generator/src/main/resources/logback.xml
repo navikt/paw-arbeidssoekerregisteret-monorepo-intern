@@ -50,6 +50,7 @@
                 <appender-ref ref="TEAM_LOGS"/>
             </logger>
             <logger name="no.nav.paw" level="DEBUG"/>
+            <logger name="no.nav.paw.logger.security.authentication" level="INFO"/>
             <logger name="no.nav.paw.pdl.PdlClient" level="WARN"/>
         </then>
     </if>

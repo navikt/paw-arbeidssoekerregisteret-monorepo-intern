@@ -1,21 +1,21 @@
-package no.nav.paw.kafkakeygenerator.service
+package no.nav.paw.kafkakeygenerator.client
 
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.kafka.config.KafkaConsumerConfig
 import no.nav.paw.kafka.service.KafkaHwmOperations
 import no.nav.paw.kafkakeygenerator.model.dao.PerioderTable
-import no.nav.paw.logging.logger.buildLogger
+import no.nav.paw.logging.logger.buildNamedLogger
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.time.Instant
 
-class PawPeriodeKafkaConsumerService(
+class PawPeriodeKafkaConsumer(
     private val kafkaConsumerConfig: KafkaConsumerConfig,
     private val kafkaHwmOperations: KafkaHwmOperations
 ) {
-    private val logger = buildLogger
+    private val logger = buildNamedLogger("kafka.consumer.paw.periode")
 
     @WithSpan
     fun handleRecords(records: ConsumerRecords<Long, Periode>) {
