@@ -1,4 +1,4 @@
-package no.nav.paw.kafkakeygenerator.service
+package no.nav.paw.kafkakeygenerator.client
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
@@ -16,7 +16,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import java.time.Instant
 
-class PdlAktorKafkaConsumerServiceTest : FreeSpec({
+class PdlAktorConsumerTest : FreeSpec({
     with(TestContext.buildWithPostgres()) {
         val aktorTopic = applicationConfig.pdlAktorConsumer.topic
 
@@ -54,7 +54,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
 
             // WHEN
             pdlAktorKafkaHwmOperations.updateHwm(aktorTopic, 0, 2, Instant.now())
-            pdlAktorKafkaConsumerService.handleRecords(records)
+            pdlAktorKafkaConsumer.handleRecords(records)
 
             // THEN
             val hwmRow = pdlAktorKafkaHwmOperations.getHwm(aktorTopic, 0)
@@ -69,7 +69,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             ).asRecords()
 
             // WHEN
-            pdlAktorKafkaConsumerService.handleRecords(records)
+            pdlAktorKafkaConsumer.handleRecords(records)
 
             // THEN
             val hwmRow = pdlAktorKafkaHwmOperations.getHwm(aktorTopic, 0)
@@ -90,7 +90,7 @@ class PdlAktorKafkaConsumerServiceTest : FreeSpec({
             ).asRecords()
 
             // WHEN
-            pdlAktorKafkaConsumerService.handleRecords(records)
+            pdlAktorKafkaConsumer.handleRecords(records)
 
             // THEN
             val hwmRow = pdlAktorKafkaHwmOperations.getHwm(aktorTopic, 0)

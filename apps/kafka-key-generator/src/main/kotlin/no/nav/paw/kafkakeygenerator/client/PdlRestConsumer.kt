@@ -1,10 +1,10 @@
-package no.nav.paw.kafkakeygenerator.service
+package no.nav.paw.kafkakeygenerator.client
 
 import kotlinx.coroutines.runBlocking
 import no.nav.paw.felles.model.CallId
 import no.nav.paw.kafkakeygenerator.exception.PdlTekniskFeilException
 import no.nav.paw.kafkakeygenerator.exception.PdlUkjentIdentitetException
-import no.nav.paw.logging.logger.buildLogger
+import no.nav.paw.logging.logger.buildNamedLogger
 import no.nav.paw.pdl.PdlClient
 import no.nav.paw.pdl.PdlException
 import no.nav.paw.pdl.graphql.generated.hentidenter.IdentInformasjon
@@ -14,10 +14,10 @@ import java.util.*
 private const val CONSUMER_ID = "paw-arbeidssoekerregisteret"
 private const val PDL_BEHANDLINGSNUMMER = "B452"
 
-class PdlService(
+class PdlRestConsumer(
     private val pdlClient: PdlClient
 ) {
-    private val logger = buildLogger
+    private val logger = buildNamedLogger("rest.consumer.pdl")
 
     fun finnIdentiteter(
         identitet: String,

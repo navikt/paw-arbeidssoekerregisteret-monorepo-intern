@@ -3,6 +3,7 @@ package no.nav.paw.kafkakeygenerator.service
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.identitet.internehendelser.vo.Identitet
 import no.nav.paw.identitet.internehendelser.vo.IdentitetType
+import no.nav.paw.kafkakeygenerator.client.PawIdentitetKafkaProducer
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
 import no.nav.paw.kafkakeygenerator.model.dao.IdentitetRow
@@ -15,7 +16,7 @@ import java.time.Instant
 
 class IdentitetService(
     private val konfliktService: KonfliktService,
-    private val hendelseService: HendelseService
+    private val pawIdentitetKafkaProducer: PawIdentitetKafkaProducer
 ) {
     private val logger = buildLogger
 
@@ -85,7 +86,7 @@ class IdentitetService(
                 .toMutableList()
                 .apply { add(arbeidssoekerId.asIdentitet()) }
 
-            hendelseService.sendIdentiteterEndretHendelse(
+            pawIdentitetKafkaProducer.sendIdentiteterEndretHendelse(
                 arbeidssoekerId = arbeidssoekerId,
                 identiteter = endredeIdentiteter.sortedBy { it.type.ordinal },
                 tidligereIdentiteter = emptyList()
@@ -223,7 +224,7 @@ class IdentitetService(
                         tidligereIdentiteter += arbeidssoekerId.asIdentitet()
                     }
 
-                    hendelseService.sendIdentiteterSlettetHendelse(
+                    pawIdentitetKafkaProducer.sendIdentiteterSlettetHendelse(
                         arbeidssoekerId = arbeidssoekerId,
                         tidligereIdentiteter = tidligereIdentiteter
                     )
@@ -379,7 +380,7 @@ class IdentitetService(
             tidligereIdentiteter += arbeidssoekerId.asIdentitet()
         }
 
-        hendelseService.sendIdentiteterEndretHendelse(
+        pawIdentitetKafkaProducer.sendIdentiteterEndretHendelse(
             arbeidssoekerId = arbeidssoekerId,
             identiteter = endredeIdentiteter.sortedBy { it.type.ordinal },
             tidligereIdentiteter = tidligereIdentiteter.sortedBy { it.type.ordinal }

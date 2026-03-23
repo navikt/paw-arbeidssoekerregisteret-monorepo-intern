@@ -1,34 +1,22 @@
 package no.nav.paw.kafkakeygenerator.service
 
-import no.nav.paw.identitet.internehendelser.vo.IdentitetType
 import no.nav.paw.kafkakeygenerator.api.models.IdentitetResponse
 import no.nav.paw.kafkakeygenerator.api.models.Konflikt
 import no.nav.paw.kafkakeygenerator.api.models.KonfliktDetaljer
 import no.nav.paw.kafkakeygenerator.api.models.KonfliktType
 import no.nav.paw.kafkakeygenerator.api.v2.asApi
+import no.nav.paw.kafkakeygenerator.client.PdlRestConsumer
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.asApi
-import no.nav.paw.kafkakeygenerator.model.dao.IdentitetRow
 import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
-import no.nav.paw.kafkakeygenerator.model.dao.KonfliktRow
 import no.nav.paw.kafkakeygenerator.model.dao.KonflikterTable
 import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.kafkakeygenerator.utils.asRecordKey
 import no.nav.paw.logging.logger.buildLogger
 
-private fun IdentitetRow.aktorIdList(): List<String> {
-    return listOf(aktorId) + if (type == IdentitetType.AKTORID) listOf(identitet) else emptyList()
-}
-
-private fun KonfliktRow.aktorIdList(): List<String> {
-    return (listOf(aktorId) + identiteter
-        .filter { it.type == IdentitetType.AKTORID }
-        .map { it.identitet }).distinct()
-}
-
 class IdentitetResponseService(
-    private val pdlService: PdlService
+    private val pdlRestConsumer: PdlRestConsumer
 ) {
     private val logger = buildLogger
 
@@ -38,6 +26,7 @@ class IdentitetResponseService(
         hentPdl: Boolean = false
     ): IdentitetResponse {
         logger.debug("Henter alle identiteter relatert til gitt identitet")
+
         val identitetRows = IdentiteterTable
             .findAllByIdentitet(identitet)
             .filter { it.status != IdentitetStatus.SLETTET }
@@ -47,10 +36,9 @@ class IdentitetResponseService(
                 identitet = identitet,
                 status = KonfliktStatus.VENTER
             )
-            val aktorIdListe = (identitetRows
-                .flatMap { it.aktorIdList() }
-                    + konfliktRows
-                .flatMap { it.aktorIdList() })
+
+            val aktorIdListe = identitetRows
+                .map { it.aktorId }
                 .distinct()
             val arbeidssoekerIdListe = identitetRows
                 .map { it.arbeidssoekerId }
@@ -67,7 +55,17 @@ class IdentitetResponseService(
                             )
                         )
                     }
-            } else if (aktorIdListe.size > 1 || arbeidssoekerIdListe.size > 1) {
+            } else if (aktorIdListe.size > 1) {
+                listOf(
+                    Konflikt(
+                        type = KonfliktType.SPLITT,
+                        detaljer = KonfliktDetaljer(
+                            aktorIdListe = aktorIdListe,
+                            arbeidssoekerIdListe = arbeidssoekerIdListe
+                        )
+                    )
+                )
+            } else if (arbeidssoekerIdListe.size > 1) {
                 listOf(
                     Konflikt(
                         type = KonfliktType.MERGE,
@@ -85,7 +83,7 @@ class IdentitetResponseService(
         }
 
         val pdlIdentiteter = if (hentPdl) {
-            pdlService.finnIdentiteter(identitet = identitet)
+            pdlRestConsumer.finnIdentiteter(identitet = identitet)
                 .map { it.asIdentitet() }
                 .map { it.asApi() }
         } else {
