@@ -87,6 +87,17 @@ object IdentiteterTable : LongIdTable("identiteter") {
             .map { it.asIdentitetRow() }
     }
 
+    // OBS! Har med soft-slettede
+    fun findByAktorIdListOrIdentitetList(
+        aktorIdList: Iterable<String>,
+        identitetList: Iterable<String>
+    ): List<IdentitetRow> = transaction {
+        selectAll()
+            .orderBy(IdentiteterTable.id)
+            .where { (aktorId inList aktorIdList) or (identitet inList identitetList) }
+            .map { it.asIdentitetRow() }
+    }
+
     fun insert(
         arbeidssoekerId: Long,
         aktorId: String,

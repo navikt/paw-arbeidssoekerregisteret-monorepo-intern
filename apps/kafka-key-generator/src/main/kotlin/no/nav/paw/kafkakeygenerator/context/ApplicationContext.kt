@@ -36,7 +36,7 @@ import no.nav.paw.kafkakeygenerator.config.PdlClientConfig
 import no.nav.paw.kafkakeygenerator.config.SERVER_CONFIG
 import no.nav.paw.kafkakeygenerator.config.ServerConfig
 import no.nav.paw.kafkakeygenerator.handler.HealthIndicatorConsumerExceptionHandler
-import no.nav.paw.kafkakeygenerator.service.IdentitetResponseService
+import no.nav.paw.kafkakeygenerator.service.IdentitetQueryService
 import no.nav.paw.kafkakeygenerator.service.IdentitetService
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
 import no.nav.paw.kafkakeygenerator.service.KonfliktService
@@ -57,7 +57,7 @@ data class ApplicationContext(
     val prometheusMeterRegistry: PrometheusMeterRegistry,
     val healthIndicatorRepository: HealthIndicatorRepository,
     val identitetService: IdentitetService,
-    val identitetResponseService: IdentitetResponseService,
+    val identitetQueryService: IdentitetQueryService,
     val konfliktService: KonfliktService,
     val pawPeriodeConsumer: KafkaConsumer<Long, Periode>,
     val pawPeriodeConsumerExceptionHandler: ConsumerExceptionHandler,
@@ -118,7 +118,7 @@ data class ApplicationContext(
                 pdlRestConsumer = pdlRestConsumer,
                 identitetService = identitetService
             )
-            val identitetResponseService = IdentitetResponseService(
+            val identitetQueryService = IdentitetQueryService(
                 pdlRestConsumer = pdlRestConsumer
             )
             val pawPeriodeKafkaHwmOperations = KafkaHwmService(
@@ -174,7 +174,7 @@ data class ApplicationContext(
                 prometheusMeterRegistry = prometheusMeterRegistry,
                 healthIndicatorRepository = healthIndicatorRepository,
                 identitetService = identitetService,
-                identitetResponseService = identitetResponseService,
+                identitetQueryService = identitetQueryService,
                 konfliktService = konfliktService,
                 pawPeriodeConsumer = pawPeriodeConsumer,
                 pawPeriodeConsumerExceptionHandler = pawPeriodeConsumerExceptionHandler,

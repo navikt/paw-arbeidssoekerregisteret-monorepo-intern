@@ -8,7 +8,7 @@ import io.ktor.server.routing.route
 import no.nav.paw.felles.model.Identitetsnummer
 import no.nav.paw.kafkakeygenerator.api.models.IdentitetRequest
 import no.nav.paw.kafkakeygenerator.api.models.IdentitetResponse
-import no.nav.paw.kafkakeygenerator.service.IdentitetResponseService
+import no.nav.paw.kafkakeygenerator.service.IdentitetQueryService
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
 import no.nav.paw.kafkakeygenerator.utils.asRecordKey
 import no.nav.paw.kafkakeygenerator.utils.getCallId
@@ -17,7 +17,7 @@ import no.nav.paw.security.authentication.plugin.autentisering
 
 fun Routing.apiV2Routes(
     kafkaKeysService: KafkaKeysService,
-    identitetResponseService: IdentitetResponseService
+    identitetQueryService: IdentitetQueryService
 ) {
     route("/api/v2") {
         autentisering(AzureAd) {
@@ -61,7 +61,7 @@ fun Routing.apiV2Routes(
                 val request = call.receive<IdentitetRequest>()
                 val visKonflikter = call.queryParameters["visKonflikter"]?.toBooleanStrictOrNull() ?: false
                 val hentPdl = call.queryParameters["hentPdl"]?.toBooleanStrictOrNull() ?: false
-                val response = identitetResponseService.finnForIdentitet(
+                val response = identitetQueryService.finnForIdentitet(
                     identitet = request.identitet,
                     visKonflikter = visKonflikter,
                     hentPdl = hentPdl

@@ -43,7 +43,7 @@ import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
 import no.nav.paw.kafkakeygenerator.config.SERVER_CONFIG
 import no.nav.paw.kafkakeygenerator.config.ServerConfig
 import no.nav.paw.kafkakeygenerator.plugin.configureRouting
-import no.nav.paw.kafkakeygenerator.service.IdentitetResponseService
+import no.nav.paw.kafkakeygenerator.service.IdentitetQueryService
 import no.nav.paw.kafkakeygenerator.service.IdentitetService
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
 import no.nav.paw.kafkakeygenerator.service.KonfliktService
@@ -101,7 +101,7 @@ class TestContext private constructor(
     ),
     val identitetServiceMock: IdentitetService = mockk<IdentitetService>(),
     val pdlRestConsumer: PdlRestConsumer = PdlRestConsumer(pdlClientMock),
-    val identitetResponseService: IdentitetResponseService = IdentitetResponseService(
+    val identitetQueryService: IdentitetQueryService = IdentitetQueryService(
         pdlRestConsumer = pdlRestConsumer
     ),
     val kafkaKeysService: KafkaKeysService = KafkaKeysService(
@@ -156,7 +156,7 @@ class TestContext private constructor(
                 meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
                 healthIndicatorRepository = HealthIndicatorRepository(),
                 kafkaKeysService = kafkaKeysService,
-                identitetResponseService = identitetResponseService
+                identitetQueryService = identitetQueryService
             )
         }
     }

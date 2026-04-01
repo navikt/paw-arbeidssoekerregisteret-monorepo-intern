@@ -19,5 +19,6 @@ data class ScheduledJobConfig(
     val enabled: Boolean,
     val delay: Duration,
     val interval: Duration,
+    val reset: Duration,
     val batchSize: Int
 )

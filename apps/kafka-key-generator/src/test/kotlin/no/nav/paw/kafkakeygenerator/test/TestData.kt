@@ -58,17 +58,19 @@ object TestData {
     const val key4 = -100004L
     const val key5 = -100005L
     const val key6 = -100006L
-    val dnr1 = Identitet(identitet = "41017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
-    val dnr2 = Identitet(identitet = "42017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
-    val dnr3 = Identitet(identitet = "43017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
-    val dnr4 = Identitet(identitet = "44017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
-    val dnr5 = Identitet(identitet = "45017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
-    val dnr6 = Identitet(identitet = "46017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
-    val dnr7 = Identitet(identitet = "47017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val dnr1_1 = Identitet(identitet = "41017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val dnr2_1 = Identitet(identitet = "42017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val dnr3_1 = Identitet(identitet = "43017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val dnr4_1 = Identitet(identitet = "44017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val dnr5_1 = Identitet(identitet = "45017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val dnr6_1 = Identitet(identitet = "46017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val dnr7_1 = Identitet(identitet = "47017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
     val dnr8_1 = Identitet(identitet = "48017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
     val dnr8_2 = Identitet(identitet = "48017012346", type = FOLKEREGISTERIDENT, gjeldende = true)
-    val dnr9 = Identitet(identitet = "49017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
-    val dnr11 = Identitet(identitet = "51017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val dnr9_1 = Identitet(identitet = "49017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val dnr10_1 = Identitet(identitet = "50017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val dnr11_1 = Identitet(identitet = "51017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val dnr12_1 = Identitet(identitet = "52017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
     val fnr1_1 = Identitet(identitet = "01017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
     val fnr1_2 = Identitet(identitet = "01017012346", type = FOLKEREGISTERIDENT, gjeldende = true)
     val fnr2_1 = Identitet(identitet = "02017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
@@ -87,24 +89,31 @@ object TestData {
     val fnr8_2 = Identitet(identitet = "08017012346", type = FOLKEREGISTERIDENT, gjeldende = true)
     val fnr9_1 = Identitet(identitet = "09017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
     val fnr9_2 = Identitet(identitet = "09017012346", type = FOLKEREGISTERIDENT, gjeldende = true)
-    val fnr10 = Identitet(identitet = "10017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr10_1 = Identitet(identitet = "10017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr10_2 = Identitet(identitet = "10017012346", type = FOLKEREGISTERIDENT, gjeldende = true)
     val fnr11_1 = Identitet(identitet = "11017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
     val fnr11_2 = Identitet(identitet = "11017012346", type = FOLKEREGISTERIDENT, gjeldende = true)
-    val aktorId1 = Identitet(identitet = "200001017012345", type = AKTORID, gjeldende = true)
-    val aktorId2 = Identitet(identitet = "200002017012345", type = AKTORID, gjeldende = true)
-    val aktorId3 = Identitet(identitet = "200003017012345", type = AKTORID, gjeldende = true)
-    val aktorId4 = Identitet(identitet = "200004017012345", type = AKTORID, gjeldende = true)
-    val aktorId5 = Identitet(identitet = "200005017012345", type = AKTORID, gjeldende = true)
+    val fnr12_1 = Identitet(identitet = "12017012345", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val fnr12_2 = Identitet(identitet = "12017012346", type = FOLKEREGISTERIDENT, gjeldende = true)
+    val aktorId1_1 = Identitet(identitet = "200001017012345", type = AKTORID, gjeldende = true)
+    val aktorId2_1 = Identitet(identitet = "200002017012345", type = AKTORID, gjeldende = true)
+    val aktorId3_1 = Identitet(identitet = "200003017012345", type = AKTORID, gjeldende = true)
+    val aktorId4_1 = Identitet(identitet = "200004017012345", type = AKTORID, gjeldende = true)
+    val aktorId5_1 = Identitet(identitet = "200005017012345", type = AKTORID, gjeldende = true)
     val aktorId6_1 = Identitet(identitet = "200006017012345", type = AKTORID, gjeldende = true)
     val aktorId6_2 = Identitet(identitet = "200006017012346", type = AKTORID, gjeldende = true)
     val aktorId7_1 = Identitet(identitet = "200007017012345", type = AKTORID, gjeldende = true)
     val aktorId7_2 = Identitet(identitet = "200007017012346", type = AKTORID, gjeldende = true)
     val aktorId8_1 = Identitet(identitet = "200008017012345", type = AKTORID, gjeldende = true)
     val aktorId8_2 = Identitet(identitet = "200008017012346", type = AKTORID, gjeldende = true)
-    val aktorId9 = Identitet(identitet = "200009017012345", type = AKTORID, gjeldende = true)
-    val aktorId10 = Identitet(identitet = "200010017012345", type = AKTORID, gjeldende = true)
+    val aktorId9_1 = Identitet(identitet = "200009017012345", type = AKTORID, gjeldende = true)
+    val aktorId9_2 = Identitet(identitet = "200009017012346", type = AKTORID, gjeldende = true)
+    val aktorId10_1 = Identitet(identitet = "200010017012345", type = AKTORID, gjeldende = true)
+    val aktorId10_2 = Identitet(identitet = "200010017012346", type = AKTORID, gjeldende = true)
     val aktorId11_1 = Identitet(identitet = "200011017012345", type = AKTORID, gjeldende = true)
     val aktorId11_2 = Identitet(identitet = "200011017012346", type = AKTORID, gjeldende = true)
+    val aktorId12_1 = Identitet(identitet = "200012017012345", type = AKTORID, gjeldende = true)
+    val aktorId12_2 = Identitet(identitet = "200012017012346", type = AKTORID, gjeldende = true)
     val npId1 = Identitet(identitet = "900001017012345", type = NPID, gjeldende = true)
     val npId2 = Identitet(identitet = "900002017012345", type = NPID, gjeldende = true)
     val npId3 = Identitet(identitet = "900003017012345", type = NPID, gjeldende = true)
@@ -135,63 +144,63 @@ object TestData {
     val navName1 = "Kari Normann"
 
     val aktor1_1 = aktor(
-        listOf(aktorId1, npId1, dnr1)
+        listOf(aktorId1_1, npId1, dnr1_1)
             .map { it.asIdentifikator() }
     )
     val aktor1_2 = aktor(
-        listOf(aktorId1, npId1, dnr1.copy(gjeldende = false), fnr1_1)
+        listOf(aktorId1_1, npId1, dnr1_1.copy(gjeldende = false), fnr1_1)
             .map { it.asIdentifikator() }
     )
     val aktor1_3 = aktor(
-        listOf(aktorId1, npId1, dnr1.copy(gjeldende = false), fnr1_1.copy(gjeldende = false), fnr1_2)
+        listOf(aktorId1_1, npId1, dnr1_1.copy(gjeldende = false), fnr1_1.copy(gjeldende = false), fnr1_2)
             .map { it.asIdentifikator() }
     )
     val aktor2_1 = aktor(
-        listOf(aktorId2, npId2, dnr2)
+        listOf(aktorId2_1, npId2, dnr2_1)
             .map { it.asIdentifikator() }
     )
     val aktor2_2 = aktor(
-        listOf(aktorId2, npId2, dnr2.copy(gjeldende = false), fnr2_1)
+        listOf(aktorId2_1, npId2, dnr2_1.copy(gjeldende = false), fnr2_1)
             .map { it.asIdentifikator() }
     )
     val aktor2_3 = aktor(
-        listOf(aktorId2, npId2, dnr2.copy(gjeldende = false), fnr2_1.copy(gjeldende = false), fnr2_2)
+        listOf(aktorId2_1, npId2, dnr2_1.copy(gjeldende = false), fnr2_1.copy(gjeldende = false), fnr2_2)
             .map { it.asIdentifikator() }
     )
     val aktor3_1 = aktor(
-        listOf(aktorId3, npId3, dnr3)
+        listOf(aktorId3_1, npId3, dnr3_1)
             .map { it.asIdentifikator() }
     )
     val aktor3_2 = aktor(
-        listOf(aktorId3, npId3, dnr3.copy(gjeldende = false), fnr3_1)
+        listOf(aktorId3_1, npId3, dnr3_1.copy(gjeldende = false), fnr3_1)
             .map { it.asIdentifikator() }
     )
     val aktor3_3 = aktor(
-        listOf(aktorId3, npId3, dnr3.copy(gjeldende = false), fnr3_1.copy(gjeldende = false), fnr3_2)
+        listOf(aktorId3_1, npId3, dnr3_1.copy(gjeldende = false), fnr3_1.copy(gjeldende = false), fnr3_2)
             .map { it.asIdentifikator() }
     )
     val aktor4_1 = aktor(
-        listOf(aktorId4, npId4, dnr4)
+        listOf(aktorId4_1, npId4, dnr4_1)
             .map { it.asIdentifikator() }
     )
     val aktor4_2 = aktor(
-        listOf(aktorId4, npId4, dnr4.copy(gjeldende = false), fnr4_1)
+        listOf(aktorId4_1, npId4, dnr4_1.copy(gjeldende = false), fnr4_1)
             .map { it.asIdentifikator() }
     )
     val aktor4_3 = aktor(
-        listOf(aktorId4, npId4, dnr4.copy(gjeldende = false), fnr4_2)
+        listOf(aktorId4_1, npId4, dnr4_1.copy(gjeldende = false), fnr4_2)
             .map { it.asIdentifikator() }
     )
     val aktor5_3 = aktor(
         listOf(
-            aktorId5,
-            dnr5.copy(gjeldende = false),
+            aktorId5_1,
+            dnr5_1.copy(gjeldende = false),
             fnr5_1.copy(gjeldende = false),
             fnr5_2
         ).map { it.asIdentifikator() }
     )
     val aktor7_1 = aktor(
-        listOf(aktorId7_1, npId7, dnr7.copy(gjeldende = false), fnr7_1).map { it.asIdentifikator() }
+        listOf(aktorId7_1, npId7, dnr7_1.copy(gjeldende = false), fnr7_1).map { it.asIdentifikator() }
     )
     val aktor7_2 = aktor(
         listOf(aktorId7_2, fnr7_1).map { it.asIdentifikator() }
@@ -213,17 +222,17 @@ object TestData {
         ).map { it.asIdentifikator() }
     )
     val aktor10 = aktor(
-        listOf(aktorId10, npId10, fnr10).map { it.asIdentifikator() }
+        listOf(aktorId10_1, npId10, fnr10_1).map { it.asIdentifikator() }
     )
 
     val periode1_1 = periodeStartet(
         periodeId = periodeId1_1,
-        identitetsnummer = dnr1.identitet,
+        identitetsnummer = dnr1_1.identitet,
         startet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(30)))
     )
     val periode2_1 = periodeAvsluttet(
         periodeId = periodeId2_1,
-        identitetsnummer = dnr2.identitet,
+        identitetsnummer = dnr2_1.identitet,
         startet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(150))),
         avsluttet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(120)))
     )
@@ -240,7 +249,7 @@ object TestData {
     )
     val periode3_1 = periodeStartet(
         periodeId = periodeId3_1,
-        identitetsnummer = dnr3.identitet,
+        identitetsnummer = dnr3_1.identitet,
         startet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(60)))
     )
     val periode3_2 = periodeStartet(
@@ -250,19 +259,19 @@ object TestData {
     )
     val periode4_1 = periodeAvsluttet(
         periodeId = periodeId4_1,
-        identitetsnummer = dnr4.identitet,
+        identitetsnummer = dnr4_1.identitet,
         startet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(120))),
         avsluttet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(90)))
     )
     val periode4_2 = periodeAvsluttet(
         periodeId = periodeId4_2,
-        identitetsnummer = dnr4.identitet,
+        identitetsnummer = dnr4_1.identitet,
         startet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(60))),
         avsluttet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(30)))
     )
     val periode5_1 = periodeAvsluttet(
         periodeId = periodeId5_1,
-        identitetsnummer = dnr5.identitet,
+        identitetsnummer = dnr5_1.identitet,
         startet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(120))),
         avsluttet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(90)))
     )
@@ -274,7 +283,7 @@ object TestData {
     )
     val periode6_1 = periodeAvsluttet(
         periodeId = periodeId6,
-        identitetsnummer = dnr6.identitet,
+        identitetsnummer = dnr6_1.identitet,
         startet = periodeMetadata(tidspunkt = Instant.now().minus(Duration.ofDays(120)))
     )
     val periode6_2 = periodeAvsluttet(
@@ -456,26 +465,26 @@ object TestData {
 
     fun asPdlAktor(request: HentIdenter): Aktor {
         return when (request.variables.ident) {
-            aktorId1.identitet -> aktor1_1
+            aktorId1_1.identitet -> aktor1_1
             npId1.identitet -> aktor1_1
-            dnr1.identitet -> aktor1_1
+            dnr1_1.identitet -> aktor1_1
             fnr1_1.identitet -> aktor1_3
             fnr1_2.identitet -> aktor1_3
-            aktorId2.identitet -> aktor2_1
+            aktorId2_1.identitet -> aktor2_1
             npId2.identitet -> aktor2_1
-            dnr2.identitet -> aktor2_1
+            dnr2_1.identitet -> aktor2_1
             fnr2_1.identitet -> aktor2_2
             fnr2_2.identitet -> aktor2_3
-            aktorId3.identitet -> aktor3_1
+            aktorId3_1.identitet -> aktor3_1
             npId3.identitet -> aktor3_1
-            dnr3.identitet -> aktor3_1
+            dnr3_1.identitet -> aktor3_1
             fnr3_1.identitet -> aktor3_2
             fnr3_2.identitet -> aktor3_3
-            aktorId4.identitet -> aktor4_1
-            dnr4.identitet -> aktor4_1
+            aktorId4_1.identitet -> aktor4_1
+            dnr4_1.identitet -> aktor4_1
             fnr4_1.identitet -> aktor4_2
             fnr4_2.identitet -> aktor4_3
-            dnr5.identitet -> aktor5_3
+            dnr5_1.identitet -> aktor5_3
             else -> throw PdlException("Fant ikke identiteter", listOf(KotlinxGraphQLError("Fant ikke person")))
         }
     }

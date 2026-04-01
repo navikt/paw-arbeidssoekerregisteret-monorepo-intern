@@ -8,11 +8,8 @@ import no.nav.paw.kafka.config.KafkaConfig
 import no.nav.paw.kafka.factory.KafkaFactory
 import no.nav.paw.kafkakeygenerator.config.APPLICATION_CONFIG
 import no.nav.paw.kafkakeygenerator.config.ApplicationConfig
-import no.nav.paw.kafkakeygenerator.test.TestData.aktor
-import no.nav.paw.kafkakeygenerator.test.TestData.identifikator
 import no.nav.paw.logging.logger.buildApplicationLogger
 import no.nav.person.pdl.aktor.v2.Aktor
-import no.nav.person.pdl.aktor.v2.Type
 import org.apache.kafka.clients.producer.ProducerRecord
 
 private val logger = buildApplicationLogger
@@ -30,32 +27,11 @@ fun main() {
             valueSerializer = AktorAvroSerializer::class
         )
 
-        val aktor1 = "2647237114816" to aktor(
-            listOf(
-                identifikator(ident = "05507646184", type = Type.FOLKEREGISTERIDENT, gjeldende = true),
-                identifikator(ident = "13497632174", type = Type.FOLKEREGISTERIDENT, gjeldende = false),
-                identifikator(ident = "02507637593", type = Type.FOLKEREGISTERIDENT, gjeldende = true),
-                identifikator(ident = "18497638182", type = Type.FOLKEREGISTERIDENT, gjeldende = false),
-                identifikator(ident = "2002308243366", type = Type.AKTORID, gjeldende = false),
-                identifikator(ident = "2647237114816", type = Type.AKTORID, gjeldende = true)
-            )
-        )
-        val aktor2 = "2078784314389" to aktor(
-            listOf(
-                identifikator(ident = "13497632174", type = Type.FOLKEREGISTERIDENT, gjeldende = true),
-                identifikator(ident = "2078784314389", type = Type.AKTORID, gjeldende = true)
-            )
-        )
-        val aktor5 = "200005017012345" to aktor(
-            listOf(
-                identifikator(ident = "05017012345", type = Type.FOLKEREGISTERIDENT, gjeldende = true),
-                identifikator(ident = "45017012345", type = Type.FOLKEREGISTERIDENT, gjeldende = false),
-                identifikator(ident = "200005017012345", type = Type.AKTORID, gjeldende = true),
-                identifikator(ident = "200045017012345", type = Type.AKTORID, gjeldende = false)
-            )
-        )
+        val aktor1 = TestData.aktorId8_1.identitet to TestData.aktor8_1
+        val aktor2 = TestData.aktorId8_2.identitet to TestData.aktor8_2
+        val aktor3 = TestData.aktorId8_2.identitet to TestData.aktor8_3
 
-        val aktors = listOf(aktor5)
+        val aktors = listOf(aktor1, aktor2, aktor3)
         val records: List<ProducerRecord<Any, Aktor>> = aktors.map {
             ProducerRecord(topic, it.first, it.second)
         }

@@ -17,7 +17,7 @@ fun Application.installScheduledTaskPlugins(
         if (identitetMergeKonfliktJob.enabled) {
             installScheduledTaskPlugin(
                 name = "IdentitetMergeKonflikt",
-                task = konfliktService::handleVentendeMergeKonflikter,
+                task = konfliktService::handleMergeKonflikter,
                 delay = identitetMergeKonfliktJob.delay,
                 interval = identitetMergeKonfliktJob.interval,
                 onFailure = konfliktService::handleMergeJobbFeilet,
@@ -31,7 +31,7 @@ fun Application.installScheduledTaskPlugins(
         if (identitetSplittKonfliktJob.enabled) {
             installScheduledTaskPlugin(
                 name = "IdentitetSplittKonflikt",
-                task = konfliktService::handleValgteSplittKonflikter,
+                task = konfliktService::handleSplittKonflikter,
                 delay = identitetSplittKonfliktJob.delay,
                 interval = identitetSplittKonfliktJob.interval,
                 onFailure = konfliktService::handleSplittJobbFeilet,

@@ -15,7 +15,7 @@ import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.kafkakeygenerator.utils.asRecordKey
 import no.nav.paw.logging.logger.buildLogger
 
-class IdentitetResponseService(
+class IdentitetQueryService(
     private val pdlRestConsumer: PdlRestConsumer
 ) {
     private val logger = buildLogger

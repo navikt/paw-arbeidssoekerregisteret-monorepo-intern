@@ -22,10 +22,12 @@ clientIdPrefix = "${KAFKA_PRODUCER_CLIENT_ID_PREFIX_PAW_HENDELSESLOGG}"
 enabled = "${SCHEDULED_JOB_ENABLED_IDENTITET_MERGE_KONFLIKT}"
 delay = "PT10M"
 interval = "PT25M"
+reset = "PT24H"
 batchSize = 1000
 
 [identitetSplittKonfliktJob]
 enabled = "${SCHEDULED_JOB_ENABLED_IDENTITET_SPLITT_KONFLIKT}"
 delay = "PT5M"
 interval = "PT32M"
+reset = "PT24H"
 batchSize = 1000

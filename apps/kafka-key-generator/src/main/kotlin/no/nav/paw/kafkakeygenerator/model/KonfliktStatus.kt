@@ -5,15 +5,20 @@ package no.nav.paw.kafkakeygenerator.model
  *
  * Statusflyt for MERGE:
  *   * Normal flyt: VENTER -> PROSESSERER -> FULLFOERT
- *   * Ved feil: VENTER -> PROSESSERER -> FEILET
+ *   * Ved problemer: VENTER -> PROSESSERER -> PAUSET
  *   * Manuelt avbrutt: VENTER -> SLETTET
  *
  * Statusflyt for SPLITT:
- *   * Manuelt valgt: VENTER -> VALGT
- *   * Normal flyt: VALGT -> PROSESSERER -> FULLFOERT
- *   * Ved feil: VALGT -> PROSESSERER -> FEILET
- *   * Manuelt avbrutt: VENTER / VALGT -> SLETTET
+ *   * Normal flyt: VENTER -> PROSESSERER -> FULLFOERT
+ *   * Ved problemer: VENTER -> PROSESSERER -> PAUSET
+ *   * Manuelt avbrutt: VENTER -> SLETTET
  */
 enum class KonfliktStatus {
-    VENTER, VALGT, PROSESSERER, FEILET, FULLFOERT, SLETTET
+    VENTER,
+    VALGT,
+    PROSESSERER,
+    PAUSET,
+    FEILET,
+    FULLFOERT,
+    SLETTET
 }

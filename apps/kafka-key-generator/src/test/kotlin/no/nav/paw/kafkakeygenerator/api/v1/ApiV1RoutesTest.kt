@@ -69,8 +69,8 @@ class ApiV1RoutesTest : FreeSpec({
                 val token = mockOAuth2Server.issueAzureToken()
 
                 // GIVEN
-                val aktorId = TestData.aktorId1
-                val dnr = TestData.dnr1
+                val aktorId = TestData.aktorId1_1
+                val dnr = TestData.dnr1_1
                 val fnr = TestData.fnr1_1
 
                 // WHEN
@@ -112,9 +112,9 @@ class ApiV1RoutesTest : FreeSpec({
                 val token = mockOAuth2Server.issueAzureToken()
 
                 // GIVEN
-                val aktorId = TestData.aktorId2
+                val aktorId = TestData.aktorId2_1
                 val npId = TestData.npId2
-                val dnr = TestData.dnr2
+                val dnr = TestData.dnr2_1
                 val fnr1 = TestData.fnr2_1
                 val fnr2 = TestData.fnr2_2
                 val arbeidssoekerId = KafkaKeysTable.insert().value

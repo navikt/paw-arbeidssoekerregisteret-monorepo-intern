@@ -83,8 +83,8 @@ class ApiV2RoutesTest : FreeSpec({
                     val token = mockOAuth2Server.issueAzureToken()
 
                     // GIVEN
-                    val aktorId = TestData.aktorId1
-                    val dnr = TestData.dnr1
+                    val aktorId = TestData.aktorId1_1
+                    val dnr = TestData.dnr1_1
                     val fnr = TestData.fnr1_1
 
                     // WHEN
@@ -126,9 +126,9 @@ class ApiV2RoutesTest : FreeSpec({
                     val token = mockOAuth2Server.issueAzureToken()
 
                     // GIVEN
-                    val aktorId = TestData.aktorId2
+                    val aktorId = TestData.aktorId2_1
                     val npId = TestData.npId2
-                    val dnr = TestData.dnr2
+                    val dnr = TestData.dnr2_1
                     val fnr1 = TestData.fnr2_1
                     val fnr2 = TestData.fnr2_2
                     val arbeidssoekerId = KafkaKeysTable.insert().value
@@ -240,9 +240,9 @@ class ApiV2RoutesTest : FreeSpec({
                     val token = mockOAuth2Server.issueAzureToken()
 
                     // GIVEN
-                    val aktorId = TestData.aktorId3
+                    val aktorId = TestData.aktorId3_1
                     val npId = TestData.npId3
-                    val dnr = TestData.dnr3
+                    val dnr = TestData.dnr3_1
                     val fnr = TestData.fnr3_1
 
                     // WHEN
@@ -365,9 +365,9 @@ class ApiV2RoutesTest : FreeSpec({
                     val token = mockOAuth2Server.issueAzureToken()
 
                     // GIVEN
-                    val aktorId = TestData.aktorId4
+                    val aktorId = TestData.aktorId4_1
                     val npId = TestData.npId4
-                    val dnr = TestData.dnr4
+                    val dnr = TestData.dnr4_1
                     val fnr1 = TestData.fnr4_1
                     val fnr2 = TestData.fnr4_2
 
@@ -559,9 +559,9 @@ class ApiV2RoutesTest : FreeSpec({
                     val token = mockOAuth2Server.issueAzureToken()
 
                     // GIVEN
-                    val aktorId = TestData.aktorId5
+                    val aktorId = TestData.aktorId5_1
                     val npId = TestData.npId5
-                    val dnr = TestData.dnr5
+                    val dnr = TestData.dnr5_1
                     val fnr1 = TestData.fnr5_1
                     val fnr2 = TestData.fnr5_2
                     val arbeidssoekerId1 = KafkaKeysTable.insert().value
