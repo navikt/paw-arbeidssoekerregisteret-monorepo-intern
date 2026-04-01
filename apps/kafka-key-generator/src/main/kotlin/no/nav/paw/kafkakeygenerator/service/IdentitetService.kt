@@ -150,7 +150,8 @@ class IdentitetService(
             )
         } else if ((aktorIdSet.isNotEmpty() && !aktorIdSet.contains(aktorId)) || eksisterendeKonfliktRows.any { it.type == KonfliktType.SPLITT }) {
             logger.warn(
-                "Pauser oppdatering som splitt fordi person har ny aktør-ID ({} identiteter)",
+                "Pauser oppdatering som {} fordi person har ny aktør-ID ({} identiteter)",
+                KonfliktType.SPLITT.name,
                 identiteter.size
             )
             identiteterSkalSplittes(
@@ -161,7 +162,8 @@ class IdentitetService(
             )
         } else if (arbeidssoekerIdSet.size > 1 || eksisterendeKonfliktRows.any { it.type == KonfliktType.MERGE }) {
             logger.warn(
-                "Pauser oppdatering som merge fordi arbeidssøker har flere arbeidssøker-ider ({} identiteter)",
+                "Pauser oppdatering som {} fordi arbeidssøker har flere arbeidssøker-ider ({} identiteter)",
+                KonfliktType.MERGE.name,
                 identiteter.size
             )
             identiteterSkalMerges(

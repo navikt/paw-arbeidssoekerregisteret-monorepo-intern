@@ -22,10 +22,12 @@ clientIdPrefix = "paw-kafka-key-generator-paw-hendelseslogg"
 enabled = true
 delay = "PT5M"
 interval = "PT13M"
+reset = "PT24H"
 batchSize = 10
 
 [identitetSplittKonfliktJob]
-enabled = false
+enabled = true
 delay = "PT4M"
 interval = "PT16M"
+reset = "PT24H"
 batchSize = 10

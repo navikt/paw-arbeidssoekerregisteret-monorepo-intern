@@ -67,7 +67,7 @@ fun Application.module(applicationContext: ApplicationContext) {
             meterRegistry = prometheusMeterRegistry,
             healthIndicatorRepository = healthIndicatorRepository,
             kafkaKeysService = kafkaKeysService,
-            identitetResponseService = identitetResponseService
+            identitetQueryService = identitetQueryService
         )
     }
 }

@@ -8,7 +8,7 @@ import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.health.route.healthRoutes
 import no.nav.paw.kafkakeygenerator.api.v1.apiV1Routes
 import no.nav.paw.kafkakeygenerator.api.v2.apiV2Routes
-import no.nav.paw.kafkakeygenerator.service.IdentitetResponseService
+import no.nav.paw.kafkakeygenerator.service.IdentitetQueryService
 import no.nav.paw.kafkakeygenerator.service.KafkaKeysService
 import no.nav.paw.metrics.route.metricsRoutes
 
@@ -16,7 +16,7 @@ fun Application.configureRouting(
     meterRegistry: PrometheusMeterRegistry,
     healthIndicatorRepository: HealthIndicatorRepository,
     kafkaKeysService: KafkaKeysService,
-    identitetResponseService: IdentitetResponseService
+    identitetQueryService: IdentitetQueryService
 ) {
     routing {
         healthRoutes(healthIndicatorRepository)
@@ -24,6 +24,6 @@ fun Application.configureRouting(
         swaggerUI(path = "docs", swaggerFile = "openapi/documentation.yaml")
         swaggerUI(path = "docs/record-key", swaggerFile = "openapi/record-key-api-spec.yaml")
         apiV1Routes(kafkaKeysService)
-        apiV2Routes(kafkaKeysService, identitetResponseService)
+        apiV2Routes(kafkaKeysService, identitetQueryService)
     }
 }

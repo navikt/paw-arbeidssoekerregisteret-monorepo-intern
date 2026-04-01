@@ -38,29 +38,29 @@ import java.time.Instant
 @ExperimentalCoroutinesApi
 class IdentitetServiceTest : FreeSpec({
     with(TestContext.buildWithPostgres().setUp()) {
-        val aktorId1 = TestData.aktorId1
-        val dnr1 = TestData.dnr1
+        val aktorId1 = TestData.aktorId1_1
+        val dnr1 = TestData.dnr1_1
         val fnr1_1 = TestData.fnr1_1
         val fnr1_2 = TestData.fnr1_2
-        val aktorId2 = TestData.aktorId2
-        val dnr2 = TestData.dnr2
+        val aktorId2 = TestData.aktorId2_1
+        val dnr2 = TestData.dnr2_1
         val fnr2_1 = TestData.fnr2_1
         val fnr2_2 = TestData.fnr2_2
-        val aktorId3 = TestData.aktorId3
-        val dnr3 = TestData.dnr3
+        val aktorId3 = TestData.aktorId3_1
+        val dnr3 = TestData.dnr3_1
         val fnr3_1 = TestData.fnr3_1
         val aktorId6_1 = TestData.aktorId6_1
         val aktorId6_2 = TestData.aktorId6_2
-        val dnr6 = TestData.dnr6
+        val dnr6 = TestData.dnr6_1
         val fnr6_1 = TestData.fnr6_1
         val fnr6_2 = TestData.fnr6_2
         val aktorId7_1 = TestData.aktorId7_1
         val aktorId7_2 = TestData.aktorId7_2
-        val dnr7 = TestData.dnr7
+        val dnr7 = TestData.dnr7_1
         val fnr7_1 = TestData.fnr7_1
         val fnr7_2 = TestData.fnr7_2
-        val aktorId9 = TestData.aktorId9
-        val dnr9 = TestData.dnr9
+        val aktorId9 = TestData.aktorId9_1
+        val dnr9 = TestData.dnr9_1
         val fnr9_1 = TestData.fnr9_1
         val fnr9_2 = TestData.fnr9_2
         val producerRecordSlot = slot<ProducerRecord<Long, IdentitetHendelse>>()

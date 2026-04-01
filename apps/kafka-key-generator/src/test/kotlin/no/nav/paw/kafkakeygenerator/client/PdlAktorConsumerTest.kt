@@ -48,8 +48,8 @@ class PdlAktorConsumerTest : FreeSpec({
         "Skal ignorere meldinger med offset som ikke er over HWM" {
             // GIVEN
             val records: ConsumerRecords<Any, Aktor> = listOf(
-                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 1, TestData.aktorId1.identitet, TestData.aktor1_1),
-                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 2, TestData.aktorId1.identitet, TestData.aktor1_2)
+                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 1, TestData.aktorId1_1.identitet, TestData.aktor1_1),
+                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 2, TestData.aktorId1_1.identitet, TestData.aktor1_2)
             ).asRecords()
 
             // WHEN
@@ -65,7 +65,7 @@ class PdlAktorConsumerTest : FreeSpec({
         "Skal oppdatere identiteter" {
             // GIVEN
             val records: ConsumerRecords<Any, Aktor> = listOf(
-                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 3, TestData.aktorId2.identitet, TestData.aktor2_1),
+                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 3, TestData.aktorId2_1.identitet, TestData.aktor2_1),
             ).asRecords()
 
             // WHEN
@@ -86,7 +86,7 @@ class PdlAktorConsumerTest : FreeSpec({
         "Skal slette identiteter" {
             // GIVEN
             val records: ConsumerRecords<Any, Aktor> = listOf(
-                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 4, TestData.aktorId2.identitet, null),
+                ConsumerRecord<Any, Aktor>(aktorTopic, 0, 4, TestData.aktorId2_1.identitet, null),
             ).asRecords()
 
             // WHEN

@@ -17,6 +17,7 @@ import no.nav.paw.kafkakeygenerator.model.dao.KonflikterTable
 import no.nav.paw.kafkakeygenerator.model.dao.PerioderTable
 import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.logging.logger.buildLogger
+import java.time.Duration
 import java.time.Instant
 
 class KonfliktService(
@@ -94,12 +95,49 @@ class KonfliktService(
         }
     }
 
-    private fun handleKonflikter(
+    private fun handlePausedeKonflikter(
         type: KonfliktType,
-        status: KonfliktStatus,
+        reset: Duration,
+        batchSize: Int
+    ) {
+        val status = KonfliktStatus.PAUSET
+        val pausedeKonfliktRows = KonflikterTable.findByTypeAndStatus(
+            type = type,
+            status = status,
+            rowCount = batchSize
+        )
+        if (pausedeKonfliktRows.isEmpty()) {
+            logger.debug(
+                "Fant ingen konflikter av type {} med status {}",
+                type.name,
+                status.name
+            )
+        } else {
+            val resetTimestamp = Instant.now().minus(reset)
+            pausedeKonfliktRows
+                .filter {
+                    if (it.updatedTimestamp == null) {
+                        it.insertedTimestamp < resetTimestamp
+                    } else {
+                        it.updatedTimestamp < resetTimestamp
+                    }
+                }
+                .forEach { konfliktRow ->
+                    oppdaterKonflikt(
+                        aktorId = konfliktRow.aktorId,
+                        type = konfliktRow.type,
+                        status = KonfliktStatus.VENTER
+                    )
+                }
+        }
+    }
+
+    private fun handleVentendeKonflikter(
+        type: KonfliktType,
         batchSize: Int,
         handleKonflikt: (KonfliktRow) -> Unit
     ) {
+        val status = KonfliktStatus.VENTER
         val ventendeKonfliktRows = KonflikterTable.findByTypeAndStatus(
             type = type,
             status = status,
@@ -132,14 +170,20 @@ class KonfliktService(
         }
     }
 
-    fun handleVentendeMergeKonflikter() = handleKonflikter(
-        type = KonfliktType.MERGE,
-        status = KonfliktStatus.VENTER,
-        batchSize = applicationConfig.identitetMergeKonfliktJob.batchSize,
-        handleKonflikt = ::handleVentendeMergeKonflikt
-    )
+    fun handleMergeKonflikter() {
+        handlePausedeKonflikter(
+            type = KonfliktType.MERGE,
+            reset = applicationConfig.identitetMergeKonfliktJob.reset,
+            batchSize = applicationConfig.identitetMergeKonfliktJob.batchSize
+        )
+        handleVentendeKonflikter(
+            type = KonfliktType.MERGE,
+            batchSize = applicationConfig.identitetMergeKonfliktJob.batchSize,
+            handleKonflikt = ::handleMergeKonflikt
+        )
+    }
 
-    private fun handleVentendeMergeKonflikt(konfliktRow: KonfliktRow) {
+    private fun handleMergeKonflikt(konfliktRow: KonfliktRow) {
         logger.debug("Håndterer konflikt av type {}", KonfliktType.MERGE.name)
 
         val endredeIdentitetRows = konfliktRow.identiteter
@@ -162,13 +206,21 @@ class KonfliktService(
             .toSet()
 
         val gjeldendeArbeidssoekerId = uledGjeldendeArbeidssoekerId(
-            aktorId = konfliktRow.aktorId,
-            type = konfliktRow.type,
-            eksisterendeIdentitetRows = eksisterendeIdentitetRows
+            identitetRows = eksisterendeIdentitetRows
         )
 
         if (gjeldendeArbeidssoekerId == null) {
-            logger.warn("Avbryter prosessering av {}-konflikt", KonfliktType.MERGE.name)
+            // Flere aktive perioder. Kan ikke håndtere merge.
+            val rowsAffected = KonflikterTable.updateStatusByAktorIdAndType(
+                aktorId = konfliktRow.aktorId,
+                type = konfliktRow.type,
+                status = KonfliktStatus.PAUSET
+            )
+            logger.error(
+                "Kunne ikke løse {}-konflikt grunn av flere aktive perioder på forskjellige identiteter (rows affected {})",
+                KonfliktType.MERGE.name,
+                rowsAffected
+            )
         } else {
             // Slett identiteter som ikke var i PDL-hendelse
             eksisterendeIdentitetRows
@@ -273,37 +325,49 @@ class KonfliktService(
         }
     }
 
-    fun handleValgteSplittKonflikter() = handleKonflikter(
-        type = KonfliktType.SPLITT,
-        status = KonfliktStatus.VALGT,
-        batchSize = applicationConfig.identitetSplittKonfliktJob.batchSize,
-        handleKonflikt = ::handleValgtSplittKonflikt
-    )
+    fun handleSplittKonflikter() {
+        handlePausedeKonflikter(
+            type = KonfliktType.SPLITT,
+            reset = applicationConfig.identitetSplittKonfliktJob.reset,
+            batchSize = applicationConfig.identitetSplittKonfliktJob.batchSize
+        )
+        handleVentendeKonflikter(
+            type = KonfliktType.SPLITT,
+            batchSize = applicationConfig.identitetSplittKonfliktJob.batchSize,
+            handleKonflikt = ::handleSplittKonflikt
+        )
+    }
 
-    fun handleValgtSplittKonflikt(konfliktRow: KonfliktRow) {
+    fun handleSplittKonflikt(konfliktRow: KonfliktRow) {
         logger.debug("Håndterer konflikt av type {}", konfliktRow.type.name)
 
-        val nyeIdentitetSet = konfliktRow.identiteter
+        val gjeldendeIdentitetSet = konfliktRow.identiteter
             .map { it.identitet }
             .toSet()
-        val eksisterendeIdentitetRows = IdentiteterTable.findByAktorIdOrIdentiteter(
-            aktorId = konfliktRow.aktorId,
-            identiteter = nyeIdentitetSet
+        val aktorIdSet = konfliktRow.identiteter
+            .filter { it.type == IdentitetType.AKTORID }
+            .map { it.identitet }
+            .toSet()
+        val eksisterendeIdentitetRows = IdentiteterTable.findByAktorIdListOrIdentitetList(
+            aktorIdList = aktorIdSet,
+            identitetList = gjeldendeIdentitetSet
         )
         val arbeidssoekerIdSet = eksisterendeIdentitetRows
             .map { it.arbeidssoekerId }
             .toSet()
         if (arbeidssoekerIdSet.size != 1) {
-            // Flere arbeidssøkerIder. Kan ikke håndtere merge.
+            // Flere arbeidssøkerIder. Kan ikke håndtere splitt.
+            val status = KonfliktStatus.PAUSET
             logger.error(
-                "Kunne ikke løse {}-konflikt på grunn av funn av {} arbeidssøkerIder",
+                "Kunne ikke løse {}-konflikt på grunn av funn av {} arbeidssøkerIder, settes til status {}",
                 konfliktRow.type.name,
                 arbeidssoekerIdSet.size,
+                status.name
             )
             oppdaterKonflikt(
                 aktorId = konfliktRow.aktorId,
                 type = konfliktRow.type,
-                status = KonfliktStatus.FEILET
+                status = status
             )
         } else {
             val arbeidssoekerId = arbeidssoekerIdSet.first()
@@ -313,8 +377,7 @@ class KonfliktService(
 
             // Slett identiteter som ikke var i PDL-hendelse
             eksisterendeIdentitetRows
-                .filter { it.status != IdentitetStatus.SLETTET }
-                .filter { !nyeIdentitetSet.contains(it.identitet) }
+                .filter { !gjeldendeIdentitetSet.contains(it.identitet) }
                 .forEach { identitetRow ->
                     slettIdentitet(
                         aktorId = konfliktRow.aktorId,
@@ -354,7 +417,7 @@ class KonfliktService(
                 }
             val tidligereIdentiteter = eksisterendeIdentitetRows
                 .filter { it.status != IdentitetStatus.SLETTET }
-                .filter { it.aktorId == konfliktRow.aktorId }
+                .filter { aktorIdSet.contains(it.aktorId) }
                 .map { it.asIdentitet() }
                 .toMutableList()
                 .also {
@@ -377,11 +440,9 @@ class KonfliktService(
     }
 
     private fun uledGjeldendeArbeidssoekerId(
-        aktorId: String,
-        type: KonfliktType,
-        eksisterendeIdentitetRows: List<IdentitetRow>
+        identitetRows: List<IdentitetRow>
     ): Long? {
-        val identiteter = eksisterendeIdentitetRows
+        val identiteter = identitetRows
             .map { it.identitet }
         val periodeRows = PerioderTable.findByIdentiteter(
             identitetList = identiteter
@@ -390,33 +451,23 @@ class KonfliktService(
 
         return if (periodeRows.isEmpty()) {
             // Ingen perioder. Velger nyeste arbeidssoekerId.
-            eksisterendeIdentitetRows.maxOf { it.arbeidssoekerId }
+            identitetRows.maxOf { it.arbeidssoekerId }
         } else if (aktivePeriodeRows.isEmpty()) {
             // Ingen aktive perioder. Velger arbeidssoekerId tilhørende nyeste periode.
             val nyestePeriode = periodeRows
                 .maxBy {
                     it.avsluttetTimestamp?.toEpochMilli() ?: it.startetTimestamp.toEpochMilli()
                 }
-            val valgtIdentitet = eksisterendeIdentitetRows.find { it.identitet == nyestePeriode.identitet }
+            val valgtIdentitet = identitetRows.find { it.identitet == nyestePeriode.identitet }
                 ?: throw IllegalStateException("Fant ikke identitet for periode")
             valgtIdentitet.arbeidssoekerId
         } else if (aktivePeriodeRows.size == 1) {
             // Én aktiv periode. Velger tilhørende arbeidssoekerId.
             val aktivPeriode = aktivePeriodeRows.first()
-            val valgtIdentitet = eksisterendeIdentitetRows.find { it.identitet == aktivPeriode.identitet }
+            val valgtIdentitet = identitetRows.find { it.identitet == aktivPeriode.identitet }
                 ?: throw IllegalStateException("Fant ikke identitet for periode")
             valgtIdentitet.arbeidssoekerId
         } else {
-            // Flere aktive perioder. Kan ikke håndtere merge.
-            val rowsAffected = KonflikterTable.updateStatusByAktorIdAndType(
-                aktorId = aktorId,
-                type = type,
-                status = KonfliktStatus.FEILET
-            )
-            logger.error(
-                "Kunne ikke løse merge for identiteter på grunn av flere aktive perioder på forskjellige identiteter (rows affected {})",
-                rowsAffected
-            )
             null
         }
     }
@@ -495,12 +546,12 @@ class KonfliktService(
         val rowsAffected = IdentiteterTable.updateByIdentitet(
             identitet = identitet,
             aktorId = aktorId,
-            gjeldende = false,
+            gjeldende = false, // Settes alltid til false ved sletting
             status = status,
             sourceTimestamp = sourceTimestamp
         )
         logger.info(
-            "Oppdaterer identitet av type {} med status {} (rows affected {})",
+            "Soft-sletter identitet av type {} med status {} (rows affected {})",
             type.name,
             status.name,
             rowsAffected
