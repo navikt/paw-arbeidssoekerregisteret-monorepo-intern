@@ -1,5 +1,12 @@
 rootProject.name = "paw-arbeidssoekerregisteret-monorepo-intern"
 
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral() // This is required to find the davidmc24 1.9.1 plugin
+    }
+}
+
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
     kotlin("jvm") version "2.3.20" apply false
