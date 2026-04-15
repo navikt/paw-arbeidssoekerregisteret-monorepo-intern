@@ -16,7 +16,10 @@
       "foedselsdato": [
         {
           "foedselsdato": "1986-11-26",
-          "foedselsaar": "1986"
+          "foedselsaar": "1986",
+          "metadata": {
+            "master": "FREG"
+          }
         }
       ],
       "foedested": [

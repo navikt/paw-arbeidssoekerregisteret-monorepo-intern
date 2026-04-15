@@ -12,6 +12,7 @@ dependencies {
     implementation(project(":lib:pdl-client"))
     api(libs.arrow.core.core)
     implementation(libs.micrometer.registry.prometheus)
+    implementation(libs.opentelemetry.api)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.test.junit5.runner)
     testImplementation(libs.test.kotest.assertionsCore)
