@@ -29,6 +29,7 @@ import no.nav.paw.pdl.graphql.generated.hentperson.Endring
 import no.nav.paw.pdl.graphql.generated.hentperson.Foedselsdato
 import no.nav.paw.pdl.graphql.generated.hentperson.Folkeregisterpersonstatus
 import no.nav.paw.pdl.graphql.generated.hentperson.Metadata
+import no.nav.paw.pdl.graphql.generated.hentperson.Metadata2
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 import no.nav.paw.pdl.graphql.generated.hentperson.Statsborgerskap
 import java.util.*
@@ -135,12 +136,12 @@ class RequestValidatorTest : FreeSpec({
                     coEvery {
                         personInfoService.hentPersonInfo(requestScope, identitsnummer.value)
                     } returns Person(
-                        foedselsdato = listOf(Foedselsdato("2000-01-01", 2000)),
+                        foedselsdato = listOf(Foedselsdato("2000-01-01", 2000, Metadata("FREG"))),
                         bostedsadresse = emptyList(),
                         folkeregisterpersonstatus = listOf(
                             Folkeregisterpersonstatus(
                                 forenkletStatus = "bosattEtterFolkeregisterloven",
-                                metadata = Metadata(
+                                metadata = Metadata2(
                                     endringer = emptyList()
                                 )
                             )
@@ -148,7 +149,7 @@ class RequestValidatorTest : FreeSpec({
                         opphold = emptyList(),
                         innflyttingTilNorge = emptyList(),
                         utflyttingFraNorge = emptyList(),
-                        statsborgerskap = listOf(Statsborgerskap("ARG", Metadata(emptyList())))
+                        statsborgerskap = listOf(Statsborgerskap("ARG", Metadata2(emptyList())))
                     )
                     "godkjent av veilederflagg er true" {
                         val resultat =
@@ -182,12 +183,12 @@ class RequestValidatorTest : FreeSpec({
                     coEvery {
                         personInfoService.hentPersonInfo(requestScope, identitsnummer.value)
                     } returns Person(
-                        foedselsdato = listOf(Foedselsdato("2000-01-01", 2000)),
+                        foedselsdato = listOf(Foedselsdato("2000-01-01", 2000, Metadata("FREG"))),
                         bostedsadresse = emptyList(),
                         folkeregisterpersonstatus = listOf(
                             Folkeregisterpersonstatus(
                                 forenkletStatus = "ikkeBosatt",
-                                metadata = Metadata(
+                                metadata = Metadata2(
                                     endringer = emptyList()
                                 )
                             )
@@ -195,7 +196,7 @@ class RequestValidatorTest : FreeSpec({
                         opphold = emptyList(),
                         innflyttingTilNorge = emptyList(),
                         utflyttingFraNorge = emptyList(),
-                        statsborgerskap = listOf(Statsborgerskap("ARG", Metadata(emptyList())))
+                        statsborgerskap = listOf(Statsborgerskap("ARG", Metadata2(emptyList())))
                     )
                     val resultat =
                         requestValidator.validerStartAvPeriodeOenske(requestScope, identitsnummer, feilretting = null)
@@ -215,18 +216,18 @@ class RequestValidatorTest : FreeSpec({
                     coEvery {
                         personInfoService.hentPersonInfo(requestScope, identitsnummer.value)
                     } returns Person(
-                        foedselsdato = listOf(Foedselsdato("2000-01-01", 2000)),
+                        foedselsdato = listOf(Foedselsdato("2000-01-01", 2000, Metadata("FREG"))),
                         bostedsadresse = emptyList(),
                         folkeregisterpersonstatus = listOf(
                             Folkeregisterpersonstatus(
                                 forenkletStatus = "ikkeBosatt",
-                                metadata = Metadata(
+                                metadata = Metadata2(
                                     endringer = emptyList()
                                 )
                             ),
                             Folkeregisterpersonstatus(
                                 forenkletStatus = "dNummer",
-                                metadata = Metadata(
+                                metadata = Metadata2(
                                     endringer = emptyList()
                                 )
                             )
@@ -234,7 +235,7 @@ class RequestValidatorTest : FreeSpec({
                         opphold = emptyList(),
                         innflyttingTilNorge = emptyList(),
                         utflyttingFraNorge = emptyList(),
-                        statsborgerskap = listOf(Statsborgerskap("ARG", Metadata(emptyList())))
+                        statsborgerskap = listOf(Statsborgerskap("ARG", Metadata2(emptyList())))
                     )
                     val resultat =
                         requestValidator.validerStartAvPeriodeOenske(requestScope, identitsnummer, feilretting = null)
@@ -279,7 +280,7 @@ class RequestValidatorTest : FreeSpec({
                         opphold = emptyList(),
                         innflyttingTilNorge = emptyList(),
                         utflyttingFraNorge = emptyList(),
-                        statsborgerskap = listOf(Statsborgerskap("ARG", Metadata(emptyList())))
+                        statsborgerskap = listOf(Statsborgerskap("ARG", Metadata2(emptyList())))
                     )
                     val resultat =
                         requestValidator.validerStartAvPeriodeOenske(requestScope, identitsnummer, feilretting = null)
@@ -298,12 +299,12 @@ class RequestValidatorTest : FreeSpec({
                     coEvery {
                         personInfoService.hentPersonInfo(requestScope, identitsnummer.value)
                     } returns Person(
-                        foedselsdato = listOf(Foedselsdato("2000-01-01", 2000)),
+                        foedselsdato = listOf(Foedselsdato("2000-01-01", 2000, Metadata("FREG"))),
                         bostedsadresse = emptyList(),
                         folkeregisterpersonstatus = listOf(
                             Folkeregisterpersonstatus(
                                 forenkletStatus = "doedIFolkeregisteret",
-                                metadata = Metadata(
+                                metadata = Metadata2(
                                     endringer = emptyList()
                                 )
                             )
@@ -311,7 +312,7 @@ class RequestValidatorTest : FreeSpec({
                         opphold = emptyList(),
                         innflyttingTilNorge = emptyList(),
                         utflyttingFraNorge = emptyList(),
-                        statsborgerskap = listOf(Statsborgerskap("ARG", Metadata(emptyList())))
+                        statsborgerskap = listOf(Statsborgerskap("ARG", Metadata2(emptyList())))
                     )
                     val resultat =
                         requestValidator.validerStartAvPeriodeOenske(requestScope, identitsnummer, feilretting = null)
@@ -330,12 +331,12 @@ class RequestValidatorTest : FreeSpec({
                     coEvery {
                         personInfoService.hentPersonInfo(requestScope, identitsnummer.value)
                     } returns Person(
-                        foedselsdato = listOf(Foedselsdato("2000-01-01", 2000)),
+                        foedselsdato = listOf(Foedselsdato("2000-01-01", 2000, Metadata("FREG"))),
                         bostedsadresse = emptyList(),
                         folkeregisterpersonstatus = listOf(
                             Folkeregisterpersonstatus(
                                 forenkletStatus = "forsvunnet",
-                                metadata = Metadata(
+                                metadata = Metadata2(
                                     endringer = listOf(
                                         Endring(
                                             type = Endringstype.OPPRETT,
@@ -349,7 +350,7 @@ class RequestValidatorTest : FreeSpec({
                         opphold = emptyList(),
                         innflyttingTilNorge = emptyList(),
                         utflyttingFraNorge = emptyList(),
-                        statsborgerskap = listOf(Statsborgerskap("ARG", Metadata(emptyList())))
+                        statsborgerskap = listOf(Statsborgerskap("ARG", Metadata2(emptyList())))
                     )
                     val resultat =
                         requestValidator.validerStartAvPeriodeOenske(requestScope, identitsnummer, feilretting = null)

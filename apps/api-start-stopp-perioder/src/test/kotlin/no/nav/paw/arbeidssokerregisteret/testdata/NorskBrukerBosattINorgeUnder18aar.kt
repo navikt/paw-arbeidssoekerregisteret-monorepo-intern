@@ -36,7 +36,11 @@ data object NorskBrukerBosattINorgeUnder18aar : StartPeriodeTestCase {
     override val id = "12345678909"
     override val person = Person(
         foedselsdato = Instant.now().let { dato ->
-            Foedselsdato(dateFormatter.format(dato), yearFormatter.format(dato).toInt()).list()
+            Foedselsdato(
+                dateFormatter.format(dato),
+                yearFormatter.format(dato).toInt(),
+                no.nav.paw.pdl.graphql.generated.hentperson.Metadata("FREG")
+            ).list()
         },
         statsborgerskap = "NOR".statsborgerskap(),
         opphold = emptyList(),

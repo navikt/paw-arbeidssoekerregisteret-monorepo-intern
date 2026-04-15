@@ -40,7 +40,8 @@ data object SvenskBrukerBosattISverigeUnder18aarMedStatusIkkeBosatt : StartPerio
         foedselsdato = Instant.now().let { dato ->
             Foedselsdato(
                 dateFormatter.format(dato),
-                yearFormatter.format(dato).toInt()
+                yearFormatter.format(dato).toInt(),
+                no.nav.paw.pdl.graphql.generated.hentperson.Metadata("FREG")
             ).list()
         },
         statsborgerskap = "SWE".statsborgerskap(),

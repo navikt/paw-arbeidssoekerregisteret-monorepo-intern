@@ -29,7 +29,7 @@ import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Opplysning as Ap
 data object IkkeEuEoesBrukerIkkeBosatt : StartPeriodeTestCase {
     override val id = "12345678919"
     override val person = Person(
-        foedselsdato = Foedselsdato("2000-03-04", 2000).list(),
+        foedselsdato = Foedselsdato("2000-03-04", 2000, no.nav.paw.pdl.graphql.generated.hentperson.Metadata("FREG")).list(),
         statsborgerskap = "USA".statsborgerskap(),
         opphold = ("2018-01-01" to "2018-02-01").opphold(),
         folkeregisterpersonstatus = dNummer.folkeregisterpersonstatus(),

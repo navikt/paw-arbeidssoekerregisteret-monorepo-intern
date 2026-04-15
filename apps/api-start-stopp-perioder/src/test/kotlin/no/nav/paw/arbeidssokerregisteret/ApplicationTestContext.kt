@@ -36,6 +36,7 @@ import no.nav.paw.pdl.graphql.generated.hentperson.Folkeregisterpersonstatus
 import no.nav.paw.pdl.graphql.generated.hentperson.InnflyttingTilNorge
 import no.nav.paw.pdl.graphql.generated.hentperson.Matrikkeladresse
 import no.nav.paw.pdl.graphql.generated.hentperson.Metadata
+import no.nav.paw.pdl.graphql.generated.hentperson.Metadata2
 import no.nav.paw.pdl.graphql.generated.hentperson.Opphold
 import no.nav.paw.pdl.graphql.generated.hentperson.Person
 import no.nav.paw.pdl.graphql.generated.hentperson.Statsborgerskap
@@ -110,7 +111,7 @@ const val forsvunnet = "forsvunnet"
 const val opphoert = "opphoert"
 const val dNummer = "dNummer"
 
-val emptyMetadat = Metadata(emptyList())
+val emptyMetadat = Metadata2(emptyList())
 
 fun String?.innflytting(): List<InnflyttingTilNorge> = list().map {
     InnflyttingTilNorge(

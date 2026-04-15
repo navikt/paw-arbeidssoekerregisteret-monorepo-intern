@@ -26,7 +26,7 @@ import java.util.*
 data object NorskBrukerBosattINorge : StartPeriodeTestCase {
     override val id = "12345678909"
     override val person = Person(
-        foedselsdato = Foedselsdato("2000-03-04", 2000).list(),
+        foedselsdato = Foedselsdato("2000-03-04", 2000, no.nav.paw.pdl.graphql.generated.hentperson.Metadata("FREG")).list(),
         statsborgerskap = "NOR".statsborgerskap(),
         opphold = emptyList(),
         folkeregisterpersonstatus = bosatt.folkeregisterpersonstatus(),
