@@ -3,10 +3,10 @@ package no.nav.paw.arbeidssokerregisteret.application
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning.*
 
 /**
- * Endring i forhold til V2:
- * - Borge over 18 år fra EU/EØS (untatt Norge) blir nå godkjent uavhengig av folkeregister status.
+ * Endringer fra V3:
+ * - Norske borgere behandles nå på lik linje med andre EU/EØS borgere.
  */
-object InngangsReglerV3: Regler {
+object InngangsReglerV4: Regler {
     override val regler: List<Regel> = listOf(
         IkkeFunnet(
             PersonIkkeFunnet,
@@ -45,12 +45,11 @@ object InngangsReglerV3: Regler {
         EuEoesStatsborgerOver18Aar(
             ErOver18Aar,
             ErEuEoesStatsborger,
-            !ErNorskStatsborger,
             vedTreff = ::grunnlagForGodkjenning
         ),
         IkkeBosattINorgeIHenholdTilFolkeregisterloven(
             !BosattEtterFregLoven,
-            ErNorskEllerTredjelandsborger,
+            !ErEuEoesStatsborger,
             vedTreff = ::muligGrunnlagForAvvisning
         )
     )

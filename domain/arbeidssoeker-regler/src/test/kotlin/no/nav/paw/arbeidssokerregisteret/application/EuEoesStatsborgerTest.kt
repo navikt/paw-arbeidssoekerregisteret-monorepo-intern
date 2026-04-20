@@ -2,14 +2,17 @@ package no.nav.paw.arbeidssokerregisteret.application
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.shouldBe
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning.ErEuEoesStatsborger
-import no.nav.paw.arbeidssokerregisteret.application.opplysninger.Opplysning
 import no.nav.paw.arbeidssokerregisteret.application.opplysninger.euEoesStatsborgerOpplysning
-import no.nav.paw.pdl.graphql.generated.hentperson.Metadata
 import no.nav.paw.pdl.graphql.generated.hentperson.Metadata2
 import no.nav.paw.pdl.graphql.generated.hentperson.Statsborgerskap
 
 class EuEoesStatsborgerTest : FreeSpec({
+    "Verifiser at Norge er inkludert i listen over EU/EØS alnd" {
+        val norsk = Statsborgerskap("NOR", Metadata2(emptyList()))
+        euEoesStatsborgerOpplysning(listOf(norsk)) shouldBe setOf(ErEuEoesStatsborger)
+    }
     "Test for EU/EØS statsborgere" - {
         alpha3EuEeaCountries
             .map { cuntry -> Statsborgerskap(cuntry, Metadata2(emptyList())) }
