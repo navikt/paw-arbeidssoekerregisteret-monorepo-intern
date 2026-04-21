@@ -9,10 +9,10 @@ import no.nav.paw.arbeidssoekerregisteret.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.model.VarselHendelse
 import no.nav.paw.arbeidssoekerregisteret.service.BestillingService
 import no.nav.paw.arbeidssoekerregisteret.service.VarselService
-import no.nav.paw.arbeidssoekerregisteret.topology.INTERNAL_STATE_STORE
-import no.nav.paw.arbeidssoekerregisteret.topology.addBekreftelseHendelseStream
-import no.nav.paw.arbeidssoekerregisteret.topology.addPeriodeStream
-import no.nav.paw.arbeidssoekerregisteret.topology.addVarselHendelseStream
+import no.nav.paw.arbeidssoekerregisteret.topology.store.INTERNAL_STATE_STORE
+import no.nav.paw.arbeidssoekerregisteret.topology.streams.addBekreftelseHendelseStream
+import no.nav.paw.arbeidssoekerregisteret.topology.streams.addPeriodeStream
+import no.nav.paw.arbeidssoekerregisteret.topology.streams.addVarselHendelseStream
 import no.nav.paw.arbeidssoekerregisteret.utils.InternalStateSerde
 import no.nav.paw.arbeidssoekerregisteret.utils.VarselHendelseSerde
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
@@ -70,7 +70,7 @@ class KafkaTestContext(
         fun buildWithPostgres(): KafkaTestContext =
             build(buildPostgresDataSource(), listOf("DROP SCHEMA public CASCADE", "CREATE SCHEMA public"))
 
-        private fun StreamsBuilder.inMemoryInternalStateStore(): StreamsBuilder {
+        private fun StreamsBuilder.addInMemoryInternalStateStore(): StreamsBuilder {
             addStateStore(
                 Stores.keyValueStoreBuilder(
                     Stores.inMemoryKeyValueStore(INTERNAL_STATE_STORE),
@@ -91,7 +91,7 @@ class KafkaTestContext(
                     )
                     .build()
                 val bekreftelseTopology = StreamsBuilder()
-                    .inMemoryInternalStateStore()
+                    .addInMemoryInternalStateStore()
                     .addBekreftelseHendelseStream(
                         applicationConfig = applicationConfig,
                         meterRegistry = prometheusMeterRegistry,

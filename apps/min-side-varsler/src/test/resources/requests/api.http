@@ -1,0 +1,11 @@
+### GET /api/v1/varsler
+
+GET {{baseUrl}}/api/v1/varsler?periodeId=f5dd5356-d2cc-43a7-b644-cf0fa772e212
+Accept: application/json
+Authorization: Bearer {{$auth.token("azure")}}
+
+### GET /api/v1/bestillinger
+
+GET {{baseUrl}}/api/v1/bestillinger
+Accept: application/json
+Authorization: Bearer {{$auth.token("azure")}}

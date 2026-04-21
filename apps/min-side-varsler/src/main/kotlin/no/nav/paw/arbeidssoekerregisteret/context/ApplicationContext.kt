@@ -1,7 +1,5 @@
 package no.nav.paw.arbeidssoekerregisteret.context
 
-import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
-import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.config.APPLICATION_CONFIG
@@ -13,33 +11,23 @@ import no.nav.paw.arbeidssoekerregisteret.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.model.VarselMeldingBygger
 import no.nav.paw.arbeidssoekerregisteret.service.BestillingService
 import no.nav.paw.arbeidssoekerregisteret.service.VarselService
-import no.nav.paw.arbeidssoekerregisteret.topology.addBekreftelseHendelseStream
-import no.nav.paw.arbeidssoekerregisteret.topology.addInternalStateStore
-import no.nav.paw.arbeidssoekerregisteret.topology.addPeriodeStream
-import no.nav.paw.arbeidssoekerregisteret.topology.addVarselHendelseStream
-import no.nav.paw.arbeidssoekerregisteret.utils.VarselHendelseSerde
+import no.nav.paw.arbeidssoekerregisteret.topology.buildBekreftelseTopology
+import no.nav.paw.arbeidssoekerregisteret.topology.buildPeriodeTopology
+import no.nav.paw.arbeidssoekerregisteret.topology.buildVarselHendelseTopology
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.database.config.DATABASE_CONFIG
 import no.nav.paw.database.config.DatabaseConfig
 import no.nav.paw.database.factory.createHikariDataSource
-import no.nav.paw.error.handler.withApplicationTerminatingExceptionHandler
-import no.nav.paw.health.listener.withHealthIndicatorStateListener
-import no.nav.paw.health.model.HealthStatus
-import no.nav.paw.health.model.LivenessHealthIndicator
-import no.nav.paw.health.model.ReadinessHealthIndicator
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafka.config.KAFKA_CONFIG
 import no.nav.paw.kafka.config.KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG
 import no.nav.paw.kafka.config.KafkaConfig
 import no.nav.paw.kafka.factory.KafkaFactory
-import no.nav.paw.kafka.factory.KafkaStreamsFactory
 import no.nav.paw.security.authentication.config.SECURITY_CONFIG
 import no.nav.paw.security.authentication.config.SecurityConfig
 import org.apache.kafka.clients.producer.Producer
-import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.serialization.StringSerializer
 import org.apache.kafka.streams.KafkaStreams
-import org.apache.kafka.streams.StreamsBuilder
 import java.time.Duration
 import javax.sql.DataSource
 
@@ -91,21 +79,21 @@ data class ApplicationContext(
                 varselMeldingBygger = varselMeldingBygger
             )
 
-            val periodeKafkaStreams = buildPeriodeKafkaStreams(
+            val periodeKafkaStreams = buildPeriodeTopology(
                 applicationConfig = applicationConfig,
                 kafkaConfig = kafkaStreamsConfig,
                 meterRegistry = prometheusMeterRegistry,
                 healthIndicatorRepository = healthIndicatorRepository,
                 varselService = varselService
             )
-            val bekreftelseKafkaStreams = buildBekreftelseKafkaStreams(
+            val bekreftelseKafkaStreams = buildBekreftelseTopology(
                 applicationConfig = applicationConfig,
                 kafkaConfig = kafkaStreamsConfig,
                 meterRegistry = prometheusMeterRegistry,
                 healthIndicatorRepository = healthIndicatorRepository,
                 varselService = varselService
             )
-            val varselHendelseKafkaStreams = buildVarselHendelseKafkaStreams(
+            val varselHendelseKafkaStreams = buildVarselHendelseTopology(
                 serverConfig = serverConfig,
                 applicationConfig = applicationConfig,
                 kafkaConfig = kafkaStreamsConfig,
@@ -133,86 +121,4 @@ data class ApplicationContext(
             )
         }
     }
-}
-
-private fun buildPeriodeKafkaStreams(
-    applicationConfig: ApplicationConfig,
-    kafkaConfig: KafkaConfig,
-    meterRegistry: MeterRegistry,
-    healthIndicatorRepository: HealthIndicatorRepository,
-    varselService: VarselService
-): KafkaStreams {
-    val kafkaTopology = StreamsBuilder()
-        .addPeriodeStream(
-            applicationConfig = applicationConfig,
-            meterRegistry = meterRegistry,
-            varselService = varselService
-        ).build()
-    val kafkaStreamsFactory = KafkaStreamsFactory(applicationConfig.periodeStreamSuffix, kafkaConfig)
-        .withDefaultKeySerde(Serdes.Long()::class)
-        .withDefaultValueSerde(SpecificAvroSerde::class)
-    return KafkaStreams(kafkaTopology, kafkaStreamsFactory.properties)
-        .withApplicationTerminatingExceptionHandler()
-        .withHealthIndicatorStateListener(
-            livenessIndicator = healthIndicatorRepository
-                .addLivenessIndicator(LivenessHealthIndicator(initialStatus = HealthStatus.UNKNOWN)),
-            readinessIndicator = healthIndicatorRepository
-                .addReadinessIndicator(ReadinessHealthIndicator(initialStatus = HealthStatus.UNKNOWN))
-        )
-}
-
-private fun buildBekreftelseKafkaStreams(
-    applicationConfig: ApplicationConfig,
-    kafkaConfig: KafkaConfig,
-    meterRegistry: MeterRegistry,
-    healthIndicatorRepository: HealthIndicatorRepository,
-    varselService: VarselService
-): KafkaStreams {
-    val kafkaTopology = StreamsBuilder()
-        .addInternalStateStore()
-        .addBekreftelseHendelseStream(
-            applicationConfig = applicationConfig,
-            meterRegistry = meterRegistry,
-            varselService = varselService
-        ).build()
-    val kafkaStreamsFactory = KafkaStreamsFactory(applicationConfig.bekreftelseStreamSuffix, kafkaConfig)
-        .withDefaultKeySerde(Serdes.Long()::class)
-        .withDefaultValueSerde(SpecificAvroSerde::class)
-    return KafkaStreams(kafkaTopology, kafkaStreamsFactory.properties)
-        .withApplicationTerminatingExceptionHandler()
-        .withHealthIndicatorStateListener(
-            livenessIndicator = healthIndicatorRepository
-                .addLivenessIndicator(LivenessHealthIndicator(initialStatus = HealthStatus.UNKNOWN)),
-            readinessIndicator = healthIndicatorRepository
-                .addReadinessIndicator(ReadinessHealthIndicator(initialStatus = HealthStatus.UNKNOWN))
-        )
-}
-
-private fun buildVarselHendelseKafkaStreams(
-    serverConfig: ServerConfig,
-    applicationConfig: ApplicationConfig,
-    kafkaConfig: KafkaConfig,
-    meterRegistry: MeterRegistry,
-    healthIndicatorRepository: HealthIndicatorRepository,
-    varselService: VarselService
-): KafkaStreams {
-    val kafkaTopology = StreamsBuilder()
-        .addVarselHendelseStream(
-            runtimeEnvironment = serverConfig.runtimeEnvironment,
-            applicationConfig = applicationConfig,
-            meterRegistry = meterRegistry,
-            varselService = varselService
-        )
-        .build()
-    val kafkaStreamsFactory = KafkaStreamsFactory(applicationConfig.varselHendelseStreamSuffix, kafkaConfig)
-        .withDefaultKeySerde(Serdes.String()::class)
-        .withDefaultValueSerde(VarselHendelseSerde::class)
-    return KafkaStreams(kafkaTopology, kafkaStreamsFactory.properties)
-        .withApplicationTerminatingExceptionHandler()
-        .withHealthIndicatorStateListener(
-            livenessIndicator = healthIndicatorRepository
-                .addLivenessIndicator(LivenessHealthIndicator(initialStatus = HealthStatus.UNKNOWN)),
-            readinessIndicator = healthIndicatorRepository
-                .addReadinessIndicator(ReadinessHealthIndicator(initialStatus = HealthStatus.UNKNOWN))
-        )
 }

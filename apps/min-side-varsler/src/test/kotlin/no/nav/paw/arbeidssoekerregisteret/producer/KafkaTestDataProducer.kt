@@ -76,14 +76,14 @@ fun main() {
             )
             val varselHendelse = bekreftelseId1.toString() to varselHendelse(
                 eventName = VarselEventName.AKTIVERT,
-                varselId = bekreftelseId1.toString(),
+                varselId = "fa704b0a-18f8-4f88-bd94-a277b41f46e5",
                 varseltype = VarselType.OPPGAVE,
                 status = VarselStatus.VENTER
             )
 
-            periodeKafkaProducer.send(periodeTopic, aapenPeriode)
+            //periodeKafkaProducer.send(periodeTopic, aapenPeriode)
             //bekreftelseHendelseKafkaProducer.send(bekreftelseHendelseTopic, bekreftelseTilgjengelig)
-            //bekreftelseHendelseKafkaProducer.send(bekreftelseHendelseTopic, bekreftelseMeldingMottatt)
+            bekreftelseHendelseKafkaProducer.send(bekreftelseHendelseTopic, bekreftelseMeldingMottatt)
             //bekreftelseHendelseKafkaProducer.send(bekreftelseHendelseTopic, periodeAvsluttet)
             //varselHendelseKafkaProducer.send(tmsVarselHendelseTopic, varselHendelse)
         }
