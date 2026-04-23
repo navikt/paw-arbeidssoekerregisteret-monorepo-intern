@@ -19,23 +19,17 @@ class AutorisasjonService(
     )
 
     suspend fun verifiserVeilederTilgangTilBruker(navAnsatt: NavAnsatt, identitetsnummer: Identitetsnummer): Boolean {
-        logger.info("NAV-ansatt forsøker å hente informasjon om bruker: $identitetsnummer")
-
         val harNavAnsattTilgang = tilgangsTjenesteForAnsatte.harAnsattTilgangTilPerson(
             navIdent = NavIdent(navAnsatt.ident),
             identitetsnummer = identitetsnummer,
             tilgang = Tilgang.SKRIVE
         ).getOrThrow()
 
-        if (!harNavAnsattTilgang) {
-            logger.warn("NAV-ansatt har ikke tilgang til bruker: $identitetsnummer (v/poao-tilgang)")
-        } else {
+        if (harNavAnsattTilgang) {
             autitLogger.info(
                 auditLogMessage(identitetsnummer, navAnsatt, "NAV-ansatt har registrert informasjon om bruker")
             )
-            logger.info("NAV-ansatt har hentet informasjon om bruker: $identitetsnummer") // er dette sånn superlogging som ikke havner rett i elastic?
         }
-
         return harNavAnsattTilgang
     }
 
