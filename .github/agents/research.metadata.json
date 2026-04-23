@@ -1,0 +1,14 @@
+{
+  "domain": "general",
+  "tags": ["research", "analysis", "codebase-exploration"],
+  "examples": [
+    {
+      "prompt": "@research-agent Finn alle steder fp-sak bruker deprecated Kafka-APIet",
+      "scenario": "Kodebase-analyse"
+    },
+    {
+      "prompt": "@research-agent Undersøk hvordan feilhåndtering fungerer i søknadsflyten i dp-soknad",
+      "scenario": "Undersøk mønstre"
+    }
+  ]
+}
