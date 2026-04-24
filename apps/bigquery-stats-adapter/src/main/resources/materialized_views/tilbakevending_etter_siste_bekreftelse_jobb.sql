@@ -21,8 +21,8 @@ LatestPerPeriode AS (
 -- Last bekreftelse per closed period, constrained to confirmations received before the close date
 SisteBekreftelse AS (
     SELECT
-        b.correlation_id,
-        b.har_jobbet AS siste_har_jobbet
+        correlation_id,
+        har_jobbet AS siste_har_jobbet
     FROM (
         SELECT
             b.*,
