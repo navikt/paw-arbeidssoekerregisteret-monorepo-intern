@@ -4,9 +4,10 @@ import no.nav.paw.health.model.LivenessCheck
 import no.nav.paw.health.model.MutableHealthCheck
 import java.util.concurrent.atomic.AtomicBoolean
 
-class GenericLivenessProbe : LivenessCheck, MutableHealthCheck {
-    private val alive = AtomicBoolean(false)
-    override fun markHealthy() = alive.set(true)
-    override fun markUnhealthy() = alive.set(false)
-    override fun isAlive(): Boolean = alive.get()
+class GenericLivenessProbe(
+    private val isAlive: AtomicBoolean = AtomicBoolean(false)
+) : LivenessCheck, MutableHealthCheck {
+    override fun markHealthy() = isAlive.set(true)
+    override fun markUnhealthy() = isAlive.set(false)
+    override fun isAlive(): Boolean = isAlive.get()
 }

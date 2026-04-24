@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    api(project(":lib:health"))
     api(project(":lib:kafka"))
     compileOnly(libs.ktor.server.core)
     implementation(libs.kafka.clients)

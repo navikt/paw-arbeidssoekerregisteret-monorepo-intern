@@ -1,4 +1,4 @@
-package no.nav.paw.health.probe
+package no.nav.paw.kafka.streams
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe

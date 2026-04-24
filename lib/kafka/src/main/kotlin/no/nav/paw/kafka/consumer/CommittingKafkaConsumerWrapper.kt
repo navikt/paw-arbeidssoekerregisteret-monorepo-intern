@@ -8,6 +8,7 @@ import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import java.time.Duration
+import java.util.concurrent.atomic.AtomicBoolean
 
 class CommittingKafkaConsumerWrapper<K, V>(
     private val topics: Collection<String>,
@@ -17,20 +18,25 @@ class CommittingKafkaConsumerWrapper<K, V>(
     private val rebalanceListener: ConsumerRebalanceListener = NoopConsumerRebalanceListener()
 ) : KafkaConsumerWrapper<K, V> {
     private val logger = buildLogger
+    private val isReady = AtomicBoolean(false)
+    private val isAlive = AtomicBoolean(false)
 
     override fun init() {
         logger.info("Kafka Consumer abonnerer på topics {}", topics)
         consumer.subscribe(topics, rebalanceListener)
+        isReady.set(true)
     }
 
     override fun consume(onConsume: (ConsumerRecords<K, V>) -> Unit) {
         try {
             val records = consumer.poll(pollTimeout)
+            isAlive.set(true)
             onConsume(records)
             if (!records.isEmpty) {
                 consumer.commitSync()
             }
         } catch (throwable: Throwable) {
+            isAlive.set(false)
             exceptionHandler.handleException(throwable)
         }
     }
@@ -38,6 +44,12 @@ class CommittingKafkaConsumerWrapper<K, V>(
     override fun stop() {
         logger.info("Kafka Consumer stopper å abonnere på topics {} og lukkes", topics)
         consumer.unsubscribe()
+        isAlive.set(false)
         consumer.close()
+        isReady.set(false)
     }
+
+    override fun isReady(): Boolean = isReady.get()
+
+    override fun isAlive(): Boolean = isAlive.get()
 }

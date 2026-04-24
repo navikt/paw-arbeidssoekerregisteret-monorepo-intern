@@ -1,4 +1,4 @@
-package no.nav.paw.health.probe
+package no.nav.paw.kafka.streams
 
 import no.nav.paw.health.model.LivenessCheck
 import no.nav.paw.health.model.ReadinessCheck
