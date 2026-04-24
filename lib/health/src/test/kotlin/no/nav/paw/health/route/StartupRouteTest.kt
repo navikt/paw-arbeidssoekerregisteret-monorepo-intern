@@ -1,4 +1,4 @@
-package no.nav.paw.health.startup
+package no.nav.paw.health.route
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
@@ -7,11 +7,12 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
+import no.nav.paw.health.model.StartupCheck
 
 class StartupProbeTest : FreeSpec({
     "Alle startup checks er ok" {
         testApplication {
-            testApplication(
+            startupCheckTestApplication(
                 { true },
                 { true },
             )
@@ -23,7 +24,7 @@ class StartupProbeTest : FreeSpec({
 
     "Startup check er OK ved ingen checks" {
         testApplication {
-            testApplication()
+            startupCheckTestApplication()
             val client = createClient { }
             val response = client.get(startupPath)
             response.status shouldBe HttpStatusCode.OK
@@ -32,7 +33,7 @@ class StartupProbeTest : FreeSpec({
 
     "Startup check feiler" {
         testApplication {
-            testApplication(
+            startupCheckTestApplication(
                 { false },
             )
             val client = createClient { }
@@ -42,7 +43,7 @@ class StartupProbeTest : FreeSpec({
     }
     "Startup check feiler så lenge en av sjekkene er false" {
         testApplication {
-            testApplication(
+            startupCheckTestApplication(
                 { true },
                 { false }
             )
@@ -53,10 +54,8 @@ class StartupProbeTest : FreeSpec({
     }
 })
 
-fun ApplicationTestBuilder.testApplication(vararg startupChecks: StartupCheck) = application {
+fun ApplicationTestBuilder.startupCheckTestApplication(vararg startupChecks: StartupCheck) = application {
     routing {
         startupRoute(*startupChecks)
     }
 }
-
-

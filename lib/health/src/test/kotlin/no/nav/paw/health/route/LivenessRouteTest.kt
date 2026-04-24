@@ -1,45 +1,44 @@
-package no.nav.paw.health.liveness
+package no.nav.paw.health.route
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
-import io.ktor.http.HttpStatusCode.Companion.OK
-import io.ktor.http.HttpStatusCode.Companion.ServiceUnavailable
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
+import no.nav.paw.health.model.LivenessCheck
 
 class LivenessTest : FreeSpec({
     "Dersom ingen liveness checks er definert, så returnerer vi OK" {
         testApplication {
-            testApplication()
+            livenessCheckTestApplication()
             val client = createClient { }
             val response = client.get(livenessPath)
-            response.status shouldBe OK
+            response.status shouldBe HttpStatusCode.OK
         }
     }
 
     "Alle liveness checks er ok" {
         testApplication {
-            testApplication({ true }, { true })
+            livenessCheckTestApplication({ true }, { true })
             val client = createClient { }
             val response = client.get(livenessPath)
-            response.status shouldBe OK
+            response.status shouldBe HttpStatusCode.OK
         }
     }
     "En liveness check er ikke ok" {
         testApplication {
-            testApplication({ true }, { false })
+            livenessCheckTestApplication({ true }, { false })
             val client = createClient { }
             val response = client.get(livenessPath)
-            response.status shouldBe ServiceUnavailable
+            response.status shouldBe HttpStatusCode.ServiceUnavailable
         }
     }
 })
 
-fun ApplicationTestBuilder.testApplication(vararg livenessChecks: LivenessCheck) = application {
+fun ApplicationTestBuilder.livenessCheckTestApplication(vararg livenessChecks: LivenessCheck) = application {
     routing {
         livenessRoute(*livenessChecks)
     }
 }
-
