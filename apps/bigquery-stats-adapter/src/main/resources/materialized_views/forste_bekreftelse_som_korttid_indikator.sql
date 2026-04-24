@@ -22,8 +22,8 @@ LatestPerPeriode AS (
 -- First bekreftelse per closed period (chronologically earliest)
 ForsteBekreftelse AS (
     SELECT
-        b.correlation_id,
-        b.har_jobbet AS forste_har_jobbet
+        correlation_id,
+        har_jobbet AS forste_har_jobbet
     FROM (
         SELECT
             b.*,
