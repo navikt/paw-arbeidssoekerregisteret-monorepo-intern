@@ -8,21 +8,23 @@ import io.ktor.server.routing.routing
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.api.docs.routes.apiDocsRoutes
 import no.nav.paw.bekreftelse.api.route.bekreftelseRoutes
+import no.nav.paw.bekreftelse.api.route.healthRoutes
 import no.nav.paw.bekreftelse.api.service.AuthorizationService
 import no.nav.paw.bekreftelse.api.service.BekreftelseService
-import no.nav.paw.health.repository.HealthIndicatorRepository
-import no.nav.paw.health.route.healthRoutes
+import no.nav.paw.health.model.LivenessCheck
+import no.nav.paw.health.model.ReadinessCheck
 import no.nav.paw.metrics.route.metricsRoutes
 
 fun Application.configureRouting(
     meterRegistry: PrometheusMeterRegistry,
-    healthIndicatorRepository: HealthIndicatorRepository,
+    readinessChecks: Collection<ReadinessCheck>,
+    livenessChecks: Collection<LivenessCheck>,
     authorizationService: AuthorizationService,
     bekreftelseService: BekreftelseService
 ) {
     install(IgnoreTrailingSlash)
     routing {
-        healthRoutes(healthIndicatorRepository)
+        healthRoutes(readinessChecks, livenessChecks)
         metricsRoutes(meterRegistry)
         apiDocsRoutes()
         bekreftelseRoutes(authorizationService, bekreftelseService)

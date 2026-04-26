@@ -56,15 +56,14 @@ fun Application.module(applicationContext: ApplicationContext) {
         installTracingPlugin()
         installDatabasePlugin(dataSource)
         installKafkaPlugins(
-            applicationConfig = applicationConfig,
             bekreftelseKafkaProducer = bekreftelseKafkaProducer,
-            bekreftelseHendelseKafkaConsumer = bekreftelseHendelseKafkaConsumer,
+            bekreftelseHendelseKafkaConsumerWrapper = bekreftelseHendelseKafkaConsumerWrapper,
             bekreftelseService = bekreftelseService,
-            consumerExceptionHandler = healthIndicatorConsumerExceptionHandler
         )
         configureRouting(
             meterRegistry = prometheusMeterRegistry,
-            healthIndicatorRepository = healthIndicatorRepository,
+            readinessChecks = readinessChecks,
+            livenessChecks = livenessChecks,
             authorizationService = authorizationService,
             bekreftelseService = bekreftelseService
         )

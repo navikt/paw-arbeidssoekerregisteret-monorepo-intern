@@ -12,10 +12,8 @@ import no.nav.paw.bekreftelse.api.config.APPLICATION_CONFIG
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.config.SERVER_CONFIG
 import no.nav.paw.bekreftelse.api.config.ServerConfig
-import no.nav.paw.bekreftelse.api.handler.HealthIndicatorConsumerExceptionHandler
 import no.nav.paw.bekreftelse.api.handler.KafkaProducerHandler
 import no.nav.paw.bekreftelse.api.plugin.installCorsPlugins
-import no.nav.paw.bekreftelse.api.repository.BekreftelseRepository
 import no.nav.paw.bekreftelse.api.route.bekreftelseRoutes
 import no.nav.paw.bekreftelse.api.service.AuthorizationService
 import no.nav.paw.bekreftelse.api.service.BekreftelseService
@@ -26,9 +24,7 @@ import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.database.plugin.installDatabasePlugin
 import no.nav.paw.error.plugin.installErrorHandlingPlugin
-import no.nav.paw.health.model.LivenessHealthIndicator
-import no.nav.paw.health.model.ReadinessHealthIndicator
-import no.nav.paw.health.repository.HealthIndicatorRepository
+import no.nav.paw.kafka.consumer.CommittingKafkaConsumerWrapper
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.security.authentication.config.SECURITY_CONFIG
 import no.nav.paw.security.authentication.config.SecurityConfig
@@ -52,20 +48,14 @@ data class TestContext(
     val kafkaProducerMock: Producer<Long, Bekreftelse> = mockk<Producer<Long, Bekreftelse>>(),
     val kafkaConsumerMock: KafkaConsumer<Long, BekreftelseHendelse> = mockk<KafkaConsumer<Long, BekreftelseHendelse>>(),
     val kafkaProducerHandlerMock: KafkaProducerHandler = mockk<KafkaProducerHandler>(),
-    val healthIndicatorConsumerExceptionHandler: HealthIndicatorConsumerExceptionHandler = HealthIndicatorConsumerExceptionHandler(
-        LivenessHealthIndicator(),
-        ReadinessHealthIndicator()
-    ),
     val authorizationService: AuthorizationService = AuthorizationService(serverConfig, tilgangskontrollClientMock),
-    val bekreftelseRepository: BekreftelseRepository = BekreftelseRepository(),
     val bekreftelseServiceMock: BekreftelseService = mockk<BekreftelseService>(),
     val bekreftelseService: BekreftelseService = BekreftelseService(
         serverConfig,
         applicationConfig,
         prometheusMeterRegistry,
         kafkaKeysClientMock,
-        kafkaProducerHandlerMock,
-        bekreftelseRepository
+        kafkaProducerHandlerMock
     ),
     val mockOAuth2Server: MockOAuth2Server = MockOAuth2Server()
 ) {
@@ -76,14 +66,17 @@ data class TestContext(
         dataSource = dataSource,
         kafkaKeysClient = kafkaKeysClientMock,
         prometheusMeterRegistry = prometheusMeterRegistry,
-        healthIndicatorRepository = HealthIndicatorRepository(),
         bekreftelseKafkaProducer = kafkaProducerMock,
-        bekreftelseHendelseKafkaConsumer = kafkaConsumerMock,
+        bekreftelseHendelseKafkaConsumerWrapper = CommittingKafkaConsumerWrapper(
+            topics = emptyList(),
+            consumer = kafkaConsumerMock
+        ),
         kafkaProducerHandler = kafkaProducerHandlerMock,
-        healthIndicatorConsumerExceptionHandler = healthIndicatorConsumerExceptionHandler,
         authorizationService = authorizationService,
         bekreftelseService = bekreftelseService,
-        additionalMeterBinders = emptyList()
+        additionalMeterBinders = emptyList(),
+        readinessChecks = emptyList(),
+        livenessChecks = emptyList()
     )
 
     fun ApplicationTestBuilder.configureTestApplication(bekreftelseService: BekreftelseService) {

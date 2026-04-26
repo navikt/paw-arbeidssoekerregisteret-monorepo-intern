@@ -11,9 +11,7 @@ import no.nav.paw.bekreftelse.api.config.APPLICATION_CONFIG
 import no.nav.paw.bekreftelse.api.config.ApplicationConfig
 import no.nav.paw.bekreftelse.api.config.SERVER_CONFIG
 import no.nav.paw.bekreftelse.api.config.ServerConfig
-import no.nav.paw.bekreftelse.api.handler.HealthIndicatorConsumerExceptionHandler
 import no.nav.paw.bekreftelse.api.handler.KafkaProducerHandler
-import no.nav.paw.bekreftelse.api.repository.BekreftelseRepository
 import no.nav.paw.bekreftelse.api.service.AuthorizationService
 import no.nav.paw.bekreftelse.api.service.BekreftelseService
 import no.nav.paw.bekreftelse.api.utils.BekreftelseAvroSerializer
@@ -24,10 +22,13 @@ import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.database.config.DATABASE_CONFIG
 import no.nav.paw.database.config.DatabaseConfig
 import no.nav.paw.database.factory.createHikariDataSource
-import no.nav.paw.health.model.HealthStatus
-import no.nav.paw.health.repository.HealthIndicatorRepository
+import no.nav.paw.health.model.LivenessCheck
+import no.nav.paw.health.model.ReadinessCheck
+import no.nav.paw.health.probe.DataSourceHealthProbe
 import no.nav.paw.kafka.config.KAFKA_CONFIG_WITH_SCHEME_REG
 import no.nav.paw.kafka.config.KafkaConfig
+import no.nav.paw.kafka.consumer.CommittingKafkaConsumerWrapper
+import no.nav.paw.kafka.consumer.KafkaConsumerWrapper
 import no.nav.paw.kafka.factory.KafkaFactory
 import no.nav.paw.kafkakeygenerator.auth.AZURE_M2M_CONFIG
 import no.nav.paw.kafkakeygenerator.auth.AzureM2MConfig
@@ -41,7 +42,6 @@ import no.nav.paw.security.authentication.config.SecurityConfig
 import no.nav.paw.tilgangskontroll.client.TILGANGSKONTROLL_CLIENT_CONFIG
 import no.nav.paw.tilgangskontroll.client.TilgangskontrollClientConfig
 import no.nav.paw.tilgangskontroll.client.tilgangsTjenesteForAnsatte
-import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.common.serialization.LongDeserializer
 import org.apache.kafka.common.serialization.LongSerializer
@@ -54,14 +54,14 @@ data class ApplicationContext(
     val dataSource: DataSource,
     val kafkaKeysClient: KafkaKeysClient,
     val prometheusMeterRegistry: PrometheusMeterRegistry,
-    val healthIndicatorRepository: HealthIndicatorRepository,
     val bekreftelseKafkaProducer: Producer<Long, Bekreftelse>,
-    val bekreftelseHendelseKafkaConsumer: KafkaConsumer<Long, BekreftelseHendelse>,
+    val bekreftelseHendelseKafkaConsumerWrapper: KafkaConsumerWrapper<Long, BekreftelseHendelse>,
     val kafkaProducerHandler: KafkaProducerHandler,
-    val healthIndicatorConsumerExceptionHandler: HealthIndicatorConsumerExceptionHandler,
     val authorizationService: AuthorizationService,
     val bekreftelseService: BekreftelseService,
-    val additionalMeterBinders: List<MeterBinder>
+    val additionalMeterBinders: List<MeterBinder>,
+    val readinessChecks: Collection<ReadinessCheck>,
+    val livenessChecks: Collection<LivenessCheck>
 ) {
     companion object {
         fun create(): ApplicationContext {
@@ -85,8 +85,6 @@ data class ApplicationContext(
 
             val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
 
-            val healthIndicatorRepository = HealthIndicatorRepository()
-
             val tilgangskontrollClient = tilgangsTjenesteForAnsatte(
                 httpClient = HttpClient {
                     install(ContentNegotiation) {
@@ -98,11 +96,6 @@ data class ApplicationContext(
             )
 
             val authorizationService = AuthorizationService(serverConfig, tilgangskontrollClient)
-
-            val healthIndicatorConsumerExceptionHandler = HealthIndicatorConsumerExceptionHandler(
-                livenessIndicator = healthIndicatorRepository.livenessIndicator(HealthStatus.HEALTHY),
-                readinessIndicator = healthIndicatorRepository.readinessIndicator(HealthStatus.HEALTHY)
-            )
 
             val kafkaFactory = KafkaFactory(kafkaConfig)
 
@@ -119,16 +112,17 @@ data class ApplicationContext(
                 keyDeserializer = LongDeserializer::class,
                 valueDeserializer = BekreftelseHendelseDeserializer::class,
             )
-
-            val bekreftelseRepository = BekreftelseRepository()
+            val bekreftelseHendelseKafkaConsumerWrapper = CommittingKafkaConsumerWrapper(
+                topics = listOf(applicationConfig.kafkaTopology.bekreftelseHendelsesloggTopic),
+                consumer = bekreftelseHendelseKafkaConsumer
+            )
 
             val bekreftelseService = BekreftelseService(
                 serverConfig,
                 applicationConfig,
                 prometheusMeterRegistry,
                 kafkaKeysClient,
-                kafkaProducerHandler,
-                bekreftelseRepository
+                kafkaProducerHandler
             )
 
             return ApplicationContext(
@@ -138,16 +132,21 @@ data class ApplicationContext(
                 dataSource = dataSource,
                 kafkaKeysClient = kafkaKeysClient,
                 prometheusMeterRegistry = prometheusMeterRegistry,
-                healthIndicatorRepository = healthIndicatorRepository,
                 bekreftelseKafkaProducer = bekreftelseKafkaProducer,
-                bekreftelseHendelseKafkaConsumer = bekreftelseHendelseKafkaConsumer,
+                bekreftelseHendelseKafkaConsumerWrapper = bekreftelseHendelseKafkaConsumerWrapper,
                 kafkaProducerHandler = kafkaProducerHandler,
-                healthIndicatorConsumerExceptionHandler = healthIndicatorConsumerExceptionHandler,
                 authorizationService = authorizationService,
                 bekreftelseService = bekreftelseService,
                 additionalMeterBinders = listOf(
                     KafkaClientMetrics(bekreftelseKafkaProducer),
                     KafkaClientMetrics(bekreftelseHendelseKafkaConsumer)
+                ),
+                readinessChecks = listOf(
+                    bekreftelseHendelseKafkaConsumerWrapper
+                ),
+                livenessChecks = listOf(
+                    DataSourceHealthProbe(dataSource),
+                    bekreftelseHendelseKafkaConsumerWrapper
                 )
             )
         }

@@ -12,6 +12,7 @@ dependencies {
     implementation(project(":lib:serialization"))
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:error-handling"))
+    implementation(project(":lib:health"))
     implementation(project(":lib:api-docs"))
     implementation(project(":lib:metrics"))
     implementation(project(":lib:logging"))

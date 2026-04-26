@@ -22,7 +22,6 @@ import no.nav.paw.bekreftelse.api.models.TilgjengeligeBekreftelserRequest
 import no.nav.paw.bekreftelse.api.test.TestData
 import no.nav.paw.bekreftelse.api.test.issueAzureToken
 import no.nav.paw.bekreftelse.api.test.issueTokenXToken
-import no.nav.paw.bekreftelse.api.test.opprettBekreftelser
 import no.nav.paw.bekreftelse.api.test.setJsonBody
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.error.model.Data
@@ -164,7 +163,7 @@ class BekreftelseRoutesTest : FreeSpec({
                 testApplication {
                     configureTestApplication(bekreftelseService)
 
-                    bekreftelseRepository.opprettBekreftelser(bereftelseRows)
+                    TestData.opprettBekreftelser(bereftelseRows)
 
                     val client = configureTestClient()
                     val response = client.get("/api/v1/tilgjengelige-bekreftelser") {
@@ -198,7 +197,7 @@ class BekreftelseRoutesTest : FreeSpec({
                 testApplication {
                     configureTestApplication(bekreftelseService)
 
-                    bekreftelseRepository.opprettBekreftelser(bereftelseRows)
+                    TestData.opprettBekreftelser(bereftelseRows)
 
                     val client = configureTestClient()
                     val response = client.post("/api/v1/tilgjengelige-bekreftelser") {
@@ -258,7 +257,7 @@ class BekreftelseRoutesTest : FreeSpec({
                 testApplication {
                     configureTestApplication(bekreftelseService)
 
-                    bekreftelseRepository.opprettBekreftelser(bereftelseRows)
+                    TestData.opprettBekreftelser(bereftelseRows)
 
                     val client = configureTestClient()
                     val response = client.post("/api/v1/bekreftelse") {
@@ -382,7 +381,7 @@ class BekreftelseRoutesTest : FreeSpec({
                 testApplication {
                     configureTestApplication(bekreftelseService)
 
-                    bekreftelseRepository.opprettBekreftelser(bereftelseRows)
+                    TestData.opprettBekreftelser(bereftelseRows)
 
                     val client = configureTestClient()
                     val response = client.post("/api/v1/tilgjengelige-bekreftelser") {
@@ -421,7 +420,7 @@ class BekreftelseRoutesTest : FreeSpec({
                 testApplication {
                     configureTestApplication(bekreftelseService)
 
-                    bekreftelseRepository.opprettBekreftelser(bereftelseRows)
+                    TestData.opprettBekreftelser(bereftelseRows)
 
                     val client = configureTestClient()
                     val response = client.post("/api/v1/bekreftelse") {

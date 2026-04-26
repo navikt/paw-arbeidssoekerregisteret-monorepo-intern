@@ -7,9 +7,9 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.append
 import no.nav.paw.bekreftelse.api.model.BekreftelseRow
+import no.nav.paw.bekreftelse.api.model.BekreftelserTable
 import no.nav.paw.bekreftelse.api.models.MottaBekreftelseRequest
 import no.nav.paw.bekreftelse.api.models.TilgjengeligeBekreftelserRequest
-import no.nav.paw.bekreftelse.api.repository.BekreftelseRepository
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.time.Duration
@@ -21,12 +21,6 @@ inline fun <reified T> HttpRequestBuilder.setJsonBody(body: T) {
         append(HttpHeaders.ContentType, ContentType.Application.Json)
     }
     setBody(body)
-}
-
-fun BekreftelseRepository.opprettBekreftelser(bekreftelseRows: Iterable<BekreftelseRow>) {
-    transaction {
-        bekreftelseRows.forEach(::insert)
-    }
 }
 
 object TestData {
@@ -147,4 +141,10 @@ object TestData {
         harJobbetIDennePerioden = harJobbetIDennePerioden,
         vilFortsetteSomArbeidssoeker = vilFortsetteSomArbeidssoeker
     )
+
+    fun opprettBekreftelser(bekreftelseRows: Iterable<BekreftelseRow>) {
+        transaction {
+            bekreftelseRows.forEach(BekreftelserTable::insert)
+        }
+    }
 }

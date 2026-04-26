@@ -1,0 +1,28 @@
+### GET /api/v1/tilgjengelige-bekreftelser
+
+GET {{baseUrl}}/api/v1/tilgjengelige-bekreftelser
+Accept: application/json
+Authorization: Bearer {{$auth.token("azure")}}
+
+### POST /api/v1/tilgjengelige-bekreftelser
+
+POST {{baseUrl}}/api/v1/tilgjengelige-bekreftelser
+Accept: application/json
+Authorization: Bearer {{$auth.token("azure")}}
+
+{
+   "identitetsnummer": "01017012345"
+}
+
+### POST /api/v1/bekreftelse
+
+POST {{baseUrl}}/api/v1/bekreftelse
+Accept: application/json
+Authorization: Bearer {{$auth.token("azure")}}
+
+{
+   "identitetsnummer": "01017012345",
+   "bekreftelseId": "0cd73e66-e5a2-4dae-88de-2dd89a910a19",
+   "harJobbetIDennePerioden": "false",
+   "vilFortsetteSomArbeidssoeker": "true"
+}
