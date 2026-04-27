@@ -93,8 +93,8 @@ mapOf(
     tasks.register(taskName, GenerateTask::class) {
         generatorName.set("kotlin-server")
         library = "ktor"
-        inputSpec = openApiDocFile
-        outputDir = generatedCodeOutputDir
+        inputSpec.set(openApiDocFile)
+        outputDir.set(generatedCodeOutputDir)
         packageName = pkgName
         configOptions.set(
             mapOf(

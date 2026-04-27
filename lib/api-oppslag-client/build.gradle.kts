@@ -47,14 +47,14 @@ tasks.compileTestKotlin {
 }
 
 openApiValidate {
-    inputSpec = "${layout.projectDirectory}/src/main/resources/openapi/api-oppslag.yaml"
+    inputSpec.set("${layout.projectDirectory}/src/main/resources/openapi/api-oppslag.yaml")
 }
 
 openApiGenerate {
     generatorName.set("kotlin")
     library = "jvm-ktor"
-    inputSpec = "${layout.projectDirectory}/src/main/resources/openapi/api-oppslag.yaml"
-    outputDir = "${layout.buildDirectory.get()}/generated/"
+    inputSpec.set("${layout.projectDirectory}/src/main/resources/openapi/api-oppslag.yaml")
+    outputDir.set("${layout.buildDirectory.get()}/generated/")
     packageName = "no.nav.paw.client.api.oppslag"
     configOptions.set(
         mapOf(

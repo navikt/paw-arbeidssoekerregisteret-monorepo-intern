@@ -111,13 +111,13 @@ tasks.withType(Jar::class) {
 val openApiDocFile = "${layout.projectDirectory}/src/main/resources/openapi/documentation.yaml"
 
 openApiValidate {
-    inputSpec = openApiDocFile
+    inputSpec.set(openApiDocFile)
 }
 
 openApiGenerate {
     generatorName = "kotlin"
-    inputSpec = openApiDocFile
-    outputDir = "${layout.buildDirectory.get()}/generated/"
+    inputSpec.set(openApiDocFile)
+    outputDir.set("${layout.buildDirectory.get()}/generated/")
     packageName = "no.nav.paw.arbeidssoekerregisteret.api"
     configOptions = mapOf(
         "serializationLibrary" to "jackson",
