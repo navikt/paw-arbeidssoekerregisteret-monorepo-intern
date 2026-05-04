@@ -2,8 +2,15 @@ plugins {
     kotlin("jvm")
 }
 
+val jvmMajorVersion: String by project
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(jvmMajorVersion))
+    }
+}
+
 dependencies {
-    implementation(project(":lib:hoplite-config"))
     api(project(":lib:hoplite-config"))
 }
 

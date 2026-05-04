@@ -4,6 +4,14 @@ plugins {
     kotlin("jvm")
 }
 
+val jvmMajorVersion: String by project
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(jvmMajorVersion))
+    }
+}
+
 dependencies {
     api(project(":domain:felles"))
     implementation(project(":lib:error-handling"))

@@ -5,6 +5,14 @@ plugins {
     id("com.github.davidmc24.gradle.plugin.avro")
 }
 
+val jvmMajorVersion: String by project
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(jvmMajorVersion))
+    }
+}
+
 dependencies {
     api(libs.avro.core)
 }

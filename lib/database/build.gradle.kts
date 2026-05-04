@@ -2,6 +2,14 @@ plugins {
     kotlin("jvm")
 }
 
+val jvmMajorVersion: String by project
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(jvmMajorVersion))
+    }
+}
+
 dependencies {
     compileOnly(libs.ktor.server.core)
     compileOnly(libs.database.hikari.connectionPool)

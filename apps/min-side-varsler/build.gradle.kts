@@ -7,6 +7,12 @@ plugins {
 
 val jvmMajorVersion: String by project
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(jvmMajorVersion))
+    }
+}
+
 dependencies {
     // Project
     implementation(project(":lib:hoplite-config"))

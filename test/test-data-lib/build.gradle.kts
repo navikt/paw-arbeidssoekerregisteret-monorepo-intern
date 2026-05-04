@@ -2,6 +2,14 @@ plugins {
     kotlin("jvm")
 }
 
+val jvmMajorVersion: String by project
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(jvmMajorVersion))
+    }
+}
+
 dependencies {
     implementation(project(":domain:interne-hendelser"))
     implementation(project(":domain:bekreftelse-interne-hendelser"))
