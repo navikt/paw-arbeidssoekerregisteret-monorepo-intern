@@ -28,7 +28,7 @@ h2-database = "2.4.240"
 bigquery = "26.80.0"
 flyway = "12.5.0"
 hikari = "7.0.2"
-kotlinx-coroutines = "1.10.2"
+kotlinx-coroutines = "1.11.0"
 kotlinx-serialization = "1.11.0"
 ktor = "3.4.3"
 
