@@ -199,8 +199,13 @@ object TestData {
             fnr5_2
         ).map { it.asIdentifikator() }
     )
-    val aktor7_1 = aktor(
-        listOf(aktorId7_1, npId7, dnr7_1.copy(gjeldende = false), fnr7_1).map { it.asIdentifikator() }
+    val aktor6_3 = aktor(
+        listOf(
+            aktorId6_1,
+            dnr6_1.copy(gjeldende = false),
+            fnr6_1.copy(gjeldende = false),
+            fnr6_2
+        ).map { it.asIdentifikator() }
     )
     val aktor7_2 = aktor(
         listOf(aktorId7_2, fnr7_1).map { it.asIdentifikator() }
@@ -219,6 +224,14 @@ object TestData {
             npId8_2,
             dnr8_1.copy(gjeldende = false),
             fnr8_1
+        ).map { it.asIdentifikator() }
+    )
+    val aktor9_3 = aktor(
+        listOf(
+            aktorId9_1,
+            dnr9_1.copy(gjeldende = false),
+            fnr9_1.copy(gjeldende = false),
+            fnr9_2
         ).map { it.asIdentifikator() }
     )
     val aktor10 = aktor(
@@ -485,6 +498,7 @@ object TestData {
             fnr4_1.identitet -> aktor4_2
             fnr4_2.identitet -> aktor4_3
             dnr5_1.identitet -> aktor5_3
+            dnr9_1.identitet -> aktor9_3
             else -> throw PdlException("Fant ikke identiteter", listOf(KotlinxGraphQLError("Fant ikke person")))
         }
     }

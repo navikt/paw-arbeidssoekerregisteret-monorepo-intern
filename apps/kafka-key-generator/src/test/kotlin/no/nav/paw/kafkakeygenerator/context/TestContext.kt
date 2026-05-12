@@ -25,6 +25,7 @@ import io.micrometer.core.instrument.logging.LoggingMeterRegistry
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.error.plugin.installErrorHandlingPlugin
@@ -119,6 +120,10 @@ class TestContext private constructor(
         identitetService = identitetServiceMock
     )
 ) {
+    init {
+        mockkStatic("no.nav.paw.kafka.producer.ProducerUtilsKt")
+    }
+
     fun setUp(): TestContext {
         Database.connect(dataSource)
         initSql.forEach { it.runAsSql() }

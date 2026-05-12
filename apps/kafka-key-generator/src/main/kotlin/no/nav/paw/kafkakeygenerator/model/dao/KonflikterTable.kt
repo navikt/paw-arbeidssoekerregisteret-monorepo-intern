@@ -82,7 +82,7 @@ object KonflikterTable : LongIdTable("konflikter") {
 
     fun findByIdentitetAndStatus(
         identitet: String,
-        status: KonfliktStatus
+        status: Iterable<KonfliktStatus>
     ): List<KonfliktRow> = transaction {
         join(
             KonfliktIdentiteterTable,
@@ -90,7 +90,7 @@ object KonflikterTable : LongIdTable("konflikter") {
             KonflikterTable.id,
             KonfliktIdentiteterTable.konfliktId
         ).select(columns)
-            .where { (KonfliktIdentiteterTable.identitet eq identitet) and (KonflikterTable.status eq status) }
+            .where { (KonfliktIdentiteterTable.identitet eq identitet) and (KonflikterTable.status inList status) }
             .orderBy(KonflikterTable.id, SortOrder.ASC)
             .map { it.asKonfliktRowMedIdentiteter() }
     }

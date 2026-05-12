@@ -31,12 +31,20 @@ class IdentitetQueryService(
             .findAllByIdentitet(identitet)
             .filter { it.status != IdentitetStatus.SLETTET }
 
-        val konflikter = if (visKonflikter) {
-            val konfliktRows = KonflikterTable.findByIdentitetAndStatus(
-                identitet = identitet,
-                status = KonfliktStatus.VENTER
-            )
+        val konfliktRows = KonflikterTable.findByIdentitetAndStatus(
+            identitet = identitet,
+            status = setOf(KonfliktStatus.VENTER, KonfliktStatus.PAUSET)
+        )
 
+        val pdlIdentiteter = if (hentPdl || konfliktRows.isNotEmpty()) {
+            pdlRestConsumer.finnIdentiteter(identitet = identitet)
+                .map { it.asIdentitet() }
+                .map { it.asApi() }
+        } else {
+            null
+        }
+
+        val konflikter = if (visKonflikter || konfliktRows.isNotEmpty()) {
             val aktorIdListe = identitetRows
                 .map { it.aktorId }
                 .distinct()
@@ -78,14 +86,6 @@ class IdentitetQueryService(
             } else {
                 emptyList()
             }
-        } else {
-            null
-        }
-
-        val pdlIdentiteter = if (hentPdl) {
-            pdlRestConsumer.finnIdentiteter(identitet = identitet)
-                .map { it.asIdentitet() }
-                .map { it.asApi() }
         } else {
             null
         }
