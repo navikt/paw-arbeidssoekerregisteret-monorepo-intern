@@ -27,13 +27,13 @@ import no.nav.paw.kafkakeygenerator.api.models.KonfliktDetaljer
 import no.nav.paw.kafkakeygenerator.api.models.ProblemDetails
 import no.nav.paw.kafkakeygenerator.context.TestContext
 import no.nav.paw.kafkakeygenerator.context.TestContext.Companion.setJsonBody
-import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
-import no.nav.paw.kafkakeygenerator.model.dao.KafkaKeysTable
-import no.nav.paw.kafkakeygenerator.model.dao.KonflikterTable
 import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktStatus
 import no.nav.paw.kafkakeygenerator.model.KonfliktType
 import no.nav.paw.kafkakeygenerator.model.asApi
+import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
+import no.nav.paw.kafkakeygenerator.model.dao.KafkaKeysTable
+import no.nav.paw.kafkakeygenerator.model.dao.KonflikterTable
 import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.kafkakeygenerator.test.IdentitetWrapper
 import no.nav.paw.kafkakeygenerator.test.TestData
@@ -552,7 +552,7 @@ class ApiV2RoutesTest : FreeSpec({
         }
 
         "Test suite for identiteter" - {
-            "Skal hente ideniteter for person" {
+            "Skal hente ideniteter for person med konflikter og PDL-data" {
                 testApplication {
                     configureWebApplication()
                     val client = buildTestClient()
@@ -615,6 +615,100 @@ class ApiV2RoutesTest : FreeSpec({
 
                     // WHEN
                     val response = client.post("/api/v2/identiteter?hentPdl=true&visKonflikter=true") {
+                        bearerAuth(token.serialize())
+                        setJsonBody(IdentitetRequest(dnr.identitet))
+                    }.validateOpenApiSpec()
+
+                    // THEN
+                    response.status shouldBe HttpStatusCode.OK
+                    val body = response.body<IdentitetResponse>()
+
+                    body.arbeidssoekerId shouldBe arbeidssoekerId1
+                    body.recordKey shouldBe recordKey1
+                    body.identiteter shouldContainOnly listOf(
+                        aktorId.asApi(),
+                        dnr.asApi(),
+                        arbId1.asApi()
+                    )
+                    body.pdlIdentiteter shouldNotBe null
+                    body.pdlIdentiteter shouldContainOnly listOf(
+                        aktorId.asApi(),
+                        dnr.copy(gjeldende = false).asApi(),
+                        fnr1.copy(gjeldende = false).asApi(),
+                        fnr2.asApi()
+                    )
+                    body.konflikter shouldNotBe null
+                    body.konflikter shouldContainOnly listOf(
+                        Konflikt(
+                            type = KonfliktType.MERGE.asApi(),
+                            detaljer = KonfliktDetaljer(
+                                aktorIdListe = listOf(
+                                    aktorId.identitet
+                                ),
+                                arbeidssoekerIdListe = listOf(
+                                    arbeidssoekerId1
+                                )
+                            )
+                        )
+                    )
+
+                    verify { pawIdentitetProducerMock wasNot Called }
+                }
+            }
+
+            "Skal hente ideniteter for person med konflikter" {
+                testApplication {
+                    configureWebApplication()
+                    val client = buildTestClient()
+                    val token = mockOAuth2Server.issueAzureToken()
+
+                    // GIVEN
+                    val aktorId = TestData.aktorId9_1
+                    val dnr = TestData.dnr9_1
+                    val fnr1 = TestData.fnr9_1
+                    val fnr2 = TestData.fnr9_2
+                    val arbeidssoekerId1 = KafkaKeysTable.insert().value
+                    val arbeidssoekerId2 = KafkaKeysTable.insert().value
+                    val arbId1 = arbeidssoekerId1.asIdentitet()
+                    val recordKey1 = arbeidssoekerId1.asRecordKey()
+
+                    IdentiteterTable.insert(
+                        arbeidssoekerId = arbeidssoekerId1,
+                        aktorId = aktorId.identitet,
+                        identitet = aktorId.identitet,
+                        type = IdentitetType.AKTORID,
+                        gjeldende = true,
+                        status = IdentitetStatus.MERGE,
+                        sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
+                    )
+                    IdentiteterTable.insert(
+                        arbeidssoekerId = arbeidssoekerId1,
+                        aktorId = aktorId.identitet,
+                        identitet = dnr.identitet,
+                        type = IdentitetType.FOLKEREGISTERIDENT,
+                        gjeldende = true,
+                        status = IdentitetStatus.MERGE,
+                        sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
+                    )
+                    IdentiteterTable.insert(
+                        arbeidssoekerId = arbeidssoekerId2,
+                        aktorId = aktorId.identitet,
+                        identitet = fnr1.identitet,
+                        type = IdentitetType.FOLKEREGISTERIDENT,
+                        gjeldende = true,
+                        status = IdentitetStatus.MERGE,
+                        sourceTimestamp = Instant.now().minus(Duration.ofDays(90))
+                    )
+                    KonflikterTable.insert(
+                        aktorId = aktorId.identitet,
+                        type = KonfliktType.MERGE,
+                        status = KonfliktStatus.VENTER,
+                        sourceTimestamp = Instant.now(),
+                        identiteter = listOf(aktorId, dnr.copy(gjeldende = false), fnr1.copy(gjeldende = false), fnr2)
+                    )
+
+                    // WHEN
+                    val response = client.post("/api/v2/identiteter") {
                         bearerAuth(token.serialize())
                         setJsonBody(IdentitetRequest(dnr.identitet))
                     }.validateOpenApiSpec()

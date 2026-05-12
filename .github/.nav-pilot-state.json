@@ -1,8 +1,8 @@
 {
   "collection": "(à la carte)",
-  "version": "2026.04.20-194821-8b2cb9f",
+  "version": "2026.05.11-162147-9823212",
   "scope": "repo",
-  "source_sha": "8b2cb9f",
+  "source_sha": "9823212",
   "installed_at": "2026-04-23T07:59:58Z",
   "files": [
     {
@@ -15,7 +15,7 @@
     },
     {
       "path": ".github/agents/forfatter.agent.md",
-      "hash": "f638bd5c234f329b"
+      "hash": "4e55f4d189619dcb"
     },
     {
       "path": ".github/agents/forfatter.metadata.json",
@@ -23,7 +23,7 @@
     },
     {
       "path": ".github/agents/observability.agent.md",
-      "hash": "ba87267d1d23aee2"
+      "hash": "5ba4036f431e3cfb"
     },
     {
       "path": ".github/agents/observability.metadata.json",
@@ -47,7 +47,7 @@
     },
     {
       "path": ".github/skills/observability-setup/",
-      "hash": "533cfb6d1dd88af3"
+      "hash": "78181a920d929a23"
     },
     {
       "path": ".github/skills/flyway-migration/",

@@ -14,7 +14,6 @@ import io.mockk.Called
 import io.mockk.clearAllMocks
 import io.mockk.confirmVerified
 import io.mockk.every
-import io.mockk.mockkStatic
 import io.mockk.verify
 import no.nav.paw.identitet.internehendelser.IdentitetHendelse
 import no.nav.paw.identitet.internehendelser.IdentiteterEndretHendelse
@@ -23,9 +22,9 @@ import no.nav.paw.kafka.producer.sendBlocking
 import no.nav.paw.kafkakeygenerator.api.models.ProblemDetails
 import no.nav.paw.kafkakeygenerator.context.TestContext
 import no.nav.paw.kafkakeygenerator.context.TestContext.Companion.setJsonBody
+import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.dao.IdentiteterTable
 import no.nav.paw.kafkakeygenerator.model.dao.KafkaKeysTable
-import no.nav.paw.kafkakeygenerator.model.IdentitetStatus
 import no.nav.paw.kafkakeygenerator.model.dto.asIdentitet
 import no.nav.paw.kafkakeygenerator.test.IdentitetWrapper
 import no.nav.paw.kafkakeygenerator.test.TestData
@@ -37,7 +36,6 @@ import org.apache.kafka.common.TopicPartition
 import java.time.Instant
 
 class ApiV1RoutesTest : FreeSpec({
-    mockkStatic("no.nav.paw.kafka.producer.ProducerUtilsKt")
     with(TestContext.buildWithPostgres()) {
         val identitetRecordMetadata =
             RecordMetadata(TopicPartition(applicationConfig.pawIdentitetProducer.topic, 0), 1, 0, 0, 0, 0)
