@@ -1,13 +1,13 @@
 {
   "collection": "(à la carte)",
-  "version": "2026.05.11-162147-9823212",
+  "version": "2026.05.22-103454-7acbe01",
   "scope": "repo",
-  "source_sha": "9823212",
+  "source_sha": "7acbe01",
   "installed_at": "2026-04-23T07:59:58Z",
   "files": [
     {
       "path": ".github/agents/auth.agent.md",
-      "hash": "97b03fd441f35a44"
+      "hash": "bdadec09cbdaf722"
     },
     {
       "path": ".github/agents/auth.metadata.json",
@@ -15,7 +15,7 @@
     },
     {
       "path": ".github/agents/forfatter.agent.md",
-      "hash": "4e55f4d189619dcb"
+      "hash": "6cc31221eab50d30"
     },
     {
       "path": ".github/agents/forfatter.metadata.json",
@@ -23,7 +23,7 @@
     },
     {
       "path": ".github/agents/observability.agent.md",
-      "hash": "5ba4036f431e3cfb"
+      "hash": "6f7b01a64b6fd461"
     },
     {
       "path": ".github/agents/observability.metadata.json",
@@ -31,7 +31,7 @@
     },
     {
       "path": ".github/agents/research.agent.md",
-      "hash": "0e7d3ea4dab5f465"
+      "hash": "90b7a1685788c5a4"
     },
     {
       "path": ".github/agents/research.metadata.json",
@@ -39,7 +39,7 @@
     },
     {
       "path": ".github/agents/security-champion.agent.md",
-      "hash": "3081dcf0ddde695d"
+      "hash": "5ccba48b66938fd0"
     },
     {
       "path": ".github/agents/security-champion.metadata.json",

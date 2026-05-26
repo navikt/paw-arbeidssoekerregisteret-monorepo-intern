@@ -1,6 +1,7 @@
 ---
 name: auth-agent
 description: Azure AD, TokenX, ID-porten, Maskinporten og JWT-validering for Nav-apper
+model: Claude Sonnet 4.6
 tools:
   - execute
   - read

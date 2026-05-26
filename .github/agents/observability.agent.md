@@ -1,6 +1,7 @@
 ---
 name: observability-agent
 description: Prometheus-metrikker, OpenTelemetry-tracing, Grafana-dashboards og varsling
+model: Claude Sonnet 4.6
 tools:
   - execute
   - read
