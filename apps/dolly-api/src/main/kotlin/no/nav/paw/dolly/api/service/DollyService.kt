@@ -63,7 +63,8 @@ class DollyService(
                 hendelseId = genererHendelseId(),
                 id = id,
                 identitetsnummer = identitetsnummer,
-                metadata = metadata
+                metadata = metadata,
+                aarsaksInformasjon = null
             )
         )
     }

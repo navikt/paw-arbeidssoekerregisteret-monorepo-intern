@@ -4,6 +4,7 @@ import no.nav.paw.arbeidssoekerregisteret.backup.database.hendelse.HendelseRecor
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.updateHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.metrics.Metrics
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvsluttetAarsakType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import org.apache.kafka.clients.consumer.ConsumerRecords
 
@@ -19,7 +20,8 @@ class BackupService(
 
                 val hendelse = record.value()
                 if (hendelse is Avsluttet) {
-                    metrics.kalkulertAvsluttetAarsakCounters[hendelse.kalkulertAarsak]?.increment()
+                    val aarsak = hendelse.aarsaksInformasjon?.aarsak ?: AvsluttetAarsakType.UDEFINERT
+                    metrics.kalkulertAvsluttetAarsakCounters[aarsak]?.increment()
                 }
             } else {
                 metrics.duplicateRecordCounter.increment()

@@ -5,8 +5,10 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import no.nav.paw.arbeidssokerregisteret.RequestScope
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Aarsak
+import no.nav.paw.arbeidssokerregisteret.application.opplysninger.DomeneOpplysning
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.RegelEvalResultat
 import no.nav.paw.felles.collection.PawNonEmptyList
 import no.nav.paw.felles.model.Identitetsnummer
 import no.nav.paw.kafka.producer.sendDeferred
@@ -68,22 +70,26 @@ class StartStoppRequestHandler(
             feilretting = feilretting
         )
 
-        val kanStarteResultat = try {
-            requestValidator.validerStartAvPeriodeOenske(
-                requestScope = requestScope,
-                identitetsnummer = identitetsnummer,
-                feilretting = null
-            ).fold(
-                ifLeft = {
-                    it.first.regel.id.toAvsluttetAarsak()
-                },
-                ifRight = {
-                    Aarsak.IngenAarsakFunnet
-                }
-            )
+        val regelEvalResultat = try {
+            if (feilretting?.tidspunktFraKilde?.avviksType == AvviksType.SLETTET) {
+                RegelEvalResultat.IKKE_RELEVANT
+            } else {
+                requestValidator.validerStartAvPeriodeOenske(
+                    requestScope = requestScope,
+                    identitetsnummer = identitetsnummer,
+                    feilretting = null
+                ).fold(
+                    ifLeft = {
+                        evaluerRegelsett(it.first)
+                    },
+                    ifRight = {
+                        RegelEvalResultat.OK
+                    }
+                )
+            }
         } catch (e: Exception) {
             logger.error("Feil under validering av start av periodeønske", e)
-            Aarsak.TekniskFeilUnderKalkuleringAvAarsak
+            RegelEvalResultat.FEIL_UNDER_EVAL
         }
 
         val hendelse = stoppResultatSomHendelse(
@@ -91,8 +97,8 @@ class StartStoppRequestHandler(
             id = id,
             identitetsnummer = identitetsnummer,
             resultat = tilgangskontrollResultat,
-            aarsak = kanStarteResultat,
-            feilretting = feilretting
+            feilretting = feilretting,
+            regelEvalResultat = regelEvalResultat
         )
         val record = ProducerRecord(
             hendelseTopic,
@@ -131,4 +137,28 @@ class StartStoppRequestHandler(
         }
         return resultat
     }
+}
+
+fun evaluerRegelsett(problem: Problem):RegelEvalResultat {
+    val regelId = problem.regel.id
+    if (regelId !is DomeneRegelId) return (RegelEvalResultat.UDEFINERT)
+    val regelEvalResultat = when (regelId) {
+        Doed -> RegelEvalResultat.DOED
+        ErStatsborgerILandMedAvtale -> RegelEvalResultat.UDEFINERT
+        EuEoesStatsborgerMenHarStatusIkkeBosatt -> RegelEvalResultat.EU_EOES_IKKE_BOSATT
+        EuEoesStatsborgerOver18Aar -> RegelEvalResultat.UDEFINERT
+        ForhaandsgodkjentAvAnsatt -> RegelEvalResultat.UDEFINERT
+        IkkeBosattINorgeIHenholdTilFolkeregisterloven -> if (problem.opplysninger.contains(DomeneOpplysning.ErNorskStatsborger)) {
+            RegelEvalResultat.NORSK_IKKE_BOSATT
+        } else {
+            RegelEvalResultat.IKKE_BOSATT
+        }
+        IkkeFunnet -> RegelEvalResultat.UDEFINERT
+        Opphoert -> RegelEvalResultat.OPPHOERT
+        Over18AarOgBosattEtterFregLoven -> RegelEvalResultat.UDEFINERT
+        Savnet -> RegelEvalResultat.SAVNET
+        UkjentAlder -> RegelEvalResultat.UDEFINERT
+        Under18Aar -> RegelEvalResultat.UDEFINERT
+    }
+    return regelEvalResultat
 }

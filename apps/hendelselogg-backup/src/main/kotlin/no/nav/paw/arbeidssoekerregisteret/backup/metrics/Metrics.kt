@@ -6,7 +6,7 @@ import no.nav.paw.arbeidssoekerregisteret.backup.context.ApplicationContext
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.Hwm
 import no.nav.paw.arbeidssoekerregisteret.backup.database.hwm.getHwm
 import no.nav.paw.arbeidssoekerregisteret.backup.kafka.HwmRebalanceListener
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Aarsak
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvsluttetAarsakType
 
 class Metrics(
     private val prometheusMeterRegistry: PrometheusMeterRegistry,
@@ -40,7 +40,7 @@ class Metrics(
     val recordCounter = prometheusMeterRegistry.counter(RECORD_COUNTER, listOf(Tag.of("include", "true")))
     val duplicateRecordCounter = prometheusMeterRegistry.counter(RECORD_COUNTER, listOf(Tag.of("include", "false")))
 
-    val kalkulertAvsluttetAarsakCounters = Aarsak.entries.associateWith { aarsak ->
+    val kalkulertAvsluttetAarsakCounters = AvsluttetAarsakType.entries.associateWith { aarsak ->
         prometheusMeterRegistry.counter(
             KALKULERT_AVSLUTTET_AARSAK,
             listOf(Tag.of("kalkulert_aarsak", aarsak.name))

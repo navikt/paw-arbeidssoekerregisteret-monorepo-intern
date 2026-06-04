@@ -3,10 +3,12 @@ package no.nav.paw.bekreftelseutgang.topology
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Aarsak
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Aarsaksinformasjon
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvsluttetAarsakType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.RegelEvalResultat
 import no.nav.paw.bekreftelse.internehendelser.BaOmAaAvsluttePeriode
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
@@ -65,7 +67,7 @@ fun processBekreftelseHendelse(
                 sikkerhetsnivaa = null
             ),
             aarsak = "[Bekreftelse] ikke levert innen fristen",
-            oppgittAarsak = Aarsak.RegisterGracePeriodeUtloept,
+            avsluttetAarsakType = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST,
             kilde = bekreftelseHendelse.kilde,
         )
         is RegisterGracePeriodeUtloeptEtterEksternInnsamling -> avsluttetHendelse(
@@ -78,7 +80,7 @@ fun processBekreftelseHendelse(
                 sikkerhetsnivaa = null
             ),
             aarsak = "[Bekreftelse:ytelse/støtte] Ikke levert innen fristen",
-            oppgittAarsak = Aarsak.RegisterGracePeriodeUtloeptEtterEksternInnsamling,
+            avsluttetAarsakType = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST,
             kilde = bekreftelseHendelse.kilde
         )
         is BaOmAaAvsluttePeriode -> avsluttetHendelse(
@@ -97,7 +99,7 @@ fun processBekreftelseHendelse(
                 sikkerhetsnivaa = bekreftelseHendelse.utfoertAv.sikkerhetsnivaa
             ),
             aarsak = "[Bekreftelse] Ønsket ikke lenger å være arbeidssøker",
-            oppgittAarsak = Aarsak.BaOmAaAvsluttePeriode,
+            avsluttetAarsakType = AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE,
             kilde = bekreftelseHendelse.kilde
         )
         else -> null
@@ -106,14 +108,21 @@ fun processBekreftelseHendelse(
 
 fun ApplicationConfig.getAppImage() = runtimeEnvironment.appImageOrDefaultForLocal("paw-arbeidssoekerregisteret-bekreftelse-utgang:LOCAL")
 
-fun avsluttetHendelse(identitetsnummer: String, periodeId: UUID, arbeidssoekerId: Long, utfoertAv: Bruker, aarsak: String, oppgittAarsak: Aarsak, kilde: String) = Avsluttet(
+fun avsluttetHendelse(
+    identitetsnummer: String,
+    periodeId: UUID,
+    arbeidssoekerId: Long,
+    utfoertAv: Bruker,
+    aarsak: String,
+    avsluttetAarsakType: AvsluttetAarsakType,
+    kilde: String,
+) = Avsluttet(
     hendelseId = UUID.randomUUID(),
     id = arbeidssoekerId,
     identitetsnummer = identitetsnummer,
     metadata = metadata(utfoertAv, aarsak, kilde),
     periodeId = periodeId,
-    kalkulertAarsak = Aarsak.Udefinert,
-    oppgittAarsak = oppgittAarsak,
+    aarsaksInformasjon = Aarsaksinformasjon(aarsak = avsluttetAarsakType, regelEvalResultat = RegelEvalResultat.IKKE_RELEVANT),
 )
 
 fun metadata(utfoertAv: Bruker, aarsak: String, kilde: String) = Metadata(

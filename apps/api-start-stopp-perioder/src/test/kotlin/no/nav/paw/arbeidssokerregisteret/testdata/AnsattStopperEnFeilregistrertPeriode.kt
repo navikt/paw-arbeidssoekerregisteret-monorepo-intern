@@ -7,10 +7,12 @@ import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feilretting
 import no.nav.paw.arbeidssokerregisteret.ansattToken
 import no.nav.paw.arbeidssokerregisteret.domain.NavAnsatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Aarsak
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvsluttetAarsakType
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Aarsaksinformasjon
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Opplysning
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.RegelEvalResultat
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.TidspunktFraKilde
 import no.nav.paw.arbeidssokerregisteret.setHarTilgangTilBruker
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
@@ -57,14 +59,16 @@ data object AnsattStopperEnFeilregistrertPeriode : StoppPeriodeTestCase {
                     avviksType = no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType.SLETTET
                 )
             ),
-            kalkulertAarsak = Aarsak.Udefinert,
-            oppgittAarsak = Aarsak.Udefinert,
             opplysninger = setOf(
                 Opplysning.ANSATT_TILGANG,
                 Opplysning.TOKENX_PID_IKKE_FUNNET,
                 Opplysning.ANSATT_TILGANG,
                 Opplysning.ER_FEILRETTING,
                 Opplysning.IKKE_SYSTEM
+            ),
+            aarsaksInformasjon = Aarsaksinformasjon(
+                aarsak = AvsluttetAarsakType.FEILREGISTRERING,
+                regelEvalResultat = RegelEvalResultat.IKKE_RELEVANT
             )
         )
     )

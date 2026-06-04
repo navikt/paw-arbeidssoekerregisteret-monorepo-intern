@@ -11,7 +11,7 @@ import no.nav.paw.arbeidssokerregisteret.app.metrics.Names
 import no.nav.paw.arbeidssokerregisteret.app.metrics.eventReceived
 import no.nav.paw.arbeidssokerregisteret.app.metrics.fineGrainedDurationToMonthsBucket
 import no.nav.paw.arbeidssokerregisteret.app.metrics.stateSent
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Aarsak
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvsluttetAarsakType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import org.apache.avro.specific.SpecificRecord
@@ -44,8 +44,8 @@ fun PrometheusMeterRegistry.tellUtgåendeTilstand(topic: String, state: Specific
 }
 
 fun PrometheusMeterRegistry.tellAvsluttetMedAarsak(periodeStartet: Instant, avsluttet: Avsluttet) {
-    val aarsak = avsluttet.oppgittAarsak.takeIf { it != Aarsak.Udefinert } ?: avsluttet.kalkulertAarsak
-    val kalkulert = avsluttet.oppgittAarsak == Aarsak.Udefinert
+    val aarsakNavn = avsluttet.aarsaksInformasjon?.aarsak?.name ?: AvsluttetAarsakType.UDEFINERT.name
+    val kalkulert = avsluttet.aarsaksInformasjon == null
     val tidspunkt = avsluttet.metadata.tidspunktFraKilde?.tidspunkt ?: avsluttet.metadata.tidspunkt
     val erFeilretting = avsluttet.metadata.tidspunktFraKilde?.avviksType?.name?.lowercase() ?: "nei"
     val varighet = fineGrainedDurationToMonthsBucket(periodeStartet, tidspunkt)
@@ -64,7 +64,7 @@ fun PrometheusMeterRegistry.tellAvsluttetMedAarsak(periodeStartet: Instant, avsl
         Names.AVSLUTTET,
         Tags.of(
             Tag.of(Labels.KALKULERT, kalkulert.toString()),
-            Tag.of(Labels.AARSAK, aarsak.name),
+            Tag.of(Labels.AARSAK, aarsakNavn),
             Tag.of(Labels.VARIGHET_MAANEDER, varighet),
             Tag.of(Labels.FEILRETTING, erFeilretting),
             Tag.of(Labels.UTFOERT_AV, avsluttet.metadata.utfoertAv.type.name.lowercase()),

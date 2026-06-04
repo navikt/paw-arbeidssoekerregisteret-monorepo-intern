@@ -12,17 +12,20 @@ import no.nav.paw.arbeidssokerregisteret.authOpplysningTilHendelseOpplysning
 import no.nav.paw.arbeidssokerregisteret.domain.m2mToken
 import no.nav.paw.arbeidssokerregisteret.domain.navAnsatt
 import no.nav.paw.arbeidssokerregisteret.domain.sluttbruker
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Aarsak
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avvist
 import no.nav.paw.arbeidssokerregisteret.intern.v1.AvvistStoppAvPeriode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.OpplysningerOmArbeidssoekerMottatt
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvsluttetAarsakType
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Aarsaksinformasjon
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.OpplysningerOmArbeidssoeker
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.RegelEvalResultat
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.TidspunktFraKilde
 import no.nav.paw.arbeidssokerregisteret.utils.AzureACR
 import no.nav.paw.felles.collection.PawNonEmptyList
@@ -37,8 +40,8 @@ fun stoppResultatSomHendelse(
     id: Long,
     identitetsnummer: Identitetsnummer,
     resultat: Either<PawNonEmptyList<Problem>, GrunnlagForGodkjenning>,
-    aarsak: Aarsak,
-    feilretting: Feilretting?
+    feilretting: Feilretting?,
+    regelEvalResultat: RegelEvalResultat
 ): Hendelse =
     when (resultat) {
         is Either.Left -> AvvistStoppAvPeriode(
@@ -63,22 +66,14 @@ fun stoppResultatSomHendelse(
                 tidspunktFraKilde = feilretting.tidspunktFraKilde
             ),
             opplysninger = resultat.value.opplysning.map(::mapToHendelseOpplysning).toSet(),
-            kalkulertAarsak = aarsak,
-            oppgittAarsak = Aarsak.Udefinert
+            aarsaksInformasjon = Aarsaksinformasjon(
+                aarsak = when {
+                    feilretting?.tidspunktFraKilde?.avviksType == AvviksType.SLETTET -> AvsluttetAarsakType.FEILREGISTRERING
+                    else -> AvsluttetAarsakType.UDEFINERT
+                },
+                regelEvalResultat = regelEvalResultat
+            )
         )
-    }
-
-fun RegelId.toAvsluttetAarsak(): Aarsak =
-    when (this) {
-        is IkkeFunnet -> Aarsak.IkkeFunnet
-        is Savnet -> Aarsak.Savnet
-        is Doed -> Aarsak.Doed
-        is Opphoert -> Aarsak.Opphoert
-        is Under18Aar -> Aarsak.Under18Aar
-        is IkkeBosattINorgeIHenholdTilFolkeregisterloven -> Aarsak.IkkeBosattINorgeIHenholdTilFolkeregisterloven
-        is UkjentAlder -> Aarsak.UkjentAlder
-        is EuEoesStatsborgerMenHarStatusIkkeBosatt -> Aarsak.EuEoesStatsborgerMenHarStatusIkkeBosatt
-        else -> Aarsak.Udefinert
     }
 
 

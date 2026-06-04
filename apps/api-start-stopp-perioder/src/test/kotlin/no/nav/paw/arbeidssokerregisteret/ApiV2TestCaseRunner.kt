@@ -107,7 +107,7 @@ class ApiV2TestCaseRunner : FreeSpec({
                                         }
                                         expectedErrorResponse.aarsakTilAvvisning?.detaljer?.also { expectedDetails ->
                                             body.aarsakTilAvvisning?.detaljer.shouldNotBeNull()
-                                            body.aarsakTilAvvisning?.detaljer?.shouldContainExactlyInAnyOrder(
+                                            body.aarsakTilAvvisning.detaljer.shouldContainExactlyInAnyOrder(
                                                 expectedDetails
                                             )
                                         }
