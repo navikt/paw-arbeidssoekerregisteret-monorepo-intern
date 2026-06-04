@@ -11,6 +11,7 @@ import no.nav.paw.kafka.config.KafkaSchemaRegistryConfig
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.common.config.SslConfigs
+import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.errors.DeserializationExceptionHandler
@@ -63,7 +64,11 @@ class KafkaStreamsFactory private constructor(
         KafkaStreamsFactory(
             applicationIdSuffix = applicationIdSuffix,
             config = config,
-            additionalProperties = additionalProperties + (StreamsConfig.PROCESSING_GUARANTEE_CONFIG to StreamsConfig.EXACTLY_ONCE_V2)
+            additionalProperties = additionalProperties + mapOf(
+                StreamsConfig.PROCESSING_GUARANTEE_CONFIG to StreamsConfig.EXACTLY_ONCE_V2,
+                StreamsConfig.REPLICATION_FACTOR_CONFIG to 3,
+                StreamsConfig.topicPrefix(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG) to "2"
+            )
         )
 
     fun <A: DeserializationExceptionHandler> withSerializationExceptionHendler(handler: KClass<A>): KafkaStreamsFactory =
