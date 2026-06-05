@@ -53,4 +53,5 @@ spec:
         - application: paw-arbeidssoekerregisteret-api-ledigestillinger
         - application: paw-arbeidssoekerregisteret-api-mine-stillinger
         - application: egenvurdering-dialog-tjeneste
+        - application: paw-arbeidssoekerregisteret-api-oversikt
         - application: rust-nais-api-test
