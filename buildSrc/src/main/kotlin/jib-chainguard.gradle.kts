@@ -15,5 +15,7 @@ jib {
         environment = mapOf(
             "IMAGE_WITH_VERSION" to targetImage
         )
+        setFormat("Docker")
     }
+
 }
