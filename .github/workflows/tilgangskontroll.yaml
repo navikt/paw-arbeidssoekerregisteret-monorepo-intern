@@ -15,6 +15,7 @@ on:
       - 'gradle.properties'
       - 'gradlew'
       - 'gradlew.bat'
+      - 'buildSrc/**'
 
 env:
   IMAGE: europe-north1-docker.pkg.dev/nais-management-233d/paw/paw-tilgangskontroll
