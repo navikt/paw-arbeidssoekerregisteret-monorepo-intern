@@ -19,12 +19,13 @@ import org.apache.kafka.common.serialization.Serializer
 import java.util.*
 import kotlin.reflect.KClass
 
-class KafkaFactory(private val config: KafkaConfig) {
+class KafkaFactory(val config: KafkaConfig) {
     val baseProperties =
         Properties().apply {
             this[CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG] = config.brokers
             config.authentication?.let { putAll(authenticationConfig(it)) }
             config.schemaRegistry?.let { putAll(schemaRegistryConfig(it)) }
+            putAll(config.extraProperties)
         }
 
     fun <K: Any, V: Any> createKafkaAvroValueConsumer(
