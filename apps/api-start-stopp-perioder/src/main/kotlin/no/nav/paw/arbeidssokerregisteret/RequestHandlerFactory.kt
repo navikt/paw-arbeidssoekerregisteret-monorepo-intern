@@ -14,12 +14,11 @@ import no.nav.paw.arbeidssokerregisteret.config.Config
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.arbeidssokerregisteret.services.PersonInfoService
 import no.nav.paw.arbeidssokerregisteret.utils.azureAdM2MTokenClient
-import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.kafka.factory.KafkaFactory
 import no.nav.paw.kafka.signing.loadKafkaSigningConfig
-import no.nav.paw.kafka.signing.toProducerProperties
+import no.nav.paw.kafka.signing.withRecordSigning
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.kafkakeygenerator.client.kafkaKeysClient
 import no.nav.paw.pdl.PdlClient
@@ -27,10 +26,7 @@ import no.nav.paw.tilgangskontroll.client.TILGANGSKONTROLL_CLIENT_CONFIG
 import no.nav.paw.tilgangskontroll.client.TilgangsTjenesteForAnsatte
 import no.nav.paw.tilgangskontroll.client.TilgangskontrollClientConfig
 import no.nav.paw.tilgangskontroll.client.tilgangsTjenesteForAnsatte
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.LongSerializer
-import java.util.Properties
 
 
 fun requestHandlers(
@@ -51,16 +47,12 @@ fun requestHandlers(
         mountPath = "/var/run/secrets/kafka-signing",
         localResource = "/local/kafka-signing-key.properties",
     )
-    val kafkaProducer = KafkaProducer<Long, Hendelse>(
-        Properties().apply {
-            putAll(kafkaFactory.baseProperties)
-            put(ProducerConfig.ACKS_CONFIG, "all")
-            put(ProducerConfig.CLIENT_ID_CONFIG, ApplicationInfo.id)
-            put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer::class.java)
-            put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, HendelseSerializer::class.java)
-            putAll(signingConfig.toProducerProperties())
-        }
-    )
+    val kafkaProducer = KafkaFactory(kafkaFactory.config.withRecordSigning(signingConfig))
+        .createProducer(
+            clientId = ApplicationInfo.id,
+            keySerializer = LongSerializer::class,
+            valueSerializer = HendelseSerializer::class
+        )
     val requestValidator = RequestValidator(
         autorisasjonService = AutorisasjonService(clients.tilgangsTjenesteForAnsatte),
         personInfoService = PersonInfoService(clients.pdlClient),
