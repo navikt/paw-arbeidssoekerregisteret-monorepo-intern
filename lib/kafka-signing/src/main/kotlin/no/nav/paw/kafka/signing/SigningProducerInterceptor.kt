@@ -31,9 +31,14 @@ internal fun decodePkcs8Key(input: String): ByteArray {
         .replace(BASE64_VALID_CHARS, "")
         .trimEnd('=')
     val padded = when (cleaned.length % 4) {
+        0 -> cleaned
         2 -> "$cleaned=="
         3 -> "$cleaned="
-        else -> cleaned
+        else -> error(
+            "Invalid Base64 key: cleaned length ${cleaned.length} gives mod4=${cleaned.length % 4}. " +
+            "Expected length divisible by 4 (e.g. 184 for P-256). " +
+            "Re-encode with: openssl pkcs8 -topk8 -nocrypt -in ec-private.pem -outform DER | base64 -w0"
+        )
     }
     logger.debug(
         "decodePkcs8Key: input.length={} cleaned.length={} padded.length={} mod4={}",
