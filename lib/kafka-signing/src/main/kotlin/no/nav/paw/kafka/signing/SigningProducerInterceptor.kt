@@ -41,9 +41,9 @@ class SigningProducerInterceptor<K, V> : ProducerInterceptor<K, V> {
     }
 
     override fun configure(configs: Map<String, *>) {
-        keyId = (configs[PAW_SIGNING_KEY_ID] as String).toByteArray(Charsets.UTF_8)
+        keyId = (configs[PAW_SIGNING_KEY_ID] as String).trim().toByteArray(Charsets.UTF_8)
 
-        val pkcs8Bytes = BASE64DEC.decode(configs[PAW_SIGNING_PRIVATE_KEY_PKCS8] as String)
+        val pkcs8Bytes = BASE64DEC.decode((configs[PAW_SIGNING_PRIVATE_KEY_PKCS8] as String).trim())
         privateKey = KeyFactory.getInstance("EC")
             .generatePrivate(PKCS8EncodedKeySpec(pkcs8Bytes)) as ECPrivateKey
 
