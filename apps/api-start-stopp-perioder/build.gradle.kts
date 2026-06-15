@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":domain:interne-hendelser"))
     implementation(project(":domain:arbeidssoeker-regler"))
     implementation(project(":lib:kafka"))
+    implementation(project(":lib:kafka-signing"))
     implementation(project(":lib:hoplite-config"))
     implementation(project(":lib:kafka-key-generator-client"))
     implementation(project(":lib:pdl-client"))
