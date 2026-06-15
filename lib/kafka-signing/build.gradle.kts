@@ -12,6 +12,7 @@ java {
 
 dependencies {
     api(libs.kafka.clients)
+    api(project(":lib:hoplite-config"))
 
     testImplementation(libs.bundles.unit.testing.kotest)
 }
