@@ -12,8 +12,31 @@ import java.security.spec.PKCS8EncodedKeySpec
 import java.util.Base64
 
 private val BASE64URL = Base64.getUrlEncoder().withoutPadding()
-private val BASE64DEC = Base64.getDecoder()
 private val logger = LoggerFactory.getLogger(SigningProducerInterceptor::class.java)
+
+/**
+ * Decodes a PKCS#8 private key from Base64. Handles:
+ * - Plain Base64 (standard or URL-safe alphabet)
+ * - PEM format (strips -----BEGIN/END PRIVATE KEY----- headers)
+ * - Missing padding
+ * - Embedded newlines / whitespace
+ */
+internal fun decodePkcs8Key(input: String): ByteArray {
+    val stripped = input
+        .lines()
+        .filterNot { it.trimStart().startsWith("-----") }
+        .joinToString("")
+        .replace(" ", "")
+        .replace("\t", "")
+        .trimEnd('=')  // strip existing padding, we add our own
+    val padded = when (stripped.length % 4) {
+        2 -> "$stripped=="
+        3 -> "$stripped="
+        else -> stripped
+    }
+    // Normalise URL-safe alphabet to standard before decoding
+    return Base64.getDecoder().decode(padded.replace('-', '+').replace('_', '/'))
+}
 
 /**
  * Kafka [ProducerInterceptor] that adds ECDSA signature headers to every outgoing record.
@@ -45,7 +68,7 @@ class SigningProducerInterceptor<K, V> : ProducerInterceptor<K, V> {
     override fun configure(configs: Map<String, *>) {
         keyId = (configs[PAW_SIGNING_KEY_ID] as String).trim().toByteArray(Charsets.UTF_8)
 
-        val pkcs8Bytes = BASE64DEC.decode((configs[PAW_SIGNING_PRIVATE_KEY_PKCS8] as String).trim())
+        val pkcs8Bytes = decodePkcs8Key(configs[PAW_SIGNING_PRIVATE_KEY_PKCS8] as String)
         privateKey = KeyFactory.getInstance("EC")
             .generatePrivate(PKCS8EncodedKeySpec(pkcs8Bytes)) as ECPrivateKey
 
