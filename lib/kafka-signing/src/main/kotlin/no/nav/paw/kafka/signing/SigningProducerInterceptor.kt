@@ -12,29 +12,34 @@ import java.security.spec.PKCS8EncodedKeySpec
 import java.util.Base64
 
 private val BASE64URL = Base64.getUrlEncoder().withoutPadding()
+private val BASE64_VALID_CHARS = Regex("[^A-Za-z0-9+/\\-_]")
 private val logger = LoggerFactory.getLogger(SigningProducerInterceptor::class.java)
 
 /**
  * Decodes a PKCS#8 private key from Base64. Handles:
  * - Plain Base64 (standard or URL-safe alphabet)
  * - PEM format (strips -----BEGIN/END PRIVATE KEY----- headers)
- * - Missing padding
- * - Embedded newlines / whitespace
+ * - Missing or incorrect padding
+ * - Embedded whitespace, newlines, BOM, and other non-Base64 characters
  */
 internal fun decodePkcs8Key(input: String): ByteArray {
-    val stripped = input
+    // Keep only valid Base64 characters; discards newlines, spaces, BOM, CRLF, invisible unicode, etc.
+    val cleaned = input
         .lines()
         .filterNot { it.trimStart().startsWith("-----") }
         .joinToString("")
-        .replace(" ", "")
-        .replace("\t", "")
-        .trimEnd('=')  // strip existing padding, we add our own
-    val padded = when (stripped.length % 4) {
-        2 -> "$stripped=="
-        3 -> "$stripped="
-        else -> stripped
+        .replace(BASE64_VALID_CHARS, "")
+        .trimEnd('=')
+    val padded = when (cleaned.length % 4) {
+        2 -> "$cleaned=="
+        3 -> "$cleaned="
+        else -> cleaned
     }
-    // Normalise URL-safe alphabet to standard before decoding
+    logger.debug(
+        "decodePkcs8Key: input.length={} cleaned.length={} padded.length={} mod4={}",
+        input.length, cleaned.length, padded.length, cleaned.length % 4
+    )
+    // Normalise URL-safe alphabet (- _) to standard (+ /) before decoding
     return Base64.getDecoder().decode(padded.replace('-', '+').replace('_', '/'))
 }
 
