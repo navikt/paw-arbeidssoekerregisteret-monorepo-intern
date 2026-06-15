@@ -4,7 +4,7 @@ import no.nav.paw.config.env.Nais
 import no.nav.paw.config.env.RuntimeEnvironment
 import java.io.File
 import java.nio.file.Path
-import java.util.Properties
+import java.util.*
 
 /**
  * Config keys used as filenames in the mounted NAIS secret.
@@ -38,7 +38,7 @@ fun loadKafkaSigningConfig(
 ): KafkaSigningConfig =
     when (runtimeEnvironment) {
         is Nais -> loadKafkaSigningConfigFromMountedSecret(mountPath)
-        else    -> loadKafkaSigningConfigFromLocalResource(localResource)
+        else -> loadKafkaSigningConfigFromLocalResource(localResource)
     }
 
 fun loadKafkaSigningConfigFromMountedSecret(mountPath: String): KafkaSigningConfig {

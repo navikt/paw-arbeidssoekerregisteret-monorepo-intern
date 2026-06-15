@@ -42,7 +42,7 @@ fun verifyKafkaRecord(
         verify(signatureBytes)
     }
 
-internal fun buildSignaturePayload(
+fun buildSignaturePayload(
     keyBytes: ByteArray,
     traceparentBytes: ByteArray,
     timestampMs: Long,
