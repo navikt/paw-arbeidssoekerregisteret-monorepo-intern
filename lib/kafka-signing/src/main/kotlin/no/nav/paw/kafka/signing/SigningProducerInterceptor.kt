@@ -5,6 +5,7 @@ import org.apache.kafka.clients.producer.ProducerInterceptor
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.apache.kafka.common.serialization.Serializer
+import org.slf4j.LoggerFactory
 import java.security.KeyFactory
 import java.security.interfaces.ECPrivateKey
 import java.security.spec.PKCS8EncodedKeySpec
@@ -12,6 +13,7 @@ import java.util.Base64
 
 private val BASE64URL = Base64.getUrlEncoder().withoutPadding()
 private val BASE64DEC = Base64.getDecoder()
+private val logger = LoggerFactory.getLogger(SigningProducerInterceptor::class.java)
 
 /**
  * Kafka [ProducerInterceptor] that adds ECDSA signature headers to every outgoing record.
@@ -55,19 +57,24 @@ class SigningProducerInterceptor<K, V> : ProducerInterceptor<K, V> {
         val topic = record.topic()
         val headers = record.headers()
 
-        val kBytes = record.key()?.let { keySerializer.serialize(topic, headers, it) } ?: ByteArray(0)
-        val vBytes = record.value()?.let { valueSerializer.serialize(topic, headers, it) } ?: ByteArray(0)
-        val traceparentBytes = headers.lastHeader("traceparent")?.value() ?: ByteArray(0)
+        return try {
+            val kBytes = record.key()?.let { keySerializer.serialize(topic, headers, it) } ?: ByteArray(0)
+            val vBytes = record.value()?.let { valueSerializer.serialize(topic, headers, it) } ?: ByteArray(0)
+            val traceparentBytes = headers.lastHeader("traceparent")?.value() ?: ByteArray(0)
 
-        // Fix the timestamp so that what we sign matches what the broker stores.
-        val timestamp = record.timestamp() ?: System.currentTimeMillis()
+            // Fix the timestamp so that what we sign matches what the broker stores.
+            val timestamp = record.timestamp() ?: System.currentTimeMillis()
 
-        val signature = signKafkaRecord(kBytes, traceparentBytes, timestamp, vBytes, privateKey)
+            val signature = signKafkaRecord(kBytes, traceparentBytes, timestamp, vBytes, privateKey)
 
-        // Return a new record with the explicit timestamp and signature headers.
-        return ProducerRecord(topic, record.partition(), timestamp, record.key(), record.value(), headers).also {
-            it.headers().add("x-paw-signature", BASE64URL.encode(signature))
-            it.headers().add("x-paw-signing-key-id", keyId)
+            // Return a new record with the explicit timestamp and signature headers.
+            ProducerRecord(topic, record.partition(), timestamp, record.key(), record.value(), headers).also {
+                it.headers().add("x-paw-signature", BASE64URL.encode(signature))
+                it.headers().add("x-paw-signing-key-id", keyId)
+            }
+        } catch (e: Exception) {
+            logger.error("Failed to sign Kafka record on topic={}, record will be sent unsigned", topic, e)
+            record
         }
     }
 

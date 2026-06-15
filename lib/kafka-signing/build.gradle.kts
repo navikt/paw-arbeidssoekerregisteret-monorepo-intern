@@ -14,6 +14,7 @@ dependencies {
     api(libs.kafka.clients)
     api(project(":lib:hoplite-config"))
     api(project(":lib:kafka"))
+    implementation(libs.logback.classic)
 
     testImplementation(libs.bundles.unit.testing.kotest)
 }
