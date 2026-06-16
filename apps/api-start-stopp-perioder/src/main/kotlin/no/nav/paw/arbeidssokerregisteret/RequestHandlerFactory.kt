@@ -42,12 +42,7 @@ fun requestHandlers(
         )
     }
 
-    val signingConfig = loadKafkaSigningConfig(
-        runtimeEnvironment = currentRuntimeEnvironment,
-        mountPath = "/var/run/secrets/kafka-signing",
-        localResource = "/local/kafka-signing-key.properties",
-    )
-    val kafkaProducer = KafkaFactory(kafkaFactory.config.withRecordSigning(signingConfig))
+    val kafkaProducer = kafkaFactory
         .createProducer(
             clientId = ApplicationInfo.id,
             keySerializer = LongSerializer::class,

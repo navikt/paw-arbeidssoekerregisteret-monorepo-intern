@@ -19,17 +19,27 @@ import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutes
 import no.nav.paw.arbeidssokerregisteret.routes.arbeidssokerRoutesV2
 import no.nav.paw.arbeidssokerregisteret.routes.healthRoutes
 import no.nav.paw.arbeidssokerregisteret.routes.swaggerRoutes
+import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.kafka.config.KAFKA_CONFIG
 import no.nav.paw.kafka.config.KafkaConfig
 import no.nav.paw.kafka.factory.KafkaFactory
+import no.nav.paw.kafka.signing.loadKafkaSigningConfig
+import no.nav.paw.kafka.signing.withRecordSigning
 import org.slf4j.LoggerFactory
 
 fun main() {
     val logger = LoggerFactory.getLogger("app")
     logger.info("Starter ${ApplicationInfo.id}")
     val applicationConfig = loadNaisOrLocalConfiguration<Config>(CONFIG_FILE_NAME)
+    val signingConfig = loadKafkaSigningConfig(
+        runtimeEnvironment = currentRuntimeEnvironment,
+        mountPath = "/var/run/secrets/kafka-signing",
+        localResource = "/local/kafka-signing-key.properties",
+    )
     val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
+        .withRecordSigning(signingConfig)
+
     val registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val (startStoppRequestHandler, opplysningerRequestHandler) = requestHandlers(
         config = applicationConfig,
