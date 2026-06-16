@@ -13,55 +13,45 @@ const val KAFKA_SIGNING_SECRET_KEY_PRIVATE_KEY = "PAW_SIGNING_PRIVATE_KEY_PKCS8_
 const val KAFKA_SIGNING_SECRET_KEY_ID = "PAW_SIGNING_KEY_ID"
 
 /**
- * Loads [KafkaSigningConfig] based on [RuntimeEnvironment]:
- * - [Nais]: reads files from a mounted secret directory at [mountPath]
- * - Local: reads from a classpath .properties file at [localResource]
- *
- * ## NAIS secret structure
- * The Kubernetes secret must contain two keys:
- *  - [KAFKA_SIGNING_SECRET_KEY_PRIVATE_KEY] — Base64-encoded PKCS#8 DER bytes
- *  - [KAFKA_SIGNING_SECRET_KEY_ID]          — key identifier string
- *
- * Mount via `filesFrom` in nais.yaml — each secret key becomes a file.
- *
- * ## Local development
- * Place a file at `src/main/resources/local/kafka-signing-key.properties`:
- * ```
- * PAW_SIGNING_PRIVATE_KEY_PKCS8_BASE64=<base64>
- * PAW_SIGNING_KEY_ID=<key-id>
- * ```
+ * Raw key material loaded from a secret — only lives inside [SigningProducerInterceptor.configure].
  */
-fun loadKafkaSigningConfig(
+internal data class KafkaSigningKeyMaterial(
+    val privateKeyPkcs8Base64: String,
+    val keyId: String,
+)
+
+internal fun loadKafkaSigningKeyMaterial(
     runtimeEnvironment: RuntimeEnvironment,
     mountPath: String,
     localResource: String,
-): KafkaSigningConfig =
+): KafkaSigningKeyMaterial =
     when (runtimeEnvironment) {
-        is Nais -> loadKafkaSigningConfigFromMountedSecret(mountPath)
-        else -> loadKafkaSigningConfigFromLocalResource(localResource)
+        is Nais -> loadKafkaSigningKeyMaterialFromMountedSecret(mountPath)
+        else -> loadKafkaSigningKeyMaterialFromLocalResource(localResource)
     }
 
-fun loadKafkaSigningConfigFromMountedSecret(mountPath: String): KafkaSigningConfig {
+internal fun loadKafkaSigningKeyMaterialFromMountedSecret(mountPath: String): KafkaSigningKeyMaterial {
     val dir = Path.of(mountPath)
-    return KafkaSigningConfig(
+    return KafkaSigningKeyMaterial(
         privateKeyPkcs8Base64 = dir.resolve(KAFKA_SIGNING_SECRET_KEY_PRIVATE_KEY).toFile().readText().trim(),
         keyId = dir.resolve(KAFKA_SIGNING_SECRET_KEY_ID).toFile().readText().trim(),
     )
 }
 
-fun loadKafkaSigningConfigFromLocalResource(resource: String): KafkaSigningConfig {
+internal fun loadKafkaSigningKeyMaterialFromLocalResource(resource: String): KafkaSigningKeyMaterial {
     val stream = object {}::class.java.getResourceAsStream(resource)
+        ?: File(resource).takeIf { it.isFile }?.inputStream()
         ?: error("Kafka signing key not found at classpath:$resource — add it to src/main/resources/local/")
     val props = stream.use { Properties().apply { load(it) } }
-    return KafkaSigningConfig(
+    return KafkaSigningKeyMaterial(
         privateKeyPkcs8Base64 = props.requireProperty(KAFKA_SIGNING_SECRET_KEY_PRIVATE_KEY),
         keyId = props.requireProperty(KAFKA_SIGNING_SECRET_KEY_ID),
     )
 }
 
-fun loadKafkaSigningConfigFromFile(propertiesFile: File): KafkaSigningConfig {
+internal fun loadKafkaSigningKeyMaterialFromFile(propertiesFile: File): KafkaSigningKeyMaterial {
     val props = Properties().apply { propertiesFile.inputStream().use { load(it) } }
-    return KafkaSigningConfig(
+    return KafkaSigningKeyMaterial(
         privateKeyPkcs8Base64 = props.requireProperty(KAFKA_SIGNING_SECRET_KEY_PRIVATE_KEY),
         keyId = props.requireProperty(KAFKA_SIGNING_SECRET_KEY_ID),
     )

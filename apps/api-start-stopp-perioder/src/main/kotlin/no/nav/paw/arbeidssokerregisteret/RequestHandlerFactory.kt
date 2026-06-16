@@ -14,11 +14,8 @@ import no.nav.paw.arbeidssokerregisteret.config.Config
 import no.nav.paw.arbeidssokerregisteret.services.AutorisasjonService
 import no.nav.paw.arbeidssokerregisteret.services.PersonInfoService
 import no.nav.paw.arbeidssokerregisteret.utils.azureAdM2MTokenClient
-import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.kafka.factory.KafkaFactory
-import no.nav.paw.kafka.signing.loadKafkaSigningConfig
-import no.nav.paw.kafka.signing.withRecordSigning
 import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.kafkakeygenerator.client.kafkaKeysClient
 import no.nav.paw.pdl.PdlClient

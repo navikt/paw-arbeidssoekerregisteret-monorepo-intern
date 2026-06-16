@@ -7,11 +7,10 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.header.internals.RecordHeaders
 import org.apache.kafka.common.serialization.StringSerializer
-import java.security.KeyFactory
+import java.nio.file.Files
 import java.security.KeyPairGenerator
 import java.security.interfaces.ECPrivateKey
 import java.security.interfaces.ECPublicKey
-import java.security.spec.PKCS8EncodedKeySpec
 import java.util.Base64
 
 class SigningProducerInterceptorTest : FreeSpec({
@@ -23,12 +22,28 @@ class SigningProducerInterceptorTest : FreeSpec({
     val pkcs8B64 = Base64.getEncoder().encodeToString(privateKey.encoded)
     val keyId = "ecdsa-v1"
 
+    val secretDir = Files.createTempDirectory("kafka-signing-interceptor-test").toFile().also { dir ->
+        dir.resolve(KAFKA_SIGNING_SECRET_KEY_PRIVATE_KEY).writeText(pkcs8B64)
+        dir.resolve(KAFKA_SIGNING_SECRET_KEY_ID).writeText(keyId)
+    }
+    val localPropertiesFile = Files.createTempFile("kafka-signing-local", ".properties").toFile().also { f ->
+        f.writeText("""
+            $KAFKA_SIGNING_SECRET_KEY_PRIVATE_KEY=$pkcs8B64
+            $KAFKA_SIGNING_SECRET_KEY_ID=$keyId
+        """.trimIndent())
+    }
+
+    afterSpec {
+        secretDir.deleteRecursively()
+        localPropertiesFile.delete()
+    }
+
     fun interceptor(): SigningProducerInterceptor<String, String> {
         return SigningProducerInterceptor<String, String>().also {
             it.configure(
                 mapOf(
-                    SigningProducerInterceptor.PAW_SIGNING_KEY_ID to keyId,
-                    SigningProducerInterceptor.PAW_SIGNING_PRIVATE_KEY_PKCS8 to pkcs8B64,
+                    SigningProducerInterceptor.PAW_SIGNING_MOUNT_PATH to secretDir.absolutePath,
+                    SigningProducerInterceptor.PAW_SIGNING_LOCAL_RESOURCE to localPropertiesFile.absolutePath,
                     ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java.name,
                     ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java.name,
                 )

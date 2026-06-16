@@ -1,5 +1,6 @@
 package no.nav.paw.kafka.signing
 
+import no.nav.paw.config.env.currentRuntimeEnvironment
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerInterceptor
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -56,8 +57,8 @@ internal fun decodePkcs8Key(input: String): ByteArray {
  *  - `x-paw-signing-key-id`: UTF-8 string identifying the public key for offline verification
  *
  * Required producer properties:
- *  - [PAW_SIGNING_KEY_ID]            : String — key identifier, e.g. "ecdsa-v1"
- *  - [PAW_SIGNING_PRIVATE_KEY_PKCS8] : Base64-encoded PKCS#8 DER bytes of the EC private key
+ *  - [PAW_SIGNING_MOUNT_PATH]     : path to mounted Nais secret directory (Nais environments)
+ *  - [PAW_SIGNING_LOCAL_RESOURCE] : classpath resource or absolute file path (local development)
  *
  * The interceptor re-instantiates the configured key and value serializers so that the
  * signature covers the actual serialized bytes, regardless of whether JSON, Avro, or any
@@ -71,14 +72,17 @@ class SigningProducerInterceptor<K, V> : ProducerInterceptor<K, V> {
     private lateinit var keyId: ByteArray
 
     companion object {
-        const val PAW_SIGNING_KEY_ID = "paw.signing.key.id"
-        const val PAW_SIGNING_PRIVATE_KEY_PKCS8 = "paw.signing.private.key.pkcs8.base64"
+        const val PAW_SIGNING_MOUNT_PATH = "paw.signing.mount.path"
+        const val PAW_SIGNING_LOCAL_RESOURCE = "paw.signing.local.resource"
     }
 
     override fun configure(configs: Map<String, *>) {
-        keyId = (configs[PAW_SIGNING_KEY_ID] as String).trim().toByteArray(Charsets.UTF_8)
+        val mountPath = configs[PAW_SIGNING_MOUNT_PATH] as String
+        val localResource = configs[PAW_SIGNING_LOCAL_RESOURCE] as String
+        val keyMaterial = loadKafkaSigningKeyMaterial(currentRuntimeEnvironment, mountPath, localResource)
+        keyId = keyMaterial.keyId.trim().toByteArray(Charsets.UTF_8)
 
-        val pkcs8Bytes = decodePkcs8Key(configs[PAW_SIGNING_PRIVATE_KEY_PKCS8] as String)
+        val pkcs8Bytes = decodePkcs8Key(keyMaterial.privateKeyPkcs8Base64)
         privateKey = KeyFactory.getInstance("EC")
             .generatePrivate(PKCS8EncodedKeySpec(pkcs8Bytes)) as ECPrivateKey
 

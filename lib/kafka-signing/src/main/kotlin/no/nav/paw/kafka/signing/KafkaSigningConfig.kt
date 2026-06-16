@@ -4,25 +4,22 @@ import no.nav.paw.kafka.config.KafkaConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 
 /**
- * Signing key configuration loaded at startup.
+ * Signing configuration passed through Kafka producer properties.
+ * Contains only non-sensitive path references — the private key is loaded
+ * by [SigningProducerInterceptor] at startup using [no.nav.paw.config.env.currentRuntimeEnvironment].
  *
- * [privateKeyPkcs8Base64] — Base64-encoded PKCS#8 DER bytes of the EC private key.
- * [keyId]                 — Identifies the public key for offline verification,
- *                           e.g. "paw-bekreftelse-tjeneste-ecdsa-v1".
+ * [mountPath]     — directory where the Nais secret is mounted (Nais environments)
+ * [localResource] — classpath resource path for local development
  */
 data class KafkaSigningConfig(
-    val privateKeyPkcs8Base64: String,
-    val keyId: String,
-) {
-    override fun toString(): String =
-        "KafkaSigningConfig(keyId=$keyId, privateKeyPkcs8Base64=***redacted***)"
-}
-
+    val mountPath: String,
+    val localResource: String,
+)
 
 fun KafkaSigningConfig.toProducerProperties(): Map<String, Any> = mapOf(
     ProducerConfig.INTERCEPTOR_CLASSES_CONFIG to SigningProducerInterceptor::class.java.name,
-    SigningProducerInterceptor.PAW_SIGNING_KEY_ID to keyId,
-    SigningProducerInterceptor.PAW_SIGNING_PRIVATE_KEY_PKCS8 to privateKeyPkcs8Base64,
+    SigningProducerInterceptor.PAW_SIGNING_MOUNT_PATH to mountPath,
+    SigningProducerInterceptor.PAW_SIGNING_LOCAL_RESOURCE to localResource,
 )
 
 fun KafkaConfig.withRecordSigning(signing: KafkaSigningConfig): KafkaConfig =
