@@ -60,7 +60,7 @@ spec:
   kafka:
     pool: nav-dev
   filesFrom:
-    - secret: api-start-stopp-perioder-secret
+    - secret: paw-api-inngang-kafka-signing-key-v2
       mountPath: /var/run/secrets/kafka-signing
   accessPolicy:
     inbound:
