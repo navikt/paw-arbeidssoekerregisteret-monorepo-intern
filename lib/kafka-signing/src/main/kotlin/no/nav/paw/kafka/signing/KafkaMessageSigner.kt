@@ -1,5 +1,6 @@
 package no.nav.paw.kafka.signing
 
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.nio.ByteBuffer
 import java.security.Signature
 import java.security.interfaces.ECPrivateKey
@@ -15,6 +16,7 @@ import java.security.interfaces.ECPublicKey
  *
  * Algorithm: SHA256withECDSA (DER-encoded output)
  */
+@WithSpan("sign_kafka_record")
 fun signKafkaRecord(
     keyBytes: ByteArray,
     traceparentBytes: ByteArray,
@@ -28,6 +30,7 @@ fun signKafkaRecord(
         sign()
     }
 
+@WithSpan("verify_kafka_record")
 fun verifyKafkaRecord(
     keyBytes: ByteArray,
     traceparentBytes: ByteArray,
