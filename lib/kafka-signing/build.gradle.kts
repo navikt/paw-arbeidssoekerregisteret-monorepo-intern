@@ -15,6 +15,7 @@ dependencies {
     api(project(":lib:hoplite-config"))
     api(project(":lib:kafka"))
     implementation(libs.logback.classic)
+    implementation(libs.opentelemetry.api)
     implementation(libs.opentelemetry.annotations)
 
     testImplementation(libs.bundles.unit.testing.kotest)

@@ -1,7 +1,11 @@
 package no.nav.paw.kafka.signing
 
+import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.trace.Span
-import io.opentelemetry.instrumentation.annotations.WithSpan
+import io.opentelemetry.api.trace.SpanContext
+import io.opentelemetry.api.trace.TraceFlags
+import io.opentelemetry.api.trace.TraceState
+import io.opentelemetry.context.Context
 import org.apache.kafka.clients.consumer.ConsumerInterceptor
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.OffsetAndMetadata
@@ -13,21 +17,18 @@ import java.security.spec.X509EncodedKeySpec
 import java.util.*
 
 private val logger = LoggerFactory.getLogger(SignatureValidatingConsumerInterceptor::class.java)
+private const val INSTRUMENTATION_SCOPE = "kafka-signing"
 
 class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, ByteArray> {
 
     private var publicKeys: Map<String, ECPublicKey> = emptyMap()
-    private var publicKeysCount: Int = -1
 
     override fun configure(configs: Map<String, *>) {
         publicKeys = loadPublicKeysFromClasspath()
-        publicKeysCount = publicKeys.size
         logger.info("SignatureValidatingConsumerInterceptor konfigurert følgende public keys:", publicKeys.keys)
     }
 
-    @WithSpan("validate_signatures")
     override fun onConsume(records: ConsumerRecords<ByteArray, ByteArray>): ConsumerRecords<ByteArray, ByteArray> {
-        Span.current().setAttribute("public.keys.loaded", publicKeys.size.toString())
         if (publicKeys.isEmpty()) return records
         for (record in records) {
             try {
@@ -59,41 +60,85 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
         signatureHeader: ByteArray?,
         keyIdHeader: ByteArray?,
     ) {
-        if (signatureHeader == null || keyIdHeader == null) {
-            logger.warn(
-                "Mangler signaturheader(er) — topic={}, harSignatur={}, harNøkkelId={}",
-                topic, signatureHeader != null, keyIdHeader != null
+        // Attach this span to the producer's trace via the record's traceparent header,
+        // so validation appears in the correct message timeline rather than as a root span.
+        val (span, scope) = spanFromTraceparent(traceparentBytes)
+        try {
+            if (signatureHeader == null || keyIdHeader == null) {
+                logger.warn(
+                    "Mangler signaturheader(er) — topic={}, harSignatur={}, harNøkkelId={}",
+                    topic, signatureHeader != null, keyIdHeader != null
+                )
+                span.addEvent("missing_signature_headers")
+                return
+            }
+
+            val keyId = String(keyIdHeader, Charsets.UTF_8)
+            span.setAttribute("record_key_id", keyId)
+            val publicKey = publicKeys[keyId]
+            if (publicKey == null) {
+                logger.warn("Ukjent signeringsnøkkel-id='{}' — topic={}", keyId, topic)
+                span.addEvent("unknown_key_id")
+                return
+            }
+
+            val signatureBytes = Base64.getUrlDecoder().decode(signatureHeader)
+            val gyldig = verifyKafkaRecord(
+                keyBytes = keyBytes,
+                traceparentBytes = traceparentBytes,
+                timestampMs = timestampMs,
+                valueBytes = valueBytes,
+                signatureBytes = signatureBytes,
+                publicKey = publicKey
             )
-            Span.current().addEvent("missing_signature_headers")
-            return
-        }
 
-        val keyId = String(keyIdHeader, Charsets.UTF_8)
-        Span.current().setAttribute("record_key_id", keyId)
-        val publicKey = publicKeys[keyId]
-        if (publicKey == null) {
-            logger.warn("Ukjent signeringsnøkkel-id='{}' — topic={}", keyId, topic)
-            Span.current().addEvent("unknown_key_id")
-            return
-        }
-
-        val signatureBytes = Base64.getUrlDecoder().decode(signatureHeader)
-        val gyldig = verifyKafkaRecord(
-            keyBytes = keyBytes,
-            traceparentBytes = traceparentBytes,
-            timestampMs = timestampMs,
-            valueBytes = valueBytes,
-            signatureBytes = signatureBytes,
-            publicKey = publicKey
-        )
-
-        if (!gyldig) {
-            logger.warn("Ugyldig signatur — topic={}, keyId='{}'", topic, keyId)
+            if (!gyldig) {
+                logger.warn("Ugyldig signatur — topic={}, keyId='{}'", topic, keyId)
+                span.addEvent("invalid_signature")
+            }
+        } finally {
+            span.end()
+            scope.close()
         }
     }
 
     override fun onCommit(offsets: Map<TopicPartition, OffsetAndMetadata>) = Unit
     override fun close() = Unit
+}
+
+/**
+ * Creates a span parented to the remote trace identified by [traceparentBytes].
+ * Returns the new span and its [io.opentelemetry.context.Scope] — both must be closed by the caller.
+ *
+ * If [traceparentBytes] is missing or cannot be parsed the span is created without a parent,
+ * which is still preferable to the old batch-level root span since it covers exactly one record.
+ */
+private fun spanFromTraceparent(traceparentBytes: ByteArray): Pair<Span, io.opentelemetry.context.Scope> {
+    val tracer = GlobalOpenTelemetry.get().tracerProvider.get(INSTRUMENTATION_SCOPE)
+    val parentContext = traceparentBytes
+        .takeIf { it.isNotEmpty() }
+        ?.let { runCatching { String(it, Charsets.UTF_8) }.getOrNull() }
+        ?.split("-")
+        ?.takeIf { it.size == 4 }
+        ?.let { parts ->
+            runCatching {
+                SpanContext.createFromRemoteParent(
+                    parts[1],
+                    parts[2],
+                    TraceFlags.getSampled(),
+                    TraceState.getDefault()
+                )
+            }.getOrNull()
+        }
+        ?.takeIf { it.isValid }
+        ?.let { spanContext -> Context.current().with(Span.wrap(spanContext)) }
+        ?: Context.current()
+
+    val span = tracer.spanBuilder("validate_signature")
+        .setParent(parentContext)
+        .startSpan()
+    val scope = parentContext.with(span).makeCurrent()
+    return span to scope
 }
 
 fun loadPublicKeysFromClasspath(): Map<String, ECPublicKey> {
