@@ -1,5 +1,7 @@
 package no.nav.paw.kafka.signing
 
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.apache.kafka.clients.consumer.ConsumerInterceptor
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.OffsetAndMetadata
@@ -8,19 +10,24 @@ import org.slf4j.LoggerFactory
 import java.security.KeyFactory
 import java.security.interfaces.ECPublicKey
 import java.security.spec.X509EncodedKeySpec
-import java.util.Base64
+import java.util.*
 
 private val logger = LoggerFactory.getLogger(SignatureValidatingConsumerInterceptor::class.java)
 
 class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, ByteArray> {
 
     private var publicKeys: Map<String, ECPublicKey> = emptyMap()
+    private var publicKeysCount: Int = -1
 
     override fun configure(configs: Map<String, *>) {
         publicKeys = loadPublicKeysFromClasspath()
+        publicKeysCount = publicKeys.size
+        logger.info("SignatureValidatingConsumerInterceptor konfigurert følgende public keys:", publicKeys.keys)
     }
 
+    @WithSpan("validate_signatures")
     override fun onConsume(records: ConsumerRecords<ByteArray, ByteArray>): ConsumerRecords<ByteArray, ByteArray> {
+        Span.current().setAttribute("public.keys.loaded", publicKeys.size.toString())
         if (publicKeys.isEmpty()) return records
         for (record in records) {
             try {
@@ -57,13 +64,16 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
                 "Mangler signaturheader(er) — topic={}, harSignatur={}, harNøkkelId={}",
                 topic, signatureHeader != null, keyIdHeader != null
             )
+            Span.current().addEvent("missing_signature_headers")
             return
         }
 
         val keyId = String(keyIdHeader, Charsets.UTF_8)
+        Span.current().setAttribute("record_key_id", keyId)
         val publicKey = publicKeys[keyId]
         if (publicKey == null) {
             logger.warn("Ukjent signeringsnøkkel-id='{}' — topic={}", keyId, topic)
+            Span.current().addEvent("unknown_key_id")
             return
         }
 
@@ -109,8 +119,8 @@ fun loadPublicKeysFromClasspath(): Map<String, ECPublicKey> {
             val keyBytes = Base64.getDecoder().decode(rawB64)
             result[keyId] = KeyFactory.getInstance("EC")
                 .generatePublic(X509EncodedKeySpec(keyBytes)) as ECPublicKey
-        }.onFailure { e ->
-            logger.error("Klarte ikke laste offentlig nøkkel for keyId='{}'", keyId, e)
+        }.getOrElse { e ->
+            throw Exception("Klarte ikke laste offentlig nøkkel for keyId='$keyId'", e)
         }
     }
 
