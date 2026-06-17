@@ -1,0 +1,119 @@
+package no.nav.paw.arbeidssokerregisteret.app.kafka
+
+import no.nav.paw.kafka.signing.verifyKafkaRecord
+import org.apache.kafka.clients.consumer.ConsumerInterceptor
+import org.apache.kafka.clients.consumer.ConsumerRecords
+import org.apache.kafka.clients.consumer.OffsetAndMetadata
+import org.apache.kafka.common.TopicPartition
+import org.slf4j.LoggerFactory
+import java.security.KeyFactory
+import java.security.interfaces.ECPublicKey
+import java.security.spec.X509EncodedKeySpec
+import java.util.Base64
+import java.util.Properties
+
+private val logger = LoggerFactory.getLogger(SignatureValidatingConsumerInterceptor::class.java)
+
+class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, ByteArray> {
+
+    private var publicKeys: Map<String, ECPublicKey> = emptyMap()
+
+    override fun configure(configs: Map<String, *>) {
+        publicKeys = loadPublicKeysFromClasspath()
+    }
+
+    override fun onConsume(records: ConsumerRecords<ByteArray, ByteArray>): ConsumerRecords<ByteArray, ByteArray> {
+        if (publicKeys.isEmpty()) return records
+        for (record in records) {
+            try {
+                valider(
+                    topic = record.topic(),
+                    keyBytes = record.key() ?: ByteArray(0),
+                    valueBytes = record.value() ?: ByteArray(0),
+                    timestampMs = record.timestamp(),
+                    traceparentBytes = record.headers().lastHeader("traceparent")?.value() ?: ByteArray(0),
+                    signatureHeader = record.headers().lastHeader("x-paw-signature")?.value(),
+                    keyIdHeader = record.headers().lastHeader("x-paw-signing-key-id")?.value(),
+                )
+            } catch (e: Exception) {
+                logger.error(
+                    "Teknisk feil ved signaturvalidering — topic={}, partition={}, offset={}",
+                    record.topic(), record.partition(), record.offset(), e
+                )
+            }
+        }
+        return records
+    }
+
+    private fun valider(
+        topic: String,
+        keyBytes: ByteArray,
+        valueBytes: ByteArray,
+        timestampMs: Long,
+        traceparentBytes: ByteArray,
+        signatureHeader: ByteArray?,
+        keyIdHeader: ByteArray?,
+    ) {
+        if (signatureHeader == null || keyIdHeader == null) {
+            logger.warn(
+                "Mangler signaturheader(er) — topic={}, harSignatur={}, harNøkkelId={}",
+                topic, signatureHeader != null, keyIdHeader != null
+            )
+            return
+        }
+
+        val keyId = String(keyIdHeader, Charsets.UTF_8)
+        val publicKey = publicKeys[keyId]
+        if (publicKey == null) {
+            logger.warn("Ukjent signeringsnøkkel-id='{}' — topic={}", keyId, topic)
+            return
+        }
+
+        val signatureBytes = Base64.getUrlDecoder().decode(signatureHeader)
+        val gyldig = verifyKafkaRecord(
+            keyBytes = keyBytes,
+            traceparentBytes = traceparentBytes,
+            timestampMs = timestampMs,
+            valueBytes = valueBytes,
+            signatureBytes = signatureBytes,
+            publicKey = publicKey
+        )
+
+        if (!gyldig) {
+            logger.warn("Ugyldig signatur — topic={}, keyId='{}'", topic, keyId)
+        }
+    }
+
+    override fun onCommit(offsets: Map<TopicPartition, OffsetAndMetadata>) = Unit
+    override fun close() = Unit
+}
+
+fun loadPublicKeysFromClasspath(): Map<String, ECPublicKey> {
+    val indexStream = SignatureValidatingConsumerInterceptor::class.java
+        .getResourceAsStream("/signing-keys/index.properties")
+        ?: run {
+            logger.warn("Ingen signeringsnøkkel-indeks funnet (/signing-keys/index.properties) — signaturvalidering deaktivert")
+            return emptyMap()
+        }
+
+    val props = Properties().apply { indexStream.use { load(it) } }
+    val result = mutableMapOf<String, ECPublicKey>()
+
+    for ((keyId, resourcePath) in props) {
+        runCatching {
+            val rawB64 = SignatureValidatingConsumerInterceptor::class.java
+                .getResourceAsStream("/$resourcePath")
+                ?.use { it.readBytes().toString(Charsets.UTF_8).trim() }
+                ?: error("Klarte ikke laste offentlig nøkkel fra /$resourcePath")
+            val keyBytes = Base64.getDecoder().decode(rawB64)
+            val publicKey = KeyFactory.getInstance("EC")
+                .generatePublic(X509EncodedKeySpec(keyBytes)) as ECPublicKey
+            result[keyId.toString()] = publicKey
+        }.onFailure { e ->
+            logger.error("Klarte ikke laste offentlig nøkkel for keyId='{}', sti='{}'", keyId, resourcePath, e)
+        }
+    }
+
+    logger.info("Lastet {} signeringsnøkkel(er): {}", result.size, result.keys)
+    return result
+}

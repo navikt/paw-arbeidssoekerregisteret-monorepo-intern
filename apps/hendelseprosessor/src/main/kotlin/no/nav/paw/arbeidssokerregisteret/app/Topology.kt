@@ -40,7 +40,7 @@ fun topology(
     dbNavn: String,
     innTopic: String,
     periodeTopic: String,
-    opplysningerOmArbeidssoekerTopic: String
+    opplysningerOmArbeidssoekerTopic: String,
 ): Topology {
     val strøm: KStream<Long, Hendelse> = builder.stream(innTopic, Consumed.with(Serdes.Long(), HendelseSerde()))
     val meteredTopicExtractor =
