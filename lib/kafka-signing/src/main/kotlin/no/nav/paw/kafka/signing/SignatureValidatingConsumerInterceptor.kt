@@ -1,6 +1,5 @@
-package no.nav.paw.arbeidssokerregisteret.app.kafka
+package no.nav.paw.kafka.signing
 
-import no.nav.paw.kafka.signing.verifyKafkaRecord
 import org.apache.kafka.clients.consumer.ConsumerInterceptor
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.OffsetAndMetadata

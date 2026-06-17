@@ -17,7 +17,7 @@ import no.nav.paw.arbeidssokerregisteret.app.metrics.TopicOperation
 import no.nav.paw.arbeidssokerregisteret.app.metrics.registerMainAvroSchemaGauges
 import no.nav.paw.arbeidssokerregisteret.app.metrics.registerTopicVersionGauge
 import no.nav.paw.arbeidssokerregisteret.app.metrics.topicInfo
-import no.nav.paw.arbeidssokerregisteret.app.kafka.SignatureValidatingConsumerInterceptor
+import no.nav.paw.kafka.signing.SignatureValidatingConsumerInterceptor
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
