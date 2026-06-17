@@ -2,7 +2,7 @@
 # Generates an EC P-256 (prime256v1) key pair for Kafka message signing.
 #
 # Private key  → uploaded to NAIS secret  (PAW_SIGNING_PRIVATE_KEY_PKCS8_BASE64)
-# Public key   → committed to repo        (signing-keys/<name>.<env>.pub.b64)
+# Public key   → committed to repo        (lib/kafka-signing/src/main/resources/paw-signing-public-keys/<key-id>.pub.b64)
 #
 # Keys are generated in a tmpfs directory and shredded on exit.
 # File upload avoids copy/paste errors when updating console.nais.io.
@@ -14,7 +14,7 @@
 #   -e, --env       dev|prod                (required)
 #   -n, --name      nais-secret-name        (required, e.g. paw-api-inngang-kafka-signing-key)
 #   -k, --key-id    key-id                  (required, e.g. paw-api-inngang-ecdsa-v1)
-#   -p, --pub-dir   path/to/signing-keys    (default: <repo>/<secret-name>/signing-keys)
+#   -p, --pub-dir   path/to/pub-keys-dir   (default: <repo>/lib/kafka-signing/src/main/resources/paw-signing-public-keys)
 #   -t, --tmp-dir   tmpfs base directory    (default: /tmp)
 #   -h, --help      Show this help
 
@@ -84,9 +84,9 @@ if [[ -z "${SECRET_NAME}" ]]; then
     usage
 fi
 
-# Derive PUB_DIR from SECRET_NAME if not explicitly set
+# Derive PUB_DIR from repo root if not explicitly set
 KEY_ID="${KEY_ID:-}"
-PUB_DIR="${PUB_DIR:-${REPO_ROOT}/signing-keys/${SECRET_NAME}}"
+PUB_DIR="${PUB_DIR:-${REPO_ROOT}/lib/kafka-signing/src/main/resources/paw-signing-public-keys}"
 
 case "${ENV}" in
     dev)  NAIS_ENV="dev-gcp"  ;;
@@ -112,7 +112,7 @@ WORKDIR=$(mktemp -d "${TMP_BASE}/paw-keys-XXXXXX")
 chmod 700 "${WORKDIR}"
 info "Arbeidsmappe (tmpfs): ${WORKDIR}"
 
-PUB_FILE="${PUB_DIR}/${KEY_ID}.${ENV}.pub.b64"
+PUB_FILE="${PUB_DIR}/${KEY_ID}.pub.b64"
 PRIV_PEM="${WORKDIR}/ec-private.pem"
 PRIV_B64_FILE="${WORKDIR}/PAW_SIGNING_PRIVATE_KEY_PKCS8_BASE64"
 KEY_ID_FILE="${WORKDIR}/PAW_SIGNING_KEY_ID"
@@ -197,9 +197,10 @@ echo -e "${CYAN}── Neste steg ───────────────�
 echo ""
 echo "  1. Last opp secret til NAIS (se over)."
 echo ""
-echo "  2. Commit den nye public key-filen:"
-echo "       git add ${PUB_FILE}"
-echo "       git commit -m 'feat(signing-keys): legg til ${KEY_ID}.${ENV}.pub.b64'"
+echo "  2. Legg til key-id i indeksfilen og commit:"
+echo "       echo '${KEY_ID}' >> ${PUB_DIR}/index"
+echo "       git add ${PUB_FILE} ${PUB_DIR}/index"
+echo "       git commit -m 'feat(kafka-signing): legg til ${KEY_ID}.pub.b64'"
 echo ""
 echo "  3. Rull ut appen så den plukker opp ny nøkkel."
 echo ""

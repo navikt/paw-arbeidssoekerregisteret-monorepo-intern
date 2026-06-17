@@ -10,7 +10,6 @@ import java.security.KeyFactory
 import java.security.interfaces.ECPublicKey
 import java.security.spec.X509EncodedKeySpec
 import java.util.Base64
-import java.util.Properties
 
 private val logger = LoggerFactory.getLogger(SignatureValidatingConsumerInterceptor::class.java)
 
@@ -90,27 +89,29 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
 
 fun loadPublicKeysFromClasspath(): Map<String, ECPublicKey> {
     val indexStream = SignatureValidatingConsumerInterceptor::class.java
-        .getResourceAsStream("/signing-keys/index.properties")
+        .getResourceAsStream("/paw-signing-public-keys/index")
         ?: run {
-            logger.warn("Ingen signeringsnøkkel-indeks funnet (/signing-keys/index.properties) — signaturvalidering deaktivert")
+            logger.warn("Ingen nøkkelindeks funnet (/paw-signing-public-keys/index) — signaturvalidering deaktivert")
             return emptyMap()
         }
 
-    val props = Properties().apply { indexStream.use { load(it) } }
-    val result = mutableMapOf<String, ECPublicKey>()
+    val keyIds = indexStream.use { it.bufferedReader().readLines() }
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
 
-    for ((keyId, resourcePath) in props) {
+    val result = mutableMapOf<String, ECPublicKey>()
+    for (keyId in keyIds) {
         runCatching {
+            val resourcePath = "/paw-signing-public-keys/$keyId.pub.b64"
             val rawB64 = SignatureValidatingConsumerInterceptor::class.java
-                .getResourceAsStream("/$resourcePath")
+                .getResourceAsStream(resourcePath)
                 ?.use { it.readBytes().toString(Charsets.UTF_8).trim() }
-                ?: error("Klarte ikke laste offentlig nøkkel fra /$resourcePath")
+                ?: error("Fant ikke $resourcePath på classpath")
             val keyBytes = Base64.getDecoder().decode(rawB64)
-            val publicKey = KeyFactory.getInstance("EC")
+            result[keyId] = KeyFactory.getInstance("EC")
                 .generatePublic(X509EncodedKeySpec(keyBytes)) as ECPublicKey
-            result[keyId.toString()] = publicKey
         }.onFailure { e ->
-            logger.error("Klarte ikke laste offentlig nøkkel for keyId='{}', sti='{}'", keyId, resourcePath, e)
+            logger.error("Klarte ikke laste offentlig nøkkel for keyId='{}'", keyId, e)
         }
     }
 
