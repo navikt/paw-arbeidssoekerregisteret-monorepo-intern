@@ -26,7 +26,11 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
 
     override fun configure(configs: Map<String, *>) {
         publicKeys = loadPublicKeysFromClasspath()
-        logger.info("SignatureValidatingConsumerInterceptor konfigurert følgende public keys:", publicKeys.keys)
+        if (publicKeys.isEmpty()) {
+            logger.warn("Ingen signeringsnøkler lastet — signaturvalidering er deaktivert")
+        } else {
+            logger.info("SignatureValidatingConsumerInterceptor konfigurert med {} nøkkel(er): {}", publicKeys.size, publicKeys.keys)
+        }
     }
 
     override fun onConsume(records: ConsumerRecords<ByteArray, ByteArray>): ConsumerRecords<ByteArray, ByteArray> {
@@ -74,7 +78,7 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
                 "Mangler signaturheader(er) — topic={}, harSignatur={}, harNøkkelId={}",
                 topic, signatureHeader != null, keyIdHeader != null
             )
-            Span.current().addEvent("missing_signature_headers")
+            Span.current().addEvent("unsigned_record")
             return
         }
 
