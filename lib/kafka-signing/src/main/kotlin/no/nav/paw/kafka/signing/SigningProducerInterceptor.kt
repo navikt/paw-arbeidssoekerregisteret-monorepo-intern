@@ -1,5 +1,7 @@
 package no.nav.paw.kafka.signing
 
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.config.env.currentRuntimeEnvironment
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerInterceptor
@@ -37,8 +39,8 @@ internal fun decodePkcs8Key(input: String): ByteArray {
         3 -> "$cleaned="
         else -> error(
             "Invalid Base64 key: cleaned length ${cleaned.length} gives mod4=${cleaned.length % 4}. " +
-            "Expected length divisible by 4 (e.g. 184 for P-256). " +
-            "Re-encode with: openssl pkcs8 -topk8 -nocrypt -in ec-private.pem -outform DER | base64 -w0"
+                    "Expected length divisible by 4 (e.g. 184 for P-256). " +
+                    "Re-encode with: openssl pkcs8 -topk8 -nocrypt -in ec-private.pem -outform DER | base64 -w0"
         )
     }
     logger.debug(
@@ -70,6 +72,7 @@ class SigningProducerInterceptor<K, V> : ProducerInterceptor<K, V> {
     private lateinit var valueSerializer: Serializer<V>
     private lateinit var privateKey: ECPrivateKey
     private lateinit var keyId: ByteArray
+    private lateinit var keyIdString: String
 
     companion object {
         const val PAW_SIGNING_MOUNT_PATH = "paw.signing.mount.path"
@@ -80,7 +83,8 @@ class SigningProducerInterceptor<K, V> : ProducerInterceptor<K, V> {
         val mountPath = configs[PAW_SIGNING_MOUNT_PATH] as String
         val localResource = configs[PAW_SIGNING_LOCAL_RESOURCE] as String
         val keyMaterial = loadKafkaSigningKeyMaterial(currentRuntimeEnvironment, mountPath, localResource)
-        keyId = keyMaterial.keyId.trim().toByteArray(Charsets.UTF_8)
+        keyIdString = keyMaterial.keyId.trim()
+        keyId = keyIdString.toByteArray(Charsets.UTF_8)
 
         val pkcs8Bytes = decodePkcs8Key(keyMaterial.privateKeyPkcs8Base64)
         privateKey = KeyFactory.getInstance("EC")
@@ -90,11 +94,13 @@ class SigningProducerInterceptor<K, V> : ProducerInterceptor<K, V> {
         valueSerializer = instantiateSerializer(configs, ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, isKey = false)
     }
 
+    @WithSpan("signing_interceptor_on_send")
     override fun onSend(record: ProducerRecord<K, V>): ProducerRecord<K, V> {
         val topic = record.topic()
         val headers = record.headers()
 
         return try {
+            Span.current().setAttribute("key_id", keyIdString)
             val kBytes = record.key()?.let { keySerializer.serialize(topic, headers, it) } ?: ByteArray(0)
             val vBytes = record.value()?.let { valueSerializer.serialize(topic, headers, it) } ?: ByteArray(0)
             val traceparentBytes = headers.lastHeader("traceparent")?.value() ?: ByteArray(0)

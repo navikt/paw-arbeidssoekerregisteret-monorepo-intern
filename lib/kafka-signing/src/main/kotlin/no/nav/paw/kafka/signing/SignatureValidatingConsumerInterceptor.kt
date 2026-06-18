@@ -6,6 +6,7 @@ import io.opentelemetry.api.trace.SpanContext
 import io.opentelemetry.api.trace.TraceFlags
 import io.opentelemetry.api.trace.TraceState
 import io.opentelemetry.context.Context
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.apache.kafka.clients.consumer.ConsumerInterceptor
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.OffsetAndMetadata
@@ -31,13 +32,15 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
     override fun onConsume(records: ConsumerRecords<ByteArray, ByteArray>): ConsumerRecords<ByteArray, ByteArray> {
         if (publicKeys.isEmpty()) return records
         for (record in records) {
+            val traceparentBytes = record.headers().lastHeader("traceparent")?.value() ?: ByteArray(0)
+            val (span, scope) = spanFromTraceparent(traceparentBytes)
             try {
                 valider(
                     topic = record.topic(),
                     keyBytes = record.key() ?: ByteArray(0),
                     valueBytes = record.value() ?: ByteArray(0),
                     timestampMs = record.timestamp(),
-                    traceparentBytes = record.headers().lastHeader("traceparent")?.value() ?: ByteArray(0),
+                    traceparentBytes = traceparentBytes,
                     signatureHeader = record.headers().lastHeader("x-paw-signature")?.value(),
                     keyIdHeader = record.headers().lastHeader("x-paw-signing-key-id")?.value(),
                 )
@@ -46,11 +49,15 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
                     "Teknisk feil ved signaturvalidering — topic={}, partition={}, offset={}",
                     record.topic(), record.partition(), record.offset(), e
                 )
+            } finally {
+                span.end()
+                scope.close()
             }
         }
         return records
     }
 
+    @WithSpan("validate_signature")
     private fun valider(
         topic: String,
         keyBytes: ByteArray,
@@ -62,43 +69,39 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
     ) {
         // Attach this span to the producer's trace via the record's traceparent header,
         // so validation appears in the correct message timeline rather than as a root span.
-        val (span, scope) = spanFromTraceparent(traceparentBytes)
-        try {
-            if (signatureHeader == null || keyIdHeader == null) {
-                logger.warn(
-                    "Mangler signaturheader(er) — topic={}, harSignatur={}, harNøkkelId={}",
-                    topic, signatureHeader != null, keyIdHeader != null
-                )
-                span.addEvent("missing_signature_headers")
-                return
-            }
-
-            val keyId = String(keyIdHeader, Charsets.UTF_8)
-            span.setAttribute("record_key_id", keyId)
-            val publicKey = publicKeys[keyId]
-            if (publicKey == null) {
-                logger.warn("Ukjent signeringsnøkkel-id='{}' — topic={}", keyId, topic)
-                span.addEvent("unknown_key_id")
-                return
-            }
-
-            val signatureBytes = Base64.getUrlDecoder().decode(signatureHeader)
-            val gyldig = verifyKafkaRecord(
-                keyBytes = keyBytes,
-                traceparentBytes = traceparentBytes,
-                timestampMs = timestampMs,
-                valueBytes = valueBytes,
-                signatureBytes = signatureBytes,
-                publicKey = publicKey
+        if (signatureHeader == null || keyIdHeader == null) {
+            logger.warn(
+                "Mangler signaturheader(er) — topic={}, harSignatur={}, harNøkkelId={}",
+                topic, signatureHeader != null, keyIdHeader != null
             )
+            Span.current().addEvent("missing_signature_headers")
+            return
+        }
 
-            if (!gyldig) {
-                logger.warn("Ugyldig signatur — topic={}, keyId='{}'", topic, keyId)
-                span.addEvent("invalid_signature")
-            }
-        } finally {
-            span.end()
-            scope.close()
+        val keyId = String(keyIdHeader, Charsets.UTF_8)
+        Span.current().setAttribute("record_key_id", keyId)
+        val publicKey = publicKeys[keyId]
+        if (publicKey == null) {
+            logger.warn("Ukjent signeringsnøkkel-id='{}' — topic={}", keyId, topic)
+            Span.current().addEvent("unknown_key_id")
+            return
+        }
+
+        val signatureBytes = Base64.getUrlDecoder().decode(signatureHeader)
+        val gyldig = verifyKafkaRecord(
+            keyBytes = keyBytes,
+            traceparentBytes = traceparentBytes,
+            timestampMs = timestampMs,
+            valueBytes = valueBytes,
+            signatureBytes = signatureBytes,
+            publicKey = publicKey
+        )
+
+        if (!gyldig) {
+            logger.warn("Ugyldig signatur — topic={}, keyId='{}'", topic, keyId)
+            Span.current().addEvent("invalid_signature")
+        } else {
+            Span.current().addEvent("valid_signature")
         }
     }
 
