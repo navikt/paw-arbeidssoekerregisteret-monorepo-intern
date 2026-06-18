@@ -17,6 +17,9 @@ import no.nav.paw.arbeidssoekerregisteret.model.VarselKanal
 import no.nav.paw.arbeidssoekerregisteret.model.VarselKilde
 import no.nav.paw.arbeidssoekerregisteret.model.VarselStatus
 import no.nav.paw.arbeidssoekerregisteret.model.VarselType
+import no.nav.paw.arbeidssokerregisteret.api.v1.Aarsaksinformasjon
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvslutningsInfo
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Bruker
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata
@@ -191,14 +194,15 @@ object TestData {
         id: UUID = UUID.randomUUID(),
         identitetsnummer: String = randomFnr(),
         startet: Metadata = metadata()
-    ): Periode = Periode(id, identitetsnummer, startet, null)
+    ): Periode = Periode(id, identitetsnummer, startet, null, null)
 
     fun lukketPeriode(
         id: UUID = UUID.randomUUID(),
         identitetsnummer: String = randomFnr(),
         startet: Metadata = metadata(tidspunkt = Instant.now().minus(Duration.ofDays(30))),
         avsluttet: Metadata = metadata(),
-    ): Periode = Periode(id, identitetsnummer, startet, avsluttet)
+    ): Periode = Periode(id, identitetsnummer, startet, avsluttet, AvslutningsInfo(Aarsaksinformasjon(
+        AvsluttetAarsakType.UDEFINERT)))
 
     fun bekreftelseTilgjengelig(
         hendelseId: UUID = UUID.randomUUID(),

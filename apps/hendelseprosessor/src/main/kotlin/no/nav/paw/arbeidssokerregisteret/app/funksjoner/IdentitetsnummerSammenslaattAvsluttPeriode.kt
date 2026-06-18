@@ -1,5 +1,8 @@
 package no.nav.paw.arbeidssokerregisteret.app.funksjoner
 
+import no.nav.paw.arbeidssokerregisteret.api.v1.Aarsaksinformasjon
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvslutningsInfo
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType.UDEFINERT
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.GjeldeneTilstand
 import no.nav.paw.arbeidssokerregisteret.app.tilstand.InternTilstandOgApiTilstander
@@ -49,7 +52,12 @@ fun FunctionContext<TilstandV1?, Long>.identitetsnummerSammenslaattAvsluttPeriod
                 stoppetPeriode.id,
                 stoppetPeriode.identitetsnummer,
                 stoppetPeriode.startet.api(),
-                stoppetPeriode.avsluttet?.api()
+                stoppetPeriode.avsluttet?.api(),
+                AvslutningsInfo(
+                    Aarsaksinformasjon(
+                        UDEFINERT
+                    )
+                )
             ),
             nyOpplysningerOmArbeidssoekerTilstand = null
         )

@@ -66,7 +66,8 @@ fun FunctionContext<TilstandV1?, Long>.startPeriode(
                 startetPeriode.id,
                 startetPeriode.identitetsnummer,
                 startetPeriode.startet.api(),
-                startetPeriode.avsluttet?.api()
+                startetPeriode.avsluttet?.api(),
+                null
             )
         }
     )

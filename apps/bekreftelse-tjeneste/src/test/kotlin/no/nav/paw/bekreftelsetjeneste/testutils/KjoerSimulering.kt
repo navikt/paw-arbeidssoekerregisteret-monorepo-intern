@@ -68,7 +68,8 @@ fun ApplicationTestContext.run(
                                 periode.id,
                                 periode.identitetsnummer,
                                 periode.startet,
-                                metadata(tidspunkt = wallclock.get())
+                                metadata(tidspunkt = wallclock.get()),
+                                null
                             )
                         }.also { periodeTopic.pipeInput(kv.key, it) }
                 }

@@ -3,8 +3,11 @@ package no.nav.paw.arbeidssokerregisteret.app
 import io.confluent.kafka.schemaregistry.testutil.MockSchemaRegistry
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvviksType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker
@@ -13,6 +16,11 @@ import no.nav.paw.arbeidssokerregisteret.app.tilstand.TilstandSerde
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvsluttetAarsakType.FEILREGISTRERING
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvsluttetAarsakType.UDEFINERT
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvsluttetAarsakType.UKJENT_VERDI
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType.*
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata as InternMetadata
 import org.apache.avro.specific.SpecificRecord
@@ -57,6 +65,23 @@ fun verifiserPeriodeOppMotStartetOgStoppetHendelser(
     } else {
         val mottattApiMetadata = mottattRecord.value.avsluttet
         verifiserApiMetadataMotInternMetadata(avsluttet.metadata, mottattApiMetadata)
+    }
+    val aarsaksInfo = avsluttet?.aarsaksInformasjon
+    if (aarsaksInfo != null) {
+        mottattRecord.value.avslutningsInfo should { mottatt ->
+            mottatt.shouldNotBeNull()
+            val  mottattAarsak = mottatt.aarsaksinformasjon.type
+            val forventet = when (aarsaksInfo.aarsak) {
+                SVARTE_NEI_I_BEKREFTELSE -> AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE
+                BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST -> AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST
+                FEILREGISTRERING -> AvsluttetAarsakType.UDEFINERT
+                UDEFINERT -> AvsluttetAarsakType.UDEFINERT
+                UKJENT_VERDI -> AvsluttetAarsakType.UKJENT_VERDI
+            }
+            mottattAarsak shouldBe forventet
+        }
+    } else {
+        mottattRecord.value.avslutningsInfo.shouldBeNull()
     }
 }
 

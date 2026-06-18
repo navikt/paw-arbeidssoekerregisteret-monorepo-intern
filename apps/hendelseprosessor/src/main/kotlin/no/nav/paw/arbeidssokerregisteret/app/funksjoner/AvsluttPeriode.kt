@@ -27,7 +27,8 @@ fun FunctionContext<TilstandV1?, Long>.avsluttPeriode(hendelse: Avsluttet): Inte
             stoppetPeriode.id,
             stoppetPeriode.identitetsnummer,
             stoppetPeriode.startet.api(),
-            stoppetPeriode.avsluttet?.api()
+            stoppetPeriode.avsluttet?.api(),
+            hendelse.aarsaksInformasjon?.api()
         ),
         nyOpplysningerOmArbeidssoekerTilstand = null
     )

@@ -1,23 +1,38 @@
 package no.nav.paw.arbeidssokerregisteret.app.tilstand
 
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvslutningsInfo
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Aarsaksinformasjon
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Annet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvsluttetAarsakType
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Bruker
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.BrukerType
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Helse
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.JaNeiVetIkke
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Jobbsituasjon
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.JobbsituasjonBeskrivelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.JobbsituasjonBeskrivelse.*
-import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.*
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.JobbsituasjonMedDetaljer
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Metadata
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.OpplysningerOmArbeidssoeker
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.TidspunktFraKilde
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Utdanning
+import java.util.*
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvviksType as ApiAvviksType
+import no.nav.paw.arbeidssokerregisteret.api.v1.Beskrivelse as ApiBeskrivelse
+import no.nav.paw.arbeidssokerregisteret.api.v1.BeskrivelseMedDetaljer as ApiBeskrivelseMedDetaljer
 import no.nav.paw.arbeidssokerregisteret.api.v1.Bruker as ApiBruker
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType as ApiBrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Helse as ApiHelse
 import no.nav.paw.arbeidssokerregisteret.api.v1.JaNeiVetIkke as ApiJaNeiVetIkke
+import no.nav.paw.arbeidssokerregisteret.api.v1.Jobbsituasjon as ApiJobbsituasjon
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as ApiMetadata
+import no.nav.paw.arbeidssokerregisteret.api.v1.TidspunktFraKilde as ApiTidspunktFraKilde
+import no.nav.paw.arbeidssokerregisteret.api.v2.Annet as ApiAnnet
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker as ApiOpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.api.v4.Utdanning as ApiUtdanning
-import no.nav.paw.arbeidssokerregisteret.api.v1.Jobbsituasjon as ApiJobbsituasjon
-import no.nav.paw.arbeidssokerregisteret.api.v1.Beskrivelse as ApiBeskrivelse
-import no.nav.paw.arbeidssokerregisteret.api.v2.Annet as ApiAnnet
-import no.nav.paw.arbeidssokerregisteret.api.v1.BeskrivelseMedDetaljer as ApiBeskrivelseMedDetaljer
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType as ApiAvsluttetType
 
-import java.util.*
-import no.nav.paw.arbeidssokerregisteret.api.v1.AvviksType as ApiAvviksType
-import no.nav.paw.arbeidssokerregisteret.api.v1.TidspunktFraKilde as ApiTidspunktFraKilde
 
 fun Bruker.api(): ApiBruker = ApiBruker(type.api(), id, sikkerhetsnivaa)
 
@@ -114,4 +129,16 @@ fun JobbsituasjonBeskrivelse.api(): ApiBeskrivelse =
 
 fun Annet.api(): ApiAnnet = ApiAnnet(
     andreForholdHindrerArbeid?.api()
+)
+
+fun Aarsaksinformasjon.api(): AvslutningsInfo = AvslutningsInfo(
+    no.nav.paw.arbeidssokerregisteret.api.v1.Aarsaksinformasjon(
+        when (this.aarsak) {
+            AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE -> ApiAvsluttetType.SVARTE_NEI_I_BEKREFTELSE
+            AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST -> ApiAvsluttetType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST
+            AvsluttetAarsakType.FEILREGISTRERING -> ApiAvsluttetType.UDEFINERT
+            AvsluttetAarsakType.UDEFINERT -> ApiAvsluttetType.UDEFINERT
+            AvsluttetAarsakType.UKJENT_VERDI -> ApiAvsluttetType.UKJENT_VERDI
+        }
+    )
 )

@@ -1,9 +1,16 @@
 package no.nav.paw.arbeidssoekerregisteret.testdata.internehendelser
 
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvslutningsInfo
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType.UDEFINERT
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType.UKJENT_VERDI
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvviksType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Startet
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.Aarsaksinformasjon
+import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvsluttetAarsakType
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType.FORSINKELSE
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType.RETTING
 import no.nav.paw.arbeidssokerregisteret.intern.v1.vo.AvviksType.SLETTET
@@ -20,6 +27,7 @@ fun Startet.tilAvroPeriode(): Periode =
         hendelseId,
         identitetsnummer,
         metadata.tilAvroMetadata(),
+        null,
         null
     )
 
@@ -28,8 +36,21 @@ fun Avsluttet.tilAvroPeriode(periode: Periode): Periode =
         periode.id,
         periode.identitetsnummer,
         periode.startet,
-        metadata.tilAvroMetadata()
+        metadata.tilAvroMetadata(),
+        aarsaksInformasjon?.tilAvro()
     )
+
+fun Aarsaksinformasjon.tilAvro() : AvslutningsInfo = AvslutningsInfo(
+    no.nav.paw.arbeidssokerregisteret.api.v1.Aarsaksinformasjon(
+        when(this.aarsak) {
+            AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE -> SVARTE_NEI_I_BEKREFTELSE
+            AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST -> BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST
+            AvsluttetAarsakType.FEILREGISTRERING -> UDEFINERT
+            AvsluttetAarsakType.UDEFINERT -> UDEFINERT
+            AvsluttetAarsakType.UKJENT_VERDI -> UKJENT_VERDI
+        }
+    )
+)
 
 fun Metadata.tilAvroMetadata(): AvroMetadata =
     AvroMetadata(

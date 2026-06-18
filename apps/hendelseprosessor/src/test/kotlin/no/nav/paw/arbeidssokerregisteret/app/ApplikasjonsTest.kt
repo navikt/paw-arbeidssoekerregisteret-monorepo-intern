@@ -215,6 +215,10 @@ class ApplikasjonsTest : FreeSpec({
                     Bruker(BrukerType.SYSTEM, "test", null),
                     "unit-test",
                     "tester"
+                ),
+                aarsaksInformasjon = Aarsaksinformasjon(
+                    aarsak = AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE,
+                    regelEvalResultat = RegelEvalResultat.IKKE_RELEVANT
                 )
             )
             eventlogTopic.pipeInput(key, stoppet)
@@ -328,6 +332,10 @@ class ApplikasjonsTest : FreeSpec({
                     Bruker(BrukerType.SYSTEM, "test", null),
                     "unit-test",
                     "tester"
+                ),
+                aarsaksInformasjon = Aarsaksinformasjon(
+                    aarsak = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST,
+                    regelEvalResultat = RegelEvalResultat.DOED
                 ),
                 periodeId = periodeId2
             )

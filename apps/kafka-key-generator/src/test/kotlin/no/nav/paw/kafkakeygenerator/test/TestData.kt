@@ -2,6 +2,9 @@ package no.nav.paw.kafkakeygenerator.test
 
 import com.expediagroup.graphql.client.serialization.types.KotlinxGraphQLError
 import com.expediagroup.graphql.client.serialization.types.KotlinxGraphQLResponse
+import no.nav.paw.arbeidssokerregisteret.api.v1.Aarsaksinformasjon
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvslutningsInfo
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvsluttetAarsakType
 import no.nav.paw.arbeidssokerregisteret.api.v1.AvviksType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.api.v1.TidspunktFraKilde
@@ -413,7 +416,7 @@ object TestData {
         periodeId: UUID = periodeId1_1,
         identitetsnummer: String = fnr1_1.identitet,
         startet: no.nav.paw.arbeidssokerregisteret.api.v1.Metadata = periodeMetadata()
-    ): Periode = Periode(periodeId, identitetsnummer, startet, null)
+    ): Periode = Periode(periodeId, identitetsnummer, startet, null, null)
 
     fun periodeAvsluttet(
         periodeId: UUID = periodeId1_1,
@@ -422,7 +425,8 @@ object TestData {
             tidspunkt = Instant.now().minus(Duration.ofDays(30))
         ),
         avsluttet: no.nav.paw.arbeidssokerregisteret.api.v1.Metadata = periodeMetadata()
-    ): Periode = Periode(periodeId, identitetsnummer, startet, avsluttet)
+    ): Periode = Periode(periodeId, identitetsnummer, startet, avsluttet, AvslutningsInfo(Aarsaksinformasjon(
+        AvsluttetAarsakType.UDEFINERT)))
 
     fun identifikator(
         ident: String = fnr1_1.identitet,
