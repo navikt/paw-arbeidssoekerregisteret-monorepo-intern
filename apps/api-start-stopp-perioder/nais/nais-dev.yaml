@@ -59,6 +59,9 @@ spec:
       runtime: java
   kafka:
     pool: nav-dev
+  filesFrom:
+    - secret: paw-api-inngang-kafka-signing-key-v2
+      mountPath: /var/run/secrets/kafka-signing
   accessPolicy:
     inbound:
       rules:

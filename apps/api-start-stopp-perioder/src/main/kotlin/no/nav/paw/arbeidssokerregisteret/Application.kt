@@ -23,6 +23,8 @@ import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.kafka.config.KAFKA_CONFIG
 import no.nav.paw.kafka.config.KafkaConfig
 import no.nav.paw.kafka.factory.KafkaFactory
+import no.nav.paw.kafka.signing.KafkaSigningConfig
+import no.nav.paw.kafka.signing.withRecordSigning
 import org.slf4j.LoggerFactory
 
 fun main() {
@@ -30,6 +32,13 @@ fun main() {
     logger.info("Starter ${ApplicationInfo.id}")
     val applicationConfig = loadNaisOrLocalConfiguration<Config>(CONFIG_FILE_NAME)
     val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG)
+        .withRecordSigning(
+            KafkaSigningConfig(
+                mountPath = "/var/run/secrets/kafka-signing",
+                localResource = "/local/kafka-signing-key.properties",
+            )
+        )
+
     val registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val (startStoppRequestHandler, opplysningerRequestHandler) = requestHandlers(
         config = applicationConfig,

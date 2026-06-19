@@ -39,11 +39,12 @@ fun requestHandlers(
         )
     }
 
-    val kafkaProducer = kafkaFactory.createProducer(
-        clientId = ApplicationInfo.id,
-        keySerializer = LongSerializer::class,
-        valueSerializer = HendelseSerializer::class
-    )
+    val kafkaProducer = kafkaFactory
+        .createProducer(
+            clientId = ApplicationInfo.id,
+            keySerializer = LongSerializer::class,
+            valueSerializer = HendelseSerializer::class
+        )
     val requestValidator = RequestValidator(
         autorisasjonService = AutorisasjonService(clients.tilgangsTjenesteForAnsatte),
         personInfoService = PersonInfoService(clients.pdlClient),

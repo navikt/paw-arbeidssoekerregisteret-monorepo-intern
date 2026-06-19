@@ -9,5 +9,6 @@ data class KafkaConfig(
     val brokers: String,
     val authentication: KafkaAuthenticationConfig? = null,
     val schemaRegistry: KafkaSchemaRegistryConfig? = null,
-    val applicationIdPrefix: String? = null
+    val applicationIdPrefix: String? = null,
+    val extraProperties: Map<String, Any> = emptyMap()
 )
