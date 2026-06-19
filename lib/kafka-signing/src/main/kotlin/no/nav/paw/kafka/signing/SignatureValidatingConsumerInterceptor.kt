@@ -29,7 +29,11 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
         if (publicKeys.isEmpty()) {
             logger.warn("Ingen signeringsnøkler lastet — signaturvalidering er deaktivert")
         } else {
-            logger.info("SignatureValidatingConsumerInterceptor konfigurert med {} nøkkel(er): {}", publicKeys.size, publicKeys.keys)
+            logger.info(
+                "SignatureValidatingConsumerInterceptor konfigurert med {} nøkkel(er): {}",
+                publicKeys.size,
+                publicKeys.keys
+            )
         }
     }
 
@@ -41,6 +45,8 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
             try {
                 valider(
                     topic = record.topic(),
+                    partition = record.partition(),
+                    offset = record.offset(),
                     keyBytes = record.key() ?: ByteArray(0),
                     valueBytes = record.value() ?: ByteArray(0),
                     timestampMs = record.timestamp(),
@@ -64,6 +70,8 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
     @WithSpan("validate_signature")
     private fun valider(
         topic: String,
+        partition: Int,
+        offset: Long,
         keyBytes: ByteArray,
         valueBytes: ByteArray,
         timestampMs: Long,
@@ -75,8 +83,8 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
         // so validation appears in the correct message timeline rather than as a root span.
         if (signatureHeader == null || keyIdHeader == null) {
             logger.warn(
-                "Mangler signaturheader(er) — topic={}, harSignatur={}, harNøkkelId={}",
-                topic, signatureHeader != null, keyIdHeader != null
+                "Mangler signaturheader(er) — topic={}, partition={}, offset={}, harSignatur={}, harNøkkelId={}",
+                topic, partition, offset, signatureHeader != null, keyIdHeader != null
             )
             Span.current().addEvent("unsigned_record")
             return
@@ -86,7 +94,13 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
         Span.current().setAttribute("record_key_id", keyId)
         val publicKey = publicKeys[keyId]
         if (publicKey == null) {
-            logger.warn("Ukjent signeringsnøkkel-id='{}' — topic={}", keyId, topic)
+            logger.warn(
+                "Ukjent signeringsnøkkel-id='{}' — topic={}, partition={}, offset={}",
+                keyId,
+                topic,
+                partition,
+                offset
+            )
             Span.current().addEvent("unknown_key_id")
             return
         }
@@ -102,7 +116,13 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
         )
 
         if (!gyldig) {
-            logger.warn("Ugyldig signatur — topic={}, keyId='{}'", topic, keyId)
+            logger.warn(
+                "Ugyldig signatur — topic={}, partition={}, offset={}, keyId='{}'",
+                topic,
+                partition,
+                offset,
+                keyId
+            )
             Span.current().addEvent("invalid_signature")
         } else {
             Span.current().addEvent("valid_signature")

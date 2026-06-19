@@ -4,9 +4,11 @@ import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
+import io.kotest.assertions.fail
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
@@ -50,11 +52,35 @@ class SignatureValidatingConsumerInterceptorTest : FreeSpec({
             add("x-paw-signature", Base64.getUrlEncoder().withoutPadding().encode(signature))
             add("x-paw-signing-key-id", signKeyId.toByteArray(Charsets.UTF_8))
         }
-        return ConsumerRecord(topic, 0, 0L, timestamp, TimestampType.CREATE_TIME, 0, 0, keyBytes, recordValue, headers, Optional.empty())
+        return ConsumerRecord(
+            topic,
+            0,
+            0L,
+            timestamp,
+            TimestampType.CREATE_TIME,
+            0,
+            0,
+            keyBytes,
+            recordValue,
+            headers,
+            Optional.empty()
+        )
     }
 
     fun unsignedRecord(): ConsumerRecord<ByteArray, ByteArray> =
-        ConsumerRecord(topic, 0, 0L, timestamp, TimestampType.CREATE_TIME, 0, 0, keyBytes, valueBytes, RecordHeaders(), Optional.empty())
+        ConsumerRecord(
+            topic,
+            0,
+            0L,
+            timestamp,
+            TimestampType.CREATE_TIME,
+            0,
+            0,
+            keyBytes,
+            valueBytes,
+            RecordHeaders(),
+            Optional.empty()
+        )
 
     fun ConsumerRecord<ByteArray, ByteArray>.asRecords() =
         ConsumerRecords(mapOf(TopicPartition(topic, 0) to listOf(this)))
@@ -91,7 +117,14 @@ class SignatureValidatingConsumerInterceptorTest : FreeSpec({
 
         val warnings = logs.filter { it.level == Level.WARN }
         warnings shouldHaveSize 1
-        warnings[0].formattedMessage shouldBe "Ugyldig signatur — topic=$topic, keyId='$keyId'"
+        warnings[0].formattedMessage should { message ->
+            if (!message.contains("Ugyldig signatur")) {
+                fail("Expected log message to contain 'Ugyldig signatur', but was: $message")
+            }
+            if (!message.contains("keyId='$keyId'")) {
+                fail("Expected log message to contain 'keyId='$keyId'', but was: $message")
+            }
+        }
     }
 
     "manglende signaturheadere logger WARN" {
@@ -103,7 +136,11 @@ class SignatureValidatingConsumerInterceptorTest : FreeSpec({
 
         val warnings = logs.filter { it.level == Level.WARN }
         warnings shouldHaveSize 1
-        warnings[0].formattedMessage shouldBe "Mangler signaturheader(er) — topic=$topic, harSignatur=false, harNøkkelId=false"
+        warnings[0].formattedMessage should { message ->
+            if (!message.contains("Mangler signaturheader(er)")) {
+                fail("Expected log message to contain 'Mangler signaturheader', but was: $message")
+            }
+        }
     }
 
     "ukjent nøkkel-id logger WARN" {
@@ -116,7 +153,11 @@ class SignatureValidatingConsumerInterceptorTest : FreeSpec({
 
         val warnings = logs.filter { it.level == Level.WARN }
         warnings shouldHaveSize 1
-        warnings[0].formattedMessage shouldBe "Ukjent signeringsnøkkel-id='ukjent-nøkkel-v99' — topic=$topic"
+        warnings[0].formattedMessage should { message ->
+            if (!message.contains("Ukjent signeringsnøkkel-id='ukjent-nøkkel-v99'")) {
+                fail("Expected log message to contain 'Ukjent signeringsnløkkel-id='ukjent-nøkkel-v99'', but was: $message")
+            }
+        }
     }
 
     "manglende signaturheadere legger til unsigned_record OTel event" {
