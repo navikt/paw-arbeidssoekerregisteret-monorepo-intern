@@ -45,8 +45,8 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
                     valueBytes = record.value() ?: ByteArray(0),
                     timestampMs = record.timestamp(),
                     traceparentBytes = traceparentBytes,
-                    signatureHeader = record.headers().lastHeader("x-paw-signature")?.value(),
-                    keyIdHeader = record.headers().lastHeader("x-paw-signing-key-id")?.value(),
+                    signatureHeader = record.headers().lastHeader(SIGNATURE_HEADER)?.value(),
+                    keyIdHeader = record.headers().lastHeader(SIGNING_KEY_ID_HEADER)?.value(),
                 )
             } catch (e: Exception) {
                 logger.error(
