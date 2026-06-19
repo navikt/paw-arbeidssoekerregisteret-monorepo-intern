@@ -8,6 +8,8 @@ plugins {
 val jvmMajorVersion: String by project
 
 dependencies {
+    implementation(project(":lib:kafka-signing"))
+    implementation(project(":lib:kafka-streams"))
     implementation(project(":domain:interne-hendelser"))
     implementation(project(":domain:arbeidssoekerregisteret-kotlin"))
     implementation(project(":domain:main-avro-schema"))
