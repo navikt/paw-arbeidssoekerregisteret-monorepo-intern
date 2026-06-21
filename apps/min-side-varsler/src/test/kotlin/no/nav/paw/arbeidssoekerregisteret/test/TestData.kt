@@ -1,14 +1,8 @@
 package no.nav.paw.arbeidssoekerregisteret.test
 
-import no.nav.paw.arbeidssoekerregisteret.model.BestillingStatus
-import no.nav.paw.arbeidssoekerregisteret.model.BestiltVarselStatus
-import no.nav.paw.arbeidssoekerregisteret.model.InsertBestillingRow
-import no.nav.paw.arbeidssoekerregisteret.model.InsertBestiltVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.InsertEksterntVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.InsertPeriodeRow
 import no.nav.paw.arbeidssoekerregisteret.model.InsertVarselRow
-import no.nav.paw.arbeidssoekerregisteret.model.UpdateBestillingRow
-import no.nav.paw.arbeidssoekerregisteret.model.UpdateBestiltVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.UpdatePeriodeRow
 import no.nav.paw.arbeidssoekerregisteret.model.UpdateVarselRow
 import no.nav.paw.arbeidssoekerregisteret.model.VarselEventName
@@ -135,42 +129,6 @@ object TestData {
         varselStatus = varselStatus,
         hendelseName = hendelseName,
         hendelseTimestamp = hendelseTimestamp
-    )
-
-    fun insertBestillingRow(
-        bestillingId: UUID = UUID.randomUUID(),
-        bestiller: String = "NAV1234"
-    ): InsertBestillingRow = InsertBestillingRow(
-        bestillingId = bestillingId,
-        bestiller = bestiller
-    )
-
-    fun updateBestillingRow(
-        bestillingId: UUID = UUID.randomUUID(),
-        status: BestillingStatus = BestillingStatus.BEKREFTET
-    ): UpdateBestillingRow = UpdateBestillingRow(
-        bestillingId = bestillingId,
-        status = status
-    )
-
-    fun insertBestiltVarselRow(
-        bestillingId: UUID = UUID.randomUUID(),
-        periodeId: UUID = UUID.randomUUID(),
-        varselId: UUID = UUID.randomUUID(),
-        identitetsnummer: String = randomFnr()
-    ): InsertBestiltVarselRow = InsertBestiltVarselRow(
-        bestillingId = bestillingId,
-        periodeId = periodeId,
-        varselId = varselId,
-        identitetsnummer = identitetsnummer
-    )
-
-    fun updateBestiltVarselRow(
-        varselId: UUID = UUID.randomUUID(),
-        status: BestiltVarselStatus = BestiltVarselStatus.AKTIV
-    ): UpdateBestiltVarselRow = UpdateBestiltVarselRow(
-        varselId = varselId,
-        status = status
     )
 
     fun bruker(

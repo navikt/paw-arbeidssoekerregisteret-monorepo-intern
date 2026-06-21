@@ -69,96 +69,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
-  /api/v1/bestillinger/{bestillingId}:
-    get:
-      operationId: getBestilling
-      description: "Endepunkt for å hente bestilling på varsler for arbeidssøkere"
-      parameters:
-        - name: "traceparent"
-          in: "header"
-          required: false
-          description: "https://www.w3.org/TR/trace-context/#traceparent-header-field-values"
-          schema:
-            type: "string"
-            format: "traceparent"
-        - name: "bestillingId"
-          in: "path"
-          required: true
-          schema:
-            type: "string"
-      responses:
-        "200":
-          description: "OK"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BestillingResponse"
-        "403":
-          description: "Forbidden"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-    put:
-      operationId: putBestilling
-      description: "Endepunkt for å bekrefte bestilling på varsler for arbeidssøkere"
-      parameters:
-        - name: "traceparent"
-          in: "header"
-          required: false
-          description: "https://www.w3.org/TR/trace-context/#traceparent-header-field-values"
-          schema:
-            type: "string"
-            format: "traceparent"
-        - name: "bestillingId"
-          in: "path"
-          required: true
-          schema:
-            type: "string"
-      responses:
-        "200":
-          description: "OK"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BestillingResponse"
-        "403":
-          description: "Forbidden"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-  /api/v1/bestillinger:
-    post:
-      operationId: postBestilling
-      description: "Endepunkt for å opprette ventende bestilling på varsler for arbeidssøkere"
-      parameters:
-        - name: "traceparent"
-          in: "header"
-          required: false
-          description: "https://www.w3.org/TR/trace-context/#traceparent-header-field-values"
-          schema:
-            type: "string"
-            format: "traceparent"
-      responses:
-        "200":
-          description: "OK"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BestillingResponse"
-        "400":
-          description: "Bad Request"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-        "403":
-          description: "Forbidden"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
   /internal/isAlive:
     get:
       operationId: getIsAlive
@@ -206,48 +116,6 @@ paths:
                 type: "string"
 components:
   schemas:
-    BestillingResponse:
-      type: "object"
-      properties:
-        bestillingId:
-          type: "string"
-          format: "uuid"
-        bestiller:
-          type: "string"
-        status:
-          $ref: "#/components/schemas/BestillingStatus"
-        varslerTotalt:
-          type: integer
-          format: int64
-        varslerSendt:
-          type: integer
-          format: int64
-        varslerFeilet:
-          type: integer
-          format: int64
-        varslerIgnorert:
-          type: integer
-          format: int64
-        insertedTimestamp:
-          type: "string"
-          format: "date-time"
-        updatedTimestamp:
-          type: "string"
-          format: "date-time"
-      required:
-        - "bestillingId"
-        - "bestiller"
-        - "status"
-        - "varslerTotalt"
-        - "varslerSendt"
-        - "varslerFeilet"
-        - "varslerIgnorert"
-        - "insertedTimestamp"
-      example:
-        bestillingId: "84201f96-363b-4aab-a589-89fa4b9b1feb"
-        status: "VENTER"
-        insertedTimestamp: "2020-02-02T11:22:33.444Z"
-        updatedTimestamp: "2020-02-02T12:22:33.444Z"
     VarselResponse:
       type: "object"
       properties:
@@ -355,15 +223,6 @@ components:
         - "INAKTIVERT"
         - "SLETTET"
         - "EKSTERN_STATUS_OPPDATERT"
-    BestillingStatus:
-      type: "string"
-      enum:
-        - "VENTER"
-        - "BEKREFTET"
-        - "AKTIV"
-        - "SENDT"
-        - "IGNORERT"
-        - "FEILET"
     ProblemDetails:
       type: object
       properties:

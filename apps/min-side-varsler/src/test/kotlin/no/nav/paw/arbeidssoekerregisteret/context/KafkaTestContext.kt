@@ -7,7 +7,6 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.arbeidssoekerregisteret.config.ApplicationConfig
 import no.nav.paw.arbeidssoekerregisteret.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.model.VarselHendelse
-import no.nav.paw.arbeidssoekerregisteret.service.BestillingService
 import no.nav.paw.arbeidssoekerregisteret.service.VarselService
 import no.nav.paw.arbeidssoekerregisteret.topology.store.INTERNAL_STATE_STORE
 import no.nav.paw.arbeidssoekerregisteret.topology.streams.addBekreftelseHendelseStream
@@ -42,7 +41,6 @@ class KafkaTestContext(
     override val securityConfig: SecurityConfig,
     override val prometheusMeterRegistry: PrometheusMeterRegistry,
     override val varselService: VarselService,
-    override val bestillingService: BestillingService,
     val periodeTopic: TestInputTopic<Long, Periode>,
     val periodeVarselTopic: TestOutputTopic<String, String>,
     val bekreftelsePeriodeTopic: TestInputTopic<Long, Periode>,
@@ -57,7 +55,6 @@ class KafkaTestContext(
     applicationConfig = applicationConfig,
     securityConfig = securityConfig,
     prometheusMeterRegistry = prometheusMeterRegistry,
-    bestillingService = bestillingService,
     varselService = varselService
 ) {
     operator fun <K, V> KeyValue<K, V>.component1(): K = key
@@ -151,7 +148,6 @@ class KafkaTestContext(
                     securityConfig = securityConfig,
                     prometheusMeterRegistry = prometheusMeterRegistry,
                     varselService = varselService,
-                    bestillingService = bestillingService,
                     periodeTopic = periodeInputTopic,
                     periodeVarselTopic = periodeVarselTopic,
                     bekreftelsePeriodeTopic = bekreftelsePeriodeTopic,

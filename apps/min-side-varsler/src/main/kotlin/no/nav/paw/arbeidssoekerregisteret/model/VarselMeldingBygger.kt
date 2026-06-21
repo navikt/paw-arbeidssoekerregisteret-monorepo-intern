@@ -59,21 +59,6 @@ class VarselMeldingBygger(
         )
     }
 
-    fun opprettManueltVarsel(
-        varselId: UUID,
-        identitetsnummer: String
-    ): OpprettBeskjed {
-        val minSideVarsel = minSideVarselConfig.manueltVarsel
-        return opprettBeskjed(
-            varselId = varselId,
-            identitetsnummer = identitetsnummer,
-            sensitivitet = minSideVarsel.sensitivitet.asSensitivitet(),
-            link = minSideVarsel.link,
-            tekster = minSideVarsel.asTekster(),
-            eksterntVarsel = minSideVarsel.eksterntVarsel?.asEksternVarslingBestilling()
-        )
-    }
-
     private fun opprettBeskjed(
         varselId: UUID,
         identitetsnummer: String,

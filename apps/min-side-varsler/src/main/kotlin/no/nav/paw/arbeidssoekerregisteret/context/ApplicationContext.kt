@@ -9,7 +9,6 @@ import no.nav.paw.arbeidssoekerregisteret.config.MinSideVarselConfig
 import no.nav.paw.arbeidssoekerregisteret.config.SERVER_CONFIG
 import no.nav.paw.arbeidssoekerregisteret.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.model.VarselMeldingBygger
-import no.nav.paw.arbeidssoekerregisteret.service.BestillingService
 import no.nav.paw.arbeidssoekerregisteret.service.VarselService
 import no.nav.paw.arbeidssoekerregisteret.topology.buildBekreftelseTopology
 import no.nav.paw.arbeidssoekerregisteret.topology.buildPeriodeTopology
@@ -39,7 +38,6 @@ data class ApplicationContext(
     val prometheusMeterRegistry: PrometheusMeterRegistry,
     val healthIndicatorRepository: HealthIndicatorRepository,
     val varselService: VarselService,
-    val bestillingService: BestillingService,
     val kafkaProducerList: List<Producer<*, *>>,
     val kafkaStreamsList: List<KafkaStreams>,
     val kafkaShutdownTimeout: Duration
@@ -70,12 +68,6 @@ data class ApplicationContext(
 
             val varselService = VarselService(
                 meterRegistry = prometheusMeterRegistry,
-                varselMeldingBygger = varselMeldingBygger
-            )
-            val bestillingService = BestillingService(
-                applicationConfig = applicationConfig,
-                meterRegistry = prometheusMeterRegistry,
-                varselKafkaProducer = varselKafkaProducer,
                 varselMeldingBygger = varselMeldingBygger
             )
 
@@ -110,7 +102,6 @@ data class ApplicationContext(
                 prometheusMeterRegistry = prometheusMeterRegistry,
                 healthIndicatorRepository = healthIndicatorRepository,
                 varselService = varselService,
-                bestillingService = bestillingService,
                 kafkaProducerList = listOf(varselKafkaProducer),
                 kafkaStreamsList = listOf(
                     periodeKafkaStreams,

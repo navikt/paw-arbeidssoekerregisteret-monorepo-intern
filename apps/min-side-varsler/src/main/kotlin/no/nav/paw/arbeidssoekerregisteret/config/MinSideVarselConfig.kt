@@ -18,8 +18,7 @@ private fun String?.isURI(): Boolean {
 
 data class MinSideVarselConfig(
     val periodeAvsluttet: MinSideVarsel,
-    val bekreftelseTilgjengelig: MinSideVarsel,
-    val manueltVarsel: MinSideVarsel
+    val bekreftelseTilgjengelig: MinSideVarsel
 )
 
 data class MinSideVarsel(

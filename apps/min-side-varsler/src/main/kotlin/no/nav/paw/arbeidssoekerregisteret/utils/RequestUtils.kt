@@ -10,10 +10,6 @@ fun ApplicationCall.pathVarselId(): UUID {
     return parameters["varselId"]?.asUUID() ?: throw BadRequestException("Forespørsel mangler varselId")
 }
 
-fun ApplicationCall.pathBestillingId(): UUID {
-    return parameters["bestillingId"]?.asUUID() ?: throw BadRequestException("Forespørsel mangler bestillingId")
-}
-
 fun ApplicationCall.queryPeriodeId(): UUID {
     return request.queryParameters["periodeId"]?.asUUID() ?: throw BadRequestException("Forespørsel mangler periodeId")
 }

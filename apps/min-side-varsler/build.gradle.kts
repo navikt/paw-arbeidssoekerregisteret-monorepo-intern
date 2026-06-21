@@ -24,7 +24,6 @@ dependencies {
     implementation(project(":lib:security"))
     implementation(project(":lib:database"))
     implementation(project(":lib:kafka-streams"))
-    implementation(project(":lib:scheduling"))
     implementation(project(":domain:bekreftelse-interne-hendelser"))
     implementation(project(":domain:main-avro-schema"))
 

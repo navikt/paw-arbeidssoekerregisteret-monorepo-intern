@@ -18,9 +18,7 @@ import no.nav.paw.arbeidssoekerregisteret.config.MinSideVarselConfig
 import no.nav.paw.arbeidssoekerregisteret.config.SERVER_CONFIG
 import no.nav.paw.arbeidssoekerregisteret.config.ServerConfig
 import no.nav.paw.arbeidssoekerregisteret.model.VarselMeldingBygger
-import no.nav.paw.arbeidssoekerregisteret.route.bestillingerRoutes
 import no.nav.paw.arbeidssoekerregisteret.route.varselRoutes
-import no.nav.paw.arbeidssoekerregisteret.service.BestillingService
 import no.nav.paw.arbeidssoekerregisteret.service.VarselService
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.database.config.DatabaseConfig
@@ -36,10 +34,6 @@ import no.nav.paw.serialization.jackson.buildObjectMapper
 import no.nav.paw.serialization.jackson.configureJackson
 import no.nav.paw.serialization.plugin.installContentNegotiationPlugin
 import no.nav.security.mock.oauth2.MockOAuth2Server
-import org.apache.kafka.clients.producer.MockProducer
-import org.apache.kafka.clients.producer.Partitioner
-import org.apache.kafka.common.Cluster
-import org.apache.kafka.common.serialization.StringSerializer
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
@@ -59,7 +53,6 @@ open class TestContext(
     open val securityConfig: SecurityConfig,
     open val prometheusMeterRegistry: PrometheusMeterRegistry,
     open val varselService: VarselService,
-    open val bestillingService: BestillingService
 ) {
     fun initDatabase() {
         Database.connect(dataSource)
@@ -81,7 +74,6 @@ open class TestContext(
         prometheusMeterRegistry = prometheusMeterRegistry,
         healthIndicatorRepository = HealthIndicatorRepository(),
         varselService = varselService,
-        bestillingService = bestillingService,
         kafkaProducerList = listOf(),
         kafkaStreamsList = listOf(),
         kafkaShutdownTimeout = applicationConfig.kafkaShutdownTimeout
@@ -95,7 +87,6 @@ open class TestContext(
                 installAuthenticationPlugin(securityConfig.authProviders)
                 routing {
                     varselRoutes(varselService)
-                    bestillingerRoutes(applicationConfig, bestillingService)
                 }
             }
         }
@@ -139,36 +130,12 @@ open class TestContext(
                 loadNaisOrLocalConfiguration<ApplicationConfig>(APPLICATION_CONFIG)
             val securityConfig = loadNaisOrLocalConfiguration<SecurityConfig>(SECURITY_CONFIG)
             val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-            val partitioner = object : Partitioner {
-                override fun partition(
-                    topic: String?,
-                    key: Any?,
-                    keyBytes: ByteArray?,
-                    value: Any?,
-                    valueBytes: ByteArray?,
-                    cluster: Cluster?
-                ): Int {
-                    return 0
-                }
-
-                override fun close() {}
-
-                override fun configure(configs: Map<String?, *>?) {}
-
-            }
-            val varselKafkaProducer = MockProducer(true, partitioner, StringSerializer(), StringSerializer())
             val varselMeldingBygger = VarselMeldingBygger(
                 runtimeEnvironment = serverConfig.runtimeEnvironment,
                 minSideVarselConfig = loadNaisOrLocalConfiguration<MinSideVarselConfig>(MIN_SIDE_VARSEL_CONFIG)
             )
             val varselService = VarselService(
                 meterRegistry = prometheusMeterRegistry,
-                varselMeldingBygger = varselMeldingBygger
-            )
-            val bestillingService = BestillingService(
-                applicationConfig = applicationConfig,
-                meterRegistry = prometheusMeterRegistry,
-                varselKafkaProducer = varselKafkaProducer,
                 varselMeldingBygger = varselMeldingBygger
             )
 
@@ -181,7 +148,6 @@ open class TestContext(
                 securityConfig = securityConfig,
                 prometheusMeterRegistry = prometheusMeterRegistry,
                 varselService = varselService,
-                bestillingService = bestillingService
             )
         }
 

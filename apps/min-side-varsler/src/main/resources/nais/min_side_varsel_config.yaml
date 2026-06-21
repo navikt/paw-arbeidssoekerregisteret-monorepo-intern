@@ -39,19 +39,3 @@ bekreftelseTilgjengelig:
     smsTekst: Hei! Ønsker du fortsatt å være registrert som arbeidssøker? Logg inn på Nav for å bekrefte at du vil være registrert. Hilsen Nav
     epostTittel: Du har fått en melding fra Nav
     epostTekst: Hei!<br>Ønsker du fortsatt å være registrert som arbeidssøker? Logg inn på Nav for å bekrefte at du vil være registrert.<br>Hilsen Nav
-
-manueltVarsel:
-  link: ${MANUELT_VARSEL_LINK}
-  sensitivitet: SUBSTANTIAL
-  standardSpraak:
-    kode: nb
-  tekster:
-    - spraak:
-        kode: nb
-      tekst: Endringer for deg som sender meldekort fra 20. mars
-    - spraak:
-        kode: nn
-      tekst: Endring i meldekort for arbeidssøkjarar frå 20. mars
-    - spraak:
-        kode: en
-      tekst: Changes in employment status form for job seekers from March 20th

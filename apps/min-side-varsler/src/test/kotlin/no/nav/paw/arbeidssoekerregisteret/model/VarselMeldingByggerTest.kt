@@ -149,30 +149,6 @@ class VarselMeldingByggerTest : FreeSpec({
             }
         }
 
-        "Skal opprette beskjed for manuelt varsel" {
-            with(minSideVarselConfig.manueltVarsel) {
-                val varselId = UUID.randomUUID()
-                val identitetsnummer = randomFnr()
-                val resultat = varselMeldingBygger.opprettManueltVarsel(
-                    varselId = varselId,
-                    identitetsnummer = identitetsnummer
-                )
-                resultat.varselId shouldBe varselId
-                resultat.value should { json ->
-                    json shouldContain "\"@event_name\":\"${EventType.Opprett.toJson()}\""
-                    json shouldContain "\"varselId\":\"$varselId\""
-                    json shouldContain "\"ident\":\"$identitetsnummer\""
-                    json shouldContain "\"sensitivitet\":\"${Sensitivitet.Substantial.toJson()}\""
-                    json shouldContain "\"type\":\"${Varseltype.Beskjed.toJson()}\""
-                    json shouldContain "\"link\":\"${link}\""
-                    json shouldContain tekster[0].tekst
-                    json shouldContain tekster[1].tekst
-                    json shouldContain tekster[2].tekst
-                    json shouldNotContain "\"eksternVarsling\":"
-                }
-            }
-        }
-
         "Skal opprette avslutt varsel" {
             val varselId = UUID.randomUUID()
             val resultat = varselMeldingBygger.avsluttVarsel(varselId)

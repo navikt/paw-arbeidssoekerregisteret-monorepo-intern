@@ -1,6 +1,5 @@
 package no.nav.paw.arbeidssoekerregisteret.model
 
-import no.nav.paw.arbeidssoekerregisteret.api.models.BestillingResponse
 import no.nav.paw.arbeidssoekerregisteret.api.models.EksterntVarselResponse
 import no.nav.paw.arbeidssoekerregisteret.api.models.HendelseName
 import no.nav.paw.arbeidssoekerregisteret.api.models.VarselResponse
@@ -59,28 +58,3 @@ private fun VarselEventName.asResponse(): HendelseName = when (this) {
     VarselEventName.UKJENT -> HendelseName.UKJENT
 }
 
-fun BestillingRow.asResponse(
-    varslerTotalt: Long,
-    varslerSendt: Long,
-    varslerFeilet: Long,
-    varslerIgnorert: Long
-): BestillingResponse = BestillingResponse(
-    bestillingId = this.bestillingId,
-    bestiller = this.bestiller,
-    status = this.status.asResponse(),
-    varslerTotalt = varslerTotalt,
-    varslerSendt = varslerSendt,
-    varslerFeilet = varslerFeilet,
-    varslerIgnorert = varslerIgnorert,
-    insertedTimestamp = this.insertedTimestamp,
-    updatedTimestamp = this.updatedTimestamp
-)
-
-fun BestillingStatus.asResponse(): no.nav.paw.arbeidssoekerregisteret.api.models.BestillingStatus = when (this) {
-    BestillingStatus.VENTER -> no.nav.paw.arbeidssoekerregisteret.api.models.BestillingStatus.VENTER
-    BestillingStatus.BEKREFTET -> no.nav.paw.arbeidssoekerregisteret.api.models.BestillingStatus.BEKREFTET
-    BestillingStatus.AKTIV -> no.nav.paw.arbeidssoekerregisteret.api.models.BestillingStatus.AKTIV
-    BestillingStatus.SENDT -> no.nav.paw.arbeidssoekerregisteret.api.models.BestillingStatus.SENDT
-    BestillingStatus.IGNORERT -> no.nav.paw.arbeidssoekerregisteret.api.models.BestillingStatus.IGNORERT
-    BestillingStatus.FEILET -> no.nav.paw.arbeidssoekerregisteret.api.models.BestillingStatus.FEILET
-}
