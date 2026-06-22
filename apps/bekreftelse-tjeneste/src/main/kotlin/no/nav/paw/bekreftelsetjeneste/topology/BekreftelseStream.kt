@@ -31,6 +31,8 @@ import no.nav.paw.bekreftelsetjeneste.tilstand.plus
 import no.nav.paw.bekreftelsetjeneste.tilstand.sisteTilstand
 import no.nav.paw.kafka.processor.Punctuation
 import no.nav.paw.kafka.processor.genericProcess
+import no.nav.paw.kafka.processor.mapRecord
+import no.nav.paw.kafka.signing.stripSigningHeaders
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.Produced
@@ -83,6 +85,7 @@ fun StreamsBuilder.buildBekreftelseStream(
                         )
                         emptyList()
                     }
+
                     else -> {
                         haandterBekreftelseMottatt(
                             wallClock,
@@ -101,7 +104,11 @@ fun StreamsBuilder.buildBekreftelseStream(
                 }
                 forwardHendelser(record, hendelser, this::forward)
             }
-            .peek { _, utgaaendeHendelse ->  prometheusMeterRegistry.tellBekreftelseUtgaaendeHendelse(utgaaendeHendelse) }
+            .peek { _, utgaaendeHendelse -> prometheusMeterRegistry.tellBekreftelseUtgaaendeHendelse(utgaaendeHendelse) }
+            .mapRecord("strip_signing_headers") { record ->
+                val headers = stripSigningHeaders(record.headers())
+                record.withHeaders(headers)
+            }
             .to(bekreftelseHendelseloggTopic, Produced.with(Serdes.Long(), BekreftelseHendelseSerde()))
     }
 }
@@ -144,7 +151,12 @@ fun processPawNamespace(
                     harAnsvar = registeretHarAnsvar,
                     tilstand = sisteTilstand,
                 )
-                val (hendelser, oppdatertBekreftelse) = behandleGyldigSvar(wallClock, gjeldeneTilstand, hendelse, bekreftelse)
+                val (hendelser, oppdatertBekreftelse) = behandleGyldigSvar(
+                    wallClock,
+                    gjeldeneTilstand,
+                    hendelse,
+                    bekreftelse
+                )
                 gjeldeneTilstand.oppdaterBekreftelse(oppdatertBekreftelse) to hendelser
             }
 
