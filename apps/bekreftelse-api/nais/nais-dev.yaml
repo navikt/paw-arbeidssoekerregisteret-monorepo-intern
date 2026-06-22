@@ -56,6 +56,9 @@ spec:
       runtime: java
   kafka:
     pool: nav-dev
+  filesFrom:
+    - secret: dev-paw-api-bekreftelse
+      mountPath: /var/run/secrets/kafka-signing
   gcp:
     sqlInstances:
       - type: POSTGRES_17

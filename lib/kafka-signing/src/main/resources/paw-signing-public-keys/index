@@ -1,3 +1,5 @@
 paw-api-inngang-kafka-signing-key
 paw-api-inngang-kafka-signing-key-v2
 prod-paw-api-inngang-ecdsa-v1
+dev-paw-api-bekreftelse-ecdsa-v1
+prod-paw-api-bekreftelse-ecdsa-v1
