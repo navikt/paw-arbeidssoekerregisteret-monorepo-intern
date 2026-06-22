@@ -16,7 +16,7 @@ import java.util.Base64
 
 private val BASE64URL = Base64.getUrlEncoder().withoutPadding()
 private val BASE64_VALID_CHARS = Regex("[^A-Za-z0-9+/\\-_]")
-private val logger = LoggerFactory.getLogger(SigningProducerInterceptor::class.java)
+private val logger = LoggerFactory.getLogger("signature.signing")
 
 /**
  * Decodes a PKCS#8 private key from Base64. Handles:
@@ -116,7 +116,12 @@ class SigningProducerInterceptor<K, V> : ProducerInterceptor<K, V> {
                 it.headers().add(SIGNING_KEY_ID_HEADER, keyId)
             }
         } catch (e: Exception) {
-            logger.error("Failed to sign Kafka record on topic={}, record will be sent unsigned", topic, e)
+            logger.error(
+                "Failed to sign Kafka record on topic={}, key={}, record will be sent unsigned",
+                topic,
+                record.key(),
+                e
+            )
             record
         }
     }

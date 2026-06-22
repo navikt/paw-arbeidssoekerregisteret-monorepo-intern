@@ -17,7 +17,7 @@ import java.security.interfaces.ECPublicKey
 import java.security.spec.X509EncodedKeySpec
 import java.util.*
 
-private val logger = LoggerFactory.getLogger(SignatureValidatingConsumerInterceptor::class.java)
+private val logger = LoggerFactory.getLogger("signature.validation")
 private const val INSTRUMENTATION_SCOPE = "kafka-signing"
 
 class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, ByteArray> {
