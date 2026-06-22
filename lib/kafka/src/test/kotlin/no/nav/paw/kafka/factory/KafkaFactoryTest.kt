@@ -97,4 +97,23 @@ class KafkaFactoryTest : StringSpec({
             )
         consumer.javaClass shouldBe KafkaConsumer::class.java
     }
+    "producer-interceptor i producerExtraProperties lekker ikke til consumer" {
+        val config = KafkaConfig(
+            brokers = "localhost:9092",
+            producerExtraProperties = mapOf(
+                "interceptor.classes" to "no.nav.paw.kafka.signing.SigningProducerInterceptor"
+            )
+        )
+
+        val factory = KafkaFactory(config)
+
+        // Consumer skal opprettes uten feil selv om producerExtraProperties inneholder en producer-interceptor
+        val consumer = factory.createConsumer(
+            groupId = "groupId",
+            clientId = "clientId",
+            keyDeserializer = Serdes.String().deserializer()::class,
+            valueDeserializer = Serdes.String().deserializer()::class
+        )
+        consumer.javaClass shouldBe KafkaConsumer::class.java
+    }
 })

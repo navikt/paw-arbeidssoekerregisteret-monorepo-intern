@@ -23,4 +23,4 @@ fun KafkaSigningConfig.toProducerProperties(): Map<String, Any> = mapOf(
 )
 
 fun KafkaConfig.withRecordSigning(signing: KafkaSigningConfig): KafkaConfig =
-    copy(extraProperties = extraProperties + signing.toProducerProperties())
+    copy(producerExtraProperties = producerExtraProperties + signing.toProducerProperties())
