@@ -17,7 +17,7 @@ import no.nav.paw.arbeidssokerregisteret.app.metrics.TopicOperation
 import no.nav.paw.arbeidssokerregisteret.app.metrics.registerMainAvroSchemaGauges
 import no.nav.paw.arbeidssokerregisteret.app.metrics.registerTopicVersionGauge
 import no.nav.paw.arbeidssokerregisteret.app.metrics.topicInfo
-import no.nav.paw.kafka.signing.SignatureValidatingConsumerInterceptor
+import no.nav.paw.kafka.signing.kafkaStreamsConsumerValidationProperties
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
@@ -25,7 +25,6 @@ import org.apache.kafka.common.utils.Time
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StoreQueryParameters
 import org.apache.kafka.streams.StreamsBuilder
-import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
 import org.apache.kafka.streams.state.QueryableStoreTypes
@@ -69,10 +68,7 @@ fun main() {
         opplysningerOmArbeidssoekerTopic = kafkaKonfigurasjon.streamKonfigurasjon.opplysningerOmArbeidssoekerTopic,
         applicationLogicConfig = appLogicCfg
     )
-    val streamsConfig = kafkaKonfigurasjon.properties + mapOf(
-        StreamsConfig.mainConsumerPrefix(ConsumerConfig.INTERCEPTOR_CLASSES_CONFIG) to
-            SignatureValidatingConsumerInterceptor::class.java.name
-    )
+    val streamsConfig = kafkaKonfigurasjon.properties + kafkaStreamsConsumerValidationProperties()
     val kafkaStreams = KafkaStreams(topology, StreamsConfig(streamsConfig))
     fun stateStore(): ReadOnlyKeyValueStore<Long, TilstandV1> = kafkaStreams.store(
         StoreQueryParameters.fromNameAndType(
