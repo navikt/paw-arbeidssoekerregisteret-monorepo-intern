@@ -5,3 +5,5 @@ dev-paw-api-bekreftelse-ecdsa-v1
 prod-paw-api-bekreftelse-ecdsa-v1
 dev-paw-bekreftelse-tjeneste-ecdsa-v1
 prod-paw-bekreftelse-tjeneste-ecdsa-v1
+dev-paw-bekreftelse-filter-ecdsa-v1
+prod-paw-bekreftelse-filter-ecdsa-v1
