@@ -30,11 +30,13 @@ fun buildKafkaStreamsFactory(
 
 fun KafkaStreamsFactory.buildKafkaStreams(
     healthIndicatorRepository: HealthIndicatorRepository,
-    kafkaTopology: Topology
+    kafkaTopology: Topology,
+    additionalProperties: Map<String, Any> = emptyMap()
 ): KafkaStreams {
+    val mergedProperties = properties.also { it.putAll(additionalProperties) }
     return KafkaStreams(
         kafkaTopology,
-        StreamsConfig(properties)
+        StreamsConfig(mergedProperties)
     )
         .withHealthIndicatorStateListener(
             healthIndicatorRepository.addLivenessIndicator(LivenessHealthIndicator()),

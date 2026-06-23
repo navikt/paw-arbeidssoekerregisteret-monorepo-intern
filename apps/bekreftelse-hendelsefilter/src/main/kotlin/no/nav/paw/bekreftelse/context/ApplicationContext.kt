@@ -13,6 +13,8 @@ import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import no.nav.paw.health.repository.HealthIndicatorRepository
 import no.nav.paw.kafka.config.KAFKA_STREAMS_CONFIG_WITH_SCHEME_REG
 import no.nav.paw.kafka.config.KafkaConfig
+import no.nav.paw.kafka.signing.KafkaSigningConfig
+import no.nav.paw.kafka.signing.toKafkaStreamsProducerProperties
 import org.apache.kafka.streams.KafkaStreams
 
 data class ApplicationContext(
@@ -30,11 +32,15 @@ data class ApplicationContext(
 
             val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
             val healthIndicatorRepository = HealthIndicatorRepository()
+            val signingConfig = KafkaSigningConfig(
+                mountPath = "/var/run/secrets/kafka-signing",
+                localResource = "/local/kafka-signing-key.properties",
+            )
 
             val kafkaStreams = buildKafkaTopologyList(applicationConfig)
                 .map { (applicationIdSuffix, topology) ->
                     buildKafkaStreamsFactory(prometheusMeterRegistry, applicationIdSuffix, kafkaConfig)
-                        .buildKafkaStreams(healthIndicatorRepository, topology)
+                        .buildKafkaStreams(healthIndicatorRepository, topology, signingConfig.toKafkaStreamsProducerProperties())
                 }
 
             return ApplicationContext(
