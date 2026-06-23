@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":lib:error-handling"))
     implementation(project(":lib:kafka-streams"))
     implementation(project(":lib:kafka-key-generator-client"))
+    implementation(project(":lib:kafka-signing"))
     implementation(project(":domain:main-avro-schema"))
     implementation(project(":domain:bekreftelse-interne-hendelser"))
     implementation(project(":domain:interne-hendelser"))

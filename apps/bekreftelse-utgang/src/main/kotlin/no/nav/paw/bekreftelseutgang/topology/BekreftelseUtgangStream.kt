@@ -21,6 +21,7 @@ import no.nav.paw.bekreftelseutgang.tilstand.generateAvsluttetEventIfStateIsComp
 import no.nav.paw.config.env.appImageOrDefaultForLocal
 import no.nav.paw.kafka.processor.mapNonNull
 import no.nav.paw.kafka.processor.mapRecord
+import no.nav.paw.kafka.signing.stripSigningHeaders
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.Consumed
@@ -43,9 +44,9 @@ fun StreamsBuilder.buildBekreftelseUtgangStream(applicationConfig: ApplicationCo
 
                 newState.generateAvsluttetEventIfStateIsComplete(applicationConfig)
 
-            }.mapRecord(name = "fjern_source_header") { record ->
+            }.mapRecord(name = "fjern_innkommende_headers") { record ->
                 val headers = record.headers()
-                val updatedHeaders = headers.remove("source")
+                val updatedHeaders = stripSigningHeaders(headers.remove("source"))
                 record.withHeaders(updatedHeaders)
             }.to(hendelseloggTopic, Produced.with(Serdes.Long(), HendelseSerde()))
     }
@@ -56,7 +57,7 @@ fun processBekreftelseHendelse(
     identitetsnummer: String,
     applicationConfig: ApplicationConfig,
 ): Avsluttet? {
-    return when(bekreftelseHendelse) {
+    return when (bekreftelseHendelse) {
         is RegisterGracePeriodeUtloept -> avsluttetHendelse(
             identitetsnummer = identitetsnummer,
             periodeId = bekreftelseHendelse.periodeId,
@@ -70,6 +71,7 @@ fun processBekreftelseHendelse(
             avsluttetAarsakType = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST,
             kilde = bekreftelseHendelse.kilde,
         )
+
         is RegisterGracePeriodeUtloeptEtterEksternInnsamling -> avsluttetHendelse(
             identitetsnummer = identitetsnummer,
             periodeId = bekreftelseHendelse.periodeId,
@@ -83,12 +85,13 @@ fun processBekreftelseHendelse(
             avsluttetAarsakType = AvsluttetAarsakType.BEKREFTELSE_IKKE_LEVERT_INNEN_FRIST,
             kilde = bekreftelseHendelse.kilde
         )
+
         is BaOmAaAvsluttePeriode -> avsluttetHendelse(
             identitetsnummer = identitetsnummer,
             periodeId = bekreftelseHendelse.periodeId,
             arbeidssoekerId = bekreftelseHendelse.arbeidssoekerId,
             utfoertAv = Bruker(
-                type = when(bekreftelseHendelse.utfoertAv.type) {
+                type = when (bekreftelseHendelse.utfoertAv.type) {
                     no.nav.paw.bekreftelse.internehendelser.vo.BrukerType.UDEFINERT -> BrukerType.UDEFINERT
                     no.nav.paw.bekreftelse.internehendelser.vo.BrukerType.UKJENT_VERDI -> BrukerType.UKJENT_VERDI
                     no.nav.paw.bekreftelse.internehendelser.vo.BrukerType.SYSTEM -> BrukerType.SYSTEM
@@ -102,11 +105,13 @@ fun processBekreftelseHendelse(
             avsluttetAarsakType = AvsluttetAarsakType.SVARTE_NEI_I_BEKREFTELSE,
             kilde = bekreftelseHendelse.kilde
         )
+
         else -> null
     }
 }
 
-fun ApplicationConfig.getAppImage() = runtimeEnvironment.appImageOrDefaultForLocal("paw-arbeidssoekerregisteret-bekreftelse-utgang:LOCAL")
+fun ApplicationConfig.getAppImage() =
+    runtimeEnvironment.appImageOrDefaultForLocal("paw-arbeidssoekerregisteret-bekreftelse-utgang:LOCAL")
 
 fun avsluttetHendelse(
     identitetsnummer: String,
@@ -122,7 +127,10 @@ fun avsluttetHendelse(
     identitetsnummer = identitetsnummer,
     metadata = metadata(utfoertAv, aarsak, kilde),
     periodeId = periodeId,
-    aarsaksInformasjon = Aarsaksinformasjon(aarsak = avsluttetAarsakType, regelEvalResultat = RegelEvalResultat.IKKE_RELEVANT),
+    aarsaksInformasjon = Aarsaksinformasjon(
+        aarsak = avsluttetAarsakType,
+        regelEvalResultat = RegelEvalResultat.IKKE_RELEVANT
+    ),
 )
 
 fun metadata(utfoertAv: Bruker, aarsak: String, kilde: String) = Metadata(
