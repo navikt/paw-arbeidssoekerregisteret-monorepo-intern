@@ -15,6 +15,9 @@ import no.nav.paw.error.handler.withApplicationTerminatingExceptionHandler
 import no.nav.paw.health.listener.withHealthIndicatorStateListener
 import no.nav.paw.health.model.LivenessHealthIndicator
 import no.nav.paw.health.model.ReadinessHealthIndicator
+import no.nav.paw.kafka.signing.KafkaSigningConfig
+import no.nav.paw.kafka.signing.kafkaStreamsConsumerValidationProperties
+import no.nav.paw.kafka.signing.toKafkaStreamsProducerProperties
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsConfig
@@ -63,9 +66,16 @@ fun buildKafkaStreams(
         .addPrometheusMeterRegistryToConfig(applicationContext.prometheusMeterRegistry)
         .apply { properties["application.server"] = applicationConfig.hostname }
 
+    val signingConfig = KafkaSigningConfig(
+        mountPath = "/var/run/secrets/kafka-signing",
+        localResource = "/local/kafka-signing-key.properties",
+    )
+    val signingProperties = signingConfig.toKafkaStreamsProducerProperties() +
+        kafkaStreamsConsumerValidationProperties()
+
     val kafkaStreams = KafkaStreams(
         topology,
-        StreamsConfig(streamsFactory.properties)
+        StreamsConfig(streamsFactory.properties.also { it.putAll(signingProperties) })
     )
     kafkaStreams.withHealthIndicatorStateListener(livenessIndicator, readinessIndicator)
     kafkaStreams.withApplicationTerminatingExceptionHandler()

@@ -63,3 +63,6 @@ spec:
         - application: paw-kafka-key-generator
         - application: logging
           namespace: nais-system
+  filesFrom:
+    - secret: dev-paw-bekreftelse-tjeneste
+      mountPath: /var/run/secrets/kafka-signing
