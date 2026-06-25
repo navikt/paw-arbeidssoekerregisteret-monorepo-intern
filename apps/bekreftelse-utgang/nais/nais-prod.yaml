@@ -45,3 +45,6 @@ spec:
   kafka:
     pool: nav-prod
     streams: true
+  filesFrom:
+    - secret: prod-paw-bekreftelse-utgang
+      mountPath: /var/run/secrets/kafka-signing
