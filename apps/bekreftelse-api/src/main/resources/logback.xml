@@ -40,6 +40,15 @@
             <logger name="team-logs-logger" level="INFO" additivity="false">
                 <appender-ref ref="CONSOLE"/>
             </logger>
+            <logger name="org.apache.kafka.streams.StreamsConfig" level="WARN"/>
+            <logger name="org.apache.kafka.clients.admin.AdminClientConfig" level="WARN"/>
+            <logger name="org.apache.kafka.clients.consumer.ConsumerConfig" level="WARN"/>
+            <logger name="org.apache.kafka.clients.producer.ProducerConfig" level="WARN"/>
+            <logger name="io.confluent.kafka.serializers.KafkaAvroSerializerConfig" level="WARN"/>
+            <logger name="io.confluent.kafka.serializers.KafkaAvroDeserializerConfig" level="WARN"/>
+            <logger name="io.ktor.server.auth" level="DEBUG"/>
+            <logger name="io.ktor.auth" level="DEBUG"/>
+            <logger name="no.nav" level="DEBUG"/>
         </then>
         <else>
             <root level="INFO">
