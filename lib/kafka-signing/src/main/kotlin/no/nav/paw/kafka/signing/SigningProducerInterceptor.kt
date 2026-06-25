@@ -120,7 +120,7 @@ class SigningProducerInterceptor<K, V> : ProducerInterceptor<K, V> {
             TeamLogsLogger.error(
                 "Failed to sign Kafka record on topic={}, key={}, record will be sent unsigned",
                 topic,
-                record.key(),
+                "${record.key()}",
                 e
             )
             record
