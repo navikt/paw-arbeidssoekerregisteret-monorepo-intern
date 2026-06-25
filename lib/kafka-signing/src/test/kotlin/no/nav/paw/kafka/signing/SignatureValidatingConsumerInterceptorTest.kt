@@ -86,7 +86,7 @@ class SignatureValidatingConsumerInterceptorTest : FreeSpec({
         ConsumerRecords(mapOf(TopicPartition(topic, 0) to listOf(this)))
 
     fun withLogCapture(block: () -> Unit): List<ILoggingEvent> {
-        val logger = LoggerFactory.getLogger("signature.validation") as Logger
+        val logger = LoggerFactory.getLogger("team-logs-logger") as Logger
         val appender = ListAppender<ILoggingEvent>().apply { start() }
         logger.addAppender(appender)
         try {
