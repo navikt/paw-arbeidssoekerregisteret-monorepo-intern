@@ -56,9 +56,10 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
                     keyIdHeader = record.headers().lastHeader(SIGNING_KEY_ID_HEADER)?.value(),
                 )
             } catch (e: Exception) {
+                val traceparent = traceparentString(traceparentBytes)
                 TeamLogsLogger.error(
-                    "[kafka-signing] Teknisk feil ved signaturvalidering — topic={}, partition={}, offset={}",
-                    record.topic(), record.partition(), record.offset(), e
+                    "[kafka-signing] Teknisk feil ved signaturvalidering — topic={}, partition={}, offset={}, trace_id={}, traceparent={}",
+                    record.topic(), record.partition(), record.offset(), traceId(traceparent), traceparent, e
                 )
             } finally {
                 span.end()
@@ -82,10 +83,12 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
     ) {
         // Attach this span to the producer's trace via the record's traceparent header,
         // so validation appears in the correct message timeline rather than as a root span.
+        val traceparent = traceparentString(traceparentBytes)
+        val traceId = traceId(traceparent)
         if (signatureHeader == null || keyIdHeader == null) {
             TeamLogsLogger.warn(
-                "[kafka-signing] Mangler signaturheader(er) — topic={}, partition={}, offset={}, harSignatur={}, harNøkkelId={}",
-                topic, partition, offset, signatureHeader != null, keyIdHeader != null
+                "[kafka-signing] Mangler signaturheader(er) — topic={}, partition={}, offset={}, harSignatur={}, harNøkkelId={}, trace_id={}, traceparent={}",
+                topic, partition, offset, signatureHeader != null, keyIdHeader != null, traceId, traceparent
             )
             Span.current().addEvent("unsigned_record")
             return
@@ -96,11 +99,8 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
         val publicKey = publicKeys[keyId]
         if (publicKey == null) {
             TeamLogsLogger.warn(
-                "[kafka-signing] Ukjent signeringsnøkkel-id='{}' — topic={}, partition={}, offset={}",
-                keyId,
-                topic,
-                partition,
-                offset
+                "[kafka-signing] Ukjent signeringsnøkkel-id='{}' — topic={}, partition={}, offset={}, trace_id={}, traceparent={}",
+                keyId, topic, partition, offset, traceId, traceparent
             )
             Span.current().addEvent("unknown_key_id")
             return
@@ -118,11 +118,8 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
 
         if (!gyldig) {
             TeamLogsLogger.warn(
-                "[kafka-signing] Ugyldig signatur — topic={}, partition={}, offset={}, keyId='{}'",
-                topic,
-                partition,
-                offset,
-                keyId
+                "[kafka-signing] Ugyldig signatur — topic={}, partition={}, offset={}, keyId='{}', trace_id={}, traceparent={}",
+                topic, partition, offset, keyId, traceId, traceparent
             )
             Span.current().addEvent("invalid_signature")
         } else {
@@ -200,3 +197,9 @@ fun loadPublicKeysFromClasspath(): Map<String, ECPublicKey> {
     TeamLogsLogger.info("[kafka-signing] Lastet {} signeringsnøkkel(er): {}", result.size, result.keys)
     return result
 }
+
+internal fun traceparentString(bytes: ByteArray): String =
+    bytes.takeIf { it.isNotEmpty() }?.let { String(it, Charsets.UTF_8) } ?: "ukjent"
+
+internal fun traceId(traceparent: String): String =
+    traceparent.split("-").getOrElse(1) { "ukjent" }
