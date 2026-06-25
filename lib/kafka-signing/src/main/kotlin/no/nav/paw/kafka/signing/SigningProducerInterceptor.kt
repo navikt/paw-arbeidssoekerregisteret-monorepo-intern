@@ -81,7 +81,7 @@ class SigningProducerInterceptor<K, V> : ProducerInterceptor<K, V> {
     }
 
     override fun configure(configs: Map<String, *>) {
-        TeamLogsLogger.info("Configuring SigningProducerInterceptor")
+        TeamLogsLogger.info("[kafka-signing] SigningProducerInterceptor konfigurert")
         val mountPath = configs[PAW_SIGNING_MOUNT_PATH] as String
         val localResource = configs[PAW_SIGNING_LOCAL_RESOURCE] as String
         val keyMaterial = loadKafkaSigningKeyMaterial(currentRuntimeEnvironment, mountPath, localResource)
@@ -119,7 +119,7 @@ class SigningProducerInterceptor<K, V> : ProducerInterceptor<K, V> {
             }
         } catch (e: Exception) {
             TeamLogsLogger.error(
-                "Failed to sign Kafka record on topic={}, key={}, record will be sent unsigned",
+                "[kafka-signing] Failed to sign Kafka record on topic={}, key={}, record will be sent unsigned",
                 topic,
                 "${record.key()}",
                 e

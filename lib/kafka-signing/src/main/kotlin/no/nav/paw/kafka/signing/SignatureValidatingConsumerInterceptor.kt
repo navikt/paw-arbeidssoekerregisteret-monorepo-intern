@@ -28,10 +28,10 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
     override fun configure(configs: Map<String, *>) {
         publicKeys = loadPublicKeysFromClasspath()
         if (publicKeys.isEmpty()) {
-            TeamLogsLogger.warn("Ingen signeringsnøkler lastet — signaturvalidering er deaktivert")
+            TeamLogsLogger.warn("[kafka-signing] Ingen signeringsnøkler lastet — signaturvalidering er deaktivert")
         } else {
             TeamLogsLogger.info(
-                "SignatureValidatingConsumerInterceptor konfigurert med {} nøkkel(er): {}",
+                "[kafka-signing] SignatureValidatingConsumerInterceptor konfigurert med {} nøkkel(er): {}",
                 publicKeys.size,
                 publicKeys.keys
             )
@@ -57,7 +57,7 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
                 )
             } catch (e: Exception) {
                 TeamLogsLogger.error(
-                    "Teknisk feil ved signaturvalidering — topic={}, partition={}, offset={}",
+                    "[kafka-signing] Teknisk feil ved signaturvalidering — topic={}, partition={}, offset={}",
                     record.topic(), record.partition(), record.offset(), e
                 )
             } finally {
@@ -84,7 +84,7 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
         // so validation appears in the correct message timeline rather than as a root span.
         if (signatureHeader == null || keyIdHeader == null) {
             TeamLogsLogger.warn(
-                "Mangler signaturheader(er) — topic={}, partition={}, offset={}, harSignatur={}, harNøkkelId={}",
+                "[kafka-signing] Mangler signaturheader(er) — topic={}, partition={}, offset={}, harSignatur={}, harNøkkelId={}",
                 topic, partition, offset, signatureHeader != null, keyIdHeader != null
             )
             Span.current().addEvent("unsigned_record")
@@ -96,7 +96,7 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
         val publicKey = publicKeys[keyId]
         if (publicKey == null) {
             TeamLogsLogger.warn(
-                "Ukjent signeringsnøkkel-id='{}' — topic={}, partition={}, offset={}",
+                "[kafka-signing] Ukjent signeringsnøkkel-id='{}' — topic={}, partition={}, offset={}",
                 keyId,
                 topic,
                 partition,
@@ -118,7 +118,7 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
 
         if (!gyldig) {
             TeamLogsLogger.warn(
-                "Ugyldig signatur — topic={}, partition={}, offset={}, keyId='{}'",
+                "[kafka-signing] Ugyldig signatur — topic={}, partition={}, offset={}, keyId='{}'",
                 topic,
                 partition,
                 offset,
@@ -173,7 +173,7 @@ fun loadPublicKeysFromClasspath(): Map<String, ECPublicKey> {
     val indexStream = SignatureValidatingConsumerInterceptor::class.java
         .getResourceAsStream("/paw-signing-public-keys/index")
         ?: run {
-            TeamLogsLogger.warn("Ingen nøkkelindeks funnet (/paw-signing-public-keys/index) — signaturvalidering deaktivert")
+            TeamLogsLogger.warn("[kafka-signing] Ingen nøkkelindeks funnet (/paw-signing-public-keys/index) — signaturvalidering deaktivert")
             return emptyMap()
         }
 
@@ -197,6 +197,6 @@ fun loadPublicKeysFromClasspath(): Map<String, ECPublicKey> {
         }
     }
 
-    logger.info("Lastet {} signeringsnøkkel(er): {}", result.size, result.keys)
+    TeamLogsLogger.info("[kafka-signing] Lastet {} signeringsnøkkel(er): {}", result.size, result.keys)
     return result
 }
