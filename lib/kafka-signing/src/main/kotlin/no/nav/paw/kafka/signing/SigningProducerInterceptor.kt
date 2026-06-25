@@ -81,6 +81,7 @@ class SigningProducerInterceptor<K, V> : ProducerInterceptor<K, V> {
     }
 
     override fun configure(configs: Map<String, *>) {
+        TeamLogsLogger.info("Configuring SigningProducerInterceptor")
         val mountPath = configs[PAW_SIGNING_MOUNT_PATH] as String
         val localResource = configs[PAW_SIGNING_LOCAL_RESOURCE] as String
         val keyMaterial = loadKafkaSigningKeyMaterial(currentRuntimeEnvironment, mountPath, localResource)

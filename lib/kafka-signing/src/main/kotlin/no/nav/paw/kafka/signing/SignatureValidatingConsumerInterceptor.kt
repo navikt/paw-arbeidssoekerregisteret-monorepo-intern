@@ -30,7 +30,7 @@ class SignatureValidatingConsumerInterceptor : ConsumerInterceptor<ByteArray, By
         if (publicKeys.isEmpty()) {
             TeamLogsLogger.warn("Ingen signeringsnøkler lastet — signaturvalidering er deaktivert")
         } else {
-            logger.info(
+            TeamLogsLogger.info(
                 "SignatureValidatingConsumerInterceptor konfigurert med {} nøkkel(er): {}",
                 publicKeys.size,
                 publicKeys.keys
