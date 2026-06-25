@@ -45,6 +45,11 @@ spec:
   kafka:
     pool: nav-prod
     streams: true
+  accessPolicy:
+    outbound:
+      rules:
+        - application: logging
+          namespace: nais-system
   filesFrom:
     - secret: prod-paw-bekreftelse-utgang
       mountPath: /var/run/secrets/kafka-signing

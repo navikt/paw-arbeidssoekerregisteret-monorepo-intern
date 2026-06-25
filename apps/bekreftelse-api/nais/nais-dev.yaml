@@ -90,3 +90,5 @@ spec:
         - application: paw-kafka-key-generator
           namespace: paw
         - application: paw-tilgangskontroll
+        - application: logging
+          namespace: nais-system
