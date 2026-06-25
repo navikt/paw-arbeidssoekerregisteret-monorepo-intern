@@ -9,6 +9,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.apache.kafka.common.serialization.Serializer
 import org.slf4j.LoggerFactory
+import no.nav.paw.logging.logger.TeamLogsLogger
 import java.security.KeyFactory
 import java.security.interfaces.ECPrivateKey
 import java.security.spec.PKCS8EncodedKeySpec
@@ -116,7 +117,7 @@ class SigningProducerInterceptor<K, V> : ProducerInterceptor<K, V> {
                 it.headers().add(SIGNING_KEY_ID_HEADER, keyId)
             }
         } catch (e: Exception) {
-            logger.error(
+            TeamLogsLogger.error(
                 "Failed to sign Kafka record on topic={}, key={}, record will be sent unsigned",
                 topic,
                 record.key(),

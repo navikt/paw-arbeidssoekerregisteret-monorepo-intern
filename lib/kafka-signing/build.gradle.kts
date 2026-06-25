@@ -18,6 +18,7 @@ dependencies {
     implementation(libs.logback.classic)
     implementation(libs.opentelemetry.api)
     implementation(libs.opentelemetry.annotations)
+    implementation(project(":lib:logging"))
 
     testImplementation(libs.bundles.unit.testing.kotest)
     testImplementation(libs.kafka.streams.core)
