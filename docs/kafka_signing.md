@@ -14,9 +14,9 @@ Validering gir `[KAFKA_SIGNING]`-merkede advarsler i teamets logger ved ukjente 
 |---|---|---|
 | `api-start-stopp-perioder` | Signerer utgående meldinger | `paw.arbeidssoker-hendelseslogg-v1` |
 | `bekreftelse-api` | Signerer utgående meldinger | `paw.arbeidssoker-bekreftelse-v1` |
-| `bekreftelse-tjeneste` | Signerer + validerer (Kafka Streams) | Inn: `paw.arbeidssokerperioder-v1`, `paw.arbeidssoker-bekreftelse-v1` → Ut: `bekreftelse-hendelseslogg` |
+| `bekreftelse-tjeneste` | Signerer + validerer (Kafka Streams) | Inn: `paw.arbeidssokerperioder-v1`, `paw.arbeidssoker-bekreftelse-v1` → Ut: `paw.arbeidssoker-bekreftelse-hendelseslogg-v1` |
 | `bekreftelse-hendelsefilter` | Signerer utgående meldinger (Kafka Streams) | Filtrerte bekreftelse- og paaVegneAv-topics |
-| `bekreftelse-utgang` | Signerer + validerer (Kafka Streams) | Inn: `paw.arbeidssokerperioder-v1`, `bekreftelse-hendelseslogg` → Ut: `paw.arbeidssoker-hendelseslogg-v1` |
+| `bekreftelse-utgang` | Signerer + validerer (Kafka Streams) | Inn: `paw.arbeidssokerperioder-v1`, `paw.arbeidssoker-bekreftelse-hendelseslogg-v1` → Ut: `paw.arbeidssoker-hendelseslogg-v1` |
 | `hendelseprosessor` | Validerer innkommende + fjerner signeringsheadere | Inn: `paw.arbeidssoker-hendelseslogg-v1` → Ut: `periode`, `opplysninger` (usignert) |
 | `dolly-api` | Legger på statisk ugyldig signatur (dev-testing) | `paw.arbeidssoker-hendelseslogg-v1` |
 
@@ -41,7 +41,7 @@ Registrerte nøkler:
 - `prod-paw-bekreftelse-tjeneste-ecdsa-v1`
 
 #### `bekreftelse-hendelsefilter`
-Kafka Streams-applikasjon som kun bruker `signingConfig.toKafkaStreamsProducerProperties()`. Filtrerer bekreftelser fra dagpenger og flex topics og republiserer til interne topics med PAW-signatur.
+Kafka Streams-applikasjon som kun bruker `signingConfig.toKafkaStreamsProducerProperties()`. Filtrerer bekreftelser fra dagpenger og flex-topics og republiserer til interne topics med PAW-signatur.
 
 Registrerte nøkler:
 - `prod-paw-bekreftelse-filter-ecdsa-v1`
@@ -74,7 +74,7 @@ prod-paw-bekreftelse-utgang-ecdsa-v1
 
 ### Overvåking og alerting
 
-Google Cloud Monitoring er satt opp til å sende alarm til **#paw-kafka-signing-alerts** ved ERROR eller WARNING tagget `KAFKA_SIGNING` i teamlogger. Dette dekker:
+Google Cloud Monitoring er satt opp til å sende alarm til **#paw-kafka-signing-alerts** ved ERROR eller WARNING tagget `KAFKA_SIGNING` i teamets logger. Dette dekker:
 
 - Ukjent nøkkel-ID (melding signert med nøkkel vi ikke kjenner)
 - Ugyldig signatur (melding er manipulert eller nøkkel er rotert uten oppdatering)
@@ -119,7 +119,9 @@ For å signere disse topics må:
 
 ## Del 3 – Bruk i fremtidig intern kontroll
 
-Signeringsinfrastrukturen som er etablert gir et grunnlag for intern kontroll av dataintegritet og meldingsopprinnelse. Her er noen tanker om hvordan dette kan brukes videre.
+> **Merk:** Dette er løse ideer og brainstorming — ikke en konkret plan eller noe som er under aktiv utvikling.
+
+Signeringsinfrastrukturen gir et grunnlag for intern kontroll av dataintegritet og meldingsopprinnelse. Her er noen tanker om hvordan dette kan brukes videre.
 
 ### Revisjonsspor for meldingsflyt
 
@@ -167,8 +169,35 @@ Merk at Tempo og Loki har kort lagringstid, så ved etterforskning som skjer noe
 Dersom en melding med ugyldig eller manglende signatur oppdages, kan trace-ID brukes til å rekonstruere årsak-virkningskjeden:
 
 1. **Finn opphavet i hendelsesloggen** — trace-ID er lagret som header på meldingen i `paw.arbeidssoker-hendelseslogg-v1`. Ved å søke på trace-ID her kan man finne den opprinnelige hendelsen, tidspunktet og nøkkel-ID som ble brukt.
-2. **Følg flyten fremover** — samme trace-ID propageres til downstream-topics (periode, opplysninger). Det er dermed mulig å se hvilke records som ble produsert som følge av den mistenkelige meldingen.
+2. **Følg flyten fremover** — samme trace-ID propageres til nedstrøms topics (periode, opplysninger). Det er dermed mulig å se hvilke records som ble produsert som følge av den mistenkelige meldingen.
 3. **Avgrens skadeomfang** — ved å søke på trace-ID på tvers av alle PAW-topics er det mulig å identifisere nøyaktig hvilke records som er berørt, uten å måtte gå gjennom hele hendelsesloggen.
 
-Et intern-kontroll-verktøy kan automatisere dette ved å ved signaturfeil søke opp trace-ID direkte i Kafka og generere en komprimert hendelsesrapport med involvert tjeneste, nøkkel og meldingsflyt.
+Et intern-kontroll-verktøy kan automatisere dette: søk opp trace-ID direkte i Kafka ved signaturfeil og generer en hendelsesrapport med involvert tjeneste, nøkkel og meldingsflyt.
+
+### Idé: Passiv audit-motor med rådata i PostgreSQL
+
+For å kunne garantere en fullstendig beviskjede, uavhengig av Kafkas egen retention, kan rådata fra Kafka lagres uendret i PostgreSQL. Et eksternt verktøy (f.eks. en enkel Rust-basert consumer) lagrer meldingene uten å tolke dem:
+
+| Felt | Beskrivelse |
+|---|---|
+| `topic`, `partition`, `offset` | Unik identifikator (brukes for deduplisering ved at-least-once-levering) |
+| `timestamp` | Meldingstidsstempel — inngår i signaturen |
+| `traceparent` | Trukket ut fra headere — inngår i signaturen |
+| `trace_id` | Parsert fra `traceparent` for rask indeksering |
+| `signing_key_id` | Fra `x-paw-signing-key-id`-headeren |
+| `signature` | Fra `x-paw-signature`-headeren (rå bytes) |
+| `key_bytes` | Kafka-nøkkelen |
+| `value_bytes` | Avro-payloaden |
+
+Med dette som grunnlag kan en audit-motor gjøre tre ting:
+
+1. **Kryptografisk verifisering** — re-verifisere ECDSA-signaturen for alle lagrede records og klassifisere dem som `GYLDIG`, `UGYLDIG_SIGNATUR`, `UKJENT_NØKKEL` eller `USIGNERT`.
+2. **Kausal graf** — koble hendelser sammen via `trace_id` og sortere dem topologisk etter tidsstempel. Dette viser hendelsesforløpet på tvers av topics og tjenester for en gitt transaksjon.
+3. **Kryssvalidering av innhold** — verifisere at meldinger på et gitt topic er signert av riktig tjeneste. En bekreftelse signert av noe annet enn `bekreftelse-api` er et tydelig anomalisignal.
+
+**Forutsetninger og svakheter:**
+- Alle historiske offentlige nøkler må bevares — ellers vil gamle gyldige meldinger feile som `UKJENT_NØKKEL`
+- Sletting av records i databasen kan ikke oppdages av signeringsmekanismen alene; kontinuerlig offset-tracking er nødvendig
+- Audit-motoren trenger tilgang til historiske Avro-skjemaversjoner fra Schema Registry for å deserialisere gamle records
+- Dersom en app ikke propagerer `traceparent`, brytes lenken i den kausale grafen
 
