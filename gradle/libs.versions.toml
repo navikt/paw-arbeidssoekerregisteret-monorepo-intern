@@ -30,7 +30,7 @@ flyway = "12.9.0"
 hikari = "7.1.0"
 kotlinx-coroutines = "1.11.0"
 kotlinx-serialization = "1.11.0"
-ktor = "3.5.0"
+ktor = "3.5.1"
 
 [libraries]
 arrow-core-core = { group = "io.arrow-kt", name = "arrow-core", version.ref = "arrow" }
