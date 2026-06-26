@@ -1,13 +1,13 @@
 {
   "collection": "(à la carte)",
-  "version": "2026.06.24-071557-1b59278",
+  "version": "2026.06.26-055820-fa64632",
   "scope": "repo",
-  "source_sha": "1b59278",
+  "source_sha": "fa64632",
   "installed_at": "2026-04-23T07:59:58Z",
   "files": [
     {
       "path": ".github/agents/auth.agent.md",
-      "hash": "fb975bbc3b6d9cd4"
+      "hash": "275b0d834d2a75f3"
     },
     {
       "path": ".github/agents/auth.metadata.json",
@@ -23,7 +23,7 @@
     },
     {
       "path": ".github/agents/observability.agent.md",
-      "hash": "dc896b1966b009c0"
+      "hash": "790f7e03f52e44d8"
     },
     {
       "path": ".github/agents/observability.metadata.json",
