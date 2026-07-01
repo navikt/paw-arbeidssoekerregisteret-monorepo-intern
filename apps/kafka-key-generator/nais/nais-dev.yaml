@@ -107,7 +107,7 @@ spec:
         - application: paw-arbeidssoekerregisteret-api-oppslag-v2
         - application: paw-arbeidssoekerregisteret-api-egenvurdering
         - application: paw-arbeidssoekerregisteret-api-mine-stillinger
-        - application: paw-arbeidssoekerregisteret-api-oversikt
+        - application: paw-arbeidssoekerregisteret-api-kartlegging
         - application: logging
           namespace: nais-system
         - application: dp-rapportering-personregister
