@@ -15,7 +15,7 @@ plugins {
     id("org.openapi.generator") version "7.23.0" apply false
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1" apply false
     id("com.expediagroup.graphql") version "9.2.0" apply false
-    id("com.github.ben-manes.versions") version "0.54.0" apply false
+    id("com.github.ben-manes.versions") version "0.58.0" apply false
 }
 
 include(
