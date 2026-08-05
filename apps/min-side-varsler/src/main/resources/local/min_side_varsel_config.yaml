@@ -1,5 +1,5 @@
 periodeAvsluttet:
-  link: http://localhost:8080/arbeidssoekerregisteret
+  link: https://www.nav.no/arbeidssoekerregisteret
   sensitivitet: SUBSTANTIAL
   standardSpraak:
     kode: nb
@@ -20,7 +20,7 @@ periodeAvsluttet:
     epostTekst: Hei!<br>Du er ikke lenger registrert som arbeidssøker hos Nav. Logg inn på Nav sine nettsider for mer informasjon.<br>Hilsen Nav
 
 bekreftelseTilgjengelig:
-  link: http://localhost:8080/arbeidssoekerregisteret/bekreftelse
+  link: https://www.nav.no/arbeidssoekerregisteret/bekreftelse
   sensitivitet: SUBSTANTIAL
   standardSpraak:
     kode: nb
