@@ -17,7 +17,9 @@ import no.nav.paw.arbeidssokerregisteret.app.metrics.TopicOperation
 import no.nav.paw.arbeidssokerregisteret.app.metrics.registerMainAvroSchemaGauges
 import no.nav.paw.arbeidssokerregisteret.app.metrics.registerTopicVersionGauge
 import no.nav.paw.arbeidssokerregisteret.app.metrics.topicInfo
+import no.nav.paw.kafka.signing.KafkaSigningConfig
 import no.nav.paw.kafka.signing.kafkaStreamsConsumerValidationProperties
+import no.nav.paw.kafka.signing.toKafkaStreamsProducerProperties
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
@@ -68,7 +70,12 @@ fun main() {
         opplysningerOmArbeidssoekerTopic = kafkaKonfigurasjon.streamKonfigurasjon.opplysningerOmArbeidssoekerTopic,
         applicationLogicConfig = appLogicCfg
     )
-    val streamsConfig = kafkaKonfigurasjon.properties + kafkaStreamsConsumerValidationProperties()
+    val streamsConfig = kafkaKonfigurasjon.properties +
+        KafkaSigningConfig(
+            mountPath = "/var/run/secrets/kafka-signing",
+            localResource = "/local/kafka-signing-key.properties",
+        ).toKafkaStreamsProducerProperties() +
+        kafkaStreamsConsumerValidationProperties()
     val kafkaStreams = KafkaStreams(topology, StreamsConfig(streamsConfig))
     fun stateStore(): ReadOnlyKeyValueStore<Long, TilstandV1> = kafkaStreams.store(
         StoreQueryParameters.fromNameAndType(

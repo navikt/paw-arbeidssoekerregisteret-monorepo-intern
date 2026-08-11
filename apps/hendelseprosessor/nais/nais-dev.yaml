@@ -33,6 +33,9 @@ spec:
   kafka:
     pool: {{ kafka }}
     streams: true
+  filesFrom:
+    - secret: dev-paw-arbeidssokerregisteret-event-prosessor
+      mountPath: /var/run/secrets/kafka-signing
   resources:
     limits:
       memory: 512Mi
