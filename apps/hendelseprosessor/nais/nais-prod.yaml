@@ -28,7 +28,7 @@ spec:
     pool: {{ kafka }}
     streams: true
   filesFrom:
-    - secret: prod-paw-arbeidssokerregisteret-event-prosessor
+    - secret: prod-paw-event-prosessor
       mountPath: /var/run/secrets/kafka-signing
   resources:
     limits:
