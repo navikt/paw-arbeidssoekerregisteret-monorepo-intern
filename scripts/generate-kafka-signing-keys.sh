@@ -7,21 +7,40 @@
 # Keys are generated in a tmpfs directory and shredded on exit.
 # File upload avoids copy/paste errors when updating console.nais.io.
 #
+# Navnekonvensjon (auto-derivert):
+#   SECRET_NAME = {env}-paw-{app}             e.g. dev-paw-bekreftelse-tjeneste
+#   KEY_ID      = {env}-paw-{app}-ecdsa-v{n}  e.g. dev-paw-bekreftelse-tjeneste-ecdsa-v1
+#
 # Usage:
-#   ./scripts/generate-kafka-signing-keys.sh -e ENV -n SECRET_NAME [OPTIONS]
+#   ./scripts/generate-kafka-signing-keys.sh ENV APP VERSION [OPTIONS]
+#   ./scripts/generate-kafka-signing-keys.sh -e ENV -a APP -v VERSION [OPTIONS]
+#
+# Examples:
+#   ./scripts/generate-kafka-signing-keys.sh dev bekreftelse-tjeneste 1
+#   ./scripts/generate-kafka-signing-keys.sh prod event-processor 2
+#   ./scripts/generate-kafka-signing-keys.sh dev api-inngang 1 --name paw-api-inngang-kafka-signing-key
+#
+# Arguments:
+#   ENV         dev|prod                         (required)
+#   APP         app-short-name                   (required, e.g. bekreftelse-tjeneste)
+#   VERSION     nøkkelversjon                    (required, e.g. 1)
 #
 # Options:
-#   -e, --env       dev|prod                (required)
-#   -n, --name      nais-secret-name        (required, e.g. paw-api-inngang-kafka-signing-key)
-#   -k, --key-id    key-id                  (required, e.g. paw-api-inngang-ecdsa-v1)
-#   -p, --pub-dir   path/to/pub-keys-dir   (default: <repo>/lib/kafka-signing/src/main/resources/paw-signing-public-keys)
-#   -t, --tmp-dir   tmpfs base directory    (default: /tmp)
+#   -e, --env       dev|prod                     (required, eller posisjonelt arg 1)
+#   -a, --app       app-short-name               (required, eller posisjonelt arg 2)
+#   -v, --version   nøkkelversjon                (required, eller posisjonelt arg 3)
+#   -n, --name      override nais-secret-name    (default: {env}-paw-{app})
+#   -k, --key-id    override key-id              (default: {env}-paw-{app}-ecdsa-v{version})
+#   -p, --pub-dir   path/to/pub-keys-dir         (default: <repo>/lib/kafka-signing/src/main/resources/paw-signing-public-keys)
+#   -t, --tmp-dir   tmpfs base directory         (default: /tmp)
 #   -h, --help      Show this help
 
 set -euo pipefail
 
 # ── defaults ──────────────────────────────────────────────────────────────────
 ENV=""
+APP=""
+VERSION=""
 SECRET_NAME=""
 KEY_ID=""
 NAMESPACE="paw"
@@ -53,40 +72,56 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# ── argument parsing ───────────────────────────────────────────────────────────
 usage() {
     sed -n '/^# Usage:/,/^[^#]/p' "$0" | grep '^#' | sed 's/^# \?//'
     exit 0
 }
 
+# ── positional args first, then flags ─────────────────────────────────────────
+POSITIONAL=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -e|--env)       ENV="$2";         shift 2 ;;
+        -a|--app)       APP="$2";         shift 2 ;;
+        -v|--version)   VERSION="$2";     shift 2 ;;
         -n|--name)      SECRET_NAME="$2"; shift 2 ;;
         -k|--key-id)    KEY_ID="$2";      shift 2 ;;
         -p|--pub-dir)   PUB_DIR="$2";     shift 2 ;;
         -t|--tmp-dir)   TMP_BASE="$2";    shift 2 ;;
         -h|--help)      usage ;;
-        *) error "Ukjent argument: $1"; usage ;;
+        -*) error "Ukjent argument: $1"; usage ;;
+        *)  POSITIONAL+=("$1"); shift ;;
     esac
 done
 
+# Populate ENV/APP/VERSION from positional args if not already set via flags
+[[ -z "${ENV}"     && ${#POSITIONAL[@]} -ge 1 ]] && ENV="${POSITIONAL[0]}"
+[[ -z "${APP}"     && ${#POSITIONAL[@]} -ge 2 ]] && APP="${POSITIONAL[1]}"
+[[ -z "${VERSION}" && ${#POSITIONAL[@]} -ge 3 ]] && VERSION="${POSITIONAL[2]}"
+
 # ── validate ──────────────────────────────────────────────────────────────────
 if [[ -z "${ENV}" ]]; then
-    error "Mangler --env (dev eller prod)"
+    error "Mangler ENV (dev eller prod)"
     echo ""
     usage
 fi
 
-if [[ -z "${SECRET_NAME}" ]]; then
-    error "Mangler --name (nais secret-navn, f.eks. paw-api-inngang-kafka-signing-key)"
+if [[ -z "${APP}" ]]; then
+    error "Mangler APP (app-short-name, f.eks. bekreftelse-tjeneste)"
     echo ""
     usage
 fi
 
-# Derive PUB_DIR from repo root if not explicitly set
-KEY_ID="${KEY_ID:-}"
+if [[ -z "${VERSION}" ]]; then
+    error "Mangler VERSION (nøkkelversjon, f.eks. 1)"
+    echo ""
+    usage
+fi
+
+# ── derive names ──────────────────────────────────────────────────────────────
 PUB_DIR="${PUB_DIR:-${REPO_ROOT}/lib/kafka-signing/src/main/resources/paw-signing-public-keys}"
+SECRET_NAME="${SECRET_NAME:-${ENV}-paw-${APP}}"
+KEY_ID="${KEY_ID:-${ENV}-paw-${APP}-ecdsa-v${VERSION}}"
 
 case "${ENV}" in
     dev)  NAIS_ENV="dev-gcp"  ;;
@@ -98,6 +133,20 @@ if ! command -v openssl &>/dev/null; then
     error "openssl er ikke installert"
     exit 1
 fi
+
+# ── preview ───────────────────────────────────────────────────────────────────
+echo ""
+echo -e "${CYAN}── Vil generere nøkkel med følgende verdier ────────────────────────────${NC}"
+echo ""
+echo "  ENV:         ${ENV} (${NAIS_ENV})"
+echo "  APP:         ${APP}"
+echo "  VERSION:     ${VERSION}"
+echo "  SECRET_NAME: ${SECRET_NAME}"
+echo "  KEY_ID:      ${KEY_ID}"
+echo "  PUB_FILE:    ${PUB_DIR}/${KEY_ID}.pub.b64"
+echo ""
+echo -e "${CYAN}────────────────────────────────────────────────────────────────────────${NC}"
+echo ""
 
 # ── verify tmpfs ───────────────────────────────────────────────────────────────
 FS_TYPE=$(stat -f -c %T "${TMP_BASE}" 2>/dev/null || stat -f "${TMP_BASE}" 2>/dev/null | awk '/Type:/{print $NF}' || echo "unknown")
