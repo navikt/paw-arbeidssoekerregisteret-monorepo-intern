@@ -25,7 +25,6 @@ class KafkaFactory(val config: KafkaConfig) {
             this[CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG] = config.brokers
             config.authentication?.let { putAll(authenticationConfig(it)) }
             config.schemaRegistry?.let { putAll(schemaRegistryConfig(it)) }
-            putAll(config.extraProperties)
         }
 
     fun <K: Any, V: Any> createKafkaAvroValueConsumer(
