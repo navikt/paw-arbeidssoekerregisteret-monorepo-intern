@@ -30,6 +30,10 @@ class Encoder(
         return encode(identSalt+periodeIdSalt, bekreftelseId.toString())
     }
 
+    fun encodeOpplysningsId(opplysningsId: UUID): String {
+        return encode(periodeIdSalt + identSalt, opplysningsId.toString())
+    }
+
     private fun encode(salt: ByteArray, source: String): String {
         val messageDigest = MessageDigest.getInstance(digestAlgorithm)
         messageDigest.update(salt)
