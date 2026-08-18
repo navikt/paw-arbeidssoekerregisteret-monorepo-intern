@@ -4,6 +4,7 @@ import com.google.api.services.bigquery.Bigquery
 import com.google.cloud.bigquery.BigQuery
 import no.nav.paw.arbeidssokerregisteret.TopicNames
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
+import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.arbeidssokerregisteret.standardTopicNames
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
@@ -45,6 +46,7 @@ class AppContext(
 class Deserializers(
     val hendelseDeserializer: HendelseDeserializer,
     val periodeDeserializer: Deserializer<Periode>,
+    val opplysningerDeserializer: Deserializer<OpplysningerOmArbeidssoeker>,
     val bekreftelseDeserializer: Deserializer<Bekreftelse>,
     val påVegneAvDeserializers: Deserializer<PaaVegneAv>,
     val bekreftelseHendelseDeserializer: BekreftelseHendelseDeserializer
@@ -53,6 +55,7 @@ class Deserializers(
 fun KafkaFactory.deserializers(): Deserializers = Deserializers(
     hendelseDeserializer = HendelseDeserializer(),
     periodeDeserializer = kafkaAvroDeSerializer(),
+    opplysningerDeserializer = kafkaAvroDeSerializer(),
     bekreftelseDeserializer = kafkaAvroDeSerializer(),
     påVegneAvDeserializers = kafkaAvroDeSerializer(),
     bekreftelseHendelseDeserializer = BekreftelseHendelseDeserializer()

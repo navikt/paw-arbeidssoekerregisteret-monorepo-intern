@@ -1,6 +1,7 @@
 package no.nav.paw.bqadapter
 
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
+import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
@@ -9,17 +10,18 @@ import no.nav.paw.bqadapter.bigquery.AppContext
 import no.nav.paw.bqadapter.bigquery.BEKREFTELSE_HENDELSE_TABELL
 import no.nav.paw.bqadapter.bigquery.BEKRFTELSE_TABELL
 import no.nav.paw.bqadapter.bigquery.HENDELSE_TABELL
+import no.nav.paw.bqadapter.bigquery.OPPLYSNINGER_TABELL
 import no.nav.paw.bqadapter.bigquery.PAAVNEGEAV_TABELL
 import no.nav.paw.bqadapter.bigquery.PERIODE_TABELL
 import no.nav.paw.bqadapter.bigquery.Row
 import no.nav.paw.bqadapter.bigquery.schema.bekreftelseHendelseRad
 import no.nav.paw.bqadapter.bigquery.schema.bekreftelseRad
 import no.nav.paw.bqadapter.bigquery.schema.hendelseRad
+import no.nav.paw.bqadapter.bigquery.schema.opplysningerRad
 import no.nav.paw.bqadapter.bigquery.schema.periodeRad
 import no.nav.paw.bqadapter.bigquery.schema.påVegneAvRad
 import no.nav.paw.health.model.HealthStatus
 import org.apache.kafka.clients.consumer.ConsumerRecord
-import org.checkerframework.checker.units.qual.A
 import java.time.Instant
 
 data class Record<A : Any>(
@@ -44,6 +46,7 @@ fun AppContext.handleRecords(records: Iterable<ConsumerRecord<Long, ByteArray>>)
             }
     }.let(::RecordsByType)
     lagrePerioder(records.get())
+    lagreOpplysninger(records.get())
     lagreHendelser(records.get())
     lagreBekreftelser(records.get())
     lagrePaaVegneAv(records.get())
@@ -58,6 +61,7 @@ fun AppContext.handleRecords(records: Iterable<ConsumerRecord<Long, ByteArray>>)
 class RecordsByType(source: Iterable<Record<Any>>)  {
     val map = source.groupBy { when (it.value) {
         is Periode -> Periode::class
+        is OpplysningerOmArbeidssoeker -> OpplysningerOmArbeidssoeker::class
         is Hendelse -> Hendelse::class
         is Bekreftelse -> Bekreftelse::class
         is PaaVegneAv -> PaaVegneAv::class
@@ -73,6 +77,7 @@ class RecordsByType(source: Iterable<Record<Any>>)  {
 fun AppContext.deserializeRecord(topic: String, bytes: ByteArray): Any? {
     return when (topic) {
         topics.periodeTopic -> deserializers.periodeDeserializer.deserialize(topic, bytes)
+        topics.opplysningerTopic -> deserializers.opplysningerDeserializer.deserialize(topic, bytes)
         topics.hendelseloggTopic -> deserializers.hendelseDeserializer.deserialize(topic, bytes)
         topics.bekreftelseTopic -> deserializers.bekreftelseDeserializer.deserialize(topic, bytes)
         topics.paavnegneavTopic -> deserializers.påVegneAvDeserializers.deserialize(topic, bytes)
@@ -92,6 +97,18 @@ fun AppContext.lagrePerioder(records: Iterable<Record<Periode>>) {
             bqDatabase.write(
                 tableName = PERIODE_TABELL,
                 rows = periodeRader
+            )
+        }
+}
+
+fun AppContext.lagreOpplysninger(records: Iterable<Record<OpplysningerOmArbeidssoeker>>) {
+    records.map { record ->
+        Row(id = record.id, value = opplysningerRad(encoder, record.value))
+    }.takeIf { it.isNotEmpty() }
+        ?.also { opplysningerRader ->
+            bqDatabase.write(
+                tableName = OPPLYSNINGER_TABELL,
+                rows = opplysningerRader
             )
         }
 }

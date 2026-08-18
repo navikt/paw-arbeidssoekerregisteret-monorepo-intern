@@ -78,6 +78,7 @@ fun main() {
         topics = listOf(
             bigqueryAppContext.topics.hendelseloggTopic,
             bigqueryAppContext.topics.periodeTopic,
+            bigqueryAppContext.topics.opplysningerTopic,
             bigqueryAppContext.topics.paavnegneavTopic,
             bigqueryAppContext.topics.bekreftelseTopic,
             bigqueryAppContext.topics.bekreftelseHendelseloggTopic
