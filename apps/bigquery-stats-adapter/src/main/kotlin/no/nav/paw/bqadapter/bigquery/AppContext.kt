@@ -15,9 +15,9 @@ import no.nav.paw.bqadapter.appLogger
 import no.nav.paw.bqadapter.bigquery.schema.bekreftelseHendelseSchema
 import no.nav.paw.bqadapter.bigquery.schema.bekreftelseSchema
 import no.nav.paw.bqadapter.bigquery.schema.hendelserSchema
+import no.nav.paw.bqadapter.bigquery.schema.opplysningerSchema
 import no.nav.paw.bqadapter.bigquery.schema.paaVegnaAvSchema
 import no.nav.paw.bqadapter.bigquery.schema.perioderSchema
-import no.nav.paw.bqadapter.bigquery.schema.påVegneAvRad
 import no.nav.paw.health.model.LivenessHealthIndicator
 import no.nav.paw.health.model.ReadinessHealthIndicator
 import no.nav.paw.kafka.factory.KafkaFactory
@@ -31,6 +31,7 @@ val HENDELSE_TABELL = TableName("hendelser")
 val BEKRFTELSE_TABELL = TableName("bekreftelser")
 val PAAVNEGEAV_TABELL = TableName("paavnegneav")
 val BEKREFTELSE_HENDELSE_TABELL = TableName("bekreftelse_hendelser")
+val OPPLYSNINGER_TABELL = TableName("opplysninger")
 
 class AppContext(
     val bqDatabase: BigqueryDatabase,
@@ -97,6 +98,11 @@ fun initBqApp(
             datasetName = INTERNT_DATASET,
             tableName = BEKREFTELSE_HENDELSE_TABELL,
             schema = bekreftelseHendelseSchema
+        ),
+        OPPLYSNINGER_TABELL to bqAdmin.getOrCreateTable(
+            datasetName = INTERNT_DATASET,
+            tableName = OPPLYSNINGER_TABELL,
+            schema = opplysningerSchema
         )
     )
 
