@@ -70,6 +70,8 @@ fun initBqApp(
     livenessHealthIndicator: LivenessHealthIndicator,
     readinessHealthIndicator: ReadinessHealthIndicator
 ): AppContext {
+    val startedAt = System.nanoTime()
+    appLogger.info("Starter initialisering av BigQuery-kontekst")
     val bqAdmin = BigQueryAdmin(
         bigQuery = bigquery,
         bigquery = bigqueryModel,
@@ -114,6 +116,10 @@ fun initBqApp(
         path = views_path
     )
     appLogger.info("Materialized views created: ${views.joinToString(", ")}")
+    appLogger.info(
+        "BigQuery-kontekst initialisert etter {} ms",
+        (System.nanoTime() - startedAt) / 1_000_000
+    )
 
     return AppContext(
         livenessHealthIndicator = livenessHealthIndicator,

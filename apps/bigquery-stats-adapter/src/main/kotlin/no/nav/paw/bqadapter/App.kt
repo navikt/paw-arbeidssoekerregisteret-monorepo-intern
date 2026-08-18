@@ -12,7 +12,6 @@ import io.ktor.server.netty.Netty
 import io.ktor.server.routing.routing
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.bqadapter.bigquery.deserializers
 import no.nav.paw.bqadapter.bigquery.initBqApp
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
@@ -29,6 +28,7 @@ import org.apache.kafka.common.serialization.ByteArrayDeserializer
 import org.apache.kafka.common.serialization.LongDeserializer
 import org.slf4j.LoggerFactory
 import java.nio.file.Paths
+import java.util.concurrent.atomic.AtomicBoolean
 
 
 val appLogger = LoggerFactory.getLogger("app")
@@ -37,17 +37,24 @@ val periodeIdSaltPath = Paths.get("/var/run/secrets/periode_id/enc_periode")
 val hendelseIdentSaltPath = Paths.get("/var/run/secrets/ident/enc_hendelse")
 
 fun main() {
+    val startupStartedAt = System.nanoTime()
     appLogger.info("Starter app...")
     val prometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val healthIndicatorRepository = HealthIndicatorRepository()
     val livenessHealthIndicator = healthIndicatorRepository.livenessIndicator(defaultStatus = HealthStatus.HEALTHY)
     val readinessHealthIndicator = healthIndicatorRepository.readinessIndicator(defaultStatus = HealthStatus.UNHEALTHY)
+
+    appLogger.info("Laster salter for pseudonymisering")
     val encoder = Encoder(
         identSalt = hendelseIdentSaltPath.toFile().readBytes(),
         periodeIdSalt = periodeIdSaltPath.toFile().readBytes()
     )
+    appLogger.info("Salter for pseudonymisering er lastet")
+
+    appLogger.info("Laster Kafka-konfigurasjon")
     val kafkaConfig = loadNaisOrLocalConfiguration<KafkaConfig>(KAFKA_CONFIG_WITH_SCHEME_REG)
     val kafkaFactory = KafkaFactory(kafkaConfig)
+    appLogger.info("Oppretter Kafka-consumer")
     val consumer = kafkaFactory.createConsumer<Long, ByteArray>(
         groupId = "bq-consumer-v10",
         clientId = "bq-consumer-v3-${System.currentTimeMillis()}",
@@ -58,9 +65,8 @@ fun main() {
         maxPollrecords = 1000
     )
 
-    appLogger.info("Lastet encoder: $encoder")
     val appConfig = appConfig
-    appLogger.info("App config: $appConfig")
+    appLogger.info("Initialiserer BigQuery")
     val bigqueryAppContext = initBqApp(
         livenessHealthIndicator = livenessHealthIndicator,
         readinessHealthIndicator = readinessHealthIndicator,
@@ -73,6 +79,10 @@ fun main() {
             GsonFactory.getDefaultInstance(),
             HttpCredentialsAdapter(ServiceAccountCredentials.getApplicationDefault())
         ).build()
+    )
+    appLogger.info(
+        "BigQuery er initialisert etter {} ms",
+        elapsedMillis(startupStartedAt)
     )
     val consumerWrapper = CommittingKafkaConsumerWrapper(
         topics = listOf(
@@ -95,9 +105,16 @@ fun main() {
             consumer = consumer
         )
     )
+    val firstPollLogged = AtomicBoolean(false)
+    appLogger.info("Starter Ktor-server")
     embeddedServer(factory = Netty, port = 8080) {
         install(KafkaConsumerPlugin<Long, ByteArray>("application_consumer")) {
-            onConsume = bigqueryAppContext::handleRecords
+            onConsume = { records ->
+                if (firstPollLogged.compareAndSet(false, true)) {
+                    appLogger.info("Første Kafka-poll fullført med {} records", records.count())
+                }
+                bigqueryAppContext.handleRecords(records)
+            }
             kafkaConsumerWrapper = consumerWrapper
         }
         routing {
@@ -106,3 +123,6 @@ fun main() {
         }
     }.start(wait = true)
 }
+
+private fun elapsedMillis(startedAt: Long): Long =
+    (System.nanoTime() - startedAt) / 1_000_000

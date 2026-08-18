@@ -3,6 +3,7 @@ package no.nav.paw.bqadapter.bigquery
 import com.google.api.services.bigquery.model.MaterializedViewDefinition
 import com.google.api.services.bigquery.model.Table
 import com.google.api.services.bigquery.model.TableReference
+import no.nav.paw.bqadapter.appLogger
 import java.io.File
 import java.time.Duration
 
@@ -20,13 +21,16 @@ data class View<A>(
 fun BigQueryAdmin.createMaterializedViews(
     datasetName: DatasetName,
     path: String
-): List<String> =
-    viewsFromResource(path)
-        ?.map { createMaterializedViewDefinition(datasetName, it) }
-        ?.map { table ->
+): List<String> {
+    val views = viewsFromResource(path).orEmpty()
+    appLogger.info("Fant {} materialized views i {}", views.size, path)
+    return views
+        .map { createMaterializedViewDefinition(datasetName, it) }
+        .map { table ->
             getOrCreate(table)
             "${table.tableReference.datasetId}.${table.tableReference.tableId}"
-        } ?: emptyList()
+        }
+}
 
 fun viewsFromResource(path: String): List<View<Sql>>? =
     Thread.currentThread()

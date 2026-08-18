@@ -19,7 +19,7 @@ spec:
     max: 1
   liveness:
     path: /internal/isAlive
-    initialDelay: 10
+    initialDelay: 120
   readiness:
     path: /internal/isReady
     initialDelay: 10

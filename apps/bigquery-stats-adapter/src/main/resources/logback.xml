@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %5p %c{1}:%L - %m%n</pattern>
-        </encoder>
-    </appender>
     <appender name="STDOUT_JSON" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
     </appender>
@@ -23,36 +18,31 @@
         </filter>
     </appender>
 
-    <if condition='"${NAIS_CLUSTER_NAME}" == "prod-gcp"'>
+    <root level="INFO">
+        <appender-ref ref="STDOUT_JSON"/>
+    </root>
+
+    <if condition='property("NAIS_CLUSTER_NAME").equals("prod-gcp")'>
         <then>
             <logger name="team-logs-logger" level="DEBUG" additivity="false">
                 <appender-ref ref="TEAM_LOGS"/>
             </logger>
-            <root level="INFO">
-                <appender-ref ref="STDOUT_JSON"/>
-            </root>
             <include resource="no/nav/common/audit_log/logback-naudit.xml"/>
         </then>
     </if>
 
-    <if condition='"${NAIS_CLUSTER_NAME}" == "dev-gcp"'>
+    <if condition='property("NAIS_CLUSTER_NAME").equals("dev-gcp")'>
         <then>
             <logger name="team-logs-logger" level="DEBUG" additivity="false">
                 <appender-ref ref="TEAM_LOGS"/>
             </logger>
-            <root level="INFO">
-                <appender-ref ref="STDOUT_JSON"/>
-            </root>
             <logger name="no.nav.paw" level="DEBUG"/>
             <include resource="no/nav/common/audit_log/logback-naudit.xml"/>
         </then>
     </if>
 
-    <if condition='"${NAIS_CLUSTER_NAME}" == "NAIS_CLUSTER_NAME_IS_UNDEFINED"'>
+    <if condition='!isDefined("NAIS_CLUSTER_NAME")'>
         <then>
-            <root level="INFO">
-                <appender-ref ref="STDOUT"/>
-            </root>
             <logger name="org.apache.kafka.streams" level="WARN"/>
             <logger name="org.apache.kafka.clients" level="WARN"/>
             <logger name="io.confluent.kafka.serializers" level="WARN"/>
