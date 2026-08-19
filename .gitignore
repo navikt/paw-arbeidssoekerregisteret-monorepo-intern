@@ -1,3 +1,6 @@
+# nav-pilot
+.github/.nav-pilot-state.json
+
 # IntelliJ
 *.idea
 http-client.private.env.json
