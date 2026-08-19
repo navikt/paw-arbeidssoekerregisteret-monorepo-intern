@@ -4,6 +4,7 @@ import com.google.api.services.bigquery.Bigquery
 import com.google.cloud.bigquery.BigQuery
 import no.nav.paw.arbeidssokerregisteret.TopicNames
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
+import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseDeserializer
 import no.nav.paw.arbeidssokerregisteret.standardTopicNames
@@ -19,6 +20,7 @@ import no.nav.paw.bqadapter.bigquery.schema.hendelserSchema
 import no.nav.paw.bqadapter.bigquery.schema.opplysningerSchema
 import no.nav.paw.bqadapter.bigquery.schema.paaVegnaAvSchema
 import no.nav.paw.bqadapter.bigquery.schema.perioderSchema
+import no.nav.paw.bqadapter.bigquery.schema.profileringSchema
 import no.nav.paw.health.model.LivenessHealthIndicator
 import no.nav.paw.health.model.ReadinessHealthIndicator
 import no.nav.paw.kafka.factory.KafkaFactory
@@ -33,6 +35,7 @@ val BEKRFTELSE_TABELL = TableName("bekreftelser")
 val PAAVNEGEAV_TABELL = TableName("paavnegneav")
 val BEKREFTELSE_HENDELSE_TABELL = TableName("bekreftelse_hendelser")
 val OPPLYSNINGER_TABELL = TableName("opplysninger")
+val PROFILERING_TABELL = TableName("profilering")
 
 class AppContext(
     val bqDatabase: BigqueryDatabase,
@@ -47,6 +50,7 @@ class Deserializers(
     val hendelseDeserializer: HendelseDeserializer,
     val periodeDeserializer: Deserializer<Periode>,
     val opplysningerDeserializer: Deserializer<OpplysningerOmArbeidssoeker>,
+    val profileringDeserializer: Deserializer<Profilering>,
     val bekreftelseDeserializer: Deserializer<Bekreftelse>,
     val påVegneAvDeserializers: Deserializer<PaaVegneAv>,
     val bekreftelseHendelseDeserializer: BekreftelseHendelseDeserializer
@@ -56,6 +60,7 @@ fun KafkaFactory.deserializers(): Deserializers = Deserializers(
     hendelseDeserializer = HendelseDeserializer(),
     periodeDeserializer = kafkaAvroDeSerializer(),
     opplysningerDeserializer = kafkaAvroDeSerializer(),
+    profileringDeserializer = kafkaAvroDeSerializer(),
     bekreftelseDeserializer = kafkaAvroDeSerializer(),
     påVegneAvDeserializers = kafkaAvroDeSerializer(),
     bekreftelseHendelseDeserializer = BekreftelseHendelseDeserializer()
@@ -108,6 +113,11 @@ fun initBqApp(
             datasetName = INTERNT_DATASET,
             tableName = OPPLYSNINGER_TABELL,
             schema = opplysningerSchema
+        ),
+        PROFILERING_TABELL to bqAdmin.getOrCreateTable(
+            datasetName = INTERNT_DATASET,
+            tableName = PROFILERING_TABELL,
+            schema = profileringSchema
         )
     )
 
