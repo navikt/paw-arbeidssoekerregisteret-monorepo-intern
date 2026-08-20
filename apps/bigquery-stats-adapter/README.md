@@ -8,3 +8,7 @@ head -c 32 /dev/urandom | kubectl create secret generic bq-enc-hendelse --from-f
 # den måten koble periode mot sha256 verdi for arbeidssøkerId
 head -c 32 /dev/urandom | kubectl create secret generic bq-enc-periode --from-file=enc_periode=/dev/stdin
 ```
+
+## Spørringer
+
+SQL som kjøres manuelt i BigQuery-konsollen, ligger i [`queries/`](queries/). Materialiserte views som applikasjonen oppretter ved oppstart, ligger i `src/main/resources/materialized_views/`.
