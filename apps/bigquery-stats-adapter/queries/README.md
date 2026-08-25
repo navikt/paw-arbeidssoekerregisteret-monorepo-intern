@@ -8,6 +8,7 @@ SQL under `src/main/resources/materialized_views/` har et annet formål: Applika
 
 - `profilering-permitterte.sql` analyserer profileringen av personer som var permittert da arbeidssøkerperioden startet.
 - `aggregert-profileringsgrunnlag.sql` lager et aggregert analysegrunnlag for alle arbeidssøkersekvenser. Resultatet kan eksporteres som CSV eller JSON for videre analyse.
+- `periodestarter-sluttbruker-august-2026.sql` sammenligner antall unike perioder som sluttbrukere startet 11., 18. og 25. august 2026. Spørringen teller hele dager fordi BigQuery-skjemaet ikke lagrer klokkeslett.
 
 Den aggregerte spørringen slår sammen perioder for samme person når oppholdet mellom dem er høyst sju dager. Sammenslåingen er transitiv, så A→B og B→C blir én sekvens fra starten av A til slutten av C. Initial status og profilering hentes fra den første perioden.
 
