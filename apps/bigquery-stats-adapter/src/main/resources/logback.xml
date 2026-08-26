@@ -22,7 +22,11 @@
         <appender-ref ref="STDOUT_JSON"/>
     </root>
 
-    <if condition='property("NAIS_CLUSTER_NAME").equals("prod-gcp")'>
+    <condition class="ch.qos.logback.core.boolex.PropertyEqualityCondition">
+        <key>NAIS_CLUSTER_NAME</key>
+        <value>prod-gcp</value>
+    </condition>
+    <if>
         <then>
             <logger name="team-logs-logger" level="DEBUG" additivity="false">
                 <appender-ref ref="TEAM_LOGS"/>
@@ -31,7 +35,11 @@
         </then>
     </if>
 
-    <if condition='property("NAIS_CLUSTER_NAME").equals("dev-gcp")'>
+    <condition class="ch.qos.logback.core.boolex.PropertyEqualityCondition">
+        <key>NAIS_CLUSTER_NAME</key>
+        <value>dev-gcp</value>
+    </condition>
+    <if>
         <then>
             <logger name="team-logs-logger" level="DEBUG" additivity="false">
                 <appender-ref ref="TEAM_LOGS"/>
@@ -41,7 +49,10 @@
         </then>
     </if>
 
-    <if condition='!isDefined("NAIS_CLUSTER_NAME")'>
+    <condition class="ch.qos.logback.core.boolex.IsPropertyNullCondition">
+        <key>NAIS_CLUSTER_NAME</key>
+    </condition>
+    <if>
         <then>
             <logger name="org.apache.kafka.streams" level="WARN"/>
             <logger name="org.apache.kafka.clients" level="WARN"/>

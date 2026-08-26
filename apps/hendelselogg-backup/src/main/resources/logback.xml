@@ -9,7 +9,10 @@
         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
     </appender>
 
-    <if condition='"${NAIS_CLUSTER_NAME}" == "NAIS_CLUSTER_NAME_IS_UNDEFINED"'>
+    <condition class="ch.qos.logback.core.boolex.IsPropertyNullCondition">
+        <key>NAIS_CLUSTER_NAME</key>
+    </condition>
+    <if>
         <then>
             <root level="INFO">
                 <appender-ref ref="STDOUT"/>
