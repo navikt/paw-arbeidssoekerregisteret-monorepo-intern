@@ -4,19 +4,22 @@ WITH DailyConfirmations AS (
         loesning,
         COUNT(*) AS confirmations
     FROM `arbeidssoekerregisteret_internt.bekreftelser`
+    WHERE tidspunkt >= DATE '2025-09-01'
     GROUP BY tidspunkt, loesning
 ),
 
 Solutions AS (
-    SELECT DISTINCT loesning
+    SELECT loesning
     FROM `arbeidssoekerregisteret_internt.bekreftelser`
+    WHERE tidspunkt >= DATE '2025-09-01'
+    GROUP BY loesning
 ),
 
 DateSeries AS (
     SELECT
         day,
         loesning
-    FROM UNNEST(GENERATE_DATE_ARRAY('2020-01-29', '2100-12-31')) AS day
+    FROM UNNEST(GENERATE_DATE_ARRAY('2025-09-29', '2100-12-31')) AS day
     CROSS JOIN Solutions
 )
 

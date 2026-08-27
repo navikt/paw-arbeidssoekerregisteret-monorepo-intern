@@ -43,6 +43,10 @@ leverte bekreftelser, blir seriedimensjoner. Grafana kan dermed vise én serie p
 kombinasjon av tallkolonne og løsning. Bruk et filter på `loesning` i SQL-en
 eller en dashboardvariabel hvis løsningene heller skal vises i separate paneler.
 
+De tre nye viewene som bruker bekreftelser, avgrenser bekreftelsesdata til datoer
+fra og med 1. september 2025. Det finnes ingen data før mars 2025, og
+datakvaliteten frem til og med august 2025 er ikke god nok for disse viewene.
+
 ### Periodestarter sammenlignet med tidligere uker
 
 Viewet `arbeidssoekerregisteret_grafana.periodestarter_sammenlignet_med_tidligere_uker`
@@ -110,6 +114,71 @@ SELECT
     antall_3_uker_siden,
     antall_4_uker_siden
 FROM `arbeidssoekerregisteret_grafana.leverte_bekreftelser_sammenlignet_med_tidligere_uker`
+WHERE $__timeFilter(TIMESTAMP(dag, 'Europe/Oslo'))
+  AND dag < CURRENT_DATE('Europe/Oslo')
+ORDER BY dag
+```
+
+### Aktive perioder etter siste svar om arbeid
+
+Viewet `arbeidssoekerregisteret_grafana.aktive_perioder_by_har_jobbet_dag_for_dag`
+viser antall aktive perioder per dag fordelt på:
+
+- `JA`: Den siste leverte bekreftelsen som dekker dagen, oppga at personen hadde
+  jobbet.
+- `NEI`: Den siste leverte bekreftelsen som dekker dagen, oppga at personen ikke
+  hadde jobbet.
+- `UKJENT`: Dagen er ikke dekket av en levert bekreftelse.
+
+En bekreftelse gjelder fra og med `gjelder_fra` til og med `gjelder_til`.
+Når en bekreftelse leveres på etterskudd, oppdateres derfor de historiske
+dagene den dekker. Ved overlappende eller korrigerte bekreftelser brukes den
+senest leverte per dag.
+
+Perioden regnes som aktiv fra og med `startet.tidspunkt` og frem til, men ikke
+med, `avsluttet.tidspunkt`. Når sluttdatoen mottas, fjerner neste oppfriskning
+perioden fra alle dager fra og med sluttdatoen.
+
+```sql
+SELECT
+    TIMESTAMP(dag, 'Europe/Oslo') AS time,
+    har_jobbet,
+    antall_aktive_perioder
+FROM `arbeidssoekerregisteret_grafana.aktive_perioder_by_har_jobbet_dag_for_dag`
+WHERE $__timeFilter(TIMESTAMP(dag, 'Europe/Oslo'))
+  AND dag < CURRENT_DATE('Europe/Oslo')
+ORDER BY dag
+```
+
+I Grafana blir `har_jobbet` seriedimensjonen, slik at `JA`, `NEI` og `UKJENT`
+vises som separate serier.
+
+### Avslutninger og arbeid i de siste bekreftelsene
+
+Viewet `arbeidssoekerregisteret_grafana.avsluttede_perioder_andel_har_jobbet_per_dag`
+viser antall avsluttede arbeidssøkerperioder per dag. Det viser også
+gjennomsnittlig andel `har_jobbet = true` i hver periodes siste 2, 10 og 20
+bekreftelser.
+
+Andelen beregnes først for hver periode. Dagsverdien er deretter et uvektet
+gjennomsnitt av periodene som ble avsluttet den dagen. En periode må ha minst
+henholdsvis 2, 10 eller 20 bekreftelser for å inngå i den aktuelle andelen.
+Kolonnene `antall_perioder_med_2_bekreftelser`,
+`antall_perioder_med_10_bekreftelser` og
+`antall_perioder_med_20_bekreftelser` viser datagrunnlaget for hver verdi.
+
+Ved korrigerte bekreftelser for samme `gjelder_fra`–`gjelder_til` brukes den
+senest leverte. Bekreftelsene rangeres deretter etter `gjelder_til`, slik at
+andelene kan oppdateres bakover i tid.
+
+```sql
+SELECT
+    TIMESTAMP(dag, 'Europe/Oslo') AS time,
+    antall_avsluttede_perioder,
+    gjennomsnittlig_andel_har_jobbet_siste_2,
+    gjennomsnittlig_andel_har_jobbet_siste_10,
+    gjennomsnittlig_andel_har_jobbet_siste_20
+FROM `arbeidssoekerregisteret_grafana.avsluttede_perioder_andel_har_jobbet_per_dag`
 WHERE $__timeFilter(TIMESTAMP(dag, 'Europe/Oslo'))
   AND dag < CURRENT_DATE('Europe/Oslo')
 ORDER BY dag
