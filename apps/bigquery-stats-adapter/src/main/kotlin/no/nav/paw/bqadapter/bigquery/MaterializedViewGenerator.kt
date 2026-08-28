@@ -8,8 +8,8 @@ import java.io.File
 import java.time.Duration
 
 const val views_path = "materialized_views/"
-val materializedViewsRefreshInterval = Duration.ofHours(6)
-val materializedViewsMaxStaleness = Duration.ofHours(7)
+val materializedViewsRefreshInterval = Duration.ofHours(1)
+val materializedViewsMaxStaleness = Duration.ofHours(2)
 
 @JvmInline
 value class Sql(val value: String)
