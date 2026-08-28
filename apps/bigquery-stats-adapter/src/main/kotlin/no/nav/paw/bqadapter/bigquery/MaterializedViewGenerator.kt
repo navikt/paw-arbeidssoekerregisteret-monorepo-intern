@@ -8,8 +8,8 @@ import java.io.File
 import java.time.Duration
 
 const val views_path = "materialized_views/"
-val matrialized_views_refresh_interval = Duration.ofHours(6)
-val matrialized_views_max_staleness = Duration.ofHours(7)
+val materializedViewsRefreshInterval = Duration.ofHours(6)
+val materializedViewsMaxStaleness = Duration.ofHours(7)
 
 @JvmInline
 value class Sql(val value: String)
@@ -27,7 +27,7 @@ fun BigQueryAdmin.createMaterializedViews(
     return views
         .map { createMaterializedViewDefinition(datasetName, it) }
         .map { table ->
-            getOrCreate(table)
+            createOrUpdateMaterializedView(table)
             "${table.tableReference.datasetId}.${table.tableReference.tableId}"
         }
 }
@@ -50,10 +50,11 @@ fun createMaterializedViewDefinition(datasetName: DatasetName, view: View<Sql>):
     }
     val viewDefinition = MaterializedViewDefinition()
         .setQuery(view.representation.value)
-        .setRefreshIntervalMs(matrialized_views_refresh_interval.toMillis())
+        .setEnableRefresh(true)
+        .setRefreshIntervalMs(materializedViewsRefreshInterval.toMillis())
         .setAllowNonIncrementalDefinition(true)
     return Table().apply {
         tableReference = tableRef
         materializedView = viewDefinition
-    }.setMaxStaleness("0-0 0 ${matrialized_views_max_staleness.toHours()}:0:0")
+    }.setMaxStaleness("0-0 0 ${materializedViewsMaxStaleness.toHours()}:0:0")
 }
