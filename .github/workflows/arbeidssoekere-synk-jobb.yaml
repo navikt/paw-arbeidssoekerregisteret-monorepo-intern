@@ -67,7 +67,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Deploy to GCP
-        uses: nais/deploy/actions/deploy@fc3eae3edebabdf67f7592102ae16176d5ba3b5f # v2
+        uses: nais/deploy/actions/deploy@027a91857992525139798892f2804b0ca21f4af6 # v2
         env:
           CLUSTER: dev-gcp
           RESOURCE: ./jobs/${{ env.MODULE }}/nais/nais-dev.yaml
@@ -87,7 +87,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Deploy to GCP
-        uses: nais/deploy/actions/deploy@fc3eae3edebabdf67f7592102ae16176d5ba3b5f # v2
+        uses: nais/deploy/actions/deploy@027a91857992525139798892f2804b0ca21f4af6 # v2
         env:
           CLUSTER: prod-gcp
           RESOURCE: ./jobs/${{ env.MODULE }}/nais/nais-prod.yaml
