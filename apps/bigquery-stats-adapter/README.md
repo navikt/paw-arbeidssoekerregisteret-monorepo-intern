@@ -48,6 +48,7 @@ Tabellene under beskriver alle viewene applikasjonen oppretter i datasettet
 | --- | --- |
 | `aktive_perioder_by_har_jobbet_dag_for_dag` ([Grafana](#aktive_perioder_by_har_jobbet_dag_for_dag), [SQL](src/main/resources/materialized_views/aktive_perioder_by_har_jobbet_dag_for_dag.sql)) | Aktive perioder per dag fordelt på `JA`, `NEI` og `UKJENT` ut fra siste bekreftelse som dekker dagen. |
 | `avsluttede_perioder_andel_har_jobbet_per_dag` ([Grafana](#avsluttede_perioder_andel_har_jobbet_per_dag), [SQL](src/main/resources/materialized_views/avsluttede_perioder_andel_har_jobbet_per_dag.sql)) | Daglige periodeavslutninger og gjennomsnittlig andel positive jobbsvar i de siste 2, 10 og 20 bekreftelsene. |
+| `avsluttede_perioder_sammenhengende_har_jobbet_per_uke` ([Grafana](#avsluttede_perioder_sammenhengende_har_jobbet_per_uke), [SQL](src/main/resources/materialized_views/avsluttede_perioder_sammenhengende_har_jobbet_per_uke.sql)) | Ukentlige periodeavslutninger fordelt på antall sammenhengende positive jobbsvar ved avslutning. |
 | `bekreftelse_jobb_og_fortsettelse_per_maaned` ([Grafana](#bekreftelse_jobb_og_fortsettelse_per_maaned), [SQL](src/main/resources/materialized_views/bekreftelse_jobb_og_fortsettelse_per_maaned.sql)) | Månedlige bekreftelser per løsning og brukertype, med antall og andeler for arbeid og ønske om å fortsette. |
 | `bekreftelse_tilgjengelig_hendelser_per_dag_by_gjelder_til` ([Grafana](#bekreftelse_tilgjengelig_hendelser_per_dag_by_gjelder_til), [SQL](src/main/resources/materialized_views/bekreftelse_tilgjengelig_hendelser_per_dag_by_gjelder_til.sql)) | Antall `bekreftelse.tilgjengelig`-hendelser per dag og datoen bekreftelsen gjelder til. |
 | `forste_bekreftelse_som_korttid_indikator` ([Grafana](#forste_bekreftelse_som_korttid_indikator), [SQL](src/main/resources/materialized_views/forste_bekreftelse_som_korttid_indikator.sql)) | Avsluttede perioder fordelt på startmåned, svar om arbeid i første bekreftelse og periodens varighetsintervall. |
@@ -268,6 +269,69 @@ WHERE $__timeFilter(TIMESTAMP(dag, 'Europe/Oslo'))
   AND dag < CURRENT_DATE('Europe/Oslo')
 ORDER BY dag
 ```
+
+<a id="avsluttede_perioder_sammenhengende_har_jobbet_per_uke"></a>
+
+### Sammenhengende positive jobbsvar ved avslutning
+
+Viewet
+`arbeidssoekerregisteret_grafana.avsluttede_perioder_sammenhengende_har_jobbet_per_uke`
+fordeler avsluttede arbeidssøkerperioder etter hvor mange sammenhengende
+bekreftelser med `har_jobbet = true` perioden hadde ved avslutning.
+Bekreftelsene leses bakover fra den nyeste, og rekken stopper ved første
+`har_jobbet = false`.
+
+En periode der siste bekreftelse har `har_jobbet = false`, havner i bøtte `0`.
+En periode med de nyeste svarene `JA, JA, JA, NEI, JA` havner i bøtte `3`.
+Rekker på 10 eller flere samles i `10+`. Perioder uten bekreftelser ligger i en
+egen bøtte.
+
+Viewet har én rad per ISO-uke fra mandag til søndag. Kolonnen `uke_start`
+identifiserer uken, mens `iso_aar` og `iso_uke` kan brukes som merkelapper.
+Hver bøtte finnes både som `antall_*` og `andel_*`. Alle andeler bruker
+`antall_avsluttede_perioder`, inkludert perioder uten bekreftelser, som nevner.
+Dermed summerer bøtteantallene til uketotalen og bøtteandelene til 1.
+
+Viewet tar med perioder som ble avsluttet fra og med 1. september 2025, og
+bruker hele bekreftelseshistorikken til disse periodene når rekken beregnes.
+Cutoff-datoen er en mandag, slik at den første raden dekker en full ISO-uke.
+Ved flere svar for samme `gjelder_fra`–`gjelder_til` brukes det senest
+innsendte svaret.
+
+Eksempel for et stablet panel med antall:
+
+```sql
+SELECT
+    TIMESTAMP(uke_start, 'Europe/Oslo') AS time,
+    antall_ingen_bekreftelser,
+    antall_sammenhengende_ja_0,
+    antall_sammenhengende_ja_1,
+    antall_sammenhengende_ja_2,
+    antall_sammenhengende_ja_3,
+    antall_sammenhengende_ja_4,
+    antall_sammenhengende_ja_5,
+    antall_sammenhengende_ja_6,
+    antall_sammenhengende_ja_7,
+    antall_sammenhengende_ja_8,
+    antall_sammenhengende_ja_9,
+    antall_sammenhengende_ja_10_pluss
+FROM `paw-prod-7151.arbeidssoekerregisteret_grafana.avsluttede_perioder_sammenhengende_har_jobbet_per_uke`
+WHERE $__timeFilter(TIMESTAMP(uke_start, 'Europe/Oslo'))
+  AND uke_start < DATE_TRUNC(CURRENT_DATE('Europe/Oslo'), ISOWEEK)
+ORDER BY uke_start
+```
+
+Filteret utelater inneværende, ufullstendige uke. Viewet eksponerer bare
+ukentlige aggregater i et datasett med bredere tilgang. Basetabellene ligger i
+et teambegrenset datasett, og brukere som kan koble aggregatene til rådata, har
+allerede tilgang til rådataene.
+
+Personvernrisikoen vurderes ut fra totalt antall avslutninger i uken, ikke
+antallet i hver bøtte. En liten bøtte identifiserer ikke en periode når ukens
+samlede populasjon er stor og viewet mangler andre dimensjoner. Vurder
+ukesbasert skjerming og tilgang på nytt dersom uketotalen blir lav, eller hvis
+det legges til dimensjoner som avslutningsårsak, løsning, geografi eller
+brukergruppe.
 
 ## Flere Grafana-spørringer
 
