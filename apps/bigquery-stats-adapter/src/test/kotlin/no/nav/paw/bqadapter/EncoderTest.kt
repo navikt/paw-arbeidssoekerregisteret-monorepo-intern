@@ -28,6 +28,7 @@ class EncoderTest : FreeSpec({
                     encoder.encodeBekreftelseId(opplysningsId)
         }
     }
+
 })
 
 private fun sha256(salt: ByteArray, source: String): String =

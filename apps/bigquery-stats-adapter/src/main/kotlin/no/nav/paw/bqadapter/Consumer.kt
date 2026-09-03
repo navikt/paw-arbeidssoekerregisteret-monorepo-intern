@@ -2,6 +2,7 @@ package no.nav.paw.bqadapter
 
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.arbeidssokerregisteret.api.v1.Profilering
+import no.nav.paw.arbeidssokerregisteret.api.v3.Egenvurdering
 import no.nav.paw.arbeidssokerregisteret.api.v4.OpplysningerOmArbeidssoeker
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
@@ -10,6 +11,7 @@ import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bqadapter.bigquery.AppContext
 import no.nav.paw.bqadapter.bigquery.BEKREFTELSE_HENDELSE_TABELL
 import no.nav.paw.bqadapter.bigquery.BEKRFTELSE_TABELL
+import no.nav.paw.bqadapter.bigquery.EGENVURDERING_TABELL
 import no.nav.paw.bqadapter.bigquery.HENDELSE_TABELL
 import no.nav.paw.bqadapter.bigquery.OPPLYSNINGER_TABELL
 import no.nav.paw.bqadapter.bigquery.PAAVNEGEAV_TABELL
@@ -18,6 +20,7 @@ import no.nav.paw.bqadapter.bigquery.PROFILERING_TABELL
 import no.nav.paw.bqadapter.bigquery.Row
 import no.nav.paw.bqadapter.bigquery.schema.bekreftelseHendelseRad
 import no.nav.paw.bqadapter.bigquery.schema.bekreftelseRad
+import no.nav.paw.bqadapter.bigquery.schema.egenvurderingRad
 import no.nav.paw.bqadapter.bigquery.schema.hendelseRad
 import no.nav.paw.bqadapter.bigquery.schema.opplysningerRad
 import no.nav.paw.bqadapter.bigquery.schema.periodeRad
@@ -51,6 +54,7 @@ fun AppContext.handleRecords(records: Iterable<ConsumerRecord<Long, ByteArray>>)
     lagrePerioder(records.get())
     lagreOpplysninger(records.get())
     lagreProfileringer(records.get())
+    lagreEgenvurderinger(records.get())
     lagreHendelser(records.get())
     lagreBekreftelser(records.get())
     lagrePaaVegneAv(records.get())
@@ -67,6 +71,7 @@ class RecordsByType(source: Iterable<Record<Any>>)  {
         is Periode -> Periode::class
         is OpplysningerOmArbeidssoeker -> OpplysningerOmArbeidssoeker::class
         is Profilering -> Profilering::class
+        is Egenvurdering -> Egenvurdering::class
         is Hendelse -> Hendelse::class
         is Bekreftelse -> Bekreftelse::class
         is PaaVegneAv -> PaaVegneAv::class
@@ -84,6 +89,7 @@ fun AppContext.deserializeRecord(topic: String, bytes: ByteArray): Any? {
         topics.periodeTopic -> deserializers.periodeDeserializer.deserialize(topic, bytes)
         topics.opplysningerTopic -> deserializers.opplysningerDeserializer.deserialize(topic, bytes)
         topics.profileringTopic -> deserializers.profileringDeserializer.deserialize(topic, bytes)
+        topics.egenvurderingTopic -> deserializers.egenvurderingDeserializer.deserialize(topic, bytes)
         topics.hendelseloggTopic -> deserializers.hendelseDeserializer.deserialize(topic, bytes)
         topics.bekreftelseTopic -> deserializers.bekreftelseDeserializer.deserialize(topic, bytes)
         topics.paavnegneavTopic -> deserializers.påVegneAvDeserializers.deserialize(topic, bytes)
@@ -127,6 +133,18 @@ fun AppContext.lagreProfileringer(records: Iterable<Record<Profilering>>) {
             bqDatabase.write(
                 tableName = PROFILERING_TABELL,
                 rows = profileringRader
+            )
+        }
+}
+
+fun AppContext.lagreEgenvurderinger(records: Iterable<Record<Egenvurdering>>) {
+    records.map { record ->
+        Row(id = record.id, value = egenvurderingRad(encoder, record.value))
+    }.takeIf { it.isNotEmpty() }
+        ?.also { egenvurderingRader ->
+            bqDatabase.write(
+                tableName = EGENVURDERING_TABELL,
+                rows = egenvurderingRader
             )
         }
 }

@@ -90,6 +90,7 @@ fun main() {
             bigqueryAppContext.topics.periodeTopic,
             bigqueryAppContext.topics.opplysningerTopic,
             bigqueryAppContext.topics.profileringTopic,
+            bigqueryAppContext.topics.egenvurderingTopic,
             bigqueryAppContext.topics.paavnegneavTopic,
             bigqueryAppContext.topics.bekreftelseTopic,
             bigqueryAppContext.topics.bekreftelseHendelseloggTopic
