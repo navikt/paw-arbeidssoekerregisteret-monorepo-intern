@@ -9,13 +9,13 @@ pluginManagement {
 
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
-    kotlin("jvm") version "2.4.10" apply false
-    kotlin("plugin.serialization") version "2.4.10" apply false
+    kotlin("jvm") version "2.4.20" apply false
+    kotlin("plugin.serialization") version "2.4.20" apply false
     id("com.google.cloud.tools.jib") version "3.5.4" apply false
     id("org.openapi.generator") version "7.24.0" apply false
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1" apply false
     id("com.expediagroup.graphql") version "10.2.2" apply false
-    id("io.github.ben-manes.versions.settings") version "0.61.0"
+    id("io.github.ben-manes.versions.settings") version "0.62.0"
 }
 
 include(
