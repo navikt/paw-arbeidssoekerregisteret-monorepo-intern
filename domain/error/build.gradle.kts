@@ -12,7 +12,7 @@ dependencies {
     //Test
     testImplementation(libs.bundles.unit.testing.kotest)
     testImplementation(libs.jackson.kotlin)
-    testImplementation(libs.jackson.datatype.jsr310)
+    testImplementation(libs.jackson.databind)
     testImplementation(libs.logback.classic)
 }
 

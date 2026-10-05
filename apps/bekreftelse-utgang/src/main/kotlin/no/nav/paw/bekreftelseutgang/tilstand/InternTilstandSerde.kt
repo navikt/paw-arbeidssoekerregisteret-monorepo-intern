@@ -1,12 +1,12 @@
 package no.nav.paw.bekreftelseutgang.tilstand
 
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.JsonDeserializer
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.module.SimpleModule
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import tools.jackson.module.kotlin.jacksonMapperBuilder
+import tools.jackson.databind.cfg.DateTimeFeature
+
+import tools.jackson.core.JsonParser
+import tools.jackson.databind.DeserializationContext
+import tools.jackson.databind.ValueDeserializer
+import tools.jackson.databind.module.SimpleModule
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelse
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseDeserializer
 import org.apache.kafka.common.serialization.Deserializer
@@ -35,17 +35,18 @@ object InternTilstandDeserializer : Deserializer<InternTilstand> {
     }
 }
 
-private val internTilstandObjectMapper = ObjectMapper()
-    .registerKotlinModule()
-    .registerModules(
+private val internTilstandObjectMapper = jacksonMapperBuilder()
+    // Behold Jackson 2-formatet i state store: tidspunkter som tall
+    .enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+    .addModule(
         SimpleModule().addDeserializer(
             BekreftelseHendelse::class.java,
             BekreftelseHendelseJsonDeserializer
         )
     )
-    .registerModules(JavaTimeModule())
+    .build()
 
-object BekreftelseHendelseJsonDeserializer : JsonDeserializer<BekreftelseHendelse>() {
+object BekreftelseHendelseJsonDeserializer : ValueDeserializer<BekreftelseHendelse>() {
     private val deserializer = BekreftelseHendelseDeserializer()
     override fun deserialize(parser: JsonParser, context: DeserializationContext): BekreftelseHendelse =
         deserializer.deserializeNode(context.readTree(parser))

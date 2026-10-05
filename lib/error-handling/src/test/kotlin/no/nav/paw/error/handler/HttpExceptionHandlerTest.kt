@@ -1,13 +1,12 @@
 package no.nav.paw.error.handler
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.kotlinModule
+import tools.jackson.module.kotlin.kotlinModule
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import io.ktor.server.plugins.BadRequestException
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
@@ -26,7 +25,6 @@ class HttpExceptionHandlerTest : FreeSpec({
                 serverInstall(ErrorHandlingPlugin)
                 serverInstall(ServerContentNegotiation) {
                     jackson {
-                        registerModule(JavaTimeModule())
                         kotlinModule()
                     }
                 }
@@ -40,7 +38,6 @@ class HttpExceptionHandlerTest : FreeSpec({
             val client = createClient {
                 install(ClientContentNegotiation) {
                     jackson {
-                        registerModule(JavaTimeModule())
                         kotlinModule()
                     }
                 }

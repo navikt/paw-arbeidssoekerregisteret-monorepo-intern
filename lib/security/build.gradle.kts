@@ -18,7 +18,7 @@ dependencies {
     implementation(libs.ktor.server.auth)
     implementation(libs.logback.classic)
     implementation(libs.nav.security.tokenValidationKtorV3)
-    implementation(libs.ktor.serialization.jackson)
+    implementation(libs.ktor.serialization.jackson3)
 
     //Test
     testImplementation(project(":lib:pdl-client"))
@@ -28,7 +28,7 @@ dependencies {
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.client.contentNegotiation)
     testImplementation(libs.ktor.client.mock)
-    testImplementation(libs.jackson.datatype.jsr310)
+    testImplementation(libs.jackson.databind)
 }
 
 tasks.withType<Test>().configureEach {

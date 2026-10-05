@@ -35,7 +35,7 @@ dependencies {
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.contentNegotiation)
     implementation(libs.ktor.serialization.jvm)
-    implementation(libs.ktor.serialization.jackson)
+    implementation(libs.ktor.serialization.jackson3)
     implementation(libs.nav.security.tokenValidationKtorV3)
     implementation(libs.nav.common.tokenClient)
     implementation(libs.nav.common.tokenClient)
@@ -62,7 +62,7 @@ dependencies {
     implementation(libs.database.hikari.connectionPool)
 
     // Jackson
-    implementation(libs.jackson.datatype.jsr310)
+    implementation(libs.jackson.databind)
     implementation(libs.jackson.kotlin)
 
     // Testing

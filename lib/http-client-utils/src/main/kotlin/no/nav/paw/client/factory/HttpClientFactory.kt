@@ -7,7 +7,7 @@ import io.ktor.client.engine.HttpClientEngineConfig
 import io.ktor.client.engine.HttpClientEngineFactory
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import no.nav.paw.serialization.jackson.configureJackson
 
 fun createHttpClient(

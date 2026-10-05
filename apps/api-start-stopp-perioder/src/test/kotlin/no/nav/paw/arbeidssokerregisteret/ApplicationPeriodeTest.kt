@@ -1,15 +1,13 @@
 package no.nav.paw.arbeidssokerregisteret
 
 import no.nav.paw.test.openapi.OpenApiValidering
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import io.ktor.serialization.jackson.*
+import io.ktor.serialization.jackson3.*
 import io.ktor.server.testing.*
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -52,8 +50,6 @@ class ApplicationPeriodeTest : FunSpec({
                 }
                 install(ContentNegotiation) {
                     jackson {
-                        registerKotlinModule()
-                        registerModule(JavaTimeModule())
                     }
                 }
             }

@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
     implementation(project(":domain:interne-hendelser"))
-    compileOnly(libs.jackson.datatype.jsr310)
+    compileOnly(libs.jackson.databind)
     compileOnly(libs.jackson.kotlin)
 }
 

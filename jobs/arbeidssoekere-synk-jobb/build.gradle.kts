@@ -15,7 +15,7 @@ dependencies {
     implementation(project(":lib:serialization"))
 
     // Ktor
-    implementation(libs.ktor.serialization.jackson)
+    implementation(libs.ktor.serialization.jackson3)
     implementation(libs.ktor.client.cio)
     implementation(libs.ktor.client.contentNegotiation)
 
@@ -24,7 +24,7 @@ dependencies {
 
     // Jackson
     implementation(libs.jackson.kotlin)
-    implementation(libs.jackson.datatype.jsr310)
+    implementation(libs.jackson.databind)
     implementation(libs.jackson.dataformat.csv)
 
     // Instrumentation

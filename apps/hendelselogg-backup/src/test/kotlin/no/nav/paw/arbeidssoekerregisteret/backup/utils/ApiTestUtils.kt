@@ -3,7 +3,7 @@ package no.nav.paw.arbeidssoekerregisteret.backup.utils
 import no.nav.paw.test.openapi.OpenApiValidering
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import io.ktor.server.application.install
 import io.ktor.server.routing.IgnoreTrailingSlash
 import io.ktor.server.routing.route

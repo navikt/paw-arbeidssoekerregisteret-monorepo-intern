@@ -1,16 +1,17 @@
 package no.nav.paw.bekreftelsetjeneste.paavegneav
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import tools.jackson.module.kotlin.jacksonMapperBuilder
+import tools.jackson.databind.cfg.DateTimeFeature
+
+import tools.jackson.module.kotlin.readValue
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
 
-private val bekreftelsePaaVegneAvObjectMapper = ObjectMapper()
-    .registerKotlinModule()
-    .registerModules(JavaTimeModule())
+private val bekreftelsePaaVegneAvObjectMapper = jacksonMapperBuilder()
+    // Behold Jackson 2-formatet i state store: tidspunkter som tall
+    .enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+    .build()
 
 class BekreftelsePaaVegneAvSerde: Serde<PaaVegneAvTilstand> {
     private val bekreftelsePaaVegneAvSerializer = BekreftelsePaaVegneAvSerializer()

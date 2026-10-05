@@ -25,14 +25,13 @@ dependencies {
     implementation(libs.bundles.ktor.server.instrumented)
 
     // Serialization
-    implementation(libs.ktor.serialization.jackson)
+    implementation(libs.ktor.serialization.jackson3)
     implementation(libs.ktor.serialization.kotlinx.json)
-    implementation(libs.jackson.datatype.jsr310)
+    implementation(libs.jackson.databind)
 
     // Tooling
     implementation(libs.arrow.core.core)
     implementation(libs.arrow.functions)
-    implementation(libs.arrow.integration.jackson)
 
     // Logging
     implementation(libs.logback.classic)

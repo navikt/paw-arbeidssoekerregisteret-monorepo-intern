@@ -1,8 +1,8 @@
 package no.nav.paw.bekreftelsetjeneste.tilstand
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import tools.jackson.module.kotlin.jacksonMapperBuilder
+import tools.jackson.databind.cfg.DateTimeFeature
+
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
@@ -29,6 +29,7 @@ object InternTilstandDeserializer : Deserializer<BekreftelseTilstand> {
     }
 }
 
-private val internTilstandObjectMapper = ObjectMapper()
-    .registerKotlinModule()
-    .registerModules(JavaTimeModule())
+private val internTilstandObjectMapper = jacksonMapperBuilder()
+    // Behold Jackson 2-formatet i state store: tidspunkter som tall
+    .enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+    .build()

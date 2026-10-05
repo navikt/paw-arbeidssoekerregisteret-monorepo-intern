@@ -1,17 +1,17 @@
 package no.nav.paw.dev.proxy.api.serialize
 
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.databind.JsonSerializer
-import com.fasterxml.jackson.databind.SerializerProvider
+import tools.jackson.core.JsonGenerator
+import tools.jackson.databind.ValueSerializer
+import tools.jackson.databind.SerializationContext
 import io.ktor.http.Headers
 
-class HeadersSerializer : JsonSerializer<Headers>() {
-    override fun serialize(value: Headers?, generator: JsonGenerator, provider: SerializerProvider) {
+class HeadersSerializer : ValueSerializer<Headers>() {
+    override fun serialize(value: Headers?, generator: JsonGenerator, provider: SerializationContext) {
         if (value == null) return
         val headers = mutableMapOf<String, String?>()
         value.forEach { name, values ->
             headers[name] = values.firstOrNull()
         }
-        generator.writeObject(headers)
+        generator.writePOJO(headers)
     }
 }

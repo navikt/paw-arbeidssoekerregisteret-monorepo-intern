@@ -28,7 +28,7 @@ dependencies {
     implementation(libs.bundles.ktor.server.instrumented)
 
     // Serialization
-    implementation(libs.jackson.datatype.jsr310)
+    implementation(libs.jackson.databind)
     implementation(libs.avro.core)
     implementation(libs.avro.kafkaSerializer)
 

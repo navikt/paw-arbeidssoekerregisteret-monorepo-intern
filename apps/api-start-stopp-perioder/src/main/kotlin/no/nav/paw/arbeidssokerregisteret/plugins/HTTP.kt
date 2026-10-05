@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret.plugins
 
-import com.fasterxml.jackson.databind.DatabindException
+import tools.jackson.databind.DatabindException
 import io.ktor.client.plugins.*
 import io.ktor.http.*
 import io.ktor.server.application.*

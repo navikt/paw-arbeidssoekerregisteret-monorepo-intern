@@ -30,8 +30,8 @@ dependencies {
     implementation(libs.ktor.client.contentNegotiation)
 
     // Serialization
-    implementation(libs.ktor.serialization.jackson)
-    implementation(libs.jackson.datatype.jsr310)
+    implementation(libs.ktor.serialization.jackson3)
+    implementation(libs.jackson.databind)
 
     // Logging
     implementation(libs.logback.classic)

@@ -1,33 +1,22 @@
 package no.nav.paw.serialization.jackson
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinFeature
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.kotlinModule
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.cfg.DateTimeFeature
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.jacksonMapperBuilder
 
 val buildObjectMapper: ObjectMapper
-    get() = jacksonObjectMapper().apply {
-        configureJackson()
-    }
+    get() = jacksonMapperBuilder()
+        .apply { configureJackson() }
+        .build()
 
-fun ObjectMapper.configureJackson(
+fun JsonMapper.Builder.configureJackson(
     propertyInclusion: JsonInclude.Include = JsonInclude.Include.NON_NULL
 ) {
-    setDefaultPropertyInclusion(propertyInclusion)
+    changeDefaultPropertyInclusion { JsonInclude.Value.construct(propertyInclusion, propertyInclusion) }
     disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-    disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-    disable(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS)
-    registerModule(JavaTimeModule())
-    kotlinModule {
-        withReflectionCacheSize(512)
-        disable(KotlinFeature.NullIsSameAsDefault)
-        disable(KotlinFeature.SingletonSupport)
-        disable(KotlinFeature.StrictNullChecks)
-        enable(KotlinFeature.NullToEmptyCollection)
-        enable(KotlinFeature.NullToEmptyMap)
-    }
+    disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+    disable(DateTimeFeature.WRITE_DURATIONS_AS_TIMESTAMPS)
 }

@@ -3,7 +3,7 @@ package no.nav.paw.dolly.api.context
 import no.nav.paw.test.openapi.OpenApiValidering
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.micrometer.prometheusmetrics.PrometheusConfig

@@ -1,10 +1,13 @@
 package no.nav.paw.arbeidssokerregisteret.intern.v1
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinFeature
-import com.fasterxml.jackson.module.kotlin.KotlinModule
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.databind.cfg.EnumFeature
+import tools.jackson.databind.cfg.DateTimeFeature
+
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.KotlinFeature
+import tools.jackson.module.kotlin.KotlinModule
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
@@ -44,10 +47,12 @@ class HendelseDeserializer(private val objectMapper: ObjectMapper) : Deserialize
 
 }
 
-private fun hendelseObjectMapper(): ObjectMapper = ObjectMapper()
+private fun hendelseObjectMapper(): ObjectMapper = JsonMapper.builder()
     .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-    .enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE)
-    .registerModules(
+    .enable(EnumFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE)
+    // Behold Jackson 2-formatet på topic: tidspunkter som tall
+    .enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+    .addModule(
         KotlinModule.Builder()
             .withReflectionCacheSize(512)
             .configure(KotlinFeature.NullToEmptyCollection, true)
@@ -55,9 +60,9 @@ private fun hendelseObjectMapper(): ObjectMapper = ObjectMapper()
             .configure(KotlinFeature.NullIsSameAsDefault, false)
             .configure(KotlinFeature.SingletonSupport, false)
             .configure(KotlinFeature.StrictNullChecks, false)
-            .build(),
-        JavaTimeModule()
+            .build()
     )
+    .build()
 
 fun deserialize(objectMapper: ObjectMapper, json: ByteArray): Hendelse {
     val node = objectMapper.readTree(json)

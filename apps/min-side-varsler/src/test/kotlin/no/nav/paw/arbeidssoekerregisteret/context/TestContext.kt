@@ -1,13 +1,13 @@
 package no.nav.paw.arbeidssoekerregisteret.context
 
 import no.nav.paw.test.openapi.OpenApiValidering
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectMapper
 import com.nimbusds.jwt.SignedJWT
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.micrometer.prometheusmetrics.PrometheusConfig

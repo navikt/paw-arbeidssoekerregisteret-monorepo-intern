@@ -2,7 +2,7 @@ package no.nav.paw.kafkakeygenerator.client
 
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient
 import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration

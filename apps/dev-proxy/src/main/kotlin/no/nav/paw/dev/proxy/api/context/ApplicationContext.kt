@@ -2,7 +2,7 @@ package no.nav.paw.dev.proxy.api.context
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.paw.client.factory.createHttpClient

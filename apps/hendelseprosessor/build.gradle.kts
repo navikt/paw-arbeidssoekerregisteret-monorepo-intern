@@ -16,7 +16,7 @@ dependencies {
     implementation(project(":lib:hoplite-config"))
 
     implementation(libs.opentelemetry.annotations)
-    implementation(libs.jackson.datatype.jsr310)
+    implementation(libs.jackson.databind)
     implementation(libs.jackson.kotlin)
     implementation(libs.nav.common.log)
     implementation(libs.kafka.clients)

@@ -2,8 +2,6 @@ package no.nav.paw.arbeidssokerregisteret
 
 import no.nav.paw.test.openapi.OpenApiValidering
 import arrow.core.right
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -15,7 +13,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.append
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import io.ktor.server.auth.authenticate
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.testApplication
@@ -88,8 +86,6 @@ class InngangSomBrukerTest : FreeSpec({
                     }
                     install(ContentNegotiation) {
                         jackson {
-                            registerKotlinModule()
-                            registerModule(JavaTimeModule())
                         }
                     }
                 }
@@ -152,8 +148,6 @@ class InngangSomBrukerTest : FreeSpec({
                     }
                     install(ContentNegotiation) {
                         jackson {
-                            registerKotlinModule()
-                            registerModule(JavaTimeModule())
                         }
                     }
                 }

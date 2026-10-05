@@ -1,15 +1,18 @@
 package no.nav.paw.arbeidssokerregisteret
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinFeature
-import com.fasterxml.jackson.module.kotlin.KotlinModule
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.databind.cfg.DateTimeFeature
+
+import tools.jackson.module.kotlin.KotlinFeature
+import tools.jackson.module.kotlin.KotlinModule
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import org.apache.kafka.common.serialization.Serializer
 
 class HendelseSerializer : Serializer<Hendelse> {
-    private val objectMapper = ObjectMapper()
-        .registerModules(
+    private val objectMapper = JsonMapper.builder()
+        // Behold Jackson 2-formatet på topic: tidspunkter som tall
+        .enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+        .addModule(
             KotlinModule.Builder()
                 .withReflectionCacheSize(512)
                 .configure(KotlinFeature.NullToEmptyCollection, true)
@@ -17,9 +20,9 @@ class HendelseSerializer : Serializer<Hendelse> {
                 .configure(KotlinFeature.NullIsSameAsDefault, false)
                 .configure(KotlinFeature.SingletonSupport, false)
                 .configure(KotlinFeature.StrictNullChecks, false)
-                .build(),
-            JavaTimeModule()
+                .build()
         )
+        .build()
 
     override fun serialize(topic: String?, data: Hendelse): ByteArray {
         return objectMapper.writeValueAsBytes(data)

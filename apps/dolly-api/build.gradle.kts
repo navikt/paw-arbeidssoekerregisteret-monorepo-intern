@@ -38,9 +38,9 @@ dependencies {
     implementation(libs.ktor.client.contentNegotiation)
 
     // Serialization
-    implementation(libs.ktor.serialization.jackson)
+    implementation(libs.ktor.serialization.jackson3)
     implementation(libs.ktor.serialization.kotlinx.json)
-    implementation(libs.jackson.datatype.jsr310)
+    implementation(libs.jackson.databind)
 
     // Authentication
     implementation(libs.nav.security.tokenValidationKtorV3)

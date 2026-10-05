@@ -1,17 +1,20 @@
 package no.nav.paw.identitet.internehendelser
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.module.kotlin.jacksonMapperBuilder
+import tools.jackson.databind.cfg.DateTimeFeature
+
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.ObjectMapper
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
 import kotlin.reflect.KClass
 
 private val buildObjectMapper
-    get(): ObjectMapper = jacksonObjectMapper()
-        .registerModules(JavaTimeModule())
+    get(): ObjectMapper = jacksonMapperBuilder()
+        // Behold Jackson 2-formatet på topic: tidspunkter som tall
+        .enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+        .build()
 
 class IdentitetHendelseSerde(
     private val objectMapper: ObjectMapper = buildObjectMapper

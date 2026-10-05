@@ -1,7 +1,7 @@
 package no.nav.paw.dev.proxy.api.model
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.annotation.JsonSerialize
 import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpStatusCode

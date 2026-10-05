@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.topology
 
-import com.fasterxml.jackson.module.kotlin.readValue
+import tools.jackson.module.kotlin.readValue
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContain

@@ -1,18 +1,23 @@
 package no.nav.paw.arbeidssokerregisteret.app.tilstand
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.KotlinFeature
-import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.fasterxml.jackson.module.kotlin.readValue
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.databind.cfg.DateTimeFeature
+
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.KotlinFeature
+import tools.jackson.module.kotlin.KotlinModule
+import tools.jackson.module.kotlin.treeToValue
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
 
 class TilstandSerde : Serde<TilstandV1> {
-    private val objectMapper = ObjectMapper()
+    private val objectMapper = JsonMapper.builder()
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .registerModules(
+        // Behold Jackson 2-formatet i state store: tidspunkter som tall
+        .enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+        .addModule(
             KotlinModule.Builder()
                 .withReflectionCacheSize(512)
                 .configure(KotlinFeature.NullToEmptyCollection, true)
@@ -20,9 +25,9 @@ class TilstandSerde : Serde<TilstandV1> {
                 .configure(KotlinFeature.NullIsSameAsDefault, false)
                 .configure(KotlinFeature.SingletonSupport, false)
                 .configure(KotlinFeature.StrictNullChecks, false)
-                .build(),
-            com.fasterxml.jackson.datatype.jsr310.JavaTimeModule()
+                .build()
         )
+        .build()
     override fun serializer() = TilstandSerializer(objectMapper)
     override fun deserializer() = TilstandDeserializer(objectMapper)
 }
@@ -44,7 +49,7 @@ class TilstandDeserializer(private val objectMapper: ObjectMapper): Deserializer
         }
         val node = objectMapper.readTree(data)
         return when (val classVersion = node.get("classVersion")?.asText()) {
-            TilstandV1.classVersion -> objectMapper.readValue<TilstandV1>(node.traverse())
+            TilstandV1.classVersion -> objectMapper.treeToValue<TilstandV1>(node)
             else -> throw IllegalArgumentException("Ukjent version av intern tilstandsklasse: '$classVersion', bytes=${data.size}")
         }
     }

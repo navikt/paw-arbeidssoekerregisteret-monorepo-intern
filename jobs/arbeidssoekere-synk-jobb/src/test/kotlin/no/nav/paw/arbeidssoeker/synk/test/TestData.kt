@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssoeker.synk.test
 
-import com.fasterxml.jackson.module.kotlin.readValue
+import tools.jackson.module.kotlin.readValue
 import kotlinx.coroutines.runBlocking
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.OutgoingContent

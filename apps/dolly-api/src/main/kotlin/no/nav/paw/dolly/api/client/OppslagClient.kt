@@ -9,7 +9,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import no.nav.paw.client.factory.createHttpClient
 import no.nav.paw.dolly.api.config.OppslagClientConfig
 import no.nav.paw.dolly.api.model.OppslagRequest

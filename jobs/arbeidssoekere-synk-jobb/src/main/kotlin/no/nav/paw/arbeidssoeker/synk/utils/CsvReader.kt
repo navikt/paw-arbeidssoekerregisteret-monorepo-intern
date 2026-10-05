@@ -1,11 +1,10 @@
 package no.nav.paw.arbeidssoeker.synk.utils
 
-import com.fasterxml.jackson.databind.MappingIterator
-import com.fasterxml.jackson.databind.ObjectReader
-import com.fasterxml.jackson.dataformat.csv.CsvMapper
-import com.fasterxml.jackson.dataformat.csv.CsvSchema
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinModule
+import tools.jackson.databind.MappingIterator
+import tools.jackson.databind.ObjectReader
+import tools.jackson.dataformat.csv.CsvMapper
+import tools.jackson.dataformat.csv.CsvSchema
+import tools.jackson.module.kotlin.KotlinModule
 import no.nav.paw.arbeidssoeker.synk.config.JobConfig
 import no.nav.paw.arbeidssoeker.synk.model.ArbeidssoekerFileRow
 import java.net.URI
@@ -33,9 +32,9 @@ private fun buildCsvSchema(
     .build()
 
 abstract class CsvReader<T : Any>(csvSchema: CsvSchema, kClass: KClass<T>) {
-    private val csvReader: ObjectReader = CsvMapper()
-        .registerModule(KotlinModule.Builder().build())
-        .registerModule(JavaTimeModule())
+    private val csvReader: ObjectReader = CsvMapper.builder()
+        .addModule(KotlinModule.Builder().build())
+        .build()
         .readerFor(kClass.java)
         .with(csvSchema)
 

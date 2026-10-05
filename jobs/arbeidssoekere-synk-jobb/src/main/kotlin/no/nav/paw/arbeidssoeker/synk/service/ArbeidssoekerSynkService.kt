@@ -1,6 +1,6 @@
 package no.nav.paw.arbeidssoeker.synk.service
 
-import com.fasterxml.jackson.databind.MappingIterator
+import tools.jackson.databind.MappingIterator
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.paw.arbeidssoeker.synk.config.JobConfig
 import no.nav.paw.arbeidssoeker.synk.consumer.InngangHttpConsumer

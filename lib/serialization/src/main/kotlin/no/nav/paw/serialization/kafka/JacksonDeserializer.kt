@@ -1,7 +1,7 @@
 package no.nav.paw.serialization.kafka
 
-import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.core.JacksonException
+import tools.jackson.databind.ObjectMapper
 import no.nav.paw.config.env.ProdGcp
 import no.nav.paw.config.env.RuntimeEnvironment
 import no.nav.paw.config.env.currentRuntimeEnvironment
@@ -19,7 +19,7 @@ open class JacksonDeserializer<T : Any>(
         try {
             return objectMapper.readValue(data, clazz.java)
         } catch (e: Exception) {
-            if (runtimeEnvironment is ProdGcp && e is JsonProcessingException) e.clearLocation()
+            if (runtimeEnvironment is ProdGcp && e is JacksonException) e.clearLocation()
             throw e
         }
     }

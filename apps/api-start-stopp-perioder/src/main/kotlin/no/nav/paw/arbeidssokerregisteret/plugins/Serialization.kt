@@ -1,15 +1,15 @@
 package no.nav.paw.arbeidssokerregisteret.plugins
 
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer
-import com.fasterxml.jackson.databind.module.SimpleModule
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.serialization.jackson.jackson
+import tools.jackson.databind.cfg.DateTimeFeature
+
+import tools.jackson.core.JsonParser
+import tools.jackson.databind.DeserializationContext
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.SerializationFeature
+import tools.jackson.databind.deser.std.StdDeserializer
+import tools.jackson.databind.module.SimpleModule
+import io.ktor.serialization.jackson3.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
@@ -27,22 +27,18 @@ import java.time.LocalDate
 fun Application.configureSerialization() {
     install(ContentNegotiation) {
         jackson {
-            disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-            registerModule(JavaTimeModule())
-            registerKotlinModule()
-            registerModule(SimpleModule().addDeserializer(Detaljer::class.java, DetaljerDeserializer()))
+            addModule(SimpleModule().addDeserializer(Detaljer::class.java, DetaljerDeserializer()))
         }
     }
 }
 
-class DetaljerDeserializer : StdDeserializer<Detaljer>(null as Class<Detaljer>?) {
+class DetaljerDeserializer : StdDeserializer<Detaljer>(Detaljer::class.java) {
 
     @WithSpan
-    override fun deserialize(parser: JsonParser?, context: DeserializationContext?): Detaljer? {
-        if (parser == null) return null
-        if (context == null) return null
-        val node = parser.codec.readTree<JsonNode>(parser)
+    override fun deserialize(parser: JsonParser, context: DeserializationContext): Detaljer? {
+        val node: JsonNode = context.readTree(parser)
         return Detaljer(
             gjelderFraDatoIso8601 = node.get(GJELDER_FRA_DATO)
                 ?.asText()

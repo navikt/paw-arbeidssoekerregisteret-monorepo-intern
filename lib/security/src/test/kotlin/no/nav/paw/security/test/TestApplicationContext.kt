@@ -1,11 +1,11 @@
 package no.nav.paw.security.test
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import tools.jackson.databind.cfg.DateTimeFeature
+
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.SerializationFeature
 import io.ktor.client.HttpClient
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.auth.authentication
@@ -40,10 +40,8 @@ class TestApplicationContext {
         return createClient {
             install(ClientContentNegotiation) {
                 jackson {
-                    disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                    disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
                     disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                    registerModule(JavaTimeModule())
-                    registerKotlinModule()
                 }
             }
         }
@@ -127,10 +125,8 @@ class TestApplicationContext {
     private fun Application.configureSerialization() {
         install(ServerContentNegotiation) {
             jackson {
-                disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
                 disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                registerModule(JavaTimeModule())
-                registerKotlinModule()
             }
         }
     }

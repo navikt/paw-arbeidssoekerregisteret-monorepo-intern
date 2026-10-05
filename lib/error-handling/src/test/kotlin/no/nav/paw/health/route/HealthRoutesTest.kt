@@ -5,7 +5,7 @@ import io.kotest.matchers.shouldBe
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import io.ktor.server.routing.IgnoreTrailingSlash
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.testApplication

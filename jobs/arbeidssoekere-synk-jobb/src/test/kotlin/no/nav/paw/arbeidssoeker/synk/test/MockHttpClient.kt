@@ -10,7 +10,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import no.nav.paw.arbeidssoeker.synk.config.JobConfig
 import no.nav.paw.arbeidssoeker.synk.model.OpprettPeriodeRequest
 import no.nav.paw.arbeidssoeker.synk.model.asOpprettPeriodeFeilType

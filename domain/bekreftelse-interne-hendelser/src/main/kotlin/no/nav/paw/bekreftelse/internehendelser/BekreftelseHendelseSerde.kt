@@ -1,18 +1,21 @@
 package no.nav.paw.bekreftelse.internehendelser
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import tools.jackson.module.kotlin.jacksonMapperBuilder
+import tools.jackson.module.kotlin.treeToValue
+import tools.jackson.databind.cfg.DateTimeFeature
+
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.readValue
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
 import kotlin.reflect.KClass
 
-private val objectMapper: ObjectMapper = ObjectMapper()
-    .registerKotlinModule().
-    registerModules(JavaTimeModule())
+private val objectMapper: ObjectMapper = jacksonMapperBuilder()
+    // Behold Jackson 2-formatet på topic: tidspunkter som tall
+    .enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+    .build()
 
 class BekreftelseHendelseSerde: Serde<BekreftelseHendelse> {
     override fun serializer(): Serializer<BekreftelseHendelse> {
@@ -40,16 +43,16 @@ class BekreftelseHendelseDeserializer: Deserializer<BekreftelseHendelse> {
 
     fun deserializeNode(node: JsonNode) =
         when (val hendelseType = node.get("hendelseType")?.asText()) {
-            leveringsfristUtloeptHendelseType -> objectMapper.readValue<LeveringsfristUtloept>(node.traverse())
-            eksternGracePeriodeUtloeptHendelseType -> objectMapper.readValue<EksternGracePeriodeUtloept>(node.traverse())
-            registerGracePeriodeUtloeptHendelseType -> objectMapper.readValue<RegisterGracePeriodeUtloept>(node.traverse())
-            bekreftelseTilgjengeligHendelseType -> objectMapper.readValue<BekreftelseTilgjengelig>(node.traverse())
-            meldingMottattHendelseType -> objectMapper.readValue<BekreftelseMeldingMottatt>(node.traverse())
-            periodeAvsluttetHendelsesType -> objectMapper.readValue<PeriodeAvsluttet>(node.traverse())
-            registerGracePeriodeGjenstaaendeTid -> objectMapper.readValue<RegisterGracePeriodeGjenstaaendeTid>(node.traverse())
-            baOmAaAvsluttePeriodeHendelsesType -> objectMapper.readValue<BaOmAaAvsluttePeriode>(node.traverse())
-            bekreftelsePaaVegneAvStartetHendelsesType -> objectMapper.readValue<BekreftelsePaaVegneAvStartet>(node.traverse())
-            registerGracePeriodeUtloeptEtterEksternInnsamlingHendelseType -> objectMapper.readValue<RegisterGracePeriodeUtloeptEtterEksternInnsamling>(node.traverse())
+            leveringsfristUtloeptHendelseType -> objectMapper.treeToValue<LeveringsfristUtloept>(node)
+            eksternGracePeriodeUtloeptHendelseType -> objectMapper.treeToValue<EksternGracePeriodeUtloept>(node)
+            registerGracePeriodeUtloeptHendelseType -> objectMapper.treeToValue<RegisterGracePeriodeUtloept>(node)
+            bekreftelseTilgjengeligHendelseType -> objectMapper.treeToValue<BekreftelseTilgjengelig>(node)
+            meldingMottattHendelseType -> objectMapper.treeToValue<BekreftelseMeldingMottatt>(node)
+            periodeAvsluttetHendelsesType -> objectMapper.treeToValue<PeriodeAvsluttet>(node)
+            registerGracePeriodeGjenstaaendeTid -> objectMapper.treeToValue<RegisterGracePeriodeGjenstaaendeTid>(node)
+            baOmAaAvsluttePeriodeHendelsesType -> objectMapper.treeToValue<BaOmAaAvsluttePeriode>(node)
+            bekreftelsePaaVegneAvStartetHendelsesType -> objectMapper.treeToValue<BekreftelsePaaVegneAvStartet>(node)
+            registerGracePeriodeUtloeptEtterEksternInnsamlingHendelseType -> objectMapper.treeToValue<RegisterGracePeriodeUtloeptEtterEksternInnsamling>(node)
             else -> throw IllegalArgumentException("Ukjent hendelseType: $hendelseType")
         }
 

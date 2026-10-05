@@ -8,9 +8,9 @@ dependencies {
     compileOnly(project(":lib:hoplite-config"))
     compileOnly(libs.ktor.server.core)
     compileOnly(libs.ktor.server.contentNegotiation)
-    compileOnly(libs.ktor.serialization.jackson)
+    compileOnly(libs.ktor.serialization.jackson3)
     compileOnly(libs.jackson.kotlin)
-    compileOnly(libs.jackson.datatype.jsr310)
+    compileOnly(libs.jackson.databind)
     compileOnly(libs.kafka.clients)
 
     testImplementation(libs.test.junit5.runner)

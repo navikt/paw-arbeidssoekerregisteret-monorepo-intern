@@ -1,13 +1,12 @@
 package no.nav.paw.tilgangskontroll
 
 import no.nav.paw.test.openapi.OpenApiValidering
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.nimbusds.jwt.SignedJWT
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.auth.authenticate
 import io.ktor.server.routing.routing
@@ -64,7 +63,6 @@ class TilgangskontrollTest : FreeSpec({
                 }
                 install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
                     jackson {
-                        registerKotlinModule()
                     }
                 }
             }

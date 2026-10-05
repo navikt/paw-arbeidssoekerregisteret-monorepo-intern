@@ -39,7 +39,7 @@ dependencies {
     implementation(libs.avro.kafkaStreamsSerde)
 
     // Ktor
-    implementation(libs.ktor.serialization.jackson)
+    implementation(libs.ktor.serialization.jackson3)
 
     // Ktor Server
     implementation(libs.bundles.ktor.server.instrumented)

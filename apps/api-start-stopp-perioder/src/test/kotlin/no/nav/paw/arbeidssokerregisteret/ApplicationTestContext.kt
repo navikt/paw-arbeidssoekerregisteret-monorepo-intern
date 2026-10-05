@@ -1,8 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret
 
 import no.nav.paw.test.openapi.OpenApiValidering
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.nimbusds.jwt.SignedJWT
 import io.kotest.assertions.AssertionErrorBuilder.Companion.fail
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -18,7 +16,7 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.append
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import io.mockk.coEvery
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.ApiV2ArbeidssokerPeriodePutRequest
 import no.nav.paw.arbeidssoekerregisteret.api.startstopp.models.Feilretting
@@ -56,8 +54,6 @@ fun HttpClientConfig<out io.ktor.client.engine.HttpClientEngineConfig>.defaultCo
     }
     install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
         jackson {
-            registerKotlinModule()
-            registerModule(JavaTimeModule())
         }
     }
 }

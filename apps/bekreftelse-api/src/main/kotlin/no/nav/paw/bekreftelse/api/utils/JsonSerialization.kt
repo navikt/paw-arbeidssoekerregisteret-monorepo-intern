@@ -1,6 +1,6 @@
 package no.nav.paw.bekreftelse.api.utils
 
-import com.fasterxml.jackson.module.kotlin.readValue
+import tools.jackson.module.kotlin.readValue
 import no.nav.paw.bekreftelse.internehendelser.BekreftelseTilgjengelig
 import no.nav.paw.serialization.jackson.buildObjectMapper
 

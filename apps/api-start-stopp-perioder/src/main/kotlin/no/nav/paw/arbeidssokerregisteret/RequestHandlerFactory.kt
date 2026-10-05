@@ -1,9 +1,8 @@
 package no.nav.paw.arbeidssokerregisteret
 
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient
 import no.nav.paw.arbeidssokerregisteret.application.OpplysningerRequestHandler
@@ -81,7 +80,6 @@ private fun AzureAdMachineToMachineTokenClient.clientsFactory(
         httpClient = HttpClient {
             install(ContentNegotiation) {
                 jackson {
-                    registerKotlinModule()
                 }
             }
         },

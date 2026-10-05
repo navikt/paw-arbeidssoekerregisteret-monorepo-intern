@@ -1,6 +1,6 @@
 package no.nav.paw.serialization.kafka
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectMapper
 import no.nav.paw.config.env.RuntimeEnvironment
 import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.serialization.jackson.buildObjectMapper

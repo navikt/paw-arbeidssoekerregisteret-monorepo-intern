@@ -1,10 +1,8 @@
 package no.nav.paw.arbeidssoekerregisteret.backup.brukerstoette
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient
 import no.nav.paw.config.env.currentRuntimeEnvironment
 import no.nav.paw.config.hoplite.loadNaisOrLocalConfiguration
@@ -27,8 +25,6 @@ fun oppslagsApiClient(
     val httpClient = HttpClient {
         install(ContentNegotiation) {
             jackson {
-                registerModule(JavaTimeModule())
-                registerKotlinModule()
             }
         }
     }

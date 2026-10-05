@@ -1,7 +1,7 @@
 package no.nav.paw.kafkakeygenerator.context
 
 import no.nav.paw.test.openapi.OpenApiValidering
-import com.fasterxml.jackson.module.kotlin.readValue
+import tools.jackson.module.kotlin.readValue
 import com.nimbusds.jwt.SignedJWT
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
@@ -19,7 +19,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.append
 import io.ktor.http.content.TextContent
 import io.ktor.http.headersOf
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.logging.LoggingMeterRegistry
