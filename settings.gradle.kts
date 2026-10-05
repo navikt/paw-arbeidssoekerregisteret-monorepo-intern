@@ -58,6 +58,7 @@ include(
     // test
     "test:test-data-lib",
     "test:kafka-streams-test-functions",
+    "test:openapi-validering",
     // jobs
     "jobs:arbeidssoekere-synk-jobb",
     // apps

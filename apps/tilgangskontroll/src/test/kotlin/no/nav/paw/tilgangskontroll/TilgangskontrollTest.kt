@@ -1,5 +1,6 @@
 package no.nav.paw.tilgangskontroll
 
+import no.nav.paw.test.openapi.OpenApiValidering
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.nimbusds.jwt.SignedJWT
 import io.kotest.core.spec.style.FreeSpec
@@ -58,6 +59,9 @@ class TilgangskontrollTest : FreeSpec({
                 }
             }
             val client = createClient {
+                install(OpenApiValidering) {
+                    spesifikasjon("src/main/resources/openapi/tilgangskontroll.yaml")
+                }
                 install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
                     jackson {
                         registerKotlinModule()

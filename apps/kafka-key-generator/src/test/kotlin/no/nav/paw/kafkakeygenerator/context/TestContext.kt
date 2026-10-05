@@ -1,5 +1,6 @@
 package no.nav.paw.kafkakeygenerator.context
 
+import no.nav.paw.test.openapi.OpenApiValidering
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.nimbusds.jwt.SignedJWT
 import io.ktor.client.HttpClient
@@ -168,6 +169,11 @@ class TestContext private constructor(
 
     fun ApplicationTestBuilder.buildTestClient(): HttpClient {
         return createClient {
+            install(OpenApiValidering) {
+                spesifikasjon("src/main/resources/openapi/documentation.yaml")
+                spesifikasjon("src/main/resources/openapi/record-key-api-spec.yaml")
+                kjenteAvvik(kjenteOpenApiAvvik)
+            }
             install(ContentNegotiation) {
                 jackson {
                     configureJackson()

@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret
 
+import no.nav.paw.test.openapi.OpenApiValidering
 import arrow.core.right
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -80,6 +81,11 @@ class InngangSomBrukerTest : FreeSpec({
                     )
                 )
                 val client = createClient {
+                    install(OpenApiValidering) {
+                        spesifikasjon("src/main/resources/openapi/startstopp.yaml")
+                        spesifikasjon("src/main/resources/openapi/opplysninger.yaml")
+                        kjenteAvvik(kjenteOpenApiAvvik)
+                    }
                     install(ContentNegotiation) {
                         jackson {
                             registerKotlinModule()
@@ -139,6 +145,11 @@ class InngangSomBrukerTest : FreeSpec({
                     )
                 )
                 val client = createClient {
+                    install(OpenApiValidering) {
+                        spesifikasjon("src/main/resources/openapi/startstopp.yaml")
+                        spesifikasjon("src/main/resources/openapi/opplysninger.yaml")
+                        kjenteAvvik(kjenteOpenApiAvvik)
+                    }
                     install(ContentNegotiation) {
                         jackson {
                             registerKotlinModule()

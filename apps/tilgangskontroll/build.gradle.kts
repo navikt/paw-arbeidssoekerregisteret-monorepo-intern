@@ -40,6 +40,7 @@ dependencies {
     implementation(libs.jackson.datatype.jsr310)
     implementation(libs.ktor.server.coreJvm)
     implementation(libs.ktor.server.openapi)
+    testImplementation(project(":test:openapi-validering"))
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.test.junit5.runner)
     testImplementation(libs.test.kotest.assertionsCore)

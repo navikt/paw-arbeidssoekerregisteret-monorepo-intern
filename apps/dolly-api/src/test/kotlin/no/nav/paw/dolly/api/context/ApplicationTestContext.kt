@@ -1,5 +1,6 @@
 package no.nav.paw.dolly.api.context
 
+import no.nav.paw.test.openapi.OpenApiValidering
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.jackson.jackson
@@ -77,6 +78,10 @@ class ApplicationTestContext {
 
     fun ApplicationTestBuilder.configureTestClient(): HttpClient {
         return createClient {
+            install(OpenApiValidering) {
+                spesifikasjon("src/main/resources/openapi/documentation.yaml")
+                kjenteAvvik(kjenteOpenApiAvvik)
+            }
             install(ContentNegotiation) {
                 jackson {
                     configureJackson()

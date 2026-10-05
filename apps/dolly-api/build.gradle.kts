@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.avro.kafkaStreamsSerde)
 
     // Test
+    testImplementation(project(":test:openapi-validering"))
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.client.mock)
     testImplementation(libs.bundles.unit.testing.kotest)

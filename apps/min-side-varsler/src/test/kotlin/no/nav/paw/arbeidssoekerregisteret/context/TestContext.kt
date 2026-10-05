@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssoekerregisteret.context
 
+import no.nav.paw.test.openapi.OpenApiValidering
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.nimbusds.jwt.SignedJWT
 import com.zaxxer.hikari.HikariConfig
@@ -94,6 +95,10 @@ open class TestContext(
 
     fun ApplicationTestBuilder.configureTestClient(): HttpClient {
         return createClient {
+            install(OpenApiValidering) {
+                spesifikasjon("src/main/resources/openapi/documentation.yaml")
+                kjenteAvvik(kjenteOpenApiAvvik)
+            }
             install(ContentNegotiation) {
                 jackson {
                     configureJackson()

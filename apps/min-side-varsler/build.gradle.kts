@@ -68,6 +68,7 @@ dependencies {
     implementation(libs.nav.security.tokenValidationKtorV3)
 
     // Testing
+    testImplementation(project(":test:openapi-validering"))
     testImplementation(project(":test:test-data-lib"))
     testImplementation(project(":lib:kafka-key-generator-client"))
     testImplementation(libs.bundles.unit.testing.kotest)

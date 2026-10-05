@@ -76,6 +76,7 @@ dependencies {
     implementation(libs.logstash.logback.encoder)
 
     // Tester
+    testImplementation(project(":test:openapi-validering"))
     testImplementation(libs.bundles.unit.testing.kotest)
     testImplementation(libs.test.testContainers.core)
     testImplementation(libs.test.testContainers.postgresql)

@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret
 
+import no.nav.paw.test.openapi.OpenApiValidering
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FunSpec
@@ -44,6 +45,11 @@ class ApplicationPeriodeTest : FunSpec({
                 arbeidssokerRoutesV2(startStoppRequestHandler)
             }
             val client = createClient {
+                install(OpenApiValidering) {
+                    spesifikasjon("src/main/resources/openapi/startstopp.yaml")
+                    spesifikasjon("src/main/resources/openapi/opplysninger.yaml")
+                    kjenteAvvik(kjenteOpenApiAvvik)
+                }
                 install(ContentNegotiation) {
                     jackson {
                         registerKotlinModule()

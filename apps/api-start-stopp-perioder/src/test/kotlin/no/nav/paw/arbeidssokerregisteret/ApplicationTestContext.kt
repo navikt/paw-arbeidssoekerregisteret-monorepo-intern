@@ -1,5 +1,6 @@
 package no.nav.paw.arbeidssokerregisteret
 
+import no.nav.paw.test.openapi.OpenApiValidering
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.nimbusds.jwt.SignedJWT
@@ -48,6 +49,11 @@ import org.apache.kafka.clients.producer.ProducerRecord
 
 
 fun HttpClientConfig<out io.ktor.client.engine.HttpClientEngineConfig>.defaultConfig() {
+    install(OpenApiValidering) {
+        spesifikasjon("src/main/resources/openapi/startstopp.yaml")
+        spesifikasjon("src/main/resources/openapi/opplysninger.yaml")
+        kjenteAvvik(kjenteOpenApiAvvik)
+    }
     install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
         jackson {
             registerKotlinModule()
