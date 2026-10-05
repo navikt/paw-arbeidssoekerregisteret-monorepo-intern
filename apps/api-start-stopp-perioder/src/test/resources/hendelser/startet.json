@@ -1,0 +1,18 @@
+{
+  "hendelseId":"7db3818c-0bcd-4037-9ce4-ec8c2c4bff07",
+  "id":152338,
+  "identitetsnummer":"29518100112",
+  "metadata":{
+    "tidspunkt":1790690278.5195227,
+    "utfoertAv":{
+      "type":"SLUTTBRUKER",
+      "id":"29518100112",
+      "sikkerhetsnivaa":null
+    },
+    "kilde":"Dolly",
+    "aarsak":"Registrering av arbeidssøker i Dolly",
+    "tidspunktFraKilde":null
+  },
+  "opplysninger":[],
+  "hendelseType":"intern.v1.startet"
+}
