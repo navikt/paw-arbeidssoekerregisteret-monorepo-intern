@@ -23,7 +23,7 @@ import no.nav.paw.kafkakeygenerator.client.KafkaKeysClient
 import no.nav.paw.security.authentication.config.SecurityConfig
 import org.apache.kafka.clients.consumer.Consumer
 import org.jetbrains.exposed.v1.jdbc.Database
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import javax.sql.DataSource
 
@@ -116,7 +116,7 @@ fun initDatabase(dataSource: DataSource): Database {
 
 fun createTestDataSource(
     databaseConfig: DatabaseConfig = loadNaisOrLocalConfiguration(DATABASE_CONFIG),
-    postgresContainer: PostgreSQLContainer<*> = postgresContainer(),
+    postgresContainer: PostgreSQLContainer = postgresContainer(),
 ): HikariDataSource {
     val updatedDatabaseConfig = postgresContainer.let {
         databaseConfig.copy(
@@ -130,7 +130,7 @@ fun createTestDataSource(
     return createHikariDataSource(updatedDatabaseConfig)
 }
 
-private fun postgresContainer(): PostgreSQLContainer<out PostgreSQLContainer<*>> {
+private fun postgresContainer(): PostgreSQLContainer {
     val postgres = PostgreSQLContainer("postgres:17").apply {
         addEnv("POSTGRES_PASSWORD", "hendelselogg_backup")
         addEnv("POSTGRES_USER", "Paw1234")

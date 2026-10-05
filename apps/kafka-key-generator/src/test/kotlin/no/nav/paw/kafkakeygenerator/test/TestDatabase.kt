@@ -10,7 +10,7 @@ import no.nav.paw.kafkakeygenerator.model.dao.KonflikterTable
 import no.nav.paw.logging.logger.buildNamedLogger
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import java.sql.SQLException
 import java.time.Instant
@@ -69,7 +69,7 @@ fun buildPostgresDataSource(): DataSource {
     return createHikariDataSource(config)
 }
 
-private fun postgreSQLContainer(): PostgreSQLContainer<out PostgreSQLContainer<*>> {
+private fun postgreSQLContainer(): PostgreSQLContainer {
     val postgres = PostgreSQLContainer(
         "postgres:14"
     ).apply {

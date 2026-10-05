@@ -7,26 +7,26 @@ nav-security-mock-oauth2-server = "6.0.2"
 nav-tms-varsel = "2.2.0"
 arrow = "2.2.3"
 arrow-jackson = "0.15.1"
-hoplite = "2.9.0"
+hoplite = "3.0.0"
 graphql = "10.2.2"
 kafka = "4.3.1"
 confluent-kafka = "8.3.0"
 avro = "1.12.2"
-jackson = "2.22.2"
+jackson = "2.22.3"
 exposed = "1.5.0"
 logstash = "9.0"
-logback = "1.6.3"
+logback = "1.6.5"
 kotest = "6.2.5"
 mockk = "1.14.11"
-testcontainers = "1.21.4"
+testcontainers = "2.0.5"
 atlassian-oai = "3.0.0"
 micrometer = "1.17.1"
 otel-api = "1.66.0"
 otel-instrumentation = "2.31.1"
 postgres = "42.7.13"
 h2-database = "2.5.250"
-bigquery = "26.88.1"
-flyway = "13.6.0"
+bigquery = "26.90.0"
+flyway = "13.9.0"
 hikari = "7.1.0"
 kotlinx-coroutines = "1.11.0"
 kotlinx-serialization = "1.11.0"
@@ -89,7 +89,7 @@ test-junit5-runner = { group = "io.kotest", name = "kotest-runner-junit5", versi
 test-kotest-assertionsCore = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotest" }
 test-mockk-core = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 test-testContainers-core = { group = "org.testcontainers", name = "testcontainers", version.ref = "testcontainers" }
-test-testContainers-postgresql = { group = "org.testcontainers", name = "postgresql", version.ref = "testcontainers" }
+test-testContainers-postgresql = { group = "org.testcontainers", name = "testcontainers-postgresql", version.ref = "testcontainers" }
 database-postgres-driver = { group = "org.postgresql", name = "postgresql", version.ref = "postgres" }
 database-flyway-core = { group = "org.flywaydb", name = "flyway-core", version.ref = "flyway" }
 database-flyway-postgres = { group = "org.flywaydb", name = "flyway-database-postgresql", version.ref = "flyway" }
@@ -111,13 +111,13 @@ nav-paw-schema-bekreftelsesmelding = { group = "no.nav.paw.arbeidssokerregistere
 
 [bundles]
 ktor-server-instrumented = [
-    "ktor-server-core",
-    "ktor-server-coreJvm",
-    "ktor-server-netty",
-    "ktor-server-metricsMicrometer",
+  "ktor-server-core",
+  "ktor-server-coreJvm",
+  "ktor-server-netty",
+  "ktor-server-metricsMicrometer",
 ]
 unit-testing-kotest = [
-    "test-junit5-runner",
-    "test-kotest-assertionsCore",
-    "test-mockk-core",
+  "test-junit5-runner",
+  "test-kotest-assertionsCore",
+  "test-mockk-core",
 ]

@@ -37,7 +37,7 @@ import no.nav.security.mock.oauth2.MockOAuth2Server
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import java.time.Duration
 import java.util.*
@@ -186,7 +186,7 @@ open class TestContext(
             )
         }
 
-        private fun postgresContainer(): PostgreSQLContainer<out PostgreSQLContainer<*>> {
+        private fun postgresContainer(): PostgreSQLContainer {
             val postgres = PostgreSQLContainer("postgres:17").apply {
                 addEnv("POSTGRES_PASSWORD", "test")
                 addEnv("POSTGRES_USER", "test")

@@ -2,7 +2,7 @@ package no.nav.paw.arbeidssoeker.synk.test
 
 import no.nav.paw.database.config.DatabaseConfig
 import no.nav.paw.database.factory.createHikariDataSource
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 import javax.sql.DataSource
 
 fun createTestDataSource(): DataSource {
@@ -17,7 +17,7 @@ fun createTestDataSource(): DataSource {
     return createHikariDataSource(databaseConfig)
 }
 
-private fun postgresContainer(): PostgreSQLContainer<out PostgreSQLContainer<*>> {
+private fun postgresContainer(): PostgreSQLContainer {
     val postgres = PostgreSQLContainer("postgres:17").apply {
         addEnv("POSTGRES_PASSWORD", "paw_arbeidssoekere_synk_jobb")
         addEnv("POSTGRES_USER", "Paw1234")
