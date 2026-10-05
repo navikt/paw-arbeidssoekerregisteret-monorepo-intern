@@ -23,16 +23,8 @@ inline fun <reified A> loadNaisOrLocalConfiguration(resource: String): A {
  */
 @OptIn(ExperimentalHoplite::class)
 inline fun <reified A> loadConfigFromProvidedResource(resource: String): A {
-    // Bevisst uten addDefaultPropertySources(): Hoplite 3 lar miljøvariabler (f.eks. PORT=8080)
-    // overstyre config-nøkler med samme navn. Verdier hentes eksplisitt via ${VAR} i toml-filene.
     return ConfigLoaderBuilder
-        .empty()
-        .addDefaultDecoders()
-        .addDefaultResolvers()
-        .addDefaultPreprocessors()
-        .addDefaultNodeTransformers()
-        .addDefaultParamMappers()
-        .addDefaultParsers()
+        .default()
         .strict()
         .withExplicitSealedTypes()
         .addResourceSource(resource)
