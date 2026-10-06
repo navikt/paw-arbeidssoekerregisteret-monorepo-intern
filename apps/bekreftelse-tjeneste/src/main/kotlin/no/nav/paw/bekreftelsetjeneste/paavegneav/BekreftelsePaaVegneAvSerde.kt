@@ -11,6 +11,7 @@ import org.apache.kafka.common.serialization.Serializer
 private val bekreftelsePaaVegneAvObjectMapper = jacksonMapperBuilder()
     // Behold Jackson 2-formatet i state store: tidspunkter som tall
     .enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+    .enable(DateTimeFeature.WRITE_DURATIONS_AS_TIMESTAMPS)
     .build()
 
 class BekreftelsePaaVegneAvSerde: Serde<PaaVegneAvTilstand> {

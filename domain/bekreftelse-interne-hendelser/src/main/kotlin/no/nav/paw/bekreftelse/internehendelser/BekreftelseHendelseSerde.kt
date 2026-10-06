@@ -15,6 +15,7 @@ import kotlin.reflect.KClass
 private val objectMapper: ObjectMapper = jacksonMapperBuilder()
     // Behold Jackson 2-formatet på topic: tidspunkter som tall
     .enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+    .enable(DateTimeFeature.WRITE_DURATIONS_AS_TIMESTAMPS)
     .build()
 
 class BekreftelseHendelseSerde: Serde<BekreftelseHendelse> {
@@ -78,4 +79,3 @@ fun eventTypeToClass(type: String?): KClass<out BekreftelseHendelse> =
         registerGracePeriodeUtloeptEtterEksternInnsamlingHendelseType -> RegisterGracePeriodeUtloeptEtterEksternInnsamling::class
         else -> throw IllegalArgumentException("Ukjent hendelse type: '$type'")
     }
-
