@@ -21,8 +21,6 @@ import no.nav.paw.arbeidssokerregisteret.app.funksjoner.tilstandKey
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Avsluttet
 import no.nav.paw.arbeidssokerregisteret.intern.v1.Hendelse
 import no.nav.paw.arbeidssokerregisteret.intern.v1.HendelseSerde
-import no.nav.paw.kafka.processor.mapRecord
-import no.nav.paw.kafka.signing.stripSigningHeaders
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
@@ -89,10 +87,6 @@ fun topology(
                 value.nyPeriodeTilstand as SpecificRecord?,
                 value.nyOpplysningerOmArbeidssoekerTilstand as SpecificRecord?
             )
-        }.mapRecord(name = "strip_signing_headers") { record ->
-            val originalHeaders = record.headers()
-            val strippedHeaders = stripSigningHeaders(originalHeaders)
-            record.withHeaders(strippedHeaders)
         }
         .to(meteredTopicExtractor)
     return builder.build()
