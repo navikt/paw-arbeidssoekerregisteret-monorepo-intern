@@ -18,6 +18,8 @@ import no.nav.paw.bekreftelsetjeneste.tilstand.KlarForUtfylling
 import no.nav.paw.bekreftelsetjeneste.tilstand.Levert
 import no.nav.paw.bekreftelsetjeneste.tilstand.PeriodeInfo
 import no.nav.paw.bekreftelsetjeneste.tilstand.VenterSvar
+import no.nav.paw.bekreftelse.internehendelser.BekreftelseHendelseSerde
+import no.nav.paw.bekreftelse.internehendelser.RegisterGracePeriodeGjenstaaendeTid
 import java.time.Duration
 import java.time.Instant
 import java.util.UUID
@@ -47,6 +49,28 @@ class StateStoreSerdeKompatibilitetTest : FreeSpec({
             }
             paaVegneAvSerde.deserializer().deserialize("topic", json) shouldBe forventet
         }
+    }
+
+    "gjenstående tid på bekreftelseshendelsen skrives som numeriske sekunder" {
+        val hendelse = RegisterGracePeriodeGjenstaaendeTid(
+            hendelseId = UUID.fromString("00000000-0000-4000-8000-000000000007"),
+            periodeId = PERIODE_ID,
+            arbeidssoekerId = 1001L,
+            hendelseTidspunkt = tidspunkt("2025-03-14T09:26:53.589Z"),
+            bekreftelseId = UUID.fromString("5f6a7b8c-9d0e-4f1a-8b2c-3d4e5f6a7b8c"),
+            gjenstaandeTid = Duration.ofDays(3).plusHours(4).plusMillis(250)
+        )
+
+        val json = BekreftelseHendelseSerde().serializer().serialize("topic", hendelse)!!.decodeToString()
+        json.contains("\"gjenstaandeTid\":273600.250000000") shouldBe true
+    }
+
+    "intervall og gracePeriode i state store skrives som numeriske sekunder" {
+        val json = paaVegneAvSerde.serializer()
+            .serialize("topic", paaVegneAvTilstander.first().second).decodeToString()
+
+        json.contains("\"intervall\":1209600.000000000") shouldBe true
+        json.contains("\"gracePeriode\":604800.500000000") shouldBe true
     }
 })
 
