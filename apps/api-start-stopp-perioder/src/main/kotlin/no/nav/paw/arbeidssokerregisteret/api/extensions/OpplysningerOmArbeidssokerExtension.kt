@@ -92,6 +92,12 @@ fun Detaljer?.toInternalApi(): Map<String, String> =
             SISTE_DAG_MED_LOENN to sisteDagMedLoennIso8601?.toString(),
             PROSENT to prosent
         )
-            .mapNotNull { (key, value) -> value?.let { key to it } }
+            .mapNotNull { (key, value) -> value?.takeIf(::harVerdi)?.let { key to it } }
             .toMap()
     }
+
+/**
+ * "null" og "" regnes som manglende verdi. Jackson 2 leste JSON-null som "null",
+ * Jackson 3 leser det som "". Begge skal gi samme resultat i hendelsen.
+ */
+private fun harVerdi(verdi: String): Boolean = verdi != "" && verdi != "null"
