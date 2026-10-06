@@ -113,7 +113,11 @@ class SigningProducerInterceptor<K, V> : ProducerInterceptor<K, V> {
             val signature = signKafkaRecord(kBytes, traceparentBytes, timestamp, vBytes, privateKey)
 
             // Return a new record with the explicit timestamp and signature headers.
+            // Kafka Streams propagates input headers to output records, so remove any
+            // signature headers inherited from upstream before adding our own.
             ProducerRecord(topic, record.partition(), timestamp, record.key(), record.value(), headers).also {
+                it.headers().remove(SIGNATURE_HEADER)
+                it.headers().remove(SIGNING_KEY_ID_HEADER)
                 it.headers().add(SIGNATURE_HEADER, BASE64URL.encode(signature))
                 it.headers().add(SIGNING_KEY_ID_HEADER, keyId)
             }

@@ -91,6 +91,26 @@ class SigningProducerInterceptorTest : FreeSpec({
         verifyKafkaRecord(keyBytes, traceparent.toByteArray(), timestamp, valueBytes, signatureBytes, publicKey) shouldBe true
     }
 
+    "replaces signature headers inherited from upstream record" {
+        val interceptor = interceptor()
+        val headers = RecordHeaders().apply {
+            add("x-paw-signature", "upstream-signature".toByteArray())
+            add("x-paw-signing-key-id", "upstream-key".toByteArray())
+        }
+        val record = ProducerRecord("test-topic", null, 1_700_000_000_000L, "record-key", """{"hello":"world"}""", headers)
+
+        val signed = interceptor.onSend(record)
+
+        signed.headers().headers("x-paw-signature").count() shouldBe 1
+        signed.headers().headers("x-paw-signing-key-id").count() shouldBe 1
+        signed.headers().lastHeader("x-paw-signing-key-id").value().toString(Charsets.UTF_8) shouldBe keyId
+
+        val signatureBytes = Base64.getUrlDecoder().decode(signed.headers().lastHeader("x-paw-signature").value())
+        val keyBytes = StringSerializer().serialize("test-topic", "record-key")
+        val valueBytes = StringSerializer().serialize("test-topic", """{"hello":"world"}""")
+        verifyKafkaRecord(keyBytes, ByteArray(0), signed.timestamp()!!, valueBytes, signatureBytes, publicKey) shouldBe true
+    }
+
     "sets explicit timestamp when record has no timestamp" {
         val interceptor = interceptor()
         val record = ProducerRecord<String, String>("test-topic", "key", "value")
