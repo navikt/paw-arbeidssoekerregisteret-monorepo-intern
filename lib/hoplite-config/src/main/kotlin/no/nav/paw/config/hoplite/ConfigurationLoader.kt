@@ -23,8 +23,10 @@ inline fun <reified A> loadNaisOrLocalConfiguration(resource: String): A {
  */
 @OptIn(ExperimentalHoplite::class)
 inline fun <reified A> loadConfigFromProvidedResource(resource: String): A {
+    // Uten property sources: Hoplite 3 lar ellers miljøvariabler (f.eks. Nais sin PORT)
+    // overstyre config-nøkler med samme navn. Miljøvariabler hentes bare eksplisitt med ${VAR}.
     return ConfigLoaderBuilder
-        .default()
+        .defaultWithoutPropertySources()
         .strict()
         .withExplicitSealedTypes()
         .addResourceSource(resource)
