@@ -49,6 +49,7 @@ spec:
         - application: paw-arbeidssoekerregisteret-api-oppslag
         - application: paw-arbeidssokerregisteret-api-inngang
         - application: paw-arbeidssoekerregisteret-api-oppslag-v2
+        - application: paw-arbeidssoekerregisteret-api-kartlegging
     outbound:
       rules:
         - application: logging
