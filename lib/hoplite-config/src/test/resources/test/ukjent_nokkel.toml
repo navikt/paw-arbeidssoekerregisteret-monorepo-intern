@@ -1,0 +1,7 @@
+port = 9090
+hostname = "fra-fil"
+ukjent = "skal feile i strict"
+
+[database]
+host = "h"
+port = 1
