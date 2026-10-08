@@ -1,32 +1,33 @@
 [[authProviders]]
 name = "idporten"
 audiences = ["${IDPORTEN_CLIENT_ID}"]
-discoveryUrl = "${IDPORTEN_WELL_KNOWN_URL}
+discoveryUrl = "${IDPORTEN_WELL_KNOWN_URL}"
 
-    [authProviders.requiredClaims]
-    claims = [
-        "acr=idporten-loa-substantial", # == Level3
-        "acr=idporten-loa-high" # == Level4
-    ]
+
+[authProviders.requiredClaims]
+claims = [
+  "acr=idporten-loa-substantial", # == Level3
+  "acr=idporten-loa-high",        # == Level4
+]
 
 [[authProviders]]
 name = "tokenx"
 audiences = ["${TOKEN_X_CLIENT_ID}"]
 discoveryUrl = "${TOKEN_X_WELL_KNOWN_URL}"
 
-    [authProviders.requiredClaims]
-    claims = [
-        "acr=Level3",
-        "acr=Level4",
-        "acr=idporten-loa-substantial", # == Level3
-        "acr=idporten-loa-high" # == Level4
-    ]
-    combineWithOr = true
+[authProviders.requiredClaims]
+claims = [
+  "acr=Level3",
+  "acr=Level4",
+  "acr=idporten-loa-substantial", # == Level3
+  "acr=idporten-loa-high",        # == Level4
+]
+combineWithOr = true
 
 [[authProviders]]
 name = "azure"
 audiences = ["${AZURE_APP_CLIENT_ID}"]
 discoveryUrl = "${AZURE_APP_WELL_KNOWN_URL}"
 
-    [authProviders.requiredClaims]
-    claims = ["NAVident"]
+[authProviders.requiredClaims]
+claims = ["NAVident"]
