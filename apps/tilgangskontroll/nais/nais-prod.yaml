@@ -28,7 +28,6 @@ spec:
       claims:
         extra:
           - NAVident
-  env:
   replicas:
     min: 2
     max: 2
