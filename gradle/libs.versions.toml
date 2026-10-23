@@ -28,7 +28,7 @@ bigquery = "26.90.0"
 flyway = "13.9.0"
 hikari = "7.1.0"
 kotlinx-coroutines = "1.11.0"
-kotlinx-serialization = "1.11.0"
+kotlinx-serialization = "1.12.0"
 ktor = "3.6.0"
 
 [libraries]
