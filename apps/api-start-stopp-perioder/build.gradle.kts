@@ -25,6 +25,7 @@ dependencies {
     implementation(libs.bundles.ktor.server.instrumented)
     implementation(libs.micrometer.registry.prometheus)
     implementation(libs.opentelemetry.annotations)
+    implementation(libs.opentelemetry.extension.kotlin)
     implementation(libs.hoplite.core)
     implementation(libs.hoplite.toml)
     implementation(libs.hoplite.yaml)

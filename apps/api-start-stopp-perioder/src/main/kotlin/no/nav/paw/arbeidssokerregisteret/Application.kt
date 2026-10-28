@@ -8,6 +8,9 @@ import io.ktor.server.routing.*
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.opentelemetry.api.trace.Span
+import io.opentelemetry.context.Context
+import io.opentelemetry.extension.kotlin.asContextElement
+import kotlinx.coroutines.withContext
 import no.nav.paw.arbeidssokerregisteret.application.InngangsReglerV2
 import no.nav.paw.arbeidssokerregisteret.application.OpplysningerRequestHandler
 import no.nav.paw.arbeidssokerregisteret.application.StartStoppRequestHandler
@@ -82,6 +85,11 @@ fun Application.module(
     configureLogging()
     configureSerialization()
     install(OtelTraceIdPlugin)
+    // Legger OTel-konteksten inn i CoroutineContext, slik at den følger coroutinen
+    // på tvers av suspensjoner og trådbytter (bl.a. traceparent på Kafka-meldinger).
+    intercept(ApplicationCallPipeline.Plugins) {
+        withContext(Context.current().asContextElement()) { proceed() }
+    }
 
     routing {
         healthRoutes(registry)

@@ -63,6 +63,7 @@ ktor-server-test-host = { group = "io.ktor", name = "ktor-server-test-host", ver
 
 opentelemetry-api = { group = "io.opentelemetry", name = "opentelemetry-api", version.ref = "otel-api" }
 opentelemetry-annotations = { group = "io.opentelemetry.instrumentation", name = "opentelemetry-instrumentation-annotations", version.ref = "otel-instrumentation" }
+opentelemetry-extension-kotlin = { group = "io.opentelemetry", name = "opentelemetry-extension-kotlin", version.ref = "otel-api" }
 opentelemetry-sdk = { group = "io.opentelemetry", name = "opentelemetry-sdk", version.ref = "otel-api" }
 micrometer-core = { group = "io.micrometer", name = "micrometer-core", version.ref = "micrometer" }
 micrometer-registry-prometheus = { group = "io.micrometer", name = "micrometer-registry-prometheus", version.ref = "micrometer" }
