@@ -57,7 +57,7 @@ jobs:
           ./gradlew -Pversion=${{ env.VERSION }} -Pimage=${{ env.IMAGE_NAME }} :apps:${{ env.MODULE }}:build :apps:${{ env.MODULE }}:jib
           echo "DIGEST=$(cat ./apps/${{ env.MODULE }}/build/jib-image.digest)" >> $GITHUB_ENV
       - name: Attest and sign image
-        uses: nais/attest-sign@c02a0aedb111660e9fcf79e505753d6a7af4dcd5 # v2.1.0
+        uses: nais/attest-sign@a790bd54d388327e00aed3b1eee2d2311bcce0d5 # v2.1.3
         env:
           TRIVY_JAVA_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-java-db:1"
         with:
