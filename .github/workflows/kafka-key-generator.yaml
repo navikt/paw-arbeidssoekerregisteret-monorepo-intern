@@ -35,7 +35,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Setup Java
-        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
         with:
           java-version: 21
           distribution: temurin
@@ -59,7 +59,7 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
       - name: Attest and sign image
-        uses: nais/attest-sign@c02a0aedb111660e9fcf79e505753d6a7af4dcd5 # v2.1.0
+        uses: nais/attest-sign@a790bd54d388327e00aed3b1eee2d2311bcce0d5 # v2.1.3
         with:
           image_ref: ${{ env.IMAGE_NAME }}@${{ env.DIGEST }}
 
