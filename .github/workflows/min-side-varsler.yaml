@@ -57,7 +57,7 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
       - name: Attest and sign image
-        uses: nais/attest-sign@a790bd54d388327e00aed3b1eee2d2311bcce0d5 # v2.1.3
+        uses: nais/attest-sign@fb244dcfc50e17d1c47065afedad95b1844a12fc # v2.1.4
         with:
           image_ref: ${{ env.IMAGE_NAME }}@${{ env.DIGEST }}
 
